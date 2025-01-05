@@ -1,0 +1,109 @@
+# 기본 Visual Studio .gitignore 설정
+## 가이드: https://aka.ms/vs-gitignore
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# User-specific files (Mono Auto Generated)
+mono_crash.*
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# Visual Studio generated folders
+.vs/
+.vscode/
+.vscode-test/
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
+
+# SQL Server files
+*.mdf
+*.ldf
+
+# Web publish folder
+.publish/
+
+# Publish app data
+App_Data/
+
+# NuGet Packages
+*.nupkg
+**/packages/*
+!**/packages/build/
+!**/packages/repositories.config
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# StyleCop
+StyleCop.Cache
+
+# Python environments
+*.env
+*.venv
+ENV/
+env/
+venv/
+
+# Java class files
+*.class
+
+# Certificates
+*.pfx
+*.p12
+
+# Visual Studio Code workspace
+*.code-workspace
+
+# Custom build rules
+*.rule
+
+# Windows crash dump files
+*.dmp
+
+# JetBrains Rider
+.idea/
+
+# Rider-specific files
+*.sln.iml
+
+# Backup files
+*.bak
+*.old
+*.orig
+*.tmp
+
+# Lock files
+~$*
+*.lock
