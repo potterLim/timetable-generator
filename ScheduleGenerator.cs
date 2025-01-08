@@ -1,14 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 
 namespace TimetableGenerator
 {
+    /// <summary>
+    /// 시간표 생성 및 검증을 담당하는 클래스
+    /// </summary>
     public static class ScheduleGenerator
     {
+        /// <summary>
+        /// 유효한 시간표 조합을 생성합니다.
+        /// </summary>
+        /// <param name="courses">과목 목록</param>
+        /// <returns>유효한 시간표 조합</returns>
         public static List<List<TimeSlot>> GenerateValidSchedules(List<Course> courses)
         {
             try
@@ -19,7 +26,7 @@ namespace TimetableGenerator
                 foreach (var group in groupedCourses)
                 {
                     var timeSlotCombinations = group.Select(course =>
-                        course.TimeSlots.Select(ts => ParseTimeSlot(ts, course.Name + $" ({course.CourseId}-{course.Section})")).ToList()).ToList();
+                        course.TimeSlots.Select(ts => TimeSlotHelper.ParseTimeSlot(ts, course.Name + $" ({course.CourseId}-{course.Section})")).ToList()).ToList();
 
                     if (combinations.Count == 0)
                     {
@@ -33,7 +40,7 @@ namespace TimetableGenerator
                     }
                 }
 
-                return combinations.Where(IsValidSchedule).ToList();
+                return combinations.Where(TimeSlotHelper.IsValidSchedule).ToList();
             }
             catch (Exception ex)
             {
@@ -44,51 +51,26 @@ namespace TimetableGenerator
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
                 Environment.Exit(1);
-                return null; // Unreachable, but included for syntax
+                return null;
             }
         }
 
-        public static bool IsValidSchedule(List<TimeSlot> schedule)
-        {
-            try
-            {
-                var times = new HashSet<string>();
-                foreach (var slot in schedule)
-                {
-                    string key = slot.Day + slot.Period;
-                    if (times.Contains(key))
-                        return false;
-                    times.Add(key);
-                }
-                return true;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    "시간표를 검증하는 중 문제가 발생했습니다.\n" +
-                    $"오류 내용: {ex.Message}",
-                    "시간표 검증 오류",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-                Environment.Exit(1);
-                return false; // Unreachable, but included for syntax
-            }
-        }
-
+        /// <summary>
+        /// 시간표 데이터를 테이블 형식으로 변환합니다.
+        /// </summary>
+        /// <param name="schedule">시간표 데이터</param>
+        /// <returns>테이블 형식의 시간표</returns>
         public static DataTable Generate(List<TimeSlot> schedule)
         {
             try
             {
                 var dataTable = new DataTable();
 
-                // 요일 순서 지정
                 var allDays = new List<string> { "월", "화", "수", "목", "금", "토", "일" };
                 var maxPeriod = Math.Max(8, schedule.Any() ? schedule.Max(s => int.Parse(s.Period)) : 8);
 
-                // 기본적으로 월화수목금 포함
                 var daysToShow = new List<string> { "월", "화", "수", "목", "금" };
 
-                // 스케줄에 따라 필요한 요일 추가
                 bool hasSaturday = schedule.Any(s => s.Day == "토");
                 bool hasSunday = schedule.Any(s => s.Day == "일");
 
@@ -102,7 +84,6 @@ namespace TimetableGenerator
                     daysToShow.Add("토");
                 }
 
-                // Add columns (time and days)
                 dataTable.Columns.Add("시간");
                 foreach (var day in allDays)
                 {
@@ -112,7 +93,6 @@ namespace TimetableGenerator
                     }
                 }
 
-                // Add header row as the first row
                 var headerRow = dataTable.NewRow();
                 headerRow["시간"] = "시간";
                 foreach (var day in daysToShow)
@@ -121,7 +101,6 @@ namespace TimetableGenerator
                 }
                 dataTable.Rows.Add(headerRow);
 
-                // Add time slots and schedule data
                 for (int i = 1; i <= maxPeriod; i++)
                 {
                     var row = dataTable.NewRow();
@@ -133,7 +112,6 @@ namespace TimetableGenerator
                     dataTable.Rows.Add(row);
                 }
 
-                // Populate the schedule
                 foreach (var slot in schedule)
                 {
                     int periodIndex = int.Parse(slot.Period);
@@ -168,11 +146,20 @@ namespace TimetableGenerator
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
                 Environment.Exit(1);
-                return null; // Unreachable, but included for syntax
+                return null;
             }
         }
+    }
 
-        private static TimeSlot ParseTimeSlot(string timeSlot, string courseName)
+    /// <summary>
+    /// 시간표 데이터 처리를 위한 헬퍼 클래스
+    /// </summary>
+    public static class TimeSlotHelper
+    {
+        /// <summary>
+        /// 시간표 데이터를 TimeSlot 객체로 변환합니다.
+        /// </summary>
+        public static TimeSlot ParseTimeSlot(string timeSlot, string courseName)
         {
             try
             {
@@ -209,7 +196,7 @@ namespace TimetableGenerator
                     throw new FormatException($"잘못된 교시 형식: {period}");
                 }
 
-                return new TimeSlot { Day = day, Period = period, CourseName = courseName };
+                return new TimeSlot(day, period, courseName);
             }
             catch (Exception ex)
             {
@@ -220,7 +207,37 @@ namespace TimetableGenerator
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
                 Environment.Exit(1);
-                return null; // Unreachable, but included for syntax
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 시간표의 유효성을 검사합니다.
+        /// </summary>
+        public static bool IsValidSchedule(List<TimeSlot> schedule)
+        {
+            try
+            {
+                var times = new HashSet<string>();
+                foreach (var slot in schedule)
+                {
+                    string key = slot.Day + slot.Period;
+                    if (times.Contains(key))
+                        return false;
+                    times.Add(key);
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "시간표를 검증하는 중 문제가 발생했습니다.\n" +
+                    $"오류 내용: {ex.Message}",
+                    "시간표 검증 오류",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                Environment.Exit(1);
+                return false;
             }
         }
     }
