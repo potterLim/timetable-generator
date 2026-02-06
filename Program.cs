@@ -5,11 +5,8 @@ namespace TimetableGenerator
 {
     internal static class Program
     {
-        /// <summary>
-        /// 애플리케이션의 주 진입점입니다.
-        /// </summary>
         [STAThread]
-        static void Main()
+        private static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
@@ -20,13 +17,8 @@ namespace TimetableGenerator
             }
             catch (Exception ex)
             {
-                // 프로그램 실행 중 발생한 알 수 없는 오류를 사용자에게 알림
-                MessageBox.Show(
-                    $"프로그램 실행 중 알 수 없는 오류가 발생했습니다.\n\n오류 메시지: {ex.Message}",
-                    "오류",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-                Environment.Exit(1);
+                UiMessageBox.ShowError(UiMessageBox.BuildErrorMessage("프로그램을 실행하는 동안 문제가 발생했습니다.", ex.Message), "오류");
+                Application.Exit();
             }
         }
     }
