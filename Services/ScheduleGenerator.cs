@@ -43,7 +43,7 @@ namespace TimetableGenerator
                         TimeSlot slot;
                         string parseError;
 
-                        if (!TimeSlotHelper.TryParse(rawTimeSlot, course.CourseId, course.Name, course.Section, course.Classroom, course.SourceLineNumber, out slot, out parseError))
+                        if (!TimeSlotHelper.TryParseTimeSlot(rawTimeSlot, course.CourseId, course.Name, course.Section, course.Classroom, course.SourceLineNumber, out slot, out parseError))
                         {
                             errorMessage = parseError;
                             return false;
