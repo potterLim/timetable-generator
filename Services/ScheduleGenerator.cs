@@ -5,11 +5,6 @@ namespace TimetableGenerator
 {
     public static class ScheduleGenerator
     {
-        // Schedule generation policy:
-        // - Courses with the same CourseId are mutually exclusive options (choose exactly one).
-        // - Current implementation builds full cartesian combinations first, then filters by collisions.
-        //   This is simple but may be expensive if there are many sections/options.
-        //   Keep input size reasonable, or replace with a pruning/backtracking generator if needed.
         public static bool TryGenerateValidSchedules(List<Course> courses, out List<List<TimeSlot>> validSchedules, out string errorMessage)
         {
             validSchedules = null;
@@ -33,7 +28,6 @@ namespace TimetableGenerator
                 coursesById[course.CourseId].Add(course);
             }
 
-            // WARNING: combinations grows multiplicatively by the number of options per CourseId group.
             List<List<TimeSlot>> combinations = new List<List<TimeSlot>>();
 
             foreach (KeyValuePair<int, List<Course>> group in coursesById)
@@ -49,7 +43,7 @@ namespace TimetableGenerator
                         TimeSlot slot;
                         string parseError;
 
-                        if (!TimeSlotHelper.TryParse(rawTimeSlot, course.CourseId, course.Name, course.Section, course.SourceLineNumber, out slot, out parseError))
+                        if (!TimeSlotHelper.TryParse(rawTimeSlot, course.CourseId, course.Name, course.Section, course.Classroom, course.SourceLineNumber, out slot, out parseError))
                         {
                             errorMessage = parseError;
                             return false;
@@ -169,7 +163,7 @@ namespace TimetableGenerator
                 }
 
                 dayLabels.Add(label);
-                newTable.Columns.Add(label);
+                newTable.Columns.Add(label, typeof(object));
             }
 
             DataRow headerRow = newTable.NewRow();
@@ -189,7 +183,7 @@ namespace TimetableGenerator
 
                 for (int j = 0; j < dayLabels.Count; ++j)
                 {
-                    row[dayLabels[j]] = "";
+                    row[dayLabels[j]] = null;
                 }
 
                 newTable.Rows.Add(row);
@@ -208,7 +202,7 @@ namespace TimetableGenerator
 
                 if (newTable.Columns.Contains(columnName))
                 {
-                    newTable.Rows[rowIndex][columnName] = slot.GetCellText();
+                    newTable.Rows[rowIndex][columnName] = slot.ToCellContent();
                 }
             }
 
@@ -216,7 +210,6 @@ namespace TimetableGenerator
             return true;
         }
 
-        // Valid schedule condition: no duplicate (Day, Period) across all time slots.
         private static bool isValidSchedule(List<TimeSlot> schedule)
         {
             HashSet<string> occupied = new HashSet<string>();
