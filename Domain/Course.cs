@@ -6,11 +6,10 @@ namespace TimetableGenerator
     // Courses with the same CourseId are treated as mutually exclusive options (choose exactly one).
     public class Course
     {
-        public int CourseId { get; private set; }
-        public string Section { get; private set; }
+        public CourseId CourseId { get; private set; }
+        public CourseSection Section { get; private set; }
         public string Name { get; private set; }
 
-        // Optional classroom information (null if not provided in CSV).
         public ClassroomLocation Classroom { get; private set; }
 
         // Raw time slot tokens from CSV, e.g. "화요일3교시" (split by '/').
@@ -18,7 +17,7 @@ namespace TimetableGenerator
 
         public int SourceLineNumber { get; private set; }
 
-        public Course(int courseId, string section, string name, ClassroomLocation classroom, List<string> timeSlots, int sourceLineNumber)
+        public Course(CourseId courseId, CourseSection section, string name, ClassroomLocation classroom, List<string> timeSlots, int sourceLineNumber)
         {
             CourseId = courseId;
             Section = section;

@@ -4,32 +4,32 @@
     public class TimeSlot
     {
         public EDay Day { get; private set; }
-        public int Period { get; private set; }
+        public Period Period { get; private set; }
 
-        public int CourseId { get; private set; }
-        public string CourseName { get; private set; }
-        public string Section { get; private set; }
+        public CourseId CourseId { get; private set; }
+        public string Name { get; private set; }
+        public CourseSection Section { get; private set; }
 
         public ClassroomLocation Classroom { get; private set; }
 
-        public TimeSlot(EDay day, int period, int courseId, string courseName, string section, ClassroomLocation classroom)
+        public TimeSlot(EDay day, Period period, CourseId courseId, string name, CourseSection section, ClassroomLocation classroom)
         {
             Day = day;
             Period = period;
             CourseId = courseId;
-            CourseName = courseName;
+            Name = name;
             Section = section;
             Classroom = classroom;
         }
 
         public string GetCourseLineText()
         {
-            if (Section == "00")
+            if (Section.IsDefault())
             {
-                return CourseName;
+                return Name;
             }
 
-            return $"{CourseName}({Section})";
+            return $"{Name}({Section.Value})";
         }
 
         public ScheduleCellContent ToCellContent()
@@ -38,9 +38,9 @@
         }
 
         // Collision key for schedule validation (same day and period cannot overlap).
-        public string GetCollisionKey()
+        public ScheduleSlotKey GetCollisionKey()
         {
-            return $"{Day}:{Period}";
+            return new ScheduleSlotKey(Day, Period);
         }
     }
 }
