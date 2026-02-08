@@ -45,6 +45,8 @@ namespace TimetableGenerator
             grid.AlternatingRowsDefaultCellStyle.BackColor = UiConstants.ALT_ROW_COLOR;
             grid.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
 
+            grid.CellPainting += onGridCellPainting;
+
             return grid;
         }
 
@@ -90,8 +92,6 @@ namespace TimetableGenerator
 
             int dayWidth = remainingWidth / dayColumnCount;
 
-            // Day columns share remaining width equally; a minimum width is enforced.
-            // Form minimum size should guarantee this condition in normal use.
             if (dayWidth < UiConstants.GRID_MIN_DAY_COLUMN_WIDTH)
             {
                 dayWidth = UiConstants.GRID_MIN_DAY_COLUMN_WIDTH;
@@ -110,7 +110,6 @@ namespace TimetableGenerator
 
         private void applyHeaderStyles(DataGridView grid)
         {
-            // Header row (row 0) and time column (col 0) are displayed in bold.
             foreach (DataGridViewRow row in grid.Rows)
             {
                 if (row.Index == 0)
@@ -119,6 +118,79 @@ namespace TimetableGenerator
                 }
 
                 row.Cells[0].Style.Font = UiConstants.BOLD_FONT;
+            }
+        }
+
+        private void onGridCellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+        {
+            if (e.RowIndex <= 0 || e.ColumnIndex <= 0)
+            {
+                return;
+            }
+
+            DataGridView grid = sender as DataGridView;
+            if (grid == null)
+            {
+                return;
+            }
+
+            object value = grid.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
+            ScheduleCellContent content = value as ScheduleCellContent;
+            if (content == null)
+            {
+                return;
+            }
+
+            e.Handled = true;
+
+            bool isSelected = (e.State & DataGridViewElementStates.Selected) == DataGridViewElementStates.Selected;
+
+            Color backColor = isSelected ? e.CellStyle.SelectionBackColor : e.CellStyle.BackColor;
+            using (SolidBrush backBrush = new SolidBrush(backColor))
+            {
+                e.Graphics.FillRectangle(backBrush, e.CellBounds);
+            }
+
+            e.Paint(e.ClipBounds, DataGridViewPaintParts.Border);
+
+            Rectangle bounds = e.CellBounds;
+
+            string courseLine = content.CourseLine ?? string.Empty;
+            string classroomLine = content.GetClassroomLine();
+
+            Font font = e.CellStyle.Font ?? UiConstants.DEFAULT_FONT;
+
+            TextFormatFlags flags = TextFormatFlags.HorizontalCenter
+                                  | TextFormatFlags.NoPadding
+                                  | TextFormatFlags.EndEllipsis;
+
+            Size courseSize = TextRenderer.MeasureText(e.Graphics, courseLine, font, new Size(bounds.Width, bounds.Height), flags);
+
+            int gap = 2;
+
+            int totalHeight = courseSize.Height;
+            Size classroomSize = Size.Empty;
+
+            bool hasClassroom = content.HasClassroom();
+            if (hasClassroom)
+            {
+                classroomSize = TextRenderer.MeasureText(e.Graphics, classroomLine, font, new Size(bounds.Width, bounds.Height), flags);
+                totalHeight = courseSize.Height + gap + classroomSize.Height;
+            }
+
+            int startY = bounds.Y + (bounds.Height - totalHeight) / 2;
+            if (startY < bounds.Y)
+            {
+                startY = bounds.Y;
+            }
+
+            Rectangle courseRect = new Rectangle(bounds.X, startY, bounds.Width, courseSize.Height);
+            TextRenderer.DrawText(e.Graphics, courseLine, font, courseRect, Color.Black, flags | TextFormatFlags.VerticalCenter);
+
+            if (hasClassroom)
+            {
+                Rectangle classroomRect = new Rectangle(bounds.X, startY + courseSize.Height + gap, bounds.Width, classroomSize.Height);
+                TextRenderer.DrawText(e.Graphics, classroomLine, font, classroomRect, UiConstants.CLASSROOM_FORE_COLOR, flags | TextFormatFlags.VerticalCenter);
             }
         }
     }

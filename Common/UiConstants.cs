@@ -64,5 +64,8 @@ namespace TimetableGenerator
 
         public static readonly Color SELECTION_BACK_COLOR = Color.LightBlue;
         public static readonly Color SELECTION_FORE_COLOR = Color.Black;
+
+        // Classroom text color (RGB 255, 0, 0)
+        public static readonly Color CLASSROOM_FORE_COLOR = Color.FromArgb(255, 0, 0);
     }
 }

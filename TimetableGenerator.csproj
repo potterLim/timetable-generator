@@ -46,7 +46,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Domain\ClassroomLocation.cs" />
     <Compile Include="Domain\Course.cs" />
+    <Compile Include="Domain\ScheduleCellContent.cs" />
     <Compile Include="Services\CsvParser.cs" />
     <Compile Include="Services\DataLoader.cs" />
     <Compile Include="Domain\DayExtensions.cs" />
