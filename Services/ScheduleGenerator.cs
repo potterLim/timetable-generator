@@ -16,7 +16,7 @@ namespace TimetableGenerator
                 return false;
             }
 
-            Dictionary<int, List<Course>> coursesById = new Dictionary<int, List<Course>>();
+            Dictionary<CourseId, List<Course>> coursesById = new Dictionary<CourseId, List<Course>>();
 
             foreach (Course course in courses)
             {
@@ -30,7 +30,7 @@ namespace TimetableGenerator
 
             List<List<TimeSlot>> combinations = new List<List<TimeSlot>>();
 
-            foreach (KeyValuePair<int, List<Course>> group in coursesById)
+            foreach (KeyValuePair<CourseId, List<Course>> group in coursesById)
             {
                 List<List<TimeSlot>> groupOptions = new List<List<TimeSlot>>();
 
@@ -142,9 +142,9 @@ namespace TimetableGenerator
 
             foreach (TimeSlot slot in schedule)
             {
-                if (slot.Period > maxPeriod)
+                if (slot.Period.Value > maxPeriod)
                 {
-                    maxPeriod = slot.Period;
+                    maxPeriod = slot.Period.Value;
                 }
             }
 
@@ -193,7 +193,7 @@ namespace TimetableGenerator
 
             foreach (TimeSlot slot in schedule)
             {
-                int rowIndex = slot.Period;
+                int rowIndex = slot.Period.Value;
 
                 string columnName;
                 if (!slot.Day.TryGetLabel(out columnName))
@@ -214,11 +214,11 @@ namespace TimetableGenerator
 
         private static bool isValidSchedule(List<TimeSlot> schedule)
         {
-            HashSet<string> occupied = new HashSet<string>();
+            HashSet<ScheduleSlotKey> occupied = new HashSet<ScheduleSlotKey>();
 
             foreach (TimeSlot slot in schedule)
             {
-                string key = slot.GetCollisionKey();
+                ScheduleSlotKey key = slot.GetCollisionKey();
                 if (occupied.Contains(key))
                 {
                     return false;

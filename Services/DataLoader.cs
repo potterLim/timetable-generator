@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 
 namespace TimetableGenerator
@@ -58,18 +57,18 @@ namespace TimetableGenerator
                     return false;
                 }
 
-                int courseId;
-                if (!int.TryParse(parts[0].Trim(), out courseId))
+                int courseIdValue;
+                if (!int.TryParse(parts[0].Trim(), out courseIdValue))
                 {
                     errorMessage = buildCsvLineErrorMessage("과목 ID가 올바르지 않습니다.", lineNumber, line);
                     return false;
                 }
 
-                string section = parts[1].Trim();
+                string sectionText = parts[1].Trim();
                 string name = parts[2].Trim();
                 string rawTimeSlots = parts[3].Trim();
 
-                if (string.IsNullOrWhiteSpace(section) || string.IsNullOrWhiteSpace(name))
+                if (string.IsNullOrWhiteSpace(sectionText) || string.IsNullOrWhiteSpace(name))
                 {
                     errorMessage = buildCsvLineErrorMessage("과목 정보가 올바르지 않습니다.", lineNumber, line);
                     return false;
@@ -80,6 +79,9 @@ namespace TimetableGenerator
                     errorMessage = buildCsvLineErrorMessage("시간표 정보가 비어 있습니다.", lineNumber, line);
                     return false;
                 }
+
+                CourseId courseId = new CourseId(courseIdValue);
+                CourseSection section = new CourseSection(sectionText);
 
                 ClassroomLocation classroom = null;
                 if (parts.Length >= 5)
