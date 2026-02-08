@@ -9,14 +9,7 @@ namespace TimetableGenerator
         // - Day must be one of: 월요일/화요일/수요일/목요일/금요일/토요일/일요일
         // - Period must be a positive integer
         // Note: This parser intentionally rejects abbreviated day names ("월", "화") to avoid ambiguity.
-        public static bool TryParse(
-            string rawTimeSlot,
-            int courseId,
-            string courseName,
-            string section,
-            int sourceLineNumber,
-            out TimeSlot timeSlot,
-            out string errorMessage)
+        public static bool TryParse(string rawTimeSlot, int courseId, string courseName, string section, int sourceLineNumber, out TimeSlot timeSlot, out string errorMessage)
         {
             timeSlot = null;
             errorMessage = null;
