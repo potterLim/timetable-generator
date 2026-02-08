@@ -119,11 +119,11 @@ namespace TimetableGenerator
 
             foreach (DataGridViewRow row in grid.Rows)
             {
-                // Axis column (col 0): LightGray + Bold for all rows
+                // Axis column (col 0): header/axis background for all rows
                 row.Cells[0].Style.BackColor = UiConstants.HEADER_AXIS_BACK_COLOR;
                 row.Cells[0].Style.Font = UiConstants.BOLD_FONT;
 
-                // Header row (row 0): LightGray + Bold for all columns
+                // Header row (row 0): header/axis background for all columns
                 if (row.Index == 0)
                 {
                     for (int c = 0; c < columnCount; ++c)
@@ -137,13 +137,66 @@ namespace TimetableGenerator
 
         private void onGridCellPainting(object sender, DataGridViewCellPaintingEventArgs e)
         {
-            if (e.RowIndex <= 0 || e.ColumnIndex <= 0)
+            if (e.RowIndex < 0 || e.ColumnIndex < 0)
             {
                 return;
             }
 
             DataGridView grid = sender as DataGridView;
             if (grid == null)
+            {
+                return;
+            }
+
+            bool isSelected = (e.State & DataGridViewElementStates.Selected) == DataGridViewElementStates.Selected;
+            Color backColor = isSelected ? e.CellStyle.SelectionBackColor : e.CellStyle.BackColor;
+
+            if (e.ColumnIndex == 0 && e.RowIndex > 0)
+            {
+                e.Handled = true;
+
+                using (SolidBrush backBrush = new SolidBrush(backColor))
+                {
+                    e.Graphics.FillRectangle(backBrush, e.CellBounds);
+                }
+
+                e.Paint(e.ClipBounds, DataGridViewPaintParts.Border);
+
+                int period = e.RowIndex;
+
+                string periodLine = period + "교시";
+                string timeLine = buildPeriodTimeLine(period);
+
+                Rectangle bounds = e.CellBounds;
+
+                TextFormatFlags flags = TextFormatFlags.HorizontalCenter| TextFormatFlags.NoPadding| TextFormatFlags.EndEllipsis;
+
+                Font periodFont = UiConstants.BOLD_FONT;
+                Font timeFont = UiConstants.AXIS_TIME_FONT;
+
+                Size periodSize = TextRenderer.MeasureText(e.Graphics, periodLine, periodFont, new Size(bounds.Width, bounds.Height), flags);
+                Size timeSize = TextRenderer.MeasureText(e.Graphics, timeLine, timeFont, new Size(bounds.Width, bounds.Height), flags);
+
+                int gap = 2;
+                int totalHeight = periodSize.Height + gap + timeSize.Height;
+
+                int startY = bounds.Y + (bounds.Height - totalHeight) / 2;
+                if (startY < bounds.Y)
+                {
+                    startY = bounds.Y;
+                }
+
+                Rectangle periodRect = new Rectangle(bounds.X, startY, bounds.Width, periodSize.Height);
+                TextRenderer.DrawText(e.Graphics, periodLine, periodFont, periodRect, Color.Black, flags | TextFormatFlags.VerticalCenter);
+
+                Rectangle timeRect = new Rectangle(bounds.X, startY + periodSize.Height + gap, bounds.Width, timeSize.Height);
+                TextRenderer.DrawText(e.Graphics, timeLine, timeFont, timeRect, Color.Black, flags | TextFormatFlags.VerticalCenter);
+
+                return;
+            }
+
+            // Only schedule cells (excluding header row/axis column)
+            if (e.RowIndex <= 0 || e.ColumnIndex <= 0)
             {
                 return;
             }
@@ -157,9 +210,6 @@ namespace TimetableGenerator
 
             e.Handled = true;
 
-            bool isSelected = (e.State & DataGridViewElementStates.Selected) == DataGridViewElementStates.Selected;
-
-            Color backColor = isSelected ? e.CellStyle.SelectionBackColor : e.CellStyle.BackColor;
             using (SolidBrush backBrush = new SolidBrush(backColor))
             {
                 e.Graphics.FillRectangle(backBrush, e.CellBounds);
@@ -167,43 +217,59 @@ namespace TimetableGenerator
 
             e.Paint(e.ClipBounds, DataGridViewPaintParts.Border);
 
-            Rectangle bounds = e.CellBounds;
+            Rectangle bounds2 = e.CellBounds;
 
             string courseLine = content.CourseLine ?? string.Empty;
             string classroomLine = content.GetClassroomLine();
 
             Font font = e.CellStyle.Font ?? UiConstants.DEFAULT_FONT;
 
-            TextFormatFlags flags = TextFormatFlags.HorizontalCenter | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis;
+            TextFormatFlags flags2 = TextFormatFlags.HorizontalCenter| TextFormatFlags.NoPadding| TextFormatFlags.EndEllipsis;
 
-            Size courseSize = TextRenderer.MeasureText(e.Graphics, courseLine, font, new Size(bounds.Width, bounds.Height), flags);
+            Size courseSize = TextRenderer.MeasureText(e.Graphics, courseLine, font, new Size(bounds2.Width, bounds2.Height), flags2);
 
-            int gap = 2;
+            int gap2 = 2;
 
-            int totalHeight = courseSize.Height;
+            int totalHeight2 = courseSize.Height;
             Size classroomSize = Size.Empty;
 
             bool hasClassroom = content.HasClassroom();
             if (hasClassroom)
             {
-                classroomSize = TextRenderer.MeasureText(e.Graphics, classroomLine, font, new Size(bounds.Width, bounds.Height), flags);
-                totalHeight = courseSize.Height + gap + classroomSize.Height;
+                classroomSize = TextRenderer.MeasureText(e.Graphics, classroomLine, font, new Size(bounds2.Width, bounds2.Height), flags2);
+                totalHeight2 = courseSize.Height + gap2 + classroomSize.Height;
             }
 
-            int startY = bounds.Y + (bounds.Height - totalHeight) / 2;
-            if (startY < bounds.Y)
+            int startY2 = bounds2.Y + (bounds2.Height - totalHeight2) / 2;
+            if (startY2 < bounds2.Y)
             {
-                startY = bounds.Y;
+                startY2 = bounds2.Y;
             }
 
-            Rectangle courseRect = new Rectangle(bounds.X, startY, bounds.Width, courseSize.Height);
-            TextRenderer.DrawText(e.Graphics, courseLine, font, courseRect, Color.Black, flags | TextFormatFlags.VerticalCenter);
+            Rectangle courseRect = new Rectangle(bounds2.X, startY2, bounds2.Width, courseSize.Height);
+            TextRenderer.DrawText(e.Graphics, courseLine, font, courseRect, Color.Black, flags2 | TextFormatFlags.VerticalCenter);
 
             if (hasClassroom)
             {
-                Rectangle classroomRect = new Rectangle(bounds.X, startY + courseSize.Height + gap, bounds.Width, classroomSize.Height);
-                TextRenderer.DrawText(e.Graphics, classroomLine, font, classroomRect, UiConstants.CLASSROOM_FORE_COLOR, flags | TextFormatFlags.VerticalCenter);
+                Rectangle classroomRect = new Rectangle(bounds2.X, startY2 + courseSize.Height + gap2, bounds2.Width, classroomSize.Height);
+                TextRenderer.DrawText(e.Graphics, classroomLine, font, classroomRect, UiConstants.CLASSROOM_FORE_COLOR, flags2 | TextFormatFlags.VerticalCenter);
             }
+        }
+
+        private static string buildPeriodTimeLine(int period)
+        {
+            int start = UiConstants.PERIOD1_START_MINUTES + ((period - 1) * UiConstants.PERIOD_BLOCK_MINUTES);
+            int end = start + UiConstants.PERIOD_DURATION_MINUTES;
+
+            return "(" + formatTime(start) + "~" + formatTime(end) + ")";
+        }
+
+        private static string formatTime(int totalMinutes)
+        {
+            int hour = totalMinutes / 60;
+            int minute = totalMinutes % 60;
+
+            return hour.ToString("D2") + ":" + minute.ToString("D2");
         }
     }
 }
