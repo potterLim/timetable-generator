@@ -4,8 +4,8 @@ using System.Windows.Forms;
 namespace TimetableGenerator
 {
     // Creates and styles the schedule grid.
-    // This grid intentionally disables scrollbars and user resizing.
-    // Minimum size is enforced at the Form level to keep all cells visible.
+    // This grid disables scrollbars and user resizing; the Form enforces minimum size
+    // so the entire grid remains visible.
     public sealed class ScheduleGridPresenter
     {
         public DataGridView CreateGrid()
@@ -29,7 +29,6 @@ namespace TimetableGenerator
 
             grid.MultiSelect = false;
             grid.SelectionMode = DataGridViewSelectionMode.CellSelect;
-
             grid.ScrollBars = ScrollBars.None;
 
             DataGridViewCellStyle style = new DataGridViewCellStyle();
@@ -42,9 +41,13 @@ namespace TimetableGenerator
             style.WrapMode = DataGridViewTriState.True;
 
             grid.DefaultCellStyle = style;
-            grid.AlternatingRowsDefaultCellStyle.BackColor = UiConstants.ALT_ROW_COLOR;
-            grid.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
 
+            // Stripe policy (start from row 1 as White, then alternate):
+            // DataGridView alternation starts at row index 0, so invert the defaults.
+            grid.RowsDefaultCellStyle.BackColor = UiConstants.ALT_ROW_COLOR;
+            grid.AlternatingRowsDefaultCellStyle.BackColor = UiConstants.GRID_BACKGROUND_COLOR;
+
+            grid.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
             grid.CellPainting += onGridCellPainting;
 
             return grid;
@@ -58,7 +61,7 @@ namespace TimetableGenerator
             }
 
             applyColumnSizing(grid);
-            applyHeaderStyles(grid);
+            applyHeaderAndAxisStyle(grid);
         }
 
         private void applyColumnSizing(DataGridView grid)
@@ -81,9 +84,7 @@ namespace TimetableGenerator
                 return;
             }
 
-            int timeWidth = UiConstants.TIME_COLUMN_WIDTH;
-            int remainingWidth = totalWidth - timeWidth;
-
+            int remainingWidth = totalWidth - UiConstants.TIME_COLUMN_WIDTH;
             if (remainingWidth <= 0)
             {
                 grid.Columns[0].Width = totalWidth;
@@ -91,7 +92,6 @@ namespace TimetableGenerator
             }
 
             int dayWidth = remainingWidth / dayColumnCount;
-
             if (dayWidth < UiConstants.GRID_MIN_DAY_COLUMN_WIDTH)
             {
                 dayWidth = UiConstants.GRID_MIN_DAY_COLUMN_WIDTH;
@@ -105,19 +105,33 @@ namespace TimetableGenerator
             int usedByDays = dayWidth * dayColumnCount;
             int remainder = remainingWidth - usedByDays;
 
-            grid.Columns[0].Width = timeWidth + remainder;
+            grid.Columns[0].Width = UiConstants.TIME_COLUMN_WIDTH + remainder;
         }
 
-        private void applyHeaderStyles(DataGridView grid)
+        private void applyHeaderAndAxisStyle(DataGridView grid)
         {
+            if (grid.Rows == null || grid.Rows.Count <= 0 || grid.Columns == null || grid.Columns.Count <= 0)
+            {
+                return;
+            }
+
+            int columnCount = grid.Columns.Count;
+
             foreach (DataGridViewRow row in grid.Rows)
             {
+                // Axis column (col 0): LightGray + Bold for all rows
+                row.Cells[0].Style.BackColor = UiConstants.HEADER_AXIS_BACK_COLOR;
+                row.Cells[0].Style.Font = UiConstants.BOLD_FONT;
+
+                // Header row (row 0): LightGray + Bold for all columns
                 if (row.Index == 0)
                 {
-                    row.DefaultCellStyle.Font = UiConstants.BOLD_FONT;
+                    for (int c = 0; c < columnCount; ++c)
+                    {
+                        row.Cells[c].Style.BackColor = UiConstants.HEADER_AXIS_BACK_COLOR;
+                        row.Cells[c].Style.Font = UiConstants.BOLD_FONT;
+                    }
                 }
-
-                row.Cells[0].Style.Font = UiConstants.BOLD_FONT;
             }
         }
 
@@ -160,9 +174,7 @@ namespace TimetableGenerator
 
             Font font = e.CellStyle.Font ?? UiConstants.DEFAULT_FONT;
 
-            TextFormatFlags flags = TextFormatFlags.HorizontalCenter
-                                  | TextFormatFlags.NoPadding
-                                  | TextFormatFlags.EndEllipsis;
+            TextFormatFlags flags = TextFormatFlags.HorizontalCenter | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis;
 
             Size courseSize = TextRenderer.MeasureText(e.Graphics, courseLine, font, new Size(bounds.Width, bounds.Height), flags);
 
