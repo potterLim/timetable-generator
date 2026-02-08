@@ -8,9 +8,11 @@ namespace TimetableGenerator
     {
         // CSV input contract:
         // - First row is a header and will be skipped.
-        // - Each data row must contain 4 fields: CourseId, Section, Name, TimeSlots
-        // - Parsing rule is a simple split into 4 parts by ',' (not a full RFC CSV parser).
-        //   Therefore: Section/Name/TimeSlots must NOT contain commas.
+        // - Each data row must contain 4 or 5 fields:
+        //   (Required) CourseId, Section, Name, TimeSlots
+        //   (Optional) Classroom ("건물명 호실" with a single whitespace)
+        // - Parsing rule is a simple split by ',' with max 5 parts (not a full RFC CSV parser).
+        //   Therefore: Section/Name/TimeSlots/Classroom must NOT contain commas.
         // - TimeSlots field uses '/' to separate multiple time slots.
         public bool TryLoadCoursesFromCsv(string inputFilePath, out List<Course> courses, out string errorMessage)
         {
@@ -49,9 +51,7 @@ namespace TimetableGenerator
                     continue;
                 }
 
-                // Split into 4 fields only. This is not a full CSV parser (no quoted fields).
-                // For strict CSV (commas inside fields), replace with a real CSV reader.
-                string[] parts = line.Split(new[] { ',' }, 4);
+                string[] parts = line.Split(new[] { ',' }, 5);
                 if (parts.Length < 4)
                 {
                     errorMessage = buildCsvLineErrorMessage("CSV 데이터 형식이 올바르지 않습니다.", lineNumber, line);
@@ -81,7 +81,23 @@ namespace TimetableGenerator
                     return false;
                 }
 
-                // Multiple time slots are separated by '/'.
+                ClassroomLocation classroom = null;
+                if (parts.Length >= 5)
+                {
+                    string rawClassroom = parts[4].Trim();
+                    if (!string.IsNullOrWhiteSpace(rawClassroom))
+                    {
+                        ClassroomLocation parsed;
+                        if (!ClassroomLocation.TryParse(rawClassroom, out parsed))
+                        {
+                            errorMessage = buildCsvLineErrorMessage("강의실 정보 형식이 올바르지 않습니다.", lineNumber, line);
+                            return false;
+                        }
+
+                        classroom = parsed;
+                    }
+                }
+
                 string[] timeSlotParts = rawTimeSlots.Split('/');
                 List<string> timeSlots = new List<string>();
 
@@ -100,7 +116,7 @@ namespace TimetableGenerator
                     return false;
                 }
 
-                parsedCourses.Add(new Course(courseId, section, name, timeSlots, lineNumber));
+                parsedCourses.Add(new Course(courseId, section, name, classroom, timeSlots, lineNumber));
             }
 
             if (parsedCourses.Count == 0)
