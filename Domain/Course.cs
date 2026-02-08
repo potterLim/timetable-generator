@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace TimetableGenerator
 {
@@ -17,14 +18,19 @@ namespace TimetableGenerator
 
         public int SourceLineNumber { get; }
 
-        public Course(CourseId courseId, CourseSection section, string name, ClassroomLocation classroom, List<string> timeSlots, int sourceLineNumber)
+        public Course(CourseId courseId, CourseSection section, string name, ClassroomLocation classroom, IEnumerable<string> timeSlots, int sourceLineNumber)
         {
+            if (timeSlots == null)
+            {
+                throw new ArgumentNullException(nameof(timeSlots));
+            }
+
             CourseId = courseId;
             Section = section;
             Name = name;
             Classroom = classroom;
 
-            // Caller-side policy: timeSlots is valid. Make it immutable for consumers.
+            // Make it immutable for consumers (defensive copy).
             TimeSlots = new List<string>(timeSlots).AsReadOnly();
 
             SourceLineNumber = sourceLineNumber;
