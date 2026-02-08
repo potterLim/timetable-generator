@@ -148,7 +148,9 @@ namespace TimetableGenerator
                 }
             }
 
-            newTable.Columns.Add("시간");
+            const string PERIOD_COLUMN_NAME = "교시";
+
+            newTable.Columns.Add(PERIOD_COLUMN_NAME);
 
             List<string> dayLabels = new List<string>(daysToShow.Count);
             for (int i = 0; i < daysToShow.Count; ++i)
@@ -167,7 +169,7 @@ namespace TimetableGenerator
             }
 
             DataRow headerRow = newTable.NewRow();
-            headerRow["시간"] = "시간";
+            headerRow[PERIOD_COLUMN_NAME] = PERIOD_COLUMN_NAME;
 
             for (int i = 0; i < dayLabels.Count; ++i)
             {
@@ -179,7 +181,7 @@ namespace TimetableGenerator
             for (int i = 1; i <= maxPeriod; ++i)
             {
                 DataRow row = newTable.NewRow();
-                row["시간"] = i + "교시";
+                row[PERIOD_COLUMN_NAME] = i + "교시";
 
                 for (int j = 0; j < dayLabels.Count; ++j)
                 {
