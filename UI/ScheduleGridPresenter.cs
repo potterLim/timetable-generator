@@ -48,6 +48,7 @@ namespace TimetableGenerator
             grid.AlternatingRowsDefaultCellStyle.BackColor = UiConstants.GRID_BACKGROUND_COLOR;
 
             grid.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
+
             grid.CellPainting += onGridCellPainting;
 
             return grid;
@@ -97,15 +98,27 @@ namespace TimetableGenerator
                 dayWidth = UiConstants.GRID_MIN_DAY_COLUMN_WIDTH;
             }
 
+            // If dayWidth was clamped up, usedByDays can exceed remainingWidth.
+            // Clamp remainder to prevent negative axis width.
+            int usedByDays = dayWidth * dayColumnCount;
+            int remainder = remainingWidth - usedByDays;
+            if (remainder < 0)
+            {
+                remainder = 0;
+            }
+
             for (int i = 1; i < grid.Columns.Count; ++i)
             {
                 grid.Columns[i].Width = dayWidth;
             }
 
-            int usedByDays = dayWidth * dayColumnCount;
-            int remainder = remainingWidth - usedByDays;
+            int axisWidth = UiConstants.TIME_COLUMN_WIDTH + remainder;
+            if (axisWidth < 0)
+            {
+                axisWidth = 0;
+            }
 
-            grid.Columns[0].Width = UiConstants.TIME_COLUMN_WIDTH + remainder;
+            grid.Columns[0].Width = axisWidth;
         }
 
         private void applyHeaderAndAxisStyle(DataGridView grid)
@@ -151,6 +164,7 @@ namespace TimetableGenerator
             bool isSelected = (e.State & DataGridViewElementStates.Selected) == DataGridViewElementStates.Selected;
             Color backColor = isSelected ? e.CellStyle.SelectionBackColor : e.CellStyle.BackColor;
 
+            // Axis column (col 0), period rows only (rowIndex > 0)
             if (e.ColumnIndex == 0 && e.RowIndex > 0)
             {
                 e.Handled = true;
@@ -162,14 +176,15 @@ namespace TimetableGenerator
 
                 e.Paint(e.ClipBounds, DataGridViewPaintParts.Border);
 
-                int period = e.RowIndex;
+                // Caller-side policy: rowIndex > 0 implies a valid period.
+                Period period = new Period(e.RowIndex);
 
-                string periodLine = period + "교시";
+                string periodLine = period.Value + "교시";
                 string timeLine = buildPeriodTimeLine(period);
 
                 Rectangle bounds = e.CellBounds;
 
-                TextFormatFlags flags = TextFormatFlags.HorizontalCenter| TextFormatFlags.NoPadding| TextFormatFlags.EndEllipsis;
+                TextFormatFlags flags = TextFormatFlags.HorizontalCenter | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis;
 
                 Font periodFont = UiConstants.BOLD_FONT;
                 Font timeFont = UiConstants.AXIS_TIME_FONT;
@@ -224,7 +239,7 @@ namespace TimetableGenerator
 
             Font font = e.CellStyle.Font ?? UiConstants.DEFAULT_FONT;
 
-            TextFormatFlags flags2 = TextFormatFlags.HorizontalCenter| TextFormatFlags.NoPadding| TextFormatFlags.EndEllipsis;
+            TextFormatFlags flags2 = TextFormatFlags.HorizontalCenter | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis;
 
             Size courseSize = TextRenderer.MeasureText(e.Graphics, courseLine, font, new Size(bounds2.Width, bounds2.Height), flags2);
 
@@ -256,9 +271,9 @@ namespace TimetableGenerator
             }
         }
 
-        private static string buildPeriodTimeLine(int period)
+        private static string buildPeriodTimeLine(Period period)
         {
-            int start = UiConstants.PERIOD1_START_MINUTES + ((period - 1) * UiConstants.PERIOD_BLOCK_MINUTES);
+            int start = UiConstants.PERIOD1_START_MINUTES + ((period.Value - 1) * UiConstants.PERIOD_BLOCK_MINUTES);
             int end = start + UiConstants.PERIOD_DURATION_MINUTES;
 
             return "(" + formatTime(start) + "~" + formatTime(end) + ")";
