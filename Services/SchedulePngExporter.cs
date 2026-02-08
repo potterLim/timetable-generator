@@ -7,9 +7,8 @@ using System.Windows.Forms;
 
 namespace TimetableGenerator
 {
-    // Exports schedules as PNG by rendering an offscreen, borderless Form containing a DataGridView.
-    // Note: DrawToBitmap depends on WinForms rendering and may vary with DPI/theme.
-    // The temp form is positioned offscreen and fully transparent to avoid visible flicker.
+    // Exports generated schedules as PNG images.
+    // The export uses the same DataGridView styling policy as the main UI for consistent output.
     public sealed class SchedulePngExporter
     {
         private readonly ScheduleGridPresenter mGridPresenter;
@@ -19,11 +18,7 @@ namespace TimetableGenerator
             mGridPresenter = gridPresenter;
         }
 
-        public bool TrySaveAll(
-            List<List<TimeSlot>> schedules,
-            string inputFilePath,
-            out string outputDirectoryPath,
-            out string errorMessage)
+        public bool TrySaveAll(List<List<TimeSlot>> schedules, string inputFilePath, out string outputDirectoryPath, out string errorMessage)
         {
             outputDirectoryPath = null;
             errorMessage = null;
@@ -67,7 +62,7 @@ namespace TimetableGenerator
                     return false;
                 }
 
-                // Process pending UI messages to keep the app responsive during batch export.
+                // Keep the UI responsive while exporting multiple schedules.
                 Application.DoEvents();
             }
 
@@ -89,7 +84,6 @@ namespace TimetableGenerator
             {
                 using (Form tempForm = new Form())
                 {
-                    // Temporary offscreen form used only for rendering.
                     tempForm.FormBorderStyle = FormBorderStyle.None;
                     tempForm.StartPosition = FormStartPosition.Manual;
                     tempForm.Location = new Point(UiConstants.OFFSCREEN_X, UiConstants.OFFSCREEN_Y);
@@ -108,13 +102,28 @@ namespace TimetableGenerator
                     tempForm.Show();
                     Application.DoEvents();
 
+                    // Fit export height to the number of visible rows (header + periods).
+                    int rowCount = table.Rows.Count;
+                    int exportHeight = (UiConstants.GRID_ROW_HEIGHT * rowCount) + UiConstants.GRID_EXPORT_EXTRA_HEIGHT;
+
+                    tempForm.ClientSize = new Size(tempForm.ClientSize.Width, exportHeight);
+
+                    tempForm.PerformLayout();
                     tempForm.Refresh();
                     tempGrid.Refresh();
                     Application.DoEvents();
 
-                    using (Bitmap bitmap = new Bitmap(tempForm.Width, tempForm.Height))
+                    // Re-apply sizing after resizing to keep column widths consistent.
+                    mGridPresenter.ApplySizingAndHeaderStyle(tempGrid);
+
+                    tempGrid.Refresh();
+                    Application.DoEvents();
+
+                    int exportWidth = tempGrid.Width;
+
+                    using (Bitmap bitmap = new Bitmap(exportWidth, exportHeight))
                     {
-                        tempForm.DrawToBitmap(bitmap, new Rectangle(0, 0, tempForm.Width, tempForm.Height));
+                        tempGrid.DrawToBitmap(bitmap, new Rectangle(0, 0, exportWidth, exportHeight));
                         bitmap.Save(filePath, System.Drawing.Imaging.ImageFormat.Png);
                     }
 
@@ -129,6 +138,7 @@ namespace TimetableGenerator
 
             return true;
         }
+
 
         private void onTempGridDataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {

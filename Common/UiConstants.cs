@@ -50,6 +50,9 @@ namespace TimetableGenerator
         public const int GRID_EXTRA_WIDTH = 2;                // small safety margin
         public const int GRID_EXTRA_HEIGHT = 2;               // small safety margin
 
+        // Export sizing safety margins (avoid clipping bottom border)
+        public const int GRID_EXPORT_EXTRA_HEIGHT = 2;
+
         // Offscreen position for temporary rendering during PNG export.
         // Must be far enough to avoid flashing on screen.
         public const int OFFSCREEN_X = -2000;
@@ -64,8 +67,6 @@ namespace TimetableGenerator
 
         public static readonly Color SELECTION_BACK_COLOR = Color.LightBlue;
         public static readonly Color SELECTION_FORE_COLOR = Color.Black;
-
-        // Classroom text color (RGB 255, 0, 0)
-        public static readonly Color CLASSROOM_FORE_COLOR = Color.FromArgb(255, 0, 0);
+        public static readonly Color CLASSROOM_FORE_COLOR = Color.Red;
     }
 }
