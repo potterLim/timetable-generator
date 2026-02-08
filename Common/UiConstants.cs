@@ -38,10 +38,7 @@ namespace TimetableGenerator
         // - Minimum day column width is enforced by form minimum size.
         public const int GRID_ROW_HEIGHT = 50;
 
-        // Time column width is fixed to 70 (no extra constants)
         public const int TIME_COLUMN_WIDTH = 70;
-
-        // Minimum day column width policy
         public const int GRID_MIN_DAY_COLUMN_WIDTH = 120;
 
         // Policy helpers (minimum-size calculation)
@@ -54,7 +51,6 @@ namespace TimetableGenerator
         public const int GRID_EXPORT_EXTRA_HEIGHT = 2;
 
         // Offscreen position for temporary rendering during PNG export.
-        // Must be far enough to avoid flashing on screen.
         public const int OFFSCREEN_X = -2000;
         public const int OFFSCREEN_Y = -2000;
 
@@ -62,11 +58,17 @@ namespace TimetableGenerator
         public static readonly Font BOLD_FONT = new Font(FONT_FAMILY_NAME, 10.0f, FontStyle.Bold);
 
         public static readonly Color MAIN_BACKGROUND_COLOR = Color.WhiteSmoke;
+
         public static readonly Color GRID_BACKGROUND_COLOR = Color.White;
         public static readonly Color ALT_ROW_COLOR = Color.FromArgb(240, 240, 240);
 
-        public static readonly Color SELECTION_BACK_COLOR = Color.LightBlue;
+        // Header row (row 0) and axis column (col 0) background color.
+        public static readonly Color HEADER_AXIS_BACK_COLOR = Color.LightGray;
+
+        // Keep selection from changing the visual background.
+        public static readonly Color SELECTION_BACK_COLOR = HEADER_AXIS_BACK_COLOR;
         public static readonly Color SELECTION_FORE_COLOR = Color.Black;
+
         public static readonly Color CLASSROOM_FORE_COLOR = Color.Red;
     }
 }
