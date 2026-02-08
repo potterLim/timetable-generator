@@ -51,11 +51,15 @@ namespace TimetableGenerator
         public const int GRID_EXPORT_EXTRA_HEIGHT = 2;
 
         // Offscreen position for temporary rendering during PNG export.
+        // Must be far enough to avoid flashing on screen.
         public const int OFFSCREEN_X = -2000;
         public const int OFFSCREEN_Y = -2000;
 
         public static readonly Font DEFAULT_FONT = new Font(FONT_FAMILY_NAME, 10.0f);
         public static readonly Font BOLD_FONT = new Font(FONT_FAMILY_NAME, 10.0f, FontStyle.Bold);
+
+        // Smaller font for the "(HH:mm~HH:mm)" line in the period axis column.
+        public static readonly Font AXIS_TIME_FONT = new Font(FONT_FAMILY_NAME, 7.75f, FontStyle.Regular);
 
         public static readonly Color MAIN_BACKGROUND_COLOR = Color.WhiteSmoke;
 
@@ -65,10 +69,19 @@ namespace TimetableGenerator
         // Header row (row 0) and axis column (col 0) background color.
         public static readonly Color HEADER_AXIS_BACK_COLOR = Color.LightGray;
 
-        // Keep selection from changing the visual background.
+        // Keep selection consistent with the header/axis background.
         public static readonly Color SELECTION_BACK_COLOR = HEADER_AXIS_BACK_COLOR;
         public static readonly Color SELECTION_FORE_COLOR = Color.Black;
 
         public static readonly Color CLASSROOM_FORE_COLOR = Color.Red;
+
+        // Period time policy:
+        // - Period 1 starts at 08:30
+        // - Class duration is 75 minutes
+        // - Break between periods is 15 minutes
+        public const int PERIOD1_START_MINUTES = (8 * 60) + 30;
+        public const int PERIOD_DURATION_MINUTES = 75;
+        public const int PERIOD_BREAK_MINUTES = 15;
+        public const int PERIOD_BLOCK_MINUTES = PERIOD_DURATION_MINUTES + PERIOD_BREAK_MINUTES;
     }
 }
