@@ -4,8 +4,8 @@
     // This is used for custom painting (course text + optional classroom text).
     public sealed class ScheduleCellContent
     {
-        public string CourseLine { get; private set; }
-        public ClassroomLocation Classroom { get; private set; }
+        public string CourseLine { get; }
+        public ClassroomLocation Classroom { get; }
 
         public ScheduleCellContent(string courseLine, ClassroomLocation classroom)
         {
