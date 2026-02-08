@@ -24,6 +24,11 @@
 
         public string GetCourseLineText()
         {
+            if (Section == "00")
+            {
+                return CourseName;
+            }
+
             return $"{CourseName}({Section})";
         }
 
