@@ -69,12 +69,16 @@ ScaffoldingReadMe.txt
 # StyleCop
 StyleCop.Cache
 
-# Python environments
+# Python environments & Source files
 *.env
 *.venv
 ENV/
 env/
 venv/
+*.py
+
+# Text documents
+*.txt
 
 # Java class files
 *.class
@@ -108,4 +112,5 @@ venv/
 ~$*
 *.lock
 
+# PDF documents
 *.pdf
