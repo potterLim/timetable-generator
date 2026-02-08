@@ -1,16 +1,16 @@
 ﻿namespace TimetableGenerator
 {
     // Parsed time slot used for collision checking and table rendering.
-    public class TimeSlot
+    public sealed class TimeSlot
     {
-        public EDay Day { get; private set; }
-        public Period Period { get; private set; }
+        public EDay Day { get; }
+        public Period Period { get; }
 
-        public CourseId CourseId { get; private set; }
-        public string Name { get; private set; }
-        public CourseSection Section { get; private set; }
+        public CourseId CourseId { get; }
+        public string Name { get; }
+        public CourseSection Section { get; }
 
-        public ClassroomLocation Classroom { get; private set; }
+        public ClassroomLocation Classroom { get; }
 
         public TimeSlot(EDay day, Period period, CourseId courseId, string name, CourseSection section, ClassroomLocation classroom)
         {

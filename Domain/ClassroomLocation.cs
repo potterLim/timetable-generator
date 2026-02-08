@@ -4,8 +4,8 @@
     // Example: "OH 101"
     public sealed class ClassroomLocation
     {
-        public string Building { get; private set; }
-        public string Room { get; private set; }
+        public string Building { get; }
+        public string Room { get; }
 
         public ClassroomLocation(string building, string room)
         {
