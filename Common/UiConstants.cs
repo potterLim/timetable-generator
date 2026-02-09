@@ -59,7 +59,7 @@ namespace TimetableGenerator
         public static readonly Font BOLD_FONT = new Font(FONT_FAMILY_NAME, 10.0f, FontStyle.Bold);
 
         // Smaller font for the "(HH:mm~HH:mm)" line in the period axis column.
-        public static readonly Font AXIS_TIME_FONT = new Font(FONT_FAMILY_NAME, 7.75f, FontStyle.Regular);
+        public static readonly Font AXIS_TIME_FONT = new Font(FONT_FAMILY_NAME, 7.5f, FontStyle.Regular);
 
         public static readonly Color MAIN_BACKGROUND_COLOR = Color.WhiteSmoke;
 
