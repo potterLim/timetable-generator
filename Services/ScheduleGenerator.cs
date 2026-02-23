@@ -155,7 +155,7 @@ namespace TimetableGenerator
             }
 
             DataRow headerRow = newTable.NewRow();
-            headerRow[PERIOD_COLUMN_NAME] = PERIOD_COLUMN_NAME;
+            headerRow[PERIOD_COLUMN_NAME] = string.Empty; // top-left header cell is intentionally blank
 
             foreach (string label in dayLabels)
             {
@@ -198,11 +198,7 @@ namespace TimetableGenerator
             return true;
         }
 
-        private static void buildSchedulesDfs(List<List<List<TimeSlot>>> optionsByGroup,
-            int groupIndex,
-            List<TimeSlot> current,
-            HashSet<ScheduleSlotKey> occupied,
-            List<List<TimeSlot>> result)
+        private static void buildSchedulesDfs(List<List<List<TimeSlot>>> optionsByGroup, int groupIndex, List<TimeSlot> current, HashSet<ScheduleSlotKey> occupied, List<List<TimeSlot>> result)
         {
             if (groupIndex >= optionsByGroup.Count)
             {
