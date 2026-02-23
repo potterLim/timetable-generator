@@ -16,25 +16,37 @@ namespace TimetableGenerator
                 return false;
             }
 
+            // Grouping policy:
+            // - Same CourseId means mutually exclusive sections (choose exactly one).
+            // - Group order: first appearance order in the input list.
+            // - Option order within a group: appearance order in the input list.
             Dictionary<CourseId, List<Course>> coursesById = new Dictionary<CourseId, List<Course>>();
+            List<CourseId> groupOrder = new List<CourseId>();
 
             foreach (Course course in courses)
             {
-                if (!coursesById.ContainsKey(course.CourseId))
+                List<Course> group;
+                if (!coursesById.TryGetValue(course.CourseId, out group))
                 {
-                    coursesById.Add(course.CourseId, new List<Course>());
+                    group = new List<Course>();
+                    coursesById.Add(course.CourseId, group);
+                    groupOrder.Add(course.CourseId);
                 }
 
-                coursesById[course.CourseId].Add(course);
+                group.Add(course);
             }
 
-            List<List<TimeSlot>> combinations = new List<List<TimeSlot>>();
+            // Parse policy:
+            // - Each option corresponds to one CSV row (one section).
+            // - Any parsing error stops generation and returns an error message.
+            List<List<List<TimeSlot>>> optionsByGroup = new List<List<List<TimeSlot>>>(groupOrder.Count);
 
-            foreach (KeyValuePair<CourseId, List<Course>> group in coursesById)
+            foreach (CourseId courseId in groupOrder)
             {
-                List<List<TimeSlot>> groupOptions = new List<List<TimeSlot>>();
+                List<Course> groupCourses = coursesById[courseId];
+                List<List<TimeSlot>> groupOptions = new List<List<TimeSlot>>(groupCourses.Count);
 
-                foreach (Course course in group.Value)
+                foreach (Course course in groupCourses)
                 {
                     List<TimeSlot> slots = new List<TimeSlot>();
 
@@ -55,41 +67,17 @@ namespace TimetableGenerator
                     groupOptions.Add(slots);
                 }
 
-                if (combinations.Count == 0)
-                {
-                    foreach (List<TimeSlot> option in groupOptions)
-                    {
-                        combinations.Add(new List<TimeSlot>(option));
-                    }
-                }
-                else
-                {
-                    List<List<TimeSlot>> next = new List<List<TimeSlot>>();
-
-                    foreach (List<TimeSlot> existing in combinations)
-                    {
-                        foreach (List<TimeSlot> option in groupOptions)
-                        {
-                            List<TimeSlot> merged = new List<TimeSlot>(existing.Count + option.Count);
-                            merged.AddRange(existing);
-                            merged.AddRange(option);
-                            next.Add(merged);
-                        }
-                    }
-
-                    combinations = next;
-                }
+                optionsByGroup.Add(groupOptions);
             }
 
+            // Generation policy:
+            // - Enumeration order must match the Cartesian product defined by groupOrder and option order.
+            // - A schedule is valid if no two TimeSlots share the same (Day, Period).
             List<List<TimeSlot>> result = new List<List<TimeSlot>>();
+            List<TimeSlot> current = new List<TimeSlot>();
+            HashSet<ScheduleSlotKey> occupied = new HashSet<ScheduleSlotKey>();
 
-            foreach (List<TimeSlot> schedule in combinations)
-            {
-                if (isValidSchedule(schedule))
-                {
-                    result.Add(schedule);
-                }
-            }
+            buildSchedulesDfs(optionsByGroup, 0, current, occupied, result);
 
             validSchedules = result;
             return true;
@@ -153,10 +141,8 @@ namespace TimetableGenerator
             newTable.Columns.Add(PERIOD_COLUMN_NAME);
 
             List<string> dayLabels = new List<string>(daysToShow.Count);
-            for (int i = 0; i < daysToShow.Count; ++i)
+            foreach (EDay day in daysToShow)
             {
-                EDay day = daysToShow[i];
-
                 string label;
                 if (!day.TryGetLabel(out label))
                 {
@@ -171,9 +157,9 @@ namespace TimetableGenerator
             DataRow headerRow = newTable.NewRow();
             headerRow[PERIOD_COLUMN_NAME] = PERIOD_COLUMN_NAME;
 
-            for (int i = 0; i < dayLabels.Count; ++i)
+            foreach (string label in dayLabels)
             {
-                headerRow[dayLabels[i]] = dayLabels[i];
+                headerRow[label] = label;
             }
 
             newTable.Rows.Add(headerRow);
@@ -183,9 +169,9 @@ namespace TimetableGenerator
                 DataRow row = newTable.NewRow();
                 row[PERIOD_COLUMN_NAME] = i + "교시";
 
-                for (int j = 0; j < dayLabels.Count; ++j)
+                foreach (string label in dayLabels)
                 {
-                    row[dayLabels[j]] = null;
+                    row[label] = null;
                 }
 
                 newTable.Rows.Add(row);
@@ -212,22 +198,54 @@ namespace TimetableGenerator
             return true;
         }
 
-        private static bool isValidSchedule(List<TimeSlot> schedule)
+        private static void buildSchedulesDfs(List<List<List<TimeSlot>>> optionsByGroup,
+            int groupIndex,
+            List<TimeSlot> current,
+            HashSet<ScheduleSlotKey> occupied,
+            List<List<TimeSlot>> result)
         {
-            HashSet<ScheduleSlotKey> occupied = new HashSet<ScheduleSlotKey>();
-
-            foreach (TimeSlot slot in schedule)
+            if (groupIndex >= optionsByGroup.Count)
             {
-                ScheduleSlotKey key = slot.GetCollisionKey();
-                if (occupied.Contains(key))
-                {
-                    return false;
-                }
-
-                occupied.Add(key);
+                result.Add(new List<TimeSlot>(current));
+                return;
             }
 
-            return true;
+            List<List<TimeSlot>> groupOptions = optionsByGroup[groupIndex];
+
+            foreach (List<TimeSlot> option in groupOptions)
+            {
+                int addedCount = 0;
+                bool canApply = true;
+
+                foreach (TimeSlot slot in option)
+                {
+                    ScheduleSlotKey key = slot.GetCollisionKey();
+
+                    if (occupied.Contains(key))
+                    {
+                        canApply = false;
+                        break;
+                    }
+
+                    occupied.Add(key);
+                    current.Add(slot);
+                    ++addedCount;
+                }
+
+                if (canApply)
+                {
+                    buildSchedulesDfs(optionsByGroup, groupIndex + 1, current, occupied, result);
+                }
+
+                for (int i = 0; i < addedCount; ++i)
+                {
+                    int lastIndex = current.Count - 1;
+                    TimeSlot lastSlot = current[lastIndex];
+
+                    current.RemoveAt(lastIndex);
+                    occupied.Remove(lastSlot.GetCollisionKey());
+                }
+            }
         }
     }
 }
