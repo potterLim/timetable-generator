@@ -8,9 +8,16 @@ namespace TimetableGenerator.UI.Product;
 internal sealed class ScheduleExportDialog : Form
 {
     private const int PREFERRED_CLIENT_WIDTH = 640;
-    private const int PREFERRED_CLIENT_HEIGHT = 430;
+    private const int PREFERRED_CLIENT_HEIGHT = 320;
     private const int MINIMUM_WINDOW_WIDTH = 520;
     private const int MINIMUM_WINDOW_HEIGHT = 360;
+    private const float TITLE_ROW_HEIGHT = 38.0f;
+    private const float DESCRIPTION_ROW_HEIGHT = 42.0f;
+    private const float SCOPE_ROW_HEIGHT = 132.0f;
+    private const float DESTINATION_ROW_HEIGHT = 88.0f;
+    private const float FOOTER_ROW_HEIGHT = 48.0f;
+    private const float DESTINATION_LABEL_ROW_HEIGHT = 32.0f;
+    private const float DESTINATION_INPUT_ROW_HEIGHT = 44.0f;
 
     private readonly ScheduleExportDialogContext mContext;
     private readonly RadioButton mCurrentScheduleRadioButton;
@@ -110,14 +117,18 @@ internal sealed class ScheduleExportDialog : Form
         layout.Dock = DockStyle.Top;
         layout.AutoSize = true;
         layout.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-        layout.Padding = new Padding(DesignTokens.SPACE_32, DesignTokens.SPACE_24, DesignTokens.SPACE_32, DesignTokens.SPACE_24);
+        layout.Padding = new Padding(
+            DesignTokens.SPACE_32,
+            DesignTokens.SPACE_24,
+            DesignTokens.SPACE_32,
+            DesignTokens.SPACE_24);
         layout.BackColor = DesignTokens.WINDOW_BACKGROUND_COLOR;
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100.0f));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38.0f));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42.0f));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 132.0f));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 88.0f));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48.0f));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, TITLE_ROW_HEIGHT));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, DESCRIPTION_ROW_HEIGHT));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, SCOPE_ROW_HEIGHT));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, DESTINATION_ROW_HEIGHT));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, FOOTER_ROW_HEIGHT));
         return layout;
     }
 
@@ -201,8 +212,12 @@ internal sealed class ScheduleExportDialog : Form
         destinationPanel.Margin = Padding.Empty;
         destinationPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100.0f));
         destinationPanel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-        destinationPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 32.0f));
-        destinationPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 44.0f));
+        destinationPanel.RowStyles.Add(new RowStyle(
+            SizeType.Absolute,
+            DESTINATION_LABEL_ROW_HEIGHT));
+        destinationPanel.RowStyles.Add(new RowStyle(
+            SizeType.Absolute,
+            DESTINATION_INPUT_ROW_HEIGHT));
 
         Label destinationLabel = new Label();
         destinationLabel.Dock = DockStyle.Fill;

@@ -163,12 +163,13 @@ internal sealed class MessageStateControl : UserControl
         int iconSize = DesignTokens.scaleLogicalPixel(this, ICON_SIZE);
         int titleHeight = DesignTokens.scaleLogicalPixel(this, TITLE_HEIGHT);
         int descriptionHeight = DesignTokens.scaleLogicalPixel(this, DESCRIPTION_HEIGHT);
-        int detailHeight = mDetailLabel.Visible
+        bool hasDetail = mDetailLabel.Text.Length > 0;
+        int detailHeight = hasDetail
             ? DesignTokens.scaleLogicalPixel(this, DETAIL_HEIGHT)
             : 0;
         int actionHeight = DesignTokens.scaleLogicalPixel(this, ACTION_HEIGHT);
         int gap = DesignTokens.scaleLogicalPixel(this, DesignTokens.SPACE_16);
-        int detailGap = mDetailLabel.Visible ? gap : 0;
+        int detailGap = hasDetail ? gap : 0;
         int messageHeight = iconSize + gap + titleHeight + descriptionHeight;
         int detailSectionHeight = detailGap + detailHeight;
         int actionSectionHeight = gap + actionHeight;

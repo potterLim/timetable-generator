@@ -432,7 +432,12 @@ internal sealed class WelcomeControl : UserControl
             return;
         }
 
-        int outerPadding = DesignTokens.scaleLogicalPixel(this, DesignTokens.SPACE_32);
+        int horizontalOuterPadding = DesignTokens.scaleLogicalPixel(
+            this,
+            DesignTokens.SPACE_32);
+        int verticalOuterPadding = DesignTokens.scaleLogicalPixel(
+            this,
+            DesignTokens.SPACE_24);
         int maximumContentWidth = DesignTokens.scaleLogicalPixel(this, DesignTokens.WELCOME_CONTENT_MAXIMUM_WIDTH);
         int iconSize = DesignTokens.scaleLogicalPixel(this, DesignTokens.WELCOME_ICON_SIZE);
         int titleHeight = DesignTokens.scaleLogicalPixel(this, DesignTokens.SPACE_48);
@@ -452,20 +457,26 @@ internal sealed class WelcomeControl : UserControl
         int dropSectionHeight = dropZoneTopGap + dropZoneHeight;
         int footerHeight = linkTopGap + linkHeight + stepsTopGap + stepsHeight;
         int contentHeight = heroHeight + dropSectionHeight + footerHeight;
-        int scrollableContentHeight = contentHeight + (outerPadding * 2);
+        int scrollableContentHeight = contentHeight + (verticalOuterPadding * 2);
         bool hasVerticalOverflow = scrollableContentHeight > ClientSize.Height;
         int verticalScrollbarWidth = hasVerticalOverflow
             ? SystemInformation.VerticalScrollBarWidth
             : 0;
 
         int viewportWidth = Math.Max(0, ClientSize.Width - verticalScrollbarWidth);
-        int availableContentWidth = Math.Max(0, viewportWidth - (outerPadding * 2));
+        int availableContentWidth = Math.Max(
+            0,
+            viewportWidth - (horizontalOuterPadding * 2));
         int contentWidth = Math.Min(maximumContentWidth, availableContentWidth);
         AutoScrollMinSize = new Size(0, scrollableContentHeight);
 
         Point scrollOffset = AutoScrollPosition;
-        int contentX = Math.Max(outerPadding, (viewportWidth - contentWidth) / 2);
-        int contentY = Math.Max(outerPadding, (ClientSize.Height - contentHeight) / 2);
+        int contentX = Math.Max(
+            horizontalOuterPadding,
+            (viewportWidth - contentWidth) / 2);
+        int contentY = Math.Max(
+            verticalOuterPadding,
+            (ClientSize.Height - contentHeight) / 2);
         mContentPanel.Bounds = new Rectangle(
             contentX + scrollOffset.X,
             contentY + scrollOffset.Y,
