@@ -8,7 +8,7 @@ namespace TimetableGenerator.UI.Product;
 internal sealed class ScheduleExportDialog : Form
 {
     private const int PREFERRED_CLIENT_WIDTH = 640;
-    private const int PREFERRED_CLIENT_HEIGHT = 320;
+    private const int PREFERRED_CLIENT_HEIGHT = 400;
     private const int MINIMUM_WINDOW_WIDTH = 520;
     private const int MINIMUM_WINDOW_HEIGHT = 360;
     private const float TITLE_ROW_HEIGHT = 38.0f;
@@ -23,6 +23,7 @@ internal sealed class ScheduleExportDialog : Form
     private readonly RadioButton mCurrentScheduleRadioButton;
     private readonly RadioButton mAllSchedulesRadioButton;
     private readonly TextBox mDestinationTextBox;
+    private readonly TableLayoutPanel mLayout;
     private readonly Font mTitleFont;
     private readonly Font mBodyFont;
     private ScheduleExportDirectoryPath mSelectedDirectory;
@@ -69,14 +70,14 @@ internal sealed class ScheduleExportDialog : Form
         }
         mDestinationTextBox = createDestinationTextBox();
 
-        TableLayoutPanel layout = createLayout();
-        layout.Controls.Add(createTitleLabel(), 0, 0);
-        layout.Controls.Add(createDescriptionLabel(), 0, 1);
-        layout.Controls.Add(createScopePanel(), 0, 2);
-        layout.Controls.Add(createDestinationPanel(), 0, 3);
-        layout.Controls.Add(createFooter(), 0, 4);
+        mLayout = createLayout();
+        mLayout.Controls.Add(createTitleLabel(), 0, 0);
+        mLayout.Controls.Add(createDescriptionLabel(), 0, 1);
+        mLayout.Controls.Add(createScopePanel(), 0, 2);
+        mLayout.Controls.Add(createDestinationPanel(), 0, 3);
+        mLayout.Controls.Add(createFooter(), 0, 4);
         Panel scrollHost = createScrollHost();
-        scrollHost.Controls.Add(layout);
+        scrollHost.Controls.Add(mLayout);
         Controls.Add(scrollHost);
     }
 
@@ -104,9 +105,14 @@ internal sealed class ScheduleExportDialog : Form
     protected override void OnLoad(EventArgs eventArgs)
     {
         base.OnLoad(eventArgs);
-        ClientSize = ProductDialogSizing.findInitialClientSize(
+        Size maximumInitialClientSize = ProductDialogSizing.findInitialClientSize(
             this,
             new Size(PREFERRED_CLIENT_WIDTH, PREFERRED_CLIENT_HEIGHT));
+        int preferredContentHeight = mLayout.GetPreferredSize(
+            new Size(maximumInitialClientSize.Width, 0)).Height;
+        ClientSize = new Size(
+            maximumInitialClientSize.Width,
+            Math.Min(maximumInitialClientSize.Height, preferredContentHeight));
     }
 
     private TableLayoutPanel createLayout()
