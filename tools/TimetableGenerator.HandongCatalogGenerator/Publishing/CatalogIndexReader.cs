@@ -8,8 +8,7 @@ namespace TimetableGenerator.HandongCatalogGenerator.Publishing;
 internal static class CatalogIndexReader
 {
     private const int CATALOG_SCHEMA_VERSION = 1;
-    private const int LEGACY_INDEX_SCHEMA_VERSION = 1;
-    private const int CURRENT_INDEX_SCHEMA_VERSION = 2;
+    private const int INDEX_SCHEMA_VERSION = 1;
 
     public static CatalogIndexDocument Read(ReadOnlyMemory<byte> content)
     {
@@ -38,7 +37,7 @@ internal static class CatalogIndexReader
     private static CatalogIndexDocument readDocument(JsonElement root)
     {
         requireString(root, "documentType", "courseCatalogIndex");
-        requireSupportedIndexSchemaVersion(root);
+        requireNumber(root, "schemaVersion", INDEX_SCHEMA_VERSION);
         string defaultCatalogId = getRequiredString(root, "defaultCatalogId");
         JsonElement entriesElement = root.GetProperty("catalogs");
         if (entriesElement.ValueKind != JsonValueKind.Array)
@@ -146,18 +145,6 @@ internal static class CatalogIndexReader
         if (actualValue != expectedValue)
         {
             throw new CatalogIndexFormatException(propertyName + " uses an unsupported value.");
-        }
-    }
-
-    private static void requireSupportedIndexSchemaVersion(JsonElement root)
-    {
-        int schemaVersion = getRequiredInt32(root, "schemaVersion");
-        bool isSupported = schemaVersion == LEGACY_INDEX_SCHEMA_VERSION
-            || schemaVersion == CURRENT_INDEX_SCHEMA_VERSION;
-        if (isSupported == false)
-        {
-            throw new CatalogIndexFormatException(
-                "schemaVersion uses an unsupported index format version.");
         }
     }
 

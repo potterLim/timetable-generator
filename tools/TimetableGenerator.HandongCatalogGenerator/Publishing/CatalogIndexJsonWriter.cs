@@ -5,7 +5,7 @@ namespace TimetableGenerator.HandongCatalogGenerator.Publishing;
 internal static class CatalogIndexJsonWriter
 {
     private const int CATALOG_SCHEMA_VERSION = 1;
-    private const int INDEX_SCHEMA_VERSION = 2;
+    private const int INDEX_SCHEMA_VERSION = 1;
 
     public static byte[] Write(CatalogIndexDocument document)
     {

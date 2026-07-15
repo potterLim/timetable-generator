@@ -53,14 +53,14 @@ public sealed class CatalogIndexTests
     }
 
     [TestMethod]
-    public void Read_LegacyTimestampFields_AcceptsAndDropsUnusedMetadata()
+    public void Read_PreReleaseTimestampFields_AcceptsAndDropsUnusedMetadata()
     {
         CatalogIndexEntry entry = createEntry("2026-2", 1, 'a');
         CatalogIndexDocument document = new CatalogIndexDocument(entry, new[] { entry });
         string currentContent = Encoding.UTF8.GetString(CatalogIndexJsonWriter.Write(document));
-        string legacyContent = currentContent
+        string preReleaseContent = currentContent
             .Replace(
-                "  \"schemaVersion\": 2,\n",
+                "  \"schemaVersion\": 1,\n",
                 "  \"schemaVersion\": 1,\n  \"updatedAt\": \"2026-07-16T00:00:00Z\",\n",
                 StringComparison.Ordinal)
             .Replace(
@@ -68,14 +68,15 @@ public sealed class CatalogIndexTests
                 "      \"revision\": 1,\n      \"publishedAt\": \"2026-07-16T00:00:00Z\",\n",
                 StringComparison.Ordinal);
 
-        CatalogIndexDocument parsed = CatalogIndexReader.Read(Encoding.UTF8.GetBytes(legacyContent));
+        CatalogIndexDocument parsed = CatalogIndexReader.Read(
+            Encoding.UTF8.GetBytes(preReleaseContent));
         string rewrittenContent = Encoding.UTF8.GetString(CatalogIndexJsonWriter.Write(parsed));
 
         Assert.HasCount(1, parsed.Entries);
         using (JsonDocument rewrittenDocument = JsonDocument.Parse(rewrittenContent))
         {
             Assert.AreEqual(
-                2,
+                1,
                 rewrittenDocument.RootElement.GetProperty("schemaVersion").GetInt32());
             Assert.AreEqual(
                 1,
@@ -97,8 +98,8 @@ public sealed class CatalogIndexTests
         string unsupportedContent = Encoding.UTF8
             .GetString(CatalogIndexJsonWriter.Write(document))
             .Replace(
+                "  \"schemaVersion\": 1,\n",
                 "  \"schemaVersion\": 2,\n",
-                "  \"schemaVersion\": 3,\n",
                 StringComparison.Ordinal);
 
         Assert.ThrowsExactly<CatalogIndexFormatException>(
