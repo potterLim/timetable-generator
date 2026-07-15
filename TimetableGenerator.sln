@@ -1,4 +1,3 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35527.113 d17.12
@@ -6,6 +5,10 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimetableGenerator", "TimetableGenerator.csproj", "{208A547E-0AE8-4784-8BD9-843CBC4CA135}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimetableGenerator.Tests", "tests\TimetableGenerator.Tests\TimetableGenerator.Tests.csproj", "{A4E2498E-7630-4F91-93DC-1CC6F324DDA6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimetableGenerator.HandongCatalogGenerator", "tools\TimetableGenerator.HandongCatalogGenerator\TimetableGenerator.HandongCatalogGenerator.csproj", "{7E4EF648-293A-4AB3-BCFD-86BA7CF12AA6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimetableGenerator.HandongCatalogGenerator.Tests", "tests\TimetableGenerator.HandongCatalogGenerator.Tests\TimetableGenerator.HandongCatalogGenerator.Tests.csproj", "{AA80E7A1-D922-448A-B213-921A99D012BC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +24,14 @@ Global
 		{A4E2498E-7630-4F91-93DC-1CC6F324DDA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A4E2498E-7630-4F91-93DC-1CC6F324DDA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A4E2498E-7630-4F91-93DC-1CC6F324DDA6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E4EF648-293A-4AB3-BCFD-86BA7CF12AA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E4EF648-293A-4AB3-BCFD-86BA7CF12AA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E4EF648-293A-4AB3-BCFD-86BA7CF12AA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E4EF648-293A-4AB3-BCFD-86BA7CF12AA6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA80E7A1-D922-448A-B213-921A99D012BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA80E7A1-D922-448A-B213-921A99D012BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA80E7A1-D922-448A-B213-921A99D012BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA80E7A1-D922-448A-B213-921A99D012BC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
