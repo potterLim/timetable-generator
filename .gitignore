@@ -57,6 +57,9 @@ $RECYCLE.BIN/
 # Publish app data
 App_Data/
 
+# Generated Dothome catalog artifacts
+/deploy/dothome/html/timetable-generator/catalog/
+
 # NuGet Packages
 *.nupkg
 **/packages/*
