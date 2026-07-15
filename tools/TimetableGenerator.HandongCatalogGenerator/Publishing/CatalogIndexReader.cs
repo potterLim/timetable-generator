@@ -7,7 +7,9 @@ namespace TimetableGenerator.HandongCatalogGenerator.Publishing;
 
 internal static class CatalogIndexReader
 {
-    private const int SCHEMA_VERSION = 1;
+    private const int CATALOG_SCHEMA_VERSION = 1;
+    private const int LEGACY_INDEX_SCHEMA_VERSION = 1;
+    private const int CURRENT_INDEX_SCHEMA_VERSION = 2;
 
     public static CatalogIndexDocument Read(ReadOnlyMemory<byte> content)
     {
@@ -36,8 +38,7 @@ internal static class CatalogIndexReader
     private static CatalogIndexDocument readDocument(JsonElement root)
     {
         requireString(root, "documentType", "courseCatalogIndex");
-        requireNumber(root, "schemaVersion", SCHEMA_VERSION);
-        CatalogPublicationTime updatedAt = CatalogPublicationTime.Parse(getRequiredString(root, "updatedAt"));
+        requireSupportedIndexSchemaVersion(root);
         string defaultCatalogId = getRequiredString(root, "defaultCatalogId");
         JsonElement entriesElement = root.GetProperty("catalogs");
         if (entriesElement.ValueKind != JsonValueKind.Array)
@@ -62,12 +63,12 @@ internal static class CatalogIndexReader
             throw new CatalogIndexFormatException("The default catalog ID is not present in the index.");
         }
 
-        return new CatalogIndexDocument(updatedAt, defaultEntryOrNull, entries);
+        return new CatalogIndexDocument(defaultEntryOrNull, entries);
     }
 
     private static CatalogIndexEntry readEntry(JsonElement element)
     {
-        requireNumber(element, "catalogSchemaVersion", SCHEMA_VERSION);
+        requireNumber(element, "catalogSchemaVersion", CATALOG_SCHEMA_VERSION);
         JsonElement institution = element.GetProperty("institution");
         requireString(institution, "id", CatalogFileLayout.INSTITUTION_ID);
         JsonElement institutionName = institution.GetProperty("name");
@@ -82,8 +83,6 @@ internal static class CatalogIndexReader
 
         CatalogRevision revision = new CatalogRevision(getRequiredInt32(element, "revision"));
         requireString(element, "catalogId", CatalogFileLayout.GetCatalogId(term, revision));
-        CatalogPublicationTime publishedAt = CatalogPublicationTime.Parse(
-            getRequiredString(element, "publishedAt"));
 
         JsonElement fileElement = element.GetProperty("file");
         requireString(fileElement, "relativePath", CatalogFileLayout.GetCatalogRelativePath(term, revision));
@@ -100,7 +99,6 @@ internal static class CatalogIndexReader
         return new CatalogIndexEntry(
             term,
             revision,
-            publishedAt,
             fileSize,
             sha256,
             courseCount,
@@ -148,6 +146,18 @@ internal static class CatalogIndexReader
         if (actualValue != expectedValue)
         {
             throw new CatalogIndexFormatException(propertyName + " uses an unsupported value.");
+        }
+    }
+
+    private static void requireSupportedIndexSchemaVersion(JsonElement root)
+    {
+        int schemaVersion = getRequiredInt32(root, "schemaVersion");
+        bool isSupported = schemaVersion == LEGACY_INDEX_SCHEMA_VERSION
+            || schemaVersion == CURRENT_INDEX_SCHEMA_VERSION;
+        if (isSupported == false)
+        {
+            throw new CatalogIndexFormatException(
+                "schemaVersion uses an unsupported index format version.");
         }
     }
 

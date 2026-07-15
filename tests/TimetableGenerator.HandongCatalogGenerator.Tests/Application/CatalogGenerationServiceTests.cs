@@ -154,7 +154,6 @@ public sealed class CatalogGenerationServiceTests
             sourceFile.FilePath,
             AcademicTerm.Parse("2026-2"),
             new CatalogRevision(revision),
-            CatalogPublicationTime.Parse("2026-07-16T00:00:00Z"),
             outputRoot.OutputRootPath);
     }
 

@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TimetableGenerator.HandongCatalogGenerator.Domain;
 using TimetableGenerator.HandongCatalogGenerator.Publishing;
@@ -12,10 +13,8 @@ public sealed class CatalogIndexTests
     [TestMethod]
     public void WriteThenRead_ValidIndex_PreservesEntriesAndHashMetadata()
     {
-        CatalogPublicationTime publicationTime = CatalogPublicationTime.Parse("2026-07-16T00:00:00Z");
-        CatalogIndexEntry entry = createEntry("2026-2", 1, publicationTime, 'a');
+        CatalogIndexEntry entry = createEntry("2026-2", 1, 'a');
         CatalogIndexDocument document = new CatalogIndexDocument(
-            publicationTime,
             entry,
             new[] { entry });
 
@@ -26,22 +25,23 @@ public sealed class CatalogIndexTests
         Assert.HasCount(1, parsed.Entries);
         Assert.AreEqual(entry.Sha256, parsed.Entries[0].Sha256);
         Assert.AreEqual((byte)'\n', content[^1]);
+        string contentText = Encoding.UTF8.GetString(content);
         Assert.IsTrue(
-            Encoding.UTF8.GetString(content).Contains(
+            contentText.Contains(
                 "handong-global-university/2026-2/catalog-r0001.json",
                 StringComparison.Ordinal));
+        Assert.IsFalse(contentText.Contains("updatedAt", StringComparison.Ordinal));
+        Assert.IsFalse(contentText.Contains("publishedAt", StringComparison.Ordinal));
     }
 
     [TestMethod]
     public void CreateWithUpsertedEntry_ExistingRevisions_PreservesAndSortsEntries()
     {
-        CatalogPublicationTime publicationTime = CatalogPublicationTime.Parse("2026-07-16T00:00:00Z");
-        CatalogIndexEntry revisionTwo = createEntry("2026-2", 2, publicationTime, 'b');
-        CatalogIndexEntry previousTerm = createEntry("2026-1", 1, publicationTime, 'a');
-        CatalogIndexEntry revisionOne = createEntry("2026-2", 1, publicationTime, 'c');
+        CatalogIndexEntry revisionTwo = createEntry("2026-2", 2, 'b');
+        CatalogIndexEntry previousTerm = createEntry("2026-1", 1, 'a');
+        CatalogIndexEntry revisionOne = createEntry("2026-2", 1, 'c');
 
         CatalogIndexDocument document = CatalogIndexDocument.CreateWithUpsertedEntry(
-            publicationTime,
             revisionOne,
             new[] { revisionTwo, previousTerm });
 
@@ -52,16 +52,67 @@ public sealed class CatalogIndexTests
         Assert.AreEqual(revisionOne.CatalogId, document.DefaultCatalogId);
     }
 
+    [TestMethod]
+    public void Read_LegacyTimestampFields_AcceptsAndDropsUnusedMetadata()
+    {
+        CatalogIndexEntry entry = createEntry("2026-2", 1, 'a');
+        CatalogIndexDocument document = new CatalogIndexDocument(entry, new[] { entry });
+        string currentContent = Encoding.UTF8.GetString(CatalogIndexJsonWriter.Write(document));
+        string legacyContent = currentContent
+            .Replace(
+                "  \"schemaVersion\": 2,\n",
+                "  \"schemaVersion\": 1,\n  \"updatedAt\": \"2026-07-16T00:00:00Z\",\n",
+                StringComparison.Ordinal)
+            .Replace(
+                "      \"revision\": 1,\n",
+                "      \"revision\": 1,\n      \"publishedAt\": \"2026-07-16T00:00:00Z\",\n",
+                StringComparison.Ordinal);
+
+        CatalogIndexDocument parsed = CatalogIndexReader.Read(Encoding.UTF8.GetBytes(legacyContent));
+        string rewrittenContent = Encoding.UTF8.GetString(CatalogIndexJsonWriter.Write(parsed));
+
+        Assert.HasCount(1, parsed.Entries);
+        using (JsonDocument rewrittenDocument = JsonDocument.Parse(rewrittenContent))
+        {
+            Assert.AreEqual(
+                2,
+                rewrittenDocument.RootElement.GetProperty("schemaVersion").GetInt32());
+            Assert.AreEqual(
+                1,
+                rewrittenDocument.RootElement
+                    .GetProperty("catalogs")[0]
+                    .GetProperty("catalogSchemaVersion")
+                    .GetInt32());
+        }
+
+        Assert.IsFalse(rewrittenContent.Contains("updatedAt", StringComparison.Ordinal));
+        Assert.IsFalse(rewrittenContent.Contains("publishedAt", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void Read_UnsupportedIndexSchemaVersion_RejectsDocument()
+    {
+        CatalogIndexEntry entry = createEntry("2026-2", 1, 'a');
+        CatalogIndexDocument document = new CatalogIndexDocument(entry, new[] { entry });
+        string unsupportedContent = Encoding.UTF8
+            .GetString(CatalogIndexJsonWriter.Write(document))
+            .Replace(
+                "  \"schemaVersion\": 2,\n",
+                "  \"schemaVersion\": 3,\n",
+                StringComparison.Ordinal);
+
+        Assert.ThrowsExactly<CatalogIndexFormatException>(
+            () => CatalogIndexReader.Read(Encoding.UTF8.GetBytes(unsupportedContent)));
+    }
+
     private static CatalogIndexEntry createEntry(
         string term,
         int revision,
-        CatalogPublicationTime publicationTime,
         char digestCharacter)
     {
         return new CatalogIndexEntry(
             AcademicTerm.Parse(term),
             new CatalogRevision(revision),
-            publicationTime,
             new CatalogFileSize(1024),
             Sha256Digest.Parse(new string(digestCharacter, 64)),
             new CatalogItemCount(515),

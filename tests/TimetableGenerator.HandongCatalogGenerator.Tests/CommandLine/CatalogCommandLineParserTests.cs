@@ -23,7 +23,6 @@ public sealed class CatalogCommandLineParserTests
         Assert.AreEqual(Path.GetFullPath(sourcePath), request.SourceFilePath.Value);
         Assert.AreEqual("2026-2", request.Term.Id);
         Assert.AreEqual(7, request.Revision.Value);
-        Assert.AreEqual("2026-07-16T00:00:00Z", request.PublicationTime.ToString());
         Assert.AreEqual(Path.GetFullPath(outputRootPath), request.OutputRootPath.Value);
     }
 
@@ -35,8 +34,6 @@ public sealed class CatalogCommandLineParserTests
         string[] arguments = new string[]
         {
             "generate",
-            "--published-at",
-            "2026-07-16T00:00:00Z",
             "--output-root",
             outputRootPath,
             "--revision",
@@ -61,6 +58,19 @@ public sealed class CatalogCommandLineParserTests
         List<string> arguments = createValidArgumentList();
         arguments.Add("--school");
         arguments.Add("handong-global-university");
+
+        CatalogGenerationException exception = Assert.ThrowsExactly<CatalogGenerationException>(
+            () => CatalogCommandLineParser.Parse(arguments));
+
+        assertInvalidArgumentsError(exception, ECatalogGenerationErrorCode.UnknownOption);
+    }
+
+    [TestMethod]
+    public void Parse_LegacyPublishedAtOption_ReportsUnknownOption()
+    {
+        List<string> arguments = createValidArgumentList();
+        arguments.Add("--published-at");
+        arguments.Add("2026-07-16T00:00:00Z");
 
         CatalogGenerationException exception = Assert.ThrowsExactly<CatalogGenerationException>(
             () => CatalogCommandLineParser.Parse(arguments));
@@ -99,7 +109,6 @@ public sealed class CatalogCommandLineParserTests
             ECatalogGenerationErrorCode.MissingRequiredOption);
         StringAssert.Contains(exception.Message, "--term");
         StringAssert.Contains(exception.Message, "--revision");
-        StringAssert.Contains(exception.Message, "--published-at");
         StringAssert.Contains(exception.Message, "--output-root");
     }
 
@@ -127,7 +136,6 @@ public sealed class CatalogCommandLineParserTests
     [DataRow("--term", "2026-02")]
     [DataRow("--revision", "0")]
     [DataRow("--revision", "1.5")]
-    [DataRow("--published-at", "2026-07-16T09:00:00+09:00")]
     public void Parse_InvalidOptionValue_ReportsTypedCommandLineError(
         string optionName,
         string invalidValue)
@@ -156,8 +164,6 @@ public sealed class CatalogCommandLineParserTests
             "2026-2",
             "--revision",
             "7",
-            "--published-at",
-            "2026-07-16T00:00:00Z",
             "--output-root",
             outputRootPath,
         };

@@ -12,14 +12,13 @@ internal static class CatalogCommandLineParser
 {
     private const string GENERATE_COMMAND = "generate";
     private const string OUTPUT_ROOT_OPTION = "--output-root";
-    private const string PUBLICATION_TIME_OPTION = "--published-at";
     private const string REVISION_OPTION = "--revision";
     private const string SOURCE_OPTION = "--source";
     private const string TERM_OPTION = "--term";
 
     public const string USAGE =
         "generate --source <path> --term <YYYY-S> --revision <positive-int> " +
-        "--published-at <YYYY-MM-DDTHH:MM:SSZ> --output-root <path>";
+        "--output-root <path>";
 
     public static CatalogGenerationRequest Parse(IReadOnlyList<string> arguments)
     {
@@ -36,7 +35,6 @@ internal static class CatalogCommandLineParser
             parseSourceFilePath(optionValues[SOURCE_OPTION]),
             parseAcademicTerm(optionValues[TERM_OPTION]),
             parseRevision(optionValues[REVISION_OPTION]),
-            parsePublicationTime(optionValues[PUBLICATION_TIME_OPTION]),
             parseOutputRootPath(optionValues[OUTPUT_ROOT_OPTION]));
     }
 
@@ -97,7 +95,6 @@ internal static class CatalogCommandLineParser
         addMissingOption(optionValues, missingOptions, SOURCE_OPTION);
         addMissingOption(optionValues, missingOptions, TERM_OPTION);
         addMissingOption(optionValues, missingOptions, REVISION_OPTION);
-        addMissingOption(optionValues, missingOptions, PUBLICATION_TIME_OPTION);
         addMissingOption(optionValues, missingOptions, OUTPUT_ROOT_OPTION);
         if (missingOptions.Count > 0)
         {
@@ -123,7 +120,6 @@ internal static class CatalogCommandLineParser
         return string.Equals(value, SOURCE_OPTION, StringComparison.Ordinal) ||
             string.Equals(value, TERM_OPTION, StringComparison.Ordinal) ||
             string.Equals(value, REVISION_OPTION, StringComparison.Ordinal) ||
-            string.Equals(value, PUBLICATION_TIME_OPTION, StringComparison.Ordinal) ||
             string.Equals(value, OUTPUT_ROOT_OPTION, StringComparison.Ordinal);
     }
 
@@ -203,21 +199,6 @@ internal static class CatalogCommandLineParser
         {
             throw createInvalidOptionValueException(
                 REVISION_OPTION,
-                exception.Message,
-                exception);
-        }
-    }
-
-    private static CatalogPublicationTime parsePublicationTime(string value)
-    {
-        try
-        {
-            return CatalogPublicationTime.Parse(value);
-        }
-        catch (FormatException exception)
-        {
-            throw createInvalidOptionValueException(
-                PUBLICATION_TIME_OPTION,
                 exception.Message,
                 exception);
         }

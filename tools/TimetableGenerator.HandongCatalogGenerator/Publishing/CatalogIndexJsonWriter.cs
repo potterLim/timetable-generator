@@ -4,7 +4,8 @@ namespace TimetableGenerator.HandongCatalogGenerator.Publishing;
 
 internal static class CatalogIndexJsonWriter
 {
-    private const int SCHEMA_VERSION = 1;
+    private const int CATALOG_SCHEMA_VERSION = 1;
+    private const int INDEX_SCHEMA_VERSION = 2;
 
     public static byte[] Write(CatalogIndexDocument document)
     {
@@ -15,8 +16,7 @@ internal static class CatalogIndexJsonWriter
     {
         writer.WriteStartObject();
         writer.WriteString("documentType", "courseCatalogIndex");
-        writer.WriteNumber("schemaVersion", SCHEMA_VERSION);
-        writer.WriteString("updatedAt", document.UpdatedAt.ToString());
+        writer.WriteNumber("schemaVersion", INDEX_SCHEMA_VERSION);
         writer.WriteString("defaultCatalogId", document.DefaultCatalogId);
         writer.WriteStartArray("catalogs");
         foreach (CatalogIndexEntry entry in document.Entries)
@@ -32,7 +32,7 @@ internal static class CatalogIndexJsonWriter
     {
         writer.WriteStartObject();
         writer.WriteString("catalogId", entry.CatalogId);
-        writer.WriteNumber("catalogSchemaVersion", SCHEMA_VERSION);
+        writer.WriteNumber("catalogSchemaVersion", CATALOG_SCHEMA_VERSION);
         writer.WriteStartObject("institution");
         writer.WriteString("id", CatalogFileLayout.INSTITUTION_ID);
         writer.WriteStartObject("name");
@@ -46,7 +46,6 @@ internal static class CatalogIndexJsonWriter
         writer.WriteNumber("semester", entry.Term.Semester.Value);
         writer.WriteEndObject();
         writer.WriteNumber("revision", entry.Revision.Value);
-        writer.WriteString("publishedAt", entry.PublishedAt.ToString());
         writer.WriteStartObject("file");
         writer.WriteString("relativePath", entry.RelativePath);
         writer.WriteString("mediaType", "application/json");

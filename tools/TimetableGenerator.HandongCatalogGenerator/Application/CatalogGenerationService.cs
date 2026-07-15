@@ -177,7 +177,6 @@ internal sealed class CatalogGenerationService
                 request.OutputRootPath,
                 request.Term,
                 request.Revision,
-                request.PublicationTime,
                 catalog,
                 catalogContent,
                 cancellationToken).ConfigureAwait(false);

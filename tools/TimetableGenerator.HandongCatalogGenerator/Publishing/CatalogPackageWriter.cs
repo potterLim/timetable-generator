@@ -13,7 +13,6 @@ internal static class CatalogPackageWriter
         CatalogOutputRootPath outputRootPath,
         AcademicTerm term,
         CatalogRevision revision,
-        CatalogPublicationTime publicationTime,
         CourseCatalog catalog,
         ReadOnlyMemory<byte> catalogContent,
         CancellationToken cancellationToken)
@@ -37,13 +36,11 @@ internal static class CatalogPackageWriter
         CatalogIndexEntry currentEntry = new CatalogIndexEntry(
             term,
             revision,
-            publicationTime,
             catalogFileSize,
             catalogSha256,
             catalog.CourseCount,
             catalog.OfferingCount);
         CatalogIndexDocument indexDocument = CatalogIndexDocument.CreateWithUpsertedEntry(
-            publicationTime,
             currentEntry,
             existingEntries);
         byte[] indexContent = CatalogIndexJsonWriter.Write(indexDocument);

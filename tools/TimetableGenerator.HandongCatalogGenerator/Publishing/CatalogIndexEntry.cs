@@ -14,7 +14,6 @@ internal sealed record CatalogIndexEntry
 
     public AcademicTerm Term { get; }
     public CatalogRevision Revision { get; }
-    public CatalogPublicationTime PublishedAt { get; }
     public string RelativePath
     {
         get
@@ -31,7 +30,6 @@ internal sealed record CatalogIndexEntry
     public CatalogIndexEntry(
         AcademicTerm term,
         CatalogRevision revision,
-        CatalogPublicationTime publishedAt,
         CatalogFileSize fileSize,
         Sha256Digest sha256,
         CatalogItemCount courseCount,
@@ -39,7 +37,6 @@ internal sealed record CatalogIndexEntry
     {
         Term = term;
         Revision = revision;
-        PublishedAt = publishedAt;
         FileSize = fileSize;
         Sha256 = sha256;
         CourseCount = courseCount;

@@ -10,7 +10,7 @@
 지정해야 합니다. 알 수 없는 옵션, 중복 옵션, 값이 없는 옵션은 오류로 종료됩니다.
 
 ```text
-generate --source <path> --term <YYYY-S> --revision <positive-int> --published-at <YYYY-MM-DDTHH:MM:SSZ> --output-root <path>
+generate --source <path> --term <YYYY-S> --revision <positive-int> --output-root <path>
 ```
 
 | 옵션 | 의미 |
@@ -18,7 +18,6 @@ generate --source <path> --term <YYYY-S> --revision <positive-int> --published-a
 | `--source` | 학교에서 내려받은 원본 `.xls` 파일 경로입니다. |
 | `--term` | `2026-2` 형식의 학년도와 학기입니다. |
 | `--revision` | 1 이상의 배포 수정 번호입니다. |
-| `--published-at` | `2026-07-16T00:00:00Z` 형식의 UTC 게시 시각입니다. 재현 가능한 산출물을 위해 초 단위 `Z` 형식만 허용합니다. |
 | `--output-root` | 닷홈의 `/html/timetable-generator/catalog/v1`에 대응하는 로컬 배포 루트입니다. |
 
 ### Windows PowerShell
@@ -30,7 +29,6 @@ dotnet run --project .\tools\TimetableGenerator.HandongCatalogGenerator\Timetabl
   --source "C:\Users\me\Downloads\개설시간표.xls" `
   --term 2026-2 `
   --revision 1 `
-  --published-at 2026-07-16T00:00:00Z `
   --output-root .\deploy\dothome\html\timetable-generator\catalog\v1
 ```
 
@@ -43,7 +41,6 @@ dotnet run --project ./tools/TimetableGenerator.HandongCatalogGenerator/Timetabl
   --source "$HOME/Downloads/개설시간표.xls" \
   --term 2026-2 \
   --revision 1 \
-  --published-at 2026-07-16T00:00:00Z \
   --output-root ./deploy/dothome/html/timetable-generator/catalog/v1
 ```
 
@@ -62,6 +59,10 @@ deploy/dothome/html/timetable-generator/catalog/v1/
 카탈로그 파일은 UTF-8(BOM 없음)과 LF 줄바꿈으로 결정적으로 직렬화됩니다. 마지막 LF까지
 포함한 실제 저장 바이트에서 SHA-256을 계산하며, `index.json`에는 그 바이트 크기와 해시를
 기록합니다. 성공 출력에도 두 파일 경로, 원본·카탈로그 SHA-256과 동적 품질 집계가 표시됩니다.
+생성 시각이나 실제 업로드 시각을 추측하는 메타데이터는 기록하지 않으므로, 같은 입력과
+revision 및 기존 index 상태에서는 두 JSON 파일이 플랫폼과 실행 시각에 관계없이 동일합니다.
+시간 필드가 있던 기존 index 스키마 v1은 계속 읽을 수 있으며, 다음 생성 시 시간 필드가 없는
+index 스키마 v2로 자동 정리됩니다. 카탈로그 자체의 스키마 버전은 계속 v1입니다.
 
 ## revision과 게시 규칙
 

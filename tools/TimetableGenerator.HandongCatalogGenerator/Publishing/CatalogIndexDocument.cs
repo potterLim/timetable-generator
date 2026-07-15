@@ -6,12 +6,10 @@ namespace TimetableGenerator.HandongCatalogGenerator.Publishing;
 
 internal sealed class CatalogIndexDocument
 {
-    public CatalogPublicationTime UpdatedAt { get; }
     public string DefaultCatalogId { get; }
     public IReadOnlyList<CatalogIndexEntry> Entries { get; }
 
     public CatalogIndexDocument(
-        CatalogPublicationTime updatedAt,
         CatalogIndexEntry defaultEntry,
         IEnumerable<CatalogIndexEntry> entries)
     {
@@ -33,13 +31,11 @@ internal sealed class CatalogIndexDocument
             throw new ArgumentException("The default catalog must be present in the index.", nameof(defaultEntry));
         }
 
-        UpdatedAt = updatedAt;
         DefaultCatalogId = defaultEntry.CatalogId;
         Entries = normalizedEntries.AsReadOnly();
     }
 
     public static CatalogIndexDocument CreateWithUpsertedEntry(
-        CatalogPublicationTime updatedAt,
         CatalogIndexEntry entry,
         IEnumerable<CatalogIndexEntry> existingEntries)
     {
@@ -56,7 +52,7 @@ internal sealed class CatalogIndexDocument
         }
 
         entries.Add(entry);
-        return new CatalogIndexDocument(updatedAt, entry, entries);
+        return new CatalogIndexDocument(entry, entries);
     }
 
     private static int compareEntries(CatalogIndexEntry left, CatalogIndexEntry right)
