@@ -8,6 +8,8 @@ namespace TimetableGenerator.UI.Product;
 internal sealed class ReadyScheduleControl : UserControl
 {
     private const int COMPACT_SIDEBAR_DIVISOR = 3;
+    private const int MINIMUM_CONTENT_WIDTH = 720;
+    private const int MINIMUM_CONTENT_HEIGHT = 520;
 
     private readonly SplitContainer mSplitContainer;
     private readonly ScheduleSidebarControl mSidebar;
@@ -23,7 +25,9 @@ internal sealed class ReadyScheduleControl : UserControl
         AccessibleName = "생성된 일정";
         AccessibleDescription = "일정 목록과 선택한 시간표를 표시합니다.";
         AccessibleRole = AccessibleRole.Pane;
-        MinimumSize = new System.Drawing.Size(720, 520);
+        MinimumSize = new System.Drawing.Size(
+            MINIMUM_CONTENT_WIDTH,
+            MINIMUM_CONTENT_HEIGHT);
 
         List<ScheduleGridViewModel> noSchedules = new List<ScheduleGridViewModel>();
         mSchedules = noSchedules.AsReadOnly();

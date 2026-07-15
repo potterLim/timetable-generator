@@ -9,6 +9,11 @@ public sealed record CourseImportRawValue
         Value = value;
     }
 
+    public override string ToString()
+    {
+        return Value;
+    }
+
     internal static CourseImportRawValue create(string? valueOrNull)
     {
         if (valueOrNull == null)
@@ -17,10 +22,5 @@ public sealed record CourseImportRawValue
         }
 
         return new CourseImportRawValue(valueOrNull);
-    }
-
-    public override string ToString()
-    {
-        return Value;
     }
 }

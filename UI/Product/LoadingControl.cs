@@ -10,6 +10,7 @@ internal sealed class LoadingControl : UserControl
 {
     private const int CONTENT_MAXIMUM_WIDTH = 560;
     private const int PROGRESS_HEIGHT = 6;
+    private const int MARQUEE_ANIMATION_SPEED_MILLISECONDS = 24;
 
     private readonly TableLayoutPanel mContentLayout;
     private readonly AppIconControl mIconControl;
@@ -188,7 +189,7 @@ internal sealed class LoadingControl : UserControl
         progressBar.Anchor = AnchorStyles.Left | AnchorStyles.Right;
         progressBar.Height = PROGRESS_HEIGHT;
         progressBar.Style = ProgressBarStyle.Marquee;
-        progressBar.MarqueeAnimationSpeed = 24;
+        progressBar.MarqueeAnimationSpeed = MARQUEE_ANIMATION_SPEED_MILLISECONDS;
         progressBar.AccessibleName = "시간표 생성 진행 중";
         progressBar.AccessibleRole = AccessibleRole.ProgressBar;
         progressBar.TabStop = false;
@@ -208,7 +209,7 @@ internal sealed class LoadingControl : UserControl
     private void resetProgress()
     {
         mProgressBar.Style = ProgressBarStyle.Marquee;
-        mProgressBar.MarqueeAnimationSpeed = 24;
+        mProgressBar.MarqueeAnimationSpeed = MARQUEE_ANIMATION_SPEED_MILLISECONDS;
         mCancelButton.Enabled = true;
     }
 

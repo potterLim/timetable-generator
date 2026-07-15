@@ -30,28 +30,34 @@ public sealed class SchedulePngExporterTests
                 new ScheduleExportBaseName("2026 봄학기"));
             SchedulePngExporter exporter = new SchedulePngExporter();
 
-            SchedulePngExportResult firstResult = await exporter.ExportCurrentAsync(
+            SchedulePngExportResult firstExportResult = await exporter.ExportCurrentAsync(
                 request,
                 CancellationToken.None);
-            SchedulePngExportResult secondResult = await exporter.ExportCurrentAsync(
+            SchedulePngExportResult secondExportResult = await exporter.ExportCurrentAsync(
                 request,
                 CancellationToken.None);
 
-            Assert.AreEqual(ESchedulePngExportCompletion.Succeeded, firstResult.Completion);
-            Assert.AreEqual(ESchedulePngExportCompletion.Succeeded, secondResult.Completion);
-            Assert.HasCount(1, firstResult.ExportedFiles);
-            Assert.HasCount(1, secondResult.ExportedFiles);
+            Assert.AreEqual(
+                ESchedulePngExportCompletion.Succeeded,
+                firstExportResult.Completion);
+            Assert.AreEqual(
+                ESchedulePngExportCompletion.Succeeded,
+                secondExportResult.Completion);
+            Assert.HasCount(1, firstExportResult.ExportedFiles);
+            Assert.HasCount(1, secondExportResult.ExportedFiles);
             Assert.AreEqual(
                 "2026 봄학기_시간표_03.png",
-                firstResult.ExportedFiles[0].OutputFilePath.FileName);
+                firstExportResult.ExportedFiles[0].OutputFilePath.FileName);
             Assert.AreEqual(
                 "2026 봄학기_시간표_03 (2).png",
-                secondResult.ExportedFiles[0].OutputFilePath.FileName);
-            Assert.IsTrue(File.Exists(firstResult.ExportedFiles[0].OutputFilePath.Value));
-            Assert.IsTrue(File.Exists(secondResult.ExportedFiles[0].OutputFilePath.Value));
+                secondExportResult.ExportedFiles[0].OutputFilePath.FileName);
+            Assert.IsTrue(
+                File.Exists(firstExportResult.ExportedFiles[0].OutputFilePath.Value));
+            Assert.IsTrue(
+                File.Exists(secondExportResult.ExportedFiles[0].OutputFilePath.Value));
             CollectionAssert.AreEqual(
-                File.ReadAllBytes(firstResult.ExportedFiles[0].OutputFilePath.Value),
-                File.ReadAllBytes(secondResult.ExportedFiles[0].OutputFilePath.Value));
+                File.ReadAllBytes(firstExportResult.ExportedFiles[0].OutputFilePath.Value),
+                File.ReadAllBytes(secondExportResult.ExportedFiles[0].OutputFilePath.Value));
         }
         finally
         {
@@ -74,14 +80,16 @@ public sealed class SchedulePngExporterTests
             RecordingExportProgress recordingProgress = new RecordingExportProgress();
             SchedulePngExporter exporter = new SchedulePngExporter();
 
-            SchedulePngExportResult result = await exporter.ExportAllAsync(
+            SchedulePngExportResult exportResult = await exporter.ExportAllAsync(
                 request,
                 recordingProgress,
                 CancellationToken.None);
 
-            Assert.AreEqual(ESchedulePngExportCompletion.Succeeded, result.Completion);
-            Assert.HasCount(2, result.ExportedFiles);
-            Assert.IsEmpty(result.Failures);
+            Assert.AreEqual(
+                ESchedulePngExportCompletion.Succeeded,
+                exportResult.Completion);
+            Assert.HasCount(2, exportResult.ExportedFiles);
+            Assert.IsEmpty(exportResult.Failures);
             Assert.HasCount(2, recordingProgress.Values);
             Assert.IsTrue(recordingProgress.Values[0].Position.IsValid);
             Assert.AreEqual(1, recordingProgress.Values[0].ProcessedScheduleCount);
@@ -92,8 +100,12 @@ public sealed class SchedulePngExporterTests
                 recordingProgress.Values[0].ItemStatus);
             Assert.AreEqual(2, recordingProgress.Values[1].ProcessedScheduleCount);
             Assert.AreEqual(2, recordingProgress.Values[1].ScheduleNumber.Value);
-            Assert.AreEqual("수강 계획_시간표_01.png", result.ExportedFiles[0].OutputFilePath.FileName);
-            Assert.AreEqual("수강 계획_시간표_02.png", result.ExportedFiles[1].OutputFilePath.FileName);
+            Assert.AreEqual(
+                "수강 계획_시간표_01.png",
+                exportResult.ExportedFiles[0].OutputFilePath.FileName);
+            Assert.AreEqual(
+                "수강 계획_시간표_02.png",
+                exportResult.ExportedFiles[1].OutputFilePath.FileName);
         }
         finally
         {
@@ -122,19 +134,21 @@ public sealed class SchedulePngExporterTests
                 new ScheduleExportBaseName("네트워크"));
             SchedulePngExporter exporter = new SchedulePngExporter();
 
-            SchedulePngExportResult result = await exporter.ExportCurrentAsync(
+            SchedulePngExportResult exportResult = await exporter.ExportCurrentAsync(
                 request,
                 CancellationToken.None);
 
-            Assert.AreEqual(ESchedulePngExportCompletion.Failed, result.Completion);
-            Assert.IsEmpty(result.ExportedFiles);
-            Assert.HasCount(1, result.Failures);
+            Assert.AreEqual(ESchedulePngExportCompletion.Failed, exportResult.Completion);
+            Assert.IsEmpty(exportResult.ExportedFiles);
+            Assert.HasCount(1, exportResult.Failures);
             Assert.AreEqual(
                 "네트워크_시간표_01.png",
-                result.Failures[0].RequestedFileName.Value);
-            StringAssert.Contains(result.Failures[0].Message, "시간표 1번 PNG를 저장하지 못했습니다.");
-            StringAssert.Contains(result.Failures[0].Message, existingFilePath);
-            StringAssert.Contains(result.Failures[0].Message, "원인:");
+                exportResult.Failures[0].RequestedFileName.Value);
+            StringAssert.Contains(
+                exportResult.Failures[0].Message,
+                "시간표 1번 PNG를 저장하지 못했습니다.");
+            StringAssert.Contains(exportResult.Failures[0].Message, existingFilePath);
+            StringAssert.Contains(exportResult.Failures[0].Message, "원인:");
         }
         finally
         {
@@ -193,14 +207,16 @@ public sealed class SchedulePngExporterTests
             {
                 CancelAfterFirstExportProgress cancellationProgress =
                     new CancelAfterFirstExportProgress(cancellationTokenSource);
-                SchedulePngExportResult result = await exporter.ExportAllAsync(
+                SchedulePngExportResult exportResult = await exporter.ExportAllAsync(
                     request,
                     cancellationProgress,
                     cancellationTokenSource.Token);
 
-                Assert.AreEqual(ESchedulePngExportCompletion.Canceled, result.Completion);
-                Assert.IsEmpty(result.ExportedFiles);
-                Assert.IsEmpty(result.Failures);
+                Assert.AreEqual(
+                    ESchedulePngExportCompletion.Canceled,
+                    exportResult.Completion);
+                Assert.IsEmpty(exportResult.ExportedFiles);
+                Assert.IsEmpty(exportResult.Failures);
             }
 
             Assert.HasCount(0, Directory.GetFiles(testDirectoryPath, "*.png"));
@@ -345,9 +361,9 @@ public sealed class SchedulePngExporterTests
             }
         }
 
-        public void Report(SchedulePngExportProgress value)
+        public void Report(SchedulePngExportProgress progress)
         {
-            mValues.Add(value);
+            mValues.Add(progress);
         }
     }
 
@@ -361,9 +377,9 @@ public sealed class SchedulePngExporterTests
             mCancellationTokenSource = cancellationTokenSource;
         }
 
-        public void Report(SchedulePngExportProgress value)
+        public void Report(SchedulePngExportProgress progress)
         {
-            if (value.ProcessedScheduleCount == 1)
+            if (progress.ProcessedScheduleCount == 1)
             {
                 mCancellationTokenSource.Cancel();
             }
@@ -372,7 +388,7 @@ public sealed class SchedulePngExporterTests
 
     private sealed class ThrowingExportProgress : IProgress<SchedulePngExportProgress>
     {
-        public void Report(SchedulePngExportProgress value)
+        public void Report(SchedulePngExportProgress progress)
         {
             throw new InvalidOperationException("Synthetic progress failure.");
         }
@@ -394,9 +410,9 @@ public sealed class SchedulePngExporterTests
             mCancellationTokenSource = cancellationTokenSource;
         }
 
-        public void Report(SchedulePngExportProgress value)
+        public void Report(SchedulePngExportProgress progress)
         {
-            if (value.ProcessedScheduleCount != 1)
+            if (progress.ProcessedScheduleCount != 1)
             {
                 return;
             }

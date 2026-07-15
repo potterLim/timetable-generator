@@ -11,7 +11,12 @@ internal sealed class ExampleFormatDialog : Form
     private const int PREFERRED_CLIENT_HEIGHT = 510;
     private const int MINIMUM_WINDOW_WIDTH = 600;
     private const int MINIMUM_WINDOW_HEIGHT = 420;
-    private const int EXAMPLE_HEIGHT = 180;
+    private const float CODE_FONT_SIZE = 10.0f;
+    private const float TITLE_ROW_HEIGHT = 38.0f;
+    private const float DESCRIPTION_ROW_HEIGHT = 64.0f;
+    private const float EXAMPLE_ROW_HEIGHT = 180.0f;
+    private const float TIP_ROW_HEIGHT = 76.0f;
+    private const float FOOTER_ROW_HEIGHT = 48.0f;
 
     private const string CSV_EXAMPLE =
         "CourseId,Section,Name,TimeSlots,Classroom\r\n"
@@ -42,7 +47,11 @@ internal sealed class ExampleFormatDialog : Form
 
         mTitleFont = DesignTokens.createSectionTitleFont(Font);
         mBodyFont = DesignTokens.createBodyFont(Font);
-        mCodeFont = new Font("Cascadia Mono", 10.0f, FontStyle.Regular, GraphicsUnit.Point);
+        mCodeFont = new Font(
+            "Cascadia Mono",
+            CODE_FONT_SIZE,
+            FontStyle.Regular,
+            GraphicsUnit.Point);
         mCopyStatusLabel = createCopyStatusLabel();
 
         TableLayoutPanel layout = createLayout();
@@ -84,14 +93,18 @@ internal sealed class ExampleFormatDialog : Form
         layout.Dock = DockStyle.Top;
         layout.AutoSize = true;
         layout.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-        layout.Padding = new Padding(DesignTokens.SPACE_32, DesignTokens.SPACE_24, DesignTokens.SPACE_32, DesignTokens.SPACE_24);
+        layout.Padding = new Padding(
+            DesignTokens.SPACE_32,
+            DesignTokens.SPACE_24,
+            DesignTokens.SPACE_32,
+            DesignTokens.SPACE_24);
         layout.BackColor = DesignTokens.WINDOW_BACKGROUND_COLOR;
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100.0f));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38.0f));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 64.0f));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, EXAMPLE_HEIGHT));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 76.0f));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48.0f));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, TITLE_ROW_HEIGHT));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, DESCRIPTION_ROW_HEIGHT));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, EXAMPLE_ROW_HEIGHT));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, TIP_ROW_HEIGHT));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, FOOTER_ROW_HEIGHT));
         return layout;
     }
 

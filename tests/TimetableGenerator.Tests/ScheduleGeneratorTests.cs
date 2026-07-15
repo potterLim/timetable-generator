@@ -16,14 +16,16 @@ public sealed class ScheduleGeneratorTests
         IReadOnlyList<CourseOffering> courseOfferings = createCartesianProductOfferings();
         ScheduleGenerator scheduleGenerator = new ScheduleGenerator();
 
-        ScheduleGenerationResult result = scheduleGenerator.GenerateSchedules(
+        ScheduleGenerationResult generationResult = scheduleGenerator.GenerateSchedules(
             courseOfferings,
             CancellationToken.None);
 
-        Assert.AreEqual(EScheduleGenerationCompletion.Completed, result.Completion);
+        Assert.AreEqual(
+            EScheduleGenerationCompletion.Completed,
+            generationResult.Completion);
         CollectionAssert.AreEqual(
             new string[] { "A,C", "A,D", "B,C", "B,D" },
-            getScheduleNames(result));
+            getScheduleNames(generationResult));
     }
 
     [TestMethod]
@@ -32,21 +34,21 @@ public sealed class ScheduleGeneratorTests
         IReadOnlyList<CourseOffering> courseOfferings = createCartesianProductOfferings();
         ScheduleGenerator scheduleGenerator = new ScheduleGenerator();
 
-        ScheduleGenerationResult firstResult = scheduleGenerator.GenerateSchedules(
+        ScheduleGenerationResult firstGenerationResult = scheduleGenerator.GenerateSchedules(
             courseOfferings,
             CancellationToken.None);
-        ScheduleGenerationResult secondResult = scheduleGenerator.GenerateSchedules(
+        ScheduleGenerationResult secondGenerationResult = scheduleGenerator.GenerateSchedules(
             courseOfferings,
             CancellationToken.None);
 
         CollectionAssert.AreEqual(
-            getScheduleNames(firstResult),
-            getScheduleNames(secondResult));
+            getScheduleNames(firstGenerationResult),
+            getScheduleNames(secondGenerationResult));
 
         IList<GeneratedSchedule> exposedSchedules =
-            (IList<GeneratedSchedule>)firstResult.Schedules;
+            (IList<GeneratedSchedule>)firstGenerationResult.Schedules;
         Assert.ThrowsExactly<NotSupportedException>(
-            () => exposedSchedules.Add(firstResult.Schedules[0]));
+            () => exposedSchedules.Add(firstGenerationResult.Schedules[0]));
     }
 
     [TestMethod]
@@ -76,12 +78,12 @@ public sealed class ScheduleGeneratorTests
         };
         ScheduleGenerator scheduleGenerator = new ScheduleGenerator();
 
-        ScheduleGenerationResult result = scheduleGenerator.GenerateSchedules(
+        ScheduleGenerationResult generationResult = scheduleGenerator.GenerateSchedules(
             courseOfferings,
             CancellationToken.None);
 
-        Assert.HasCount(1, result.Schedules);
-        Assert.AreEqual("Base,Valid", getScheduleName(result.Schedules[0]));
+        Assert.HasCount(1, generationResult.Schedules);
+        Assert.AreEqual("Base,Valid", getScheduleName(generationResult.Schedules[0]));
     }
 
     [TestMethod]
@@ -123,13 +125,15 @@ public sealed class ScheduleGeneratorTests
         {
             cancellationTokenSource.Cancel();
 
-            ScheduleGenerationResult result = scheduleGenerator.GenerateSchedules(
+            ScheduleGenerationResult generationResult = scheduleGenerator.GenerateSchedules(
                 courseOfferings,
                 cancellationTokenSource.Token);
 
-            Assert.AreEqual(EScheduleGenerationCompletion.Canceled, result.Completion);
-            Assert.IsTrue(result.IsCanceled);
-            Assert.IsEmpty(result.Schedules);
+            Assert.AreEqual(
+                EScheduleGenerationCompletion.Canceled,
+                generationResult.Completion);
+            Assert.IsTrue(generationResult.IsCanceled);
+            Assert.IsEmpty(generationResult.Schedules);
         }
     }
 
@@ -144,10 +148,11 @@ public sealed class ScheduleGeneratorTests
         }.AsReadOnly();
     }
 
-    private static string[] getScheduleNames(ScheduleGenerationResult result)
+    private static string[] getScheduleNames(
+        ScheduleGenerationResult generationResult)
     {
-        List<string> scheduleNames = new List<string>(result.Schedules.Count);
-        foreach (GeneratedSchedule generatedSchedule in result.Schedules)
+        List<string> scheduleNames = new List<string>(generationResult.Schedules.Count);
+        foreach (GeneratedSchedule generatedSchedule in generationResult.Schedules)
         {
             scheduleNames.Add(getScheduleName(generatedSchedule));
         }

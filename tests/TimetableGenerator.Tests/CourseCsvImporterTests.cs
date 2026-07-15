@@ -22,13 +22,13 @@ public sealed class CourseCsvImporterTests
 
         using (TemporaryCsvFile temporaryCsvFile = new TemporaryCsvFile(fileContent))
         {
-            CourseImportResult result = importCourses(temporaryCsvFile);
+            CourseImportResult courseImportResult = importCourses(temporaryCsvFile);
 
-            Assert.IsTrue(result.IsSuccessful);
-            Assert.HasCount(1, result.CourseOfferings);
-            Assert.AreEqual("자료구조", result.CourseOfferings[0].Name.Value);
-            Assert.HasCount(2, result.CourseOfferings[0].ScheduleSlots);
-            Assert.IsFalse(result.CourseOfferings[0].ClassroomAssignment.IsAssigned);
+            Assert.IsTrue(courseImportResult.IsSuccessful);
+            Assert.HasCount(1, courseImportResult.CourseOfferings);
+            Assert.AreEqual("자료구조", courseImportResult.CourseOfferings[0].Name.Value);
+            Assert.HasCount(2, courseImportResult.CourseOfferings[0].ScheduleSlots);
+            Assert.IsFalse(courseImportResult.CourseOfferings[0].ClassroomAssignment.IsAssigned);
         }
     }
 
@@ -40,11 +40,11 @@ public sealed class CourseCsvImporterTests
 
         using (TemporaryCsvFile temporaryCsvFile = new TemporaryCsvFile(fileContent))
         {
-            CourseImportResult result = importCourses(temporaryCsvFile);
+            CourseImportResult courseImportResult = importCourses(temporaryCsvFile);
 
-            Assert.IsTrue(result.IsSuccessful);
+            Assert.IsTrue(courseImportResult.IsSuccessful);
             ClassroomAssignment classroomAssignment =
-                result.CourseOfferings[0].ClassroomAssignment;
+                courseImportResult.CourseOfferings[0].ClassroomAssignment;
             Assert.IsTrue(classroomAssignment.IsAssigned);
             ClassroomLocation classroomLocation = classroomAssignment.GetClassroomLocation();
             Assert.AreEqual("Engineering Hall", classroomLocation.BuildingName.Value);
@@ -61,11 +61,11 @@ public sealed class CourseCsvImporterTests
 
         using (TemporaryCsvFile temporaryCsvFile = new TemporaryCsvFile(fileContent))
         {
-            CourseImportResult result = importCourses(temporaryCsvFile);
+            CourseImportResult courseImportResult = importCourses(temporaryCsvFile);
 
-            Assert.IsTrue(result.IsSuccessful);
-            Assert.AreEqual("자료, \"구조\"", result.CourseOfferings[0].Name.Value);
-            Assert.AreEqual("운영체제\r\n심화", result.CourseOfferings[1].Name.Value);
+            Assert.IsTrue(courseImportResult.IsSuccessful);
+            Assert.AreEqual("자료, \"구조\"", courseImportResult.CourseOfferings[0].Name.Value);
+            Assert.AreEqual("운영체제\r\n심화", courseImportResult.CourseOfferings[1].Name.Value);
         }
     }
 
@@ -78,20 +78,20 @@ public sealed class CourseCsvImporterTests
 
         using (TemporaryCsvFile temporaryCsvFile = new TemporaryCsvFile(fileContent))
         {
-            CourseImportResult result = importCourses(temporaryCsvFile);
+            CourseImportResult courseImportResult = importCourses(temporaryCsvFile);
 
-            Assert.IsFalse(result.IsSuccessful);
-            Assert.HasCount(1, result.Diagnostics);
+            Assert.IsFalse(courseImportResult.IsSuccessful);
+            Assert.HasCount(1, courseImportResult.Diagnostics);
             Assert.AreEqual(
                 ECourseImportErrorCode.InvalidScheduleSlot,
-                result.Diagnostics[0].ErrorCode);
-            Assert.IsTrue(result.Diagnostics[0].SourcePosition.HasRowNumber);
+                courseImportResult.Diagnostics[0].ErrorCode);
+            Assert.IsTrue(courseImportResult.Diagnostics[0].SourcePosition.HasRowNumber);
             Assert.AreEqual(
                 4L,
-                result.Diagnostics[0].SourcePosition.GetRowNumber().Value);
+                courseImportResult.Diagnostics[0].SourcePosition.GetRowNumber().Value);
             Assert.AreEqual(
                 "월요일1교시junk",
-                result.Diagnostics[0].RawValue.Value);
+                courseImportResult.Diagnostics[0].RawValue.Value);
         }
     }
 
@@ -103,9 +103,9 @@ public sealed class CourseCsvImporterTests
 
         using (TemporaryCsvFile temporaryCsvFile = new TemporaryCsvFile(fileContent))
         {
-            CourseImportResult result = importCourses(temporaryCsvFile);
+            CourseImportResult courseImportResult = importCourses(temporaryCsvFile);
 
-            assertSingleDiagnostic(result, ECourseImportErrorCode.InvalidHeader);
+            assertSingleDiagnostic(courseImportResult, ECourseImportErrorCode.InvalidHeader);
         }
     }
 
@@ -118,17 +118,17 @@ public sealed class CourseCsvImporterTests
 
         using (TemporaryCsvFile temporaryCsvFile = new TemporaryCsvFile(fileContent))
         {
-            CourseImportResult result = importCourses(temporaryCsvFile);
+            CourseImportResult courseImportResult = importCourses(temporaryCsvFile);
 
-            Assert.IsFalse(result.IsSuccessful);
-            Assert.IsEmpty(result.CourseOfferings);
-            Assert.HasCount(2, result.Diagnostics);
+            Assert.IsFalse(courseImportResult.IsSuccessful);
+            Assert.IsEmpty(courseImportResult.CourseOfferings);
+            Assert.HasCount(2, courseImportResult.Diagnostics);
             Assert.AreEqual(
                 ECourseImportErrorCode.InvalidScheduleSlot,
-                result.Diagnostics[0].ErrorCode);
+                courseImportResult.Diagnostics[0].ErrorCode);
             Assert.AreEqual(
                 ECourseImportErrorCode.EmptyScheduleSlot,
-                result.Diagnostics[1].ErrorCode);
+                courseImportResult.Diagnostics[1].ErrorCode);
         }
     }
 
@@ -140,9 +140,9 @@ public sealed class CourseCsvImporterTests
 
         using (TemporaryCsvFile temporaryCsvFile = new TemporaryCsvFile(fileContent))
         {
-            CourseImportResult result = importCourses(temporaryCsvFile);
+            CourseImportResult courseImportResult = importCourses(temporaryCsvFile);
 
-            assertSingleDiagnostic(result, ECourseImportErrorCode.InvalidColumnCount);
+            assertSingleDiagnostic(courseImportResult, ECourseImportErrorCode.InvalidColumnCount);
         }
     }
 
@@ -154,13 +154,13 @@ public sealed class CourseCsvImporterTests
 
         using (TemporaryCsvFile temporaryCsvFile = new TemporaryCsvFile(fileContent))
         {
-            CourseImportResult result = importCourses(temporaryCsvFile);
+            CourseImportResult courseImportResult = importCourses(temporaryCsvFile);
 
-            assertSingleDiagnostic(result, ECourseImportErrorCode.MalformedCsvRecord);
-            Assert.IsTrue(result.Diagnostics[0].SourcePosition.HasRowNumber);
+            assertSingleDiagnostic(courseImportResult, ECourseImportErrorCode.MalformedCsvRecord);
+            Assert.IsTrue(courseImportResult.Diagnostics[0].SourcePosition.HasRowNumber);
             Assert.AreEqual(
                 2L,
-                result.Diagnostics[0].SourcePosition.GetRowNumber().Value);
+                courseImportResult.Diagnostics[0].SourcePosition.GetRowNumber().Value);
         }
     }
 
@@ -177,13 +177,13 @@ public sealed class CourseCsvImporterTests
             CourseCsvImportOptions options = new CourseCsvImportOptions(
                 new DiagnosticCountLimit(1));
 
-            CourseImportResult result = importer.ImportCourses(
+            CourseImportResult courseImportResult = importer.ImportCourses(
                 temporaryCsvFile.FilePath,
                 options);
 
-            Assert.IsFalse(result.IsSuccessful);
-            Assert.HasCount(1, result.Diagnostics);
-            Assert.IsTrue(result.HasReachedDiagnosticLimit);
+            Assert.IsFalse(courseImportResult.IsSuccessful);
+            Assert.HasCount(1, courseImportResult.Diagnostics);
+            Assert.IsTrue(courseImportResult.HasReachedDiagnosticLimit);
         }
     }
 
@@ -196,11 +196,11 @@ public sealed class CourseCsvImporterTests
         CsvInputFilePath inputFilePath = new CsvInputFilePath(missingFilePath);
         CourseCsvImporter importer = new CourseCsvImporter();
 
-        CourseImportResult result = importer.ImportCourses(inputFilePath);
+        CourseImportResult courseImportResult = importer.ImportCourses(inputFilePath);
 
-        assertSingleDiagnostic(result, ECourseImportErrorCode.FileNotFound);
-        Assert.AreEqual(ECsvColumn.File, result.Diagnostics[0].Column);
-        Assert.AreEqual(missingFilePath, result.Diagnostics[0].RawValue.Value);
+        assertSingleDiagnostic(courseImportResult, ECourseImportErrorCode.FileNotFound);
+        Assert.AreEqual(ECsvColumn.File, courseImportResult.Diagnostics[0].Column);
+        Assert.AreEqual(missingFilePath, courseImportResult.Diagnostics[0].RawValue.Value);
         Assert.AreEqual(Path.GetFileName(missingFilePath), inputFilePath.FileName.Value);
     }
 
@@ -257,12 +257,12 @@ public sealed class CourseCsvImporterTests
     }
 
     private static void assertSingleDiagnostic(
-        CourseImportResult result,
+        CourseImportResult courseImportResult,
         ECourseImportErrorCode expectedErrorCode)
     {
-        Assert.IsFalse(result.IsSuccessful);
-        Assert.IsEmpty(result.CourseOfferings);
-        Assert.HasCount(1, result.Diagnostics);
-        Assert.AreEqual(expectedErrorCode, result.Diagnostics[0].ErrorCode);
+        Assert.IsFalse(courseImportResult.IsSuccessful);
+        Assert.IsEmpty(courseImportResult.CourseOfferings);
+        Assert.HasCount(1, courseImportResult.Diagnostics);
+        Assert.AreEqual(expectedErrorCode, courseImportResult.Diagnostics[0].ErrorCode);
     }
 }

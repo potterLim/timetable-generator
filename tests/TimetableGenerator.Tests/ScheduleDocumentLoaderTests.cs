@@ -27,18 +27,19 @@ public sealed class ScheduleDocumentLoaderTests
         {
             ScheduleDocumentLoader loader = new ScheduleDocumentLoader();
 
-            ScheduleDocumentLoadResult result = await loader.LoadDocumentAsync(
+            ScheduleDocumentLoadResult documentLoadResult = await loader.LoadDocumentAsync(
                 temporaryCsvFile.FilePath,
                 CancellationToken.None);
 
-            Assert.AreEqual(EScheduleDocumentLoadStatus.Loaded, result.Status);
-            Assert.IsTrue(result.IsSuccessful);
-            Assert.IsTrue(result.HasDocument);
-            Assert.IsFalse(result.HasFailure);
-            Assert.IsFalse(result.HasReachedMaximumScheduleCount);
-            Assert.ThrowsExactly<InvalidOperationException>(() => result.GetFailure());
+            Assert.AreEqual(EScheduleDocumentLoadStatus.Loaded, documentLoadResult.Status);
+            Assert.IsTrue(documentLoadResult.IsSuccessful);
+            Assert.IsTrue(documentLoadResult.HasDocument);
+            Assert.IsFalse(documentLoadResult.HasFailure);
+            Assert.IsFalse(documentLoadResult.HasReachedMaximumScheduleCount);
+            Assert.ThrowsExactly<InvalidOperationException>(
+                () => documentLoadResult.GetFailure());
 
-            ScheduleDocument document = result.GetDocument();
+            ScheduleDocument document = documentLoadResult.GetDocument();
             Assert.AreEqual(temporaryCsvFile.FilePath, document.SourceFilePath);
             Assert.AreEqual(1, document.ScheduleCount);
 
@@ -78,18 +79,21 @@ public sealed class ScheduleDocumentLoaderTests
         {
             ScheduleDocumentLoader loader = new ScheduleDocumentLoader(loadOptions);
 
-            ScheduleDocumentLoadResult result = await loader.LoadDocumentAsync(
+            ScheduleDocumentLoadResult documentLoadResult = await loader.LoadDocumentAsync(
                 temporaryCsvFile.FilePath,
                 CancellationToken.None);
 
-            Assert.AreEqual(EScheduleDocumentLoadStatus.ImportFailed, result.Status);
-            Assert.IsFalse(result.IsSuccessful);
-            Assert.IsFalse(result.HasDocument);
-            Assert.IsTrue(result.HasFailure);
-            Assert.ThrowsExactly<InvalidOperationException>(() => result.GetDocument());
+            Assert.AreEqual(
+                EScheduleDocumentLoadStatus.ImportFailed,
+                documentLoadResult.Status);
+            Assert.IsFalse(documentLoadResult.IsSuccessful);
+            Assert.IsFalse(documentLoadResult.HasDocument);
+            Assert.IsTrue(documentLoadResult.HasFailure);
+            Assert.ThrowsExactly<InvalidOperationException>(
+                () => documentLoadResult.GetDocument());
 
-            ScheduleDocumentLoadFailure failure = result.GetFailure();
-            Assert.AreEqual(result.Status, failure.Status);
+            ScheduleDocumentLoadFailure failure = documentLoadResult.GetFailure();
+            Assert.AreEqual(documentLoadResult.Status, failure.Status);
             Assert.IsTrue(failure.HasImportDiagnostics);
             Assert.IsTrue(failure.HasReachedImportDiagnosticLimit);
             Assert.AreEqual(
@@ -113,14 +117,14 @@ public sealed class ScheduleDocumentLoaderTests
         {
             ScheduleDocumentLoader loader = new ScheduleDocumentLoader();
 
-            ScheduleDocumentLoadResult result = await loader.LoadDocumentAsync(
+            ScheduleDocumentLoadResult documentLoadResult = await loader.LoadDocumentAsync(
                 temporaryCsvFile.FilePath,
                 CancellationToken.None);
 
             Assert.AreEqual(
                 EScheduleDocumentLoadStatus.NoValidSchedules,
-                result.Status);
-            ScheduleDocumentLoadFailure failure = result.GetFailure();
+                documentLoadResult.Status);
+            ScheduleDocumentLoadFailure failure = documentLoadResult.GetFailure();
             Assert.IsFalse(failure.HasImportDiagnostics);
             Assert.IsFalse(failure.HasReachedImportDiagnosticLimit);
         }
@@ -142,16 +146,16 @@ public sealed class ScheduleDocumentLoaderTests
         {
             ScheduleDocumentLoader loader = new ScheduleDocumentLoader(loadOptions);
 
-            ScheduleDocumentLoadResult result = await loader.LoadDocumentAsync(
+            ScheduleDocumentLoadResult documentLoadResult = await loader.LoadDocumentAsync(
                 temporaryCsvFile.FilePath,
                 CancellationToken.None);
 
             Assert.AreEqual(
                 EScheduleDocumentLoadStatus.LoadedWithMaximumScheduleCountReached,
-                result.Status);
-            Assert.IsTrue(result.IsSuccessful);
-            Assert.IsTrue(result.HasReachedMaximumScheduleCount);
-            Assert.AreEqual(1, result.GetDocument().ScheduleCount);
+                documentLoadResult.Status);
+            Assert.IsTrue(documentLoadResult.IsSuccessful);
+            Assert.IsTrue(documentLoadResult.HasReachedMaximumScheduleCount);
+            Assert.AreEqual(1, documentLoadResult.GetDocument().ScheduleCount);
         }
     }
 
@@ -165,15 +169,15 @@ public sealed class ScheduleDocumentLoaderTests
         {
             ScheduleDocumentLoader loader = new ScheduleDocumentLoader();
 
-            ScheduleDocumentLoadResult result = await loader.LoadDocumentAsync(
+            ScheduleDocumentLoadResult documentLoadResult = await loader.LoadDocumentAsync(
                 temporaryCsvFile.FilePath,
                 CancellationToken.None);
 
             Assert.AreEqual(
                 EScheduleDocumentLoadStatus.UnsupportedAcademicPeriod,
-                result.Status);
-            Assert.IsFalse(result.IsSuccessful);
-            Assert.IsFalse(result.GetFailure().HasImportDiagnostics);
+                documentLoadResult.Status);
+            Assert.IsFalse(documentLoadResult.IsSuccessful);
+            Assert.IsFalse(documentLoadResult.GetFailure().HasImportDiagnostics);
         }
     }
 
@@ -191,13 +195,15 @@ public sealed class ScheduleDocumentLoaderTests
                 cancellationTokenSource.Cancel();
                 ScheduleDocumentLoader loader = new ScheduleDocumentLoader();
 
-                ScheduleDocumentLoadResult result = await loader.LoadDocumentAsync(
+                ScheduleDocumentLoadResult documentLoadResult = await loader.LoadDocumentAsync(
                     temporaryCsvFile.FilePath,
                     cancellationTokenSource.Token);
 
-                Assert.AreEqual(EScheduleDocumentLoadStatus.Canceled, result.Status);
-                Assert.IsFalse(result.IsSuccessful);
-                Assert.IsFalse(result.GetFailure().HasImportDiagnostics);
+                Assert.AreEqual(
+                    EScheduleDocumentLoadStatus.Canceled,
+                    documentLoadResult.Status);
+                Assert.IsFalse(documentLoadResult.IsSuccessful);
+                Assert.IsFalse(documentLoadResult.GetFailure().HasImportDiagnostics);
             }
         }
     }
@@ -219,13 +225,15 @@ public sealed class ScheduleDocumentLoaderTests
                     ScheduleDocumentLoadOptions.CreateDefault(),
                     courseCsvImporter);
 
-                ScheduleDocumentLoadResult result = await loader.LoadDocumentAsync(
+                ScheduleDocumentLoadResult documentLoadResult = await loader.LoadDocumentAsync(
                     temporaryCsvFile.FilePath,
                     cancellationTokenSource.Token);
 
-                Assert.AreEqual(EScheduleDocumentLoadStatus.Canceled, result.Status);
-                Assert.IsFalse(result.IsSuccessful);
-                Assert.IsFalse(result.GetFailure().HasImportDiagnostics);
+                Assert.AreEqual(
+                    EScheduleDocumentLoadStatus.Canceled,
+                    documentLoadResult.Status);
+                Assert.IsFalse(documentLoadResult.IsSuccessful);
+                Assert.IsFalse(documentLoadResult.GetFailure().HasImportDiagnostics);
             }
         }
     }
