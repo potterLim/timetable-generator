@@ -10,6 +10,7 @@ internal sealed class AppLogoControl : Control
 
     internal AppLogoControl()
     {
+        BackColor = DesignTokens.SURFACE_COLOR;
         AccessibleName = APP_TITLE;
         AccessibleRole = AccessibleRole.StaticText;
         TabStop = false;

@@ -1,13 +1,13 @@
 using System;
+using System.Diagnostics;
 
 namespace TimetableGenerator.Application.Documents;
 
 public sealed class ScheduleDocumentLoadResult
 {
-    private readonly ScheduleDocument mDocumentOrNull;
-    private readonly ScheduleDocumentLoadFailure mFailureOrNull;
-
     public EScheduleDocumentLoadStatus Status { get; }
+
+    private readonly ScheduleDocument? mDocumentOrNull;
 
     public bool HasDocument
     {
@@ -16,6 +16,8 @@ public sealed class ScheduleDocumentLoadResult
             return mDocumentOrNull != null;
         }
     }
+
+    private readonly ScheduleDocumentLoadFailure? mFailureOrNull;
 
     public bool HasFailure
     {
@@ -44,8 +46,8 @@ public sealed class ScheduleDocumentLoadResult
 
     private ScheduleDocumentLoadResult(
         EScheduleDocumentLoadStatus status,
-        ScheduleDocument documentOrNull,
-        ScheduleDocumentLoadFailure failureOrNull)
+        ScheduleDocument? documentOrNull,
+        ScheduleDocumentLoadFailure? failureOrNull)
     {
         if (Enum.IsDefined(typeof(EScheduleDocumentLoadStatus), status) == false)
         {
@@ -67,7 +69,7 @@ public sealed class ScheduleDocumentLoadResult
                 nameof(status));
         }
 
-        if (hasFailure && failureOrNull.Status != status)
+        if (failureOrNull != null && failureOrNull.Status != status)
         {
             throw new ArgumentException(
                 "Document load failure status must match its result status.",
@@ -81,7 +83,7 @@ public sealed class ScheduleDocumentLoadResult
 
     public ScheduleDocument GetDocument()
     {
-        if (HasDocument == false)
+        if (mDocumentOrNull == null)
         {
             throw new InvalidOperationException(
                 "A failed document load result does not contain a schedule document.");
@@ -92,7 +94,7 @@ public sealed class ScheduleDocumentLoadResult
 
     public ScheduleDocumentLoadFailure GetFailure()
     {
-        if (HasFailure == false)
+        if (mFailureOrNull == null)
         {
             throw new InvalidOperationException(
                 "A successful document load result does not contain failure information.");
@@ -142,6 +144,7 @@ public sealed class ScheduleDocumentLoadResult
             case EScheduleDocumentLoadStatus.Canceled:
                 return false;
             default:
+                Debug.Fail("Unexpected document load status: " + status);
                 return false;
         }
     }

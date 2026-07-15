@@ -79,19 +79,27 @@ public sealed class ScheduleGenerator
 
         foreach (CourseOffering courseOffering in courseOfferings)
         {
-            List<CourseOffering> groupedCourseOfferings;
+            List<CourseOffering>? groupedCourseOfferingsOrNull;
             bool hasChoiceGroup = courseOfferingsByChoiceGroupId.TryGetValue(
                 courseOffering.ChoiceGroupId,
-                out groupedCourseOfferings);
+                out groupedCourseOfferingsOrNull);
 
             if (hasChoiceGroup == false)
             {
-                groupedCourseOfferings = new List<CourseOffering>();
-                courseOfferingsByChoiceGroupId.Add(courseOffering.ChoiceGroupId, groupedCourseOfferings);
+                groupedCourseOfferingsOrNull = new List<CourseOffering>();
+                courseOfferingsByChoiceGroupId.Add(
+                    courseOffering.ChoiceGroupId,
+                    groupedCourseOfferingsOrNull);
                 choiceGroupIdsInInputOrder.Add(courseOffering.ChoiceGroupId);
             }
 
-            groupedCourseOfferings.Add(courseOffering);
+            if (groupedCourseOfferingsOrNull == null)
+            {
+                throw new InvalidOperationException(
+                    "A registered course choice group did not contain an offering collection.");
+            }
+
+            groupedCourseOfferingsOrNull.Add(courseOffering);
         }
 
         List<CourseChoiceGroup> courseChoiceGroups = new List<CourseChoiceGroup>(
@@ -108,19 +116,19 @@ public sealed class ScheduleGenerator
         return courseChoiceGroups.AsReadOnly();
     }
 
-    private static bool generateSchedulesRecursive(
+    private static EGenerationTraversalDecision generateSchedulesRecursive(
         ScheduleGenerationState state,
         int choiceGroupIndex)
     {
         if (state.ShouldStop)
         {
-            return false;
+            return EGenerationTraversalDecision.Stop;
         }
 
         if (state.CancellationToken.IsCancellationRequested)
         {
             state.MarkCanceled();
-            return false;
+            return EGenerationTraversalDecision.Stop;
         }
 
         if (choiceGroupIndex >= state.CourseChoiceGroups.Count)
@@ -134,7 +142,7 @@ public sealed class ScheduleGenerator
             if (state.CancellationToken.IsCancellationRequested)
             {
                 state.MarkCanceled();
-                return false;
+                return EGenerationTraversalDecision.Stop;
             }
 
             if (canAddCourseOffering(state, courseOffering) == false)
@@ -145,10 +153,11 @@ public sealed class ScheduleGenerator
             addCourseOffering(state, courseOffering);
             try
             {
-                bool shouldContinue = generateSchedulesRecursive(state, choiceGroupIndex + 1);
-                if (shouldContinue == false)
+                EGenerationTraversalDecision traversalDecision =
+                    generateSchedulesRecursive(state, choiceGroupIndex + 1);
+                if (traversalDecision == EGenerationTraversalDecision.Stop)
                 {
-                    return false;
+                    return EGenerationTraversalDecision.Stop;
                 }
             }
             finally
@@ -157,20 +166,21 @@ public sealed class ScheduleGenerator
             }
         }
 
-        return true;
+        return EGenerationTraversalDecision.Continue;
     }
 
-    private static bool addCompletedSchedule(ScheduleGenerationState state)
+    private static EGenerationTraversalDecision addCompletedSchedule(
+        ScheduleGenerationState state)
     {
         if (state.GeneratedSchedules.Count >= state.Options.MaximumScheduleCount.Value)
         {
             state.MarkMaximumScheduleCountReached();
-            return false;
+            return EGenerationTraversalDecision.Stop;
         }
 
         GeneratedSchedule generatedSchedule = new GeneratedSchedule(state.SelectedCourseOfferings);
         state.GeneratedSchedules.Add(generatedSchedule);
-        return true;
+        return EGenerationTraversalDecision.Continue;
     }
 
     private static bool canAddCourseOffering(

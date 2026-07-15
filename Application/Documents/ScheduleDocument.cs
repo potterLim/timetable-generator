@@ -6,9 +6,9 @@ namespace TimetableGenerator.Application.Documents;
 
 public sealed class ScheduleDocument
 {
-    private readonly IReadOnlyList<ScheduleDocumentSchedule> mSchedules;
-
     public CsvInputFilePath SourceFilePath { get; }
+
+    private readonly IReadOnlyList<ScheduleDocumentSchedule> mSchedules;
 
     public IReadOnlyList<ScheduleDocumentSchedule> Schedules
     {

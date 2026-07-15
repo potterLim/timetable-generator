@@ -1,14 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using TimetableGenerator.Infrastructure.Csv;
 
 namespace TimetableGenerator.Application.Documents;
 
 public sealed class ScheduleDocumentLoadFailure
 {
-    private readonly IReadOnlyList<CourseImportDiagnostic> mImportDiagnostics;
-
     public EScheduleDocumentLoadStatus Status { get; }
+
+    private readonly IReadOnlyList<CourseImportDiagnostic> mImportDiagnostics;
 
     public IReadOnlyList<CourseImportDiagnostic> ImportDiagnostics
     {
@@ -147,6 +148,7 @@ public sealed class ScheduleDocumentLoadFailure
             case EScheduleDocumentLoadStatus.LoadedWithMaximumScheduleCountReached:
                 return false;
             default:
+                Debug.Fail("Unexpected document load status: " + status);
                 return false;
         }
     }

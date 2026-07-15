@@ -1,0 +1,135 @@
+root = true
+
+[*.{cs,csproj,sln,md,csv,json,xml}]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.cs]
+indent_style = space
+indent_size = 4
+tab_width = 4
+
+dotnet_sort_system_directives_first = true
+csharp_using_directive_placement = outside_namespace:warning
+csharp_style_namespace_declarations = file_scoped:warning
+
+csharp_style_var_for_built_in_types = false:warning
+csharp_style_var_when_type_is_apparent = false:warning
+csharp_style_var_elsewhere = false:warning
+csharp_style_implicit_object_creation_when_type_is_apparent = false:warning
+csharp_prefer_simple_using_statement = false:warning
+csharp_prefer_braces = true:warning
+
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+
+csharp_style_expression_bodied_constructors = false:silent
+csharp_style_expression_bodied_methods = false:silent
+csharp_style_expression_bodied_operators = false:silent
+csharp_style_expression_bodied_local_functions = false:silent
+
+dotnet_naming_symbols.interfaces.applicable_kinds = interface
+dotnet_naming_symbols.interfaces.applicable_accessibilities = *
+
+dotnet_naming_symbols.enums.applicable_kinds = enum
+dotnet_naming_symbols.enums.applicable_accessibilities = *
+
+dotnet_naming_symbols.types.applicable_kinds = class, struct, delegate
+dotnet_naming_symbols.types.applicable_accessibilities = *
+
+dotnet_naming_symbols.public_methods.applicable_kinds = method
+dotnet_naming_symbols.public_methods.applicable_accessibilities = public
+
+dotnet_naming_symbols.override_methods.applicable_kinds = method
+dotnet_naming_symbols.override_methods.applicable_accessibilities = *
+dotnet_naming_symbols.override_methods.required_modifiers = override
+
+dotnet_naming_symbols.non_public_methods.applicable_kinds = method
+dotnet_naming_symbols.non_public_methods.applicable_accessibilities = internal, private, protected, protected_internal
+
+dotnet_naming_symbols.properties_and_events.applicable_kinds = property, event
+dotnet_naming_symbols.properties_and_events.applicable_accessibilities = *
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+
+dotnet_naming_symbols.static_fields.applicable_kinds = field
+dotnet_naming_symbols.static_fields.applicable_accessibilities = *
+dotnet_naming_symbols.static_fields.required_modifiers = static
+
+dotnet_naming_symbols.constant_fields.applicable_kinds = field
+dotnet_naming_symbols.constant_fields.applicable_accessibilities = *
+dotnet_naming_symbols.constant_fields.required_modifiers = const
+
+dotnet_naming_symbols.static_readonly_fields.applicable_kinds = field
+dotnet_naming_symbols.static_readonly_fields.applicable_accessibilities = *
+dotnet_naming_symbols.static_readonly_fields.required_modifiers = static, readonly
+
+dotnet_naming_style.pascal_case.capitalization = pascal_case
+
+dotnet_naming_style.camel_case.capitalization = camel_case
+
+dotnet_naming_style.interface_name.capitalization = pascal_case
+dotnet_naming_style.interface_name.required_prefix = I
+
+dotnet_naming_style.enum_name.capitalization = pascal_case
+dotnet_naming_style.enum_name.required_prefix = E
+
+dotnet_naming_style.private_field_name.capitalization = pascal_case
+dotnet_naming_style.private_field_name.required_prefix = m
+
+dotnet_naming_style.static_field_name.capitalization = pascal_case
+dotnet_naming_style.static_field_name.required_prefix = s
+
+dotnet_naming_style.upper_case.capitalization = all_upper
+dotnet_naming_style.upper_case.word_separator = _
+
+dotnet_naming_rule.interfaces_should_begin_with_i.symbols = interfaces
+dotnet_naming_rule.interfaces_should_begin_with_i.style = interface_name
+dotnet_naming_rule.interfaces_should_begin_with_i.severity = warning
+
+dotnet_naming_rule.enums_should_begin_with_e.symbols = enums
+dotnet_naming_rule.enums_should_begin_with_e.style = enum_name
+dotnet_naming_rule.enums_should_begin_with_e.severity = warning
+
+dotnet_naming_rule.types_should_use_pascal_case.symbols = types
+dotnet_naming_rule.types_should_use_pascal_case.style = pascal_case
+dotnet_naming_rule.types_should_use_pascal_case.severity = warning
+
+dotnet_naming_rule.public_methods_should_use_pascal_case.symbols = public_methods
+dotnet_naming_rule.public_methods_should_use_pascal_case.style = pascal_case
+dotnet_naming_rule.public_methods_should_use_pascal_case.severity = warning
+
+dotnet_naming_rule.override_methods_should_use_pascal_case.symbols = override_methods
+dotnet_naming_rule.override_methods_should_use_pascal_case.style = pascal_case
+dotnet_naming_rule.override_methods_should_use_pascal_case.severity = warning
+
+dotnet_naming_rule.non_public_methods_should_use_camel_case.symbols = non_public_methods
+dotnet_naming_rule.non_public_methods_should_use_camel_case.style = camel_case
+dotnet_naming_rule.non_public_methods_should_use_camel_case.severity = warning
+
+dotnet_naming_rule.properties_and_events_should_use_pascal_case.symbols = properties_and_events
+dotnet_naming_rule.properties_and_events_should_use_pascal_case.style = pascal_case
+dotnet_naming_rule.properties_and_events_should_use_pascal_case.severity = warning
+
+dotnet_naming_rule.constant_fields_should_use_upper_case.symbols = constant_fields
+dotnet_naming_rule.constant_fields_should_use_upper_case.style = upper_case
+dotnet_naming_rule.constant_fields_should_use_upper_case.severity = warning
+
+dotnet_naming_rule.static_readonly_fields_should_use_upper_case.symbols = static_readonly_fields
+dotnet_naming_rule.static_readonly_fields_should_use_upper_case.style = upper_case
+dotnet_naming_rule.static_readonly_fields_should_use_upper_case.severity = warning
+
+dotnet_naming_rule.static_fields_should_use_s_prefix.symbols = static_fields
+dotnet_naming_rule.static_fields_should_use_s_prefix.style = static_field_name
+dotnet_naming_rule.static_fields_should_use_s_prefix.severity = warning
+
+dotnet_naming_rule.private_fields_should_use_m_prefix.symbols = private_fields
+dotnet_naming_rule.private_fields_should_use_m_prefix.style = private_field_name
+dotnet_naming_rule.private_fields_should_use_m_prefix.severity = warning

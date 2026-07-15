@@ -7,11 +7,11 @@ namespace TimetableGenerator.Presentation.Schedules;
 
 public sealed class SchedulePeriodRowViewModel
 {
-    private readonly IReadOnlyList<ScheduleCellViewModel> mCells;
-
     public CorePeriod Period { get; }
 
     public AcademicPeriodTimeRange TimeRange { get; }
+
+    private readonly IReadOnlyList<ScheduleCellViewModel> mCells;
 
     public IReadOnlyList<ScheduleCellViewModel> Cells
     {

@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Threading;
 using TimetableGenerator.Core.Domain;
 using CoreClassroomLocation = TimetableGenerator.Core.Domain.ClassroomLocation;
 using CoreDay = TimetableGenerator.Core.Domain.EDay;
@@ -24,7 +26,8 @@ internal sealed class CourseCsvRecordParser
     public CourseCsvRecordParseResult ParseCourseOffering(
         string[] fields,
         CsvSourcePosition sourcePosition,
-        CourseCsvSchema schema)
+        CourseCsvSchema schema,
+        CancellationToken cancellationToken)
     {
         if (fields == null)
         {
@@ -41,24 +44,29 @@ internal sealed class CourseCsvRecordParser
             throw new ArgumentException("The CSV record does not match its validated schema.", nameof(fields));
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
         List<CourseImportDiagnostic> diagnostics = new List<CourseImportDiagnostic>();
 
         CourseChoiceGroupId choiceGroupId = parseCourseChoiceGroupId(
             fields[COURSE_CHOICE_GROUP_ID_INDEX],
             sourcePosition,
             diagnostics);
-        CourseSectionCode sectionCodeOrNull = parseCourseSectionCodeOrNull(
+        cancellationToken.ThrowIfCancellationRequested();
+        CourseSectionCode? sectionCodeOrNull = parseCourseSectionCodeOrNull(
             fields[COURSE_SECTION_CODE_INDEX],
             sourcePosition,
             diagnostics);
-        CourseName courseNameOrNull = parseCourseNameOrNull(
+        cancellationToken.ThrowIfCancellationRequested();
+        CourseName? courseNameOrNull = parseCourseNameOrNull(
             fields[COURSE_NAME_INDEX],
             sourcePosition,
             diagnostics);
+        cancellationToken.ThrowIfCancellationRequested();
         IReadOnlyList<ScheduleSlot> scheduleSlots = parseScheduleSlots(
             fields[SCHEDULE_SLOTS_INDEX],
             sourcePosition,
-            diagnostics);
+            diagnostics,
+            cancellationToken);
 
         ClassroomAssignment classroomAssignment = ClassroomAssignment.Unassigned;
         if (schema.HasClassroomLocationColumn)
@@ -66,12 +74,20 @@ internal sealed class CourseCsvRecordParser
             classroomAssignment = parseClassroomAssignment(
                 fields[CLASSROOM_LOCATION_INDEX],
                 sourcePosition,
-                diagnostics);
+                diagnostics,
+                cancellationToken);
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
         if (diagnostics.Count > 0)
         {
             return CourseCsvRecordParseResult.CreateFailure(diagnostics);
+        }
+
+        if (courseNameOrNull == null || sectionCodeOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "A successful CSV record parse did not produce required course values.");
         }
 
         CourseOffering courseOffering = new CourseOffering(
@@ -102,7 +118,7 @@ internal sealed class CourseCsvRecordParser
                 ECourseImportErrorCode.InvalidCourseChoiceGroupId,
                 sourcePosition,
                 ECsvColumn.CourseChoiceGroupId,
-                rawValue,
+                CourseImportRawValue.create(rawValue),
                 "Course choice group IDs must be positive base-10 integers."));
             return default(CourseChoiceGroupId);
         }
@@ -110,7 +126,7 @@ internal sealed class CourseCsvRecordParser
         return new CourseChoiceGroupId(parsedValue);
     }
 
-    private static CourseSectionCode parseCourseSectionCodeOrNull(
+    private static CourseSectionCode? parseCourseSectionCodeOrNull(
         string rawValue,
         CsvSourcePosition sourcePosition,
         ICollection<CourseImportDiagnostic> diagnostics)
@@ -122,7 +138,7 @@ internal sealed class CourseCsvRecordParser
                 ECourseImportErrorCode.InvalidCourseSectionCode,
                 sourcePosition,
                 ECsvColumn.CourseSectionCode,
-                rawValue,
+                CourseImportRawValue.create(rawValue),
                 "Course section codes cannot be empty."));
             return null;
         }
@@ -130,7 +146,7 @@ internal sealed class CourseCsvRecordParser
         return new CourseSectionCode(normalizedValue);
     }
 
-    private static CourseName parseCourseNameOrNull(
+    private static CourseName? parseCourseNameOrNull(
         string rawValue,
         CsvSourcePosition sourcePosition,
         ICollection<CourseImportDiagnostic> diagnostics)
@@ -142,7 +158,7 @@ internal sealed class CourseCsvRecordParser
                 ECourseImportErrorCode.InvalidCourseName,
                 sourcePosition,
                 ECsvColumn.CourseName,
-                rawValue,
+                CourseImportRawValue.create(rawValue),
                 "Course names cannot be empty."));
             return null;
         }
@@ -153,8 +169,10 @@ internal sealed class CourseCsvRecordParser
     private static IReadOnlyList<ScheduleSlot> parseScheduleSlots(
         string rawValue,
         CsvSourcePosition sourcePosition,
-        ICollection<CourseImportDiagnostic> diagnostics)
+        ICollection<CourseImportDiagnostic> diagnostics,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         string normalizedValue = getTrimmedFieldValue(rawValue);
         List<ScheduleSlot> scheduleSlots = new List<ScheduleSlot>();
         HashSet<ScheduleSlot> uniqueScheduleSlots = new HashSet<ScheduleSlot>();
@@ -165,7 +183,7 @@ internal sealed class CourseCsvRecordParser
                 ECourseImportErrorCode.EmptyScheduleSlot,
                 sourcePosition,
                 ECsvColumn.ScheduleSlots,
-                rawValue,
+                CourseImportRawValue.create(rawValue),
                 "At least one schedule slot is required."));
             return scheduleSlots.AsReadOnly();
         }
@@ -176,6 +194,7 @@ internal sealed class CourseCsvRecordParser
 
         foreach (string rawScheduleSlotToken in scheduleSlotTokens)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             string scheduleSlotToken = rawScheduleSlotToken.Trim();
             if (scheduleSlotToken.Length == 0)
             {
@@ -183,7 +202,7 @@ internal sealed class CourseCsvRecordParser
                     ECourseImportErrorCode.EmptyScheduleSlot,
                     sourcePosition,
                     ECsvColumn.ScheduleSlots,
-                    rawScheduleSlotToken,
+                    CourseImportRawValue.create(rawScheduleSlotToken),
                     "Schedule slot separators cannot contain empty entries."));
                 continue;
             }
@@ -196,7 +215,7 @@ internal sealed class CourseCsvRecordParser
                     ECourseImportErrorCode.InvalidScheduleSlot,
                     sourcePosition,
                     ECsvColumn.ScheduleSlots,
-                    rawScheduleSlotToken,
+                    CourseImportRawValue.create(rawScheduleSlotToken),
                     "Schedule slots must exactly match {Korean day}{positive period}교시."));
                 continue;
             }
@@ -207,7 +226,7 @@ internal sealed class CourseCsvRecordParser
                     ECourseImportErrorCode.DuplicateScheduleSlot,
                     sourcePosition,
                     ECsvColumn.ScheduleSlots,
-                    rawScheduleSlotToken,
+                    CourseImportRawValue.create(rawScheduleSlotToken),
                     "A course offering cannot repeat a schedule slot."));
                 continue;
             }
@@ -264,6 +283,7 @@ internal sealed class CourseCsvRecordParser
             case "일요일":
                 return CoreDay.Sunday;
             default:
+                Debug.Fail("Unexpected validated Korean day: " + koreanDay);
                 throw new InvalidOperationException("The validated Korean day was not recognized.");
         }
     }
@@ -271,22 +291,24 @@ internal sealed class CourseCsvRecordParser
     private static ClassroomAssignment parseClassroomAssignment(
         string rawValue,
         CsvSourcePosition sourcePosition,
-        ICollection<CourseImportDiagnostic> diagnostics)
+        ICollection<CourseImportDiagnostic> diagnostics,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         string normalizedValue = getTrimmedFieldValue(rawValue);
         if (normalizedValue.Length == 0)
         {
             return ClassroomAssignment.Unassigned;
         }
 
-        int separatorIndex = findLastWhitespaceIndex(normalizedValue);
+        int separatorIndex = findLastWhitespaceIndex(normalizedValue, cancellationToken);
         if (separatorIndex <= 0 || separatorIndex >= normalizedValue.Length - 1)
         {
             diagnostics.Add(createDiagnostic(
                 ECourseImportErrorCode.InvalidClassroomLocation,
                 sourcePosition,
                 ECsvColumn.ClassroomLocation,
-                rawValue,
+                CourseImportRawValue.create(rawValue),
                 "Classroom locations require a building name and room identifier."));
             return ClassroomAssignment.Unassigned;
         }
@@ -299,7 +321,7 @@ internal sealed class CourseCsvRecordParser
                 ECourseImportErrorCode.InvalidClassroomLocation,
                 sourcePosition,
                 ECsvColumn.ClassroomLocation,
-                rawValue,
+                CourseImportRawValue.create(rawValue),
                 "Classroom locations require a building name and room identifier."));
             return ClassroomAssignment.Unassigned;
         }
@@ -310,10 +332,13 @@ internal sealed class CourseCsvRecordParser
         return ClassroomAssignment.CreateAssigned(classroomLocation);
     }
 
-    private static int findLastWhitespaceIndex(string value)
+    private static int findLastWhitespaceIndex(
+        string value,
+        CancellationToken cancellationToken)
     {
         for (int index = value.Length - 1; index >= 0; --index)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (char.IsWhiteSpace(value[index]))
             {
                 return index;
@@ -337,20 +362,19 @@ internal sealed class CourseCsvRecordParser
         ECourseImportErrorCode errorCode,
         CsvSourcePosition sourcePosition,
         ECsvColumn column,
-        string rawValue,
+        CourseImportRawValue rawValue,
         string technicalDetails)
     {
-        string safeRawValue = rawValue;
-        if (safeRawValue == null)
+        if (rawValue == null)
         {
-            safeRawValue = string.Empty;
+            throw new ArgumentNullException(nameof(rawValue));
         }
 
         return new CourseImportDiagnostic(
             errorCode,
             sourcePosition,
             column,
-            safeRawValue,
+            rawValue,
             technicalDetails);
     }
 }

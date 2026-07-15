@@ -6,11 +6,11 @@ namespace TimetableGenerator.Presentation.Schedules;
 
 public sealed class ScheduleGridSummary
 {
-    private readonly IReadOnlyList<CoreDay> mActiveDays;
-
     public int SelectedCourseCount { get; }
 
     public int ScheduledMeetingCount { get; }
+
+    private readonly IReadOnlyList<CoreDay> mActiveDays;
 
     public IReadOnlyList<CoreDay> ActiveDays
     {

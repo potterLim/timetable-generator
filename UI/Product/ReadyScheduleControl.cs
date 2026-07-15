@@ -14,7 +14,7 @@ internal sealed class ReadyScheduleControl : UserControl
     private readonly ScheduleWorkspaceControl mWorkspace;
     private IReadOnlyList<ScheduleGridViewModel> mSchedules;
 
-    internal event EventHandler<ScheduleSelectionChangedEventArgs> SelectedScheduleChanged;
+    internal event EventHandler<ScheduleSelectionChangedEventArgs>? SelectedScheduleChanged;
 
     internal ReadyScheduleControl()
     {
@@ -144,7 +144,7 @@ internal sealed class ReadyScheduleControl : UserControl
     }
 
     private void onSidebarSelectedScheduleChanged(
-        object sender,
+        object? senderOrNull,
         ScheduleSelectionChangedEventArgs eventArgs)
     {
         if (eventArgs.SelectedIndex.Value >= mSchedules.Count)
@@ -166,14 +166,14 @@ internal sealed class ReadyScheduleControl : UserControl
             previousAvailability,
             nextAvailability);
 
-        EventHandler<ScheduleSelectionChangedEventArgs> eventHandler = SelectedScheduleChanged;
-        if (eventHandler != null)
+        EventHandler<ScheduleSelectionChangedEventArgs>? eventHandlerOrNull = SelectedScheduleChanged;
+        if (eventHandlerOrNull != null)
         {
-            eventHandler(this, eventArgs);
+            eventHandlerOrNull(this, eventArgs);
         }
     }
 
-    private void onPreviousScheduleRequested(object sender, EventArgs eventArgs)
+    private void onPreviousScheduleRequested(object? senderOrNull, EventArgs eventArgs)
     {
         ScheduleIndex selectedScheduleIndex = mSidebar.getSelectedScheduleIndex();
         if (selectedScheduleIndex.HasPrevious == false)
@@ -184,7 +184,7 @@ internal sealed class ReadyScheduleControl : UserControl
         mSidebar.selectSchedule(selectedScheduleIndex.GetPrevious());
     }
 
-    private void onNextScheduleRequested(object sender, EventArgs eventArgs)
+    private void onNextScheduleRequested(object? senderOrNull, EventArgs eventArgs)
     {
         ScheduleIndex selectedScheduleIndex = mSidebar.getSelectedScheduleIndex();
         ScheduleIndex nextScheduleIndex = selectedScheduleIndex.GetNext();

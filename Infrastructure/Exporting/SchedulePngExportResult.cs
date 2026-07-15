@@ -6,7 +6,6 @@ namespace TimetableGenerator.Infrastructure.Exporting;
 public sealed class SchedulePngExportResult
 {
     private readonly IReadOnlyList<ExportedSchedulePng> mExportedFiles;
-    private readonly IReadOnlyList<SchedulePngExportFailure> mFailures;
 
     public IReadOnlyList<ExportedSchedulePng> ExportedFiles
     {
@@ -16,11 +15,23 @@ public sealed class SchedulePngExportResult
         }
     }
 
+    private readonly IReadOnlyList<SchedulePngExportFailure> mFailures;
+
     public IReadOnlyList<SchedulePngExportFailure> Failures
     {
         get
         {
             return mFailures;
+        }
+    }
+
+    private readonly IReadOnlyList<SchedulePngExportArtifact> mRetainedArtifacts;
+
+    public IReadOnlyList<SchedulePngExportArtifact> RetainedArtifacts
+    {
+        get
+        {
+            return mRetainedArtifacts;
         }
     }
 
@@ -48,21 +59,13 @@ public sealed class SchedulePngExportResult
         }
     }
 
+    private readonly ESchedulePngExportCompletion mCompletion;
+
     public ESchedulePngExportCompletion Completion
     {
         get
         {
-            if (mFailures.Count == 0)
-            {
-                return ESchedulePngExportCompletion.Succeeded;
-            }
-
-            if (mExportedFiles.Count == 0)
-            {
-                return ESchedulePngExportCompletion.Failed;
-            }
-
-            return ESchedulePngExportCompletion.PartiallySucceeded;
+            return mCompletion;
         }
     }
 
@@ -83,15 +86,35 @@ public sealed class SchedulePngExportResult
         List<ExportedSchedulePng> copiedExportedFiles = copyExportedFiles(exportedFiles);
         List<SchedulePngExportFailure> copiedFailures = copyFailures(failures);
 
-        if (copiedExportedFiles.Count + copiedFailures.Count == 0)
-        {
-            throw new ArgumentException("Export results require at least one item.");
-        }
-
+        validateResultHasItems(copiedExportedFiles, copiedFailures);
         validateUniqueScheduleNumbers(copiedExportedFiles, copiedFailures);
 
         mExportedFiles = copiedExportedFiles.AsReadOnly();
         mFailures = copiedFailures.AsReadOnly();
+        mRetainedArtifacts = Array.Empty<SchedulePngExportArtifact>();
+        mCompletion = findCompletion(copiedExportedFiles, copiedFailures);
+    }
+
+    private SchedulePngExportResult(
+        IEnumerable<SchedulePngExportArtifact> retainedArtifacts)
+    {
+        if (retainedArtifacts == null)
+        {
+            throw new ArgumentNullException(nameof(retainedArtifacts));
+        }
+
+        List<SchedulePngExportArtifact> copiedArtifacts = copyArtifacts(
+            retainedArtifacts);
+        mExportedFiles = Array.Empty<ExportedSchedulePng>();
+        mFailures = Array.Empty<SchedulePngExportFailure>();
+        mRetainedArtifacts = copiedArtifacts.AsReadOnly();
+        mCompletion = ESchedulePngExportCompletion.Canceled;
+    }
+
+    internal static SchedulePngExportResult createCanceled(
+        IEnumerable<SchedulePngExportArtifact> retainedArtifacts)
+    {
+        return new SchedulePngExportResult(retainedArtifacts);
     }
 
     private static List<ExportedSchedulePng> copyExportedFiles(
@@ -132,6 +155,26 @@ public sealed class SchedulePngExportResult
         return copiedFailures;
     }
 
+    private static List<SchedulePngExportArtifact> copyArtifacts(
+        IEnumerable<SchedulePngExportArtifact> retainedArtifacts)
+    {
+        List<SchedulePngExportArtifact> copiedArtifacts =
+            new List<SchedulePngExportArtifact>();
+        foreach (SchedulePngExportArtifact retainedArtifact in retainedArtifacts)
+        {
+            if (retainedArtifact == null)
+            {
+                throw new ArgumentException(
+                    "Retained artifacts cannot contain null values.",
+                    nameof(retainedArtifacts));
+            }
+
+            copiedArtifacts.Add(retainedArtifact);
+        }
+
+        return copiedArtifacts;
+    }
+
     private static void validateUniqueScheduleNumbers(
         IEnumerable<ExportedSchedulePng> exportedFiles,
         IEnumerable<SchedulePngExportFailure> failures)
@@ -152,5 +195,32 @@ public sealed class SchedulePngExportResult
                 throw new ArgumentException("Export results cannot repeat schedule numbers.");
             }
         }
+    }
+
+    private static void validateResultHasItems(
+        IReadOnlyCollection<ExportedSchedulePng> exportedFiles,
+        IReadOnlyCollection<SchedulePngExportFailure> failures)
+    {
+        if (exportedFiles.Count + failures.Count == 0)
+        {
+            throw new ArgumentException("Export results require at least one item.");
+        }
+    }
+
+    private static ESchedulePngExportCompletion findCompletion(
+        IReadOnlyCollection<ExportedSchedulePng> exportedFiles,
+        IReadOnlyCollection<SchedulePngExportFailure> failures)
+    {
+        if (failures.Count == 0)
+        {
+            return ESchedulePngExportCompletion.Succeeded;
+        }
+
+        if (exportedFiles.Count == 0)
+        {
+            return ESchedulePngExportCompletion.Failed;
+        }
+
+        return ESchedulePngExportCompletion.PartiallySucceeded;
     }
 }

@@ -17,7 +17,7 @@ public sealed class ScheduleDocumentLoaderTests
     private const string HEADER = "CourseId,Section,Name,TimeSlots,Classroom\r\n";
 
     [TestMethod]
-    public async Task LoadDocumentAsyncBuildsAnImmutableDocumentAndCorrespondingGrids()
+    public async Task LoadDocumentAsyncBuildsAnImmutableDocumentAndCorrespondingGridsAsync()
     {
         string fileContent = HEADER +
             "1,01,자료구조,월요일1교시,공학관 101\r\n" +
@@ -63,7 +63,7 @@ public sealed class ScheduleDocumentLoaderTests
     }
 
     [TestMethod]
-    public async Task LoadDocumentAsyncPreservesBoundedImportDiagnostics()
+    public async Task LoadDocumentAsyncPreservesBoundedImportDiagnosticsAsync()
     {
         string fileContent = HEADER +
             "bad,01,자료구조,월요일1교시,\r\n" +
@@ -103,7 +103,7 @@ public sealed class ScheduleDocumentLoaderTests
     }
 
     [TestMethod]
-    public async Task LoadDocumentAsyncDistinguishesZeroValidSchedules()
+    public async Task LoadDocumentAsyncDistinguishesZeroValidSchedulesAsync()
     {
         string fileContent = HEADER +
             "1,01,자료구조,월요일1교시,\r\n" +
@@ -127,7 +127,7 @@ public sealed class ScheduleDocumentLoaderTests
     }
 
     [TestMethod]
-    public async Task LoadDocumentAsyncKeepsTheDocumentWhenTheScheduleLimitIsReached()
+    public async Task LoadDocumentAsyncKeepsTheDocumentWhenTheScheduleLimitIsReachedAsync()
     {
         string fileContent = HEADER +
             "1,01,자료구조,월요일1교시,\r\n" +
@@ -156,7 +156,7 @@ public sealed class ScheduleDocumentLoaderTests
     }
 
     [TestMethod]
-    public async Task LoadDocumentAsyncRejectsPeriodsOutsideTheProductTimePolicy()
+    public async Task LoadDocumentAsyncRejectsPeriodsOutsideTheProductTimePolicyAsync()
     {
         string fileContent = HEADER +
             "1,01,야간 강의,월요일11교시,\r\n";
@@ -178,25 +178,77 @@ public sealed class ScheduleDocumentLoaderTests
     }
 
     [TestMethod]
-    public async Task LoadDocumentAsyncReturnsATypedResultForPreCanceledWork()
+    public async Task LoadDocumentAsyncReturnsATypedResultForPreCanceledWorkAsync()
     {
         string fileContent = HEADER +
             "1,01,자료구조,월요일1교시,\r\n";
 
         using (TemporaryCsvFile temporaryCsvFile = new TemporaryCsvFile(fileContent))
-        using (CancellationTokenSource cancellationTokenSource =
-            new CancellationTokenSource())
         {
-            cancellationTokenSource.Cancel();
-            ScheduleDocumentLoader loader = new ScheduleDocumentLoader();
+            using (CancellationTokenSource cancellationTokenSource =
+                new CancellationTokenSource())
+            {
+                cancellationTokenSource.Cancel();
+                ScheduleDocumentLoader loader = new ScheduleDocumentLoader();
 
-            ScheduleDocumentLoadResult result = await loader.LoadDocumentAsync(
-                temporaryCsvFile.FilePath,
-                cancellationTokenSource.Token);
+                ScheduleDocumentLoadResult result = await loader.LoadDocumentAsync(
+                    temporaryCsvFile.FilePath,
+                    cancellationTokenSource.Token);
 
-            Assert.AreEqual(EScheduleDocumentLoadStatus.Canceled, result.Status);
-            Assert.IsFalse(result.IsSuccessful);
-            Assert.IsFalse(result.GetFailure().HasImportDiagnostics);
+                Assert.AreEqual(EScheduleDocumentLoadStatus.Canceled, result.Status);
+                Assert.IsFalse(result.IsSuccessful);
+                Assert.IsFalse(result.GetFailure().HasImportDiagnostics);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task LoadDocumentAsyncReturnsATypedResultWhenImportIsCanceledAsync()
+    {
+        string fileContent = HEADER +
+            "1,01,자료구조,월요일1교시,\r\n";
+
+        using (TemporaryCsvFile temporaryCsvFile = new TemporaryCsvFile(fileContent))
+        {
+            using (CancellationTokenSource cancellationTokenSource =
+                new CancellationTokenSource())
+            {
+                CancelingCourseCsvImporter courseCsvImporter =
+                    new CancelingCourseCsvImporter(cancellationTokenSource);
+                ScheduleDocumentLoader loader = new ScheduleDocumentLoader(
+                    ScheduleDocumentLoadOptions.CreateDefault(),
+                    courseCsvImporter);
+
+                ScheduleDocumentLoadResult result = await loader.LoadDocumentAsync(
+                    temporaryCsvFile.FilePath,
+                    cancellationTokenSource.Token);
+
+                Assert.AreEqual(EScheduleDocumentLoadStatus.Canceled, result.Status);
+                Assert.IsFalse(result.IsSuccessful);
+                Assert.IsFalse(result.GetFailure().HasImportDiagnostics);
+            }
+        }
+    }
+
+    private sealed class CancelingCourseCsvImporter : ICourseCsvImporter
+    {
+        private readonly CancellationTokenSource mCancellationTokenSource;
+
+        public CancelingCourseCsvImporter(
+            CancellationTokenSource cancellationTokenSource)
+        {
+            mCancellationTokenSource = cancellationTokenSource;
+        }
+
+        public CourseImportResult ImportCourses(
+            CsvInputFilePath inputFilePath,
+            CourseCsvImportOptions options,
+            CancellationToken cancellationToken)
+        {
+            mCancellationTokenSource.Cancel();
+            cancellationToken.ThrowIfCancellationRequested();
+            throw new InvalidOperationException(
+                "The cancellation test importer did not observe its token.");
         }
     }
 }

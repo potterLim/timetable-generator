@@ -1,8 +1,9 @@
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.IO;
 using System.Windows.Forms;
+using TimetableGenerator.Infrastructure.Csv;
 
 namespace TimetableGenerator.UI.Product;
 
@@ -28,15 +29,16 @@ internal sealed class WelcomeControl : UserControl
 
     private EFileDropVisualState mFileDropVisualState;
 
-    internal event EventHandler CsvOpenRequested;
-    internal event EventHandler ExampleFormatRequested;
-    internal event EventHandler<CsvFileDroppedEventArgs> CsvFileDropped;
+    internal event EventHandler? CsvOpenRequested;
+    internal event EventHandler? ExampleFormatRequested;
+    internal event EventHandler<CsvFileDroppedEventArgs>? CsvFileDropped;
 
     internal WelcomeControl()
     {
         AutoScaleDimensions = new SizeF(DesignTokens.BASE_DPI, DesignTokens.BASE_DPI);
         AutoScaleMode = AutoScaleMode.Dpi;
         AllowDrop = true;
+        AutoScroll = true;
         BackColor = DesignTokens.WINDOW_BACKGROUND_COLOR;
         AccessibleName = "시간표 시작 화면";
         AccessibleDescription = "CSV 파일을 선택하거나 끌어 놓아 시간표 조합을 만듭니다.";
@@ -266,7 +268,7 @@ internal sealed class WelcomeControl : UserControl
         control.DragDrop += onCsvDragDrop;
     }
 
-    private void onCsvSelectButtonClick(object sender, EventArgs eventArgs)
+    private void onCsvSelectButtonClick(object? senderOrNull, EventArgs eventArgs)
     {
         if (CsvOpenRequested != null)
         {
@@ -274,7 +276,7 @@ internal sealed class WelcomeControl : UserControl
         }
     }
 
-    private void onExampleFormatLinkClicked(object sender, LinkLabelLinkClickedEventArgs eventArgs)
+    private void onExampleFormatLinkClicked(object? senderOrNull, LinkLabelLinkClickedEventArgs eventArgs)
     {
         if (ExampleFormatRequested != null)
         {
@@ -282,10 +284,10 @@ internal sealed class WelcomeControl : UserControl
         }
     }
 
-    private void onCsvDragEnter(object sender, DragEventArgs dragEventArgs)
+    private void onCsvDragEnter(object? senderOrNull, DragEventArgs dragEventArgs)
     {
-        string droppedCsvPath;
-        if (tryFindSingleCsvPath(dragEventArgs, out droppedCsvPath))
+        CsvInputFilePath droppedCsvFilePath;
+        if (tryFindSingleCsvFilePath(dragEventArgs, out droppedCsvFilePath))
         {
             dragEventArgs.Effect = DragDropEffects.Copy;
             showFileDropVisualState(EFileDropVisualState.Ready);
@@ -296,15 +298,15 @@ internal sealed class WelcomeControl : UserControl
         showFileDropVisualState(EFileDropVisualState.Invalid);
     }
 
-    private void onCsvDragLeave(object sender, EventArgs eventArgs)
+    private void onCsvDragLeave(object? senderOrNull, EventArgs eventArgs)
     {
         showFileDropVisualState(EFileDropVisualState.Idle);
     }
 
-    private void onCsvDragDrop(object sender, DragEventArgs dragEventArgs)
+    private void onCsvDragDrop(object? senderOrNull, DragEventArgs dragEventArgs)
     {
-        string droppedCsvPath;
-        if (tryFindSingleCsvPath(dragEventArgs, out droppedCsvPath) == false)
+        CsvInputFilePath droppedCsvFilePath;
+        if (tryFindSingleCsvFilePath(dragEventArgs, out droppedCsvFilePath) == false)
         {
             showFileDropVisualState(EFileDropVisualState.Invalid);
             return;
@@ -313,22 +315,37 @@ internal sealed class WelcomeControl : UserControl
         showFileDropVisualState(EFileDropVisualState.Idle);
         if (CsvFileDropped != null)
         {
-            CsvFileDropped(this, new CsvFileDroppedEventArgs(droppedCsvPath));
+            CsvFileDropped(this, new CsvFileDroppedEventArgs(droppedCsvFilePath));
         }
     }
 
-    private void onDropZonePanelPaint(object sender, PaintEventArgs paintEventArgs)
+    private void onDropZonePanelPaint(object? senderOrNull, PaintEventArgs paintEventArgs)
     {
-        paintEventArgs.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
         Rectangle borderBounds = ProductDrawing.insetRectangle(mDropZonePanel.ClientRectangle, 1);
         int cornerRadius = DesignTokens.scaleLogicalPixel(this, DesignTokens.CORNER_RADIUS_MEDIUM);
         Color borderColor = findDropZoneBorderColor();
 
-        using (GraphicsPath borderPath = ProductDrawing.createRoundedRectanglePath(borderBounds, cornerRadius))
-        using (Pen borderPen = new Pen(borderColor, DesignTokens.scaleLogicalPixel(this, DesignTokens.FOCUS_RING_WIDTH)))
+        GraphicsState graphicsState = paintEventArgs.Graphics.Save();
+        try
         {
-            borderPen.DashStyle = DashStyle.Dash;
-            paintEventArgs.Graphics.DrawPath(borderPen, borderPath);
+            paintEventArgs.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            using (GraphicsPath borderPath =
+                ProductDrawing.createRoundedRectanglePath(borderBounds, cornerRadius))
+            {
+                using (Pen borderPen = new Pen(
+                    borderColor,
+                    DesignTokens.scaleLogicalPixel(
+                        this,
+                        DesignTokens.FOCUS_RING_WIDTH)))
+                {
+                    borderPen.DashStyle = DashStyle.Dash;
+                    paintEventArgs.Graphics.DrawPath(borderPen, borderPath);
+                }
+            }
+        }
+        finally
+        {
+            paintEventArgs.Graphics.Restore(graphicsState);
         }
     }
 
@@ -351,6 +368,7 @@ internal sealed class WelcomeControl : UserControl
                 mDropInstructionLabel.ForeColor = DesignTokens.ERROR_COLOR;
                 break;
             default:
+                Debug.Fail("Unexpected file drop visual state: " + mFileDropVisualState);
                 mDropInstructionLabel.Text = IDLE_DROP_MESSAGE;
                 mDropInstructionLabel.ForeColor = DesignTokens.TEXT_PRIMARY_COLOR;
                 break;
@@ -370,42 +388,52 @@ internal sealed class WelcomeControl : UserControl
             case EFileDropVisualState.Invalid:
                 return DesignTokens.ERROR_COLOR;
             default:
+                Debug.Fail("Unexpected file drop visual state: " + mFileDropVisualState);
                 return DesignTokens.ACCENT_COLOR;
         }
     }
 
-    private bool tryFindSingleCsvPath(DragEventArgs dragEventArgs, out string droppedCsvPath)
+    private bool tryFindSingleCsvFilePath(
+        DragEventArgs dragEventArgs,
+        out CsvInputFilePath droppedCsvFilePath)
     {
-        droppedCsvPath = string.Empty;
+        droppedCsvFilePath = default(CsvInputFilePath);
         if (dragEventArgs.Data == null || dragEventArgs.Data.GetDataPresent(DataFormats.FileDrop) == false)
         {
             return false;
         }
 
-        object droppedDataOrNull = dragEventArgs.Data.GetData(DataFormats.FileDrop);
-        string[] droppedFilePathsOrNull = droppedDataOrNull as string[];
+        object? droppedDataOrNull = dragEventArgs.Data.GetData(DataFormats.FileDrop);
+        string[]? droppedFilePathsOrNull = droppedDataOrNull as string[];
         if (droppedFilePathsOrNull == null || droppedFilePathsOrNull.Length != 1)
         {
             return false;
         }
 
-        string candidateFilePath = droppedFilePathsOrNull[0];
-        if (string.Equals(Path.GetExtension(candidateFilePath), ".csv", StringComparison.OrdinalIgnoreCase) == false)
+        try
+        {
+            droppedCsvFilePath = new CsvInputFilePath(droppedFilePathsOrNull[0]);
+        }
+        catch (Exception exception) when (
+            exception is ArgumentException ||
+            exception is NotSupportedException)
         {
             return false;
         }
 
-        droppedCsvPath = candidateFilePath;
         return true;
     }
 
     private void layoutContent()
     {
+        // WinForms can raise SizeChanged while DPI autoscaling is still constructing this control.
+        if (mContentPanel == null)
+        {
+            return;
+        }
+
         int outerPadding = DesignTokens.scaleLogicalPixel(this, DesignTokens.SPACE_32);
         int maximumContentWidth = DesignTokens.scaleLogicalPixel(this, DesignTokens.WELCOME_CONTENT_MAXIMUM_WIDTH);
-        int availableContentWidth = Math.Max(0, ClientSize.Width - (outerPadding * 2));
-        int contentWidth = Math.Min(maximumContentWidth, availableContentWidth);
-
         int iconSize = DesignTokens.scaleLogicalPixel(this, DesignTokens.WELCOME_ICON_SIZE);
         int titleHeight = DesignTokens.scaleLogicalPixel(this, DesignTokens.SPACE_48);
         int descriptionHeight = DesignTokens.scaleLogicalPixel(this, DesignTokens.SPACE_32);
@@ -419,10 +447,30 @@ internal sealed class WelcomeControl : UserControl
         int linkTopGap = DesignTokens.scaleLogicalPixel(this, DesignTokens.SPACE_12);
         int stepsTopGap = DesignTokens.scaleLogicalPixel(this, DesignTokens.SPACE_12);
 
-        int contentHeight = iconSize + titleTopGap + titleHeight + descriptionTopGap + descriptionHeight + dropZoneTopGap + dropZoneHeight + linkTopGap + linkHeight + stepsTopGap + stepsHeight;
-        int contentX = Math.Max(outerPadding, (ClientSize.Width - contentWidth) / 2);
+        int heroHeight = iconSize + titleTopGap + titleHeight +
+            descriptionTopGap + descriptionHeight;
+        int dropSectionHeight = dropZoneTopGap + dropZoneHeight;
+        int footerHeight = linkTopGap + linkHeight + stepsTopGap + stepsHeight;
+        int contentHeight = heroHeight + dropSectionHeight + footerHeight;
+        int scrollableContentHeight = contentHeight + (outerPadding * 2);
+        bool hasVerticalOverflow = scrollableContentHeight > ClientSize.Height;
+        int verticalScrollbarWidth = hasVerticalOverflow
+            ? SystemInformation.VerticalScrollBarWidth
+            : 0;
+
+        int viewportWidth = Math.Max(0, ClientSize.Width - verticalScrollbarWidth);
+        int availableContentWidth = Math.Max(0, viewportWidth - (outerPadding * 2));
+        int contentWidth = Math.Min(maximumContentWidth, availableContentWidth);
+        AutoScrollMinSize = new Size(0, scrollableContentHeight);
+
+        Point scrollOffset = AutoScrollPosition;
+        int contentX = Math.Max(outerPadding, (viewportWidth - contentWidth) / 2);
         int contentY = Math.Max(outerPadding, (ClientSize.Height - contentHeight) / 2);
-        mContentPanel.Bounds = new Rectangle(contentX, contentY, contentWidth, contentHeight);
+        mContentPanel.Bounds = new Rectangle(
+            contentX + scrollOffset.X,
+            contentY + scrollOffset.Y,
+            contentWidth,
+            contentHeight);
 
         int currentY = 0;
         int iconX = (contentWidth - iconSize) / 2;

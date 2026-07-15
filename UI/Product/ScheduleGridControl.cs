@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Globalization;
@@ -9,8 +10,8 @@ namespace TimetableGenerator.UI.Product;
 
 internal sealed class ScheduleGridControl : DataGridView
 {
-    private const int AXIS_COLUMN_WIDTH = 112;
-    private const int DAY_COLUMN_MINIMUM_WIDTH = 132;
+    private const int AXIS_COLUMN_WIDTH = 96;
+    private const int DAY_COLUMN_MINIMUM_WIDTH = 116;
     private const int COLUMN_HEADER_HEIGHT = 44;
     private const int PERIOD_ROW_HEIGHT = 88;
     private const int COURSE_CARD_INSET = 6;
@@ -20,7 +21,7 @@ internal sealed class ScheduleGridControl : DataGridView
     private readonly Font mAxisTimeFont;
     private readonly Font mCourseTitleFont;
     private readonly Font mCourseDetailFont;
-    private ScheduleGridViewModel mViewModelOrNull;
+    private ScheduleGridViewModel? mViewModelOrNull;
 
     internal ScheduleGridControl()
     {
@@ -206,15 +207,19 @@ internal sealed class ScheduleGridControl : DataGridView
     }
 
     private void onCellPainting(
-        object sender,
+        object? senderOrNull,
         DataGridViewCellPaintingEventArgs cellPaintingEventArgs)
     {
+        Graphics? graphicsOrNull = cellPaintingEventArgs.Graphics;
         if (mViewModelOrNull == null ||
+            graphicsOrNull == null ||
             cellPaintingEventArgs.RowIndex < 0 ||
             cellPaintingEventArgs.ColumnIndex < 0)
         {
             return;
         }
+
+        Graphics graphics = graphicsOrNull;
 
         cellPaintingEventArgs.Handled = true;
         bool isSelected =
@@ -229,47 +234,53 @@ internal sealed class ScheduleGridControl : DataGridView
             backgroundColor = isSelected
                 ? DesignTokens.ACCENT_TINT_COLOR
                 : DesignTokens.SUBTLE_SURFACE_COLOR;
-            drawCellBackground(cellPaintingEventArgs, backgroundColor);
-            drawPeriodAxisCell(cellPaintingEventArgs);
+            drawCellBackground(graphics, cellPaintingEventArgs, backgroundColor);
+            drawPeriodAxisCell(graphics, cellPaintingEventArgs);
         }
         else
         {
-            drawCellBackground(cellPaintingEventArgs, backgroundColor);
-            drawCourseCell(cellPaintingEventArgs);
+            drawCellBackground(graphics, cellPaintingEventArgs, backgroundColor);
+            drawCourseCell(graphics, cellPaintingEventArgs);
         }
 
-        drawCellBorder(cellPaintingEventArgs);
-        drawCellFocus(cellPaintingEventArgs, backgroundColor);
+        drawCellBorder(graphics, cellPaintingEventArgs);
+        drawCellFocus(graphics, cellPaintingEventArgs, backgroundColor);
     }
 
     private static void drawCellBackground(
+        Graphics graphics,
         DataGridViewCellPaintingEventArgs cellPaintingEventArgs,
         Color backgroundColor)
     {
         using (SolidBrush backgroundBrush = new SolidBrush(backgroundColor))
         {
-            cellPaintingEventArgs.Graphics.FillRectangle(
+            graphics.FillRectangle(
                 backgroundBrush,
                 cellPaintingEventArgs.CellBounds);
         }
     }
 
-    private void drawPeriodAxisCell(DataGridViewCellPaintingEventArgs cellPaintingEventArgs)
+    private void drawPeriodAxisCell(
+        Graphics graphics,
+        DataGridViewCellPaintingEventArgs cellPaintingEventArgs)
     {
-        SchedulePeriodRowViewModel periodRowViewModel =
-            (SchedulePeriodRowViewModel)Rows[cellPaintingEventArgs.RowIndex].Cells[0].Tag;
+        if (Rows[cellPaintingEventArgs.RowIndex].Cells[0].Tag is not
+            SchedulePeriodRowViewModel periodRowViewModel)
+        {
+            return;
+        }
 
         string periodText = periodRowViewModel.Period.Value + "교시";
         string timeText = formatTimeRange(periodRowViewModel.TimeRange);
         int contentGap = DesignTokens.scaleLogicalPixel(this, DesignTokens.SPACE_4);
         Size periodTextSize = TextRenderer.MeasureText(
-            cellPaintingEventArgs.Graphics,
+            graphics,
             periodText,
             mAxisPeriodFont,
             cellPaintingEventArgs.CellBounds.Size,
             TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
         Size timeTextSize = TextRenderer.MeasureText(
-            cellPaintingEventArgs.Graphics,
+            graphics,
             timeText,
             mAxisTimeFont,
             cellPaintingEventArgs.CellBounds.Size,
@@ -290,14 +301,14 @@ internal sealed class ScheduleGridControl : DataGridView
             timeTextSize.Height);
 
         TextRenderer.DrawText(
-            cellPaintingEventArgs.Graphics,
+            graphics,
             periodText,
             mAxisPeriodFont,
             periodBounds,
             DesignTokens.TEXT_PRIMARY_COLOR,
             TextFormatFlags.HorizontalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
         TextRenderer.DrawText(
-            cellPaintingEventArgs.Graphics,
+            graphics,
             timeText,
             mAxisTimeFont,
             timeBounds,
@@ -305,12 +316,14 @@ internal sealed class ScheduleGridControl : DataGridView
             TextFormatFlags.HorizontalCenter | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
     }
 
-    private void drawCourseCell(DataGridViewCellPaintingEventArgs cellPaintingEventArgs)
+    private void drawCourseCell(
+        Graphics graphics,
+        DataGridViewCellPaintingEventArgs cellPaintingEventArgs)
     {
-        ScheduleCellViewModel cellViewModel =
-            (ScheduleCellViewModel)Rows[cellPaintingEventArgs.RowIndex]
-                .Cells[cellPaintingEventArgs.ColumnIndex].Tag;
-        if (cellViewModel == null || cellViewModel.HasCourseOffering == false)
+        if (Rows[cellPaintingEventArgs.RowIndex]
+                .Cells[cellPaintingEventArgs.ColumnIndex].Tag is not
+            ScheduleCellViewModel cellViewModel ||
+            cellViewModel.HasCourseOffering == false)
         {
             return;
         }
@@ -324,21 +337,36 @@ internal sealed class ScheduleGridControl : DataGridView
         Color borderColor = findCourseBorderColor(cellViewModel);
         Color textColor = findCourseTextColor(cellViewModel);
 
-        using (GraphicsPath cardPath = ProductDrawing.createRoundedRectanglePath(cardBounds, cornerRadius))
-        using (SolidBrush cardBrush = new SolidBrush(backgroundColor))
-        using (Pen cardBorderPen = new Pen(
-            borderColor,
-            DesignTokens.scaleLogicalPixel(this, DesignTokens.BORDER_WIDTH)))
+        GraphicsState graphicsState = graphics.Save();
+        try
         {
-            cellPaintingEventArgs.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            cellPaintingEventArgs.Graphics.FillPath(cardBrush, cardPath);
-            cellPaintingEventArgs.Graphics.DrawPath(cardBorderPen, cardPath);
+            graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            using (GraphicsPath cardPath =
+                ProductDrawing.createRoundedRectanglePath(cardBounds, cornerRadius))
+            {
+                using (SolidBrush cardBrush = new SolidBrush(backgroundColor))
+                {
+                    using (Pen cardBorderPen = new Pen(
+                        borderColor,
+                        DesignTokens.scaleLogicalPixel(
+                            this,
+                            DesignTokens.BORDER_WIDTH)))
+                    {
+                        graphics.FillPath(cardBrush, cardPath);
+                        graphics.DrawPath(cardBorderPen, cardPath);
+                    }
+                }
+            }
+        }
+        finally
+        {
+            graphics.Restore(graphicsState);
         }
 
         int cardPadding = DesignTokens.scaleLogicalPixel(this, COURSE_CARD_PADDING);
         Rectangle contentBounds = ProductDrawing.insetRectangle(cardBounds, cardPadding);
         drawCourseCardText(
-            cellPaintingEventArgs.Graphics,
+            graphics,
             contentBounds,
             cellViewModel,
             textColor);
@@ -398,18 +426,20 @@ internal sealed class ScheduleGridControl : DataGridView
             TextFormatFlags.Left | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis);
     }
 
-    private static void drawCellBorder(DataGridViewCellPaintingEventArgs cellPaintingEventArgs)
+    private static void drawCellBorder(
+        Graphics graphics,
+        DataGridViewCellPaintingEventArgs cellPaintingEventArgs)
     {
         Rectangle bounds = cellPaintingEventArgs.CellBounds;
         using (Pen borderPen = new Pen(DesignTokens.SUBTLE_BORDER_COLOR))
         {
-            cellPaintingEventArgs.Graphics.DrawLine(
+            graphics.DrawLine(
                 borderPen,
                 bounds.Left,
                 bounds.Bottom - 1,
                 bounds.Right - 1,
                 bounds.Bottom - 1);
-            cellPaintingEventArgs.Graphics.DrawLine(
+            graphics.DrawLine(
                 borderPen,
                 bounds.Right - 1,
                 bounds.Top,
@@ -419,6 +449,7 @@ internal sealed class ScheduleGridControl : DataGridView
     }
 
     private void drawCellFocus(
+        Graphics graphics,
         DataGridViewCellPaintingEventArgs cellPaintingEventArgs,
         Color backgroundColor)
     {
@@ -434,7 +465,7 @@ internal sealed class ScheduleGridControl : DataGridView
             cellPaintingEventArgs.CellBounds,
             DesignTokens.scaleLogicalPixel(this, DesignTokens.SPACE_4));
         ControlPaint.DrawFocusRectangle(
-            cellPaintingEventArgs.Graphics,
+            graphics,
             focusBounds,
             DesignTokens.TEXT_PRIMARY_COLOR,
             backgroundColor);
@@ -470,49 +501,55 @@ internal sealed class ScheduleGridControl : DataGridView
 
     private static Color findCourseBackgroundColor(ScheduleCellViewModel cellViewModel)
     {
-        int paletteIndex = cellViewModel.GetCourseOffering().ChoiceGroupId.Value % 3;
-        switch (paletteIndex)
+        EScheduleCourseColor courseColor = ScheduleCourseColorPolicy.findColor(
+            cellViewModel.GetCourseOffering().ChoiceGroupId);
+        switch (courseColor)
         {
-            case 0:
-                return DesignTokens.COURSE_GREEN_BACKGROUND_COLOR;
-            case 1:
+            case EScheduleCourseColor.Blue:
                 return DesignTokens.COURSE_BLUE_BACKGROUND_COLOR;
-            case 2:
+            case EScheduleCourseColor.Green:
+                return DesignTokens.COURSE_GREEN_BACKGROUND_COLOR;
+            case EScheduleCourseColor.Purple:
                 return DesignTokens.COURSE_PURPLE_BACKGROUND_COLOR;
             default:
-                throw new InvalidOperationException("The course color palette index is invalid.");
+                Debug.Fail("Unexpected schedule course color: " + courseColor);
+                throw new ArgumentOutOfRangeException(nameof(courseColor));
         }
     }
 
     private static Color findCourseBorderColor(ScheduleCellViewModel cellViewModel)
     {
-        int paletteIndex = cellViewModel.GetCourseOffering().ChoiceGroupId.Value % 3;
-        switch (paletteIndex)
+        EScheduleCourseColor courseColor = ScheduleCourseColorPolicy.findColor(
+            cellViewModel.GetCourseOffering().ChoiceGroupId);
+        switch (courseColor)
         {
-            case 0:
-                return DesignTokens.COURSE_GREEN_BORDER_COLOR;
-            case 1:
+            case EScheduleCourseColor.Blue:
                 return DesignTokens.COURSE_BLUE_BORDER_COLOR;
-            case 2:
+            case EScheduleCourseColor.Green:
+                return DesignTokens.COURSE_GREEN_BORDER_COLOR;
+            case EScheduleCourseColor.Purple:
                 return DesignTokens.COURSE_PURPLE_BORDER_COLOR;
             default:
-                throw new InvalidOperationException("The course color palette index is invalid.");
+                Debug.Fail("Unexpected schedule course color: " + courseColor);
+                throw new ArgumentOutOfRangeException(nameof(courseColor));
         }
     }
 
     private static Color findCourseTextColor(ScheduleCellViewModel cellViewModel)
     {
-        int paletteIndex = cellViewModel.GetCourseOffering().ChoiceGroupId.Value % 3;
-        switch (paletteIndex)
+        EScheduleCourseColor courseColor = ScheduleCourseColorPolicy.findColor(
+            cellViewModel.GetCourseOffering().ChoiceGroupId);
+        switch (courseColor)
         {
-            case 0:
-                return DesignTokens.COURSE_GREEN_TEXT_COLOR;
-            case 1:
+            case EScheduleCourseColor.Blue:
                 return DesignTokens.COURSE_BLUE_TEXT_COLOR;
-            case 2:
+            case EScheduleCourseColor.Green:
+                return DesignTokens.COURSE_GREEN_TEXT_COLOR;
+            case EScheduleCourseColor.Purple:
                 return DesignTokens.COURSE_PURPLE_TEXT_COLOR;
             default:
-                throw new InvalidOperationException("The course color palette index is invalid.");
+                Debug.Fail("Unexpected schedule course color: " + courseColor);
+                throw new ArgumentOutOfRangeException(nameof(courseColor));
         }
     }
 }

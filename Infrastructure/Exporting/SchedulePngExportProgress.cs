@@ -4,28 +4,38 @@ namespace TimetableGenerator.Infrastructure.Exporting;
 
 public sealed class SchedulePngExportProgress
 {
-    public int ProcessedScheduleCount { get; }
+    public SchedulePngExportProgressPosition Position { get; }
 
-    public int TotalScheduleCount { get; }
+    public int ProcessedScheduleCount
+    {
+        get
+        {
+            return Position.ProcessedScheduleCount;
+        }
+    }
+
+    public int TotalScheduleCount
+    {
+        get
+        {
+            return Position.TotalScheduleCount;
+        }
+    }
 
     public ScheduleExportNumber ScheduleNumber { get; }
 
     public ESchedulePngExportItemStatus ItemStatus { get; }
 
     internal SchedulePngExportProgress(
-        int processedScheduleCount,
-        int totalScheduleCount,
+        SchedulePngExportProgressPosition position,
         ScheduleExportNumber scheduleNumber,
         ESchedulePngExportItemStatus itemStatus)
     {
-        if (totalScheduleCount <= 0)
+        if (position.IsValid == false)
         {
-            throw new ArgumentOutOfRangeException(nameof(totalScheduleCount));
-        }
-
-        if (processedScheduleCount <= 0 || processedScheduleCount > totalScheduleCount)
-        {
-            throw new ArgumentOutOfRangeException(nameof(processedScheduleCount));
+            throw new ArgumentException(
+                "A valid PNG export progress position is required.",
+                nameof(position));
         }
 
         if (scheduleNumber.IsValid == false)
@@ -38,8 +48,7 @@ public sealed class SchedulePngExportProgress
             throw new ArgumentOutOfRangeException(nameof(itemStatus));
         }
 
-        ProcessedScheduleCount = processedScheduleCount;
-        TotalScheduleCount = totalScheduleCount;
+        Position = position;
         ScheduleNumber = scheduleNumber;
         ItemStatus = itemStatus;
     }

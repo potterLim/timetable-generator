@@ -6,7 +6,7 @@ namespace TimetableGenerator.Infrastructure.Csv;
 
 internal sealed class CourseCsvRecordParseResult
 {
-    private readonly CourseOffering mCourseOfferingOrNull;
+    private readonly CourseOffering? mCourseOfferingOrNull;
     private readonly IReadOnlyList<CourseImportDiagnostic> mDiagnostics;
 
     public IReadOnlyList<CourseImportDiagnostic> Diagnostics
@@ -26,7 +26,7 @@ internal sealed class CourseCsvRecordParseResult
     }
 
     private CourseCsvRecordParseResult(
-        CourseOffering courseOfferingOrNull,
+        CourseOffering? courseOfferingOrNull,
         IEnumerable<CourseImportDiagnostic> diagnostics)
     {
         if (diagnostics == null)
@@ -75,7 +75,7 @@ internal sealed class CourseCsvRecordParseResult
 
     public CourseOffering GetCourseOffering()
     {
-        if (IsSuccessful == false)
+        if (mCourseOfferingOrNull == null)
         {
             throw new InvalidOperationException("A failed CSV record does not contain a course offering.");
         }

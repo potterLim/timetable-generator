@@ -103,31 +103,20 @@ public sealed class SchedulePngExporter
 
     private SchedulePngExportResult exportCurrent(
         SchedulePngExportRequest request,
-        IProgress<SchedulePngExportProgress> progressOrNull,
+        IProgress<SchedulePngExportProgress>? progressOrNull,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         List<ExportedSchedulePng> exportedFiles = new List<ExportedSchedulePng>();
         List<SchedulePngExportFailure> failures = new List<SchedulePngExportFailure>();
-        string requestedFileName = buildRequestedFileName(request.BaseName, request.ScheduleNumber);
+        SchedulePngRequestedFileName requestedFileName = buildRequestedFileName(
+            request.BaseName,
+            request.ScheduleNumber);
 
         try
         {
             prepareDestinationDirectory(request.DestinationDirectory);
-            ExportedSchedulePng exportedFile = exportSchedule(
-                request.ScheduleGrid,
-                request.ScheduleNumber,
-                request.DestinationDirectory,
-                requestedFileName,
-                cancellationToken);
-            exportedFiles.Add(exportedFile);
-            reportProgress(
-                progressOrNull,
-                1,
-                1,
-                request.ScheduleNumber,
-                ESchedulePngExportItemStatus.Succeeded);
         }
         catch (Exception exception) when (isRecoverableExportException(exception))
         {
@@ -137,12 +126,66 @@ public sealed class SchedulePngExporter
                 request.DestinationDirectory,
                 exception);
             failures.Add(failure);
-            reportProgress(
-                progressOrNull,
-                1,
-                1,
+            SchedulePngExportProgress exportProgress = createProgress(
+                new SchedulePngExportProgressPosition(1, 1),
                 request.ScheduleNumber,
                 ESchedulePngExportItemStatus.Failed);
+            reportProgress(
+                progressOrNull,
+                exportProgress);
+            return new SchedulePngExportResult(exportedFiles, failures);
+        }
+
+        try
+        {
+            ExportedSchedulePng exportedFile = exportSchedule(
+                request.ScheduleGrid,
+                request.ScheduleNumber,
+                request.DestinationDirectory,
+                requestedFileName,
+                cancellationToken);
+            exportedFiles.Add(exportedFile);
+        }
+        catch (Exception exception) when (isRecoverableExportException(exception))
+        {
+            SchedulePngExportFailure failure = createFailure(
+                request.ScheduleNumber,
+                requestedFileName,
+                request.DestinationDirectory,
+                exception);
+            failures.Add(failure);
+            SchedulePngExportProgress exportProgress = createProgress(
+                new SchedulePngExportProgressPosition(1, 1),
+                request.ScheduleNumber,
+                ESchedulePngExportItemStatus.Failed);
+            reportProgress(
+                progressOrNull,
+                exportProgress);
+            return new SchedulePngExportResult(exportedFiles, failures);
+        }
+
+        try
+        {
+            SchedulePngExportProgress exportProgress = createProgress(
+                new SchedulePngExportProgressPosition(1, 1),
+                request.ScheduleNumber,
+                ESchedulePngExportItemStatus.Succeeded);
+            reportProgress(
+                progressOrNull,
+                exportProgress);
+        }
+        catch (Exception exception)
+        {
+            IReadOnlyList<SchedulePngExportArtifact> retainedArtifacts =
+                rollbackExportedFiles(exportedFiles);
+            if (retainedArtifacts.Count > 0)
+            {
+                throw new SchedulePngExportCleanupException(
+                    retainedArtifacts,
+                    exception);
+            }
+
+            throw;
         }
 
         return new SchedulePngExportResult(exportedFiles, failures);
@@ -150,7 +193,7 @@ public sealed class SchedulePngExporter
 
     private SchedulePngExportResult exportAll(
         SchedulePngBatchExportRequest request,
-        IProgress<SchedulePngExportProgress> progressOrNull,
+        IProgress<SchedulePngExportProgress>? progressOrNull,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -165,7 +208,7 @@ public sealed class SchedulePngExporter
         }
         catch (Exception exception) when (isRecoverableExportException(exception))
         {
-            addDestinationFailures(
+            addDestinationFailure(
                 request,
                 exception,
                 failures,
@@ -174,42 +217,85 @@ public sealed class SchedulePngExporter
             return new SchedulePngExportResult(exportedFiles, failures);
         }
 
-        for (int scheduleIndex = 0; scheduleIndex < totalScheduleCount; ++scheduleIndex)
+        try
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            ScheduleExportNumber scheduleNumber = new ScheduleExportNumber(scheduleIndex + 1);
-            string requestedFileName = buildRequestedFileName(request.BaseName, scheduleNumber);
-            ESchedulePngExportItemStatus itemStatus;
-
-            try
+            for (int scheduleIndex = 0; scheduleIndex < totalScheduleCount; ++scheduleIndex)
             {
-                ExportedSchedulePng exportedFile = exportSchedule(
-                    request.ScheduleGrids[scheduleIndex],
+                cancellationToken.ThrowIfCancellationRequested();
+
+                ScheduleExportNumber scheduleNumber = new ScheduleExportNumber(scheduleIndex + 1);
+                SchedulePngRequestedFileName requestedFileName =
+                    buildRequestedFileName(request.BaseName, scheduleNumber);
+                ESchedulePngExportItemStatus itemStatus =
+                    ESchedulePngExportItemStatus.Failed;
+
+                try
+                {
+                    ExportedSchedulePng exportedFile = exportSchedule(
+                        request.ScheduleGrids[scheduleIndex],
+                        scheduleNumber,
+                        request.DestinationDirectory,
+                        requestedFileName,
+                        cancellationToken);
+                    exportedFiles.Add(exportedFile);
+                    itemStatus = ESchedulePngExportItemStatus.Succeeded;
+                }
+                catch (Exception exception) when (isRecoverableExportException(exception))
+                {
+                    SchedulePngExportFailure failure = createFailure(
+                        scheduleNumber,
+                        requestedFileName,
+                        request.DestinationDirectory,
+                        exception);
+                    failures.Add(failure);
+                }
+
+                SchedulePngExportProgress exportProgress = createProgress(
+                    new SchedulePngExportProgressPosition(
+                        scheduleIndex + 1,
+                        totalScheduleCount),
                     scheduleNumber,
-                    request.DestinationDirectory,
-                    requestedFileName,
-                    cancellationToken);
-                exportedFiles.Add(exportedFile);
-                itemStatus = ESchedulePngExportItemStatus.Succeeded;
+                    itemStatus);
+                reportProgress(
+                    progressOrNull,
+                    exportProgress);
             }
-            catch (Exception exception) when (isRecoverableExportException(exception))
+        }
+        catch (SchedulePngExportCleanupException exception)
+        {
+            List<SchedulePngExportArtifact> retainedArtifacts =
+                new List<SchedulePngExportArtifact>(exception.RetainedArtifacts);
+            IReadOnlyList<SchedulePngExportArtifact> rollbackArtifacts =
+                rollbackExportedFiles(exportedFiles);
+            retainedArtifacts.AddRange(rollbackArtifacts);
+            throw new SchedulePngExportCleanupException(retainedArtifacts, exception);
+        }
+        catch (OperationCanceledException exception)
+        {
+            IReadOnlyList<SchedulePngExportArtifact> retainedArtifacts =
+                rollbackExportedFiles(exportedFiles);
+            if (retainedArtifacts.Count > 0)
             {
-                SchedulePngExportFailure failure = createFailure(
-                    scheduleNumber,
-                    requestedFileName,
-                    request.DestinationDirectory,
+                throw new SchedulePngExportCleanupException(
+                    retainedArtifacts,
                     exception);
-                failures.Add(failure);
-                itemStatus = ESchedulePngExportItemStatus.Failed;
             }
 
-            reportProgress(
-                progressOrNull,
-                scheduleIndex + 1,
-                totalScheduleCount,
-                scheduleNumber,
-                itemStatus);
+            return SchedulePngExportResult.createCanceled(
+                Array.Empty<SchedulePngExportArtifact>());
+        }
+        catch (Exception exception)
+        {
+            IReadOnlyList<SchedulePngExportArtifact> retainedArtifacts =
+                rollbackExportedFiles(exportedFiles);
+            if (retainedArtifacts.Count > 0)
+            {
+                throw new SchedulePngExportCleanupException(
+                    retainedArtifacts,
+                    exception);
+            }
+
+            throw;
         }
 
         return new SchedulePngExportResult(exportedFiles, failures);
@@ -221,45 +307,46 @@ public sealed class SchedulePngExporter
         Directory.CreateDirectory(destinationDirectory.Value);
     }
 
-    private void addDestinationFailures(
+    private void addDestinationFailure(
         SchedulePngBatchExportRequest request,
         Exception exception,
         ICollection<SchedulePngExportFailure> failures,
-        IProgress<SchedulePngExportProgress> progressOrNull,
+        IProgress<SchedulePngExportProgress>? progressOrNull,
         CancellationToken cancellationToken)
     {
         int totalScheduleCount = request.ScheduleGrids.Count;
-        for (int scheduleIndex = 0; scheduleIndex < totalScheduleCount; ++scheduleIndex)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
+        cancellationToken.ThrowIfCancellationRequested();
 
-            ScheduleExportNumber scheduleNumber = new ScheduleExportNumber(scheduleIndex + 1);
-            string requestedFileName = buildRequestedFileName(request.BaseName, scheduleNumber);
-            SchedulePngExportFailure failure = createFailure(
-                scheduleNumber,
-                requestedFileName,
-                request.DestinationDirectory,
-                exception);
-            failures.Add(failure);
-            reportProgress(
-                progressOrNull,
-                scheduleIndex + 1,
-                totalScheduleCount,
-                scheduleNumber,
-                ESchedulePngExportItemStatus.Failed);
-        }
+        ScheduleExportNumber firstScheduleNumber = new ScheduleExportNumber(1);
+        SchedulePngRequestedFileName requestedFileName = buildRequestedFileName(
+            request.BaseName,
+            firstScheduleNumber);
+        SchedulePngExportFailure failure = createFailure(
+            firstScheduleNumber,
+            requestedFileName,
+            request.DestinationDirectory,
+            exception);
+        failures.Add(failure);
+        SchedulePngExportProgress exportProgress = createProgress(
+            new SchedulePngExportProgressPosition(1, totalScheduleCount),
+            firstScheduleNumber,
+            ESchedulePngExportItemStatus.Failed);
+        reportProgress(
+            progressOrNull,
+            exportProgress);
     }
 
     private ExportedSchedulePng exportSchedule(
         ScheduleGridViewModel scheduleGrid,
         ScheduleExportNumber scheduleNumber,
         ScheduleExportDirectoryPath destinationDirectory,
-        string requestedFileName,
+        SchedulePngRequestedFileName requestedFileName,
         CancellationToken cancellationToken)
     {
         RenderedSchedulePng renderedPng = mRenderer.Render(scheduleGrid, cancellationToken);
         SchedulePngOutputFilePath outputFilePath = writeToUniqueFile(
             renderedPng,
+            scheduleNumber,
             destinationDirectory,
             requestedFileName,
             cancellationToken);
@@ -268,11 +355,12 @@ public sealed class SchedulePngExporter
 
     private static SchedulePngOutputFilePath writeToUniqueFile(
         RenderedSchedulePng renderedPng,
+        ScheduleExportNumber scheduleNumber,
         ScheduleExportDirectoryPath destinationDirectory,
-        string requestedFileName,
+        SchedulePngRequestedFileName requestedFileName,
         CancellationToken cancellationToken)
     {
-        string requestedFileStem = Path.GetFileNameWithoutExtension(requestedFileName);
+        string requestedFileStem = requestedFileName.FileStem;
 
         for (int attemptNumber = 1;
             attemptNumber <= MAXIMUM_UNIQUE_FILE_NAME_ATTEMPTS;
@@ -286,28 +374,24 @@ public sealed class SchedulePngExporter
             string candidateFilePath = Path.Combine(
                 destinationDirectory.Value,
                 candidateFileName);
-            FileStream outputStream;
-
-            try
+            if (File.Exists(candidateFilePath))
             {
-                outputStream = new FileStream(
-                    candidateFilePath,
-                    FileMode.CreateNew,
-                    FileAccess.Write,
-                    FileShare.None,
-                    FILE_STREAM_BUFFER_SIZE_BYTES,
-                    FileOptions.SequentialScan);
-            }
-            catch (IOException)
-            {
-                if (File.Exists(candidateFilePath))
-                {
-                    continue;
-                }
-
-                throw;
+                continue;
             }
 
+            string temporaryFilePath = candidateFilePath
+                + "."
+                + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)
+                + ".tmp";
+            FileStream outputStream = new FileStream(
+                temporaryFilePath,
+                FileMode.CreateNew,
+                FileAccess.Write,
+                FileShare.None,
+                FILE_STREAM_BUFFER_SIZE_BYTES,
+                FileOptions.SequentialScan);
+
+            bool hasCommittedOutputFile = false;
             try
             {
                 using (outputStream)
@@ -317,11 +401,70 @@ public sealed class SchedulePngExporter
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
+                try
+                {
+                    File.Move(temporaryFilePath, candidateFilePath, false);
+                    hasCommittedOutputFile = true;
+                }
+                catch (IOException exception)
+                {
+                    if (File.Exists(candidateFilePath))
+                    {
+                        if (tryDeleteExportArtifact(temporaryFilePath) == false)
+                        {
+                            SchedulePngExportArtifact retainedTemporaryArtifact =
+                                createExportArtifact(
+                                    scheduleNumber,
+                                    temporaryFilePath,
+                                    ESchedulePngExportArtifactKind.TemporaryFile);
+                            throw new SchedulePngExportCleanupException(
+                                new SchedulePngExportArtifact[] { retainedTemporaryArtifact },
+                                exception);
+                        }
+
+                        continue;
+                    }
+
+                    throw;
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
                 return new SchedulePngOutputFilePath(candidateFilePath);
             }
-            catch
+            catch (SchedulePngExportCleanupException)
             {
-                deleteIncompleteFile(candidateFilePath);
+                throw;
+            }
+            catch (Exception exception)
+            {
+                List<SchedulePngExportArtifact> retainedArtifacts =
+                    new List<SchedulePngExportArtifact>();
+                if (tryDeleteExportArtifact(temporaryFilePath) == false)
+                {
+                    retainedArtifacts.Add(createExportArtifact(
+                        scheduleNumber,
+                        temporaryFilePath,
+                        ESchedulePngExportArtifactKind.TemporaryFile));
+                }
+
+                if (hasCommittedOutputFile)
+                {
+                    if (tryDeleteExportArtifact(candidateFilePath) == false)
+                    {
+                        retainedArtifacts.Add(createExportArtifact(
+                            scheduleNumber,
+                            candidateFilePath,
+                            ESchedulePngExportArtifactKind.CompletedPng));
+                    }
+                }
+
+                if (retainedArtifacts.Count > 0)
+                {
+                    throw new SchedulePngExportCleanupException(
+                        retainedArtifacts,
+                        exception);
+                }
+
                 throw;
             }
         }
@@ -332,26 +475,60 @@ public sealed class SchedulePngExporter
             + " attempts.");
     }
 
-    private static void deleteIncompleteFile(string filePath)
+    private static bool tryDeleteExportArtifact(string filePath)
     {
         try
         {
             File.Delete(filePath);
+            return true;
         }
-        catch
+        catch (Exception exception) when (isRecoverableExportException(exception))
         {
-            // The original export failure is more actionable than cleanup failure here.
+            return false;
         }
     }
 
-    private static string buildRequestedFileName(
+    private static IReadOnlyList<SchedulePngExportArtifact> rollbackExportedFiles(
+        IEnumerable<ExportedSchedulePng> exportedFiles)
+    {
+        List<SchedulePngExportArtifact> retainedArtifacts =
+            new List<SchedulePngExportArtifact>();
+        foreach (ExportedSchedulePng exportedFile in exportedFiles)
+        {
+            if (tryDeleteExportArtifact(exportedFile.OutputFilePath.Value) == false)
+            {
+                retainedArtifacts.Add(createExportArtifact(
+                    exportedFile.ScheduleNumber,
+                    exportedFile.OutputFilePath.Value,
+                    ESchedulePngExportArtifactKind.CompletedPng));
+            }
+        }
+
+        return retainedArtifacts.AsReadOnly();
+    }
+
+    private static SchedulePngExportArtifact createExportArtifact(
+        ScheduleExportNumber scheduleNumber,
+        string filePath,
+        ESchedulePngExportArtifactKind kind)
+    {
+        SchedulePngExportArtifactFilePath artifactFilePath =
+            new SchedulePngExportArtifactFilePath(filePath);
+        return new SchedulePngExportArtifact(
+            scheduleNumber,
+            artifactFilePath,
+            kind);
+    }
+
+    private static SchedulePngRequestedFileName buildRequestedFileName(
         ScheduleExportBaseName baseName,
         ScheduleExportNumber scheduleNumber)
     {
-        return baseName.Value
+        string requestedFileName = baseName.Value
             + "_시간표_"
             + scheduleNumber.Value.ToString("D2", CultureInfo.InvariantCulture)
             + ".png";
+        return new SchedulePngRequestedFileName(requestedFileName);
     }
 
     private static string buildUniqueCandidateFileName(
@@ -371,7 +548,7 @@ public sealed class SchedulePngExporter
 
     private static SchedulePngExportFailure createFailure(
         ScheduleExportNumber scheduleNumber,
-        string requestedFileName,
+        SchedulePngRequestedFileName requestedFileName,
         ScheduleExportDirectoryPath destinationDirectory,
         Exception exception)
     {
@@ -383,7 +560,7 @@ public sealed class SchedulePngExporter
 
         string destinationFilePath = Path.Combine(
             destinationDirectory.Value,
-            requestedFileName);
+            requestedFileName.Value);
         string failureMessage = "시간표 "
             + scheduleNumber.Value.ToString(CultureInfo.InvariantCulture)
             + "번 PNG를 저장하지 못했습니다.\n대상: "
@@ -397,23 +574,27 @@ public sealed class SchedulePngExporter
     }
 
     private static void reportProgress(
-        IProgress<SchedulePngExportProgress> progressOrNull,
-        int processedScheduleCount,
-        int totalScheduleCount,
-        ScheduleExportNumber scheduleNumber,
-        ESchedulePngExportItemStatus itemStatus)
+        IProgress<SchedulePngExportProgress>? progressOrNull,
+        SchedulePngExportProgress progress)
     {
         if (progressOrNull == null)
         {
             return;
         }
 
+        progressOrNull.Report(progress);
+    }
+
+    private static SchedulePngExportProgress createProgress(
+        SchedulePngExportProgressPosition position,
+        ScheduleExportNumber scheduleNumber,
+        ESchedulePngExportItemStatus itemStatus)
+    {
         SchedulePngExportProgress progress = new SchedulePngExportProgress(
-            processedScheduleCount,
-            totalScheduleCount,
+            position,
             scheduleNumber,
             itemStatus);
-        progressOrNull.Report(progress);
+        return progress;
     }
 
     private static bool isRecoverableExportException(Exception exception)

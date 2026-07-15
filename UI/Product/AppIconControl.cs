@@ -29,6 +29,7 @@ internal sealed class AppIconControl : Control
         SetStyle(ControlStyles.AllPaintingInWmPaint, true);
         SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
         SetStyle(ControlStyles.ResizeRedraw, true);
+        SetStyle(ControlStyles.SupportsTransparentBackColor, true);
         SetStyle(ControlStyles.UserPaint, true);
     }
 

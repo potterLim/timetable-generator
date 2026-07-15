@@ -9,6 +9,20 @@ public readonly record struct CsvInputFilePath
 
     public string Value { get; }
 
+    public CsvInputFileName FileName
+    {
+        get
+        {
+            if (IsValid == false)
+            {
+                throw new InvalidOperationException(
+                    "Invalid CSV input paths do not have a file name.");
+            }
+
+            return new CsvInputFileName(Path.GetFileName(Value));
+        }
+    }
+
     public bool IsValid
     {
         get
@@ -42,6 +56,11 @@ public readonly record struct CsvInputFilePath
 
     public override string ToString()
     {
+        if (IsValid == false)
+        {
+            return string.Empty;
+        }
+
         return Value;
     }
 }

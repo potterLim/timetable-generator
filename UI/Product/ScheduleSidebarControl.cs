@@ -18,7 +18,7 @@ internal sealed class ScheduleSidebarControl : UserControl
     private readonly Font mItemSummaryFont;
     private bool mIsBindingSchedules;
 
-    internal event EventHandler<ScheduleSelectionChangedEventArgs> SelectedScheduleChanged;
+    internal event EventHandler<ScheduleSelectionChangedEventArgs>? SelectedScheduleChanged;
 
     internal ScheduleSidebarControl()
     {
@@ -181,7 +181,7 @@ internal sealed class ScheduleSidebarControl : UserControl
             DesignTokens.SIDEBAR_ITEM_HEIGHT);
     }
 
-    private void onScheduleListBoxSelectedIndexChanged(object sender, EventArgs eventArgs)
+    private void onScheduleListBoxSelectedIndexChanged(object? senderOrNull, EventArgs eventArgs)
     {
         if (mIsBindingSchedules || mScheduleListBox.SelectedItem == null)
         {
@@ -193,14 +193,14 @@ internal sealed class ScheduleSidebarControl : UserControl
             new ScheduleSelectionChangedEventArgs(
                 selectedItem.ScheduleIndex,
                 selectedItem.Schedule);
-        EventHandler<ScheduleSelectionChangedEventArgs> eventHandler = SelectedScheduleChanged;
-        if (eventHandler != null)
+        EventHandler<ScheduleSelectionChangedEventArgs>? eventHandlerOrNull = SelectedScheduleChanged;
+        if (eventHandlerOrNull != null)
         {
-            eventHandler(this, selectionChangedEventArgs);
+            eventHandlerOrNull(this, selectionChangedEventArgs);
         }
     }
 
-    private void onScheduleListBoxDrawItem(object sender, DrawItemEventArgs drawItemEventArgs)
+    private void onScheduleListBoxDrawItem(object? senderOrNull, DrawItemEventArgs drawItemEventArgs)
     {
         if (drawItemEventArgs.Index < 0 || drawItemEventArgs.Index >= mScheduleListBox.Items.Count)
         {

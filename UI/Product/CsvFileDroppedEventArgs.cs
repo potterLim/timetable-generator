@@ -1,18 +1,21 @@
 using System;
+using TimetableGenerator.Infrastructure.Csv;
 
 namespace TimetableGenerator.UI.Product;
 
 internal sealed class CsvFileDroppedEventArgs : EventArgs
 {
-    internal string FilePath { get; }
+    internal CsvInputFilePath SourceFilePath { get; }
 
-    internal CsvFileDroppedEventArgs(string filePath)
+    internal CsvFileDroppedEventArgs(CsvInputFilePath sourceFilePath)
     {
-        if (string.IsNullOrWhiteSpace(filePath))
+        if (sourceFilePath.IsValid == false)
         {
-            throw new ArgumentException("Dropped CSV file paths cannot be empty.", nameof(filePath));
+            throw new ArgumentException(
+                "Dropped CSV file paths must be valid.",
+                nameof(sourceFilePath));
         }
 
-        FilePath = filePath;
+        SourceFilePath = sourceFilePath;
     }
 }

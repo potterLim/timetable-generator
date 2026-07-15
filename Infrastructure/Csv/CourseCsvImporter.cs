@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Security;
 using System.Text;
+using System.Threading;
 using Microsoft.VisualBasic.FileIO;
 using TimetableGenerator.Core.Domain;
 
 namespace TimetableGenerator.Infrastructure.Csv;
 
-public sealed class CourseCsvImporter
+public sealed class CourseCsvImporter : ICourseCsvImporter
 {
     private static readonly string[] FOUR_COLUMN_HEADER = new string[]
     {
@@ -38,24 +38,41 @@ public sealed class CourseCsvImporter
     public CourseImportResult ImportCourses(CsvInputFilePath inputFilePath)
     {
         CourseCsvImportOptions options = CourseCsvImportOptions.CreateDefault();
-        return ImportCourses(inputFilePath, options);
+        return ImportCourses(inputFilePath, options, CancellationToken.None);
+    }
+
+    public CourseImportResult ImportCourses(
+        CsvInputFilePath inputFilePath,
+        CancellationToken cancellationToken)
+    {
+        CourseCsvImportOptions options = CourseCsvImportOptions.CreateDefault();
+        return ImportCourses(inputFilePath, options, cancellationToken);
     }
 
     public CourseImportResult ImportCourses(
         CsvInputFilePath inputFilePath,
         CourseCsvImportOptions options)
     {
+        return ImportCourses(inputFilePath, options, CancellationToken.None);
+    }
+
+    public CourseImportResult ImportCourses(
+        CsvInputFilePath inputFilePath,
+        CourseCsvImportOptions options,
+        CancellationToken cancellationToken)
+    {
         if (options == null)
         {
             throw new ArgumentNullException(nameof(options));
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
         CourseCsvImportState state = new CourseCsvImportState(options);
         if (inputFilePath.IsValid == false)
         {
             CourseImportDiagnostic invalidPathDiagnostic = createFileDiagnostic(
                 ECourseImportErrorCode.InvalidInputFilePath,
-                getSafePathValue(inputFilePath),
+                CourseImportRawValue.create(getSafePathValue(inputFilePath)),
                 "The CSV input file path was not initialized.");
             state.TryAddDiagnostic(invalidPathDiagnostic);
             return createFailedResult(state);
@@ -65,7 +82,7 @@ public sealed class CourseCsvImporter
         {
             CourseImportDiagnostic fileNotFoundDiagnostic = createFileDiagnostic(
                 ECourseImportErrorCode.FileNotFound,
-                inputFilePath.Value,
+                CourseImportRawValue.create(inputFilePath.Value),
                 "The CSV input file does not exist.");
             state.TryAddDiagnostic(fileNotFoundDiagnostic);
             return createFailedResult(state);
@@ -73,7 +90,7 @@ public sealed class CourseCsvImporter
 
         try
         {
-            importCoursesFromFile(inputFilePath, state);
+            importCoursesFromFile(inputFilePath, state, cancellationToken);
         }
         catch (DecoderFallbackException exception)
         {
@@ -124,6 +141,7 @@ public sealed class CourseCsvImporter
                 exception);
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
         if (state.Diagnostics.Count > 0)
         {
             return createFailedResult(state);
@@ -133,7 +151,7 @@ public sealed class CourseCsvImporter
         {
             CourseImportDiagnostic noCoursesDiagnostic = createFileDiagnostic(
                 ECourseImportErrorCode.NoCourseOfferings,
-                inputFilePath.Value,
+                CourseImportRawValue.create(inputFilePath.Value),
                 "The CSV file does not contain course offering records.");
             state.TryAddDiagnostic(noCoursesDiagnostic);
             return createFailedResult(state);
@@ -147,8 +165,10 @@ public sealed class CourseCsvImporter
 
     private void importCoursesFromFile(
         CsvInputFilePath inputFilePath,
-        CourseCsvImportState state)
+        CourseCsvImportState state,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         UTF8Encoding strictUtf8Encoding = new UTF8Encoding(false, true);
         using (TextFieldParser parser = new TextFieldParser(
             inputFilePath.Value,
@@ -160,67 +180,76 @@ public sealed class CourseCsvImporter
             parser.HasFieldsEnclosedInQuotes = true;
             parser.TrimWhiteSpace = false;
 
-            CourseCsvSchema schemaOrNull = readSchemaOrNull(parser, state);
+            cancellationToken.ThrowIfCancellationRequested();
+            CourseCsvSchema? schemaOrNull = readSchemaOrNull(
+                parser,
+                state,
+                cancellationToken);
             if (schemaOrNull == null || state.ShouldStopCollectingDiagnostics)
             {
                 return;
             }
 
-            readCourseOfferings(parser, schemaOrNull, state);
+            cancellationToken.ThrowIfCancellationRequested();
+            readCourseOfferings(parser, schemaOrNull, state, cancellationToken);
         }
     }
 
-    private static CourseCsvSchema readSchemaOrNull(
+    private static CourseCsvSchema? readSchemaOrNull(
         TextFieldParser parser,
-        CourseCsvImportState state)
+        CourseCsvImportState state,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         if (parser.EndOfData)
         {
             CourseImportDiagnostic missingHeaderDiagnostic = new CourseImportDiagnostic(
                 ECourseImportErrorCode.MissingHeader,
                 CsvSourcePosition.File,
                 ECsvColumn.Header,
-                string.Empty,
+                CourseImportRawValue.create(string.Empty),
                 "The CSV file is empty.");
             state.TryAddDiagnostic(missingHeaderDiagnostic);
             return null;
         }
 
         long headerStartLineNumber = parser.LineNumber;
-        string[] headerFields;
+        string[]? headerFieldsOrNull = null;
 
         try
         {
-            headerFields = parser.ReadFields();
+            cancellationToken.ThrowIfCancellationRequested();
+            headerFieldsOrNull = parser.ReadFields();
+            cancellationToken.ThrowIfCancellationRequested();
         }
         catch (MalformedLineException exception)
         {
             CsvSourcePosition sourcePosition = createSourcePosition(
                 exception.LineNumber,
-                headerStartLineNumber);
+                new CsvRowNumber(headerStartLineNumber));
             CourseImportDiagnostic malformedHeaderDiagnostic = new CourseImportDiagnostic(
                 ECourseImportErrorCode.MalformedCsvRecord,
                 sourcePosition,
                 ECsvColumn.Header,
-                getSafeErrorLine(parser),
+                CourseImportRawValue.create(getSafeErrorLine(parser)),
                 exception.Message);
             state.TryAddDiagnostic(malformedHeaderDiagnostic);
             return null;
         }
 
-        if (headerFields == null)
+        if (headerFieldsOrNull == null)
         {
             CourseImportDiagnostic missingHeaderDiagnostic = new CourseImportDiagnostic(
                 ECourseImportErrorCode.MissingHeader,
                 CsvSourcePosition.File,
                 ECsvColumn.Header,
-                string.Empty,
+                CourseImportRawValue.create(string.Empty),
                 "The CSV file is empty.");
             state.TryAddDiagnostic(missingHeaderDiagnostic);
             return null;
         }
 
-        CourseCsvSchema schemaOrNull = findSchemaOrNull(headerFields);
+        CourseCsvSchema? schemaOrNull = findSchemaOrNull(headerFieldsOrNull);
         if (schemaOrNull != null)
         {
             return schemaOrNull;
@@ -228,12 +257,12 @@ public sealed class CourseCsvImporter
 
         CsvSourcePosition headerSourcePosition = createSourcePosition(
             headerStartLineNumber,
-            1L);
+            new CsvRowNumber(1L));
         CourseImportDiagnostic invalidHeaderDiagnostic = new CourseImportDiagnostic(
             ECourseImportErrorCode.InvalidHeader,
             headerSourcePosition,
             ECsvColumn.Header,
-            string.Join(",", headerFields),
+            CourseImportRawValue.create(string.Join(",", headerFieldsOrNull)),
             "Expected CourseId,Section,Name,TimeSlots with an optional final Classroom column.");
         state.TryAddDiagnostic(invalidHeaderDiagnostic);
         return null;
@@ -242,54 +271,67 @@ public sealed class CourseCsvImporter
     private void readCourseOfferings(
         TextFieldParser parser,
         CourseCsvSchema schema,
-        CourseCsvImportState state)
+        CourseCsvImportState state,
+        CancellationToken cancellationToken)
     {
-        while (parser.EndOfData == false && state.ShouldStopCollectingDiagnostics == false)
+        while (state.ShouldStopCollectingDiagnostics == false)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (parser.EndOfData)
+            {
+                break;
+            }
+
             long recordStartLineNumber = parser.LineNumber;
-            string[] fields;
+            string[]? fieldsOrNull = null;
 
             try
             {
-                fields = parser.ReadFields();
+                cancellationToken.ThrowIfCancellationRequested();
+                fieldsOrNull = parser.ReadFields();
+                cancellationToken.ThrowIfCancellationRequested();
             }
             catch (MalformedLineException exception)
             {
                 CsvSourcePosition malformedRecordSourcePosition = createSourcePosition(
                     exception.LineNumber,
-                    recordStartLineNumber);
+                    new CsvRowNumber(recordStartLineNumber));
                 CourseImportDiagnostic malformedRecordDiagnostic = new CourseImportDiagnostic(
                     ECourseImportErrorCode.MalformedCsvRecord,
                     malformedRecordSourcePosition,
                     ECsvColumn.Record,
-                    getSafeErrorLine(parser),
+                    CourseImportRawValue.create(getSafeErrorLine(parser)),
                     exception.Message);
                 state.TryAddDiagnostic(malformedRecordDiagnostic);
                 continue;
             }
 
-            if (fields == null)
+            if (fieldsOrNull == null)
             {
                 break;
             }
 
-            CsvSourcePosition sourcePosition = createSourcePosition(recordStartLineNumber, 1L);
-            if (fields.Length != schema.ColumnCount)
+            CsvSourcePosition sourcePosition = createSourcePosition(
+                recordStartLineNumber,
+                new CsvRowNumber(1L));
+            if (fieldsOrNull.Length != schema.ColumnCount)
             {
                 CourseImportDiagnostic invalidColumnCountDiagnostic = new CourseImportDiagnostic(
                     ECourseImportErrorCode.InvalidColumnCount,
                     sourcePosition,
                     ECsvColumn.Record,
-                    string.Join(",", fields),
+                    CourseImportRawValue.create(string.Join(",", fieldsOrNull)),
                     "The record column count must exactly match the CSV header.");
                 state.TryAddDiagnostic(invalidColumnCountDiagnostic);
                 continue;
             }
 
             CourseCsvRecordParseResult recordParseResult = mRecordParser.ParseCourseOffering(
-                fields,
+                fieldsOrNull,
                 sourcePosition,
-                schema);
+                schema,
+                cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
             if (recordParseResult.IsSuccessful)
             {
                 state.CourseOfferings.Add(recordParseResult.GetCourseOffering());
@@ -298,6 +340,7 @@ public sealed class CourseCsvImporter
 
             foreach (CourseImportDiagnostic diagnostic in recordParseResult.Diagnostics)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 bool hasAddedDiagnostic = state.TryAddDiagnostic(diagnostic);
                 if (hasAddedDiagnostic == false)
                 {
@@ -307,7 +350,7 @@ public sealed class CourseCsvImporter
         }
     }
 
-    private static CourseCsvSchema findSchemaOrNull(IReadOnlyList<string> headerFields)
+    private static CourseCsvSchema? findSchemaOrNull(IReadOnlyList<string> headerFields)
     {
         if (isHeaderMatch(headerFields, FOUR_COLUMN_HEADER))
         {
@@ -347,28 +390,26 @@ public sealed class CourseCsvImporter
 
     private static CsvSourcePosition createSourcePosition(
         long preferredLineNumber,
-        long fallbackLineNumber)
+        CsvRowNumber fallbackRowNumber)
     {
-        long sourceLineNumber = preferredLineNumber;
-        if (sourceLineNumber <= 0L)
+        if (preferredLineNumber <= 0L)
         {
-            sourceLineNumber = fallbackLineNumber;
+            return CsvSourcePosition.CreateAtRow(fallbackRowNumber);
         }
 
-        Debug.Assert(sourceLineNumber > 0L);
-        CsvRowNumber rowNumber = new CsvRowNumber(sourceLineNumber);
+        CsvRowNumber rowNumber = new CsvRowNumber(preferredLineNumber);
         return CsvSourcePosition.CreateAtRow(rowNumber);
     }
 
     private static string getSafeErrorLine(TextFieldParser parser)
     {
-        string errorLine = parser.ErrorLine;
-        if (errorLine == null)
+        string? errorLineOrNull = parser.ErrorLine;
+        if (errorLineOrNull == null)
         {
             return string.Empty;
         }
 
-        return errorLine;
+        return errorLineOrNull;
     }
 
     private static void addFileExceptionDiagnostic(
@@ -379,7 +420,7 @@ public sealed class CourseCsvImporter
     {
         CourseImportDiagnostic diagnostic = createFileDiagnostic(
             errorCode,
-            inputFilePath.Value,
+            CourseImportRawValue.create(inputFilePath.Value),
             exception.Message);
         state.TryAddDiagnostic(diagnostic);
     }
@@ -395,7 +436,7 @@ public sealed class CourseCsvImporter
 
     private static CourseImportDiagnostic createFileDiagnostic(
         ECourseImportErrorCode errorCode,
-        string rawValue,
+        CourseImportRawValue rawValue,
         string technicalDetails)
     {
         return new CourseImportDiagnostic(

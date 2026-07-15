@@ -6,13 +6,13 @@ public sealed class SchedulePngExportFailure
 {
     public ScheduleExportNumber ScheduleNumber { get; }
 
-    public string RequestedFileName { get; }
+    public SchedulePngRequestedFileName RequestedFileName { get; }
 
     public string Message { get; }
 
     internal SchedulePngExportFailure(
         ScheduleExportNumber scheduleNumber,
-        string requestedFileName,
+        SchedulePngRequestedFileName requestedFileName,
         string message)
     {
         if (scheduleNumber.IsValid == false)
@@ -20,9 +20,9 @@ public sealed class SchedulePngExportFailure
             throw new ArgumentException("A valid schedule number is required.", nameof(scheduleNumber));
         }
 
-        if (string.IsNullOrWhiteSpace(requestedFileName))
+        if (requestedFileName == null)
         {
-            throw new ArgumentException("Requested file names cannot be empty.", nameof(requestedFileName));
+            throw new ArgumentNullException(nameof(requestedFileName));
         }
 
         if (string.IsNullOrWhiteSpace(message))

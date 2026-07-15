@@ -14,7 +14,7 @@ namespace TimetableGenerator.Application.Documents;
 
 public sealed class ScheduleDocumentLoader
 {
-    private readonly CourseCsvImporter mCourseCsvImporter;
+    private readonly ICourseCsvImporter mCourseCsvImporter;
     private readonly CoreScheduleGenerator mScheduleGenerator;
     private readonly ScheduleDocumentLoadOptions mOptions;
 
@@ -24,13 +24,25 @@ public sealed class ScheduleDocumentLoader
     }
 
     public ScheduleDocumentLoader(ScheduleDocumentLoadOptions options)
+        : this(options, new CourseCsvImporter())
+    {
+    }
+
+    public ScheduleDocumentLoader(
+        ScheduleDocumentLoadOptions options,
+        ICourseCsvImporter courseCsvImporter)
     {
         if (options == null)
         {
             throw new ArgumentNullException(nameof(options));
         }
 
-        mCourseCsvImporter = new CourseCsvImporter();
+        if (courseCsvImporter == null)
+        {
+            throw new ArgumentNullException(nameof(courseCsvImporter));
+        }
+
+        mCourseCsvImporter = courseCsvImporter;
         mScheduleGenerator = new CoreScheduleGenerator();
         mOptions = options;
     }
@@ -52,13 +64,27 @@ public sealed class ScheduleDocumentLoader
             return createFailureResult(EScheduleDocumentLoadStatus.Canceled);
         }
 
-        CourseImportResult courseImportResult = mCourseCsvImporter.ImportCourses(
-            sourceFilePath,
-            mOptions.CourseImportOptions);
-        if (cancellationToken.IsCancellationRequested)
+        try
+        {
+            return loadDocumentWhenNotCanceled(sourceFilePath, cancellationToken);
+        }
+        catch (OperationCanceledException exception)
+            when (exception.CancellationToken == cancellationToken
+                && cancellationToken.IsCancellationRequested)
         {
             return createFailureResult(EScheduleDocumentLoadStatus.Canceled);
         }
+    }
+
+    private ScheduleDocumentLoadResult loadDocumentWhenNotCanceled(
+        CsvInputFilePath sourceFilePath,
+        CancellationToken cancellationToken)
+    {
+        CourseImportResult courseImportResult = mCourseCsvImporter.ImportCourses(
+            sourceFilePath,
+            mOptions.CourseImportOptions,
+            cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
 
         if (courseImportResult.IsSuccessful == false)
         {
@@ -67,7 +93,9 @@ public sealed class ScheduleDocumentLoader
             return ScheduleDocumentLoadResult.createFailed(importFailure);
         }
 
-        if (hasUnsupportedAcademicPeriod(courseImportResult.CourseOfferings))
+        if (hasUnsupportedAcademicPeriod(
+            courseImportResult.CourseOfferings,
+            cancellationToken))
         {
             return createFailureResult(
                 EScheduleDocumentLoadStatus.UnsupportedAcademicPeriod);
@@ -89,19 +117,25 @@ public sealed class ScheduleDocumentLoader
 
         ScheduleDocument document = createDocument(
             sourceFilePath,
-            generationResult.Schedules);
+            generationResult.Schedules,
+            cancellationToken);
         EScheduleDocumentLoadStatus loadedStatus = getLoadedStatus(generationResult.Completion);
         return ScheduleDocumentLoadResult.createLoaded(document, loadedStatus);
     }
 
     private static bool hasUnsupportedAcademicPeriod(
-        IReadOnlyList<CourseOffering> courseOfferings)
+        IReadOnlyList<CourseOffering> courseOfferings,
+        CancellationToken cancellationToken)
     {
         CorePeriod maximumSupportedPeriod = AcademicPeriodTimePolicy.MaximumSupportedPeriod;
         foreach (CourseOffering courseOffering in courseOfferings)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             foreach (ScheduleSlot scheduleSlot in courseOffering.ScheduleSlots)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 if (scheduleSlot.Period.Value > maximumSupportedPeriod.Value)
                 {
                     return true;
@@ -114,12 +148,15 @@ public sealed class ScheduleDocumentLoader
 
     private static ScheduleDocument createDocument(
         CsvInputFilePath sourceFilePath,
-        IReadOnlyList<GeneratedSchedule> generatedSchedules)
+        IReadOnlyList<GeneratedSchedule> generatedSchedules,
+        CancellationToken cancellationToken)
     {
         List<ScheduleDocumentSchedule> documentSchedules =
             new List<ScheduleDocumentSchedule>(generatedSchedules.Count);
         foreach (GeneratedSchedule generatedSchedule in generatedSchedules)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             ScheduleGridViewModel gridViewModel =
                 ScheduleGridViewModelFactory.Create(generatedSchedule);
             ScheduleDocumentSchedule documentSchedule = new ScheduleDocumentSchedule(
@@ -128,6 +165,7 @@ public sealed class ScheduleDocumentLoader
             documentSchedules.Add(documentSchedule);
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
         return new ScheduleDocument(sourceFilePath, documentSchedules);
     }
 

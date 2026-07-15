@@ -5,8 +5,6 @@ namespace TimetableGenerator.Core.Domain;
 
 public sealed class CourseOffering
 {
-    private readonly IReadOnlyList<ScheduleSlot> mScheduleSlots;
-
     public CourseChoiceGroupId ChoiceGroupId { get; }
 
     public CourseName Name { get; }
@@ -14,6 +12,8 @@ public sealed class CourseOffering
     public CourseSectionCode SectionCode { get; }
 
     public ClassroomAssignment ClassroomAssignment { get; }
+
+    private readonly IReadOnlyList<ScheduleSlot> mScheduleSlots;
 
     public IReadOnlyList<ScheduleSlot> ScheduleSlots
     {

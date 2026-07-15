@@ -8,7 +8,6 @@ namespace TimetableGenerator.Presentation.Schedules;
 public sealed class ScheduleGridViewModel
 {
     private readonly IReadOnlyList<ScheduleDayColumnViewModel> mDayColumns;
-    private readonly IReadOnlyList<SchedulePeriodRowViewModel> mPeriodRows;
 
     public IReadOnlyList<ScheduleDayColumnViewModel> DayColumns
     {
@@ -17,6 +16,8 @@ public sealed class ScheduleGridViewModel
             return mDayColumns;
         }
     }
+
+    private readonly IReadOnlyList<SchedulePeriodRowViewModel> mPeriodRows;
 
     public IReadOnlyList<SchedulePeriodRowViewModel> PeriodRows
     {

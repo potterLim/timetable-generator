@@ -7,7 +7,6 @@ namespace TimetableGenerator.Infrastructure.Csv;
 public sealed class CourseImportResult
 {
     private readonly IReadOnlyList<CourseOffering> mCourseOfferings;
-    private readonly IReadOnlyList<CourseImportDiagnostic> mDiagnostics;
 
     public IReadOnlyList<CourseOffering> CourseOfferings
     {
@@ -16,6 +15,8 @@ public sealed class CourseImportResult
             return mCourseOfferings;
         }
     }
+
+    private readonly IReadOnlyList<CourseImportDiagnostic> mDiagnostics;
 
     public IReadOnlyList<CourseImportDiagnostic> Diagnostics
     {

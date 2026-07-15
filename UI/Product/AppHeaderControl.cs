@@ -2,11 +2,18 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
+using TimetableGenerator.Infrastructure.Csv;
 
 namespace TimetableGenerator.UI.Product;
 
 internal sealed class AppHeaderControl : UserControl
 {
+    private const int COMPACT_LAYOUT_BREAKPOINT = 1_000;
+    private const int COMPACT_BUTTON_MINIMUM_WIDTH = 44;
+    private const string CSV_OPEN_BUTTON_TEXT = "CSV 불러오기";
+    private const string PNG_EXPORT_BUTTON_TEXT = "PNG 내보내기";
+    private const string OUTPUT_FOLDER_BUTTON_TEXT = "폴더 열기";
+
     private readonly TableLayoutPanel mLayout;
     private readonly AppLogoControl mAppLogoControl;
     private readonly Panel mCurrentFilePanel;
@@ -15,10 +22,11 @@ internal sealed class AppHeaderControl : UserControl
     private readonly ProductButton mCsvOpenButton;
     private readonly ProductButton mPngExportButton;
     private readonly ProductButton mOutputFolderButton;
+    private readonly ToolTip mCommandToolTip;
 
-    internal event EventHandler CsvOpenRequested;
-    internal event EventHandler PngExportRequested;
-    internal event EventHandler OutputFolderOpenRequested;
+    internal event EventHandler? CsvOpenRequested;
+    internal event EventHandler? PngExportRequested;
+    internal event EventHandler? OutputFolderOpenRequested;
 
     internal AppHeaderControl()
     {
@@ -36,21 +44,26 @@ internal sealed class AppHeaderControl : UserControl
         mCommandPanel = createCommandPanel();
 
         mCsvOpenButton = createHeaderButton(
-            "CSV 불러오기",
+            CSV_OPEN_BUTTON_TEXT,
             "시간표 CSV 파일 불러오기",
-            EAppIcon.FolderOpen);
+            EAppIcon.File);
         mPngExportButton = createHeaderButton(
-            "PNG 내보내기",
+            PNG_EXPORT_BUTTON_TEXT,
             "선택한 시간표를 PNG 이미지로 내보내기",
             EAppIcon.ImageExport);
         mOutputFolderButton = createHeaderButton(
-            "폴더 열기",
+            OUTPUT_FOLDER_BUTTON_TEXT,
             "마지막으로 내보낸 폴더 열기",
             EAppIcon.FolderOpen);
 
         mCsvOpenButton.Click += onCsvOpenButtonClick;
         mPngExportButton.Click += onPngExportButtonClick;
         mOutputFolderButton.Click += onOutputFolderButtonClick;
+
+        mCommandToolTip = new ToolTip();
+        mCommandToolTip.SetToolTip(mCsvOpenButton, CSV_OPEN_BUTTON_TEXT);
+        mCommandToolTip.SetToolTip(mPngExportButton, PNG_EXPORT_BUTTON_TEXT);
+        mCommandToolTip.SetToolTip(mOutputFolderButton, OUTPUT_FOLDER_BUTTON_TEXT);
 
         mCurrentFilePanel.Controls.Add(mCurrentFileLabel);
 
@@ -69,16 +82,15 @@ internal sealed class AppHeaderControl : UserControl
         applyMetrics();
     }
 
-    internal void showCurrentFileName(string fileName)
+    internal void showCurrentFileName(CsvInputFileName fileName)
     {
-        if (string.IsNullOrWhiteSpace(fileName))
+        if (fileName == null)
         {
-            throw new ArgumentException("Current file names cannot be empty.", nameof(fileName));
+            throw new ArgumentNullException(nameof(fileName));
         }
 
-        string normalizedFileName = fileName.Trim();
-        mCurrentFileLabel.Text = normalizedFileName;
-        mCurrentFileLabel.AccessibleName = "현재 파일 " + normalizedFileName;
+        mCurrentFileLabel.Text = fileName.Value;
+        mCurrentFileLabel.AccessibleName = "현재 파일 " + fileName.Value;
         mCurrentFilePanel.Visible = true;
     }
 
@@ -108,6 +120,22 @@ internal sealed class AppHeaderControl : UserControl
     {
         base.OnDpiChangedAfterParent(eventArgs);
         applyMetrics();
+    }
+
+    protected override void OnSizeChanged(EventArgs eventArgs)
+    {
+        base.OnSizeChanged(eventArgs);
+        applyCommandPresentation();
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            mCommandToolTip.Dispose();
+        }
+
+        base.Dispose(disposing);
     }
 
     private TableLayoutPanel createLayout()
@@ -162,6 +190,7 @@ internal sealed class AppHeaderControl : UserControl
         commandPanel.WrapContents = false;
         commandPanel.Margin = Padding.Empty;
         commandPanel.Padding = Padding.Empty;
+        commandPanel.BackColor = DesignTokens.SURFACE_COLOR;
         commandPanel.AccessibleName = "파일 명령";
         commandPanel.AccessibleRole = AccessibleRole.ToolBar;
         commandPanel.TabStop = false;
@@ -179,7 +208,7 @@ internal sealed class AppHeaderControl : UserControl
         return button;
     }
 
-    private void onCurrentFilePanelPaint(object sender, PaintEventArgs paintEventArgs)
+    private void onCurrentFilePanelPaint(object? senderOrNull, PaintEventArgs paintEventArgs)
     {
         int separatorX = 0;
         using (Pen separatorPen = new Pen(DesignTokens.BORDER_COLOR, DesignTokens.scaleLogicalPixel(this, DesignTokens.BORDER_WIDTH)))
@@ -198,7 +227,7 @@ internal sealed class AppHeaderControl : UserControl
             DesignTokens.TEXT_SECONDARY_COLOR);
     }
 
-    private void onCsvOpenButtonClick(object sender, EventArgs eventArgs)
+    private void onCsvOpenButtonClick(object? senderOrNull, EventArgs eventArgs)
     {
         if (CsvOpenRequested != null)
         {
@@ -206,7 +235,7 @@ internal sealed class AppHeaderControl : UserControl
         }
     }
 
-    private void onPngExportButtonClick(object sender, EventArgs eventArgs)
+    private void onPngExportButtonClick(object? senderOrNull, EventArgs eventArgs)
     {
         if (PngExportRequested != null)
         {
@@ -214,7 +243,7 @@ internal sealed class AppHeaderControl : UserControl
         }
     }
 
-    private void onOutputFolderButtonClick(object sender, EventArgs eventArgs)
+    private void onOutputFolderButtonClick(object? senderOrNull, EventArgs eventArgs)
     {
         if (OutputFolderOpenRequested != null)
         {
@@ -227,14 +256,40 @@ internal sealed class AppHeaderControl : UserControl
         Height = DesignTokens.scaleLogicalPixel(this, DesignTokens.APP_HEADER_HEIGHT);
         MinimumSize = new Size(0, Height);
 
-        int buttonMinimumWidth = DesignTokens.scaleLogicalPixel(this, DesignTokens.HEADER_BUTTON_MINIMUM_WIDTH);
         int buttonMinimumHeight = DesignTokens.scaleLogicalPixel(this, DesignTokens.BUTTON_MINIMUM_HEIGHT);
+        mCsvOpenButton.MinimumSize = new Size(mCsvOpenButton.MinimumSize.Width, buttonMinimumHeight);
+        mPngExportButton.MinimumSize = new Size(mPngExportButton.MinimumSize.Width, buttonMinimumHeight);
+        mOutputFolderButton.MinimumSize = new Size(mOutputFolderButton.MinimumSize.Width, buttonMinimumHeight);
+
+        applyCommandPresentation();
+        mCurrentFilePanel.Invalidate();
+    }
+
+    private void applyCommandPresentation()
+    {
+        if (mCsvOpenButton == null)
+        {
+            return;
+        }
+
+        int compactBreakpoint = DesignTokens.scaleLogicalPixel(
+            this,
+            COMPACT_LAYOUT_BREAKPOINT);
+        bool isCompactLayout = ClientSize.Width < compactBreakpoint;
+        int buttonMinimumWidth = isCompactLayout
+            ? DesignTokens.scaleLogicalPixel(this, COMPACT_BUTTON_MINIMUM_WIDTH)
+            : DesignTokens.scaleLogicalPixel(this, DesignTokens.HEADER_BUTTON_MINIMUM_WIDTH);
+        int buttonMinimumHeight = DesignTokens.scaleLogicalPixel(
+            this,
+            DesignTokens.BUTTON_MINIMUM_HEIGHT);
         Size buttonMinimumSize = new Size(buttonMinimumWidth, buttonMinimumHeight);
+
+        mCsvOpenButton.Text = isCompactLayout ? string.Empty : CSV_OPEN_BUTTON_TEXT;
+        mPngExportButton.Text = isCompactLayout ? string.Empty : PNG_EXPORT_BUTTON_TEXT;
+        mOutputFolderButton.Text = isCompactLayout ? string.Empty : OUTPUT_FOLDER_BUTTON_TEXT;
         mCsvOpenButton.MinimumSize = buttonMinimumSize;
         mPngExportButton.MinimumSize = buttonMinimumSize;
         mOutputFolderButton.MinimumSize = buttonMinimumSize;
-
-        mCurrentFilePanel.Invalidate();
     }
 
     private static bool isCommandEnabled(ECommandAvailability commandAvailability)

@@ -5,4 +5,5 @@ public enum ESchedulePngExportCompletion
     Succeeded,
     PartiallySucceeded,
     Failed,
+    Canceled,
 }

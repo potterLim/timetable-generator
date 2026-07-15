@@ -6,9 +6,9 @@ namespace TimetableGenerator.Core.Application.Scheduling;
 
 internal sealed class CourseChoiceGroup
 {
-    private readonly IReadOnlyList<CourseOffering> mCourseOfferings;
-
     public CourseChoiceGroupId ChoiceGroupId { get; }
+
+    private readonly IReadOnlyList<CourseOffering> mCourseOfferings;
 
     public IReadOnlyList<CourseOffering> CourseOfferings
     {

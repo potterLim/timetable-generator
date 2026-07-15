@@ -10,7 +10,7 @@ public sealed class CourseImportDiagnostic
 
     public ECsvColumn Column { get; }
 
-    public string RawValue { get; }
+    public CourseImportRawValue RawValue { get; }
 
     public string TechnicalDetails { get; }
 
@@ -18,7 +18,7 @@ public sealed class CourseImportDiagnostic
         ECourseImportErrorCode errorCode,
         CsvSourcePosition sourcePosition,
         ECsvColumn column,
-        string rawValue,
+        CourseImportRawValue rawValue,
         string technicalDetails)
     {
         if (Enum.IsDefined(typeof(ECourseImportErrorCode), errorCode) == false)

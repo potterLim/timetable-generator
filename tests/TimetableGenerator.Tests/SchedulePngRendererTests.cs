@@ -33,10 +33,12 @@ public sealed class SchedulePngRendererTests
         assertPngSignature(firstContent);
 
         using (MemoryStream imageStream = new MemoryStream(firstContent, false))
-        using (Image image = Image.FromStream(imageStream))
         {
-            Assert.AreEqual(firstPng.PixelSize.Width, image.Width);
-            Assert.AreEqual(firstPng.PixelSize.Height, image.Height);
+            using (Image image = Image.FromStream(imageStream))
+            {
+                Assert.AreEqual(firstPng.PixelSize.Width, image.Width);
+                Assert.AreEqual(firstPng.PixelSize.Height, image.Height);
+            }
         }
     }
 

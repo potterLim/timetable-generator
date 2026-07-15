@@ -83,6 +83,7 @@ public sealed class SchedulePngExporterTests
             Assert.HasCount(2, result.ExportedFiles);
             Assert.IsEmpty(result.Failures);
             Assert.HasCount(2, recordingProgress.Values);
+            Assert.IsTrue(recordingProgress.Values[0].Position.IsValid);
             Assert.AreEqual(1, recordingProgress.Values[0].ProcessedScheduleCount);
             Assert.AreEqual(2, recordingProgress.Values[0].TotalScheduleCount);
             Assert.AreEqual(1, recordingProgress.Values[0].ScheduleNumber.Value);
@@ -128,6 +129,9 @@ public sealed class SchedulePngExporterTests
             Assert.AreEqual(ESchedulePngExportCompletion.Failed, result.Completion);
             Assert.IsEmpty(result.ExportedFiles);
             Assert.HasCount(1, result.Failures);
+            Assert.AreEqual(
+                "네트워크_시간표_01.png",
+                result.Failures[0].RequestedFileName.Value);
             StringAssert.Contains(result.Failures[0].Message, "시간표 1번 PNG를 저장하지 못했습니다.");
             StringAssert.Contains(result.Failures[0].Message, existingFilePath);
             StringAssert.Contains(result.Failures[0].Message, "원인:");
@@ -171,6 +175,147 @@ public sealed class SchedulePngExporterTests
         }
     }
 
+    [TestMethod]
+    public async Task ExportAllAsyncRollsBackCompletedFilesWhenCanceledAsync()
+    {
+        string testDirectoryPath = createTestDirectoryPath();
+        try
+        {
+            IReadOnlyList<ScheduleGridViewModel> scheduleGrids =
+                SchedulePngTestData.createScheduleGrids();
+            SchedulePngBatchExportRequest request = new SchedulePngBatchExportRequest(
+                scheduleGrids,
+                new ScheduleExportDirectoryPath(testDirectoryPath),
+                new ScheduleExportBaseName("취소 롤백"));
+            SchedulePngExporter exporter = new SchedulePngExporter();
+
+            using (CancellationTokenSource cancellationTokenSource = new CancellationTokenSource())
+            {
+                CancelAfterFirstExportProgress cancellationProgress =
+                    new CancelAfterFirstExportProgress(cancellationTokenSource);
+                SchedulePngExportResult result = await exporter.ExportAllAsync(
+                    request,
+                    cancellationProgress,
+                    cancellationTokenSource.Token);
+
+                Assert.AreEqual(ESchedulePngExportCompletion.Canceled, result.Completion);
+                Assert.IsEmpty(result.ExportedFiles);
+                Assert.IsEmpty(result.Failures);
+            }
+
+            Assert.HasCount(0, Directory.GetFiles(testDirectoryPath, "*.png"));
+        }
+        finally
+        {
+            deleteTestDirectory(testDirectoryPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task ExportAllAsyncRollsBackCompletedFilesWhenProgressReportingFailsAsync()
+    {
+        string testDirectoryPath = createTestDirectoryPath();
+        try
+        {
+            IReadOnlyList<ScheduleGridViewModel> scheduleGrids =
+                SchedulePngTestData.createScheduleGrids();
+            SchedulePngBatchExportRequest request = new SchedulePngBatchExportRequest(
+                scheduleGrids,
+                new ScheduleExportDirectoryPath(testDirectoryPath),
+                new ScheduleExportBaseName("오류 롤백"));
+            SchedulePngExporter exporter = new SchedulePngExporter();
+            ThrowingExportProgress throwingProgress = new ThrowingExportProgress();
+
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => exporter.ExportAllAsync(
+                    request,
+                    throwingProgress,
+                    CancellationToken.None));
+
+            Assert.HasCount(0, Directory.GetFiles(testDirectoryPath, "*.png"));
+        }
+        finally
+        {
+            deleteTestDirectory(testDirectoryPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task ExportCurrentAsyncRollsBackCompletedFileWhenProgressReportingFailsAsync()
+    {
+        string testDirectoryPath = createTestDirectoryPath();
+        try
+        {
+            ScheduleGridViewModel scheduleGrid = SchedulePngTestData.createScheduleGrid(
+                "운영체제",
+                EDay.Wednesday,
+                3);
+            SchedulePngExportRequest request = new SchedulePngExportRequest(
+                scheduleGrid,
+                new ScheduleExportNumber(1),
+                new ScheduleExportDirectoryPath(testDirectoryPath),
+                new ScheduleExportBaseName("현재 오류 롤백"));
+            SchedulePngExporter exporter = new SchedulePngExporter();
+            ThrowingExportProgress throwingProgress = new ThrowingExportProgress();
+
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => exporter.ExportCurrentAsync(
+                    request,
+                    throwingProgress,
+                    CancellationToken.None));
+
+            Assert.HasCount(0, Directory.GetFiles(testDirectoryPath, "*.png"));
+        }
+        finally
+        {
+            deleteTestDirectory(testDirectoryPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task ExportAllAsyncReportsRetainedArtifactWhenRollbackCannotDeleteAFileAsync()
+    {
+        string testDirectoryPath = createTestDirectoryPath();
+        try
+        {
+            IReadOnlyList<ScheduleGridViewModel> scheduleGrids =
+                SchedulePngTestData.createScheduleGrids();
+            SchedulePngBatchExportRequest request = new SchedulePngBatchExportRequest(
+                scheduleGrids,
+                new ScheduleExportDirectoryPath(testDirectoryPath),
+                new ScheduleExportBaseName("잠금 롤백"));
+            SchedulePngExporter exporter = new SchedulePngExporter();
+
+            using (CancellationTokenSource cancellationTokenSource = new CancellationTokenSource())
+            {
+                using (LockFirstOutputAndCancelProgress progress =
+                    new LockFirstOutputAndCancelProgress(
+                        testDirectoryPath,
+                        cancellationTokenSource))
+                {
+                    SchedulePngExportCleanupException exception =
+                        await Assert.ThrowsAsync<SchedulePngExportCleanupException>(
+                            () => exporter.ExportAllAsync(
+                                request,
+                                progress,
+                                cancellationTokenSource.Token));
+
+                    Assert.HasCount(1, exception.RetainedArtifacts);
+                    Assert.AreEqual(
+                        ESchedulePngExportArtifactKind.CompletedPng,
+                        exception.RetainedArtifacts[0].Kind);
+                    Assert.AreEqual(
+                        Path.Combine(testDirectoryPath, "잠금 롤백_시간표_01.png"),
+                        exception.RetainedArtifacts[0].FilePath.Value);
+                }
+            }
+        }
+        finally
+        {
+            deleteTestDirectory(testDirectoryPath);
+        }
+    }
+
     private static string createTestDirectoryPath()
     {
         return Path.Combine(
@@ -203,6 +348,77 @@ public sealed class SchedulePngExporterTests
         public void Report(SchedulePngExportProgress value)
         {
             mValues.Add(value);
+        }
+    }
+
+    private sealed class CancelAfterFirstExportProgress : IProgress<SchedulePngExportProgress>
+    {
+        private readonly CancellationTokenSource mCancellationTokenSource;
+
+        internal CancelAfterFirstExportProgress(
+            CancellationTokenSource cancellationTokenSource)
+        {
+            mCancellationTokenSource = cancellationTokenSource;
+        }
+
+        public void Report(SchedulePngExportProgress value)
+        {
+            if (value.ProcessedScheduleCount == 1)
+            {
+                mCancellationTokenSource.Cancel();
+            }
+        }
+    }
+
+    private sealed class ThrowingExportProgress : IProgress<SchedulePngExportProgress>
+    {
+        public void Report(SchedulePngExportProgress value)
+        {
+            throw new InvalidOperationException("Synthetic progress failure.");
+        }
+    }
+
+    private sealed class LockFirstOutputAndCancelProgress :
+        IProgress<SchedulePngExportProgress>,
+        IDisposable
+    {
+        private readonly string mOutputDirectoryPath;
+        private readonly CancellationTokenSource mCancellationTokenSource;
+        private FileStream? mLockedOutputStreamOrNull;
+
+        internal LockFirstOutputAndCancelProgress(
+            string outputDirectoryPath,
+            CancellationTokenSource cancellationTokenSource)
+        {
+            mOutputDirectoryPath = outputDirectoryPath;
+            mCancellationTokenSource = cancellationTokenSource;
+        }
+
+        public void Report(SchedulePngExportProgress value)
+        {
+            if (value.ProcessedScheduleCount != 1)
+            {
+                return;
+            }
+
+            string firstOutputFilePath = Path.Combine(
+                mOutputDirectoryPath,
+                "잠금 롤백_시간표_01.png");
+            mLockedOutputStreamOrNull = new FileStream(
+                firstOutputFilePath,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.None);
+            mCancellationTokenSource.Cancel();
+        }
+
+        public void Dispose()
+        {
+            if (mLockedOutputStreamOrNull != null)
+            {
+                mLockedOutputStreamOrNull.Dispose();
+                mLockedOutputStreamOrNull = null;
+            }
         }
     }
 }

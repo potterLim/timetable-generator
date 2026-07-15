@@ -21,8 +21,8 @@ internal sealed class ScheduleWorkspaceControl : UserControl
     private readonly Font mTitleFont;
     private readonly Font mSummaryFont;
 
-    internal event EventHandler PreviousScheduleRequested;
-    internal event EventHandler NextScheduleRequested;
+    internal event EventHandler? PreviousScheduleRequested;
+    internal event EventHandler? NextScheduleRequested;
 
     internal ScheduleWorkspaceControl()
     {
@@ -45,7 +45,7 @@ internal sealed class ScheduleWorkspaceControl : UserControl
         mNavigationPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
         mNavigationPanel.FlowDirection = FlowDirection.LeftToRight;
         mNavigationPanel.WrapContents = false;
-        mNavigationPanel.BackColor = Color.Transparent;
+        mNavigationPanel.BackColor = DesignTokens.WINDOW_BACKGROUND_COLOR;
 
         mPreviousButton = new ProductButton(
             "이전",
@@ -66,7 +66,7 @@ internal sealed class ScheduleWorkspaceControl : UserControl
 
         mHeaderTextPanel = new Panel();
         mHeaderTextPanel.Dock = DockStyle.Fill;
-        mHeaderTextPanel.BackColor = Color.Transparent;
+        mHeaderTextPanel.BackColor = DesignTokens.WINDOW_BACKGROUND_COLOR;
 
         mScheduleTitleLabel = new Label();
         mScheduleTitleLabel.Dock = DockStyle.Top;
@@ -132,6 +132,7 @@ internal sealed class ScheduleWorkspaceControl : UserControl
         mPreviousButton.Enabled = previousAvailability == ECommandAvailability.Enabled;
         mNextButton.Enabled = nextAvailability == ECommandAvailability.Enabled;
         mScheduleGrid.showSchedule(schedule);
+        applyDpiMetrics();
     }
 
     protected override void Dispose(bool disposing)
@@ -186,21 +187,21 @@ internal sealed class ScheduleWorkspaceControl : UserControl
             DesignTokens.scaleLogicalPixel(this, DesignTokens.SPACE_8);
     }
 
-    private void onPreviousButtonClick(object sender, EventArgs eventArgs)
+    private void onPreviousButtonClick(object? senderOrNull, EventArgs eventArgs)
     {
-        EventHandler eventHandler = PreviousScheduleRequested;
-        if (eventHandler != null)
+        EventHandler? eventHandlerOrNull = PreviousScheduleRequested;
+        if (eventHandlerOrNull != null)
         {
-            eventHandler(this, EventArgs.Empty);
+            eventHandlerOrNull(this, EventArgs.Empty);
         }
     }
 
-    private void onNextButtonClick(object sender, EventArgs eventArgs)
+    private void onNextButtonClick(object? senderOrNull, EventArgs eventArgs)
     {
-        EventHandler eventHandler = NextScheduleRequested;
-        if (eventHandler != null)
+        EventHandler? eventHandlerOrNull = NextScheduleRequested;
+        if (eventHandlerOrNull != null)
         {
-            eventHandler(this, EventArgs.Empty);
+            eventHandlerOrNull(this, EventArgs.Empty);
         }
     }
 }

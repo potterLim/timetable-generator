@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using TimetableGenerator.Presentation.Schedules;
 using CoreDay = TimetableGenerator.Core.Domain.EDay;
 
@@ -73,6 +74,7 @@ internal static class ScheduleSummaryTextFormatter
                 return "일";
             case CoreDay.None:
             default:
+                Debug.Fail("Unexpected active schedule day: " + day);
                 throw new ArgumentOutOfRangeException(nameof(day));
         }
     }

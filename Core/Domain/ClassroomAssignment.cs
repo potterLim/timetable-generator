@@ -4,7 +4,7 @@ namespace TimetableGenerator.Core.Domain;
 
 public readonly record struct ClassroomAssignment
 {
-    private readonly ClassroomLocation mClassroomLocationOrNull;
+    private readonly ClassroomLocation? mClassroomLocationOrNull;
 
     public static ClassroomAssignment Unassigned
     {
@@ -39,7 +39,7 @@ public readonly record struct ClassroomAssignment
 
     public ClassroomLocation GetClassroomLocation()
     {
-        if (IsAssigned == false)
+        if (mClassroomLocationOrNull == null)
         {
             throw new InvalidOperationException("The course offering does not have an assigned classroom.");
         }

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -27,7 +28,25 @@ public sealed class SchedulePngRenderer
     private const int COURSE_CARD_CONTENT_INSET_PIXELS = 18;
     private const int TABLE_CORNER_RADIUS_PIXELS = 18;
     private const int PNG_DPI = 144;
-    private const string FONT_FAMILY_NAME = "Segoe UI";
+    private const float GRID_LINE_WIDTH_PIXELS = 1.0f;
+    private const float TITLE_TOP_INSET_PIXELS = 8.0f;
+    private const float TITLE_TEXT_HEIGHT_PIXELS = 58.0f;
+    private const float SUBTITLE_TOP_OFFSET_PIXELS = 62.0f;
+    private const float SUBTITLE_TEXT_HEIGHT_PIXELS = 34.0f;
+    private const float TITLE_ACCENT_TOP_OFFSET_PIXELS = -1.0f;
+    private const float TITLE_ACCENT_WIDTH_PIXELS = 8.0f;
+    private const float TITLE_ACCENT_HEIGHT_PIXELS = 57.0f;
+    private const float PERIOD_LABEL_TOP_INSET_PIXELS = 18.0f;
+    private const float PERIOD_LABEL_HEIGHT_PIXELS = 35.0f;
+    private const float TIME_RANGE_TOP_INSET_PIXELS = 55.0f;
+    private const float TIME_RANGE_HEIGHT_PIXELS = 34.0f;
+    private const float COURSE_NAME_TOP_INSET_PIXELS = 16.0f;
+    private const float COURSE_NAME_BOTTOM_INSET_PIXELS = 26.0f;
+    private const float CLASSROOM_RESERVED_HEIGHT_PIXELS = 28.0f;
+    private const float CLASSROOM_BOTTOM_INSET_PIXELS = 39.0f;
+    private const float CLASSROOM_TEXT_HEIGHT_PIXELS = 24.0f;
+    private const float FOOTER_TOP_INSET_PIXELS = 18.0f;
+    private const float FOOTER_TEXT_HEIGHT_PIXELS = 30.0f;
 
     private static readonly Color PAGE_BACKGROUND_COLOR = Color.FromArgb(247, 249, 252);
     private static readonly Color SURFACE_COLOR = Color.White;
@@ -43,18 +62,12 @@ public sealed class SchedulePngRenderer
         Color.FromArgb(231, 243, 255),
         Color.FromArgb(232, 247, 242),
         Color.FromArgb(242, 237, 255),
-        Color.FromArgb(255, 242, 231),
-        Color.FromArgb(255, 235, 240),
-        Color.FromArgb(232, 246, 249),
     };
     private static readonly Color[] COURSE_CARD_ACCENT_COLORS = new Color[]
     {
         Color.FromArgb(15, 108, 189),
         Color.FromArgb(16, 124, 97),
         Color.FromArgb(105, 76, 180),
-        Color.FromArgb(196, 92, 28),
-        Color.FromArgb(190, 55, 88),
-        Color.FromArgb(25, 123, 140),
     };
 
     public RenderedSchedulePng Render(ScheduleGridViewModel scheduleGrid)
@@ -126,19 +139,9 @@ public sealed class SchedulePngRenderer
         SchedulePngPixelSize pixelSize,
         CancellationToken cancellationToken)
     {
-        using (Font titleFont = new Font(FONT_FAMILY_NAME, 33.0f, FontStyle.Bold, GraphicsUnit.Pixel))
-        using (Font subtitleFont = new Font(FONT_FAMILY_NAME, 17.0f, FontStyle.Regular, GraphicsUnit.Pixel))
-        using (Font headerFont = new Font(FONT_FAMILY_NAME, 19.0f, FontStyle.Bold, GraphicsUnit.Pixel))
-        using (Font periodFont = new Font(FONT_FAMILY_NAME, 18.0f, FontStyle.Bold, GraphicsUnit.Pixel))
-        using (Font timeFont = new Font(FONT_FAMILY_NAME, 14.0f, FontStyle.Regular, GraphicsUnit.Pixel))
-        using (Font courseFont = new Font(FONT_FAMILY_NAME, 18.0f, FontStyle.Bold, GraphicsUnit.Pixel))
-        using (Font classroomFont = new Font(FONT_FAMILY_NAME, 14.0f, FontStyle.Regular, GraphicsUnit.Pixel))
-        using (Font footerFont = new Font(FONT_FAMILY_NAME, 13.0f, FontStyle.Regular, GraphicsUnit.Pixel))
-        using (StringFormat centeredFormat = createCenteredStringFormat())
-        using (StringFormat leftAlignedFormat = createLeftAlignedStringFormat())
-        using (StringFormat courseFormat = createCourseStringFormat())
+        using (SchedulePngRenderResources resources = new SchedulePngRenderResources())
         {
-            drawTitle(graphics, scheduleGrid, titleFont, subtitleFont, leftAlignedFormat);
+            drawTitle(graphics, scheduleGrid, resources);
 
             RectangleF tableBounds = getTableBounds(scheduleGrid);
             drawTableSurface(graphics, tableBounds);
@@ -154,18 +157,12 @@ public sealed class SchedulePngRenderer
                         graphics,
                         scheduleGrid,
                         tableBounds,
-                        headerFont,
-                        centeredFormat);
+                        resources);
                     drawPeriodRows(
                         graphics,
                         scheduleGrid,
                         tableBounds,
-                        periodFont,
-                        timeFont,
-                        courseFont,
-                        classroomFont,
-                        centeredFormat,
-                        courseFormat,
+                        resources,
                         cancellationToken);
                 }
                 finally
@@ -175,78 +172,55 @@ public sealed class SchedulePngRenderer
             }
 
             drawTableBorder(graphics, tableBounds);
-            drawFooter(graphics, pixelSize, tableBounds, footerFont, leftAlignedFormat);
+            drawFooter(graphics, pixelSize, tableBounds, resources);
         }
-    }
-
-    private static StringFormat createCenteredStringFormat()
-    {
-        StringFormat stringFormat = new StringFormat(StringFormat.GenericTypographic);
-        stringFormat.Alignment = StringAlignment.Center;
-        stringFormat.LineAlignment = StringAlignment.Center;
-        stringFormat.Trimming = StringTrimming.EllipsisCharacter;
-        stringFormat.FormatFlags = StringFormatFlags.NoWrap;
-        return stringFormat;
-    }
-
-    private static StringFormat createLeftAlignedStringFormat()
-    {
-        StringFormat stringFormat = new StringFormat(StringFormat.GenericTypographic);
-        stringFormat.Alignment = StringAlignment.Near;
-        stringFormat.LineAlignment = StringAlignment.Center;
-        stringFormat.Trimming = StringTrimming.EllipsisCharacter;
-        stringFormat.FormatFlags = StringFormatFlags.NoWrap;
-        return stringFormat;
-    }
-
-    private static StringFormat createCourseStringFormat()
-    {
-        StringFormat stringFormat = new StringFormat(StringFormat.GenericTypographic);
-        stringFormat.Alignment = StringAlignment.Near;
-        stringFormat.LineAlignment = StringAlignment.Near;
-        stringFormat.Trimming = StringTrimming.EllipsisWord;
-        stringFormat.FormatFlags = StringFormatFlags.LineLimit;
-        return stringFormat;
     }
 
     private static void drawTitle(
         Graphics graphics,
         ScheduleGridViewModel scheduleGrid,
-        Font titleFont,
-        Font subtitleFont,
-        StringFormat leftAlignedFormat)
+        SchedulePngRenderResources resources)
     {
-        float titleTop = PAGE_MARGIN_PIXELS + 8.0f;
+        float titleTop = PAGE_MARGIN_PIXELS + TITLE_TOP_INSET_PIXELS;
         RectangleF titleBounds = new RectangleF(
             PAGE_MARGIN_PIXELS,
             titleTop,
             CANVAS_WIDTH_PIXELS - (PAGE_MARGIN_PIXELS * 2),
-            58.0f);
+            TITLE_TEXT_HEIGHT_PIXELS);
         RectangleF subtitleBounds = new RectangleF(
             PAGE_MARGIN_PIXELS,
-            titleTop + 62.0f,
+            titleTop + SUBTITLE_TOP_OFFSET_PIXELS,
             CANVAS_WIDTH_PIXELS - (PAGE_MARGIN_PIXELS * 2),
-            34.0f);
+            SUBTITLE_TEXT_HEIGHT_PIXELS);
 
         using (SolidBrush titleBrush = new SolidBrush(TITLE_COLOR))
-        using (SolidBrush subtitleBrush = new SolidBrush(SECONDARY_TEXT_COLOR))
-        using (SolidBrush accentBrush = new SolidBrush(ACCENT_COLOR))
         {
-            graphics.FillRectangle(
-                accentBrush,
-                PAGE_MARGIN_PIXELS,
-                titleTop - 1.0f,
-                8.0f,
-                57.0f);
-            graphics.DrawString("시간표", titleFont, titleBrush, titleBounds, leftAlignedFormat);
+            using (SolidBrush subtitleBrush = new SolidBrush(SECONDARY_TEXT_COLOR))
+            {
+                using (SolidBrush accentBrush = new SolidBrush(ACCENT_COLOR))
+                {
+                    graphics.FillRectangle(
+                        accentBrush,
+                        PAGE_MARGIN_PIXELS,
+                        titleTop + TITLE_ACCENT_TOP_OFFSET_PIXELS,
+                        TITLE_ACCENT_WIDTH_PIXELS,
+                        TITLE_ACCENT_HEIGHT_PIXELS);
+                    graphics.DrawString(
+                        "시간표",
+                        resources.TitleFont,
+                        titleBrush,
+                        titleBounds,
+                        resources.LeftAlignedTextFormat);
 
-            string summaryText = buildSummaryText(scheduleGrid);
-            graphics.DrawString(
-                summaryText,
-                subtitleFont,
-                subtitleBrush,
-                subtitleBounds,
-                leftAlignedFormat);
+                    string summaryText = buildSummaryText(scheduleGrid);
+                    graphics.DrawString(
+                        summaryText,
+                        resources.SubtitleFont,
+                        subtitleBrush,
+                        subtitleBounds,
+                        resources.LeftAlignedTextFormat);
+                }
+            }
         }
     }
 
@@ -291,6 +265,7 @@ public sealed class SchedulePngRenderer
                 return "일요일";
             case CoreDay.None:
             default:
+                Debug.Fail("Unexpected schedule day: " + day);
                 throw new ArgumentOutOfRangeException(nameof(day));
         }
     }
@@ -312,9 +287,11 @@ public sealed class SchedulePngRenderer
         using (GraphicsPath tablePath = createRoundedRectanglePath(
             tableBounds,
             TABLE_CORNER_RADIUS_PIXELS))
-        using (SolidBrush surfaceBrush = new SolidBrush(SURFACE_COLOR))
         {
-            graphics.FillPath(surfaceBrush, tablePath);
+            using (SolidBrush surfaceBrush = new SolidBrush(SURFACE_COLOR))
+            {
+                graphics.FillPath(surfaceBrush, tablePath);
+            }
         }
     }
 
@@ -323,9 +300,11 @@ public sealed class SchedulePngRenderer
         using (GraphicsPath tablePath = createRoundedRectanglePath(
             tableBounds,
             TABLE_CORNER_RADIUS_PIXELS))
-        using (Pen borderPen = new Pen(GRID_LINE_COLOR, 1.0f))
         {
-            graphics.DrawPath(borderPen, tablePath);
+            using (Pen borderPen = new Pen(GRID_LINE_COLOR, GRID_LINE_WIDTH_PIXELS))
+            {
+                graphics.DrawPath(borderPen, tablePath);
+            }
         }
     }
 
@@ -333,8 +312,7 @@ public sealed class SchedulePngRenderer
         Graphics graphics,
         ScheduleGridViewModel scheduleGrid,
         RectangleF tableBounds,
-        Font headerFont,
-        StringFormat centeredFormat)
+        SchedulePngRenderResources resources)
     {
         RectangleF headerBounds = new RectangleF(
             tableBounds.X,
@@ -344,51 +322,65 @@ public sealed class SchedulePngRenderer
         using (GraphicsPath headerPath = createTopRoundedRectanglePath(
             headerBounds,
             TABLE_CORNER_RADIUS_PIXELS))
-        using (SolidBrush headerBackgroundBrush = new SolidBrush(HEADER_BACKGROUND_COLOR))
-        using (SolidBrush headerTextBrush = new SolidBrush(TITLE_COLOR))
-        using (Pen gridPen = new Pen(GRID_LINE_COLOR, 1.0f))
         {
-            graphics.FillPath(headerBackgroundBrush, headerPath);
-
-            RectangleF timeHeaderBounds = new RectangleF(
-                tableBounds.X,
-                tableBounds.Y,
-                TIME_COLUMN_WIDTH_PIXELS,
-                COLUMN_HEADER_HEIGHT_PIXELS);
-            graphics.DrawString("교시", headerFont, headerTextBrush, timeHeaderBounds, centeredFormat);
-
-            float dayColumnWidth = calculateDayColumnWidth(scheduleGrid, tableBounds);
-            for (int columnIndex = 0; columnIndex < scheduleGrid.DayColumns.Count; ++columnIndex)
+            using (SolidBrush headerBackgroundBrush = new SolidBrush(HEADER_BACKGROUND_COLOR))
             {
-                float columnLeft = tableBounds.X
-                    + TIME_COLUMN_WIDTH_PIXELS
-                    + (columnIndex * dayColumnWidth);
-                RectangleF dayHeaderBounds = new RectangleF(
-                    columnLeft,
-                    tableBounds.Y,
-                    dayColumnWidth,
-                    COLUMN_HEADER_HEIGHT_PIXELS);
-                string dayHeaderText = scheduleGrid.DayColumns[columnIndex].DisplayName + "요일";
-                graphics.DrawString(
-                    dayHeaderText,
-                    headerFont,
-                    headerTextBrush,
-                    dayHeaderBounds,
-                    centeredFormat);
-                graphics.DrawLine(
-                    gridPen,
-                    columnLeft,
-                    tableBounds.Y,
-                    columnLeft,
-                    tableBounds.Bottom);
-            }
+                using (SolidBrush headerTextBrush = new SolidBrush(TITLE_COLOR))
+                {
+                    using (Pen gridPen = new Pen(GRID_LINE_COLOR, GRID_LINE_WIDTH_PIXELS))
+                    {
+                        graphics.FillPath(headerBackgroundBrush, headerPath);
 
-            graphics.DrawLine(
-                gridPen,
-                tableBounds.X,
-                tableBounds.Y + COLUMN_HEADER_HEIGHT_PIXELS,
-                tableBounds.Right,
-                tableBounds.Y + COLUMN_HEADER_HEIGHT_PIXELS);
+                        RectangleF timeHeaderBounds = new RectangleF(
+                            tableBounds.X,
+                            tableBounds.Y,
+                            TIME_COLUMN_WIDTH_PIXELS,
+                            COLUMN_HEADER_HEIGHT_PIXELS);
+                        graphics.DrawString(
+                            "교시",
+                            resources.ColumnHeaderFont,
+                            headerTextBrush,
+                            timeHeaderBounds,
+                            resources.CenteredTextFormat);
+
+                        float dayColumnWidth = calculateDayColumnWidth(scheduleGrid, tableBounds);
+                        for (int columnIndex = 0;
+                            columnIndex < scheduleGrid.DayColumns.Count;
+                            ++columnIndex)
+                        {
+                            float columnLeft = tableBounds.X
+                                + TIME_COLUMN_WIDTH_PIXELS
+                                + (columnIndex * dayColumnWidth);
+                            RectangleF dayHeaderBounds = new RectangleF(
+                                columnLeft,
+                                tableBounds.Y,
+                                dayColumnWidth,
+                                COLUMN_HEADER_HEIGHT_PIXELS);
+                            string dayHeaderText = scheduleGrid.DayColumns[columnIndex].DisplayName
+                                + "요일";
+                            graphics.DrawString(
+                                dayHeaderText,
+                                resources.ColumnHeaderFont,
+                                headerTextBrush,
+                                dayHeaderBounds,
+                                resources.CenteredTextFormat);
+                            graphics.DrawLine(
+                                gridPen,
+                                columnLeft,
+                                tableBounds.Y,
+                                columnLeft,
+                                tableBounds.Bottom);
+                        }
+
+                        graphics.DrawLine(
+                            gridPen,
+                            tableBounds.X,
+                            tableBounds.Y + COLUMN_HEADER_HEIGHT_PIXELS,
+                            tableBounds.Right,
+                            tableBounds.Y + COLUMN_HEADER_HEIGHT_PIXELS);
+                    }
+                }
+            }
         }
     }
 
@@ -404,78 +396,79 @@ public sealed class SchedulePngRenderer
         Graphics graphics,
         ScheduleGridViewModel scheduleGrid,
         RectangleF tableBounds,
-        Font periodFont,
-        Font timeFont,
-        Font courseFont,
-        Font classroomFont,
-        StringFormat centeredFormat,
-        StringFormat courseFormat,
+        SchedulePngRenderResources resources,
         CancellationToken cancellationToken)
     {
         float dayColumnWidth = calculateDayColumnWidth(scheduleGrid, tableBounds);
-        using (Pen gridPen = new Pen(GRID_LINE_COLOR, 1.0f))
-        using (SolidBrush alternateRowBrush = new SolidBrush(ALTERNATE_ROW_COLOR))
-        using (SolidBrush primaryTextBrush = new SolidBrush(TITLE_COLOR))
-        using (SolidBrush secondaryTextBrush = new SolidBrush(SECONDARY_TEXT_COLOR))
+        using (Pen gridPen = new Pen(GRID_LINE_COLOR, GRID_LINE_WIDTH_PIXELS))
         {
-            for (int rowIndex = 0; rowIndex < scheduleGrid.PeriodRows.Count; ++rowIndex)
+            using (SolidBrush alternateRowBrush = new SolidBrush(ALTERNATE_ROW_COLOR))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                SchedulePeriodRowViewModel periodRow = scheduleGrid.PeriodRows[rowIndex];
-                float rowTop = tableBounds.Y
-                    + COLUMN_HEADER_HEIGHT_PIXELS
-                    + (rowIndex * PERIOD_ROW_HEIGHT_PIXELS);
-                RectangleF rowBounds = new RectangleF(
-                    tableBounds.X,
-                    rowTop,
-                    tableBounds.Width,
-                    PERIOD_ROW_HEIGHT_PIXELS);
-
-                if (rowIndex % 2 == 1)
+                using (SolidBrush primaryTextBrush = new SolidBrush(TITLE_COLOR))
                 {
-                    graphics.FillRectangle(alternateRowBrush, rowBounds);
-                }
+                    using (SolidBrush secondaryTextBrush = new SolidBrush(SECONDARY_TEXT_COLOR))
+                    {
+                        for (int rowIndex = 0;
+                            rowIndex < scheduleGrid.PeriodRows.Count;
+                            ++rowIndex)
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
 
-                drawPeriodAxis(
-                    graphics,
-                    periodRow,
-                    rowBounds,
-                    periodFont,
-                    timeFont,
-                    primaryTextBrush,
-                    secondaryTextBrush,
-                    centeredFormat);
+                            SchedulePeriodRowViewModel periodRow = scheduleGrid.PeriodRows[rowIndex];
+                            float rowTop = tableBounds.Y
+                                + COLUMN_HEADER_HEIGHT_PIXELS
+                                + (rowIndex * PERIOD_ROW_HEIGHT_PIXELS);
+                            RectangleF rowBounds = new RectangleF(
+                                tableBounds.X,
+                                rowTop,
+                                tableBounds.Width,
+                                PERIOD_ROW_HEIGHT_PIXELS);
 
-                for (int columnIndex = 0; columnIndex < periodRow.Cells.Count; ++columnIndex)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
+                            if (rowIndex % 2 == 1)
+                            {
+                                graphics.FillRectangle(alternateRowBrush, rowBounds);
+                            }
 
-                    float cellLeft = tableBounds.X
-                        + TIME_COLUMN_WIDTH_PIXELS
-                        + (columnIndex * dayColumnWidth);
-                    RectangleF cellBounds = new RectangleF(
-                        cellLeft,
-                        rowTop,
-                        dayColumnWidth,
-                        PERIOD_ROW_HEIGHT_PIXELS);
-                    drawScheduleCell(
-                        graphics,
-                        periodRow.Cells[columnIndex],
-                        cellBounds,
-                        courseFont,
-                        classroomFont,
-                        courseFormat);
-                }
+                            drawPeriodAxis(
+                                graphics,
+                                periodRow,
+                                rowBounds,
+                                resources,
+                                primaryTextBrush,
+                                secondaryTextBrush);
 
-                if (rowIndex < scheduleGrid.PeriodRows.Count - 1)
-                {
-                    graphics.DrawLine(
-                        gridPen,
-                        tableBounds.X,
-                        rowBounds.Bottom,
-                        tableBounds.Right,
-                        rowBounds.Bottom);
+                            for (int columnIndex = 0;
+                                columnIndex < periodRow.Cells.Count;
+                                ++columnIndex)
+                            {
+                                cancellationToken.ThrowIfCancellationRequested();
+
+                                float cellLeft = tableBounds.X
+                                    + TIME_COLUMN_WIDTH_PIXELS
+                                    + (columnIndex * dayColumnWidth);
+                                RectangleF cellBounds = new RectangleF(
+                                    cellLeft,
+                                    rowTop,
+                                    dayColumnWidth,
+                                    PERIOD_ROW_HEIGHT_PIXELS);
+                                drawScheduleCell(
+                                    graphics,
+                                    periodRow.Cells[columnIndex],
+                                    cellBounds,
+                                    resources);
+                            }
+
+                            if (rowIndex < scheduleGrid.PeriodRows.Count - 1)
+                            {
+                                graphics.DrawLine(
+                                    gridPen,
+                                    tableBounds.X,
+                                    rowBounds.Bottom,
+                                    tableBounds.Right,
+                                    rowBounds.Bottom);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -485,39 +478,45 @@ public sealed class SchedulePngRenderer
         Graphics graphics,
         SchedulePeriodRowViewModel periodRow,
         RectangleF rowBounds,
-        Font periodFont,
-        Font timeFont,
+        SchedulePngRenderResources resources,
         Brush primaryTextBrush,
-        Brush secondaryTextBrush,
-        StringFormat centeredFormat)
+        Brush secondaryTextBrush)
     {
         RectangleF periodBounds = new RectangleF(
             rowBounds.X,
-            rowBounds.Y + 18.0f,
+            rowBounds.Y + PERIOD_LABEL_TOP_INSET_PIXELS,
             TIME_COLUMN_WIDTH_PIXELS,
-            35.0f);
+            PERIOD_LABEL_HEIGHT_PIXELS);
         RectangleF timeBounds = new RectangleF(
             rowBounds.X,
-            rowBounds.Y + 55.0f,
+            rowBounds.Y + TIME_RANGE_TOP_INSET_PIXELS,
             TIME_COLUMN_WIDTH_PIXELS,
-            34.0f);
+            TIME_RANGE_HEIGHT_PIXELS);
 
         string periodText = periodRow.Period.Value.ToString(CultureInfo.InvariantCulture) + "교시";
         string timeText = periodRow.TimeRange.StartTime.ToString("HH:mm", CultureInfo.InvariantCulture)
             + " – "
             + periodRow.TimeRange.EndTime.ToString("HH:mm", CultureInfo.InvariantCulture);
 
-        graphics.DrawString(periodText, periodFont, primaryTextBrush, periodBounds, centeredFormat);
-        graphics.DrawString(timeText, timeFont, secondaryTextBrush, timeBounds, centeredFormat);
+        graphics.DrawString(
+            periodText,
+            resources.PeriodLabelFont,
+            primaryTextBrush,
+            periodBounds,
+            resources.CenteredTextFormat);
+        graphics.DrawString(
+            timeText,
+            resources.TimeRangeFont,
+            secondaryTextBrush,
+            timeBounds,
+            resources.CenteredTextFormat);
     }
 
     private static void drawScheduleCell(
         Graphics graphics,
         ScheduleCellViewModel scheduleCell,
         RectangleF cellBounds,
-        Font courseFont,
-        Font classroomFont,
-        StringFormat courseFormat)
+        SchedulePngRenderResources resources)
     {
         if (scheduleCell.HasCourseOffering == false)
         {
@@ -532,64 +531,89 @@ public sealed class SchedulePngRenderer
         using (GraphicsPath cardPath = createRoundedRectanglePath(
             cardBounds,
             COURSE_CARD_CORNER_RADIUS_PIXELS))
-        using (SolidBrush cardBackgroundBrush = new SolidBrush(cardBackgroundColor))
-        using (SolidBrush cardAccentBrush = new SolidBrush(cardAccentColor))
-        using (SolidBrush courseTextBrush = new SolidBrush(TITLE_COLOR))
-        using (SolidBrush classroomTextBrush = new SolidBrush(SECONDARY_TEXT_COLOR))
         {
-            graphics.FillPath(cardBackgroundBrush, cardPath);
-            RectangleF accentBounds = new RectangleF(
-                cardBounds.X,
-                cardBounds.Y,
-                COURSE_CARD_ACCENT_WIDTH_PIXELS,
-                cardBounds.Height);
-            GraphicsState cardClipState = graphics.Save();
-            try
+            using (SolidBrush cardBackgroundBrush = new SolidBrush(cardBackgroundColor))
             {
-                graphics.SetClip(cardPath, CombineMode.Intersect);
-                graphics.FillRectangle(cardAccentBrush, accentBounds);
-            }
-            finally
-            {
-                graphics.Restore(cardClipState);
-            }
+                using (SolidBrush cardAccentBrush = new SolidBrush(cardAccentColor))
+                {
+                    using (SolidBrush courseTextBrush = new SolidBrush(TITLE_COLOR))
+                    {
+                        using (SolidBrush classroomTextBrush = new SolidBrush(SECONDARY_TEXT_COLOR))
+                        {
+                            graphics.FillPath(cardBackgroundBrush, cardPath);
+                            RectangleF accentBounds = new RectangleF(
+                                cardBounds.X,
+                                cardBounds.Y,
+                                COURSE_CARD_ACCENT_WIDTH_PIXELS,
+                                cardBounds.Height);
+                            GraphicsState cardClipState = graphics.Save();
+                            try
+                            {
+                                graphics.SetClip(cardPath, CombineMode.Intersect);
+                                graphics.FillRectangle(cardAccentBrush, accentBounds);
+                            }
+                            finally
+                            {
+                                graphics.Restore(cardClipState);
+                            }
 
-            float contentLeft = cardBounds.X + COURSE_CARD_CONTENT_INSET_PIXELS;
-            float contentWidth = cardBounds.Width - (COURSE_CARD_CONTENT_INSET_PIXELS * 2);
-            float classroomHeight = scheduleCell.HasClassroom ? 28.0f : 0.0f;
-            RectangleF courseBounds = new RectangleF(
-                contentLeft,
-                cardBounds.Y + 16.0f,
-                contentWidth,
-                cardBounds.Height - classroomHeight - 26.0f);
-            graphics.DrawString(
-                scheduleCell.CourseDisplayName,
-                courseFont,
-                courseTextBrush,
-                courseBounds,
-                courseFormat);
+                            float contentLeft = cardBounds.X + COURSE_CARD_CONTENT_INSET_PIXELS;
+                            float contentWidth = cardBounds.Width
+                                - (COURSE_CARD_CONTENT_INSET_PIXELS * 2);
+                            float classroomReservedHeight = scheduleCell.HasClassroom
+                                ? CLASSROOM_RESERVED_HEIGHT_PIXELS
+                                : 0.0f;
+                            RectangleF courseBounds = new RectangleF(
+                                contentLeft,
+                                cardBounds.Y + COURSE_NAME_TOP_INSET_PIXELS,
+                                contentWidth,
+                                cardBounds.Height
+                                    - classroomReservedHeight
+                                    - COURSE_NAME_BOTTOM_INSET_PIXELS);
+                            graphics.DrawString(
+                                scheduleCell.CourseDisplayName,
+                                resources.CourseNameFont,
+                                courseTextBrush,
+                                courseBounds,
+                                resources.CourseTextFormat);
 
-            if (scheduleCell.HasClassroom)
-            {
-                RectangleF classroomBounds = new RectangleF(
-                    contentLeft,
-                    cardBounds.Bottom - 39.0f,
-                    contentWidth,
-                    24.0f);
-                graphics.DrawString(
-                    scheduleCell.GetClassroomDisplayText(),
-                    classroomFont,
-                    classroomTextBrush,
-                    classroomBounds,
-                    courseFormat);
+                            if (scheduleCell.HasClassroom)
+                            {
+                                RectangleF classroomBounds = new RectangleF(
+                                    contentLeft,
+                                    cardBounds.Bottom - CLASSROOM_BOTTOM_INSET_PIXELS,
+                                    contentWidth,
+                                    CLASSROOM_TEXT_HEIGHT_PIXELS);
+                                graphics.DrawString(
+                                    scheduleCell.GetClassroomDisplayText(),
+                                    resources.ClassroomFont,
+                                    classroomTextBrush,
+                                    classroomBounds,
+                                    resources.CourseTextFormat);
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 
     private static int getCoursePaletteIndex(ScheduleCellViewModel scheduleCell)
     {
-        int choiceGroupIndex = scheduleCell.GetCourseOffering().ChoiceGroupId.Value - 1;
-        return choiceGroupIndex % COURSE_CARD_BACKGROUND_COLORS.Length;
+        EScheduleCourseColor courseColor = ScheduleCourseColorPolicy.findColor(
+            scheduleCell.GetCourseOffering().ChoiceGroupId);
+        switch (courseColor)
+        {
+            case EScheduleCourseColor.Blue:
+                return 0;
+            case EScheduleCourseColor.Green:
+                return 1;
+            case EScheduleCourseColor.Purple:
+                return 2;
+            default:
+                Debug.Fail("Unexpected schedule course color: " + courseColor);
+                throw new ArgumentOutOfRangeException(nameof(courseColor));
+        }
     }
 
     private static RectangleF insetRectangle(RectangleF bounds, float inset)
@@ -605,22 +629,21 @@ public sealed class SchedulePngRenderer
         Graphics graphics,
         SchedulePngPixelSize pixelSize,
         RectangleF tableBounds,
-        Font footerFont,
-        StringFormat leftAlignedFormat)
+        SchedulePngRenderResources resources)
     {
         RectangleF footerBounds = new RectangleF(
             PAGE_MARGIN_PIXELS,
-            tableBounds.Bottom + 18.0f,
+            tableBounds.Bottom + FOOTER_TOP_INSET_PIXELS,
             pixelSize.Width - (PAGE_MARGIN_PIXELS * 2),
-            30.0f);
+            FOOTER_TEXT_HEIGHT_PIXELS);
         using (SolidBrush footerTextBrush = new SolidBrush(MUTED_TEXT_COLOR))
         {
             graphics.DrawString(
                 "Timetable Generator  ·  PNG 내보내기",
-                footerFont,
+                resources.FooterFont,
                 footerTextBrush,
                 footerBounds,
-                leftAlignedFormat);
+                resources.LeftAlignedTextFormat);
         }
     }
 

@@ -7,7 +7,7 @@ namespace TimetableGenerator.Presentation.Schedules;
 
 public sealed class ScheduleCellViewModel
 {
-    private readonly CoreCourseOffering mCourseOfferingOrNull;
+    private readonly CoreCourseOffering? mCourseOfferingOrNull;
 
     public CoreScheduleSlot ScheduleSlot { get; }
 
@@ -69,21 +69,9 @@ public sealed class ScheduleCellViewModel
         ClassroomAssignment = courseOffering.ClassroomAssignment;
     }
 
-    internal static ScheduleCellViewModel createEmpty(CoreScheduleSlot scheduleSlot)
-    {
-        return new ScheduleCellViewModel(scheduleSlot);
-    }
-
-    internal static ScheduleCellViewModel createScheduled(
-        CoreScheduleSlot scheduleSlot,
-        CoreCourseOffering courseOffering)
-    {
-        return new ScheduleCellViewModel(scheduleSlot, courseOffering);
-    }
-
     public CoreCourseOffering GetCourseOffering()
     {
-        if (HasCourseOffering == false)
+        if (mCourseOfferingOrNull == null)
         {
             throw new InvalidOperationException("An empty schedule cell does not contain a course offering.");
         }
@@ -99,6 +87,18 @@ public sealed class ScheduleCellViewModel
         }
 
         return ClassroomAssignment.GetClassroomLocation().ToDisplayText();
+    }
+
+    internal static ScheduleCellViewModel createEmpty(CoreScheduleSlot scheduleSlot)
+    {
+        return new ScheduleCellViewModel(scheduleSlot);
+    }
+
+    internal static ScheduleCellViewModel createScheduled(
+        CoreScheduleSlot scheduleSlot,
+        CoreCourseOffering courseOffering)
+    {
+        return new ScheduleCellViewModel(scheduleSlot, courseOffering);
     }
 
     private static bool containsScheduleSlot(

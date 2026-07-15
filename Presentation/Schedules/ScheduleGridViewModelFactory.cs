@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using CoreCourseOffering = TimetableGenerator.Core.Domain.CourseOffering;
 using CoreDay = TimetableGenerator.Core.Domain.EDay;
 using CoreGeneratedSchedule = TimetableGenerator.Core.Domain.GeneratedSchedule;
@@ -33,7 +34,8 @@ public static class ScheduleGridViewModelFactory
         Dictionary<CoreScheduleSlot, CoreCourseOffering> courseOfferingByScheduleSlot =
             new Dictionary<CoreScheduleSlot, CoreCourseOffering>();
         HashSet<CoreDay> activeDays = new HashSet<CoreDay>();
-        int maximumVisiblePeriodValue = DEFAULT_VISIBLE_PERIOD_VALUE;
+        CorePeriod maximumVisiblePeriod = new CorePeriod(
+            DEFAULT_VISIBLE_PERIOD_VALUE);
         int scheduledMeetingCount = 0;
 
         foreach (CoreCourseOffering courseOffering in generatedSchedule.CourseOfferings)
@@ -50,9 +52,9 @@ public static class ScheduleGridViewModelFactory
                 }
 
                 activeDays.Add(scheduleSlot.Day);
-                if (scheduleSlot.Period.Value > maximumVisiblePeriodValue)
+                if (scheduleSlot.Period.Value > maximumVisiblePeriod.Value)
                 {
-                    maximumVisiblePeriodValue = scheduleSlot.Period.Value;
+                    maximumVisiblePeriod = scheduleSlot.Period;
                 }
 
                 ++scheduledMeetingCount;
@@ -63,7 +65,7 @@ public static class ScheduleGridViewModelFactory
         IReadOnlyList<ScheduleDayColumnViewModel> dayColumns = createDayColumns(activeDays);
         IReadOnlyList<SchedulePeriodRowViewModel> periodRows = createPeriodRows(
             dayColumns,
-            maximumVisiblePeriodValue,
+            maximumVisiblePeriod,
             courseOfferingByScheduleSlot);
         ScheduleGridSummary summary = new ScheduleGridSummary(
             generatedSchedule.CourseOfferings.Count,
@@ -111,13 +113,15 @@ public static class ScheduleGridViewModelFactory
 
     private static IReadOnlyList<SchedulePeriodRowViewModel> createPeriodRows(
         IReadOnlyList<ScheduleDayColumnViewModel> dayColumns,
-        int maximumVisiblePeriodValue,
+        CorePeriod maximumVisiblePeriod,
         IReadOnlyDictionary<CoreScheduleSlot, CoreCourseOffering> courseOfferingByScheduleSlot)
     {
         List<SchedulePeriodRowViewModel> periodRows = new List<SchedulePeriodRowViewModel>(
-            maximumVisiblePeriodValue);
+            maximumVisiblePeriod.Value);
 
-        for (int periodValue = 1; periodValue <= maximumVisiblePeriodValue; ++periodValue)
+        for (int periodValue = 1;
+            periodValue <= maximumVisiblePeriod.Value;
+            ++periodValue)
         {
             CorePeriod period = new CorePeriod(periodValue);
             AcademicPeriodTimeRange timeRange = AcademicPeriodTimePolicy.GetTimeRange(period);
@@ -126,19 +130,16 @@ public static class ScheduleGridViewModelFactory
             foreach (ScheduleDayColumnViewModel dayColumn in dayColumns)
             {
                 CoreScheduleSlot scheduleSlot = new CoreScheduleSlot(dayColumn.Day, period);
-                CoreCourseOffering courseOfferingOrNull;
+                CoreCourseOffering? courseOfferingOrNull;
                 bool hasCourseOffering = courseOfferingByScheduleSlot.TryGetValue(
                     scheduleSlot,
                     out courseOfferingOrNull);
-                ScheduleCellViewModel cell;
-                if (hasCourseOffering)
-                {
-                    cell = ScheduleCellViewModel.createScheduled(scheduleSlot, courseOfferingOrNull);
-                }
-                else
-                {
-                    cell = ScheduleCellViewModel.createEmpty(scheduleSlot);
-                }
+                ScheduleCellViewModel cell =
+                    hasCourseOffering && courseOfferingOrNull != null
+                        ? ScheduleCellViewModel.createScheduled(
+                            scheduleSlot,
+                            courseOfferingOrNull)
+                        : ScheduleCellViewModel.createEmpty(scheduleSlot);
 
                 cells.Add(cell);
             }
@@ -173,6 +174,7 @@ public static class ScheduleGridViewModelFactory
                 return "일";
             case CoreDay.None:
             default:
+                Debug.Fail("Unexpected schedule day: " + day);
                 throw new ArgumentOutOfRangeException(nameof(day));
         }
     }

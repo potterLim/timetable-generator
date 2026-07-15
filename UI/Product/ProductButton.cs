@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -8,10 +9,10 @@ namespace TimetableGenerator.UI.Product;
 
 internal sealed class ProductButton : Button
 {
-    private EProductButtonVariant mVariant;
-    private EAppIcon mAppIcon;
     private bool mIsPointerOver;
     private bool mIsPressed;
+
+    private EProductButtonVariant mVariant;
 
     [Browsable(false)]
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -27,6 +28,8 @@ internal sealed class ProductButton : Button
             Invalidate();
         }
     }
+
+    private EAppIcon mAppIcon;
 
     [Browsable(false)]
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -102,7 +105,11 @@ internal sealed class ProductButton : Button
 
             if (mAppIcon != EAppIcon.None)
             {
-                preferredWidth += iconSize + contentGap;
+                preferredWidth += iconSize;
+                if (Text.Length > 0)
+                {
+                    preferredWidth += contentGap;
+                }
             }
 
             int minimumHeight = DesignTokens.scaleLogicalPixel(this, DesignTokens.BUTTON_MINIMUM_HEIGHT);
@@ -115,6 +122,7 @@ internal sealed class ProductButton : Button
     {
         Graphics graphics = paintEventArgs.Graphics;
         graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        graphics.Clear(findCanvasColor());
 
         Rectangle backgroundBounds = ProductDrawing.insetRectangle(ClientRectangle, 1);
         int cornerRadius = DesignTokens.scaleLogicalPixel(this, DesignTokens.CORNER_RADIUS_SMALL);
@@ -123,16 +131,23 @@ internal sealed class ProductButton : Button
         Color borderColor = findBorderColor();
         Color foregroundColor = findForegroundColor();
 
-        using (GraphicsPath backgroundPath = ProductDrawing.createRoundedRectanglePath(backgroundBounds, cornerRadius))
-        using (SolidBrush backgroundBrush = new SolidBrush(backgroundColor))
+        using (GraphicsPath backgroundPath =
+            ProductDrawing.createRoundedRectanglePath(backgroundBounds, cornerRadius))
         {
-            graphics.FillPath(backgroundBrush, backgroundPath);
-
-            if (borderColor.A > 0)
+            using (SolidBrush backgroundBrush = new SolidBrush(backgroundColor))
             {
-                using (Pen borderPen = new Pen(borderColor, DesignTokens.scaleLogicalPixel(this, DesignTokens.BORDER_WIDTH)))
+                graphics.FillPath(backgroundBrush, backgroundPath);
+
+                if (borderColor.A > 0)
                 {
-                    graphics.DrawPath(borderPen, backgroundPath);
+                    using (Pen borderPen = new Pen(
+                        borderColor,
+                        DesignTokens.scaleLogicalPixel(
+                            this,
+                            DesignTokens.BORDER_WIDTH)))
+                    {
+                        graphics.DrawPath(borderPen, backgroundPath);
+                    }
                 }
             }
         }
@@ -228,7 +243,11 @@ internal sealed class ProductButton : Button
 
             if (mAppIcon != EAppIcon.None)
             {
-                contentWidth += iconSize + contentGap;
+                contentWidth += iconSize;
+                if (Text.Length > 0)
+                {
+                    contentWidth += contentGap;
+                }
             }
 
             int contentX = (ClientSize.Width - contentWidth) / 2;
@@ -238,7 +257,11 @@ internal sealed class ProductButton : Button
             {
                 Rectangle iconBounds = new Rectangle(contentX, contentY, iconSize, iconSize);
                 AppIconPainter.drawIcon(graphics, iconBounds, mAppIcon, foregroundColor);
-                contentX += iconSize + contentGap;
+                contentX += iconSize;
+                if (Text.Length > 0)
+                {
+                    contentX += contentGap;
+                }
             }
 
             Rectangle textBounds = new Rectangle(
@@ -263,11 +286,18 @@ internal sealed class ProductButton : Button
         Rectangle focusBounds = ProductDrawing.insetRectangle(ClientRectangle, focusInset);
         int focusRadius = Math.Max(1, cornerRadius - 1);
 
-        using (GraphicsPath focusPath = ProductDrawing.createRoundedRectanglePath(focusBounds, focusRadius))
-        using (Pen focusPen = new Pen(DesignTokens.ACCENT_COLOR, DesignTokens.scaleLogicalPixel(this, DesignTokens.FOCUS_RING_WIDTH)))
+        using (GraphicsPath focusPath =
+            ProductDrawing.createRoundedRectanglePath(focusBounds, focusRadius))
         {
-            focusPen.DashStyle = DashStyle.Dot;
-            graphics.DrawPath(focusPen, focusPath);
+            using (Pen focusPen = new Pen(
+                DesignTokens.ACCENT_COLOR,
+                DesignTokens.scaleLogicalPixel(
+                    this,
+                    DesignTokens.FOCUS_RING_WIDTH)))
+            {
+                focusPen.DashStyle = DashStyle.Dot;
+                graphics.DrawPath(focusPen, focusPath);
+            }
         }
     }
 
@@ -322,6 +352,7 @@ internal sealed class ProductButton : Button
 
                 return Color.Transparent;
             default:
+                Debug.Fail("Unexpected product button variant: " + mVariant);
                 return DesignTokens.SURFACE_COLOR;
         }
     }
@@ -359,5 +390,21 @@ internal sealed class ProductButton : Button
         }
 
         return DesignTokens.TEXT_PRIMARY_COLOR;
+    }
+
+    private Color findCanvasColor()
+    {
+        Control? ancestorOrNull = Parent;
+        while (ancestorOrNull != null)
+        {
+            if (ancestorOrNull.BackColor.A == byte.MaxValue)
+            {
+                return ancestorOrNull.BackColor;
+            }
+
+            ancestorOrNull = ancestorOrNull.Parent;
+        }
+
+        return DesignTokens.SURFACE_COLOR;
     }
 }

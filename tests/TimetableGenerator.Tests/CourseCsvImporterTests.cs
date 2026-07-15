@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TimetableGenerator.Core.Domain;
 using TimetableGenerator.Infrastructure.Csv;
@@ -88,6 +89,9 @@ public sealed class CourseCsvImporterTests
             Assert.AreEqual(
                 4L,
                 result.Diagnostics[0].SourcePosition.GetRowNumber().Value);
+            Assert.AreEqual(
+                "월요일1교시junk",
+                result.Diagnostics[0].RawValue.Value);
         }
     }
 
@@ -196,6 +200,54 @@ public sealed class CourseCsvImporterTests
 
         assertSingleDiagnostic(result, ECourseImportErrorCode.FileNotFound);
         Assert.AreEqual(ECsvColumn.File, result.Diagnostics[0].Column);
+        Assert.AreEqual(missingFilePath, result.Diagnostics[0].RawValue.Value);
+        Assert.AreEqual(Path.GetFileName(missingFilePath), inputFilePath.FileName.Value);
+    }
+
+    [TestMethod]
+    public void ImportCoursesWithDefaultOptionsThrowsForPreCanceledWork()
+    {
+        string fileContent = FOUR_COLUMN_HEADER +
+            "1,01,자료구조,월요일1교시\r\n";
+
+        using (TemporaryCsvFile temporaryCsvFile = new TemporaryCsvFile(fileContent))
+        {
+            using (CancellationTokenSource cancellationTokenSource =
+                new CancellationTokenSource())
+            {
+                cancellationTokenSource.Cancel();
+                CourseCsvImporter importer = new CourseCsvImporter();
+
+                Assert.ThrowsExactly<OperationCanceledException>(
+                    () => importer.ImportCourses(
+                        temporaryCsvFile.FilePath,
+                        cancellationTokenSource.Token));
+            }
+        }
+    }
+
+    [TestMethod]
+    public void ImportCoursesWithExplicitOptionsThrowsForPreCanceledWork()
+    {
+        string fileContent = FOUR_COLUMN_HEADER +
+            "1,01,자료구조,월요일1교시\r\n";
+
+        using (TemporaryCsvFile temporaryCsvFile = new TemporaryCsvFile(fileContent))
+        {
+            using (CancellationTokenSource cancellationTokenSource =
+                new CancellationTokenSource())
+            {
+                cancellationTokenSource.Cancel();
+                CourseCsvImporter importer = new CourseCsvImporter();
+                CourseCsvImportOptions options = CourseCsvImportOptions.CreateDefault();
+
+                Assert.ThrowsExactly<OperationCanceledException>(
+                    () => importer.ImportCourses(
+                        temporaryCsvFile.FilePath,
+                        options,
+                        cancellationTokenSource.Token));
+            }
+        }
     }
 
     private static CourseImportResult importCourses(TemporaryCsvFile temporaryCsvFile)
