@@ -170,15 +170,15 @@ internal sealed partial class PlannerWorkspaceViewModel
         {
             if (ActivePlan.SelectedCourseCount == 0)
             {
-                return "과목을 추가해 시간표를 시작하세요";
+                return "첫 과목을 추가해 보세요";
             }
 
             if (ActivePlan.ScheduledCourses.Count == 0)
             {
-                return "시간이 제공된 과목이 아직 없어요";
+                return "시간표가 있는 과목이 없습니다";
             }
 
-            return "충돌 없는 시간표 조합을 찾지 못했어요";
+            return "겹치지 않는 시간표를 찾지 못했습니다";
         }
     }
 
@@ -188,15 +188,15 @@ internal sealed partial class PlannerWorkspaceViewModel
         {
             if (ActivePlan.SelectedCourseCount == 0)
             {
-                return "왼쪽 과목 목록에서 원하는 과목을 선택하면 가능한 분반 조합을 바로 계산합니다.";
+                return "왼쪽 과목 목록에서 +를 누르면 가능한 시간표를 자동으로 찾아드려요.";
             }
 
             if (ActivePlan.ScheduledCourses.Count == 0)
             {
-                return "선택한 과목은 모두 시간 미정입니다. 오른쪽 계획에서 확인할 수 있습니다.";
+                return "시간 미정 과목은 내 계획에 그대로 보관했습니다.";
             }
 
-            return "겹치는 과목을 제거하거나 다른 과목을 선택해 다시 계산해 보세요.";
+            return "겹치는 과목을 제거하거나 분반 후보를 조정해 주세요.";
         }
     }
 

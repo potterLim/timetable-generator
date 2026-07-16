@@ -11,10 +11,10 @@ internal sealed partial class PlannerWorkspaceViewModel
 {
     private const double COLLAPSED_COURSE_PANE_WIDTH = 320.0;
     private const double COLLAPSED_INSPECTOR_PANE_WIDTH = 320.0;
-    private const double EXTRA_WIDE_COURSE_PANE_WIDTH = 368.0;
-    private const double EXTRA_WIDE_INSPECTOR_PANE_WIDTH = 326.0;
-    private const double WIDE_COURSE_PANE_WIDTH = 336.0;
-    private const double WIDE_INSPECTOR_PANE_WIDTH = 304.0;
+    private const double EXTRA_WIDE_COURSE_PANE_WIDTH = 352.0;
+    private const double EXTRA_WIDE_INSPECTOR_PANE_WIDTH = 312.0;
+    private const double WIDE_COURSE_PANE_WIDTH = 328.0;
+    private const double WIDE_INSPECTOR_PANE_WIDTH = 296.0;
 
     private EWorkspaceLayoutMode mLayoutMode;
 

@@ -89,9 +89,46 @@
 
           <Border Grid.Row="2" Background="{DynamicResource BorderBrush}" />
 
+          <Border
+              x:Name="EmptyPlanState"
+              Grid.Row="4"
+              Padding="18,26"
+              IsVisible="{Binding !ActivePlan.HasSelectedCourses}"
+              Background="{DynamicResource SubtleSurfaceBrush}"
+              CornerRadius="10">
+            <StackPanel Spacing="8">
+              <Border
+                  Width="40"
+                  Height="40"
+                  HorizontalAlignment="Left"
+                  Background="{DynamicResource AccentTintBrush}"
+                  CornerRadius="20">
+                <icons:FluentIcon
+                    Width="20"
+                    Height="20"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Icon="CalendarEmpty"
+                    IconVariant="Regular"
+                    Foreground="{DynamicResource AccentBrush}" />
+              </Border>
+              <TextBlock
+                  Margin="0,4,0,0"
+                  FontWeight="SemiBold"
+                  Text="아직 선택한 과목이 없습니다"
+                  TextWrapping="Wrap" />
+              <TextBlock
+                  Classes="caption"
+                  LineHeight="18"
+                  Text="왼쪽 과목 목록에서 +를 눌러 이 계획에 과목을 추가하세요."
+                  TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+
           <TextBlock
               Grid.Row="4"
               FontWeight="SemiBold"
+              IsVisible="{Binding ActivePlan.HasScheduledCourses}"
               Text="{Binding ActivePlan.ScheduledCourseHeading}" />
 
           <ListBox
@@ -99,6 +136,7 @@
               Grid.Row="6"
               Classes="workspace-list"
               MaxHeight="360"
+              IsVisible="{Binding ActivePlan.HasScheduledCourses}"
               ItemsSource="{Binding ActivePlan.ScheduledCourses}"
               AutomationProperties.AutomationId="SelectedCourses"
               AutomationProperties.Name="선택한 수강 과목">
@@ -160,10 +198,15 @@
             </ListBox.ItemTemplate>
           </ListBox>
 
-          <Border Grid.Row="8" Background="{DynamicResource BorderBrush}" />
+          <Border
+              Grid.Row="8"
+              IsVisible="{Binding ActivePlan.HasUnconfirmedCourses}"
+              Background="{DynamicResource BorderBrush}" />
 
           <Expander
+              x:Name="TimeNotProvidedCoursesExpander"
               Grid.Row="10"
+              IsVisible="{Binding ActivePlan.HasUnconfirmedCourses}"
               IsExpanded="True"
               AutomationProperties.Name="시간 미정 과목">
             <Expander.Header>
@@ -173,27 +216,11 @@
                     Height="18"
                     Icon="Warning"
                     IconVariant="Filled"
-                    Foreground="{DynamicResource WarningBrush}"
-                    IsVisible="{Binding ActivePlan.HasUnconfirmedCourses}" />
-                <icons:FluentIcon
-                    Width="18"
-                    Height="18"
-                    Icon="Clock"
-                    IconVariant="Regular"
-                    Foreground="{DynamicResource TextSecondaryBrush}"
-                    IsVisible="{Binding !ActivePlan.HasUnconfirmedCourses}" />
+                    Foreground="{DynamicResource WarningBrush}" />
                 <TextBlock FontWeight="SemiBold" Text="{Binding ActivePlan.UnconfirmedHeading}" />
               </StackPanel>
             </Expander.Header>
-            <Grid RowDefinitions="Auto,Auto">
-              <TextBlock
-                  Grid.Row="0"
-                  Margin="0,8,0,2"
-                  Classes="caption"
-                  IsVisible="{Binding !ActivePlan.HasUnconfirmedCourses}"
-                  Text="선택한 시간 미정 분반이 없습니다."
-                  TextWrapping="Wrap" />
-              <ItemsControl Grid.Row="1" ItemsSource="{Binding ActivePlan.UnconfirmedCourses}">
+            <ItemsControl ItemsSource="{Binding ActivePlan.UnconfirmedCourses}">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate DataType="models:PlanCourseItem">
                     <Border
@@ -242,16 +269,19 @@
                     </Border>
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
-              </ItemsControl>
-            </Grid>
+            </ItemsControl>
           </Expander>
 
-          <Border Grid.Row="12" Background="{DynamicResource BorderBrush}" />
+          <Border
+              Grid.Row="12"
+              IsVisible="{Binding ActivePlan.HasSelectedCourses}"
+              Background="{DynamicResource BorderBrush}" />
 
           <Border
               x:Name="RecommendationPolicyCard"
               Grid.Row="14"
               Padding="12"
+              IsVisible="{Binding ActivePlan.HasSelectedCourses}"
               Background="{DynamicResource SubtleSurfaceBrush}"
               CornerRadius="7">
             <Grid ColumnDefinitions="22,*" ColumnSpacing="9">
@@ -266,7 +296,7 @@
                 <TextBlock
                     Classes="caption"
                     LineHeight="18"
-                    Text="선택한 분반 후보 중 시간이 겹치지 않는 조합만 표시합니다. 시간 미정 분반은 별도로 유지합니다."
+                    Text="시간이 겹치지 않는 분반 조합만 추천합니다. 시간 미정 과목은 별도로 보관합니다."
                     TextWrapping="Wrap" />
               </StackPanel>
             </Grid>

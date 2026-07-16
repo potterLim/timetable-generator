@@ -10,7 +10,7 @@
   <Grid>
     <Grid
         x:Name="WorkspaceSurface"
-        RowDefinitions="64,48,*"
+        RowDefinitions="56,44,*"
         IsEnabled="{Binding IsWorkspaceInteractionEnabled}">
     <Border
         x:Name="ProductTitleBar"
@@ -78,7 +78,7 @@
                 Foreground="{DynamicResource SuccessBrush}" />
             <TextBlock
                 VerticalAlignment="Center"
-                Foreground="{DynamicResource SuccessBrush}"
+                Foreground="{DynamicResource TextSecondaryBrush}"
                 Text="{Binding AutosaveStatusText}" />
           </StackPanel>
           <StackPanel
@@ -113,29 +113,11 @@
             Grid.Column="4"
             Classes="icon"
             Margin="0,0,10,0"
+            Click="onHelpClicked"
             AutomationProperties.Name="도움말"
-            ToolTip.Tip="도움말"
+            ToolTip.Tip="도움말 (F1)"
             WindowDecorationProperties.ElementRole="User">
           <icons:FluentIcon Icon="QuestionCircle" IconVariant="Regular" FontSize="21" />
-          <Button.Flyout>
-            <Flyout Placement="BottomEdgeAlignedRight">
-              <StackPanel Width="310" Margin="8" Spacing="12">
-                <TextBlock FontSize="17" FontWeight="SemiBold" Text="시간표 만들기" />
-                <Grid ColumnDefinitions="24,*" ColumnSpacing="10">
-                  <TextBlock Grid.Column="0" Foreground="{DynamicResource AccentBrush}" FontWeight="Bold" Text="1" />
-                  <TextBlock Grid.Column="1" Classes="secondary" Text="왼쪽에서 과목과 분반 방식을 선택해 계획에 추가하세요." TextWrapping="Wrap" />
-                </Grid>
-                <Grid ColumnDefinitions="24,*" ColumnSpacing="10">
-                  <TextBlock Grid.Column="0" Foreground="{DynamicResource AccentBrush}" FontWeight="Bold" Text="2" />
-                  <TextBlock Grid.Column="1" Classes="secondary" Text="가운데에서 충돌 없는 분반 조합을 비교하세요." TextWrapping="Wrap" />
-                </Grid>
-                <Grid ColumnDefinitions="24,*" ColumnSpacing="10">
-                  <TextBlock Grid.Column="0" Foreground="{DynamicResource AccentBrush}" FontWeight="Bold" Text="3" />
-                  <TextBlock Grid.Column="1" Classes="secondary" Text="시간 미정 과목은 오른쪽에서 별도로 확인하세요." TextWrapping="Wrap" />
-                </Grid>
-              </StackPanel>
-            </Flyout>
-          </Button.Flyout>
         </Button>
 
       </Grid>
@@ -147,10 +129,12 @@
         BorderBrush="{DynamicResource BorderBrush}"
         BorderThickness="0,0,0,1"
         AutomationProperties.LandmarkType="Navigation">
-      <Grid ColumnDefinitions="*,1,Auto">
+      <Grid ColumnDefinitions="Auto,Auto,*">
         <ScrollViewer
             x:Name="PlanTabScrollViewer"
             Grid.Column="0"
+            MaxWidth="720"
+            HorizontalAlignment="Left"
             HorizontalScrollBarVisibility="Auto"
             VerticalScrollBarVisibility="Disabled">
           <TabStrip
@@ -174,10 +158,11 @@
                       MinWidth="26"
                       MinHeight="26"
                       Padding="0"
-                      IsVisible="{Binding CanClose}"
+                      IsEnabled="{Binding CanClose}"
                       Command="{Binding CloseCommand}"
                       AutomationProperties.Name="{Binding CloseButtonAccessibleName}"
-                      ToolTip.Tip="계획 닫기">
+                      AutomationProperties.HelpText="{Binding CloseButtonHelpText}"
+                      ToolTip.Tip="{Binding CloseButtonHelpText}">
                     <icons:FluentIcon Icon="Dismiss" IconVariant="Regular" FontSize="14" />
                   </Button>
                 </StackPanel>
@@ -186,18 +171,11 @@
           </TabStrip>
         </ScrollViewer>
 
-        <Border
-            Grid.Column="1"
-            Width="1"
-            Height="20"
-            VerticalAlignment="Center"
-            Background="{DynamicResource BorderBrush}" />
-
         <Button
             x:Name="AddPlanButton"
-            Grid.Column="2"
+            Grid.Column="1"
             Classes="icon"
-            Margin="12,6"
+            Margin="8,4"
             Command="{Binding AddPlanCommand}"
             AutomationProperties.Name="새 계획 추가"
             ToolTip.Tip="새 계획 추가">
@@ -333,8 +311,7 @@
                   Command="{Binding CancelDeletePlanCommand}"
                   Content="취소" />
               <Button
-                  Background="{DynamicResource ErrorBrush}"
-                  Foreground="White"
+                  Classes="danger"
                   Command="{Binding ConfirmDeletePlanCommand}"
                   Content="계획 닫기" />
             </StackPanel>

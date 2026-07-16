@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Chrome;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 
@@ -34,7 +35,7 @@ public sealed class PlannerWorkspaceRenderTests
         Assert.True(window.CanResize);
         Assert.Equal(WindowDecorations.Full, window.WindowDecorations);
         Assert.True(window.ExtendClientAreaToDecorationsHint);
-        Assert.Equal(64.0, window.ExtendClientAreaTitleBarHeightHint);
+        Assert.Equal(56.0, window.ExtendClientAreaTitleBarHeightHint);
         Assert.True(window.ShowInTaskbar);
         Border? startupTitleBarOrNull =
             window.FindControl<Border>("StartupTitleBar");

@@ -202,6 +202,7 @@ public sealed class PlannerWorkspaceSmokeTests
             Assert.True(planToClose.CanClose);
             Assert.True(planToClose.CloseCommand.CanExecute(null));
             Assert.Contains(planToClose.DisplayName, planToClose.CloseButtonAccessibleName);
+            Assert.Equal("계획 닫기", planToClose.CloseButtonHelpText);
 
             planToClose.CloseCommand.Execute(null);
 
@@ -217,6 +218,9 @@ public sealed class PlannerWorkspaceSmokeTests
             Assert.Equal(activePlan.PlanId, remainingPlan.PlanId);
             Assert.False(remainingPlan.CanClose);
             Assert.False(remainingPlan.CloseCommand.CanExecute(null));
+            Assert.Equal(
+                "마지막 계획은 닫을 수 없습니다",
+                remainingPlan.CloseButtonHelpText);
             Assert.False(workspace.IsPlanEditingOverlayVisible);
             Assert.True(workspace.IsWorkspaceInteractionEnabled);
         }

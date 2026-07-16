@@ -13,7 +13,7 @@
     Icon="/Assets/AppIcon.png"
     CanResize="True"
     ExtendClientAreaToDecorationsHint="True"
-    ExtendClientAreaTitleBarHeightHint="64"
+    ExtendClientAreaTitleBarHeightHint="56"
     ShowInTaskbar="True"
     WindowDecorations="Full"
     WindowStartupLocation="CenterScreen"
@@ -32,7 +32,7 @@
 
     <Grid
         IsVisible="{Binding IsStartupVisible}"
-        RowDefinitions="64,*">
+        RowDefinitions="56,*">
       <Border
           x:Name="StartupTitleBar"
           Grid.Row="0"

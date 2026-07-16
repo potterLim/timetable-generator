@@ -20,20 +20,12 @@
   </UserControl.Styles>
   <Grid Margin="24,20,22,16" RowDefinitions="Auto,14,*,14,Auto">
     <Grid Grid.Row="0" ColumnDefinitions="*,Auto" RowDefinitions="Auto,10,Auto">
-      <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="9">
-        <TextBlock
-            Classes="title"
-            AutomationProperties.HeadingLevel="1"
-            Text="추천 시간표" />
-        <icons:FluentIcon
-            Width="18"
-            Height="18"
-            VerticalAlignment="Center"
-            Icon="Info"
-            IconVariant="Regular"
-            Foreground="{DynamicResource TextSecondaryBrush}"
-            ToolTip.Tip="선택한 과목에서 충돌 없는 분반 조합을 탐색합니다." />
-      </StackPanel>
+      <TextBlock
+          Grid.Row="0"
+          Grid.Column="0"
+          Classes="title"
+          AutomationProperties.HeadingLevel="1"
+          Text="추천 시간표" />
 
       <StackPanel
           Grid.Row="2"
@@ -64,15 +56,18 @@
             VerticalAlignment="Center"
             Foreground="{DynamicResource AccentBrush}"
             FontWeight="SemiBold"
+            IsVisible="{Binding HasScheduleEntries}"
             Text="{Binding RecommendationInsight}" />
       </StackPanel>
 
       <StackPanel
+          x:Name="RecommendationActions"
           Grid.Row="0"
           Grid.RowSpan="3"
           Grid.Column="1"
           Orientation="Horizontal"
           Spacing="10"
+          IsVisible="{Binding HasScheduleEntries}"
           VerticalAlignment="Center">
         <Button
             Classes="outline"
@@ -121,39 +116,42 @@
     </Grid>
 
     <Grid Grid.Row="2">
-      <views:ScheduleBoardView
-          x:Name="ScheduleBoard"
-          DataContext="{Binding ActiveRecommendation}" />
+      <Grid
+          x:Name="ScheduleBoardContainer"
+          IsVisible="{Binding HasScheduleEntries}">
+        <views:ScheduleBoardView
+            x:Name="ScheduleBoard"
+            DataContext="{Binding ActiveRecommendation}" />
+      </Grid>
 
       <Border
-          Margin="1"
+          x:Name="ScheduleEmptyState"
           Padding="32"
           IsVisible="{Binding IsScheduleEmpty}"
-          Background="{DynamicResource SurfaceBrush}"
-          CornerRadius="7">
+          Background="Transparent">
         <StackPanel
             MaxWidth="430"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Spacing="10">
           <Border
-              Width="48"
-              Height="48"
+              Width="46"
+              Height="46"
               HorizontalAlignment="Center"
-              Background="{DynamicResource SubtleSurfaceBrush}"
-              CornerRadius="24">
+              Background="{DynamicResource AccentTintBrush}"
+              CornerRadius="23">
             <icons:FluentIcon
-                Width="23"
-                Height="23"
+                Width="22"
+                Height="22"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Icon="CalendarEmpty"
                 IconVariant="Regular"
-                Foreground="{DynamicResource TextSecondaryBrush}" />
+                Foreground="{DynamicResource AccentBrush}" />
           </Border>
           <TextBlock
               Margin="0,4,0,0"
-              FontSize="19"
+              FontSize="20"
               FontWeight="SemiBold"
               Text="{Binding EmptyScheduleTitle}"
               TextAlignment="Center"
@@ -163,16 +161,14 @@
               LineHeight="21"
               Text="{Binding EmptyScheduleMessage}"
               TextAlignment="Center"
-          TextWrapping="Wrap" />
+              TextWrapping="Wrap" />
         </StackPanel>
       </Border>
 
       <Border
-          Margin="1"
           Padding="32"
           IsVisible="{Binding IsRecommendationCalculating}"
-          Background="{DynamicResource SurfaceBrush}"
-          CornerRadius="7"
+          Background="Transparent"
           AutomationProperties.LiveSetting="Polite">
         <StackPanel
             MaxWidth="430"
@@ -197,11 +193,9 @@
       </Border>
 
       <Border
-          Margin="1"
           Padding="32"
           IsVisible="{Binding HasRecommendationCalculationError}"
-          Background="{DynamicResource SurfaceBrush}"
-          CornerRadius="7"
+          Background="Transparent"
           AutomationProperties.LiveSetting="Assertive">
         <StackPanel
             MaxWidth="430"
@@ -235,9 +229,11 @@
     </Grid>
 
     <StackPanel
+        x:Name="RecommendationFooter"
         Grid.Row="4"
         Orientation="Horizontal"
         Spacing="8"
+        IsVisible="{Binding HasScheduleEntries}"
         VerticalAlignment="Center">
       <icons:FluentIcon
           Width="18"

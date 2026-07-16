@@ -8,14 +8,19 @@
     AutomationProperties.LandmarkType="Search"
     AutomationProperties.Name="과목 찾기">
   <UserControl.Styles>
-    <Style Selector="Border.course-item.blue">
-      <Setter Property="BorderBrush" Value="{DynamicResource CourseBlueBorderBrush}" />
+    <Style Selector="Border.course-item">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="CornerRadius" Value="7" />
     </Style>
-    <Style Selector="Border.course-item.purple">
-      <Setter Property="BorderBrush" Value="{DynamicResource CoursePurpleBorderBrush}" />
+    <Style Selector="Border.course-item:pointerover">
+      <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
     </Style>
-    <Style Selector="Border.course-item.green">
-      <Setter Property="BorderBrush" Value="{DynamicResource CourseGreenBorderBrush}" />
+    <Style Selector="Border.course-item.added">
+      <Setter Property="Background" Value="{DynamicResource AccentTintBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+      <Setter Property="BorderThickness" Value="3,0,0,0" />
     </Style>
   </UserControl.Styles>
 
@@ -102,12 +107,9 @@
           <DataTemplate DataType="models:CourseSearchItem">
             <Border
                 Classes="course-item"
-                Classes.blue="{Binding IsBlue}"
-                Classes.purple="{Binding IsPurple}"
-                Classes.green="{Binding IsGreen}"
-                MinHeight="96"
-                BorderThickness="3,0,0,1"
-                Background="{DynamicResource SurfaceBrush}">
+                Classes.added="{Binding IsAdded}"
+                MinHeight="92"
+                Margin="0,0,2,4">
               <Grid Margin="13,10,10,9" ColumnDefinitions="*,38" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
                 <TextBlock
                     Grid.Row="0"

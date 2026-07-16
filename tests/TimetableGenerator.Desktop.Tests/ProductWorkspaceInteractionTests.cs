@@ -1,10 +1,15 @@
 using System;
+using System.Linq;
 
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Desktop.Views;
@@ -113,6 +118,133 @@ public sealed class ProductWorkspaceInteractionTests
             Assert.Equal(
                 "새 계획 추가",
                 AutomationProperties.GetName(addPlanButton));
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
+    public void LastPlanKeepsAVisibleDisabledCloseAction()
+    {
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+        workspace.Plans[1].CloseCommand.Execute(null);
+        workspace.ConfirmDeletePlanCommand.Execute(null);
+
+        ProductWorkspaceHostView host = new ProductWorkspaceHostView();
+        host.DataContext = workspace;
+        Window window = createWindow(host, 900.0);
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Button closeButton = host.GetVisualDescendants()
+                .OfType<Button>()
+                .Single(
+                    candidate => ReferenceEquals(
+                        candidate.Command,
+                        workspace.ActivePlan.CloseCommand));
+
+            Assert.True(closeButton.IsVisible);
+            Assert.False(closeButton.IsEnabled);
+            Assert.False(closeButton.Command?.CanExecute(null));
+            Assert.Equal(
+                workspace.ActivePlan.CloseButtonAccessibleName,
+                AutomationProperties.GetName(closeButton));
+            Assert.Equal(
+                workspace.ActivePlan.CloseButtonHelpText,
+                AutomationProperties.GetHelpText(closeButton));
+            Assert.Equal(
+                workspace.ActivePlan.CloseButtonHelpText,
+                ToolTip.GetTip(closeButton));
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
+    public void F1OpensHelpAndExplicitCloseReturnsFocus()
+    {
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+        ProductWorkspaceHostView host = new ProductWorkspaceHostView();
+        host.DataContext = workspace;
+        Window window = createWindow(host, 1200.0);
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Button helpButton = findRequiredControl<Button>(host, "HelpButton");
+            Assert.True(helpButton.Focus());
+
+            window.KeyPress(
+                Key.F1,
+                RawInputModifiers.None,
+                PhysicalKey.F1,
+                null);
+            Dispatcher.UIThread.RunJobs();
+
+            WorkspaceHelpView helpView = window.GetVisualDescendants()
+                .OfType<WorkspaceHelpView>()
+                .Single();
+            Assert.True(helpView.IsAttachedToVisualTree());
+            Button dismissHelpButton = findRequiredControl<Button>(
+                helpView,
+                "DismissHelpButton");
+            dismissHelpButton.RaiseEvent(
+                new RoutedEventArgs(Button.ClickEvent));
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(helpView.IsAttachedToVisualTree());
+            Assert.True(helpButton.IsKeyboardFocusWithin);
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
+    public void FindShortcutOpensTheCoursePaneAndFocusesSearch()
+    {
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+        workspace.IsCoursePaneOpen = false;
+        ProductWorkspaceHostView host = new ProductWorkspaceHostView();
+        host.DataContext = workspace;
+        Window window = createWindow(host, 900.0);
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Button helpButton = findRequiredControl<Button>(host, "HelpButton");
+            Assert.True(helpButton.Focus());
+
+            window.KeyPress(
+                Key.F,
+                RawInputModifiers.Control,
+                PhysicalKey.F,
+                "f");
+            Dispatcher.UIThread.RunJobs();
+
+            TextBox searchBox = host.GetVisualDescendants()
+                .OfType<TextBox>()
+                .Single(candidate => candidate.Name == "CourseSearchBox");
+            Assert.True(workspace.IsCoursePaneOpen);
+            Assert.True(searchBox.IsKeyboardFocusWithin);
         }
         finally
         {

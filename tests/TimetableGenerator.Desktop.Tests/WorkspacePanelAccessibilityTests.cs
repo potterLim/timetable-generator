@@ -21,7 +21,7 @@ public sealed class WorkspacePanelAccessibilityTests
 {
     private const double INSPECTOR_WIDTH = 384.0;
     private const double MINIMUM_PRODUCT_WINDOW_HEIGHT = 640.0;
-    private const double PRODUCT_NAVIGATION_HEIGHT = 112.0;
+    private const double PRODUCT_NAVIGATION_HEIGHT = 100.0;
     private const double MINIMUM_WORKSPACE_HEIGHT =
         MINIMUM_PRODUCT_WINDOW_HEIGHT - PRODUCT_NAVIGATION_HEIGHT;
 

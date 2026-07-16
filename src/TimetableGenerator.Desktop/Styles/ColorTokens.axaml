@@ -13,17 +13,25 @@
       <SolidColorBrush x:Key="StrongBorderBrush" Color="#CDD2D8" />
       <SolidColorBrush x:Key="TextPrimaryBrush" Color="#17191C" />
       <SolidColorBrush x:Key="TextSecondaryBrush" Color="#5D6673" />
-      <SolidColorBrush x:Key="TextTertiaryBrush" Color="#727B87" />
+      <SolidColorBrush x:Key="TextTertiaryBrush" Color="#66707C" />
       <SolidColorBrush x:Key="AccentBrush" Color="#0F6CBD" />
       <SolidColorBrush x:Key="AccentHoverBrush" Color="#115EA3" />
       <SolidColorBrush x:Key="AccentPressedBrush" Color="#0C3B5E" />
       <SolidColorBrush x:Key="AccentTintBrush" Color="#EFF6FC" />
-      <SolidColorBrush x:Key="AccentFocusBrush" Color="#4F9FE8" />
+      <SolidColorBrush x:Key="AccentFillBrush" Color="#0F6CBD" />
+      <SolidColorBrush x:Key="AccentFillHoverBrush" Color="#115EA3" />
+      <SolidColorBrush x:Key="AccentFillPressedBrush" Color="#0C3B5E" />
+      <SolidColorBrush x:Key="OnAccentFillBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="FocusStrokeBrush" Color="#0F6CBD" />
       <SolidColorBrush x:Key="SuccessBrush" Color="#107C41" />
       <SolidColorBrush x:Key="WarningBrush" Color="#B35C00" />
       <SolidColorBrush x:Key="WarningSubtleBrush" Color="#FFF4CE" />
       <SolidColorBrush x:Key="ErrorBrush" Color="#C42B1C" />
       <SolidColorBrush x:Key="ErrorSubtleBrush" Color="#FDE7E9" />
+      <SolidColorBrush x:Key="ErrorFillBrush" Color="#C42B1C" />
+      <SolidColorBrush x:Key="ErrorFillHoverBrush" Color="#A4262C" />
+      <SolidColorBrush x:Key="ErrorFillPressedBrush" Color="#8E1D14" />
+      <SolidColorBrush x:Key="OnErrorFillBrush" Color="#FFFFFF" />
       <SolidColorBrush x:Key="CourseBlueBackgroundBrush" Color="#F1F7FF" />
       <SolidColorBrush x:Key="CourseBlueBorderBrush" Color="#8DBCF4" />
       <SolidColorBrush x:Key="CourseBlueTextBrush" Color="#0F6CBD" />
@@ -47,16 +55,24 @@
       <SolidColorBrush x:Key="TextPrimaryBrush" Color="#F3F5F7" />
       <SolidColorBrush x:Key="TextSecondaryBrush" Color="#C1C7CF" />
       <SolidColorBrush x:Key="TextTertiaryBrush" Color="#98A1AC" />
-      <SolidColorBrush x:Key="AccentBrush" Color="#4F9FE8" />
-      <SolidColorBrush x:Key="AccentHoverBrush" Color="#69AFE9" />
-      <SolidColorBrush x:Key="AccentPressedBrush" Color="#2F7FCA" />
+      <SolidColorBrush x:Key="AccentBrush" Color="#69AFE9" />
+      <SolidColorBrush x:Key="AccentHoverBrush" Color="#86C4F5" />
+      <SolidColorBrush x:Key="AccentPressedBrush" Color="#4F9FE8" />
       <SolidColorBrush x:Key="AccentTintBrush" Color="#1B3348" />
-      <SolidColorBrush x:Key="AccentFocusBrush" Color="#86C4F5" />
+      <SolidColorBrush x:Key="AccentFillBrush" Color="#0F6CBD" />
+      <SolidColorBrush x:Key="AccentFillHoverBrush" Color="#115EA3" />
+      <SolidColorBrush x:Key="AccentFillPressedBrush" Color="#0C3B5E" />
+      <SolidColorBrush x:Key="OnAccentFillBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="FocusStrokeBrush" Color="#86C4F5" />
       <SolidColorBrush x:Key="SuccessBrush" Color="#54B77A" />
       <SolidColorBrush x:Key="WarningBrush" Color="#F4B25F" />
       <SolidColorBrush x:Key="WarningSubtleBrush" Color="#44351E" />
-      <SolidColorBrush x:Key="ErrorBrush" Color="#F1707B" />
+      <SolidColorBrush x:Key="ErrorBrush" Color="#FF8A94" />
       <SolidColorBrush x:Key="ErrorSubtleBrush" Color="#442726" />
+      <SolidColorBrush x:Key="ErrorFillBrush" Color="#C42B1C" />
+      <SolidColorBrush x:Key="ErrorFillHoverBrush" Color="#A4262C" />
+      <SolidColorBrush x:Key="ErrorFillPressedBrush" Color="#8E1D14" />
+      <SolidColorBrush x:Key="OnErrorFillBrush" Color="#FFFFFF" />
       <SolidColorBrush x:Key="CourseBlueBackgroundBrush" Color="#1A3148" />
       <SolidColorBrush x:Key="CourseBlueBorderBrush" Color="#356D9F" />
       <SolidColorBrush x:Key="CourseBlueTextBrush" Color="#86C4F5" />

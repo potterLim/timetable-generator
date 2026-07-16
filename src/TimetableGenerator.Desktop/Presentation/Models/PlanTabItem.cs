@@ -46,6 +46,19 @@ internal sealed class PlanTabItem
         }
     }
 
+    public string CloseButtonHelpText
+    {
+        get
+        {
+            if (CanClose)
+            {
+                return "계획 닫기";
+            }
+
+            return "마지막 계획은 닫을 수 없습니다";
+        }
+    }
+
     public bool CanClose
     {
         get
@@ -65,6 +78,22 @@ internal sealed class PlanTabItem
         get
         {
             return ScheduledCourses.Count + UnconfirmedCourses.Count;
+        }
+    }
+
+    public bool HasSelectedCourses
+    {
+        get
+        {
+            return SelectedCourseCount > 0;
+        }
+    }
+
+    public bool HasScheduledCourses
+    {
+        get
+        {
+            return ScheduledCourses.Count > 0;
         }
     }
 
