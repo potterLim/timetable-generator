@@ -24,7 +24,7 @@
       BorderBrush="{DynamicResource PaneDividerBrush}"
       BorderThickness="1,0,0,0">
     <Grid Margin="22,20,22,18" RowDefinitions="Auto,12,*">
-      <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+      <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="4">
         <TextBlock
             Classes="title"
             AutomationProperties.HeadingLevel="2"
@@ -65,6 +65,20 @@
               </StackPanel>
             </Flyout>
           </Button.Flyout>
+        </Button>
+        <Button
+            x:Name="CloseInspectorPaneButton"
+            Grid.Column="2"
+            Classes="icon"
+            Width="32"
+            Height="32"
+            MinWidth="32"
+            MinHeight="32"
+            IsVisible="{Binding IsInspectorPaneToggleVisible}"
+            Command="{Binding ToggleInspectorPaneCommand}"
+            AutomationProperties.Name="내 계획 패널 닫기"
+            ToolTip.Tip="내 계획 닫기">
+          <icons:FluentIcon Icon="Dismiss" IconVariant="Regular" FontSize="17" />
         </Button>
       </Grid>
 

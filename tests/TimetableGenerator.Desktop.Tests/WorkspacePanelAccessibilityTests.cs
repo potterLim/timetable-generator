@@ -3,12 +3,14 @@ using System.Linq;
 using System.Windows.Input;
 
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
+using TimetableGenerator.Desktop.Presentation.Layout;
 using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Desktop.Views;
@@ -116,6 +118,72 @@ public sealed class WorkspacePanelAccessibilityTests
             assertListDelegatesFocusToCommand(
                 scheduledCourses,
                 workspace.RemoveCourseCommand);
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
+    public void ResponsivePaneHeadersExposeDismissActions()
+    {
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+        workspace.applyWorkspaceWidth(new WorkspaceWidth(1_300.0));
+        CourseBrowserView courseBrowser = new CourseBrowserView();
+        courseBrowser.DataContext = workspace;
+        PlanInspectorView inspector = new PlanInspectorView();
+        inspector.DataContext = workspace;
+
+        Grid panels = new Grid();
+        panels.ColumnDefinitions.Add(new ColumnDefinition(
+            new GridLength(1.0, GridUnitType.Star)));
+        panels.ColumnDefinitions.Add(new ColumnDefinition(
+            new GridLength(1.0, GridUnitType.Star)));
+        Grid.SetColumn(inspector, 1);
+        panels.Children.Add(courseBrowser);
+        panels.Children.Add(inspector);
+
+        Window window = createPanelWindow(panels);
+        window.Width = 768.0;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Button closeCoursePane = findRequiredControl<Button>(
+                courseBrowser,
+                "CloseCoursePaneButton");
+            Button closeInspectorPane = findRequiredControl<Button>(
+                inspector,
+                "CloseInspectorPaneButton");
+
+            Assert.False(closeCoursePane.IsVisible);
+            Assert.True(closeInspectorPane.IsVisible);
+            Assert.Equal(
+                "과목 찾기 패널 닫기",
+                AutomationProperties.GetName(closeCoursePane));
+            Assert.Equal(
+                "내 계획 패널 닫기",
+                AutomationProperties.GetName(closeInspectorPane));
+
+            workspace.ToggleInspectorPaneCommand.Execute(null);
+            Assert.True(workspace.IsInspectorPaneOpen);
+            closeInspectorPane.Command?.Execute(null);
+            Assert.False(workspace.IsInspectorPaneOpen);
+
+            workspace.applyWorkspaceWidth(new WorkspaceWidth(960.0));
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(closeCoursePane.IsVisible);
+            Assert.True(closeInspectorPane.IsVisible);
+            workspace.ToggleCoursePaneCommand.Execute(null);
+            Assert.True(workspace.IsCoursePaneOpen);
+            closeCoursePane.Command?.Execute(null);
+            Assert.False(workspace.IsCoursePaneOpen);
         }
         finally
         {

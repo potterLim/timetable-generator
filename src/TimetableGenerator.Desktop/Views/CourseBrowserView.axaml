@@ -29,11 +29,26 @@
       BorderBrush="{DynamicResource PaneDividerBrush}"
       BorderThickness="0,0,1,0">
     <Grid Margin="18,20,16,14" RowDefinitions="Auto,14,40,12,40,14,1,16,Auto,8,*">
-      <TextBlock
-          Grid.Row="0"
-          Classes="title"
-          AutomationProperties.HeadingLevel="2"
-          Text="과목 찾기" />
+      <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+        <TextBlock
+            Classes="title"
+            AutomationProperties.HeadingLevel="2"
+            Text="과목 찾기" />
+        <Button
+            x:Name="CloseCoursePaneButton"
+            Grid.Column="1"
+            Classes="icon"
+            Width="32"
+            Height="32"
+            MinWidth="32"
+            MinHeight="32"
+            IsVisible="{Binding IsCoursePaneToggleVisible}"
+            Command="{Binding ToggleCoursePaneCommand}"
+            AutomationProperties.Name="과목 찾기 패널 닫기"
+            ToolTip.Tip="과목 찾기 닫기">
+          <icons:FluentIcon Icon="Dismiss" IconVariant="Regular" FontSize="17" />
+        </Button>
+      </Grid>
 
       <Grid Grid.Row="2">
         <TextBox
