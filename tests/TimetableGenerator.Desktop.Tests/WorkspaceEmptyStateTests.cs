@@ -7,6 +7,7 @@ using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
+using TimetableGenerator.Desktop.Presentation.Layout;
 using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Desktop.Views;
@@ -22,6 +23,7 @@ public sealed class WorkspaceEmptyStateTests
     {
         PlannerWorkspaceViewModel workspace =
             PlannerWorkspaceTestFactory.CreateWorkspace();
+        workspace.applyWorkspaceWidth(new WorkspaceWidth(1_200.0));
         workspace.ActivePlan = workspace.Plans[1];
         await workspace.RecommendationRefreshTask;
 
@@ -89,6 +91,9 @@ public sealed class WorkspaceEmptyStateTests
         Button exportButton = findRequiredControl<Button>(
             scheduleWorkspace,
             "ExportScheduleButton");
+        Button openInspectorPane = findRequiredControl<Button>(
+            scheduleWorkspace,
+            "OpenInspectorPaneButton");
 
         Assert.False(recommendationActions.IsVisible);
         Assert.False(scheduleBoardContainer.IsVisible);
@@ -96,6 +101,7 @@ public sealed class WorkspaceEmptyStateTests
         Assert.False(recommendationFooter.IsVisible);
         Assert.False(exportButton.IsEffectivelyVisible);
         Assert.False(exportButton.IsEnabled);
+        Assert.True(openInspectorPane.IsEffectivelyVisible);
     }
 
     private static void assertPopulatedScheduleState(
@@ -116,6 +122,9 @@ public sealed class WorkspaceEmptyStateTests
         Button exportButton = findRequiredControl<Button>(
             scheduleWorkspace,
             "ExportScheduleButton");
+        Button openInspectorPane = findRequiredControl<Button>(
+            scheduleWorkspace,
+            "OpenInspectorPaneButton");
 
         Assert.True(recommendationActions.IsVisible);
         Assert.True(scheduleBoardContainer.IsVisible);
@@ -123,6 +132,7 @@ public sealed class WorkspaceEmptyStateTests
         Assert.True(recommendationFooter.IsVisible);
         Assert.True(exportButton.IsEffectivelyVisible);
         Assert.True(exportButton.IsEnabled);
+        Assert.True(openInspectorPane.IsEffectivelyVisible);
     }
 
     private static void assertEmptyInspectorState(PlanInspectorView planInspector)

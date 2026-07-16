@@ -21,6 +21,7 @@
   <Grid Margin="18,20,18,16" RowDefinitions="Auto,14,*,14,Auto">
     <Grid Grid.Row="0" ColumnDefinitions="*,Auto" RowDefinitions="Auto,10,Auto">
       <TextBlock
+          x:Name="ScheduleWorkspaceTitle"
           Grid.Row="0"
           Grid.Column="0"
           Classes="title"
@@ -28,6 +29,7 @@
           Text="추천 시간표" />
 
       <StackPanel
+          x:Name="WorkspaceSupportingActions"
           Grid.Row="2"
           Grid.Column="0"
           Orientation="Horizontal"
@@ -42,16 +44,6 @@
             <TextBlock VerticalAlignment="Center" Text="과목 찾기" />
           </StackPanel>
         </Button>
-        <Button
-            Classes="outline"
-            IsVisible="{Binding IsInspectorPaneToggleVisible}"
-            Command="{Binding ToggleInspectorPaneCommand}"
-            AutomationProperties.Name="내 계획 패널 열기">
-          <StackPanel Orientation="Horizontal" Spacing="7">
-            <icons:FluentIcon Icon="PanelRight" IconVariant="Regular" FontSize="17" />
-            <TextBlock VerticalAlignment="Center" Text="내 계획" />
-          </StackPanel>
-        </Button>
         <TextBlock
             VerticalAlignment="Center"
             Foreground="{DynamicResource AccentBrush}"
@@ -61,46 +53,65 @@
       </StackPanel>
 
       <StackPanel
-          x:Name="RecommendationActions"
+          x:Name="WorkspaceHeaderActions"
           Grid.Row="0"
           Grid.RowSpan="3"
           Grid.Column="1"
+          HorizontalAlignment="Right"
           Orientation="Horizontal"
           Spacing="10"
-          IsVisible="{Binding HasScheduleEntries}"
           VerticalAlignment="Center">
+        <StackPanel
+            x:Name="RecommendationActions"
+            Orientation="Horizontal"
+            Spacing="10"
+            IsVisible="{Binding HasScheduleEntries}">
+          <Button
+              Classes="outline"
+              Width="40"
+              Padding="8"
+              Command="{Binding PreviousRecommendationCommand}"
+              AutomationProperties.AutomationId="PreviousRecommendation"
+              AutomationProperties.Name="이전 추천 시간표"
+              ToolTip.Tip="이전 시간표">
+            <icons:FluentIcon Icon="ChevronLeft" IconVariant="Regular" FontSize="19" />
+          </Button>
+          <TextBlock
+              MinWidth="62"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              TextAlignment="Center"
+              FontWeight="SemiBold"
+              Text="{Binding RecommendationSummary}"
+              AutomationProperties.LiveSetting="Polite" />
+          <Button
+              Classes="outline"
+              Width="40"
+              Padding="8"
+              Command="{Binding NextRecommendationCommand}"
+              AutomationProperties.AutomationId="NextRecommendation"
+              AutomationProperties.Name="다음 추천 시간표"
+              ToolTip.Tip="다음 시간표">
+            <icons:FluentIcon Icon="ChevronRight" IconVariant="Regular" FontSize="19" />
+          </Button>
+        </StackPanel>
         <Button
+            x:Name="OpenInspectorPaneButton"
             Classes="outline"
-            Width="40"
-            Padding="8"
-            Command="{Binding PreviousRecommendationCommand}"
-            AutomationProperties.AutomationId="PreviousRecommendation"
-            AutomationProperties.Name="이전 추천 시간표"
-            ToolTip.Tip="이전 시간표">
-          <icons:FluentIcon Icon="ChevronLeft" IconVariant="Regular" FontSize="19" />
-        </Button>
-        <TextBlock
-            MinWidth="62"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Center"
-            TextAlignment="Center"
-            FontWeight="SemiBold"
-            Text="{Binding RecommendationSummary}"
-            AutomationProperties.LiveSetting="Polite" />
-        <Button
-            Classes="outline"
-            Width="40"
-            Padding="8"
-            Command="{Binding NextRecommendationCommand}"
-            AutomationProperties.AutomationId="NextRecommendation"
-            AutomationProperties.Name="다음 추천 시간표"
-            ToolTip.Tip="다음 시간표">
-          <icons:FluentIcon Icon="ChevronRight" IconVariant="Regular" FontSize="19" />
+            IsVisible="{Binding IsInspectorPaneToggleVisible}"
+            Command="{Binding ToggleInspectorPaneCommand}"
+            AutomationProperties.AutomationId="OpenInspectorPane"
+            AutomationProperties.Name="내 계획 패널 열기"
+            ToolTip.Tip="내 계획 열기">
+          <StackPanel Orientation="Horizontal" Spacing="7">
+            <icons:FluentIcon Icon="PanelRight" IconVariant="Regular" FontSize="17" />
+            <TextBlock VerticalAlignment="Center" Text="내 계획 열기" />
+          </StackPanel>
         </Button>
         <Button
             x:Name="ExportScheduleButton"
             Classes="accent"
-            Margin="4,0,0,0"
+            IsVisible="{Binding HasScheduleEntries}"
             IsEnabled="{Binding HasScheduleEntries}"
             Command="{Binding ExportCommand, ElementName=WorkspaceRoot}"
             AutomationProperties.AutomationId="ExportSchedule"

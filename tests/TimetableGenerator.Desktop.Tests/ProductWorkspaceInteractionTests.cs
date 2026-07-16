@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Avalonia;
 using Avalonia.Automation;
@@ -10,6 +11,7 @@ using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
+using TimetableGenerator.Desktop.Presentation.Layout;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Desktop.Views;
 
@@ -207,6 +209,100 @@ public sealed class ProductWorkspaceInteractionTests
         }
     }
 
+    [AvaloniaFact]
+    public async Task HeaderActionsFitAndOpenInspectorAtMediumBreakpointAsync()
+    {
+        const double MEDIUM_BREAKPOINT_WIDTH = 1_080.0;
+
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+        await workspace.RecommendationRefreshTask;
+        workspace.applyWorkspaceWidth(new WorkspaceWidth(
+            MEDIUM_BREAKPOINT_WIDTH));
+        ProductWorkspaceHostView host = new ProductWorkspaceHostView();
+        host.DataContext = workspace;
+        Window window = createWindow(host, MEDIUM_BREAKPOINT_WIDTH);
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            ScheduleWorkspaceView scheduleWorkspace = host.GetVisualDescendants()
+                .OfType<ScheduleWorkspaceView>()
+                .Single();
+            TextBlock title = findRequiredControl<TextBlock>(
+                scheduleWorkspace,
+                "ScheduleWorkspaceTitle");
+            StackPanel headerActions = findRequiredControl<StackPanel>(
+                scheduleWorkspace,
+                "WorkspaceHeaderActions");
+            Button openInspector = findRequiredControl<Button>(
+                scheduleWorkspace,
+                "OpenInspectorPaneButton");
+            Button export = findRequiredControl<Button>(
+                scheduleWorkspace,
+                "ExportScheduleButton");
+
+            Assert.True(openInspector.IsEffectivelyVisible);
+            Assert.True(export.IsEffectivelyVisible);
+            Assert.Same(
+                workspace.ToggleInspectorPaneCommand,
+                openInspector.Command);
+            Assert.Equal(
+                "내 계획 패널 열기",
+                AutomationProperties.GetName(openInspector));
+            Assert.Equal(
+                "OpenInspectorPane",
+                AutomationProperties.GetAutomationId(openInspector));
+            Assert.Equal("내 계획 열기", ToolTip.GetTip(openInspector));
+            Assert.Contains(
+                openInspector.GetVisualDescendants().OfType<TextBlock>(),
+                candidate => candidate.Text == "내 계획 열기");
+            Assert.True(openInspector.Focusable);
+            Assert.True(openInspector.IsTabStop);
+            Assert.True(
+                headerActions.Children.IndexOf(openInspector)
+                < headerActions.Children.IndexOf(export));
+
+            Point titlePosition = findRequiredPosition(title, scheduleWorkspace);
+            Point headerPosition = findRequiredPosition(
+                headerActions,
+                scheduleWorkspace);
+            Point openInspectorPosition = findRequiredPosition(
+                openInspector,
+                scheduleWorkspace);
+            Point exportPosition = findRequiredPosition(
+                export,
+                scheduleWorkspace);
+
+            double titleRight = titlePosition.X + title.Bounds.Width;
+            double headerRight = headerPosition.X + headerActions.Bounds.Width;
+            double openInspectorRight =
+                openInspectorPosition.X + openInspector.Bounds.Width;
+            double openInspectorCenterY = openInspectorPosition.Y
+                + (openInspector.Bounds.Height / 2.0);
+            double exportCenterY = exportPosition.Y
+                + (export.Bounds.Height / 2.0);
+
+            Assert.True(titleRight <= headerPosition.X + 1.0);
+            Assert.True(headerRight <= scheduleWorkspace.Bounds.Width + 1.0);
+            Assert.True(openInspectorRight <= exportPosition.X + 1.0);
+            Assert.InRange(
+                Math.Abs(openInspectorCenterY - exportCenterY),
+                0.0,
+                1.0);
+
+            openInspector.Command?.Execute(null);
+            Assert.True(workspace.IsInspectorPaneOpen);
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
     private static Window createWindow(Control content, double width)
     {
         Window window = new Window();
@@ -229,6 +325,20 @@ public sealed class ProductWorkspaceInteractionTests
         }
 
         return controlOrNull;
+    }
+
+    private static Point findRequiredPosition(Control control, Control relativeTo)
+    {
+        Point? positionOrNull = control.TranslatePoint(
+            new Point(0.0, 0.0),
+            relativeTo);
+        if (positionOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The workspace control was not attached to the requested surface.");
+        }
+
+        return positionOrNull.Value;
     }
 
     private static void assertCentered(Control dialog, Control host)
