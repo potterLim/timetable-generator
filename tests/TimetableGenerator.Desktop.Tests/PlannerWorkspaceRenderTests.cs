@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 
 using Avalonia.Controls;
+using Avalonia.Controls.Chrome;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media.Imaging;
@@ -32,8 +33,21 @@ public sealed class PlannerWorkspaceRenderTests
         window.Height = REFERENCE_HEIGHT;
         Assert.True(window.CanResize);
         Assert.Equal(WindowDecorations.Full, window.WindowDecorations);
-        Assert.False(window.ExtendClientAreaToDecorationsHint);
+        Assert.True(window.ExtendClientAreaToDecorationsHint);
+        Assert.Equal(64.0, window.ExtendClientAreaTitleBarHeightHint);
         Assert.True(window.ShowInTaskbar);
+        Border? startupTitleBarOrNull =
+            window.FindControl<Border>("StartupTitleBar");
+        Assert.NotNull(startupTitleBarOrNull);
+        if (startupTitleBarOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The startup title bar could not be resolved.");
+        }
+
+        Assert.Equal(
+            WindowDecorationsElementRole.TitleBar,
+            WindowDecorationProperties.GetElementRole(startupTitleBarOrNull));
 
         try
         {

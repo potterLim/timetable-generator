@@ -7,9 +7,11 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform;
 
 using TimetableGenerator.Desktop.Presentation.Layout;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
+using TimetableGenerator.Desktop.Presentation.Windowing;
 using TimetableGenerator.Desktop.Product;
 
 namespace TimetableGenerator.Desktop.Views;
@@ -33,6 +35,7 @@ internal sealed partial class MainWindow : Window
         AvaloniaXamlLoader.Load(this);
         mProductShellViewModel = productShellViewModel;
         DataContext = mProductShellViewModel;
+        applyInitialWindowPlacement();
 
         SizeChanged += onSizeChanged;
         KeyDown += onKeyDown;
@@ -138,5 +141,30 @@ internal sealed partial class MainWindow : Window
         {
             workspaceOrNull.applyWorkspaceWidth(new WorkspaceWidth(width));
         }
+    }
+
+    private void applyInitialWindowPlacement()
+    {
+        Screen? primaryScreenOrNull = Screens.Primary;
+        if (primaryScreenOrNull == null)
+        {
+            WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            return;
+        }
+
+        DisplayScale displayScale = new DisplayScale(
+            primaryScreenOrNull.Scaling);
+        WindowWorkingArea workingArea = new WindowWorkingArea(
+            primaryScreenOrNull.WorkingArea,
+            displayScale);
+        InitialWindowPlacement placement =
+            InitialWindowPlacementPolicy.CreatePlacement(workingArea);
+
+        MinWidth = placement.EffectiveMinimumSize.Width;
+        MinHeight = placement.EffectiveMinimumSize.Height;
+        Width = placement.InitialSize.Width;
+        Height = placement.InitialSize.Height;
+        Position = placement.Position;
+        WindowStartupLocation = WindowStartupLocation.Manual;
     }
 }

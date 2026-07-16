@@ -13,12 +13,14 @@
         RowDefinitions="64,48,*"
         IsEnabled="{Binding IsWorkspaceInteractionEnabled}">
     <Border
+        x:Name="ProductTitleBar"
         Grid.Row="0"
-        Padding="28,0,22,0"
+        Padding="{DynamicResource WindowTitleBarContentPadding}"
         Background="{DynamicResource SurfaceBrush}"
         BorderBrush="{DynamicResource BorderBrush}"
         BorderThickness="0,0,0,1"
-        AutomationProperties.LandmarkType="Banner">
+        AutomationProperties.LandmarkType="Banner"
+        WindowDecorationProperties.ElementRole="TitleBar">
       <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto" VerticalAlignment="Center">
         <Grid Grid.Column="0" ColumnDefinitions="30,Auto" ColumnSpacing="14">
           <Border
@@ -107,11 +109,13 @@
         </Grid>
 
         <Button
+            x:Name="HelpButton"
             Grid.Column="4"
             Classes="icon"
             Margin="0,0,10,0"
             AutomationProperties.Name="도움말"
-            ToolTip.Tip="도움말">
+            ToolTip.Tip="도움말"
+            WindowDecorationProperties.ElementRole="User">
           <icons:FluentIcon Icon="QuestionCircle" IconVariant="Regular" FontSize="21" />
           <Button.Flyout>
             <Flyout Placement="BottomEdgeAlignedRight">

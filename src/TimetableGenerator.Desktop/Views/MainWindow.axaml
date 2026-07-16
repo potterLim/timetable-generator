@@ -7,14 +7,13 @@
     xmlns:viewModels="using:TimetableGenerator.Desktop.Presentation.ViewModels"
     xmlns:views="using:TimetableGenerator.Desktop.Views"
     x:DataType="product:ProductShellViewModel"
-    Width="1440"
-    Height="900"
     MinWidth="900"
     MinHeight="640"
     Title="시간표"
     Icon="/Assets/AppIcon.png"
     CanResize="True"
-    ExtendClientAreaToDecorationsHint="False"
+    ExtendClientAreaToDecorationsHint="True"
+    ExtendClientAreaTitleBarHeightHint="64"
     ShowInTaskbar="True"
     WindowDecorations="Full"
     WindowStartupLocation="CenterScreen"
@@ -35,11 +34,13 @@
         IsVisible="{Binding IsStartupVisible}"
         RowDefinitions="64,*">
       <Border
+          x:Name="StartupTitleBar"
           Grid.Row="0"
-          Padding="28,0"
+          Padding="{DynamicResource WindowTitleBarContentPadding}"
           Background="{DynamicResource SurfaceBrush}"
           BorderBrush="{DynamicResource BorderBrush}"
-          BorderThickness="0,0,0,1">
+          BorderThickness="0,0,0,1"
+          WindowDecorationProperties.ElementRole="TitleBar">
         <Grid ColumnDefinitions="30,Auto" ColumnSpacing="14" VerticalAlignment="Center">
           <Border
               Grid.Column="0"
