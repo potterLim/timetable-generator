@@ -220,6 +220,28 @@ public sealed class ProductColorContrastTests
     }
 
     [AvaloniaFact]
+    public void PrimaryActionPaletteKeepsLightBrandBlueAndSoftensDarkStates()
+    {
+        SolidColorBrush lightFill = findRequiredBrush(
+            ACCENT_FILL,
+            ThemeVariant.Light);
+        SolidColorBrush darkFill = findRequiredBrush(
+            ACCENT_FILL,
+            ThemeVariant.Dark);
+        SolidColorBrush darkHover = findRequiredBrush(
+            ACCENT_FILL_HOVER,
+            ThemeVariant.Dark);
+        SolidColorBrush darkPressed = findRequiredBrush(
+            ACCENT_FILL_PRESSED,
+            ThemeVariant.Dark);
+
+        Assert.Equal(Color.Parse("#0047FF"), lightFill.Color);
+        Assert.Equal(Color.Parse("#1B4FDE"), darkFill.Color);
+        Assert.Equal(Color.Parse("#2D59E4"), darkHover.Color);
+        Assert.Equal(Color.Parse("#1745CC"), darkPressed.Color);
+    }
+
+    [AvaloniaFact]
     public void SemanticStatusTokensMeetContrastOnRenderedSurfaces()
     {
         ContrastRequirement[] contrastRequirements =
@@ -285,8 +307,12 @@ public sealed class ProductColorContrastTests
             nonText(ThemeVariant.Dark, FOCUS_STROKE, HOVER_SURFACE),
             nonText(ThemeVariant.Dark, FOCUS_STROKE, PRESSED_SURFACE),
             nonText(ThemeVariant.Light, FOCUS_ON_FILL_STROKE, ACCENT_FILL),
+            nonText(ThemeVariant.Light, FOCUS_ON_FILL_STROKE, ACCENT_FILL_HOVER),
+            nonText(ThemeVariant.Light, FOCUS_ON_FILL_STROKE, ACCENT_FILL_PRESSED),
             nonText(ThemeVariant.Light, FOCUS_ON_FILL_STROKE, ERROR_FILL),
             nonText(ThemeVariant.Dark, FOCUS_ON_FILL_STROKE, ACCENT_FILL),
+            nonText(ThemeVariant.Dark, FOCUS_ON_FILL_STROKE, ACCENT_FILL_HOVER),
+            nonText(ThemeVariant.Dark, FOCUS_ON_FILL_STROKE, ACCENT_FILL_PRESSED),
             nonText(ThemeVariant.Dark, FOCUS_ON_FILL_STROKE, ERROR_FILL),
         };
 

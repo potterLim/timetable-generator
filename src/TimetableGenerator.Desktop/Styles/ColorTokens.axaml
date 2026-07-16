@@ -93,9 +93,9 @@
       <SolidColorBrush x:Key="AccentHoverBrush" Color="#A5B9FF" />
       <SolidColorBrush x:Key="AccentPressedBrush" Color="#7196F2" />
       <SolidColorBrush x:Key="AccentTintBrush" Color="#202A45" />
-      <SolidColorBrush x:Key="ProductPrimaryActionFillBrush" Color="#0047FF" />
-      <SolidColorBrush x:Key="ProductPrimaryActionHoverFillBrush" Color="#1457FF" />
-      <SolidColorBrush x:Key="ProductPrimaryActionPressedFillBrush" Color="#003FD9" />
+      <SolidColorBrush x:Key="ProductPrimaryActionFillBrush" Color="#1B4FDE" />
+      <SolidColorBrush x:Key="ProductPrimaryActionHoverFillBrush" Color="#2D59E4" />
+      <SolidColorBrush x:Key="ProductPrimaryActionPressedFillBrush" Color="#1745CC" />
       <SolidColorBrush x:Key="ProductOnPrimaryActionFillBrush" Color="#F5EFE0" />
       <SolidColorBrush x:Key="ProductFocusStrokeBrush" Color="#8BA9FF" />
       <SolidColorBrush x:Key="ProductFocusOnFillStrokeBrush" Color="#F5EFE0" />
