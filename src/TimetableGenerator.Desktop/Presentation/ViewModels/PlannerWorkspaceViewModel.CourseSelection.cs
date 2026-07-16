@@ -201,14 +201,14 @@ internal sealed partial class PlannerWorkspaceViewModel
         PlanningPlan activePlan = ActivePlan.Plan;
         foreach (CourseSearchItem course in mAllCourses)
         {
-            PlanningCourseSelection? selectionOrNull = findCourseSelection(
+            PlanningCourseSelection? selectionOrNull = findCourseSelectionOrNull(
                 activePlan,
                 course.CourseId);
             course.SynchronizeSelection(selectionOrNull);
         }
     }
 
-    private static PlanningCourseSelection? findCourseSelection(
+    private static PlanningCourseSelection? findCourseSelectionOrNull(
         PlanningPlan plan,
         CourseId courseId)
     {

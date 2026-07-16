@@ -265,7 +265,7 @@ internal sealed class CourseSearchItem : ObservableObject
                 nameof(selectionOrNull));
         }
 
-        CourseSelectionOption? matchingOptionOrNull = findSelectionOption(
+        CourseSelectionOption? matchingOptionOrNull = findSelectionOptionOrNull(
             selectionOrNull);
         if (matchingOptionOrNull == null)
         {
@@ -410,7 +410,7 @@ internal sealed class CourseSearchItem : ObservableObject
         return false;
     }
 
-    private CourseSelectionOption? findSelectionOption(
+    private CourseSelectionOption? findSelectionOptionOrNull(
         PlanningCourseSelection selection)
     {
         foreach (CourseSelectionOption option in SelectionOptions)

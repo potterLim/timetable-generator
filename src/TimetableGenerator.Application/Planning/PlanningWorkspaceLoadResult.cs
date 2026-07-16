@@ -19,22 +19,22 @@ public sealed class PlanningWorkspaceLoadResult
 
     private PlanningWorkspaceLoadResult(
         EPlanningWorkspaceLoadStatus status,
-        PlanningWorkspace? workspace)
+        PlanningWorkspace? workspaceOrNull)
     {
-        if (status == EPlanningWorkspaceLoadStatus.NotFound && workspace != null)
+        if (status == EPlanningWorkspaceLoadStatus.NotFound && workspaceOrNull != null)
         {
             throw new ArgumentException(
                 "A not-found workspace result cannot contain a workspace.",
-                nameof(workspace));
+                nameof(workspaceOrNull));
         }
 
-        if (status != EPlanningWorkspaceLoadStatus.NotFound && workspace == null)
+        if (status != EPlanningWorkspaceLoadStatus.NotFound && workspaceOrNull == null)
         {
-            throw new ArgumentNullException(nameof(workspace));
+            throw new ArgumentNullException(nameof(workspaceOrNull));
         }
 
         Status = status;
-        WorkspaceOrNull = workspace;
+        WorkspaceOrNull = workspaceOrNull;
     }
 
     public static PlanningWorkspaceLoadResult CreateNotFound()
