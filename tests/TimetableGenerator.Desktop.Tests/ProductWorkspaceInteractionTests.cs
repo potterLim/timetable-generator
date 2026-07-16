@@ -7,7 +7,6 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -127,7 +126,7 @@ public sealed class ProductWorkspaceInteractionTests
     }
 
     [AvaloniaFact]
-    public void LastPlanKeepsAVisibleDisabledCloseAction()
+    public void LastPlanHidesItsUnavailableCloseAction()
     {
         PlannerWorkspaceViewModel workspace =
             PlannerWorkspaceTestFactory.CreateWorkspace();
@@ -150,7 +149,7 @@ public sealed class ProductWorkspaceInteractionTests
                         candidate.Command,
                         workspace.ActivePlan.CloseCommand));
 
-            Assert.True(closeButton.IsVisible);
+            Assert.False(closeButton.IsVisible);
             Assert.False(closeButton.IsEnabled);
             Assert.False(closeButton.Command?.CanExecute(null));
             Assert.Equal(
@@ -162,51 +161,6 @@ public sealed class ProductWorkspaceInteractionTests
             Assert.Equal(
                 workspace.ActivePlan.CloseButtonHelpText,
                 ToolTip.GetTip(closeButton));
-        }
-        finally
-        {
-            window.Close();
-            workspace.Dispose();
-        }
-    }
-
-    [AvaloniaFact]
-    public void F1OpensHelpAndExplicitCloseReturnsFocus()
-    {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
-        ProductWorkspaceHostView host = new ProductWorkspaceHostView();
-        host.DataContext = workspace;
-        Window window = createWindow(host, 1200.0);
-
-        try
-        {
-            window.Show();
-            Dispatcher.UIThread.RunJobs();
-
-            Button helpButton = findRequiredControl<Button>(host, "HelpButton");
-            Assert.True(helpButton.Focus());
-
-            window.KeyPress(
-                Key.F1,
-                RawInputModifiers.None,
-                PhysicalKey.F1,
-                null);
-            Dispatcher.UIThread.RunJobs();
-
-            WorkspaceHelpView helpView = window.GetVisualDescendants()
-                .OfType<WorkspaceHelpView>()
-                .Single();
-            Assert.True(helpView.IsAttachedToVisualTree());
-            Button dismissHelpButton = findRequiredControl<Button>(
-                helpView,
-                "DismissHelpButton");
-            dismissHelpButton.RaiseEvent(
-                new RoutedEventArgs(Button.ClickEvent));
-            Dispatcher.UIThread.RunJobs();
-
-            Assert.False(helpView.IsAttachedToVisualTree());
-            Assert.True(helpButton.IsKeyboardFocusWithin);
         }
         finally
         {
@@ -230,8 +184,8 @@ public sealed class ProductWorkspaceInteractionTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            Button helpButton = findRequiredControl<Button>(host, "HelpButton");
-            Assert.True(helpButton.Focus());
+            Button addPlanButton = findRequiredControl<Button>(host, "AddPlanButton");
+            Assert.True(addPlanButton.Focus());
 
             window.KeyPress(
                 Key.F,

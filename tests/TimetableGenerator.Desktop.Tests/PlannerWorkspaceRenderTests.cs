@@ -37,18 +37,18 @@ public sealed class PlannerWorkspaceRenderTests
         Assert.True(window.ExtendClientAreaToDecorationsHint);
         Assert.Equal(56.0, window.ExtendClientAreaTitleBarHeightHint);
         Assert.True(window.ShowInTaskbar);
-        Border? startupTitleBarOrNull =
-            window.FindControl<Border>("StartupTitleBar");
-        Assert.NotNull(startupTitleBarOrNull);
-        if (startupTitleBarOrNull == null)
+        Border? productTitleBarOrNull =
+            window.FindControl<Border>("ProductTitleBar");
+        Assert.NotNull(productTitleBarOrNull);
+        if (productTitleBarOrNull == null)
         {
             throw new InvalidOperationException(
-                "The startup title bar could not be resolved.");
+                "The product title bar could not be resolved.");
         }
 
         Assert.Equal(
             WindowDecorationsElementRole.TitleBar,
-            WindowDecorationProperties.GetElementRole(startupTitleBarOrNull));
+            WindowDecorationProperties.GetElementRole(productTitleBarOrNull));
 
         try
         {

@@ -15,41 +15,36 @@
     ExtendClientAreaToDecorationsHint="True"
     ExtendClientAreaTitleBarHeightHint="56"
     ShowInTaskbar="True"
+    WindowDecorationsTheme="{StaticResource ProductWindowDecorationsTheme}"
     WindowDecorations="Full"
     WindowStartupLocation="CenterScreen"
     AutomationProperties.Name="{Binding AccessibleWindowName}">
-  <Grid Background="{DynamicResource WindowBackgroundBrush}">
-    <Grid IsEnabled="{Binding IsProductInteractionEnabled}">
-    <ContentControl
-        Content="{Binding WorkspaceOrNull}"
-        IsVisible="{Binding IsReady}">
-      <ContentControl.DataTemplates>
-        <DataTemplate DataType="viewModels:PlannerWorkspaceViewModel">
-          <views:ProductWorkspaceHostView />
-        </DataTemplate>
-      </ContentControl.DataTemplates>
-    </ContentControl>
-
-    <Grid
-        IsVisible="{Binding IsStartupVisible}"
-        RowDefinitions="56,*">
-      <Border
-          x:Name="StartupTitleBar"
-          Grid.Row="0"
-          Padding="{DynamicResource WindowTitleBarContentPadding}"
-          Background="{DynamicResource SurfaceBrush}"
-          BorderBrush="{DynamicResource BorderBrush}"
-          BorderThickness="0,0,0,1"
-          WindowDecorationProperties.ElementRole="TitleBar">
-        <Grid ColumnDefinitions="30,Auto" ColumnSpacing="14" VerticalAlignment="Center">
+  <Grid
+      RowDefinitions="56,*"
+      Background="{DynamicResource WindowBackgroundBrush}">
+    <Border
+        x:Name="ProductTitleBar"
+        Grid.Row="0"
+        Padding="{DynamicResource WindowTitleBarContentPadding}"
+        Background="{DynamicResource SurfaceBrush}"
+        BorderBrush="{DynamicResource BorderBrush}"
+        BorderThickness="0,0,0,1"
+        AutomationProperties.LandmarkType="Banner"
+        WindowDecorationProperties.ElementRole="TitleBar">
+      <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
+        <Grid
+            Grid.Column="0"
+            ColumnDefinitions="28,Auto"
+            ColumnSpacing="12"
+            VerticalAlignment="Center">
           <Border
               Grid.Column="0"
-              Width="30"
-              Height="30"
+              Width="28"
+              Height="28"
               ClipToBounds="True">
             <Image
-                Width="72"
-                Height="72"
+                Width="68"
+                Height="68"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Source="/Assets/AppIcon.png"
@@ -57,211 +52,234 @@
                 AutomationProperties.AccessibilityView="Raw"
                 IsHitTestVisible="False" />
           </Border>
+          <StackPanel
+              Grid.Column="1"
+              VerticalAlignment="Center"
+              Spacing="0">
+            <TextBlock
+                FontSize="16"
+                FontWeight="SemiBold"
+                LineHeight="19"
+                Text="시간표" />
+            <TextBlock
+                Classes="caption"
+                IsVisible="{Binding IsReady}"
+                LineHeight="16"
+                Text="{Binding WorkspaceOrNull.InstitutionTermDisplayText}" />
+          </StackPanel>
+        </Grid>
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="1">
+      <Grid IsEnabled="{Binding IsProductInteractionEnabled}">
+        <ContentControl
+            Content="{Binding WorkspaceOrNull}"
+            IsVisible="{Binding IsReady}">
+          <ContentControl.DataTemplates>
+            <DataTemplate DataType="viewModels:PlannerWorkspaceViewModel">
+              <views:ProductWorkspaceHostView />
+            </DataTemplate>
+          </ContentControl.DataTemplates>
+        </ContentControl>
+
+        <Grid IsVisible="{Binding IsStartupVisible}">
+          <Border
+              Width="520"
+              MaxWidth="520"
+              Margin="28"
+              Padding="42"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Background="{DynamicResource SurfaceBrush}"
+              BorderBrush="{DynamicResource BorderBrush}"
+              BorderThickness="1"
+              CornerRadius="12">
+            <Grid>
+              <StackPanel
+                  IsVisible="{Binding IsLoading}"
+                  Spacing="14"
+                  AutomationProperties.LiveSetting="Polite">
+                <TextBlock
+                    FontSize="24"
+                    FontWeight="SemiBold"
+                    Text="{Binding StatusTitle}"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap" />
+                <TextBlock
+                    Classes="secondary"
+                    FontSize="14"
+                    LineHeight="22"
+                    Text="{Binding StatusMessage}"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap" />
+                <ProgressBar
+                    Margin="0,12,0,0"
+                    Height="4"
+                    IsIndeterminate="True"
+                    AutomationProperties.Name="시간표 준비 진행 상태" />
+              </StackPanel>
+
+              <StackPanel
+                  IsVisible="{Binding HasError}"
+                  HorizontalAlignment="Stretch"
+                  Spacing="14"
+                  AutomationProperties.LiveSetting="Assertive">
+                <Border
+                    Width="48"
+                    Height="48"
+                    HorizontalAlignment="Center"
+                    Background="{DynamicResource WarningSubtleBrush}"
+                    CornerRadius="24">
+                  <icons:FluentIcon
+                      Width="24"
+                      Height="24"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      Icon="ErrorCircle"
+                      IconVariant="Regular"
+                      Foreground="{DynamicResource WarningBrush}" />
+                </Border>
+                <TextBlock
+                    FontSize="24"
+                    FontWeight="SemiBold"
+                    Text="{Binding StatusTitle}"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap" />
+                <TextBlock
+                    Classes="secondary"
+                    FontSize="14"
+                    LineHeight="22"
+                    Text="{Binding StatusMessage}"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap" />
+                <Button
+                    Classes="accent"
+                    Margin="0,12,0,0"
+                    HorizontalAlignment="Center"
+                    Command="{Binding RetryCommand}"
+                    AutomationProperties.Name="과목 데이터 다시 불러오기">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <icons:FluentIcon Icon="ArrowClockwise" IconVariant="Regular" FontSize="18" />
+                    <TextBlock VerticalAlignment="Center" Text="다시 시도" />
+                  </StackPanel>
+                </Button>
+              </StackPanel>
+            </Grid>
+          </Border>
+        </Grid>
+      </Grid>
+
+      <Border
+          ZIndex="8"
+          MaxWidth="620"
+          Margin="24,24,24,28"
+          Padding="14,10,10,10"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Bottom"
+          IsVisible="{Binding HasProductNotice}"
+          Background="{DynamicResource SurfaceBrush}"
+          BorderBrush="{DynamicResource BorderBrush}"
+          BorderThickness="1"
+          BoxShadow="0 8 24 0 #24000000"
+          CornerRadius="8"
+          AutomationProperties.LiveSetting="Polite">
+        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+          <Border
+              Grid.Column="0"
+              Width="30"
+              Height="30"
+              Background="{DynamicResource AccentTintBrush}"
+              CornerRadius="15">
+            <icons:FluentIcon
+                Width="17"
+                Height="17"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Icon="Info"
+                IconVariant="Regular"
+                Foreground="{DynamicResource AccentBrush}" />
+          </Border>
           <TextBlock
               Grid.Column="1"
               VerticalAlignment="Center"
-              FontSize="20"
-              FontWeight="SemiBold"
-              Text="시간표" />
+              FontSize="13"
+              LineHeight="19"
+              Text="{Binding ProductNotice}"
+              TextWrapping="Wrap" />
+          <Button
+              Grid.Column="2"
+              Classes="subtle icon"
+              Width="30"
+              Height="30"
+              Padding="0"
+              Command="{Binding DismissProductNoticeCommand}"
+              AutomationProperties.Name="알림 닫기">
+            <icons:FluentIcon
+                Icon="Dismiss"
+                IconVariant="Regular"
+                FontSize="16" />
+          </Button>
         </Grid>
       </Border>
 
       <Border
-          Grid.Row="1"
-          Width="520"
-          MaxWidth="520"
-          Margin="28"
-          Padding="42"
-          HorizontalAlignment="Center"
-          VerticalAlignment="Center"
-          Background="{DynamicResource SurfaceBrush}"
-          BorderBrush="{DynamicResource BorderBrush}"
-          BorderThickness="1"
-          CornerRadius="12">
-        <Grid>
-          <StackPanel
-              IsVisible="{Binding IsLoading}"
-              Spacing="14"
-              AutomationProperties.LiveSetting="Polite">
-            <TextBlock
-                FontSize="24"
-                FontWeight="SemiBold"
-                Text="{Binding StatusTitle}"
-                TextAlignment="Center"
-                TextWrapping="Wrap" />
-            <TextBlock
-                Classes="secondary"
-                FontSize="14"
-                LineHeight="22"
-                Text="{Binding StatusMessage}"
-                TextAlignment="Center"
-                TextWrapping="Wrap" />
+          ZIndex="10"
+          IsVisible="{Binding IsShutdownOverlayVisible}"
+          Background="{DynamicResource OverlayScrimBrush}"
+          AutomationProperties.LiveSetting="Assertive">
+        <Border
+            Width="440"
+            Padding="32"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Background="{DynamicResource SurfaceBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="12">
+          <StackPanel Spacing="14">
             <ProgressBar
-                Margin="0,12,0,0"
                 Height="4"
                 IsIndeterminate="True"
-                AutomationProperties.Name="시간표 준비 진행 상태" />
-          </StackPanel>
-
-          <StackPanel
-              IsVisible="{Binding HasError}"
-              HorizontalAlignment="Stretch"
-              Spacing="14"
-              AutomationProperties.LiveSetting="Assertive">
+                IsVisible="{Binding IsShutdownInProgress}" />
             <Border
-                Width="48"
-                Height="48"
+                Width="44"
+                Height="44"
                 HorizontalAlignment="Center"
+                IsVisible="{Binding HasShutdownError}"
                 Background="{DynamicResource WarningSubtleBrush}"
-                CornerRadius="24">
+                CornerRadius="22">
               <icons:FluentIcon
-                  Width="24"
-                  Height="24"
+                  Width="22"
+                  Height="22"
                   HorizontalAlignment="Center"
                   VerticalAlignment="Center"
-                  Icon="ErrorCircle"
+                  Icon="Warning"
                   IconVariant="Regular"
                   Foreground="{DynamicResource WarningBrush}" />
             </Border>
             <TextBlock
-                FontSize="24"
+                FontSize="21"
                 FontWeight="SemiBold"
-                Text="{Binding StatusTitle}"
+                Text="{Binding ShutdownTitle}"
                 TextAlignment="Center"
                 TextWrapping="Wrap" />
             <TextBlock
                 Classes="secondary"
-                FontSize="14"
-                LineHeight="22"
-                Text="{Binding StatusMessage}"
+                LineHeight="21"
+                Text="{Binding ShutdownMessage}"
                 TextAlignment="Center"
                 TextWrapping="Wrap" />
             <Button
                 Classes="accent"
-                Margin="0,12,0,0"
+                Margin="0,6,0,0"
                 HorizontalAlignment="Center"
-                Command="{Binding RetryCommand}"
-                AutomationProperties.Name="과목 데이터 다시 불러오기">
-              <StackPanel Orientation="Horizontal" Spacing="8">
-                <icons:FluentIcon Icon="ArrowClockwise" IconVariant="Regular" FontSize="18" />
-                <TextBlock VerticalAlignment="Center" Text="다시 시도" />
-              </StackPanel>
-            </Button>
+                IsVisible="{Binding HasShutdownError}"
+                Command="{Binding DismissShutdownErrorCommand}"
+                Content="계속 편집" />
           </StackPanel>
-        </Grid>
-      </Border>
-    </Grid>
-    </Grid>
-
-    <Border
-        ZIndex="8"
-        MaxWidth="620"
-        Margin="24,24,24,28"
-        Padding="14,10,10,10"
-        HorizontalAlignment="Center"
-        VerticalAlignment="Bottom"
-        IsVisible="{Binding HasProductNotice}"
-        Background="{DynamicResource SurfaceBrush}"
-        BorderBrush="{DynamicResource BorderBrush}"
-        BorderThickness="1"
-        BoxShadow="0 8 24 0 #24000000"
-        CornerRadius="8"
-        AutomationProperties.LiveSetting="Polite">
-      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
-        <Border
-            Grid.Column="0"
-            Width="30"
-            Height="30"
-            Background="{DynamicResource AccentTintBrush}"
-            CornerRadius="15">
-          <icons:FluentIcon
-              Width="17"
-              Height="17"
-              HorizontalAlignment="Center"
-              VerticalAlignment="Center"
-              Icon="Info"
-              IconVariant="Regular"
-              Foreground="{DynamicResource AccentBrush}" />
         </Border>
-        <TextBlock
-            Grid.Column="1"
-            VerticalAlignment="Center"
-            FontSize="13"
-            LineHeight="19"
-            Text="{Binding ProductNotice}"
-            TextWrapping="Wrap" />
-        <Button
-            Grid.Column="2"
-            Classes="subtle icon"
-            Width="30"
-            Height="30"
-            Padding="0"
-            Command="{Binding DismissProductNoticeCommand}"
-            AutomationProperties.Name="알림 닫기">
-          <icons:FluentIcon
-              Icon="Dismiss"
-              IconVariant="Regular"
-              FontSize="16" />
-        </Button>
-      </Grid>
-    </Border>
-
-    <Border
-        ZIndex="10"
-        IsVisible="{Binding IsShutdownOverlayVisible}"
-        Background="{DynamicResource OverlayScrimBrush}"
-        AutomationProperties.LiveSetting="Assertive">
-      <Border
-          Width="440"
-          Padding="32"
-          HorizontalAlignment="Center"
-          VerticalAlignment="Center"
-          Background="{DynamicResource SurfaceBrush}"
-          BorderBrush="{DynamicResource BorderBrush}"
-          BorderThickness="1"
-          CornerRadius="12">
-        <StackPanel Spacing="14">
-          <ProgressBar
-              Height="4"
-              IsIndeterminate="True"
-              IsVisible="{Binding IsShutdownInProgress}" />
-          <Border
-              Width="44"
-              Height="44"
-              HorizontalAlignment="Center"
-              IsVisible="{Binding HasShutdownError}"
-              Background="{DynamicResource WarningSubtleBrush}"
-              CornerRadius="22">
-            <icons:FluentIcon
-                Width="22"
-                Height="22"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Icon="Warning"
-                IconVariant="Regular"
-                Foreground="{DynamicResource WarningBrush}" />
-          </Border>
-          <TextBlock
-              FontSize="21"
-              FontWeight="SemiBold"
-              Text="{Binding ShutdownTitle}"
-              TextAlignment="Center"
-              TextWrapping="Wrap" />
-          <TextBlock
-              Classes="secondary"
-              LineHeight="21"
-              Text="{Binding ShutdownMessage}"
-              TextAlignment="Center"
-              TextWrapping="Wrap" />
-          <Button
-              Classes="accent"
-              Margin="0,6,0,0"
-              HorizontalAlignment="Center"
-              IsVisible="{Binding HasShutdownError}"
-              Command="{Binding DismissShutdownErrorCommand}"
-              Content="계속 편집" />
-        </StackPanel>
       </Border>
-    </Border>
+    </Grid>
   </Grid>
 </Window>

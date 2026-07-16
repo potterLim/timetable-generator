@@ -6,6 +6,7 @@
   <Application.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://TimetableGenerator.Desktop/Styles/ProductWindowDecorations.axaml" />
         <ResourceInclude Source="avares://TimetableGenerator.Desktop/Styles/ColorTokens.axaml" />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
