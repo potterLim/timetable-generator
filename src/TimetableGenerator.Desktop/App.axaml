@@ -5,6 +5,8 @@
     RequestedThemeVariant="Default">
   <Application.Resources>
     <ResourceDictionary>
+      <FontFamily x:Key="ProductSystemFontFamily">$Default</FontFamily>
+      <FontFamily x:Key="ContentControlThemeFontFamily">$Default</FontFamily>
       <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://TimetableGenerator.Desktop/Styles/ProductWindowDecorations.axaml" />
         <ResourceInclude Source="avares://TimetableGenerator.Desktop/Styles/ColorTokens.axaml" />
