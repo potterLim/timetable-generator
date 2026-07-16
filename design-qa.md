@@ -13,6 +13,8 @@
 - 최종 다크 과목 선택 상태: `tests/TimetableGenerator.Desktop.Tests/TestResults/theme-polish-2026-07-17/05-dark-selected-product-button.png`
 - 최종 중앙 우선 Windows 화면: `tests/TimetableGenerator.Desktop.Tests/TestResults/layout-polish-2026-07-17/01-windows-selected-final.png`
 - 최종 반응형 인스펙터와 닫기 동작: `tests/TimetableGenerator.Desktop.Tests/TestResults/layout-polish-2026-07-17/03-inspector-dismiss-final.png`
+- 최종 다크 상단 작업 영역: `tests/TimetableGenerator.Desktop.Tests/TestResults/action-polish-2026-07-17/05-dark-actions-printwindow.png`
+- 최종 내 계획 진입·닫기 흐름: `tests/TimetableGenerator.Desktop.Tests/TestResults/action-polish-2026-07-17/06-dark-inspector-printwindow.png`
 - 검증 창 크기: 1718 × 916 px, DWM 가시 프레임 캡처: 1702 × 908 px
 - 최종 레이아웃 검증 Windows 프레임: 1818 × 969 px
 
@@ -26,8 +28,8 @@
 ## 시각 체계
 
 - 라이트: 순백을 제거하고 창, 상단, 좌우 패널, 중앙 작업 영역, 입력, 떠 있는 표면을 서로 다른 저대비 블루 계층으로 분리했다. 전체가 푸른 분위기를 유지하면서도 세 영역의 경계를 읽을 수 있다.
-- 다크: 차가운 청회색 대신 `#1A1A1A` 기반의 따뜻한 흑색과 `#F5EFE0` 크림색 본문을 사용한다. 작은 강조 전경은 `#8BA9FF`, 주요 동작 채움은 `#0047FF`로 분리했다.
-- 주요 동작: 실제 Windows 게시본의 라이트·다크 `PNG로 저장` 버튼이 모두 `#0047FF`로 렌더링되는 것을 픽셀 확인했다. Avalonia 기본 accent 버튼 템플릿이 다크 전경색을 채움으로 재사용하던 문제는 제품 전용 ControlTheme으로 차단했다.
+- 다크: 차가운 청회색 대신 `#1A1A1A` 기반의 따뜻한 흑색과 `#F5EFE0` 크림색 본문을 사용한다. 작은 강조 전경은 `#8BA9FF`, 주요 동작 채움은 절제한 `#1B4FDE`로 분리했다.
+- 주요 동작: 라이트 `PNG로 저장`은 브랜드 기준인 `#0047FF`를 유지한다. 다크에서는 채움을 `#1B4FDE`, hover를 `#2D59E4`, pressed를 `#1745CC`로 낮춰 시간표보다 먼저 시선을 빼앗지 않게 했다. 크림색 버튼 텍스트 대비는 각 상태에서 5:1 이상이며 실제 Windows 게시본에서도 상태 위계와 가독성을 확인했다.
 - 컨트롤: TextBox, ComboBox, RadioButton, Flyout, ProgressBar, ScrollBar, Expander와 창 캡션 버튼이 제품 팔레트와 같은 Fluent 팔레트를 사용한다.
 - 상태: hover, pressed, selected, focus, success, warning, error와 course 카드 색을 역할별 토큰으로 분리했다. 조작 컨트롤 경계는 인접 표면 대비 3:1 이상, 일반 본문과 채움 위 텍스트는 4.5:1 이상을 자동 검증한다.
 - 시간표 카드: 좁은 요일 열에서도 긴 영문 담당교원 이름이 한 글자만 다음 줄로 떨어지지 않도록 본문 크기와 줄바꿈 정책을 조정했다. 과목명은 12 DIP SemiBold 한 줄을 유지하고, 정말 긴 이름만 말줄임표로 처리한다. 전체 이름은 접근성 이름, 툴팁과 상세 Flyout에 보존된다.
@@ -37,6 +39,7 @@
 - 1600 DIP 이상에서는 과목 패널 312 DIP, 계획 패널 288 DIP를 Inline으로 유지한다.
 - 1280–1599 DIP에서는 과목 패널 312 DIP만 Inline으로 유지하고 계획 패널은 304 DIP 오버레이로 연다. 기본 1440 DIP 창에서 시간표가 중앙 폭을 우선 확보한다.
 - 더 작은 창에서는 기존 단계별 Overlay 전환을 유지하며, 오버레이 과목 패널과 계획 패널 모두 헤더에 명시적인 닫기 버튼을 제공한다.
+- `내 계획 열기`는 추천 시간표 제목 아래의 보조 정보 영역이 아니라 상단 작업 영역에서 내보내기 바로 앞에 둔다. 시간표가 비어 있어도 진입점을 유지하고 1080 DIP 폭에서도 제목·추천 탐색·내보내기와 겹치지 않는다.
 - 시간표 내부 좌우 여백은 각각 18 DIP, 교시 열은 72 DIP, 카드 바깥 여백은 4 DIP로 정리했다. Windows 게시본에서 `글로벌 기업가정신 입문`이 월·목 카드 모두 한 줄로 표시되는 것을 확인했다.
 
 ## 타이포그래피
@@ -59,16 +62,16 @@
 3. 화면 모드 선택 — 해결: 메뉴가 제품 표면 계층을 사용하며 세 모드의 선택 상태를 즉시 반영한다.
 4. 테마 전환 중 상태 유지 — 해결: 열린 작업 공간과 코드 생성 시간표가 창을 다시 열지 않고 새 팔레트로 갱신된다.
 5. 창 조작 — 해결: 네이티브 최소화·최대화·닫기와 제목 표시줄 드래그를 유지한다.
-6. 반응형 계획 확인 — 해결: 일반 창에서는 `내 계획` 버튼으로 인스펙터를 열고, 패널 헤더의 닫기 버튼·바깥 클릭·Esc로 닫을 수 있다.
+6. 반응형 계획 확인 — 해결: 일반 창에서는 상단 작업 영역의 `내 계획 열기` 버튼으로 인스펙터를 열고, 패널 헤더의 닫기 버튼·바깥 클릭·Esc로 닫을 수 있다.
 
 ## 회귀 검증
 
-- Release 솔루션 테스트 342개가 실패와 건너뜀 없이 통과했다.
+- Release 솔루션 테스트 344개가 실패와 건너뜀 없이 통과했다.
 - 제품 색상 토큰의 라이트·다크 대칭성, 텍스트·상태·경계·포커스 대비와 주요 동작의 실제 ContentPresenter 렌더링을 검사한다.
 - 채워진 시간표 상태에서 라이트→다크 전환 후 코드 생성 브러시가 교체되는지 검사한다.
 - `dotnet format --verify-no-changes`, `git diff --check`, Windows x64 self-contained 게시 검증을 통과했다.
-- 최종 Windows 실행 파일 SHA-256: `55348F6D79D2BCF2E4AD21590C4C9D8DDF5108A8F445143B9A277145846DB5BA`
-- 최종 Windows ZIP SHA-256: `34D9533FBC0C08635840400A170EEE7D807C3629BF5D99C862492388322E1183`
+- 최종 Windows 실행 파일 SHA-256: `A0D8368E7F6668C4AB1EF57D6247B15C7CA62ACE3583911841F1EA6B4B062A21`
+- 최종 Windows ZIP SHA-256: `B5B40F0C4ADB1F9EBAE6D7513B0803089C0E75AB673DFD74B08787500287F58F`
 
 화면 캡처만으로 스크린리더 전체 동작이나 모든 WCAG 조건을 확정하지는 않는다. 운영체제 고대비 모드, 실제 Windows 10 기기, macOS Intel·Apple Silicon의 창 장식·시스템 글꼴 폴백과 스크린리더 읽기 순서는 출시 전 실기 검증 대상으로 남긴다.
 
