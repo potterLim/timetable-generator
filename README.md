@@ -1,96 +1,96 @@
 # Timetable Generator
 
-CSV로 수강 대안을 불러와 시간이 겹치지 않는 조합을 최대 10,000개까지 비교하고 PNG로 내보내는 Windows 데스크톱 앱입니다. 처음 실행해도 별도 폴더 준비 없이 환영 화면에서 바로 시작할 수 있습니다.
+학교가 게시한 검증 가능한 과목 카탈로그에서 과목을 찾고, 시간이 겹치지 않는 분반 조합을 비교해 수강 계획을 만드는 Windows·macOS 데스크톱 앱입니다. 사용자가 CSV를 만들거나 학교 원본 파일의 열 구조를 이해할 필요가 없습니다.
 
-자세한 사용 방법은 [사용 설명서](instruction.md)를 참고하세요.
+자세한 제품 사용 방법은 [사용 설명서](instruction.md), 학교 원본 `.xls`를 배포 카탈로그로 만드는 절차는 [카탈로그 생성기 안내](tools/TimetableGenerator.HandongCatalogGenerator/README.md)를 참고하세요.
 
-## 주요 흐름
+## 제품 경험
 
-1. 환영 화면에서 CSV 파일을 선택하거나 끌어 놓습니다.
-2. 앱이 입력을 검증하고 가능한 시간표 조합을 최대 10,000개까지 생성합니다. 상한에 도달하면 하단 상태 영역에 안내가 표시됩니다.
-3. 왼쪽 목록이나 이전·다음 버튼으로 조합을 비교합니다.
-4. 필요한 경우 현재 시간표 또는 전체 시간표의 저장 폴더를 선택해 PNG로 내보냅니다.
+- 과목명·과목 코드·교수 검색과 학부·이수 구분 필터
+- 과목별 분반 후보 선택과 최대 24개의 충돌 없는 추천 시간표
+- 이름을 붙일 수 있는 여러 계획과 원자적 자동 저장
+- 학교가 시간을 제공하지 않은 분반의 명시적인 분리 표시
+- 현재 추천 시간표의 고해상도 PNG 저장
+- 검증한 카탈로그의 로컬 캐시와 오프라인 재실행
+- 좁은 창에서도 과목 목록과 계획 패널을 열고 닫을 수 있는 반응형 Avalonia UI
 
-파일을 불러오거나 내보내는 중 문제가 발생해도 앱은 닫히지 않습니다. 오류 내용을 확인한 뒤 다른 파일을 선택하거나 다시 시도할 수 있습니다.
+시간 미정 분반은 계획에서 보존하지만 충돌 자동 검증에는 포함하지 않습니다. 앱은 이 분반을 충돌이 없다고 추측하지 않습니다.
 
-## CSV 형식
+## 카탈로그 전달 모델
 
-CSV는 UTF-8로 저장해야 하며, 헤더는 아래 두 형식 중 하나와 정확히 일치해야 합니다.
+첫 실행에서 앱은 설정된 `index.json`을 읽고, 선택된 revision의 카탈로그를 내려받아 파일 크기와 SHA-256 및 JSON 계약을 검증한 뒤 로컬 캐시에 원자적으로 설치합니다. 검증이 실패하면 기존 캐시와 계획을 바꾸지 않습니다. 캐시가 있으면 네트워크 없이도 마지막으로 검증한 카탈로그를 사용할 수 있습니다.
 
-```text
-CourseId,Section,Name,TimeSlots
-CourseId,Section,Name,TimeSlots,Classroom
+카탈로그 주소는 소스 코드에 넣지 않습니다. 다음 두 방법 중 하나로 설치 환경에서 제공합니다. 환경 변수가 로컬 파일보다 우선합니다.
+
+### 환경 변수
+
+```powershell
+$env:TIMETABLE_GENERATOR_CATALOG_INDEX_URI = "https://catalog.example.edu/timetable-generator/catalog/v1/index.json"
+dotnet run --project .\src\TimetableGenerator.Desktop\TimetableGenerator.Desktop.csproj
 ```
 
-| 열 | 필수 | 설명 |
-| --- | --- | --- |
-| `CourseId` | 예 | 양의 정수입니다. 같은 값의 행은 함께 듣는 강의가 아니라 서로 대체 가능한 분반입니다. |
-| `Section` | 예 | 분반 코드입니다. |
-| `Name` | 예 | 화면과 PNG에 표시할 과목명입니다. |
-| `TimeSlots` | 예 | `한국어 요일+교시` 형식이며 여러 시간은 `/`로 구분합니다. 사용할 수 있는 범위는 1~10교시입니다. |
-| `Classroom` | 아니요 | 5열 형식을 선택했을 때 사용할 수 있는 강의실입니다. 값은 비워 둘 수 있으며, 입력할 때는 마지막 공백을 기준으로 건물명과 호실을 나눈 `<건물명> <호실>` 형식이어야 합니다. 공백 없는 단일 값은 사용할 수 없습니다. |
-
-`TimeSlots` 예시는 `월요일1교시/수요일1교시`입니다. 요일은 `월요일`부터 `일요일`까지 정확히 입력하며 중간에 공백을 넣지 않습니다.
-
-저장소의 [기본 예제 CSV](data/example_course_schedule.csv)는 세 과목에 각각 두 개의 대안 분반이 있어 `2 × 2 × 2 = 8`개의 유효 조합을 만듭니다.
-
-```csv
-CourseId,Section,Name,TimeSlots,Classroom
-1,01,알고리즘,월요일1교시/수요일1교시,공학관 301
-1,02,알고리즘,화요일1교시/목요일1교시,공학관 302
-2,01,자료구조,월요일3교시/수요일3교시,미래관 204
-2,02,자료구조,화요일3교시/목요일3교시,미래관 205
-3,01,데이터베이스,금요일2교시,과학관 401
-3,02,데이터베이스,금요일4교시,과학관 402
+```bash
+TIMETABLE_GENERATOR_CATALOG_INDEX_URI="https://catalog.example.edu/timetable-generator/catalog/v1/index.json" \
+  dotnet run --project ./src/TimetableGenerator.Desktop/TimetableGenerator.Desktop.csproj
 ```
 
-## 내보내기
+### 로컬 배포 설정
 
-시간표는 자동으로 저장되지 않습니다. 사용자가 현재 시간표 또는 전체 시간표 내보내기를 선택하고 대상 폴더를 지정한 경우에만 PNG를 만듭니다.
+`src/TimetableGenerator.Desktop/catalog-source.local.json`을 아래 형식으로 만듭니다.
 
-기본 파일명은 `{CSV 이름}_시간표_{번호}.png` 형식입니다. 대상 폴더에 같은 이름이 있으면 기존 파일을 덮어쓰지 않고 고유한 번호를 붙여 새 파일로 저장합니다.
+```json
+{
+  "schemaVersion": 1,
+  "indexUri": "https://catalog.example.edu/timetable-generator/catalog/v1/index.json"
+}
+```
 
-## 키보드 단축키
+이 파일은 Git에서 무시되며, 존재할 때만 빌드·게시 출력에 복사됩니다. 배포 전에 게시 디렉터리의 값을 확인하세요. 카탈로그 URL은 앱이 접속하려면 사용자 기기에서 확인 가능한 정보이므로 비밀 키로 취급하면 안 됩니다.
 
-| 단축키 | 동작 |
-| --- | --- |
-| `Ctrl+O` | CSV 불러오기 |
-| `Ctrl+E` | 현재 시간표를 PNG로 내보내기 |
-| `Ctrl+Shift+E` | 전체 시간표를 PNG로 내보내기 |
-| `Alt+Left` / `Alt+Right` | 이전 / 다음 시간표 |
-| `Esc` | 진행 중인 불러오기 또는 내보내기 취소 |
-
-## 개발자 안내
+## 개발
 
 ### 요구 사항
 
-- Windows 10 또는 Windows 11
-- .NET 10 SDK
-- 선택 사항: .NET 데스크톱 개발 워크로드가 설치된 Visual Studio 2026 18.0 이상
-
-앱은 .NET 10 기반 WinForms 프로젝트이며 Windows에서 실행됩니다.
-
-### 빌드와 테스트
+- .NET 10 SDK (`global.json`은 10.0.100 이상 feature band를 허용합니다.)
+- Windows 10/11 또는 지원되는 macOS
 
 저장소 루트에서 다음 명령을 실행합니다.
 
 ```powershell
-dotnet build TimetableGenerator.sln --configuration Release
-dotnet test TimetableGenerator.sln --configuration Release
-dotnet run --project TimetableGenerator.csproj
+dotnet restore TimetableGenerator.sln
+dotnet build TimetableGenerator.sln --configuration Release --no-restore
+dotnet test TimetableGenerator.sln --configuration Release --no-restore
+dotnet run --project .\src\TimetableGenerator.Desktop\TimetableGenerator.Desktop.csproj
 ```
 
-Release 실행 파일은 `bin/Release/net10.0-windows/` 아래에 생성됩니다.
+macOS에서는 경로 구분자만 `/`로 바꾸면 같은 명령을 사용할 수 있습니다.
 
-### 코드 구조
+## 게시
 
-데이터 흐름은 `CSV Infrastructure → Core → Application Documents → Presentation → Product UI` 순서입니다.
+게시 산출물은 Git에서 무시되는 `artifacts/publish` 아래에 만듭니다. 전 대상의 self-contained 제품 archive와 SHA-256을 한 번에 만들려면 다음 명령을 사용합니다.
 
-- `Core/Domain`, `Core/Application/Scheduling`: 강타입 도메인 값과 충돌 없는 조합 생성
-- `Infrastructure/Csv`: UTF-8 CSV 파싱과 행·열 단위 진단
-- `Application/Documents`: 가져오기, 생성, 화면 모델 조립과 취소 상태 통합
-- `Presentation/Schedules`: 불변 시간표 그리드 모델과 교시 시간 정책
-- `Infrastructure/Exporting`: UI와 분리된 PNG 렌더링과 충돌 없는 파일 저장
-- `UI/Product`: 시작, 로딩, 오류, 탐색, 내보내기 제품 경험
+```powershell
+pwsh ./scripts/publish-desktop.ps1
+```
 
-코드는 프로젝트 C# 코딩 표준에 따라 파일 범위 네임스페이스, 의미 있는 강타입 매개변수, 불변 모델, 명시적 실패 상태와 일관된 네이밍을 사용합니다. 변경 후에는 Release 빌드와 전체 테스트를 모두 통과해야 합니다.
+스크립트는 Windows x64 PE와 macOS Intel·Apple Silicon Mach-O 아키텍처, self-contained 런타임, `.app` 구조와 디버그 심볼 제외 여부를 검증합니다. Windows 아이콘과 manifest는 Windows 대상에만 연결되므로 macOS 교차 게시를 오염시키지 않습니다.
+
+만들어진 macOS archive는 인증서가 없는 개발 환경에서도 재현할 수 있는 unsigned 산출물입니다. 공개 전에 Windows 코드 서명과 실제 기기 검사, macOS Developer ID 서명·hardened runtime·notarization·stapling이 별도로 필요합니다. 전체 명령과 검증 경계는 [데스크톱 제품 배포 안내](docs/distribution.md)를 참고하세요.
+
+배포 설정 파일을 포함할 경우 URL이 올바른지, 실제 카탈로그의 SHA-256과 `index.json`이 일치하는지 함께 확인합니다.
+
+## 구조
+
+```text
+src/
+├── TimetableGenerator.Domain/          강타입 도메인과 불변 계획 모델
+├── TimetableGenerator.Application/     계획 편집과 추천 유스케이스
+├── TimetableGenerator.CatalogJson/     엄격한 카탈로그 JSON 계약
+├── TimetableGenerator.Infrastructure/  원격 검증, 캐시, 원자적 영속화
+└── TimetableGenerator.Desktop/         Avalonia 제품 UI와 플랫폼 진입점
+tests/                                  계층별 단위·통합·렌더링 테스트
+tools/TimetableGenerator.HandongCatalogGenerator/
+                                        학교 원본을 정규화하는 운영 도구
+```
+
+사용자 계획과 카탈로그 캐시는 `Environment.SpecialFolder.LocalApplicationData` 아래의 `TimetableGenerator` 디렉터리에 저장됩니다. 저장소에는 원본 `.xls`, 생성된 카탈로그 JSON, 실제 서비스 주소, 사용자 계획을 커밋하지 않습니다.
