@@ -1,0 +1,133 @@
+<UserControl
+    x:Class="TimetableGenerator.Desktop.Views.ScheduleWorkspaceView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:icons="using:FluentIcons.Avalonia"
+    xmlns:viewModels="using:TimetableGenerator.Desktop.Presentation.ViewModels"
+    xmlns:views="using:TimetableGenerator.Desktop.Views"
+    x:DataType="viewModels:PlannerWorkspaceViewModel"
+    Background="{DynamicResource WindowBackgroundBrush}"
+    AutomationProperties.LandmarkType="Main"
+    AutomationProperties.Name="추천 시간표">
+  <Grid Margin="24,20,22,16" RowDefinitions="Auto,14,*,14,Auto">
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" RowDefinitions="Auto,10,Auto">
+      <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="9">
+        <TextBlock
+            Classes="title"
+            AutomationProperties.HeadingLevel="1"
+            Text="추천 시간표" />
+        <icons:FluentIcon
+            Width="18"
+            Height="18"
+            VerticalAlignment="Center"
+            Icon="Info"
+            IconVariant="Regular"
+            Foreground="{DynamicResource TextSecondaryBrush}"
+            ToolTip.Tip="선호 조건을 반영해 정렬한 시간표입니다." />
+      </StackPanel>
+
+      <StackPanel
+          Grid.Row="2"
+          Grid.Column="0"
+          Orientation="Horizontal"
+          Spacing="8">
+        <Button
+            Classes="outline"
+            IsVisible="{Binding IsCoursePaneToggleVisible}"
+            Command="{Binding ToggleCoursePaneCommand}"
+            AutomationProperties.Name="과목 찾기 패널 열기">
+          <StackPanel Orientation="Horizontal" Spacing="7">
+            <icons:FluentIcon Icon="PanelLeft" IconVariant="Regular" FontSize="17" />
+            <TextBlock VerticalAlignment="Center" Text="과목 찾기" />
+          </StackPanel>
+        </Button>
+        <Button
+            Classes="outline"
+            IsVisible="{Binding IsInspectorPaneToggleVisible}"
+            Command="{Binding ToggleInspectorPaneCommand}"
+            AutomationProperties.Name="내 계획 패널 열기">
+          <StackPanel Orientation="Horizontal" Spacing="7">
+            <icons:FluentIcon Icon="PanelRight" IconVariant="Regular" FontSize="17" />
+            <TextBlock VerticalAlignment="Center" Text="내 계획" />
+          </StackPanel>
+        </Button>
+        <TextBlock
+            VerticalAlignment="Center"
+            Foreground="{DynamicResource AccentBrush}"
+            FontWeight="SemiBold"
+            Text="공강 2일 · 오전 수업 없음" />
+      </StackPanel>
+
+      <StackPanel
+          Grid.Row="0"
+          Grid.RowSpan="3"
+          Grid.Column="1"
+          Orientation="Horizontal"
+          Spacing="10"
+          VerticalAlignment="Center">
+        <Button
+            Classes="outline"
+            Width="40"
+            Padding="8"
+            Command="{Binding PreviousRecommendationCommand}"
+            AutomationProperties.AutomationId="PreviousRecommendation"
+            AutomationProperties.Name="이전 추천 시간표"
+            ToolTip.Tip="이전 시간표">
+          <icons:FluentIcon Icon="ChevronLeft" IconVariant="Regular" FontSize="19" />
+        </Button>
+        <TextBlock
+            MinWidth="62"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Center"
+            TextAlignment="Center"
+            FontWeight="SemiBold"
+            Text="{Binding RecommendationSummary}"
+            AutomationProperties.LiveSetting="Polite" />
+        <Button
+            Classes="outline"
+            Width="40"
+            Padding="8"
+            Command="{Binding NextRecommendationCommand}"
+            AutomationProperties.AutomationId="NextRecommendation"
+            AutomationProperties.Name="다음 추천 시간표"
+            ToolTip.Tip="다음 시간표">
+          <icons:FluentIcon Icon="ChevronRight" IconVariant="Regular" FontSize="19" />
+        </Button>
+        <Button
+            x:Name="ExportScheduleButton"
+            Classes="accent"
+            Margin="4,0,0,0"
+            IsEnabled="False"
+            AutomationProperties.AutomationId="ExportSchedule"
+            AutomationProperties.Name="현재 시간표를 PNG로 저장"
+            AutomationProperties.HelpText="내보내기 서비스가 연결되면 사용할 수 있습니다."
+            ToolTip.Tip="내보내기 서비스 연결 후 사용할 수 있습니다.">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <icons:FluentIcon Icon="Save" IconVariant="Regular" FontSize="18" />
+            <TextBlock VerticalAlignment="Center" Text="PNG로 저장" />
+          </StackPanel>
+        </Button>
+      </StackPanel>
+    </Grid>
+
+    <views:ScheduleBoardView
+        Grid.Row="2"
+        DataContext="{Binding ActiveRecommendation}" />
+
+    <StackPanel
+        Grid.Row="4"
+        Orientation="Horizontal"
+        Spacing="8"
+        VerticalAlignment="Center">
+      <icons:FluentIcon
+          Width="18"
+          Height="18"
+          Icon="Lightbulb"
+          IconVariant="Regular"
+          Foreground="{DynamicResource AccentBrush}" />
+      <TextBlock
+          Classes="caption"
+          Text="원하는 과목을 추가하거나 제거해 더 많은 시간표를 추천받으세요." />
+    </StackPanel>
+  </Grid>
+</UserControl>

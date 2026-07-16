@@ -1,0 +1,170 @@
+<UserControl
+    x:Class="TimetableGenerator.Desktop.Views.CourseBrowserView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:icons="using:FluentIcons.Avalonia"
+    xmlns:models="using:TimetableGenerator.Desktop.Presentation.Models"
+    x:CompileBindings="False"
+    AutomationProperties.LandmarkType="Search"
+    AutomationProperties.Name="과목 찾기">
+  <UserControl.Styles>
+    <Style Selector="Border.course-item.blue">
+      <Setter Property="BorderBrush" Value="{DynamicResource CourseBlueBorderBrush}" />
+    </Style>
+    <Style Selector="Border.course-item.purple">
+      <Setter Property="BorderBrush" Value="{DynamicResource CoursePurpleBorderBrush}" />
+    </Style>
+    <Style Selector="Border.course-item.green">
+      <Setter Property="BorderBrush" Value="{DynamicResource CourseGreenBorderBrush}" />
+    </Style>
+  </UserControl.Styles>
+
+  <Border
+      Background="{DynamicResource SurfaceBrush}"
+      BorderBrush="{DynamicResource BorderBrush}"
+      BorderThickness="0,0,1,0">
+    <Grid Margin="18,20,16,14" RowDefinitions="Auto,14,40,12,40,14,1,16,Auto,8,*">
+      <TextBlock
+          Grid.Row="0"
+          Classes="title"
+          AutomationProperties.HeadingLevel="2"
+          Text="과목 찾기" />
+
+      <Grid Grid.Row="2">
+        <TextBox
+            x:Name="CourseSearchBox"
+            Padding="36,8,10,8"
+            Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            PlaceholderText="과목명, 코드, 교수 검색"
+            AutomationProperties.AutomationId="CourseSearchBox"
+            AutomationProperties.Name="과목 검색어" />
+        <icons:FluentIcon
+            Width="18"
+            Height="18"
+            Margin="11,0,0,0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            Icon="Search"
+            IconVariant="Regular"
+            Foreground="{DynamicResource TextTertiaryBrush}"
+            IsHitTestVisible="False" />
+      </Grid>
+
+      <Grid Grid.Row="4" ColumnDefinitions="*,12,*">
+        <ComboBox
+            Grid.Column="0"
+            ItemsSource="{Binding DepartmentFilters}"
+            SelectedItem="{Binding SelectedDepartmentFilter, Mode=TwoWay}"
+            AutomationProperties.AutomationId="DepartmentFilter"
+            AutomationProperties.Name="학부 필터">
+          <ComboBox.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding DisplayName}" />
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+
+        <ComboBox
+            Grid.Column="2"
+            ItemsSource="{Binding RequirementFilters}"
+            SelectedItem="{Binding SelectedRequirementFilter, Mode=TwoWay}"
+            AutomationProperties.AutomationId="RequirementFilter"
+            AutomationProperties.Name="이수 구분 필터">
+          <ComboBox.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding DisplayName}" />
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+      </Grid>
+
+      <Border Grid.Row="6" Background="{DynamicResource BorderBrush}" />
+
+      <TextBlock
+          Grid.Row="8"
+          Classes="secondary"
+          FontSize="13"
+          Text="{Binding VisibleCourseHeading}" />
+
+      <ListBox
+          Grid.Row="10"
+          Classes="workspace-list"
+          ItemsSource="{Binding VisibleCourses}"
+          AutomationProperties.AutomationId="CourseResults"
+          AutomationProperties.Name="과목 검색 결과">
+        <ListBox.ItemTemplate>
+          <DataTemplate DataType="models:CourseSearchItem">
+            <Border
+                Classes="course-item"
+                Classes.blue="{Binding IsBlue}"
+                Classes.purple="{Binding IsPurple}"
+                Classes.green="{Binding IsGreen}"
+                MinHeight="96"
+                BorderThickness="3,0,0,1"
+                Background="{DynamicResource SurfaceBrush}">
+              <Grid Margin="13,10,10,9" ColumnDefinitions="*,38" RowDefinitions="Auto,Auto,Auto,Auto">
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Classes="caption"
+                    Text="{Binding Code}" />
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Margin="0,2,0,0"
+                    FontSize="15"
+                    FontWeight="SemiBold"
+                    Text="{Binding Name}"
+                    TextTrimming="CharacterEllipsis" />
+                <StackPanel
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Margin="0,5,0,0"
+                    Orientation="Horizontal"
+                    Spacing="7">
+                  <TextBlock Classes="caption" Text="{Binding InstructorDisplayText}" />
+                  <TextBlock Classes="caption" Text="·" />
+                  <TextBlock Classes="caption" Text="{Binding CreditDisplayText}" />
+                </StackPanel>
+                <TextBlock
+                    Grid.Row="3"
+                    Grid.Column="0"
+                    Margin="0,3,0,0"
+                    Classes="caption"
+                    Text="{Binding MeetingDisplayText}"
+                    TextTrimming="CharacterEllipsis" />
+
+                <Button
+                    Grid.Row="0"
+                    Grid.RowSpan="4"
+                    Grid.Column="1"
+                    Classes="icon course-add"
+                    VerticalAlignment="Center"
+                    IsEnabled="{Binding !IsAdded}"
+                    Command="{Binding DataContext.AddCourseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    CommandParameter="{Binding}"
+                    AutomationProperties.Name="{Binding AddButtonAccessibleName}"
+                    ToolTip.Tip="계획에 추가">
+                  <Grid>
+                    <icons:FluentIcon
+                        Icon="AddCircle"
+                        IconVariant="Regular"
+                        FontSize="22"
+                        Foreground="{DynamicResource AccentBrush}"
+                        IsVisible="{Binding !IsAdded}" />
+                    <icons:FluentIcon
+                        Icon="CheckmarkCircle"
+                        IconVariant="Filled"
+                        FontSize="22"
+                        Foreground="{DynamicResource SuccessBrush}"
+                        IsVisible="{Binding IsAdded}" />
+                  </Grid>
+                </Button>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </Grid>
+  </Border>
+</UserControl>

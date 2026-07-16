@@ -1,0 +1,49 @@
+<UserControl
+    x:Class="TimetableGenerator.Desktop.Views.ScheduleBoardView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    MinHeight="260"
+    AutomationProperties.Name="주간 시간표">
+  <UserControl.Styles>
+    <Style Selector="Button.schedule-card">
+      <Setter Property="Margin" Value="6" />
+      <Setter Property="Padding" Value="9,8" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="VerticalContentAlignment" Value="Stretch" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="5" />
+      <Setter Property="FontWeight" Value="Normal" />
+    </Style>
+    <Style Selector="Button.schedule-card.blue">
+      <Setter Property="Background" Value="{DynamicResource CourseBlueBackgroundBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource CourseBlueBorderBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+    <Style Selector="Button.schedule-card.purple">
+      <Setter Property="Background" Value="{DynamicResource CoursePurpleBackgroundBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource CoursePurpleBorderBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+    <Style Selector="Button.schedule-card.green">
+      <Setter Property="Background" Value="{DynamicResource CourseGreenBackgroundBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource CourseGreenBorderBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+  </UserControl.Styles>
+
+  <Border
+      CornerRadius="7"
+      BorderBrush="{DynamicResource BorderBrush}"
+      BorderThickness="1"
+      ClipToBounds="True"
+      Background="{DynamicResource SurfaceBrush}">
+    <ScrollViewer
+        x:Name="ScheduleScrollViewer"
+        HorizontalScrollBarVisibility="Disabled"
+        VerticalScrollBarVisibility="Auto"
+        AutomationProperties.Name="시간표 교시 스크롤">
+      <Grid x:Name="BoardGrid" />
+    </ScrollViewer>
+  </Border>
+</UserControl>

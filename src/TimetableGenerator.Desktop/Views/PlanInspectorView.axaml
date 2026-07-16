@@ -1,0 +1,208 @@
+<UserControl
+    x:Class="TimetableGenerator.Desktop.Views.PlanInspectorView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:icons="using:FluentIcons.Avalonia"
+    xmlns:models="using:TimetableGenerator.Desktop.Presentation.Models"
+    x:CompileBindings="False"
+    AutomationProperties.LandmarkType="Complementary"
+    AutomationProperties.Name="내 계획">
+  <UserControl.Styles>
+    <Style Selector="Border.plan-course.blue">
+      <Setter Property="BorderBrush" Value="{DynamicResource CourseBlueBorderBrush}" />
+    </Style>
+    <Style Selector="Border.plan-course.purple">
+      <Setter Property="BorderBrush" Value="{DynamicResource CoursePurpleBorderBrush}" />
+    </Style>
+    <Style Selector="Border.plan-course.green">
+      <Setter Property="BorderBrush" Value="{DynamicResource CourseGreenBorderBrush}" />
+    </Style>
+  </UserControl.Styles>
+
+  <Border
+      Background="{DynamicResource SurfaceBrush}"
+      BorderBrush="{DynamicResource BorderBrush}"
+      BorderThickness="1,0,0,0">
+    <Grid Margin="22,20,22,18" RowDefinitions="Auto,12,Auto,18,1,14,Auto,8,*,14,1,12,Auto,12,1,14,Auto,Auto">
+      <TextBlock
+          Grid.Row="0"
+          Classes="title"
+          AutomationProperties.HeadingLevel="2"
+          Text="내 계획" />
+
+      <StackPanel Grid.Row="2" Spacing="10">
+        <TextBlock FontWeight="SemiBold" Text="{Binding ActivePlan.CreditSummary}" />
+        <ProgressBar
+            Classes="plan-progress"
+            Minimum="0"
+            Maximum="{Binding ActivePlan.CreditLimit}"
+            Value="{Binding ActivePlan.TotalCredits}"
+            AutomationProperties.Name="신청 학점"
+            AutomationProperties.HelpText="{Binding ActivePlan.CreditSummary}" />
+      </StackPanel>
+
+      <Border Grid.Row="4" Background="{DynamicResource BorderBrush}" />
+
+      <TextBlock
+          Grid.Row="6"
+          FontWeight="SemiBold"
+          Text="{Binding ActivePlan.ScheduledCourseHeading}" />
+
+      <ListBox
+          Grid.Row="8"
+          Classes="workspace-list"
+          ItemsSource="{Binding ActivePlan.ScheduledCourses}"
+          AutomationProperties.AutomationId="SelectedCourses"
+          AutomationProperties.Name="선택한 수강 과목">
+        <ListBox.ItemTemplate>
+          <DataTemplate DataType="models:PlanCourseItem">
+            <Border
+                Classes="plan-course"
+                Classes.blue="{Binding IsBlue}"
+                Classes.purple="{Binding IsPurple}"
+                Classes.green="{Binding IsGreen}"
+                MinHeight="91"
+                BorderThickness="3,0,0,1"
+                Background="{DynamicResource SurfaceBrush}">
+              <Grid Margin="13,9,7,8" ColumnDefinitions="*,36" RowDefinitions="Auto,Auto,Auto,Auto">
+                <TextBlock Grid.Row="0" Classes="caption" Text="{Binding Code}" />
+                <TextBlock
+                    Grid.Row="1"
+                    Margin="0,2,0,0"
+                    FontSize="15"
+                    FontWeight="SemiBold"
+                    Text="{Binding Name}"
+                    TextTrimming="CharacterEllipsis" />
+                <StackPanel Grid.Row="2" Margin="0,5,0,0" Orientation="Horizontal" Spacing="7">
+                  <TextBlock Classes="caption" Text="{Binding InstructorDisplayText}" />
+                  <TextBlock Classes="caption" Text="·" />
+                  <TextBlock Classes="caption" Text="{Binding CreditDisplayText}" />
+                </StackPanel>
+                <TextBlock
+                    Grid.Row="3"
+                    Margin="0,3,0,0"
+                    Classes="caption"
+                    Text="{Binding MeetingDisplayText}"
+                    TextTrimming="CharacterEllipsis" />
+
+                <Button
+                    Grid.Row="0"
+                    Grid.RowSpan="4"
+                    Grid.Column="1"
+                    Classes="icon"
+                    Width="32"
+                    Height="32"
+                    MinWidth="32"
+                    MinHeight="32"
+                    VerticalAlignment="Top"
+                    Command="{Binding DataContext.RemoveCourseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    CommandParameter="{Binding}"
+                    AutomationProperties.Name="{Binding RemoveButtonAccessibleName}"
+                    ToolTip.Tip="계획에서 제거">
+                  <icons:FluentIcon Icon="Dismiss" IconVariant="Regular" FontSize="17" />
+                </Button>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+
+      <Border Grid.Row="10" Background="{DynamicResource BorderBrush}" />
+
+      <Expander
+          Grid.Row="12"
+          IsExpanded="True"
+          AutomationProperties.Name="시간 미정 과목">
+        <Expander.Header>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <icons:FluentIcon
+                Width="18"
+                Height="18"
+                Icon="Warning"
+                IconVariant="Filled"
+                Foreground="{DynamicResource WarningBrush}" />
+            <TextBlock FontWeight="SemiBold" Text="{Binding ActivePlan.UnconfirmedHeading}" />
+          </StackPanel>
+        </Expander.Header>
+
+        <ItemsControl ItemsSource="{Binding ActivePlan.UnconfirmedCourses}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="models:PlanCourseItem">
+              <Border
+                  Margin="0,7,0,0"
+                  Padding="12,9,6,9"
+                  CornerRadius="6"
+                  BorderBrush="{DynamicResource BorderBrush}"
+                  BorderThickness="1"
+                  Background="{DynamicResource SubtleSurfaceBrush}">
+                <Grid ColumnDefinitions="*,34" RowDefinitions="Auto,Auto,Auto,Auto">
+                  <TextBlock Grid.Row="0" Classes="caption" Text="{Binding Code}" />
+                  <TextBlock Grid.Row="1" Margin="0,2,0,0" FontWeight="SemiBold" Text="{Binding Name}" />
+                  <StackPanel Grid.Row="2" Margin="0,4,0,0" Orientation="Horizontal" Spacing="7">
+                    <TextBlock Classes="caption" Text="{Binding InstructorDisplayText}" />
+                    <TextBlock Classes="caption" Text="·" />
+                    <TextBlock Classes="caption" Text="{Binding CreditDisplayText}" />
+                  </StackPanel>
+                  <TextBlock
+                      Grid.Row="3"
+                      Margin="0,3,0,0"
+                      Classes="caption"
+                      Text="{Binding MeetingDisplayText}" />
+                  <Button
+                      Grid.Row="0"
+                      Grid.RowSpan="4"
+                      Grid.Column="1"
+                      Classes="icon"
+                      Width="32"
+                      Height="32"
+                      MinWidth="32"
+                      MinHeight="32"
+                      Command="{Binding DataContext.RemoveCourseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                      CommandParameter="{Binding}"
+                      AutomationProperties.Name="{Binding RemoveButtonAccessibleName}"
+                      ToolTip.Tip="계획에서 제거">
+                    <icons:FluentIcon Icon="Dismiss" IconVariant="Regular" FontSize="17" />
+                  </Button>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Expander>
+
+      <Border Grid.Row="14" Background="{DynamicResource BorderBrush}" />
+
+      <Grid Grid.Row="16" ColumnDefinitions="*,Auto">
+        <TextBlock FontWeight="SemiBold" Text="선호 조건" />
+        <Button
+            Grid.Column="1"
+            Padding="6,2"
+            MinHeight="30"
+            Background="Transparent"
+            BorderBrush="Transparent"
+            Foreground="{DynamicResource AccentBrush}"
+            AutomationProperties.Name="선호 조건 편집">
+          <StackPanel Orientation="Horizontal" Spacing="5">
+            <icons:FluentIcon Icon="Edit" IconVariant="Regular" FontSize="16" />
+            <TextBlock VerticalAlignment="Center" Text="편집" />
+          </StackPanel>
+        </Button>
+      </Grid>
+
+      <StackPanel Grid.Row="17" Margin="0,12,0,0" Spacing="12">
+        <StackPanel Orientation="Horizontal" Spacing="9">
+          <icons:FluentIcon Icon="Checkmark" IconVariant="Regular" FontSize="18" Foreground="{DynamicResource AccentBrush}" />
+          <TextBlock Classes="secondary" Text="공강일 수: 최소 2일" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="9">
+          <icons:FluentIcon Icon="Checkmark" IconVariant="Regular" FontSize="18" Foreground="{DynamicResource AccentBrush}" />
+          <TextBlock Classes="secondary" Text="오전 수업 없음" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="9">
+          <icons:FluentIcon Icon="Checkmark" IconVariant="Regular" FontSize="18" Foreground="{DynamicResource AccentBrush}" />
+          <TextBlock Classes="secondary" Text="주당 최대 수업: 4개" />
+        </StackPanel>
+      </StackPanel>
+    </Grid>
+  </Border>
+</UserControl>

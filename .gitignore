@@ -64,6 +64,10 @@ App_Data/
 /Directory.Build.local.props
 /src/TimetableGenerator.Desktop/catalog-source.local.json
 /artifacts/
+/tests/TimetableGenerator.Desktop.Tests/TestResults/
+
+# macOS metadata
+.DS_Store
 
 # NuGet Packages
 *.nupkg
