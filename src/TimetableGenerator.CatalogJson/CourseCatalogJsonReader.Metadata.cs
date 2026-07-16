@@ -36,25 +36,25 @@ public static partial class CourseCatalogJsonReader
                 "the source provider must match the catalog institution.");
         }
 
-        string logicalFileName = sourceObject.GetString("logicalFileName");
+        string logicalFileNameText = sourceObject.GetString("logicalFileName");
         string expectedLogicalFileName = "hgu-" + term.Id + "-source.xls";
         CatalogJsonValueParser.RequireExactString(
-            logicalFileName,
+            logicalFileNameText,
             expectedLogicalFileName,
             sourceObject.GetPropertyPath("logicalFileName"));
-        string declaredExtension = sourceObject.GetString("declaredExtension");
-        string detectedMediaType = sourceObject.GetString("detectedMediaType");
-        string declaredCharset = sourceObject.GetString("declaredCharset");
-        string decodedWith = sourceObject.GetString("decodedWith");
+        string declaredExtensionText = sourceObject.GetString("declaredExtension");
+        string detectedMediaTypeText = sourceObject.GetString("detectedMediaType");
+        string declaredCharsetText = sourceObject.GetString("declaredCharset");
+        string decodedWithText = sourceObject.GetString("decodedWith");
         CatalogJsonValueParser.RequireExactString(
-            declaredExtension,
+            declaredExtensionText,
             "xls",
             sourceObject.GetPropertyPath("declaredExtension"));
         CatalogJsonValueParser.RequireExactString(
-            detectedMediaType,
+            detectedMediaTypeText,
             "text/html",
             sourceObject.GetPropertyPath("detectedMediaType"));
-        if (string.IsNullOrWhiteSpace(declaredCharset))
+        if (string.IsNullOrWhiteSpace(declaredCharsetText))
         {
             throw new CatalogJsonFormatException(
                 sourceObject.GetPropertyPath("declaredCharset"),
@@ -62,9 +62,16 @@ public static partial class CourseCatalogJsonReader
         }
 
         CatalogJsonValueParser.RequireExactString(
-            decodedWith,
+            decodedWithText,
             "windows-949",
             sourceObject.GetPropertyPath("decodedWith"));
+        CatalogSourceLogicalFileName logicalFileName = new CatalogSourceLogicalFileName(
+            logicalFileNameText);
+        CatalogFileExtension declaredExtension = new CatalogFileExtension(
+            declaredExtensionText);
+        CatalogMediaType detectedMediaType = new CatalogMediaType(detectedMediaTypeText);
+        CatalogCharset declaredCharset = new CatalogCharset(declaredCharsetText);
+        CatalogDecoderName decodedWith = new CatalogDecoderName(decodedWithText);
         CatalogFileSize size = new CatalogFileSize(sourceObject.GetInt64("sizeBytes"));
         Sha256Digest sha256 = new Sha256Digest(sourceObject.GetString("sha256"));
         return new CatalogSourceMetadata(
@@ -88,14 +95,15 @@ public static partial class CourseCatalogJsonReader
                 "id",
                 "version",
             });
-        string converterId = converterObject.GetString("id");
+        string converterIdText = converterObject.GetString("id");
         CatalogJsonValueParser.RequireExactString(
-            converterId,
+            converterIdText,
             "handong-course-catalog-importer",
             converterObject.GetPropertyPath("id"));
-        string converterVersion = converterObject.GetString("version");
+        CatalogConverterId converterId = new CatalogConverterId(converterIdText);
+        string converterVersionText = converterObject.GetString("version");
         Version? parsedVersionOrNull;
-        bool isVersion = Version.TryParse(converterVersion, out parsedVersionOrNull);
+        bool isVersion = Version.TryParse(converterVersionText, out parsedVersionOrNull);
         if (isVersion == false || parsedVersionOrNull == null)
         {
             throw new CatalogJsonFormatException(
@@ -103,6 +111,8 @@ public static partial class CourseCatalogJsonReader
                 "a numeric converter version is required.");
         }
 
+        CatalogConverterVersion converterVersion = new CatalogConverterVersion(
+            parsedVersionOrNull);
         return new CatalogConverterMetadata(converterId, converterVersion);
     }
 
@@ -119,10 +129,10 @@ public static partial class CourseCatalogJsonReader
                 "meetingNotProvided",
             });
         return new CatalogDocumentCounts(
-            countsObject.GetInt32("courses"),
-            countsObject.GetInt32("offerings"),
-            countsObject.GetInt32("scheduledOfferings"),
-            countsObject.GetInt32("meetingNotProvided"));
+            new CatalogCourseCount(countsObject.GetInt32("courses")),
+            new CatalogOfferingCount(countsObject.GetInt32("offerings")),
+            new CatalogScheduledOfferingCount(countsObject.GetInt32("scheduledOfferings")),
+            new CatalogMeetingNotProvidedCount(countsObject.GetInt32("meetingNotProvided")));
     }
 
     private static CatalogDataQualityMetadata parseDataQuality(
@@ -152,12 +162,17 @@ public static partial class CourseCatalogJsonReader
             knownCourseIds);
         return new CatalogDataQualityMetadata(
             normalizationSource,
-            dataQualityObject.GetInt32("sourceEnglishScheduleMismatch"),
-            dataQualityObject.GetInt32("roomNotProvided"),
-            dataQualityObject.GetInt32("enrollmentNotProvided"),
-            dataQualityObject.GetInt32("instructorUnconfirmed"),
-            dataQualityObject.GetInt32("multiInstructorDisplay"),
-            dataQualityObject.GetInt32("sourceRemarkLookupOnly"),
+            new CatalogSourceEnglishScheduleMismatchCount(
+                dataQualityObject.GetInt32("sourceEnglishScheduleMismatch")),
+            new CatalogRoomNotProvidedCount(dataQualityObject.GetInt32("roomNotProvided")),
+            new CatalogEnrollmentNotProvidedCount(
+                dataQualityObject.GetInt32("enrollmentNotProvided")),
+            new CatalogInstructorUnconfirmedCount(
+                dataQualityObject.GetInt32("instructorUnconfirmed")),
+            new CatalogMultiInstructorDisplayCount(
+                dataQualityObject.GetInt32("multiInstructorDisplay")),
+            new CatalogSourceRemarkLookupOnlyCount(
+                dataQualityObject.GetInt32("sourceRemarkLookupOnly")),
             manualReviews);
     }
 
@@ -199,7 +214,7 @@ public static partial class CourseCatalogJsonReader
                 courseId,
                 field,
                 reason,
-                reviewObject.GetString("sourceValue")));
+                new CatalogManualReviewSourceValue(reviewObject.GetString("sourceValue"))));
             ++reviewIndex;
         }
 

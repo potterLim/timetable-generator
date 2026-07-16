@@ -6,11 +6,11 @@ public sealed class CatalogFileDescriptor
 {
     public CatalogRelativePath RelativePath { get; }
 
-    public string MediaType { get; }
+    public CatalogMediaType MediaType { get; }
 
-    public string Charset { get; }
+    public CatalogCharset Charset { get; }
 
-    public string ContentEncoding { get; }
+    public CatalogContentEncoding ContentEncoding { get; }
 
     public CatalogFileSize Size { get; }
 
@@ -18,9 +18,9 @@ public sealed class CatalogFileDescriptor
 
     public CatalogFileDescriptor(
         CatalogRelativePath relativePath,
-        string mediaType,
-        string charset,
-        string contentEncoding,
+        CatalogMediaType mediaType,
+        CatalogCharset charset,
+        CatalogContentEncoding contentEncoding,
         CatalogFileSize size,
         Sha256Digest sha256)
     {
@@ -29,21 +29,19 @@ public sealed class CatalogFileDescriptor
             throw new ArgumentNullException(nameof(relativePath));
         }
 
-        if (string.IsNullOrWhiteSpace(mediaType))
+        if (mediaType == null)
         {
-            throw new ArgumentException("Media types cannot be empty.", nameof(mediaType));
+            throw new ArgumentNullException(nameof(mediaType));
         }
 
-        if (string.IsNullOrWhiteSpace(charset))
+        if (charset == null)
         {
-            throw new ArgumentException("Charsets cannot be empty.", nameof(charset));
+            throw new ArgumentNullException(nameof(charset));
         }
 
-        if (string.IsNullOrWhiteSpace(contentEncoding))
+        if (contentEncoding == null)
         {
-            throw new ArgumentException(
-                "Content encodings cannot be empty.",
-                nameof(contentEncoding));
+            throw new ArgumentNullException(nameof(contentEncoding));
         }
 
         if (sha256 == null)

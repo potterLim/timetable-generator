@@ -26,8 +26,8 @@ public sealed class CatalogIndexJsonReaderTests
         Assert.AreEqual(CatalogJsonTestDocuments.VALID_RELATIVE_PATH, defaultEntry.File.RelativePath.Value);
         Assert.AreEqual(fileSize, defaultEntry.File.Size);
         Assert.AreEqual(VALID_SHA256, defaultEntry.File.Sha256);
-        Assert.AreEqual(1, defaultEntry.Counts.CourseCount);
-        Assert.AreEqual(2, defaultEntry.Counts.OfferingCount);
+        Assert.AreEqual(1, defaultEntry.Counts.CourseCount.Value);
+        Assert.AreEqual(2, defaultEntry.Counts.OfferingCount.Value);
     }
 
     [TestMethod]
@@ -154,9 +154,9 @@ public sealed class CatalogIndexJsonReaderTests
         Assert.ThrowsExactly<ArgumentException>(
             () => new CatalogFileDescriptor(
                 new CatalogRelativePath(CatalogJsonTestDocuments.VALID_RELATIVE_PATH),
-                "application/json",
-                "utf-8",
-                "identity",
+                new CatalogMediaType("application/json"),
+                new CatalogCharset("utf-8"),
+                new CatalogContentEncoding("identity"),
                 default(CatalogFileSize),
                 VALID_SHA256));
     }

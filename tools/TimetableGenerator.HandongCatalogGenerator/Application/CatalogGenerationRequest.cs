@@ -16,8 +16,11 @@ internal sealed record CatalogGenerationRequest
         CatalogRevision revision,
         CatalogOutputRootPath outputRootPath)
     {
-        SourceFilePath = sourceFilePath ??
+        if (sourceFilePath == null)
+        {
             throw new ArgumentNullException(nameof(sourceFilePath));
+        }
+
         if (term.AcademicYear.Value == 0 || term.Semester.Value == 0)
         {
             throw new ArgumentException("The academic term must be initialized.", nameof(term));
@@ -28,9 +31,14 @@ internal sealed record CatalogGenerationRequest
             throw new ArgumentException("The catalog revision must be initialized.", nameof(revision));
         }
 
+        if (outputRootPath == null)
+        {
+            throw new ArgumentNullException(nameof(outputRootPath));
+        }
+
+        SourceFilePath = sourceFilePath;
         Term = term;
         Revision = revision;
-        OutputRootPath = outputRootPath ??
-            throw new ArgumentNullException(nameof(outputRootPath));
+        OutputRootPath = outputRootPath;
     }
 }

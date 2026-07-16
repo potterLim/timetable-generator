@@ -4,41 +4,31 @@ namespace TimetableGenerator.CatalogJson;
 
 public sealed class CatalogDocumentCounts
 {
-    public int CourseCount { get; }
+    public CatalogCourseCount CourseCount { get; }
 
-    public int OfferingCount { get; }
+    public CatalogOfferingCount OfferingCount { get; }
 
-    public int ScheduledOfferingCount { get; }
+    public CatalogScheduledOfferingCount ScheduledOfferingCount { get; }
 
-    public int MeetingNotProvidedCount { get; }
+    public CatalogMeetingNotProvidedCount MeetingNotProvidedCount { get; }
 
     public CatalogDocumentCounts(
-        int courseCount,
-        int offeringCount,
-        int scheduledOfferingCount,
-        int meetingNotProvidedCount)
+        CatalogCourseCount courseCount,
+        CatalogOfferingCount offeringCount,
+        CatalogScheduledOfferingCount scheduledOfferingCount,
+        CatalogMeetingNotProvidedCount meetingNotProvidedCount)
     {
-        if (courseCount <= 0)
+        if (courseCount.IsValid == false)
         {
             throw new ArgumentOutOfRangeException(nameof(courseCount));
         }
 
-        if (offeringCount <= 0)
+        if (offeringCount.IsValid == false)
         {
             throw new ArgumentOutOfRangeException(nameof(offeringCount));
         }
 
-        if (scheduledOfferingCount < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(scheduledOfferingCount));
-        }
-
-        if (meetingNotProvidedCount < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(meetingNotProvidedCount));
-        }
-
-        if (scheduledOfferingCount + meetingNotProvidedCount != offeringCount)
+        if (scheduledOfferingCount.Value + meetingNotProvidedCount.Value != offeringCount.Value)
         {
             throw new ArgumentException(
                 "Scheduled and time-not-provided counts must partition all offerings.");

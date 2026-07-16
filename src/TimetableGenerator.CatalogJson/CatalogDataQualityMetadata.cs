@@ -9,17 +9,17 @@ public sealed class CatalogDataQualityMetadata
 
     public EScheduleNormalizationSource ScheduleNormalizationSource { get; }
 
-    public int SourceEnglishScheduleMismatchCount { get; }
+    public CatalogSourceEnglishScheduleMismatchCount SourceEnglishScheduleMismatchCount { get; }
 
-    public int RoomNotProvidedCount { get; }
+    public CatalogRoomNotProvidedCount RoomNotProvidedCount { get; }
 
-    public int EnrollmentNotProvidedCount { get; }
+    public CatalogEnrollmentNotProvidedCount EnrollmentNotProvidedCount { get; }
 
-    public int InstructorUnconfirmedCount { get; }
+    public CatalogInstructorUnconfirmedCount InstructorUnconfirmedCount { get; }
 
-    public int MultiInstructorDisplayCount { get; }
+    public CatalogMultiInstructorDisplayCount MultiInstructorDisplayCount { get; }
 
-    public int SourceRemarkLookupOnlyCount { get; }
+    public CatalogSourceRemarkLookupOnlyCount SourceRemarkLookupOnlyCount { get; }
 
     public IReadOnlyList<CatalogManualReview> ManualReviews
     {
@@ -31,20 +31,14 @@ public sealed class CatalogDataQualityMetadata
 
     public CatalogDataQualityMetadata(
         EScheduleNormalizationSource scheduleNormalizationSource,
-        int sourceEnglishScheduleMismatchCount,
-        int roomNotProvidedCount,
-        int enrollmentNotProvidedCount,
-        int instructorUnconfirmedCount,
-        int multiInstructorDisplayCount,
-        int sourceRemarkLookupOnlyCount,
+        CatalogSourceEnglishScheduleMismatchCount sourceEnglishScheduleMismatchCount,
+        CatalogRoomNotProvidedCount roomNotProvidedCount,
+        CatalogEnrollmentNotProvidedCount enrollmentNotProvidedCount,
+        CatalogInstructorUnconfirmedCount instructorUnconfirmedCount,
+        CatalogMultiInstructorDisplayCount multiInstructorDisplayCount,
+        CatalogSourceRemarkLookupOnlyCount sourceRemarkLookupOnlyCount,
         IEnumerable<CatalogManualReview> manualReviews)
     {
-        validateCount(sourceEnglishScheduleMismatchCount, nameof(sourceEnglishScheduleMismatchCount));
-        validateCount(roomNotProvidedCount, nameof(roomNotProvidedCount));
-        validateCount(enrollmentNotProvidedCount, nameof(enrollmentNotProvidedCount));
-        validateCount(instructorUnconfirmedCount, nameof(instructorUnconfirmedCount));
-        validateCount(multiInstructorDisplayCount, nameof(multiInstructorDisplayCount));
-        validateCount(sourceRemarkLookupOnlyCount, nameof(sourceRemarkLookupOnlyCount));
         if (manualReviews == null)
         {
             throw new ArgumentNullException(nameof(manualReviews));
@@ -71,16 +65,5 @@ public sealed class CatalogDataQualityMetadata
         MultiInstructorDisplayCount = multiInstructorDisplayCount;
         SourceRemarkLookupOnlyCount = sourceRemarkLookupOnlyCount;
         mManualReviews = copiedManualReviews.AsReadOnly();
-    }
-
-    private static void validateCount(int count, string parameterName)
-    {
-        if (count < 0)
-        {
-            throw new ArgumentOutOfRangeException(
-                parameterName,
-                count,
-                "Data quality counts cannot be negative.");
-        }
     }
 }

@@ -151,25 +151,29 @@ internal static class CatalogProjectionTestFixture
             new EnglishInstitutionName("Handong Global University"));
         CatalogSourceMetadata source = new CatalogSourceMetadata(
             institutionId,
-            "catalog.xls",
-            ".xls",
-            "application/vnd.ms-excel",
-            "windows-949",
-            "windows-949",
+            new CatalogSourceLogicalFileName("catalog.xls"),
+            new CatalogFileExtension(".xls"),
+            new CatalogMediaType("application/vnd.ms-excel"),
+            new CatalogCharset("windows-949"),
+            new CatalogDecoderName("windows-949"),
             new CatalogFileSize(1),
             new Sha256Digest(new string('0', 64)));
         CatalogConverterMetadata converter = new CatalogConverterMetadata(
-            "catalog-converter",
-            "1.0.0");
-        CatalogDocumentCounts counts = new CatalogDocumentCounts(2, 4, 2, 2);
+            new CatalogConverterId("catalog-converter"),
+            new CatalogConverterVersion(new Version(1, 0, 0)));
+        CatalogDocumentCounts counts = new CatalogDocumentCounts(
+            new CatalogCourseCount(2),
+            new CatalogOfferingCount(4),
+            new CatalogScheduledOfferingCount(2),
+            new CatalogMeetingNotProvidedCount(2));
         CatalogDataQualityMetadata dataQuality = new CatalogDataQualityMetadata(
             EScheduleNormalizationSource.KoreanPeriodText,
-            0,
-            3,
-            4,
-            1,
-            1,
-            0,
+            new CatalogSourceEnglishScheduleMismatchCount(0),
+            new CatalogRoomNotProvidedCount(3),
+            new CatalogEnrollmentNotProvidedCount(4),
+            new CatalogInstructorUnconfirmedCount(1),
+            new CatalogMultiInstructorDisplayCount(1),
+            new CatalogSourceRemarkLookupOnlyCount(0),
             Array.Empty<CatalogManualReview>());
 
         return new CourseCatalogDocument(

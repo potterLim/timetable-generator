@@ -7,15 +7,15 @@ public sealed class CatalogSourceMetadata
 {
     public InstitutionId ProviderId { get; }
 
-    public string LogicalFileName { get; }
+    public CatalogSourceLogicalFileName LogicalFileName { get; }
 
-    public string DeclaredExtension { get; }
+    public CatalogFileExtension DeclaredExtension { get; }
 
-    public string DetectedMediaType { get; }
+    public CatalogMediaType DetectedMediaType { get; }
 
-    public string DeclaredCharset { get; }
+    public CatalogCharset DeclaredCharset { get; }
 
-    public string DecodedWith { get; }
+    public CatalogDecoderName DecodedWith { get; }
 
     public CatalogFileSize Size { get; }
 
@@ -23,11 +23,11 @@ public sealed class CatalogSourceMetadata
 
     public CatalogSourceMetadata(
         InstitutionId providerId,
-        string logicalFileName,
-        string declaredExtension,
-        string detectedMediaType,
-        string declaredCharset,
-        string decodedWith,
+        CatalogSourceLogicalFileName logicalFileName,
+        CatalogFileExtension declaredExtension,
+        CatalogMediaType detectedMediaType,
+        CatalogCharset declaredCharset,
+        CatalogDecoderName decodedWith,
         CatalogFileSize size,
         Sha256Digest sha256)
     {
@@ -36,11 +36,31 @@ public sealed class CatalogSourceMetadata
             throw new ArgumentNullException(nameof(providerId));
         }
 
-        validateText(logicalFileName, nameof(logicalFileName));
-        validateText(declaredExtension, nameof(declaredExtension));
-        validateText(detectedMediaType, nameof(detectedMediaType));
-        validateText(declaredCharset, nameof(declaredCharset));
-        validateText(decodedWith, nameof(decodedWith));
+        if (logicalFileName == null)
+        {
+            throw new ArgumentNullException(nameof(logicalFileName));
+        }
+
+        if (declaredExtension == null)
+        {
+            throw new ArgumentNullException(nameof(declaredExtension));
+        }
+
+        if (detectedMediaType == null)
+        {
+            throw new ArgumentNullException(nameof(detectedMediaType));
+        }
+
+        if (declaredCharset == null)
+        {
+            throw new ArgumentNullException(nameof(declaredCharset));
+        }
+
+        if (decodedWith == null)
+        {
+            throw new ArgumentNullException(nameof(decodedWith));
+        }
+
         if (sha256 == null)
         {
             throw new ArgumentNullException(nameof(sha256));
@@ -54,13 +74,5 @@ public sealed class CatalogSourceMetadata
         DecodedWith = decodedWith;
         Size = size;
         Sha256 = sha256;
-    }
-
-    private static void validateText(string value, string parameterName)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new ArgumentException("Catalog source values cannot be empty.", parameterName);
-        }
     }
 }

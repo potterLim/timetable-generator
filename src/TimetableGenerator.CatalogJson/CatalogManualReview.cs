@@ -11,24 +11,22 @@ public sealed class CatalogManualReview
 
     public EManualReviewReason Reason { get; }
 
-    public string SourceValue { get; }
+    public CatalogManualReviewSourceValue SourceValue { get; }
 
     public CatalogManualReview(
         CourseId courseId,
         EManualReviewField field,
         EManualReviewReason reason,
-        string sourceValue)
+        CatalogManualReviewSourceValue sourceValue)
     {
         if (courseId == null)
         {
             throw new ArgumentNullException(nameof(courseId));
         }
 
-        if (string.IsNullOrWhiteSpace(sourceValue))
+        if (sourceValue == null)
         {
-            throw new ArgumentException(
-                "Manual review source values cannot be empty.",
-                nameof(sourceValue));
+            throw new ArgumentNullException(nameof(sourceValue));
         }
 
         CourseId = courseId;

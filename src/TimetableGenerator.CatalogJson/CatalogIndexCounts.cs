@@ -4,13 +4,13 @@ namespace TimetableGenerator.CatalogJson;
 
 public sealed class CatalogIndexCounts
 {
-    public int CourseCount { get; }
+    public CatalogCourseCount CourseCount { get; }
 
-    public int OfferingCount { get; }
+    public CatalogOfferingCount OfferingCount { get; }
 
-    public CatalogIndexCounts(int courseCount, int offeringCount)
+    public CatalogIndexCounts(CatalogCourseCount courseCount, CatalogOfferingCount offeringCount)
     {
-        if (courseCount <= 0)
+        if (courseCount.IsValid == false)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(courseCount),
@@ -18,7 +18,7 @@ public sealed class CatalogIndexCounts
                 "Catalog indexes require a positive course count.");
         }
 
-        if (offeringCount <= 0)
+        if (offeringCount.IsValid == false)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(offeringCount),

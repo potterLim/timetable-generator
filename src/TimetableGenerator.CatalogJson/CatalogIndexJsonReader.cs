@@ -162,21 +162,25 @@ public static class CatalogIndexJsonReader
             });
         CatalogRelativePath relativePath = new CatalogRelativePath(
             fileObject.GetString("relativePath"));
-        string mediaType = fileObject.GetString("mediaType");
-        string charset = fileObject.GetString("charset");
-        string contentEncoding = fileObject.GetString("contentEncoding");
+        string mediaTypeText = fileObject.GetString("mediaType");
+        string charsetText = fileObject.GetString("charset");
+        string contentEncodingText = fileObject.GetString("contentEncoding");
         CatalogJsonValueParser.RequireExactString(
-            mediaType,
+            mediaTypeText,
             CatalogJsonSchema.JSON_MEDIA_TYPE,
             fileObject.GetPropertyPath("mediaType"));
         CatalogJsonValueParser.RequireExactString(
-            charset,
+            charsetText,
             CatalogJsonSchema.UTF8_CHARSET,
             fileObject.GetPropertyPath("charset"));
         CatalogJsonValueParser.RequireExactString(
-            contentEncoding,
+            contentEncodingText,
             CatalogJsonSchema.IDENTITY_CONTENT_ENCODING,
             fileObject.GetPropertyPath("contentEncoding"));
+        CatalogMediaType mediaType = new CatalogMediaType(mediaTypeText);
+        CatalogCharset charset = new CatalogCharset(charsetText);
+        CatalogContentEncoding contentEncoding = new CatalogContentEncoding(
+            contentEncodingText);
         CatalogFileSize fileSize = new CatalogFileSize(fileObject.GetInt64("sizeBytes"));
         Sha256Digest sha256 = new Sha256Digest(fileObject.GetString("sha256"));
         return new CatalogFileDescriptor(
@@ -199,7 +203,7 @@ public static class CatalogIndexJsonReader
                 "offerings",
             });
         return new CatalogIndexCounts(
-            countsObject.GetInt32("courses"),
-            countsObject.GetInt32("offerings"));
+            new CatalogCourseCount(countsObject.GetInt32("courses")),
+            new CatalogOfferingCount(countsObject.GetInt32("offerings")));
     }
 }

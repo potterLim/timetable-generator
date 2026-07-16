@@ -13,14 +13,14 @@ public static partial class CourseCatalogJsonReader
         IReadOnlyList<CatalogOffering> offerings,
         IReadOnlyList<CatalogOfferingMetadata> offeringMetadata)
     {
-        if (counts.CourseCount != courses.Count)
+        if (counts.CourseCount.Value != courses.Count)
         {
             throw new CatalogJsonFormatException(
                 "$.counts.courses",
                 "the declared course count does not match the courses array.");
         }
 
-        if (counts.OfferingCount != offerings.Count)
+        if (counts.OfferingCount.Value != offerings.Count)
         {
             throw new CatalogJsonFormatException(
                 "$.counts.offerings",
@@ -86,31 +86,31 @@ public static partial class CourseCatalogJsonReader
         }
 
         requireCount(
-            counts.ScheduledOfferingCount,
+            counts.ScheduledOfferingCount.Value,
             scheduledOfferingCount,
             "$.counts.scheduledOfferings");
         requireCount(
-            counts.MeetingNotProvidedCount,
+            counts.MeetingNotProvidedCount.Value,
             meetingNotProvidedCount,
             "$.counts.meetingNotProvided");
         requireCount(
-            dataQuality.RoomNotProvidedCount,
+            dataQuality.RoomNotProvidedCount.Value,
             roomNotProvidedCount,
             "$.dataQuality.roomNotProvided");
         requireCount(
-            dataQuality.EnrollmentNotProvidedCount,
+            dataQuality.EnrollmentNotProvidedCount.Value,
             enrollmentNotProvidedCount,
             "$.dataQuality.enrollmentNotProvided");
         requireCount(
-            dataQuality.InstructorUnconfirmedCount,
+            dataQuality.InstructorUnconfirmedCount.Value,
             instructorUnconfirmedCount,
             "$.dataQuality.instructorUnconfirmed");
         requireCount(
-            dataQuality.MultiInstructorDisplayCount,
+            dataQuality.MultiInstructorDisplayCount.Value,
             multiInstructorDisplayCount,
             "$.dataQuality.multiInstructorDisplay");
         requireCount(
-            dataQuality.SourceRemarkLookupOnlyCount,
+            dataQuality.SourceRemarkLookupOnlyCount.Value,
             sourceRemarkLookupOnlyCount,
             "$.dataQuality.sourceRemarkLookupOnly");
     }

@@ -4,20 +4,20 @@ namespace TimetableGenerator.CatalogJson;
 
 public sealed class CatalogConverterMetadata
 {
-    public string Id { get; }
+    public CatalogConverterId Id { get; }
 
-    public string Version { get; }
+    public CatalogConverterVersion Version { get; }
 
-    public CatalogConverterMetadata(string id, string version)
+    public CatalogConverterMetadata(CatalogConverterId id, CatalogConverterVersion version)
     {
-        if (string.IsNullOrWhiteSpace(id))
+        if (id == null)
         {
-            throw new ArgumentException("Converter IDs cannot be empty.", nameof(id));
+            throw new ArgumentNullException(nameof(id));
         }
 
-        if (string.IsNullOrWhiteSpace(version))
+        if (version == null)
         {
-            throw new ArgumentException("Converter versions cannot be empty.", nameof(version));
+            throw new ArgumentNullException(nameof(version));
         }
 
         Id = id;

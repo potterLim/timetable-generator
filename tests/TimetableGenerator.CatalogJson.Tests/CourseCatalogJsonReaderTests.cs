@@ -216,10 +216,10 @@ public sealed class CourseCatalogJsonReaderTests
             indexEntry.File.Sha256.HexValue);
         Assert.HasCount(515, firstDocument.Catalog.Courses);
         Assert.HasCount(742, firstDocument.Catalog.Offerings);
-        Assert.AreEqual(657, firstDocument.Counts.ScheduledOfferingCount);
-        Assert.AreEqual(85, firstDocument.Counts.MeetingNotProvidedCount);
-        Assert.AreEqual(93, firstDocument.DataQuality.InstructorUnconfirmedCount);
-        Assert.AreEqual(92, firstDocument.DataQuality.RoomNotProvidedCount);
+        Assert.AreEqual(657, firstDocument.Counts.ScheduledOfferingCount.Value);
+        Assert.AreEqual(85, firstDocument.Counts.MeetingNotProvidedCount.Value);
+        Assert.AreEqual(93, firstDocument.DataQuality.InstructorUnconfirmedCount.Value);
+        Assert.AreEqual(92, firstDocument.DataQuality.RoomNotProvidedCount.Value);
         Assert.HasCount(742, firstDocument.OfferingMetadata);
         Assert.AreEqual(firstDocument.Catalog.Id, secondDocument.Catalog.Id);
         Assert.AreEqual(
