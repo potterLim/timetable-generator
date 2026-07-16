@@ -52,7 +52,7 @@ TIMETABLE_GENERATOR_CATALOG_INDEX_URI="https://catalog.example.edu/timetable-gen
 ### 요구 사항
 
 - .NET 10 SDK (`global.json`은 10.0.100 이상 feature band를 허용합니다.)
-- Windows 10/11 또는 지원되는 macOS
+- Windows 10/11 x64 또는 macOS 14 이상
 
 저장소 루트에서 다음 명령을 실행합니다.
 

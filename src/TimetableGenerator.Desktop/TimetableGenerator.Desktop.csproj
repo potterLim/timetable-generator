@@ -3,6 +3,15 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <AssemblyTitle>Timetable Generator</AssemblyTitle>
+    <Product>Timetable Generator</Product>
+    <Description>Cross-platform course planning and timetable generation.</Description>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="('$(RuntimeIdentifier)' == '' And '$(OS)' == 'Windows_NT') Or $([System.Text.RegularExpressions.Regex]::IsMatch('$(RuntimeIdentifier)', '^win(-|$)'))">
+    <ApplicationManifest>Platforms\Windows\app.manifest</ApplicationManifest>
+    <ApplicationIcon>Platforms\Windows\AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
