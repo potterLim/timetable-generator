@@ -59,8 +59,7 @@ public sealed class PlanningWorkspaceEditor
             existingPlan.Id,
             name,
             existingPlan.CatalogBinding,
-            existingPlan.ScheduledCourseChoices,
-            existingPlan.UnscheduledOfferingSelections);
+            existingPlan.Content);
         return replacePlan(workspace, renamedPlan);
     }
 
@@ -121,8 +120,10 @@ public sealed class PlanningWorkspaceEditor
             existingPlan.Id,
             existingPlan.Name,
             existingPlan.CatalogBinding,
-            scheduledChoices,
-            existingPlan.UnscheduledOfferingSelections);
+            new PlanningPlanContent(
+                scheduledChoices,
+                existingPlan.UnscheduledOfferingSelections,
+                existingPlan.PersonalSchedules));
         return replacePlan(workspace, updatedPlan);
     }
 
@@ -150,8 +151,10 @@ public sealed class PlanningWorkspaceEditor
             existingPlan.Id,
             existingPlan.Name,
             existingPlan.CatalogBinding,
-            existingPlan.ScheduledCourseChoices,
-            selections);
+            new PlanningPlanContent(
+                existingPlan.ScheduledCourseChoices,
+                selections,
+                existingPlan.PersonalSchedules));
         return replacePlan(workspace, updatedPlan);
     }
 
@@ -179,9 +182,115 @@ public sealed class PlanningWorkspaceEditor
             existingPlan.Id,
             existingPlan.Name,
             existingPlan.CatalogBinding,
-            scheduledChoices,
-            unscheduledSelections);
+            new PlanningPlanContent(
+                scheduledChoices,
+                unscheduledSelections,
+                existingPlan.PersonalSchedules));
         return replacePlan(workspace, updatedPlan);
+    }
+
+    public PlanningWorkspace AddPersonalSchedule(
+        PlanningWorkspace workspace,
+        PlanId planId,
+        PersonalSchedule personalSchedule)
+    {
+        if (workspace == null)
+        {
+            throw new ArgumentNullException(nameof(workspace));
+        }
+
+        if (personalSchedule == null)
+        {
+            throw new ArgumentNullException(nameof(personalSchedule));
+        }
+
+        PlanningPlan existingPlan = findPlan(workspace, planId);
+        List<PersonalSchedule> personalSchedules =
+            new List<PersonalSchedule>(existingPlan.PersonalSchedules);
+        personalSchedules.Add(personalSchedule);
+        return replacePersonalSchedules(workspace, existingPlan, personalSchedules);
+    }
+
+    public PlanningWorkspace UpdatePersonalSchedule(
+        PlanningWorkspace workspace,
+        PlanId planId,
+        PersonalSchedule personalSchedule)
+    {
+        if (workspace == null)
+        {
+            throw new ArgumentNullException(nameof(workspace));
+        }
+
+        if (personalSchedule == null)
+        {
+            throw new ArgumentNullException(nameof(personalSchedule));
+        }
+
+        PlanningPlan existingPlan = findPlan(workspace, planId);
+        List<PersonalSchedule> personalSchedules =
+            new List<PersonalSchedule>(existingPlan.PersonalSchedules.Count);
+        bool hasReplacement = false;
+        foreach (PersonalSchedule existingSchedule in existingPlan.PersonalSchedules)
+        {
+            if (existingSchedule.Id == personalSchedule.Id)
+            {
+                personalSchedules.Add(personalSchedule);
+                hasReplacement = true;
+            }
+            else
+            {
+                personalSchedules.Add(existingSchedule);
+            }
+        }
+
+        if (hasReplacement == false)
+        {
+            throw new KeyNotFoundException(
+                "The planning plan does not contain the personal schedule.");
+        }
+
+        return replacePersonalSchedules(workspace, existingPlan, personalSchedules);
+    }
+
+    public PlanningWorkspace RemovePersonalSchedule(
+        PlanningWorkspace workspace,
+        PlanId planId,
+        PersonalScheduleId personalScheduleId)
+    {
+        if (workspace == null)
+        {
+            throw new ArgumentNullException(nameof(workspace));
+        }
+
+        if (personalScheduleId.IsValid == false)
+        {
+            throw new ArgumentException(
+                "Personal schedule removal requires a valid ID.",
+                nameof(personalScheduleId));
+        }
+
+        PlanningPlan existingPlan = findPlan(workspace, planId);
+        List<PersonalSchedule> personalSchedules = new List<PersonalSchedule>();
+        bool hasRemovedSchedule = false;
+        foreach (PersonalSchedule personalSchedule in existingPlan.PersonalSchedules)
+        {
+            if (personalSchedule.Id == personalScheduleId)
+            {
+                hasRemovedSchedule = true;
+            }
+            else
+            {
+                personalSchedules.Add(personalSchedule);
+            }
+        }
+
+        if (hasRemovedSchedule == false)
+        {
+            throw new KeyNotFoundException(
+                "The planning plan does not contain the personal schedule.");
+        }
+
+        return replacePersonalSchedules(workspace, existingPlan, personalSchedules);
     }
 
     private static PlanningPlan findPlan(
@@ -232,6 +341,23 @@ public sealed class PlanningWorkspaceEditor
         }
 
         return new PlanningWorkspace(workspace.ActivePlanId, plans);
+    }
+
+    private static PlanningWorkspace replacePersonalSchedules(
+        PlanningWorkspace workspace,
+        PlanningPlan existingPlan,
+        IEnumerable<PersonalSchedule> personalSchedules)
+    {
+        PlanningPlanContent content = new PlanningPlanContent(
+            existingPlan.ScheduledCourseChoices,
+            existingPlan.UnscheduledOfferingSelections,
+            personalSchedules);
+        PlanningPlan updatedPlan = new PlanningPlan(
+            existingPlan.Id,
+            existingPlan.Name,
+            existingPlan.CatalogBinding,
+            content);
+        return replacePlan(workspace, updatedPlan);
     }
 
     private static List<ScheduledCourseChoice> copyScheduledChoicesExceptCourse(

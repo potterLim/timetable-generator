@@ -1,26 +1,23 @@
 using System;
 using System.Collections.Generic;
-using TimetableGenerator.Domain.Catalogs;
 
 namespace TimetableGenerator.Domain.Planning;
 
 public sealed class PlanningPlan
 {
-    private readonly IReadOnlyList<ScheduledCourseChoice> mScheduledCourseChoices;
-
-    private readonly IReadOnlyList<UnscheduledOfferingSelection> mUnscheduledOfferingSelections;
-
     public PlanId Id { get; }
 
     public PlanName Name { get; }
 
     public PlanCatalogBinding CatalogBinding { get; }
 
+    public PlanningPlanContent Content { get; }
+
     public IReadOnlyList<ScheduledCourseChoice> ScheduledCourseChoices
     {
         get
         {
-            return mScheduledCourseChoices;
+            return Content.ScheduledCourseChoices;
         }
     }
 
@@ -28,7 +25,15 @@ public sealed class PlanningPlan
     {
         get
         {
-            return mUnscheduledOfferingSelections;
+            return Content.UnscheduledOfferingSelections;
+        }
+    }
+
+    public IReadOnlyList<PersonalSchedule> PersonalSchedules
+    {
+        get
+        {
+            return Content.PersonalSchedules;
         }
     }
 
@@ -36,7 +41,7 @@ public sealed class PlanningPlan
     {
         get
         {
-            return mUnscheduledOfferingSelections.Count > 0;
+            return UnscheduledOfferingSelections.Count > 0;
         }
     }
 
@@ -44,8 +49,7 @@ public sealed class PlanningPlan
         PlanId id,
         PlanName name,
         PlanCatalogBinding catalogBinding,
-        IEnumerable<ScheduledCourseChoice> scheduledCourseChoices,
-        IEnumerable<UnscheduledOfferingSelection> unscheduledOfferingSelections)
+        PlanningPlanContent content)
     {
         if (id.IsValid == false)
         {
@@ -62,108 +66,14 @@ public sealed class PlanningPlan
             throw new ArgumentNullException(nameof(catalogBinding));
         }
 
-        if (scheduledCourseChoices == null)
+        if (content == null)
         {
-            throw new ArgumentNullException(nameof(scheduledCourseChoices));
+            throw new ArgumentNullException(nameof(content));
         }
-
-        if (unscheduledOfferingSelections == null)
-        {
-            throw new ArgumentNullException(nameof(unscheduledOfferingSelections));
-        }
-
-        HashSet<CourseId> selectedCourseIds = new HashSet<CourseId>();
-        HashSet<OfferingId> selectedOfferingIds = new HashSet<OfferingId>();
-        IReadOnlyList<ScheduledCourseChoice> copiedScheduledCourseChoices =
-            copyAndValidateScheduledCourseChoices(
-                scheduledCourseChoices,
-                selectedCourseIds,
-                selectedOfferingIds);
-        IReadOnlyList<UnscheduledOfferingSelection> copiedUnscheduledSelections =
-            copyAndValidateUnscheduledOfferingSelections(
-                unscheduledOfferingSelections,
-                selectedCourseIds,
-                selectedOfferingIds);
 
         Id = id;
         Name = name;
         CatalogBinding = catalogBinding;
-        mScheduledCourseChoices = copiedScheduledCourseChoices;
-        mUnscheduledOfferingSelections = copiedUnscheduledSelections;
-    }
-
-    private static IReadOnlyList<ScheduledCourseChoice> copyAndValidateScheduledCourseChoices(
-        IEnumerable<ScheduledCourseChoice> scheduledCourseChoices,
-        ISet<CourseId> selectedCourseIds,
-        ISet<OfferingId> selectedOfferingIds)
-    {
-        List<ScheduledCourseChoice> copiedChoices = new List<ScheduledCourseChoice>();
-        foreach (ScheduledCourseChoice scheduledCourseChoice in scheduledCourseChoices)
-        {
-            if (scheduledCourseChoice == null)
-            {
-                throw new ArgumentException(
-                    "Planning plans cannot contain null scheduled course choices.",
-                    nameof(scheduledCourseChoices));
-            }
-
-            if (selectedCourseIds.Add(scheduledCourseChoice.CourseId) == false)
-            {
-                throw new ArgumentException(
-                    "Planning plans cannot select the same course more than once.",
-                    nameof(scheduledCourseChoices));
-            }
-
-            foreach (OfferingId offeringId in scheduledCourseChoice.OfferingIds)
-            {
-                if (selectedOfferingIds.Add(offeringId) == false)
-                {
-                    throw new ArgumentException(
-                        "Planning plans cannot select the same offering more than once.",
-                        nameof(scheduledCourseChoices));
-                }
-            }
-
-            copiedChoices.Add(scheduledCourseChoice);
-        }
-
-        return copiedChoices.AsReadOnly();
-    }
-
-    private static IReadOnlyList<UnscheduledOfferingSelection>
-        copyAndValidateUnscheduledOfferingSelections(
-            IEnumerable<UnscheduledOfferingSelection> unscheduledOfferingSelections,
-            ISet<CourseId> selectedCourseIds,
-            ISet<OfferingId> selectedOfferingIds)
-    {
-        List<UnscheduledOfferingSelection> copiedSelections =
-            new List<UnscheduledOfferingSelection>();
-        foreach (UnscheduledOfferingSelection selection in unscheduledOfferingSelections)
-        {
-            if (selection == null)
-            {
-                throw new ArgumentException(
-                    "Planning plans cannot contain null unscheduled selections.",
-                    nameof(unscheduledOfferingSelections));
-            }
-
-            if (selectedCourseIds.Add(selection.CourseId) == false)
-            {
-                throw new ArgumentException(
-                    "A course cannot be both scheduled and time-unconfirmed in one plan.",
-                    nameof(unscheduledOfferingSelections));
-            }
-
-            if (selectedOfferingIds.Add(selection.OfferingId) == false)
-            {
-                throw new ArgumentException(
-                    "Planning plans cannot select the same offering more than once.",
-                    nameof(unscheduledOfferingSelections));
-            }
-
-            copiedSelections.Add(selection);
-        }
-
-        return copiedSelections.AsReadOnly();
+        Content = content;
     }
 }

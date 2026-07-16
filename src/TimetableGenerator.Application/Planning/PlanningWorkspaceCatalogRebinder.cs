@@ -279,8 +279,7 @@ public static class PlanningWorkspaceCatalogRebinder
                 plan.Id,
                 plan.Name,
                 newBinding,
-                plan.ScheduledCourseChoices,
-                plan.UnscheduledOfferingSelections);
+                plan.Content);
             reboundPlans.Add(reboundPlan);
         }
 

@@ -273,6 +273,108 @@ public sealed class ScheduleRecommendationGeneratorTests
         Assert.IsEmpty(result.Recommendations);
     }
 
+    [TestMethod]
+    public void PersonalSchedulePrunesOnlyOverlappingCourseOfferings()
+    {
+        CatalogCourse course = ScheduleRecommendationTestData.CreateCourse("AAA10001");
+        CatalogOffering mondayOffering =
+            ScheduleRecommendationTestData.CreateScheduledOffering(
+                "AAA10001",
+                "01",
+                new MeetingSlot[]
+                {
+                    ScheduleRecommendationTestData.CreateMeetingSlot(
+                        EDay.Monday,
+                        1),
+                });
+        CatalogOffering tuesdayOffering =
+            ScheduleRecommendationTestData.CreateScheduledOffering(
+                "AAA10001",
+                "02",
+                new MeetingSlot[]
+                {
+                    ScheduleRecommendationTestData.CreateMeetingSlot(
+                        EDay.Tuesday,
+                        1),
+                });
+        CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(
+            new CatalogCourse[] { course },
+            new CatalogOffering[] { mondayOffering, tuesdayOffering });
+        PersonalSchedule personalSchedule = createPersonalSchedule(
+            EDay.Monday,
+            new ScheduleTime(9, 15),
+            new ScheduleTime(10, 15));
+        PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
+            catalog,
+            new ScheduledCourseChoice[]
+            {
+                ScheduleRecommendationTestData.CreateChoice(
+                    "AAA10001",
+                    "01",
+                    "02"),
+            },
+            Array.Empty<UnscheduledOfferingSelection>(),
+            new PersonalSchedule[] { personalSchedule });
+
+        ScheduleRecommendationResult result = generate(catalog, plan, 10);
+
+        Assert.HasCount(1, result.Recommendations);
+        Assert.AreEqual(
+            "02",
+            result.Recommendations[0].ScheduledOfferings[0].SectionCode.Value);
+        Assert.AreSame(
+            personalSchedule,
+            result.Recommendations[0].PersonalSchedules[0]);
+    }
+
+    [TestMethod]
+    public void PersonalOnlyPlanProducesAConfirmedRecommendation()
+    {
+        CatalogCourse catalogCourse =
+            ScheduleRecommendationTestData.CreateCourse("AAA10001");
+        CatalogOffering catalogOffering =
+            ScheduleRecommendationTestData.CreateUnscheduledOffering(
+                "AAA10001",
+                "01");
+        CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(
+            new CatalogCourse[] { catalogCourse },
+            new CatalogOffering[] { catalogOffering });
+        PersonalSchedule personalSchedule = createPersonalSchedule(
+            EDay.Wednesday,
+            new ScheduleTime(12, 20),
+            new ScheduleTime(13, 20));
+        PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
+            catalog,
+            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<UnscheduledOfferingSelection>(),
+            new PersonalSchedule[] { personalSchedule });
+
+        ScheduleRecommendationResult result = generate(catalog, plan, 10);
+        ScheduleRecommendation recommendation = result.Recommendations[0];
+
+        Assert.HasCount(1, result.Recommendations);
+        Assert.IsEmpty(recommendation.ScheduledOfferings);
+        Assert.HasCount(1, recommendation.PersonalSchedules);
+        Assert.AreEqual(
+            ERecommendationVerificationStatus.ConfirmedConflictFree,
+            recommendation.VerificationStatus);
+    }
+
+    private static PersonalSchedule createPersonalSchedule(
+        EDay day,
+        ScheduleTime start,
+        ScheduleTime end)
+    {
+        WeeklyTimeRange timeRange = new WeeklyTimeRange(
+            day,
+            new DailyTimeRange(start, end));
+        return new PersonalSchedule(
+            PersonalScheduleId.CreateNew(),
+            new PersonalScheduleTitle("랩 미팅"),
+            new WeeklyTimeRange[] { timeRange },
+            PersonalScheduleDetails.CreateEmpty());
+    }
+
     private static CourseCatalog createCartesianCatalog()
     {
         CatalogCourse firstCourse = ScheduleRecommendationTestData.CreateCourse("AAA10001");

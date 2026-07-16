@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Planning;
@@ -59,16 +60,33 @@ internal static class ScheduleRecommendationTestData
         IEnumerable<ScheduledCourseChoice> scheduledChoices,
         IEnumerable<UnscheduledOfferingSelection> unscheduledSelections)
     {
+        return CreatePlan(
+            catalog,
+            scheduledChoices,
+            unscheduledSelections,
+            Array.Empty<PersonalSchedule>());
+    }
+
+    public static PlanningPlan CreatePlan(
+        CourseCatalog catalog,
+        IEnumerable<ScheduledCourseChoice> scheduledChoices,
+        IEnumerable<UnscheduledOfferingSelection> unscheduledSelections,
+        IEnumerable<PersonalSchedule> personalSchedules)
+    {
         PlanCatalogBinding catalogBinding = new PlanCatalogBinding(
             catalog.Id,
             catalog.InstitutionId,
             catalog.Term,
             catalog.Revision,
             new CatalogArtifactSha256(new string('a', 64)));
-        return CreatePlanWithBinding(
+        return new PlanningPlan(
+            PlanId.CreateNew(),
+            new PlanName("기본 시간표"),
             catalogBinding,
-            scheduledChoices,
-            unscheduledSelections);
+            new PlanningPlanContent(
+                scheduledChoices,
+                unscheduledSelections,
+                personalSchedules));
     }
 
     public static PlanningPlan CreatePlanWithBinding(
@@ -80,8 +98,10 @@ internal static class ScheduleRecommendationTestData
             PlanId.CreateNew(),
             new PlanName("기본 시간표"),
             catalogBinding,
-            scheduledChoices,
-            unscheduledSelections);
+            new PlanningPlanContent(
+                scheduledChoices,
+                unscheduledSelections,
+                Array.Empty<PersonalSchedule>()));
     }
 
     public static ScheduledCourseChoice CreateChoice(

@@ -205,7 +205,9 @@ public sealed class PlanningWorkspaceEditorTests
             PlanId.CreateNew(),
             new PlanName(name),
             binding,
-            scheduledChoices,
-            unscheduledSelections);
+            new PlanningPlanContent(
+                scheduledChoices,
+                unscheduledSelections,
+                Array.Empty<PersonalSchedule>()));
     }
 }

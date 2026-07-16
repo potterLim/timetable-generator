@@ -79,8 +79,10 @@ public sealed class PlanningWorkspaceSession
             planId,
             name,
             binding,
-            Array.Empty<ScheduledCourseChoice>(),
-            Array.Empty<UnscheduledOfferingSelection>());
+            new PlanningPlanContent(
+                Array.Empty<ScheduledCourseChoice>(),
+                Array.Empty<UnscheduledOfferingSelection>(),
+                Array.Empty<PersonalSchedule>()));
         mWorkspace = mEditor.AddPlan(mWorkspace, plan);
         return mWorkspace;
     }
@@ -144,6 +146,44 @@ public sealed class PlanningWorkspaceSession
             mWorkspace,
             mWorkspace.ActivePlanId,
             courseId);
+        return mWorkspace;
+    }
+
+    public PlanningWorkspace AddPersonalSchedule(PersonalSchedule personalSchedule)
+    {
+        if (personalSchedule == null)
+        {
+            throw new ArgumentNullException(nameof(personalSchedule));
+        }
+
+        mWorkspace = mEditor.AddPersonalSchedule(
+            mWorkspace,
+            mWorkspace.ActivePlanId,
+            personalSchedule);
+        return mWorkspace;
+    }
+
+    public PlanningWorkspace UpdatePersonalSchedule(PersonalSchedule personalSchedule)
+    {
+        if (personalSchedule == null)
+        {
+            throw new ArgumentNullException(nameof(personalSchedule));
+        }
+
+        mWorkspace = mEditor.UpdatePersonalSchedule(
+            mWorkspace,
+            mWorkspace.ActivePlanId,
+            personalSchedule);
+        return mWorkspace;
+    }
+
+    public PlanningWorkspace RemovePersonalSchedule(
+        PersonalScheduleId personalScheduleId)
+    {
+        mWorkspace = mEditor.RemovePersonalSchedule(
+            mWorkspace,
+            mWorkspace.ActivePlanId,
+            personalScheduleId);
         return mWorkspace;
     }
 

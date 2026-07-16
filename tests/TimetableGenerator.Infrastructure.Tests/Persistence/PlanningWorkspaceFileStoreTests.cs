@@ -216,8 +216,8 @@ public sealed class PlanningWorkspaceFileStoreTests
                 latestPath,
                 CancellationToken.None);
             string futureContent = latestContent.Replace(
-                "\"schemaVersion\": 1,",
                 "\"schemaVersion\": 2,",
+                "\"schemaVersion\": 3,",
                 StringComparison.Ordinal);
             await File.WriteAllTextAsync(
                 latestPath,
@@ -239,8 +239,8 @@ public sealed class PlanningWorkspaceFileStoreTests
             byte[][] contentAfterSave = await readGenerationContentsAsync(
                 testDirectoryPath);
 
-            Assert.AreEqual(2, exception.UnsupportedSchemaVersion);
-            Assert.AreEqual(2, saveException.UnsupportedSchemaVersion);
+            Assert.AreEqual(3, exception.UnsupportedSchemaVersion);
+            Assert.AreEqual(3, saveException.UnsupportedSchemaVersion);
             Assert.HasCount(contentBeforeSave.Length, contentAfterSave);
             for (int index = 0; index < contentBeforeSave.Length; index++)
             {
@@ -267,8 +267,8 @@ public sealed class PlanningWorkspaceFileStoreTests
                 futurePath,
                 CancellationToken.None);
             futureContent = futureContent.Replace(
-                "\"schemaVersion\": 1,",
                 "\"schemaVersion\": 2,",
+                "\"schemaVersion\": 3,",
                 StringComparison.Ordinal);
             await File.WriteAllTextAsync(
                 futurePath,
@@ -490,8 +490,10 @@ public sealed class PlanningWorkspaceFileStoreTests
             planId,
             new PlanName(name),
             binding,
-            Array.Empty<ScheduledCourseChoice>(),
-            Array.Empty<UnscheduledOfferingSelection>());
+            new PlanningPlanContent(
+                Array.Empty<ScheduledCourseChoice>(),
+                Array.Empty<UnscheduledOfferingSelection>(),
+                Array.Empty<PersonalSchedule>()));
         return new PlanningWorkspace(planId, new PlanningPlan[] { plan });
     }
 

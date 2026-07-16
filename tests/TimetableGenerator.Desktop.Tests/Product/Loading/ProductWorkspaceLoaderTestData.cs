@@ -326,8 +326,10 @@ internal static class ProductWorkspaceLoaderTestData
             planId,
             new PlanName("저장된 시간표"),
             createCatalogBinding(revision),
-            choices,
-            Array.Empty<UnscheduledOfferingSelection>());
+            new PlanningPlanContent(
+                choices,
+                Array.Empty<UnscheduledOfferingSelection>(),
+                Array.Empty<PersonalSchedule>()));
         return new PlanningWorkspace(planId, new PlanningPlan[] { plan });
     }
 
@@ -340,8 +342,10 @@ internal static class ProductWorkspaceLoaderTestData
             planId,
             planName,
             createCatalogBinding(revision),
-            Array.Empty<ScheduledCourseChoice>(),
-            Array.Empty<UnscheduledOfferingSelection>());
+            new PlanningPlanContent(
+                Array.Empty<ScheduledCourseChoice>(),
+                Array.Empty<UnscheduledOfferingSelection>(),
+                Array.Empty<PersonalSchedule>()));
     }
 
     private static PlanCatalogBinding createCatalogBinding(CatalogRevision revision)

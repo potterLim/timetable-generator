@@ -121,8 +121,10 @@ public sealed class PlanningPlanTests
             planId,
             new PlanName(planName),
             createCatalogBinding(),
-            scheduledCourseChoices,
-            unscheduledOfferingSelections);
+            new PlanningPlanContent(
+                scheduledCourseChoices,
+                unscheduledOfferingSelections,
+                Array.Empty<PersonalSchedule>()));
     }
 
     private static PlanCatalogBinding createCatalogBinding()

@@ -531,8 +531,10 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             PlanId.CreateNew(),
             new PlanName(name),
             binding,
-            scheduledChoices,
-            unscheduledSelections);
+            new PlanningPlanContent(
+                scheduledChoices,
+                unscheduledSelections,
+                Array.Empty<PersonalSchedule>()));
     }
 
     private static MeetingSlot[] createMondaySlot()

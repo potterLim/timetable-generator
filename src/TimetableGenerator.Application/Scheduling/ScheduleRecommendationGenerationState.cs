@@ -12,6 +12,8 @@ internal sealed class ScheduleRecommendationGenerationState
 
     public IReadOnlyList<UnscheduledOfferingSelection> UnscheduledSelections { get; }
 
+    public IReadOnlyList<PersonalSchedule> PersonalSchedules { get; }
+
     public ScheduleRecommendationLimit MaximumRecommendationCount { get; }
 
     public CancellationToken CancellationToken { get; }
@@ -35,6 +37,7 @@ internal sealed class ScheduleRecommendationGenerationState
     public ScheduleRecommendationGenerationState(
         IReadOnlyList<ValidatedScheduleChoice> scheduledChoices,
         IReadOnlyList<UnscheduledOfferingSelection> unscheduledSelections,
+        IReadOnlyList<PersonalSchedule> personalSchedules,
         ScheduleRecommendationLimit maximumRecommendationCount,
         CancellationToken cancellationToken)
     {
@@ -48,6 +51,11 @@ internal sealed class ScheduleRecommendationGenerationState
             throw new ArgumentNullException(nameof(unscheduledSelections));
         }
 
+        if (personalSchedules == null)
+        {
+            throw new ArgumentNullException(nameof(personalSchedules));
+        }
+
         if (maximumRecommendationCount.IsValid == false)
         {
             throw new ArgumentException(
@@ -57,6 +65,7 @@ internal sealed class ScheduleRecommendationGenerationState
 
         ScheduledChoices = scheduledChoices;
         UnscheduledSelections = unscheduledSelections;
+        PersonalSchedules = personalSchedules;
         MaximumRecommendationCount = maximumRecommendationCount;
         CancellationToken = cancellationToken;
         SelectedOfferings = new List<ScheduledOffering>(scheduledChoices.Count);

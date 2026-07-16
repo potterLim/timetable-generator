@@ -165,14 +165,18 @@ internal static class PlannerWorkspaceTestFactory
             primaryPlanId,
             new PlanName("공강 우선"),
             binding,
-            new ScheduledCourseChoice[] { programmingChoice },
-            Array.Empty<UnscheduledOfferingSelection>());
+            new PlanningPlanContent(
+                new ScheduledCourseChoice[] { programmingChoice },
+                Array.Empty<UnscheduledOfferingSelection>(),
+                Array.Empty<PersonalSchedule>()));
         PlanningPlan secondaryPlan = new PlanningPlan(
             PlanId.CreateNew(),
             new PlanName("대안 계획"),
             binding,
-            Array.Empty<ScheduledCourseChoice>(),
-            Array.Empty<UnscheduledOfferingSelection>());
+            new PlanningPlanContent(
+                Array.Empty<ScheduledCourseChoice>(),
+                Array.Empty<UnscheduledOfferingSelection>(),
+                Array.Empty<PersonalSchedule>()));
         return new PlanningWorkspace(
             primaryPlanId,
             new PlanningPlan[] { primaryPlan, secondaryPlan });

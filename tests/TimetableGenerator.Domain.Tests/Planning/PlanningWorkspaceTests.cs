@@ -87,7 +87,9 @@ public sealed class PlanningWorkspaceTests
             planId,
             new PlanName(planName),
             catalogBinding,
-            Array.Empty<ScheduledCourseChoice>(),
-            Array.Empty<UnscheduledOfferingSelection>());
+            new PlanningPlanContent(
+                Array.Empty<ScheduledCourseChoice>(),
+                Array.Empty<UnscheduledOfferingSelection>(),
+                Array.Empty<PersonalSchedule>()));
     }
 }

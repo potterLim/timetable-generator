@@ -32,13 +32,16 @@ public sealed class ScheduleRecommendationGenerator
 
         if (validationResult.ScheduledChoices.Count == 0)
         {
-            return createResultWithoutScheduledChoices(validationResult.UnscheduledSelections);
+            return createResultWithoutScheduledChoices(
+                validationResult.UnscheduledSelections,
+                request.Plan.PersonalSchedules);
         }
 
         ScheduleRecommendationGenerationState state =
             new ScheduleRecommendationGenerationState(
                 validationResult.ScheduledChoices,
                 validationResult.UnscheduledSelections,
+                request.Plan.PersonalSchedules,
                 request.MaximumRecommendationCount,
                 cancellationToken);
         generateRecommendationsRecursive(state, 0);
@@ -54,9 +57,10 @@ public sealed class ScheduleRecommendationGenerator
     }
 
     private static ScheduleRecommendationResult createResultWithoutScheduledChoices(
-        IReadOnlyList<UnscheduledOfferingSelection> unscheduledSelections)
+        IReadOnlyList<UnscheduledOfferingSelection> unscheduledSelections,
+        IReadOnlyList<PersonalSchedule> personalSchedules)
     {
-        if (unscheduledSelections.Count == 0)
+        if (unscheduledSelections.Count == 0 && personalSchedules.Count == 0)
         {
             return ScheduleRecommendationResult.createCompleted(
                 Array.Empty<ScheduleRecommendation>(),
@@ -65,7 +69,8 @@ public sealed class ScheduleRecommendationGenerator
 
         ScheduleRecommendation recommendation = new ScheduleRecommendation(
             Array.Empty<ScheduledOffering>(),
-            unscheduledSelections);
+            unscheduledSelections,
+            personalSchedules);
         return ScheduleRecommendationResult.createCompleted(
             new ScheduleRecommendation[] { recommendation },
             EScheduleRecommendationCompletion.Completed);
@@ -301,7 +306,8 @@ public sealed class ScheduleRecommendationGenerator
 
         ScheduleRecommendation recommendation = new ScheduleRecommendation(
             state.SelectedOfferings,
-            state.UnscheduledSelections);
+            state.UnscheduledSelections,
+            state.PersonalSchedules);
         state.Recommendations.Add(recommendation);
         return EGenerationTraversalDecision.Continue;
     }
@@ -315,6 +321,22 @@ public sealed class ScheduleRecommendationGenerator
             if (state.OccupiedSlots.Contains(slot))
             {
                 return false;
+            }
+
+            WeeklyTimeRange offeringTimeRange =
+                AcademicPeriodTimeTable.GetWeeklyTimeRange(slot);
+            foreach (PersonalSchedule personalSchedule in state.PersonalSchedules)
+            {
+                foreach (WeeklyTimeRange personalTimeRange
+                    in personalSchedule.TimeRanges)
+                {
+                    if (ScheduleConflictDetector.HasConflict(
+                        offeringTimeRange,
+                        personalTimeRange))
+                    {
+                        return false;
+                    }
+                }
             }
         }
 

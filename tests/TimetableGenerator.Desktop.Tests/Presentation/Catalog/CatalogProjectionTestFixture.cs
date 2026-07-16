@@ -66,8 +66,10 @@ internal static class CatalogProjectionTestFixture
             PlanId.CreateNew(),
             new PlanName("프로젝션 테스트"),
             catalogBinding,
-            new ScheduledCourseChoice[] { scheduledChoice },
-            new UnscheduledOfferingSelection[] { unscheduledSelection });
+            new PlanningPlanContent(
+                new ScheduledCourseChoice[] { scheduledChoice },
+                new UnscheduledOfferingSelection[] { unscheduledSelection },
+                Array.Empty<PersonalSchedule>()));
         ScheduleRecommendationRequest request = new ScheduleRecommendationRequest(
             document.Catalog,
             plan,

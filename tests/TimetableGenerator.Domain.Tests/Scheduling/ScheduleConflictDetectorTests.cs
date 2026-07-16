@@ -67,6 +67,58 @@ public sealed class ScheduleConflictDetectorTests
             () => new ScheduledOffering(unscheduledOffering));
     }
 
+    [TestMethod]
+    public void ActualTimeRangesUseHalfOpenOverlapRules()
+    {
+        WeeklyTimeRange firstRange = createTimeRange(
+            EDay.Monday,
+            9,
+            0,
+            10,
+            0);
+        WeeklyTimeRange touchingRange = createTimeRange(
+            EDay.Monday,
+            10,
+            0,
+            11,
+            0);
+        WeeklyTimeRange overlappingRange = createTimeRange(
+            EDay.Monday,
+            9,
+            59,
+            10,
+            30);
+        WeeklyTimeRange otherDayRange = createTimeRange(
+            EDay.Tuesday,
+            9,
+            30,
+            10,
+            30);
+
+        Assert.IsFalse(ScheduleConflictDetector.HasConflict(
+            firstRange,
+            touchingRange));
+        Assert.IsTrue(ScheduleConflictDetector.HasConflict(
+            firstRange,
+            overlappingRange));
+        Assert.IsFalse(ScheduleConflictDetector.HasConflict(
+            firstRange,
+            otherDayRange));
+    }
+
+    private static WeeklyTimeRange createTimeRange(
+        EDay day,
+        int startHour,
+        int startMinute,
+        int endHour,
+        int endMinute)
+    {
+        DailyTimeRange timeRange = new DailyTimeRange(
+            new ScheduleTime(startHour, startMinute),
+            new ScheduleTime(endHour, endMinute));
+        return new WeeklyTimeRange(day, timeRange);
+    }
+
     private static ScheduledOffering createScheduledOffering(
         string courseCodeValue,
         string sectionCodeValue,

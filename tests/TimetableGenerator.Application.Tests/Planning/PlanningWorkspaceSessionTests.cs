@@ -145,8 +145,10 @@ public sealed class PlanningWorkspaceSessionTests
             PlanId.CreateNew(),
             new PlanName("둘째 시간표"),
             changedArtifactBinding,
-            Array.Empty<ScheduledCourseChoice>(),
-            Array.Empty<UnscheduledOfferingSelection>());
+            new PlanningPlanContent(
+                Array.Empty<ScheduledCourseChoice>(),
+                Array.Empty<UnscheduledOfferingSelection>(),
+                Array.Empty<PersonalSchedule>()));
         PlanningWorkspace workspace = new PlanningWorkspace(
             firstPlan.Id,
             new PlanningPlan[] { firstPlan, secondPlan });
