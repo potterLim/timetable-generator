@@ -25,11 +25,11 @@ public sealed class ProductColorContrastTests
     private static readonly ColorToken ACCENT =
         new ColorToken("AccentBrush");
     private static readonly ColorToken ACCENT_FILL =
-        new ColorToken("AccentFillBrush");
+        new ColorToken("ProductPrimaryActionFillBrush");
     private static readonly ColorToken ACCENT_FILL_HOVER =
-        new ColorToken("AccentFillHoverBrush");
+        new ColorToken("ProductPrimaryActionHoverFillBrush");
     private static readonly ColorToken ACCENT_FILL_PRESSED =
-        new ColorToken("AccentFillPressedBrush");
+        new ColorToken("ProductPrimaryActionPressedFillBrush");
     private static readonly ColorToken ACCENT_HOVER =
         new ColorToken("AccentHoverBrush");
     private static readonly ColorToken ACCENT_PRESSED =
@@ -51,23 +51,23 @@ public sealed class ProductColorContrastTests
     private static readonly ColorToken ERROR =
         new ColorToken("ErrorBrush");
     private static readonly ColorToken ERROR_FILL =
-        new ColorToken("ErrorFillBrush");
+        new ColorToken("ProductDangerActionFillBrush");
     private static readonly ColorToken ERROR_FILL_HOVER =
-        new ColorToken("ErrorFillHoverBrush");
+        new ColorToken("ProductDangerActionHoverFillBrush");
     private static readonly ColorToken ERROR_FILL_PRESSED =
-        new ColorToken("ErrorFillPressedBrush");
+        new ColorToken("ProductDangerActionPressedFillBrush");
     private static readonly ColorToken ERROR_SUBTLE =
         new ColorToken("ErrorSubtleBrush");
     private static readonly ColorToken FOCUS_ON_FILL_STROKE =
-        new ColorToken("FocusOnFillStrokeBrush");
+        new ColorToken("ProductFocusOnFillStrokeBrush");
     private static readonly ColorToken FOCUS_STROKE =
-        new ColorToken("FocusStrokeBrush");
+        new ColorToken("ProductFocusStrokeBrush");
     private static readonly ColorToken HOVER_SURFACE =
         new ColorToken("HoverSurfaceBrush");
     private static readonly ColorToken ON_ACCENT_FILL =
-        new ColorToken("OnAccentFillBrush");
+        new ColorToken("ProductOnPrimaryActionFillBrush");
     private static readonly ColorToken ON_ERROR_FILL =
-        new ColorToken("OnErrorFillBrush");
+        new ColorToken("ProductOnDangerActionFillBrush");
     private static readonly ColorToken PANE_SURFACE =
         new ColorToken("PaneSurfaceBrush");
     private static readonly ColorToken PRESSED_SURFACE =
@@ -120,21 +120,21 @@ public sealed class ProductColorContrastTests
         new ColorToken("AccentHoverBrush"),
         new ColorToken("AccentPressedBrush"),
         new ColorToken("AccentTintBrush"),
-        new ColorToken("AccentFillBrush"),
-        new ColorToken("AccentFillHoverBrush"),
-        new ColorToken("AccentFillPressedBrush"),
-        new ColorToken("OnAccentFillBrush"),
-        new ColorToken("FocusStrokeBrush"),
-        new ColorToken("FocusOnFillStrokeBrush"),
+        new ColorToken("ProductPrimaryActionFillBrush"),
+        new ColorToken("ProductPrimaryActionHoverFillBrush"),
+        new ColorToken("ProductPrimaryActionPressedFillBrush"),
+        new ColorToken("ProductOnPrimaryActionFillBrush"),
+        new ColorToken("ProductFocusStrokeBrush"),
+        new ColorToken("ProductFocusOnFillStrokeBrush"),
         new ColorToken("SuccessBrush"),
         new ColorToken("WarningBrush"),
         new ColorToken("WarningSubtleBrush"),
         new ColorToken("ErrorBrush"),
         new ColorToken("ErrorSubtleBrush"),
-        new ColorToken("ErrorFillBrush"),
-        new ColorToken("ErrorFillHoverBrush"),
-        new ColorToken("ErrorFillPressedBrush"),
-        new ColorToken("OnErrorFillBrush"),
+        new ColorToken("ProductDangerActionFillBrush"),
+        new ColorToken("ProductDangerActionHoverFillBrush"),
+        new ColorToken("ProductDangerActionPressedFillBrush"),
+        new ColorToken("ProductOnDangerActionFillBrush"),
         new ColorToken("CourseBlueBackgroundBrush"),
         new ColorToken("CourseBlueBorderBrush"),
         new ColorToken("CoursePurpleBackgroundBrush"),

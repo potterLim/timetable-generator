@@ -73,19 +73,19 @@ internal sealed partial class ScheduleBoardView
 
         TextBlock instructor = createCardText(
             entry.InstructorDisplayText,
-            11.0,
+            10.0,
             FontWeight.Normal);
         instructor.Margin = new Thickness(0.0, 3.0, 0.0, 0.0);
-        instructor.TextWrapping = TextWrapping.Wrap;
+        instructor.TextWrapping = TextWrapping.WrapWithOverflow;
         Grid.SetRow(instructor, 2);
         content.Children.Add(instructor);
 
         TextBlock location = createCardText(
             entry.LocationDisplayText,
-            11.0,
+            10.5,
             FontWeight.Normal);
         location.Margin = new Thickness(0.0, 2.0, 0.0, 0.0);
-        location.TextWrapping = TextWrapping.Wrap;
+        location.TextWrapping = TextWrapping.WrapWithOverflow;
         Grid.SetRow(location, 3);
         content.Children.Add(location);
 

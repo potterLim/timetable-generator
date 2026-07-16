@@ -1,6 +1,35 @@
 <Styles
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <ControlTheme x:Key="ProductFilledActionButtonTheme" TargetType="Button">
+      <Setter Property="RenderTransform" Value="none" />
+      <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <ContentPresenter
+              x:Name="PART_ContentPresenter"
+              Background="{TemplateBinding Background}"
+              BorderBrush="{TemplateBinding BorderBrush}"
+              BorderThickness="{TemplateBinding BorderThickness}"
+              CornerRadius="{TemplateBinding CornerRadius}"
+              Content="{TemplateBinding Content}"
+              ContentTemplate="{TemplateBinding ContentTemplate}"
+              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+              Padding="{TemplateBinding Padding}"
+              RecognizesAccessKey="True"
+              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+        </ControlTemplate>
+      </Setter>
+      <Style Selector="^:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.98)" />
+      </Style>
+      <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Opacity" Value="0.45" />
+      </Style>
+    </ControlTheme>
+  </Styles.Resources>
+
   <Style Selector="Window">
     <Setter Property="Background" Value="{DynamicResource WindowBackgroundBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
@@ -56,35 +85,37 @@
 
   <Style Selector="Button.accent">
     <Setter Property="MinHeight" Value="40" />
-    <Setter Property="Background" Value="{DynamicResource AccentFillBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource AccentFillBrush}" />
-    <Setter Property="Foreground" Value="{DynamicResource OnAccentFillBrush}" />
+    <Setter Property="Theme" Value="{StaticResource ProductFilledActionButtonTheme}" />
+    <Setter Property="Background" Value="{DynamicResource ProductPrimaryActionFillBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ProductPrimaryActionFillBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource ProductOnPrimaryActionFillBrush}" />
   </Style>
 
   <Style Selector="Button.accent:pointerover">
-    <Setter Property="Background" Value="{DynamicResource AccentFillHoverBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource AccentFillHoverBrush}" />
+    <Setter Property="Background" Value="{DynamicResource ProductPrimaryActionHoverFillBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ProductPrimaryActionHoverFillBrush}" />
   </Style>
 
   <Style Selector="Button.accent:pressed">
-    <Setter Property="Background" Value="{DynamicResource AccentFillPressedBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource AccentFillPressedBrush}" />
+    <Setter Property="Background" Value="{DynamicResource ProductPrimaryActionPressedFillBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ProductPrimaryActionPressedFillBrush}" />
   </Style>
 
   <Style Selector="Button.danger">
-    <Setter Property="Background" Value="{DynamicResource ErrorFillBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource ErrorFillBrush}" />
-    <Setter Property="Foreground" Value="{DynamicResource OnErrorFillBrush}" />
+    <Setter Property="Theme" Value="{StaticResource ProductFilledActionButtonTheme}" />
+    <Setter Property="Background" Value="{DynamicResource ProductDangerActionFillBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ProductDangerActionFillBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource ProductOnDangerActionFillBrush}" />
   </Style>
 
   <Style Selector="Button.danger:pointerover">
-    <Setter Property="Background" Value="{DynamicResource ErrorFillHoverBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource ErrorFillHoverBrush}" />
+    <Setter Property="Background" Value="{DynamicResource ProductDangerActionHoverFillBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ProductDangerActionHoverFillBrush}" />
   </Style>
 
   <Style Selector="Button.danger:pressed">
-    <Setter Property="Background" Value="{DynamicResource ErrorFillPressedBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource ErrorFillPressedBrush}" />
+    <Setter Property="Background" Value="{DynamicResource ProductDangerActionPressedFillBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ProductDangerActionPressedFillBrush}" />
   </Style>
 
   <Style Selector="Button.outline">
@@ -98,12 +129,12 @@
   </Style>
 
   <Style Selector="Button:focus-visible">
-    <Setter Property="BorderBrush" Value="{DynamicResource FocusStrokeBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ProductFocusStrokeBrush}" />
     <Setter Property="BorderThickness" Value="2" />
   </Style>
 
   <Style Selector="Button.accent:focus-visible, Button.danger:focus-visible">
-    <Setter Property="BorderBrush" Value="{DynamicResource FocusOnFillStrokeBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ProductFocusOnFillStrokeBrush}" />
   </Style>
 
   <Style Selector="TextBox, ComboBox">
@@ -119,7 +150,7 @@
   </Style>
 
   <Style Selector="TextBox:focus, ComboBox:focus">
-    <Setter Property="BorderBrush" Value="{DynamicResource FocusStrokeBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ProductFocusStrokeBrush}" />
     <Setter Property="BorderThickness" Value="2" />
   </Style>
 
@@ -136,10 +167,6 @@
 
   <Style Selector="RadioButton:pointerover">
     <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
-  </Style>
-
-  <Style Selector="RadioButton:checked">
-    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
   </Style>
 
   <Style Selector="ListBox.workspace-list">

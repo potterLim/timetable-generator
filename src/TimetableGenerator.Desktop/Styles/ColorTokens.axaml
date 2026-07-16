@@ -34,21 +34,21 @@
       <SolidColorBrush x:Key="AccentHoverBrush" Color="#003FD9" />
       <SolidColorBrush x:Key="AccentPressedBrush" Color="#0035B8" />
       <SolidColorBrush x:Key="AccentTintBrush" Color="#D5E2FF" />
-      <SolidColorBrush x:Key="AccentFillBrush" Color="#0047FF" />
-      <SolidColorBrush x:Key="AccentFillHoverBrush" Color="#003FD9" />
-      <SolidColorBrush x:Key="AccentFillPressedBrush" Color="#0035B8" />
-      <SolidColorBrush x:Key="OnAccentFillBrush" Color="#FFFFFF" />
-      <SolidColorBrush x:Key="FocusStrokeBrush" Color="#0047FF" />
-      <SolidColorBrush x:Key="FocusOnFillStrokeBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="ProductPrimaryActionFillBrush" Color="#0047FF" />
+      <SolidColorBrush x:Key="ProductPrimaryActionHoverFillBrush" Color="#003FD9" />
+      <SolidColorBrush x:Key="ProductPrimaryActionPressedFillBrush" Color="#0035B8" />
+      <SolidColorBrush x:Key="ProductOnPrimaryActionFillBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="ProductFocusStrokeBrush" Color="#0047FF" />
+      <SolidColorBrush x:Key="ProductFocusOnFillStrokeBrush" Color="#FFFFFF" />
       <SolidColorBrush x:Key="SuccessBrush" Color="#0D704E" />
       <SolidColorBrush x:Key="WarningBrush" Color="#8C4700" />
       <SolidColorBrush x:Key="WarningSubtleBrush" Color="#F5E4C2" />
       <SolidColorBrush x:Key="ErrorBrush" Color="#B42318" />
       <SolidColorBrush x:Key="ErrorSubtleBrush" Color="#F5DAD8" />
-      <SolidColorBrush x:Key="ErrorFillBrush" Color="#B42318" />
-      <SolidColorBrush x:Key="ErrorFillHoverBrush" Color="#991B13" />
-      <SolidColorBrush x:Key="ErrorFillPressedBrush" Color="#7F1710" />
-      <SolidColorBrush x:Key="OnErrorFillBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="ProductDangerActionFillBrush" Color="#B42318" />
+      <SolidColorBrush x:Key="ProductDangerActionHoverFillBrush" Color="#991B13" />
+      <SolidColorBrush x:Key="ProductDangerActionPressedFillBrush" Color="#7F1710" />
+      <SolidColorBrush x:Key="ProductOnDangerActionFillBrush" Color="#FFFFFF" />
       <SolidColorBrush x:Key="CourseBlueBackgroundBrush" Color="#DCE9FB" />
       <SolidColorBrush x:Key="CourseBlueBorderBrush" Color="#6A97D6" />
       <SolidColorBrush x:Key="CoursePurpleBackgroundBrush" Color="#E8E1F7" />
@@ -93,21 +93,21 @@
       <SolidColorBrush x:Key="AccentHoverBrush" Color="#A5B9FF" />
       <SolidColorBrush x:Key="AccentPressedBrush" Color="#7196F2" />
       <SolidColorBrush x:Key="AccentTintBrush" Color="#202A45" />
-      <SolidColorBrush x:Key="AccentFillBrush" Color="#0047FF" />
-      <SolidColorBrush x:Key="AccentFillHoverBrush" Color="#1457FF" />
-      <SolidColorBrush x:Key="AccentFillPressedBrush" Color="#003FD9" />
-      <SolidColorBrush x:Key="OnAccentFillBrush" Color="#F5EFE0" />
-      <SolidColorBrush x:Key="FocusStrokeBrush" Color="#8BA9FF" />
-      <SolidColorBrush x:Key="FocusOnFillStrokeBrush" Color="#F5EFE0" />
+      <SolidColorBrush x:Key="ProductPrimaryActionFillBrush" Color="#0047FF" />
+      <SolidColorBrush x:Key="ProductPrimaryActionHoverFillBrush" Color="#1457FF" />
+      <SolidColorBrush x:Key="ProductPrimaryActionPressedFillBrush" Color="#003FD9" />
+      <SolidColorBrush x:Key="ProductOnPrimaryActionFillBrush" Color="#F5EFE0" />
+      <SolidColorBrush x:Key="ProductFocusStrokeBrush" Color="#8BA9FF" />
+      <SolidColorBrush x:Key="ProductFocusOnFillStrokeBrush" Color="#F5EFE0" />
       <SolidColorBrush x:Key="SuccessBrush" Color="#73D6A2" />
       <SolidColorBrush x:Key="WarningBrush" Color="#F0B866" />
       <SolidColorBrush x:Key="WarningSubtleBrush" Color="#3D3120" />
       <SolidColorBrush x:Key="ErrorBrush" Color="#FF9C9C" />
       <SolidColorBrush x:Key="ErrorSubtleBrush" Color="#442827" />
-      <SolidColorBrush x:Key="ErrorFillBrush" Color="#B42318" />
-      <SolidColorBrush x:Key="ErrorFillHoverBrush" Color="#C83227" />
-      <SolidColorBrush x:Key="ErrorFillPressedBrush" Color="#941B13" />
-      <SolidColorBrush x:Key="OnErrorFillBrush" Color="#F5EFE0" />
+      <SolidColorBrush x:Key="ProductDangerActionFillBrush" Color="#B42318" />
+      <SolidColorBrush x:Key="ProductDangerActionHoverFillBrush" Color="#C83227" />
+      <SolidColorBrush x:Key="ProductDangerActionPressedFillBrush" Color="#941B13" />
+      <SolidColorBrush x:Key="ProductOnDangerActionFillBrush" Color="#F5EFE0" />
       <SolidColorBrush x:Key="CourseBlueBackgroundBrush" Color="#202A45" />
       <SolidColorBrush x:Key="CourseBlueBorderBrush" Color="#5879B8" />
       <SolidColorBrush x:Key="CoursePurpleBackgroundBrush" Color="#302A3F" />
