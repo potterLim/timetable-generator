@@ -126,6 +126,32 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
     public async Task<VerifiedCatalogPackage> SynchronizeDefaultCatalogAsync(
         CancellationToken cancellationToken)
     {
+        VerifiedCatalogPackage package = await DownloadDefaultCatalogAsync(
+            cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await mCacheStore.SaveAsync(package, cancellationToken).ConfigureAwait(false);
+            return package;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (CatalogCacheUpgradeRequiredException)
+        {
+            throw;
+        }
+        catch (CatalogCachePersistenceException exception)
+        {
+            throw new RemoteCatalogSynchronizationException(
+                "The verified remote catalog could not be installed in the offline cache.",
+                exception);
+        }
+    }
+
+    public async Task<VerifiedCatalogPackage> DownloadDefaultCatalogAsync(
+        CancellationToken cancellationToken)
+    {
         cancellationToken.ThrowIfCancellationRequested();
         try
         {
@@ -151,7 +177,6 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
             VerifiedCatalogPackage package = VerifiedCatalogPackage.ReadAndVerify(
                 indexBytes,
                 catalogBytes);
-            await mCacheStore.SaveAsync(package, cancellationToken).ConfigureAwait(false);
             return package;
         }
         catch (OperationCanceledException exception) when (
@@ -165,10 +190,6 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
         {
             throw;
         }
-        catch (CatalogCacheUpgradeRequiredException)
-        {
-            throw;
-        }
         catch (RemoteCatalogSynchronizationException)
         {
             throw;
@@ -177,12 +198,6 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
         {
             throw new RemoteCatalogSynchronizationException(
                 "The remote catalog package failed strict verification.",
-                exception);
-        }
-        catch (CatalogCachePersistenceException exception)
-        {
-            throw new RemoteCatalogSynchronizationException(
-                "The verified remote catalog could not be installed in the offline cache.",
                 exception);
         }
         catch (HttpRequestException exception)

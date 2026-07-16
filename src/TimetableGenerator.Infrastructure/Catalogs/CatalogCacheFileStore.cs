@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using TimetableGenerator.Domain.Planning;
 
 namespace TimetableGenerator.Infrastructure.Catalogs;
 
@@ -95,6 +96,56 @@ public sealed class CatalogCacheFileStore
         {
             throw new CatalogCachePersistenceException(
                 "The catalog cache generations could not be loaded.",
+                exception);
+        }
+        finally
+        {
+            mAccessGate.Release();
+        }
+    }
+
+    public async Task<CatalogCacheLoadResult> LoadMatchingAsync(
+        PlanCatalogBinding catalogBinding,
+        CancellationToken cancellationToken)
+    {
+        if (catalogBinding == null)
+        {
+            throw new ArgumentNullException(nameof(catalogBinding));
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        if (Directory.Exists(mDirectoryPath) == false)
+        {
+            return CatalogCacheLoadResult.createNotFound();
+        }
+
+        await mAccessGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            using (FileStream processLock = await acquireCrossProcessLockAsync(
+                cancellationToken).ConfigureAwait(false))
+            {
+                return await loadMatchingWithoutLockAsync(
+                    catalogBinding,
+                    cancellationToken).ConfigureAwait(false);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (CatalogCacheUpgradeRequiredException)
+        {
+            throw;
+        }
+        catch (CatalogCachePersistenceException)
+        {
+            throw;
+        }
+        catch (Exception exception) when (isFileSystemException(exception))
+        {
+            throw new CatalogCachePersistenceException(
+                "The catalog cache generations could not be searched.",
                 exception);
         }
         finally
@@ -292,6 +343,72 @@ public sealed class CatalogCacheFileStore
             new AggregateException(failures));
     }
 
+    private async Task<CatalogCacheLoadResult> loadMatchingWithoutLockAsync(
+        PlanCatalogBinding catalogBinding,
+        CancellationToken cancellationToken)
+    {
+        List<CatalogCacheGenerationFile> generationFiles = getGenerationFiles();
+        if (generationFiles.Count == 0)
+        {
+            return CatalogCacheLoadResult.createNotFound();
+        }
+
+        List<Exception> failures = new List<Exception>();
+        CatalogCacheLoadResult? matchingResultOrNull = null;
+        int validGenerationCount = 0;
+        for (int index = 0; index < generationFiles.Count; ++index)
+        {
+            CatalogCacheGenerationFile generationFile = generationFiles[index];
+            try
+            {
+                CatalogCacheDocument document = await readDocumentAsync(
+                    generationFile.Path,
+                    cancellationToken).ConfigureAwait(false);
+                requireMatchingGeneration(document, generationFile);
+                ++validGenerationCount;
+
+                if (matchingResultOrNull == null
+                    && hasMatchingCatalogBinding(document.Package, catalogBinding))
+                {
+                    if (index == 0)
+                    {
+                        matchingResultOrNull =
+                            CatalogCacheLoadResult.createLoadedLatestGeneration(
+                                document.Package);
+                    }
+                    else
+                    {
+                        matchingResultOrNull =
+                            CatalogCacheLoadResult.createRecoveredPreviousGeneration(
+                                document.Package);
+                    }
+                }
+            }
+            catch (UnsupportedCatalogCacheSchemaVersionException exception)
+            {
+                throw createUpgradeRequiredException(exception);
+            }
+            catch (Exception exception) when (isRecoverableGenerationException(exception))
+            {
+                failures.Add(exception);
+            }
+        }
+
+        if (matchingResultOrNull != null)
+        {
+            return matchingResultOrNull;
+        }
+
+        if (validGenerationCount > 0)
+        {
+            return CatalogCacheLoadResult.createNotFound();
+        }
+
+        throw new CatalogCachePersistenceException(
+            "No valid catalog cache generation could be searched.",
+            new AggregateException(failures));
+    }
+
     private async Task<CatalogCacheDocument> readDocumentAsync(
         string path,
         CancellationToken cancellationToken)
@@ -421,6 +538,15 @@ public sealed class CatalogCacheFileStore
         return first.Entry.CatalogId == second.Entry.CatalogId
             && first.Entry.Revision == second.Entry.Revision
             && first.Entry.File.Sha256 == second.Entry.File.Sha256;
+    }
+
+    private static bool hasMatchingCatalogBinding(
+        VerifiedCatalogPackage package,
+        PlanCatalogBinding catalogBinding)
+    {
+        return package.Entry.CatalogId == catalogBinding.CatalogId
+            && package.Entry.Term == catalogBinding.Term
+            && package.Entry.Revision == catalogBinding.Revision;
     }
 
     private static void requireMatchingGeneration(

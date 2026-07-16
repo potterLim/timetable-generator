@@ -1,0 +1,230 @@
+using System;
+using System.Collections.Generic;
+using TimetableGenerator.Domain.Catalogs;
+using TimetableGenerator.Domain.Planning;
+
+namespace TimetableGenerator.Application.Planning;
+
+public static class PlanningWorkspaceCatalogRebinder
+{
+    public static PlanningWorkspaceCatalogRebindResult TryRebind(
+        CourseCatalog newCatalog,
+        PlanningWorkspace workspace)
+    {
+        if (newCatalog == null)
+        {
+            throw new ArgumentNullException(nameof(newCatalog));
+        }
+
+        if (workspace == null)
+        {
+            throw new ArgumentNullException(nameof(workspace));
+        }
+
+        if (hasMixedCatalogBindings(workspace))
+        {
+            return PlanningWorkspaceCatalogRebindResult.createFailure(
+                EPlanningWorkspaceCatalogRebindStatus.MixedCatalogBindings);
+        }
+
+        Dictionary<CourseId, CatalogCourse> coursesById = createCoursesById(newCatalog);
+        Dictionary<OfferingId, CatalogOffering> offeringsById =
+            createOfferingsById(newCatalog);
+        EPlanningWorkspaceCatalogRebindStatus validationStatus = validatePlans(
+            workspace,
+            coursesById,
+            offeringsById);
+        if (validationStatus != EPlanningWorkspaceCatalogRebindStatus.Rebound)
+        {
+            return PlanningWorkspaceCatalogRebindResult.createFailure(validationStatus);
+        }
+
+        PlanCatalogBinding newBinding = new PlanCatalogBinding(
+            newCatalog.Id,
+            newCatalog.Term,
+            newCatalog.Revision);
+        List<PlanningPlan> reboundPlans = createReboundPlans(workspace, newBinding);
+        PlanningWorkspace reboundWorkspace = new PlanningWorkspace(
+            workspace.ActivePlanId,
+            reboundPlans);
+        return PlanningWorkspaceCatalogRebindResult.createRebound(reboundWorkspace);
+    }
+
+    private static bool hasMixedCatalogBindings(PlanningWorkspace workspace)
+    {
+        PlanCatalogBinding firstBinding = workspace.Plans[0].CatalogBinding;
+        foreach (PlanningPlan plan in workspace.Plans)
+        {
+            if (plan.CatalogBinding != firstBinding)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static Dictionary<CourseId, CatalogCourse> createCoursesById(
+        CourseCatalog catalog)
+    {
+        Dictionary<CourseId, CatalogCourse> coursesById =
+            new Dictionary<CourseId, CatalogCourse>();
+        foreach (CatalogCourse course in catalog.Courses)
+        {
+            coursesById.Add(course.Id, course);
+        }
+
+        return coursesById;
+    }
+
+    private static Dictionary<OfferingId, CatalogOffering> createOfferingsById(
+        CourseCatalog catalog)
+    {
+        Dictionary<OfferingId, CatalogOffering> offeringsById =
+            new Dictionary<OfferingId, CatalogOffering>();
+        foreach (CatalogOffering offering in catalog.Offerings)
+        {
+            offeringsById.Add(offering.Id, offering);
+        }
+
+        return offeringsById;
+    }
+
+    private static EPlanningWorkspaceCatalogRebindStatus validatePlans(
+        PlanningWorkspace workspace,
+        IReadOnlyDictionary<CourseId, CatalogCourse> coursesById,
+        IReadOnlyDictionary<OfferingId, CatalogOffering> offeringsById)
+    {
+        foreach (PlanningPlan plan in workspace.Plans)
+        {
+            EPlanningWorkspaceCatalogRebindStatus planStatus = validatePlan(
+                plan,
+                coursesById,
+                offeringsById);
+            if (planStatus != EPlanningWorkspaceCatalogRebindStatus.Rebound)
+            {
+                return planStatus;
+            }
+        }
+
+        return EPlanningWorkspaceCatalogRebindStatus.Rebound;
+    }
+
+    private static EPlanningWorkspaceCatalogRebindStatus validatePlan(
+        PlanningPlan plan,
+        IReadOnlyDictionary<CourseId, CatalogCourse> coursesById,
+        IReadOnlyDictionary<OfferingId, CatalogOffering> offeringsById)
+    {
+        foreach (ScheduledCourseChoice choice in plan.ScheduledCourseChoices)
+        {
+            EPlanningWorkspaceCatalogRebindStatus choiceStatus = validateScheduledChoice(
+                choice,
+                coursesById,
+                offeringsById);
+            if (choiceStatus != EPlanningWorkspaceCatalogRebindStatus.Rebound)
+            {
+                return choiceStatus;
+            }
+        }
+
+        foreach (UnscheduledOfferingSelection selection
+            in plan.UnscheduledOfferingSelections)
+        {
+            EPlanningWorkspaceCatalogRebindStatus selectionStatus =
+                validateUnscheduledSelection(
+                    selection,
+                    coursesById,
+                    offeringsById);
+            if (selectionStatus != EPlanningWorkspaceCatalogRebindStatus.Rebound)
+            {
+                return selectionStatus;
+            }
+        }
+
+        return EPlanningWorkspaceCatalogRebindStatus.Rebound;
+    }
+
+    private static EPlanningWorkspaceCatalogRebindStatus validateScheduledChoice(
+        ScheduledCourseChoice choice,
+        IReadOnlyDictionary<CourseId, CatalogCourse> coursesById,
+        IReadOnlyDictionary<OfferingId, CatalogOffering> offeringsById)
+    {
+        if (coursesById.ContainsKey(choice.CourseId) == false)
+        {
+            return EPlanningWorkspaceCatalogRebindStatus.CourseNotFound;
+        }
+
+        foreach (OfferingId offeringId in choice.OfferingIds)
+        {
+            CatalogOffering? offeringOrNull;
+            bool hasOffering = offeringsById.TryGetValue(offeringId, out offeringOrNull);
+            if (hasOffering == false || offeringOrNull == null)
+            {
+                return EPlanningWorkspaceCatalogRebindStatus.OfferingNotFound;
+            }
+
+            if (offeringOrNull.CourseId != choice.CourseId)
+            {
+                return EPlanningWorkspaceCatalogRebindStatus.OfferingCourseMismatch;
+            }
+
+            if (offeringOrNull.MeetingSchedule.IsScheduled == false)
+            {
+                return EPlanningWorkspaceCatalogRebindStatus.ScheduledChoiceHasNoProvidedTime;
+            }
+        }
+
+        return EPlanningWorkspaceCatalogRebindStatus.Rebound;
+    }
+
+    private static EPlanningWorkspaceCatalogRebindStatus validateUnscheduledSelection(
+        UnscheduledOfferingSelection selection,
+        IReadOnlyDictionary<CourseId, CatalogCourse> coursesById,
+        IReadOnlyDictionary<OfferingId, CatalogOffering> offeringsById)
+    {
+        if (coursesById.ContainsKey(selection.CourseId) == false)
+        {
+            return EPlanningWorkspaceCatalogRebindStatus.CourseNotFound;
+        }
+
+        CatalogOffering? offeringOrNull;
+        bool hasOffering = offeringsById.TryGetValue(
+            selection.OfferingId,
+            out offeringOrNull);
+        if (hasOffering == false || offeringOrNull == null)
+        {
+            return EPlanningWorkspaceCatalogRebindStatus.OfferingNotFound;
+        }
+
+        if (offeringOrNull.CourseId != selection.CourseId)
+        {
+            return EPlanningWorkspaceCatalogRebindStatus.OfferingCourseMismatch;
+        }
+
+        if (offeringOrNull.MeetingSchedule.IsScheduled)
+        {
+            return EPlanningWorkspaceCatalogRebindStatus.UnscheduledSelectionHasProvidedTime;
+        }
+
+        return EPlanningWorkspaceCatalogRebindStatus.Rebound;
+    }
+
+    private static List<PlanningPlan> createReboundPlans(
+        PlanningWorkspace workspace,
+        PlanCatalogBinding newBinding)
+    {
+        List<PlanningPlan> reboundPlans = new List<PlanningPlan>(workspace.Plans.Count);
+        foreach (PlanningPlan plan in workspace.Plans)
+        {
+            PlanningPlan reboundPlan = new PlanningPlan(
+                plan.Id,
+                plan.Name,
+                newBinding,
+                plan.ScheduledCourseChoices,
+                plan.UnscheduledOfferingSelections);
+            reboundPlans.Add(reboundPlan);
+        }
+
+        return reboundPlans;
+    }
+}

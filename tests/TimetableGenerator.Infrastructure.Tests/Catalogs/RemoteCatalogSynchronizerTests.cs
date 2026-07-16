@@ -78,6 +78,49 @@ public sealed class RemoteCatalogSynchronizerTests
     }
 
     [TestMethod]
+    public async Task DownloadVerifiesWithoutInstallingDefaultCatalogAsync()
+    {
+        string testDirectoryPath = createTestDirectoryPath();
+        try
+        {
+            byte[] catalogBytes = CatalogSynchronizationTestDocuments.CreateValidCatalogBytes();
+            byte[] indexBytes = CatalogSynchronizationTestDocuments.CreateValidIndexBytes(
+                catalogBytes);
+            using (QueueHttpMessageHandler handler = new QueueHttpMessageHandler(
+                new HttpResponseMessage[]
+                {
+                    createResponse(indexBytes),
+                    createResponse(catalogBytes),
+                }))
+            using (HttpClient httpClient = new HttpClient(handler))
+            {
+                CatalogSynchronizationLimits limits = createLimits();
+                CatalogCacheFileStore store = createStore(testDirectoryPath, limits);
+                RemoteCatalogSynchronizer synchronizer = createSynchronizer(
+                    httpClient,
+                    store,
+                    limits);
+
+                VerifiedCatalogPackage package =
+                    await synchronizer.DownloadDefaultCatalogAsync(
+                        CancellationToken.None);
+                CatalogCacheLoadResult cachedResult = await store.LoadAsync(
+                    CancellationToken.None);
+
+                Assert.AreEqual(
+                    "handong-global-university:2026-2:r0001",
+                    package.Document.Catalog.Id.Value);
+                Assert.AreEqual(2, handler.RequestCount);
+                Assert.AreEqual(ECatalogCacheLoadStatus.NotFound, cachedResult.Status);
+            }
+        }
+        finally
+        {
+            deleteTestDirectory(testDirectoryPath);
+        }
+    }
+
+    [TestMethod]
     public async Task SynchronizeRejectsOversizedIndexBeforeParsingAsync()
     {
         string testDirectoryPath = createTestDirectoryPath();

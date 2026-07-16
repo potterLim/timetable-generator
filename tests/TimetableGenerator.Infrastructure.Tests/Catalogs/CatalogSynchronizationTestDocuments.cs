@@ -1,6 +1,8 @@
 using System;
+using System.Globalization;
 using System.Text;
 using TimetableGenerator.CatalogJson;
+using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Infrastructure.Catalogs;
 
 namespace TimetableGenerator.Infrastructure.Tests.Catalogs;
@@ -229,6 +231,39 @@ internal static class CatalogSynchronizationTestDocuments
     {
         byte[] catalogBytes = CreateCatalogBytesWithKoreanName(koreanName);
         byte[] indexBytes = CreateValidIndexBytes(catalogBytes);
+        return VerifiedCatalogPackage.ReadAndVerify(indexBytes, catalogBytes);
+    }
+
+    public static VerifiedCatalogPackage CreateVerifiedPackageWithRevision(
+        CatalogRevision revision,
+        string koreanName)
+    {
+        if (revision.IsValid == false)
+        {
+            throw new ArgumentException(
+                "Test catalog packages require a valid revision.",
+                nameof(revision));
+        }
+
+        byte[] catalogBytes = CreateCatalogBytesWithKoreanName(koreanName);
+        catalogBytes = Replace(
+            catalogBytes,
+            "r0001",
+            revision.FileComponent);
+        catalogBytes = Replace(
+            catalogBytes,
+            "\"revision\": 1",
+            "\"revision\": " + revision.Value.ToString(CultureInfo.InvariantCulture));
+
+        byte[] indexBytes = CreateValidIndexBytes(catalogBytes);
+        indexBytes = Replace(
+            indexBytes,
+            "r0001",
+            revision.FileComponent);
+        indexBytes = Replace(
+            indexBytes,
+            "\"revision\": 1",
+            "\"revision\": " + revision.Value.ToString(CultureInfo.InvariantCulture));
         return VerifiedCatalogPackage.ReadAndVerify(indexBytes, catalogBytes);
     }
 

@@ -5,6 +5,8 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using TimetableGenerator.Domain.Catalogs;
+using TimetableGenerator.Domain.Planning;
 using TimetableGenerator.Infrastructure.Catalogs;
 
 namespace TimetableGenerator.Infrastructure.Tests.Catalogs;
@@ -67,6 +69,155 @@ public sealed class CatalogCacheFileStoreTests
                 result.GetPackage().Document.Catalog.Courses[0].KoreanName.Value);
             Assert.HasCount(2, Directory.GetFiles(testDirectoryPath, "catalog.g*.cache"));
             Assert.IsEmpty(Directory.GetFiles(testDirectoryPath, "*.tmp"));
+        }
+        finally
+        {
+            deleteTestDirectory(testDirectoryPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task LoadMatchingReturnsPreviousGenerationForBoundRevisionAsync()
+    {
+        string testDirectoryPath = createTestDirectoryPath();
+        try
+        {
+            CatalogCacheFileStore store = createStore(testDirectoryPath);
+            VerifiedCatalogPackage boundPackage =
+                CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithKoreanName(
+                    "계획에 연결된 자료구조");
+            VerifiedCatalogPackage latestPackage =
+                CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithRevision(
+                    new CatalogRevision(2),
+                    "새 개설 자료구조");
+            await store.SaveAsync(boundPackage, CancellationToken.None);
+            await store.SaveAsync(latestPackage, CancellationToken.None);
+            PlanCatalogBinding catalogBinding = createBinding(boundPackage);
+
+            CatalogCacheLoadResult result = await store.LoadMatchingAsync(
+                catalogBinding,
+                CancellationToken.None);
+
+            Assert.AreEqual(
+                ECatalogCacheLoadStatus.RecoveredPreviousGeneration,
+                result.Status);
+            Assert.AreEqual(catalogBinding.CatalogId, result.GetPackage().Entry.CatalogId);
+            Assert.AreEqual(catalogBinding.Term, result.GetPackage().Entry.Term);
+            Assert.AreEqual(catalogBinding.Revision, result.GetPackage().Entry.Revision);
+            Assert.AreEqual(
+                "계획에 연결된 자료구조",
+                result.GetPackage().Document.Catalog.Courses[0].KoreanName.Value);
+        }
+        finally
+        {
+            deleteTestDirectory(testDirectoryPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task LoadMatchingRequiresEveryCatalogBindingComponentAsync()
+    {
+        string testDirectoryPath = createTestDirectoryPath();
+        try
+        {
+            CatalogCacheFileStore store = createStore(testDirectoryPath);
+            VerifiedCatalogPackage package =
+                CatalogSynchronizationTestDocuments.CreateVerifiedPackage();
+            await store.SaveAsync(package, CancellationToken.None);
+            PlanCatalogBinding differentCatalogIdBinding = new PlanCatalogBinding(
+                new CatalogId("another-university:2026-2:r0001"),
+                package.Entry.Term,
+                package.Entry.Revision);
+            PlanCatalogBinding differentTermBinding = new PlanCatalogBinding(
+                package.Entry.CatalogId,
+                AcademicTerm.Parse("2027-1"),
+                package.Entry.Revision);
+            PlanCatalogBinding differentRevisionBinding = new PlanCatalogBinding(
+                package.Entry.CatalogId,
+                package.Entry.Term,
+                new CatalogRevision(2));
+
+            CatalogCacheLoadResult catalogIdResult = await store.LoadMatchingAsync(
+                differentCatalogIdBinding,
+                CancellationToken.None);
+            CatalogCacheLoadResult termResult = await store.LoadMatchingAsync(
+                differentTermBinding,
+                CancellationToken.None);
+            CatalogCacheLoadResult revisionResult = await store.LoadMatchingAsync(
+                differentRevisionBinding,
+                CancellationToken.None);
+
+            Assert.AreEqual(ECatalogCacheLoadStatus.NotFound, catalogIdResult.Status);
+            Assert.AreEqual(ECatalogCacheLoadStatus.NotFound, termResult.Status);
+            Assert.AreEqual(ECatalogCacheLoadStatus.NotFound, revisionResult.Status);
+        }
+        finally
+        {
+            deleteTestDirectory(testDirectoryPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task LoadMatchingSkipsCorruptGenerationBeforeBoundRevisionAsync()
+    {
+        string testDirectoryPath = createTestDirectoryPath();
+        try
+        {
+            CatalogCacheFileStore store = createStore(testDirectoryPath);
+            VerifiedCatalogPackage boundPackage =
+                CatalogSynchronizationTestDocuments.CreateVerifiedPackage();
+            VerifiedCatalogPackage corruptPackage =
+                CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithRevision(
+                    new CatalogRevision(2),
+                    "손상될 자료구조");
+            await store.SaveAsync(boundPackage, CancellationToken.None);
+            await store.SaveAsync(corruptPackage, CancellationToken.None);
+            await File.WriteAllBytesAsync(
+                getGenerationPath(testDirectoryPath, 2L),
+                new byte[] { 0x01, 0x02, 0x03 },
+                CancellationToken.None);
+
+            CatalogCacheLoadResult result = await store.LoadMatchingAsync(
+                createBinding(boundPackage),
+                CancellationToken.None);
+
+            Assert.AreEqual(
+                ECatalogCacheLoadStatus.RecoveredPreviousGeneration,
+                result.Status);
+            Assert.AreEqual(boundPackage.Entry.Revision, result.GetPackage().Entry.Revision);
+        }
+        finally
+        {
+            deleteTestDirectory(testDirectoryPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task FutureSchemaCannotBeHiddenByMatchingLatestGenerationAsync()
+    {
+        string testDirectoryPath = createTestDirectoryPath();
+        try
+        {
+            CatalogCacheFileStore store = createStore(testDirectoryPath);
+            VerifiedCatalogPackage previousPackage =
+                CatalogSynchronizationTestDocuments.CreateVerifiedPackage();
+            VerifiedCatalogPackage latestPackage =
+                CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithRevision(
+                    new CatalogRevision(2),
+                    "최신 자료구조");
+            await store.SaveAsync(previousPackage, CancellationToken.None);
+            await store.SaveAsync(latestPackage, CancellationToken.None);
+            await writeSchemaVersionAsync(
+                getGenerationPath(testDirectoryPath, 1L),
+                2);
+
+            CatalogCacheUpgradeRequiredException exception =
+                await Assert.ThrowsExactlyAsync<CatalogCacheUpgradeRequiredException>(
+                    () => store.LoadMatchingAsync(
+                        createBinding(latestPackage),
+                        CancellationToken.None));
+
+            Assert.AreEqual(2, exception.UnsupportedSchemaVersion);
         }
         finally
         {
@@ -336,6 +487,14 @@ public sealed class CatalogCacheFileStoreTests
         CatalogCacheFilePath cachePath = new CatalogCacheFilePath(
             Path.Combine(testDirectoryPath, "catalog.cache"));
         return new CatalogCacheFileStore(cachePath, createLimits());
+    }
+
+    private static PlanCatalogBinding createBinding(VerifiedCatalogPackage package)
+    {
+        return new PlanCatalogBinding(
+            package.Entry.CatalogId,
+            package.Entry.Term,
+            package.Entry.Revision);
     }
 
     private static CatalogSynchronizationLimits createLimits()
