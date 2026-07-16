@@ -94,7 +94,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             }
 
             return "‘" + mPlanPendingDeletionOrNull.DisplayName
-                + "’에 선택한 과목과 추천 결과가 이 기기에서 삭제됩니다.";
+                + "’의 과목과 추천 결과가 삭제됩니다.";
         }
     }
 
