@@ -155,6 +155,36 @@ public sealed class CatalogMetadataStrongTypingTests
     }
 
     [TestMethod]
+    public void DataQualityMetadataRejectsAnUndefinedNormalizationSource()
+    {
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
+            () => new CatalogDataQualityMetadata(
+                default(EScheduleNormalizationSource),
+                new CatalogSourceEnglishScheduleMismatchCount(0),
+                new CatalogRoomNotProvidedCount(0),
+                new CatalogEnrollmentNotProvidedCount(0),
+                new CatalogInstructorUnconfirmedCount(0),
+                new CatalogMultiInstructorDisplayCount(0),
+                new CatalogSourceRemarkLookupOnlyCount(0),
+                Array.Empty<CatalogManualReview>()));
+    }
+
+    [TestMethod]
+    public void SourceMetadataRejectsADefaultFileSize()
+    {
+        Assert.ThrowsExactly<ArgumentException>(
+            () => new CatalogSourceMetadata(
+                new InstitutionId("school"),
+                new CatalogSourceLogicalFileName("catalog.xls"),
+                new CatalogFileExtension("xls"),
+                new CatalogMediaType("text/html"),
+                new CatalogCharset("windows-949"),
+                new CatalogDecoderName("windows-949"),
+                default(CatalogFileSize),
+                new Sha256Digest(new string('0', 64))));
+    }
+
+    [TestMethod]
     public void TextValueObjectsRejectBlankValues()
     {
         Assert.ThrowsExactly<ArgumentException>(() => new CatalogSourceLogicalFileName(" "));

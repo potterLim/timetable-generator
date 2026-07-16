@@ -39,6 +39,16 @@ public sealed class CatalogDataQualityMetadata
         CatalogSourceRemarkLookupOnlyCount sourceRemarkLookupOnlyCount,
         IEnumerable<CatalogManualReview> manualReviews)
     {
+        if (Enum.IsDefined(
+            typeof(EScheduleNormalizationSource),
+            scheduleNormalizationSource) == false)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(scheduleNormalizationSource),
+                scheduleNormalizationSource,
+                "The schedule normalization source is unsupported.");
+        }
+
         if (manualReviews == null)
         {
             throw new ArgumentNullException(nameof(manualReviews));
