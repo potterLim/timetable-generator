@@ -13,7 +13,62 @@
   </Application.Resources>
 
   <Application.Styles>
-    <FluentTheme />
+    <FluentTheme>
+      <FluentTheme.Palettes>
+        <ColorPaletteResources
+            x:Key="Light"
+            Accent="#0047FF"
+            AltHigh="#FFF7FAFD"
+            AltLow="#33F7FAFD"
+            AltMedium="#99F7FAFD"
+            AltMediumHigh="#CCF7FAFD"
+            AltMediumLow="#66F7FAFD"
+            BaseHigh="#FF162235"
+            BaseLow="#33162235"
+            BaseMedium="#99162235"
+            BaseMediumHigh="#CC162235"
+            BaseMediumLow="#66162235"
+            ChromeAltLow="#FF162235"
+            ChromeDisabledHigh="#FFC7D4E4"
+            ChromeDisabledLow="#FF71869F"
+            ChromeGray="#FF71869F"
+            ChromeHigh="#FF9FB2CC"
+            ChromeLow="#FFF2F6FA"
+            ChromeMedium="#FFE2EBF5"
+            ChromeMediumLow="#FFE7EFF8"
+            ChromeWhite="#FFF7FAFD"
+            ErrorText="#B42318"
+            ListLow="#19162235"
+            ListMedium="#33162235"
+            RegionColor="#EAF1F8" />
+        <ColorPaletteResources
+            x:Key="Dark"
+            Accent="#8BA9FF"
+            AltHigh="#FF1A1A1A"
+            AltLow="#331A1A1A"
+            AltMedium="#991A1A1A"
+            AltMediumHigh="#CC1A1A1A"
+            AltMediumLow="#661A1A1A"
+            BaseHigh="#FFF5EFE0"
+            BaseLow="#33F5EFE0"
+            BaseMedium="#99F5EFE0"
+            BaseMediumHigh="#CCF5EFE0"
+            BaseMediumLow="#66F5EFE0"
+            ChromeAltLow="#FFF5EFE0"
+            ChromeDisabledHigh="#FF393731"
+            ChromeDisabledLow="#FF777268"
+            ChromeGray="#FF9C978E"
+            ChromeHigh="#FF777268"
+            ChromeLow="#FF20201E"
+            ChromeMedium="#FF242421"
+            ChromeMediumLow="#FF282724"
+            ChromeWhite="#FFF5EFE0"
+            ErrorText="#FF9C9C"
+            ListLow="#19F5EFE0"
+            ListMedium="#33F5EFE0"
+            RegionColor="#1A1A1A" />
+      </FluentTheme.Palettes>
+    </FluentTheme>
     <StyleInclude Source="avares://TimetableGenerator.Desktop/Styles/ControlStyles.axaml" />
   </Application.Styles>
 </Application>

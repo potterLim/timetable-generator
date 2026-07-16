@@ -44,7 +44,7 @@
               <Border
                   x:Name="PART_WindowBorder"
                   Background="{DynamicResource SystemControlTransparentBrush}"
-                  BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                  BorderBrush="{DynamicResource PaneDividerBrush}"
                   BorderThickness="{TemplateBinding FrameThickness}"
                   IsHitTestVisible="False" />
               <Panel
@@ -115,7 +115,7 @@
             <Panel
                 Height="{TemplateBinding DefaultTitleBarHeight}"
                 VerticalAlignment="Top"
-                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                Background="{DynamicResource ChromeSurfaceBrush}"
                 WindowDecorationProperties.ElementRole="TitleBar">
               <StackPanel
                   HorizontalAlignment="Right"

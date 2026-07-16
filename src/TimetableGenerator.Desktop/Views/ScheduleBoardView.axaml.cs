@@ -68,6 +68,7 @@ internal sealed partial class ScheduleBoardView : UserControl
         RenderedPeriodCount = MINIMUM_VISIBLE_PERIOD_COUNT;
         DataContextChanged += onDataContextChanged;
         AttachedToVisualTree += onAttachedToVisualTree;
+        ActualThemeVariantChanged += onActualThemeVariantChanged;
     }
 
     private void onDataContextChanged(object? senderOrNull, EventArgs eventArgs)
@@ -84,6 +85,18 @@ internal sealed partial class ScheduleBoardView : UserControl
         object? senderOrNull,
         VisualTreeAttachmentEventArgs eventArgs)
     {
+        rebuildBoard();
+    }
+
+    private void onActualThemeVariantChanged(
+        object? senderOrNull,
+        EventArgs eventArgs)
+    {
+        if (VisualRoot == null)
+        {
+            return;
+        }
+
         rebuildBoard();
     }
 

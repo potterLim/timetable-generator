@@ -20,8 +20,8 @@
   </UserControl.Styles>
 
   <Border
-      Background="{DynamicResource SurfaceBrush}"
-      BorderBrush="{DynamicResource BorderBrush}"
+      Background="{DynamicResource PaneSurfaceBrush}"
+      BorderBrush="{DynamicResource PaneDividerBrush}"
       BorderThickness="1,0,0,0">
     <Grid Margin="22,20,22,18" RowDefinitions="Auto,12,*">
       <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
@@ -154,7 +154,7 @@
                     Classes.green="{Binding IsGreen}"
                     MinHeight="91"
                     BorderThickness="3,0,0,1"
-                    Background="{DynamicResource SurfaceBrush}">
+                    Background="{DynamicResource PaneSurfaceBrush}">
                   <Grid Margin="13,9,7,8" ColumnDefinitions="*,36" RowDefinitions="Auto,Auto,Auto,Auto">
                     <TextBlock Grid.Row="0" Classes="caption" Text="{Binding Code}" />
                     <TextBlock

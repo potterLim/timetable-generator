@@ -7,7 +7,7 @@
     xmlns:viewModels="using:TimetableGenerator.Desktop.Presentation.ViewModels"
     xmlns:views="using:TimetableGenerator.Desktop.Views"
     x:DataType="viewModels:PlannerWorkspaceViewModel"
-    Background="{DynamicResource WindowBackgroundBrush}"
+    Background="{DynamicResource WorkspaceBackdropBrush}"
     AutomationProperties.LandmarkType="Main"
     AutomationProperties.Name="추천 시간표">
   <UserControl.Styles>

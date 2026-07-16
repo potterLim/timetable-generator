@@ -37,7 +37,7 @@
       BorderBrush="{DynamicResource BorderBrush}"
       BorderThickness="1"
       ClipToBounds="True"
-      Background="{DynamicResource SurfaceBrush}">
+      Background="{DynamicResource ElevatedSurfaceBrush}">
     <ScrollViewer
         x:Name="ScheduleScrollViewer"
         HorizontalScrollBarVisibility="Disabled"
@@ -45,7 +45,7 @@
         AutomationProperties.Name="시간표 교시 스크롤">
       <Grid
           x:Name="BoardGrid"
-          Background="{DynamicResource SurfaceBrush}" />
+          Background="{DynamicResource ElevatedSurfaceBrush}" />
     </ScrollViewer>
   </Border>
 </UserControl>

@@ -14,6 +14,7 @@ using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -182,6 +183,65 @@ public sealed class ScheduleWorkspaceViewTests
             Dispatcher.UIThread.RunJobs();
             Assert.True(detailsFlyoutOrNull.IsOpen);
             detailsFlyoutOrNull.Hide();
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void ScheduleBoardRebuildsCodeGeneratedBrushesWhenThemeChanges()
+    {
+        ScheduleEntry entry = createScheduleEntry(
+            EDay.Monday,
+            new AcademicPeriod(1));
+        ScheduleBoardView scheduleBoard = new ScheduleBoardView();
+        scheduleBoard.DataContext = new ScheduleRecommendation(
+            new ScheduleEntry[] { entry });
+
+        Window window = new Window();
+        window.Width = 800.0;
+        window.Height = 420.0;
+        window.RequestedThemeVariant = ThemeVariant.Light;
+        window.Content = scheduleBoard;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            RenderedScheduleBrushes lightBrushes = findRenderedScheduleBrushes(
+                scheduleBoard);
+
+            window.RequestedThemeVariant = ThemeVariant.Dark;
+            Dispatcher.UIThread.RunJobs();
+
+            RenderedScheduleBrushes darkBrushes = findRenderedScheduleBrushes(
+                scheduleBoard);
+            SolidColorBrush expectedDarkBorder = findRequiredThemeBrush(
+                "BorderBrush",
+                ThemeVariant.Dark);
+            SolidColorBrush expectedDarkSecondary = findRequiredThemeBrush(
+                "TextSecondaryBrush",
+                ThemeVariant.Dark);
+            SolidColorBrush expectedDarkAccent = findRequiredThemeBrush(
+                "AccentBrush",
+                ThemeVariant.Dark);
+
+            Assert.NotSame(lightBrushes.ScheduleCard, darkBrushes.ScheduleCard);
+            Assert.NotEqual(
+                lightBrushes.CellBorder.Color,
+                darkBrushes.CellBorder.Color);
+            Assert.NotEqual(
+                lightBrushes.PeriodTime.Color,
+                darkBrushes.PeriodTime.Color);
+            Assert.NotEqual(
+                lightBrushes.DetailAccent.Color,
+                darkBrushes.DetailAccent.Color);
+            Assert.Equal(expectedDarkBorder.Color, darkBrushes.CellBorder.Color);
+            Assert.Equal(expectedDarkSecondary.Color, darkBrushes.PeriodTime.Color);
+            Assert.Equal(expectedDarkAccent.Color, darkBrushes.DetailAccent.Color);
         }
         finally
         {
@@ -379,4 +439,99 @@ public sealed class ScheduleWorkspaceViewTests
             period,
             ECourseAccent.Blue);
     }
+
+    private static RenderedScheduleBrushes findRenderedScheduleBrushes(
+        ScheduleBoardView scheduleBoard)
+    {
+        Grid? boardGridOrNull = scheduleBoard.FindControl<Grid>("BoardGrid");
+        Assert.NotNull(boardGridOrNull);
+        if (boardGridOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The rendered schedule grid was not found.");
+        }
+
+        Border? cellOrNull = null;
+        TextBlock? periodTimeOrNull = null;
+        Button? scheduleCardOrNull = null;
+        foreach (Control child in boardGridOrNull.Children)
+        {
+            if (cellOrNull == null && child is Border cell && cell.BorderBrush != null)
+            {
+                cellOrNull = cell;
+            }
+
+            if (child is StackPanel periodHeader)
+            {
+                foreach (Control periodChild in periodHeader.Children)
+                {
+                    if (periodChild is TextBlock periodText &&
+                        periodText.Text == "08:30–09:45")
+                    {
+                        periodTimeOrNull = periodText;
+                    }
+                }
+            }
+
+            if (child is Button scheduleCard)
+            {
+                scheduleCardOrNull = scheduleCard;
+            }
+        }
+
+        Assert.NotNull(cellOrNull);
+        Assert.NotNull(periodTimeOrNull);
+        Assert.NotNull(scheduleCardOrNull);
+        if (cellOrNull == null ||
+            periodTimeOrNull == null ||
+            scheduleCardOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The generated schedule visuals were incomplete.");
+        }
+
+        SolidColorBrush cellBorder = Assert.IsType<SolidColorBrush>(
+            cellOrNull.BorderBrush);
+        SolidColorBrush periodTime = Assert.IsType<SolidColorBrush>(
+            periodTimeOrNull.Foreground);
+        Flyout detailsFlyout = Assert.IsType<Flyout>(scheduleCardOrNull.Flyout);
+        Border detailsSurface = Assert.IsType<Border>(detailsFlyout.Content);
+        StackPanel details = Assert.IsType<StackPanel>(detailsSurface.Child);
+        TextBlock identity = Assert.IsType<TextBlock>(details.Children[0]);
+        SolidColorBrush detailAccent = Assert.IsType<SolidColorBrush>(
+            identity.Foreground);
+
+        return new RenderedScheduleBrushes(
+            scheduleCardOrNull,
+            cellBorder,
+            periodTime,
+            detailAccent);
+    }
+
+    private static SolidColorBrush findRequiredThemeBrush(
+        string resourceKey,
+        ThemeVariant themeVariant)
+    {
+        Avalonia.Application? applicationOrNull = Avalonia.Application.Current;
+        Assert.NotNull(applicationOrNull);
+        if (applicationOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The Avalonia test application was not initialized.");
+        }
+
+        object? resourceOrNull;
+        bool hasResource = applicationOrNull.TryGetResource(
+            resourceKey,
+            themeVariant,
+            out resourceOrNull);
+        Assert.True(hasResource, "Missing brush resource: " + resourceKey);
+        return Assert.IsType<SolidColorBrush>(resourceOrNull);
+    }
+
+    private readonly record struct RenderedScheduleBrushes(
+        Button ScheduleCard,
+        SolidColorBrush CellBorder,
+        SolidColorBrush PeriodTime,
+        SolidColorBrush DetailAccent);
 }
