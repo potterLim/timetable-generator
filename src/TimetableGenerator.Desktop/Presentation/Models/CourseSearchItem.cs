@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Text;
 
-using TimetableGenerator.Desktop.Presentation;
+using TimetableGenerator.Application.Planning;
+using TimetableGenerator.Desktop.Presentation.Catalog;
 using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Scheduling;
 
@@ -8,17 +12,57 @@ namespace TimetableGenerator.Desktop.Presentation.Models;
 
 internal sealed class CourseSearchItem : ObservableObject
 {
+    private readonly ObservableCollection<CourseSelectionOption> mSelectionOptions;
+
+    private readonly string mSearchIndex;
+
+    private CourseSelectionOption mSelectedSelectionOption;
+
     private bool mIsAdded;
 
-    public CourseId CourseId { get; }
+    public CatalogCourseProjection Projection { get; }
 
-    public string Code { get; }
+    public CourseId CourseId
+    {
+        get
+        {
+            return Projection.Course.Id;
+        }
+    }
 
-    public string Name { get; }
+    public string Code
+    {
+        get
+        {
+            return Projection.Course.Code.Value;
+        }
+    }
+
+    public string Name
+    {
+        get
+        {
+            return Projection.Course.KoreanName.Value;
+        }
+    }
+
+    public string EnglishName
+    {
+        get
+        {
+            return Projection.Course.EnglishName.Value;
+        }
+    }
 
     public string InstructorDisplayText { get; }
 
-    public CourseCredits Credits { get; }
+    public CourseCredits Credits
+    {
+        get
+        {
+            return Projection.Course.Credits;
+        }
+    }
 
     public string CreditDisplayText
     {
@@ -32,19 +76,51 @@ internal sealed class CourseSearchItem : ObservableObject
 
     public string LocationDisplayText { get; }
 
-    public ECourseDepartmentFilter Department { get; }
-
-    public ERequirementFilter Requirement { get; }
-
-    public ECourseAccent Accent { get; }
-
-    public EMeetingScheduleStatus ScheduleStatus { get; }
-
-    public bool HasConfirmedSchedule
+    public ECourseAccent Accent
     {
         get
         {
-            return ScheduleStatus == EMeetingScheduleStatus.Scheduled;
+            return Projection.Accent;
+        }
+    }
+
+    public IReadOnlyList<CourseSelectionOption> SelectionOptions
+    {
+        get
+        {
+            return mSelectionOptions;
+        }
+    }
+
+    public CourseSelectionOption SelectedSelectionOption
+    {
+        get
+        {
+            return mSelectedSelectionOption;
+        }
+        set
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            if (containsSelectionOption(value) == false)
+            {
+                throw new ArgumentException(
+                    "The selected course option must belong to this course.",
+                    nameof(value));
+            }
+
+            setProperty(ref mSelectedSelectionOption, value);
+        }
+    }
+
+    public bool HasMultipleSelectionOptions
+    {
+        get
+        {
+            return SelectionOptions.Count > 1;
         }
     }
 
@@ -80,6 +156,14 @@ internal sealed class CourseSearchItem : ObservableObject
         }
     }
 
+    public bool IsSelectionEnabled
+    {
+        get
+        {
+            return IsAdded == false;
+        }
+    }
+
     public string AddButtonAccessibleName
     {
         get
@@ -93,32 +177,51 @@ internal sealed class CourseSearchItem : ObservableObject
         }
     }
 
-    public CourseSearchItem(
-        CourseId courseId,
-        string code,
-        string name,
-        string instructorDisplayText,
-        CourseCredits credits,
-        string meetingDisplayText,
-        string locationDisplayText,
-        ECourseDepartmentFilter department,
-        ERequirementFilter requirement,
-        ECourseAccent accent,
-        EMeetingScheduleStatus scheduleStatus)
+    public CourseSearchItem(CatalogCourseProjection projection)
     {
-        ArgumentNullException.ThrowIfNull(courseId);
+        if (projection == null)
+        {
+            throw new ArgumentNullException(nameof(projection));
+        }
 
-        CourseId = courseId;
-        Code = code;
-        Name = name;
-        InstructorDisplayText = instructorDisplayText;
-        Credits = credits;
-        MeetingDisplayText = meetingDisplayText;
-        LocationDisplayText = locationDisplayText;
-        Department = department;
-        Requirement = requirement;
-        Accent = accent;
-        ScheduleStatus = scheduleStatus;
+        Projection = projection;
+        List<CourseSelectionOption> selectionOptions = createSelectionOptions(projection);
+        if (selectionOptions.Count == 0)
+        {
+            throw new ArgumentException(
+                "Searchable courses require at least one selectable offering.",
+                nameof(projection));
+        }
+
+        mSelectionOptions = new ObservableCollection<CourseSelectionOption>(
+            selectionOptions);
+        mSelectedSelectionOption = mSelectionOptions[0];
+        InstructorDisplayText = createInstructorSummary(projection);
+        MeetingDisplayText = createMeetingSummary(projection);
+        LocationDisplayText = createLocationSummary(projection);
+        mSearchIndex = createSearchIndex(projection);
+    }
+
+    public bool MatchesSearchText(string searchText)
+    {
+        if (searchText == null)
+        {
+            throw new ArgumentNullException(nameof(searchText));
+        }
+
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            return true;
+        }
+
+        return mSearchIndex.Contains(
+            searchText.Trim(),
+            StringComparison.CurrentCultureIgnoreCase);
+    }
+
+    public PlanningCourseSelection CreateSelection()
+    {
+        return SelectedSelectionOption.Selection;
     }
 
     public void MarkAdded()
@@ -131,18 +234,208 @@ internal sealed class CourseSearchItem : ObservableObject
         setSelectionState(ESelectionState.NotSelected);
     }
 
-    public PlanCourseItem CreatePlanCourseItem()
+    public void SynchronizeSelection(PlanningCourseSelection? selectionOrNull)
     {
-        return new PlanCourseItem(
-            CourseId,
-            Code,
-            Name,
-            InstructorDisplayText,
-            Credits,
-            MeetingDisplayText,
-            LocationDisplayText,
-            Accent,
-            ScheduleStatus);
+        if (selectionOrNull == null)
+        {
+            MarkRemoved();
+            return;
+        }
+
+        if (selectionOrNull.CourseId != CourseId)
+        {
+            throw new ArgumentException(
+                "The synchronized selection must belong to this course.",
+                nameof(selectionOrNull));
+        }
+
+        CourseSelectionOption? matchingOptionOrNull = findSelectionOption(
+            selectionOrNull);
+        if (matchingOptionOrNull == null)
+        {
+            matchingOptionOrNull = createPersistedSelectionOption(selectionOrNull);
+            mSelectionOptions.Add(matchingOptionOrNull);
+        }
+
+        SelectedSelectionOption = matchingOptionOrNull;
+        MarkAdded();
+    }
+
+    private static List<CourseSelectionOption> createSelectionOptions(
+        CatalogCourseProjection projection)
+    {
+        List<CourseSelectionOption> options = new List<CourseSelectionOption>();
+        if (projection.ScheduledOfferingIds.Count > 0)
+        {
+            PlanningCourseSelection scheduledSelection =
+                PlanningCourseSelection.CreateScheduledAlternatives(
+                    projection.Course.Id,
+                    projection.ScheduledOfferingIds);
+            string scheduledDisplayName = "시간표가 있는 "
+                + projection.ScheduledOfferingIds.Count
+                + "개 분반에서 자동 선택";
+            options.Add(new CourseSelectionOption(
+                scheduledSelection,
+                EMeetingScheduleStatus.Scheduled,
+                scheduledDisplayName));
+        }
+
+        foreach (OfferingId offeringId in projection.TimeNotProvidedOfferingIds)
+        {
+            CatalogOfferingProjection offering = findOffering(projection, offeringId);
+            PlanningCourseSelection selection =
+                PlanningCourseSelection.CreateTimeNotProvidedOffering(
+                    projection.Course.Id,
+                    offeringId);
+            string displayName = offering.Offering.SectionCode.Value
+                + "분반 · 시간 미정 · "
+                + offering.InstructorSummary;
+            options.Add(new CourseSelectionOption(
+                selection,
+                EMeetingScheduleStatus.NotProvided,
+                displayName));
+        }
+
+        return options;
+    }
+
+    private static CatalogOfferingProjection findOffering(
+        CatalogCourseProjection projection,
+        OfferingId offeringId)
+    {
+        foreach (CatalogOfferingProjection offering in projection.Offerings)
+        {
+            if (offering.Offering.Id == offeringId)
+            {
+                return offering;
+            }
+        }
+
+        throw new InvalidOperationException(
+            "A projected course did not contain one of its declared offering IDs.");
+    }
+
+    private static string createInstructorSummary(CatalogCourseProjection projection)
+    {
+        if (projection.Offerings.Count == 1)
+        {
+            return projection.Offerings[0].InstructorSummary;
+        }
+
+        return projection.Offerings.Count + "개 분반";
+    }
+
+    private static string createMeetingSummary(CatalogCourseProjection projection)
+    {
+        int scheduledCount = projection.ScheduledOfferingIds.Count;
+        int timeNotProvidedCount = projection.TimeNotProvidedOfferingIds.Count;
+        if (projection.Offerings.Count == 1)
+        {
+            return projection.Offerings[0].ScheduleSummary;
+        }
+
+        if (scheduledCount > 0 && timeNotProvidedCount > 0)
+        {
+            return scheduledCount
+                + "개 시간표 분반 · 시간 미정 "
+                + timeNotProvidedCount
+                + "개";
+        }
+
+        if (scheduledCount > 0)
+        {
+            return scheduledCount + "개 분반의 시간 조합을 자동 탐색";
+        }
+
+        return timeNotProvidedCount + "개 시간 미정 분반 중 직접 선택";
+    }
+
+    private static string createLocationSummary(CatalogCourseProjection projection)
+    {
+        if (projection.Offerings.Count == 1)
+        {
+            return projection.Offerings[0].LocationSummary;
+        }
+
+        return "분반별 강의실";
+    }
+
+    private static string createSearchIndex(CatalogCourseProjection projection)
+    {
+        StringBuilder searchIndex = new StringBuilder();
+        searchIndex.Append(projection.Course.Code.Value);
+        searchIndex.Append(' ');
+        searchIndex.Append(projection.Course.KoreanName.Value);
+        searchIndex.Append(' ');
+        searchIndex.Append(projection.Course.EnglishName.Value);
+        foreach (CatalogOfferingProjection offering in projection.Offerings)
+        {
+            searchIndex.Append(' ');
+            searchIndex.Append(offering.InstructorSummary);
+            searchIndex.Append(' ');
+            searchIndex.Append(offering.Metadata.Classification.OfferingUnitName.Value);
+            searchIndex.Append(' ');
+            searchIndex.Append(offering.Offering.SectionCode.Value);
+        }
+
+        return searchIndex.ToString();
+    }
+
+    private bool containsSelectionOption(CourseSelectionOption option)
+    {
+        foreach (CourseSelectionOption candidate in SelectionOptions)
+        {
+            if (ReferenceEquals(candidate, option))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private CourseSelectionOption? findSelectionOption(
+        PlanningCourseSelection selection)
+    {
+        foreach (CourseSelectionOption option in SelectionOptions)
+        {
+            if (option.Represents(selection))
+            {
+                return option;
+            }
+        }
+
+        return null;
+    }
+
+    private CourseSelectionOption createPersistedSelectionOption(
+        PlanningCourseSelection selection)
+    {
+        if (selection.Kind == EPlanningCourseSelectionKind.ScheduledAlternatives)
+        {
+            int offeringCount = selection.GetScheduledOfferingIds().Count;
+            return new CourseSelectionOption(
+                selection,
+                EMeetingScheduleStatus.Scheduled,
+                "저장된 " + offeringCount + "개 분반에서 자동 선택");
+        }
+
+        if (selection.Kind == EPlanningCourseSelectionKind.TimeNotProvidedOffering)
+        {
+            CatalogOfferingProjection offering = findOffering(
+                Projection,
+                selection.GetTimeNotProvidedOfferingId());
+            return new CourseSelectionOption(
+                selection,
+                EMeetingScheduleStatus.NotProvided,
+                offering.Offering.SectionCode.Value
+                    + "분반 · 저장된 시간 미정 선택");
+        }
+
+        throw new ArgumentOutOfRangeException(
+            nameof(selection),
+            selection.Kind,
+            "Unknown planning course selection kind.");
     }
 
     private void setSelectionState(ESelectionState selectionState)
@@ -151,6 +444,7 @@ internal sealed class CourseSearchItem : ObservableObject
         if (setProperty(ref mIsAdded, isAdded, nameof(IsAdded)))
         {
             raisePropertyChanged(nameof(AddButtonAccessibleName));
+            raisePropertyChanged(nameof(IsSelectionEnabled));
         }
     }
 }

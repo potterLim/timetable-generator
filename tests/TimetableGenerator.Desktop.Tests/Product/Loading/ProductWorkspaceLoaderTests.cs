@@ -210,7 +210,7 @@ public sealed class ProductWorkspaceLoaderTests
         VerifiedCatalogPackage catalogPackage =
             ProductWorkspaceLoaderTestData.CreateCatalogPackage(new CatalogRevision(1));
         Func<CancellationToken, Task<VerifiedCatalogPackage>> download =
-            delegate(CancellationToken cancellationToken)
+            delegate (CancellationToken cancellationToken)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 return Task.FromResult(catalogPackage);
@@ -251,7 +251,7 @@ public sealed class ProductWorkspaceLoaderTests
             ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(
                 savedRevision);
         Func<CancellationToken, Task<VerifiedCatalogPackage>> download =
-            delegate(CancellationToken cancellationToken)
+            delegate (CancellationToken cancellationToken)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 return Task.FromResult(downloadedCatalogPackage);
@@ -289,7 +289,7 @@ public sealed class ProductWorkspaceLoaderTests
         PlanningWorkspace workspace =
             ProductWorkspaceLoaderTestData.CreateWorkspaceWithMissingOffering(revision);
         Func<CancellationToken, Task<VerifiedCatalogPackage>> download =
-            delegate(CancellationToken cancellationToken)
+            delegate (CancellationToken cancellationToken)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 return Task.FromResult(catalogPackage);

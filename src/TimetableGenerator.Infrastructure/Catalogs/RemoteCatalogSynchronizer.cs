@@ -144,6 +144,7 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
         catch (CatalogCachePersistenceException exception)
         {
             throw new RemoteCatalogSynchronizationException(
+                ERemoteCatalogSynchronizationFailureKind.LocalPersistence,
                 "The verified remote catalog could not be installed in the offline cache.",
                 exception);
         }
@@ -164,6 +165,7 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
             if (entry.File.Size.Value > mLimits.Catalog.Bytes)
             {
                 throw new RemoteCatalogSynchronizationException(
+                    ERemoteCatalogSynchronizationFailureKind.ResourceLimit,
                     "The index declares a catalog larger than the configured download limit.");
             }
 
@@ -183,6 +185,7 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
             cancellationToken.IsCancellationRequested == false)
         {
             throw new RemoteCatalogSynchronizationException(
+                ERemoteCatalogSynchronizationFailureKind.Network,
                 "The remote catalog request timed out.",
                 exception);
         }
@@ -197,18 +200,21 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
         catch (CatalogJsonFormatException exception)
         {
             throw new RemoteCatalogSynchronizationException(
+                ERemoteCatalogSynchronizationFailureKind.InvalidRemoteData,
                 "The remote catalog package failed strict verification.",
                 exception);
         }
         catch (HttpRequestException exception)
         {
             throw new RemoteCatalogSynchronizationException(
+                ERemoteCatalogSynchronizationFailureKind.Network,
                 "The remote catalog service could not be reached successfully.",
                 exception);
         }
         catch (IOException exception)
         {
             throw new RemoteCatalogSynchronizationException(
+                ERemoteCatalogSynchronizationFailureKind.Network,
                 "The remote catalog response could not be read.",
                 exception);
         }
@@ -232,6 +238,7 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
                 if (response.IsSuccessStatusCode == false)
                 {
                     throw new RemoteCatalogSynchronizationException(
+                        ERemoteCatalogSynchronizationFailureKind.Network,
                         "The remote catalog service returned HTTP status "
                         + (int)response.StatusCode
                         + ".");
@@ -242,6 +249,7 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
                     && declaredLengthOrNull.Value > byteLimit.Bytes)
                 {
                     throw new RemoteCatalogSynchronizationException(
+                        ERemoteCatalogSynchronizationFailureKind.ResourceLimit,
                         "The remote catalog response exceeds its configured size limit.");
                 }
 
@@ -260,6 +268,7 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
         if (responseUriOrNull == null || mEndpoint.IsSameOrigin(responseUriOrNull) == false)
         {
             throw new RemoteCatalogSynchronizationException(
+                ERemoteCatalogSynchronizationFailureKind.SecurityPolicy,
                 "The remote catalog service redirected outside the configured origin.");
         }
     }
@@ -295,6 +304,7 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
                 if (nextLength > byteLimit.Bytes)
                 {
                     throw new RemoteCatalogSynchronizationException(
+                        ERemoteCatalogSynchronizationFailureKind.ResourceLimit,
                         "The remote catalog response exceeds its configured size limit.");
                 }
 

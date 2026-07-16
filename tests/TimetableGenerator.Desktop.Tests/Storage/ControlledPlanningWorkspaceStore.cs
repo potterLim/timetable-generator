@@ -101,10 +101,10 @@ internal sealed class ControlledPlanningWorkspaceStore : IPlanningWorkspaceStore
             }
         }
 
-        saveAttempt.MarkStarted(workspace);
+        saveAttempt.markStarted(workspace);
         try
         {
-            await saveAttempt.WaitForCompletionAsync().ConfigureAwait(false);
+            await saveAttempt.waitForCompletionAsync().ConfigureAwait(false);
         }
         finally
         {

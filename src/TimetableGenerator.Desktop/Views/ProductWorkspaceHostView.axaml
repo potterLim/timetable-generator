@@ -1,0 +1,228 @@
+<UserControl
+    x:Class="TimetableGenerator.Desktop.Views.ProductWorkspaceHostView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:icons="using:FluentIcons.Avalonia"
+    xmlns:models="using:TimetableGenerator.Desktop.Presentation.Models"
+    xmlns:viewModels="using:TimetableGenerator.Desktop.Presentation.ViewModels"
+    xmlns:views="using:TimetableGenerator.Desktop.Views"
+    x:DataType="viewModels:PlannerWorkspaceViewModel">
+  <Grid RowDefinitions="64,48,*">
+    <Border
+        Grid.Row="0"
+        Padding="28,0,22,0"
+        Background="{DynamicResource SurfaceBrush}"
+        BorderBrush="{DynamicResource BorderBrush}"
+        BorderThickness="0,0,0,1"
+        AutomationProperties.LandmarkType="Banner">
+      <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto" VerticalAlignment="Center">
+        <Grid Grid.Column="0" ColumnDefinitions="30,Auto" ColumnSpacing="14">
+          <Border
+              Grid.Column="0"
+              Width="30"
+              Height="30"
+              ClipToBounds="True">
+            <Image
+                Width="72"
+                Height="72"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Source="/Assets/AppIcon.png"
+                Stretch="Uniform"
+                AutomationProperties.AccessibilityView="Raw"
+                IsHitTestVisible="False" />
+          </Border>
+          <TextBlock
+              Grid.Column="1"
+              VerticalAlignment="Center"
+              FontSize="20"
+              FontWeight="SemiBold"
+              Text="시간표" />
+        </Grid>
+
+        <Border
+            Grid.Column="1"
+            Width="1"
+            Height="24"
+            Margin="24,0"
+            Background="{DynamicResource BorderBrush}" />
+
+        <TextBlock
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            FontSize="15"
+            FontWeight="SemiBold"
+            Text="{Binding InstitutionTermDisplayText}" />
+
+        <Grid
+            Grid.Column="3"
+            Margin="28,0,0,0"
+            VerticalAlignment="Center"
+            AutomationProperties.Name="자동 저장 상태"
+            AutomationProperties.LiveSetting="Polite">
+          <StackPanel
+              Orientation="Horizontal"
+              Spacing="8"
+              IsVisible="{Binding IsAutosaveSaved}">
+            <icons:FluentIcon
+                Width="18"
+                Height="18"
+                Icon="CheckmarkCircle"
+                IconVariant="Regular"
+                Foreground="{DynamicResource SuccessBrush}" />
+            <TextBlock
+                VerticalAlignment="Center"
+                Foreground="{DynamicResource SuccessBrush}"
+                Text="{Binding AutosaveStatusText}" />
+          </StackPanel>
+          <StackPanel
+              Orientation="Horizontal"
+              Spacing="8"
+              IsVisible="{Binding IsAutosaveSaving}">
+            <ProgressBar Width="34" Height="3" IsIndeterminate="True" />
+            <TextBlock
+                VerticalAlignment="Center"
+                Classes="secondary"
+                Text="{Binding AutosaveStatusText}" />
+          </StackPanel>
+          <Button
+              Padding="4,2"
+              MinHeight="30"
+              HorizontalAlignment="Left"
+              Background="Transparent"
+              BorderBrush="Transparent"
+              Foreground="{DynamicResource ErrorBrush}"
+              IsVisible="{Binding HasAutosaveError}"
+              Command="{Binding RetryAutosaveCommand}"
+              ToolTip.Tip="다시 저장">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <icons:FluentIcon Icon="ErrorCircle" IconVariant="Regular" FontSize="18" />
+              <TextBlock VerticalAlignment="Center" Text="저장 실패 · 다시 시도" />
+            </StackPanel>
+          </Button>
+        </Grid>
+
+        <Button
+            Grid.Column="4"
+            Classes="icon"
+            Margin="0,0,10,0"
+            AutomationProperties.Name="도움말"
+            ToolTip.Tip="도움말">
+          <icons:FluentIcon Icon="QuestionCircle" IconVariant="Regular" FontSize="21" />
+          <Button.Flyout>
+            <Flyout Placement="BottomEdgeAlignedRight">
+              <StackPanel Width="310" Margin="8" Spacing="12">
+                <TextBlock FontSize="17" FontWeight="SemiBold" Text="시간표 만들기" />
+                <Grid ColumnDefinitions="24,*" ColumnSpacing="10">
+                  <TextBlock Grid.Column="0" Foreground="{DynamicResource AccentBrush}" FontWeight="Bold" Text="1" />
+                  <TextBlock Grid.Column="1" Classes="secondary" Text="왼쪽에서 과목과 분반 방식을 선택해 계획에 추가하세요." TextWrapping="Wrap" />
+                </Grid>
+                <Grid ColumnDefinitions="24,*" ColumnSpacing="10">
+                  <TextBlock Grid.Column="0" Foreground="{DynamicResource AccentBrush}" FontWeight="Bold" Text="2" />
+                  <TextBlock Grid.Column="1" Classes="secondary" Text="가운데에서 충돌 없는 분반 조합을 비교하세요." TextWrapping="Wrap" />
+                </Grid>
+                <Grid ColumnDefinitions="24,*" ColumnSpacing="10">
+                  <TextBlock Grid.Column="0" Foreground="{DynamicResource AccentBrush}" FontWeight="Bold" Text="3" />
+                  <TextBlock Grid.Column="1" Classes="secondary" Text="시간 미정 과목은 오른쪽에서 별도로 확인하세요." TextWrapping="Wrap" />
+                </Grid>
+              </StackPanel>
+            </Flyout>
+          </Button.Flyout>
+        </Button>
+
+        <Button
+            Grid.Column="5"
+            Classes="icon"
+            AutomationProperties.Name="설정"
+            ToolTip.Tip="설정">
+          <icons:FluentIcon Icon="Settings" IconVariant="Regular" FontSize="21" />
+          <Button.Flyout>
+            <Flyout Placement="BottomEdgeAlignedRight">
+              <StackPanel Width="286" Margin="8" Spacing="9">
+                <TextBlock FontSize="17" FontWeight="SemiBold" Text="데이터 정보" />
+                <TextBlock FontWeight="SemiBold" Text="{Binding InstitutionTermDisplayText}" />
+                <TextBlock Classes="secondary" Text="{Binding CatalogRevisionDisplayText}" />
+                <Border Height="1" Margin="0,4" Background="{DynamicResource BorderBrush}" />
+                <TextBlock
+                    Classes="caption"
+                    LineHeight="18"
+                    Text="계획은 이 기기에 자동 저장됩니다. 시간 미정 분반은 충돌 자동 검증에 포함되지 않습니다."
+                    TextWrapping="Wrap" />
+              </StackPanel>
+            </Flyout>
+          </Button.Flyout>
+        </Button>
+      </Grid>
+    </Border>
+
+    <Border
+        Grid.Row="1"
+        Background="{DynamicResource SurfaceBrush}"
+        BorderBrush="{DynamicResource BorderBrush}"
+        BorderThickness="0,0,0,1"
+        AutomationProperties.LandmarkType="Navigation">
+      <Grid ColumnDefinitions="Auto,1,Auto" HorizontalAlignment="Left">
+        <TabStrip
+            Grid.Column="0"
+            Classes="plan-tabs"
+            ItemsSource="{Binding Plans}"
+            SelectedItem="{Binding ActivePlan, Mode=TwoWay}"
+            AutomationProperties.Name="계획 목록">
+          <TabStrip.ItemTemplate>
+            <DataTemplate x:DataType="models:PlanTabItem">
+              <TextBlock VerticalAlignment="Center" Text="{Binding DisplayName}" />
+            </DataTemplate>
+          </TabStrip.ItemTemplate>
+        </TabStrip>
+
+        <Border
+            Grid.Column="1"
+            Width="1"
+            Height="20"
+            VerticalAlignment="Center"
+            Background="{DynamicResource BorderBrush}" />
+
+        <Button
+            Grid.Column="2"
+            Classes="icon"
+            Margin="12,6"
+            Command="{Binding AddPlanCommand}"
+            AutomationProperties.Name="새 계획 추가"
+            ToolTip.Tip="새 계획 추가">
+          <icons:FluentIcon Icon="Add" IconVariant="Regular" FontSize="20" />
+        </Button>
+      </Grid>
+    </Border>
+
+    <SplitView
+        Grid.Row="2"
+        PanePlacement="Left"
+        DisplayMode="{Binding CoursePaneDisplayMode}"
+        IsPaneOpen="{Binding IsCoursePaneOpen, Mode=TwoWay}"
+        OpenPaneLength="{Binding CoursePaneWidth}"
+        PaneBackground="{DynamicResource SurfaceBrush}"
+        UseLightDismissOverlayMode="True">
+      <SplitView.Pane>
+        <views:CourseBrowserView />
+      </SplitView.Pane>
+
+      <SplitView.Content>
+        <SplitView
+            PanePlacement="Right"
+            DisplayMode="{Binding InspectorPaneDisplayMode}"
+            IsPaneOpen="{Binding IsInspectorPaneOpen, Mode=TwoWay}"
+            OpenPaneLength="{Binding InspectorPaneWidth}"
+            PaneBackground="{DynamicResource SurfaceBrush}"
+            UseLightDismissOverlayMode="True">
+          <SplitView.Pane>
+            <views:PlanInspectorView />
+          </SplitView.Pane>
+
+          <SplitView.Content>
+            <views:ScheduleWorkspaceView />
+          </SplitView.Content>
+        </SplitView>
+      </SplitView.Content>
+    </SplitView>
+  </Grid>
+</UserControl>

@@ -53,8 +53,8 @@
       <Grid Grid.Row="4" ColumnDefinitions="*,12,*">
         <ComboBox
             Grid.Column="0"
-            ItemsSource="{Binding DepartmentFilters}"
-            SelectedItem="{Binding SelectedDepartmentFilter, Mode=TwoWay}"
+            ItemsSource="{Binding UnitFilters}"
+            SelectedItem="{Binding SelectedUnitFilter, Mode=TwoWay}"
             AutomationProperties.AutomationId="DepartmentFilter"
             AutomationProperties.Name="학부 필터">
           <ComboBox.ItemTemplate>
@@ -102,7 +102,7 @@
                 MinHeight="96"
                 BorderThickness="3,0,0,1"
                 Background="{DynamicResource SurfaceBrush}">
-              <Grid Margin="13,10,10,9" ColumnDefinitions="*,38" RowDefinitions="Auto,Auto,Auto,Auto">
+              <Grid Margin="13,10,10,9" ColumnDefinitions="*,38" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
                 <TextBlock
                     Grid.Row="0"
                     Grid.Column="0"
@@ -133,6 +133,27 @@
                     Classes="caption"
                     Text="{Binding MeetingDisplayText}"
                     TextTrimming="CharacterEllipsis" />
+
+                <ComboBox
+                    Grid.Row="4"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    Margin="0,8,0,2"
+                    MinHeight="34"
+                    ItemsSource="{Binding SelectionOptions}"
+                    SelectedItem="{Binding SelectedSelectionOption, Mode=TwoWay}"
+                    IsEnabled="{Binding IsSelectionEnabled}"
+                    IsVisible="{Binding HasMultipleSelectionOptions}"
+                    AutomationProperties.Name="추가할 분반 선택">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate DataType="models:CourseSelectionOption">
+                      <TextBlock
+                          MaxWidth="260"
+                          Text="{Binding DisplayName}"
+                          TextTrimming="CharacterEllipsis" />
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
 
                 <Button
                     Grid.Row="0"

@@ -16,6 +16,8 @@ public sealed class PlanningWorkspaceAutosaveQueue
     private PlanningWorkspaceAutosaveState? mCurrentStateOrNull;
     private Task mWorkerTask;
     private bool mIsWorkerRunning;
+    private bool mIsCompletionInProgress;
+    private bool mIsCompleted;
 
     public event EventHandler<PlanningWorkspaceAutosaveStateChangedEventArgs>? StateChanged;
 
@@ -51,6 +53,12 @@ public sealed class PlanningWorkspaceAutosaveQueue
 
         lock (mSynchronizationRoot)
         {
+            if (mIsCompletionInProgress || mIsCompleted)
+            {
+                throw new InvalidOperationException(
+                    "Completed autosave queues cannot accept new workspace snapshots.");
+            }
+
             mPendingWorkspaceOrNull = workspace;
             if (mIsWorkerRunning)
             {
@@ -80,13 +88,46 @@ public sealed class PlanningWorkspaceAutosaveQueue
 
     public async Task CompleteAsync(CancellationToken cancellationToken)
     {
-        await FlushAsync(cancellationToken).ConfigureAwait(false);
-        PlanningWorkspaceAutosaveState? stateOrNull = CurrentStateOrNull;
-        PlanningWorkspaceAutosaveFailedState? failedStateOrNull =
-            stateOrNull as PlanningWorkspaceAutosaveFailedState;
-        if (failedStateOrNull != null)
+        Task workerTask;
+        lock (mSynchronizationRoot)
         {
-            throw new PlanningWorkspaceAutosaveException(failedStateOrNull.Failure);
+            if (mIsCompleted)
+            {
+                return;
+            }
+
+            if (mIsCompletionInProgress)
+            {
+                throw new InvalidOperationException(
+                    "Autosave completion is already in progress.");
+            }
+
+            mIsCompletionInProgress = true;
+            workerTask = mWorkerTask;
+        }
+
+        bool isCompleted = false;
+        try
+        {
+            await workerTask.WaitAsync(cancellationToken).ConfigureAwait(false);
+            PlanningWorkspaceAutosaveState? stateOrNull = CurrentStateOrNull;
+            PlanningWorkspaceAutosaveFailedState? failedStateOrNull =
+                stateOrNull as PlanningWorkspaceAutosaveFailedState;
+            if (failedStateOrNull != null)
+            {
+                throw new PlanningWorkspaceAutosaveException(
+                    failedStateOrNull.Failure);
+            }
+
+            isCompleted = true;
+        }
+        finally
+        {
+            lock (mSynchronizationRoot)
+            {
+                mIsCompletionInProgress = false;
+                mIsCompleted = isCompleted;
+            }
         }
     }
 

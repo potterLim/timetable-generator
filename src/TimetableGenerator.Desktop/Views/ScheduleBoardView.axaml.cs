@@ -48,6 +48,14 @@ internal sealed partial class ScheduleBoardView : UserControl
 
     internal int RenderedPeriodCount { get; private set; }
 
+    internal Control PngExportSurface
+    {
+        get
+        {
+            return mBoardGrid;
+        }
+    }
+
     public ScheduleBoardView()
     {
         AvaloniaXamlLoader.Load(this);

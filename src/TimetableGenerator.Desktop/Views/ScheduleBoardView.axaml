@@ -43,7 +43,9 @@
         HorizontalScrollBarVisibility="Disabled"
         VerticalScrollBarVisibility="Auto"
         AutomationProperties.Name="시간표 교시 스크롤">
-      <Grid x:Name="BoardGrid" />
+      <Grid
+          x:Name="BoardGrid"
+          Background="{DynamicResource SurfaceBrush}" />
     </ScrollViewer>
   </Border>
 </UserControl>

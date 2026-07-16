@@ -37,12 +37,12 @@ internal sealed class ControlledSaveAttempt
         mSaveCompletionSource.SetException(failure);
     }
 
-    internal void MarkStarted(PlanningWorkspace workspace)
+    internal void markStarted(PlanningWorkspace workspace)
     {
         mStartedCompletionSource.SetResult(workspace);
     }
 
-    internal Task WaitForCompletionAsync()
+    internal Task waitForCompletionAsync()
     {
         return mSaveCompletionSource.Task;
     }

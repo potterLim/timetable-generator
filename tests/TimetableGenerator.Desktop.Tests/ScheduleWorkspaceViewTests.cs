@@ -1,13 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 
+using TimetableGenerator.Desktop.Exporting;
 using TimetableGenerator.Desktop.Presentation.Models;
-using TimetableGenerator.Desktop.Presentation.Sample;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Desktop.Views;
 using TimetableGenerator.Domain.Scheduling;
@@ -84,9 +88,61 @@ public sealed class ScheduleWorkspaceViewTests
     }
 
     [AvaloniaFact]
-    public void ExportActionCommunicatesThatItIsNotYetAvailable()
+    public async Task PngExportSurfaceIncludesEveryRenderedPeriodAsync()
     {
-        PlannerWorkspaceViewModel workspace = PlannerSampleStateFactory.CreateWorkspace();
+        List<ScheduleEntry> entries = new List<ScheduleEntry>();
+        entries.Add(createScheduleEntry(EDay.Thursday, new AcademicPeriod(10)));
+        ScheduleBoardView scheduleBoard = new ScheduleBoardView();
+        scheduleBoard.DataContext = new ScheduleRecommendation(entries);
+
+        Window window = new Window();
+        window.Width = 800.0;
+        window.Height = 420.0;
+        window.Content = scheduleBoard;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            ScrollViewer? scrollViewerOrNull = scheduleBoard.FindControl<ScrollViewer>(
+                "ScheduleScrollViewer");
+            Assert.NotNull(scrollViewerOrNull);
+            if (scrollViewerOrNull == null)
+            {
+                throw new InvalidOperationException(
+                    "The rendered schedule scroll viewer was not found.");
+            }
+
+            Assert.True(
+                scheduleBoard.PngExportSurface.Bounds.Height
+                    > scrollViewerOrNull.Viewport.Height);
+
+            AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(
+                PngExportScale.PRODUCT_QUALITY);
+            using (MemoryStream destinationStream = new MemoryStream())
+            {
+                await exporter.ExportControlAsync(
+                    scheduleBoard.PngExportSurface,
+                    destinationStream,
+                    CancellationToken.None);
+                destinationStream.Position = 0L;
+                using (Bitmap bitmap = new Bitmap(destinationStream))
+                {
+                    Assert.Equal(2_004, bitmap.PixelSize.Height);
+                }
+            }
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task ExportActionIsAvailableForARenderedScheduleAsync()
+    {
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+        await workspace.RecommendationRefreshTask;
         ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView();
         workspaceView.DataContext = workspace;
 
@@ -109,13 +165,13 @@ public sealed class ScheduleWorkspaceViewTests
             }
 
             Button exportButton = exportButtonOrNull;
-            Assert.False(exportButton.IsEnabled);
-            Assert.Null(exportButton.Command);
+            Assert.True(exportButton.IsEnabled);
+            Assert.NotNull(exportButton.Command);
             Assert.Equal(
                 "현재 시간표를 PNG로 저장",
                 AutomationProperties.GetName(exportButton));
             Assert.Equal(
-                "내보내기 서비스가 연결되면 사용할 수 있습니다.",
+                "현재 추천 시간표를 고해상도 PNG 파일로 저장합니다.",
                 AutomationProperties.GetHelpText(exportButton));
         }
         finally

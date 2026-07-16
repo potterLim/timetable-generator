@@ -261,6 +261,71 @@ public sealed class PlanningWorkspaceAutosaveQueueTests
             autosaveQueue.CurrentStateOrNull);
     }
 
+    [Fact]
+    public async Task CompleteFormsAnAtomicBarrierAgainstNewSnapshotsAsync()
+    {
+        ControlledPlanningWorkspaceStore store = new ControlledPlanningWorkspaceStore();
+        ControlledSaveAttempt saveAttempt = new ControlledSaveAttempt();
+        store.EnqueueSaveAttempt(saveAttempt);
+        PlanningWorkspaceAutosaveQueue autosaveQueue =
+            new PlanningWorkspaceAutosaveQueue(store);
+        PlanningWorkspace persistedWorkspace = createWorkspace(
+            new PlanName("종료 전 상태"));
+        PlanningWorkspace lateWorkspace = createWorkspace(
+            new PlanName("종료 중 늦은 상태"));
+        autosaveQueue.RequestSave(persistedWorkspace);
+        await saveAttempt
+            .WaitForStartAsync()
+            .WaitAsync(TEST_OPERATION_TIMEOUT, TestContext.Current.CancellationToken);
+
+        Task completionTask = autosaveQueue.CompleteAsync(
+            TestContext.Current.CancellationToken);
+
+        Assert.Throws<InvalidOperationException>(
+            delegate
+            {
+                autosaveQueue.RequestSave(lateWorkspace);
+            });
+        saveAttempt.CompleteSuccessfully();
+        await completionTask;
+        Assert.Throws<InvalidOperationException>(
+            delegate
+            {
+                autosaveQueue.RequestSave(lateWorkspace);
+            });
+        Assert.Same(
+            persistedWorkspace,
+            Assert.Single(store.StartedWorkspaces));
+    }
+
+    [Fact]
+    public async Task FailedCompletionReopensTheQueueForRetryAsync()
+    {
+        ControlledPlanningWorkspaceStore store = new ControlledPlanningWorkspaceStore();
+        ControlledSaveAttempt failedAttempt = new ControlledSaveAttempt();
+        ControlledSaveAttempt retryAttempt = new ControlledSaveAttempt();
+        failedAttempt.CompleteWithFailure(
+            new InvalidOperationException("Expected completion failure."));
+        retryAttempt.CompleteSuccessfully();
+        store.EnqueueSaveAttempt(failedAttempt);
+        store.EnqueueSaveAttempt(retryAttempt);
+        PlanningWorkspaceAutosaveQueue autosaveQueue =
+            new PlanningWorkspaceAutosaveQueue(store);
+        autosaveQueue.RequestSave(createWorkspace(new PlanName("실패 상태")));
+        await Assert.ThrowsAsync<PlanningWorkspaceAutosaveException>(
+            async delegate
+            {
+                await autosaveQueue.CompleteAsync(
+                    TestContext.Current.CancellationToken);
+            });
+
+        autosaveQueue.RequestSave(createWorkspace(new PlanName("재시도 상태")));
+        await autosaveQueue.CompleteAsync(TestContext.Current.CancellationToken);
+
+        Assert.IsType<PlanningWorkspaceAutosaveSavedState>(
+            autosaveQueue.CurrentStateOrNull);
+    }
+
     private static PlanningWorkspace createWorkspace(PlanName planName)
     {
         return PlanningWorkspaceTestFactory.CreateWorkspace(planName);

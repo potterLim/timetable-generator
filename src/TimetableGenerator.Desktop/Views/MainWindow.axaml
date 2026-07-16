@@ -3,10 +3,10 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:icons="using:FluentIcons.Avalonia"
-    xmlns:models="using:TimetableGenerator.Desktop.Presentation.Models"
+    xmlns:product="using:TimetableGenerator.Desktop.Product"
     xmlns:viewModels="using:TimetableGenerator.Desktop.Presentation.ViewModels"
     xmlns:views="using:TimetableGenerator.Desktop.Views"
-    x:DataType="viewModels:PlannerWorkspaceViewModel"
+    x:DataType="product:ProductShellViewModel"
     Width="1440"
     Height="900"
     MinWidth="900"
@@ -14,17 +14,29 @@
     Title="시간표"
     Icon="/Assets/AppIcon.png"
     WindowStartupLocation="CenterScreen"
-    AutomationProperties.Name="한동대학교 시간표 계획">
-  <Grid RowDefinitions="64,48,*">
-    <Border
-        Grid.Row="0"
-        Padding="28,0,22,0"
-        Background="{DynamicResource SurfaceBrush}"
-        BorderBrush="{DynamicResource BorderBrush}"
-        BorderThickness="0,0,0,1"
-        AutomationProperties.LandmarkType="Banner">
-      <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto" VerticalAlignment="Center">
-        <Grid Grid.Column="0" ColumnDefinitions="30,Auto" ColumnSpacing="14">
+    AutomationProperties.Name="{Binding AccessibleWindowName}">
+  <Grid Background="{DynamicResource WindowBackgroundBrush}">
+    <Grid IsEnabled="{Binding IsProductInteractionEnabled}">
+    <ContentControl
+        Content="{Binding WorkspaceOrNull}"
+        IsVisible="{Binding IsReady}">
+      <ContentControl.DataTemplates>
+        <DataTemplate DataType="viewModels:PlannerWorkspaceViewModel">
+          <views:ProductWorkspaceHostView />
+        </DataTemplate>
+      </ContentControl.DataTemplates>
+    </ContentControl>
+
+    <Grid
+        IsVisible="{Binding IsStartupVisible}"
+        RowDefinitions="64,*">
+      <Border
+          Grid.Row="0"
+          Padding="28,0"
+          Background="{DynamicResource SurfaceBrush}"
+          BorderBrush="{DynamicResource BorderBrush}"
+          BorderThickness="0,0,0,1">
+        <Grid ColumnDefinitions="30,Auto" ColumnSpacing="14" VerticalAlignment="Center">
           <Border
               Grid.Column="0"
               Width="30"
@@ -47,128 +59,151 @@
               FontWeight="SemiBold"
               Text="시간표" />
         </Grid>
+      </Border>
 
-        <Border
-            Grid.Column="1"
-            Width="1"
-            Height="24"
-            Margin="24,0"
-            Background="{DynamicResource BorderBrush}" />
+      <Border
+          Grid.Row="1"
+          Width="520"
+          MaxWidth="520"
+          Margin="28"
+          Padding="42"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center"
+          Background="{DynamicResource SurfaceBrush}"
+          BorderBrush="{DynamicResource BorderBrush}"
+          BorderThickness="1"
+          CornerRadius="12">
+        <Grid>
+          <StackPanel
+              IsVisible="{Binding IsLoading}"
+              Spacing="14"
+              AutomationProperties.LiveSetting="Polite">
+            <TextBlock
+                FontSize="24"
+                FontWeight="SemiBold"
+                Text="{Binding StatusTitle}"
+                TextAlignment="Center"
+                TextWrapping="Wrap" />
+            <TextBlock
+                Classes="secondary"
+                FontSize="14"
+                LineHeight="22"
+                Text="{Binding StatusMessage}"
+                TextAlignment="Center"
+                TextWrapping="Wrap" />
+            <ProgressBar
+                Margin="0,12,0,0"
+                Height="4"
+                IsIndeterminate="True"
+                AutomationProperties.Name="시간표 준비 진행 상태" />
+          </StackPanel>
 
-        <TextBlock
-            Grid.Column="2"
-            VerticalAlignment="Center"
-            FontSize="15"
-            FontWeight="SemiBold"
-            Text="한동대학교  ·  2026-2" />
-
-        <StackPanel
-            Grid.Column="3"
-            Margin="28,0,0,0"
-            Orientation="Horizontal"
-            Spacing="8"
-            VerticalAlignment="Center"
-            AutomationProperties.Name="자동 저장 상태"
-            AutomationProperties.LiveSetting="Polite">
-          <icons:FluentIcon
-              Width="18"
-              Height="18"
-              Icon="CheckmarkCircle"
-              IconVariant="Regular"
-              Foreground="{DynamicResource SuccessBrush}" />
-          <TextBlock
-              VerticalAlignment="Center"
-              Foreground="{DynamicResource SuccessBrush}"
-              Text="자동 저장됨" />
-        </StackPanel>
-
-        <Button
-            Grid.Column="4"
-            Classes="icon"
-            Margin="0,0,10,0"
-            AutomationProperties.Name="도움말"
-            ToolTip.Tip="도움말">
-          <icons:FluentIcon Icon="QuestionCircle" IconVariant="Regular" FontSize="21" />
-        </Button>
-
-        <Button
-            Grid.Column="5"
-            Classes="icon"
-            AutomationProperties.Name="설정"
-            ToolTip.Tip="설정">
-          <icons:FluentIcon Icon="Settings" IconVariant="Regular" FontSize="21" />
-        </Button>
-      </Grid>
-    </Border>
+          <StackPanel
+              IsVisible="{Binding HasError}"
+              HorizontalAlignment="Stretch"
+              Spacing="14"
+              AutomationProperties.LiveSetting="Assertive">
+            <Border
+                Width="48"
+                Height="48"
+                HorizontalAlignment="Center"
+                Background="{DynamicResource WarningSubtleBrush}"
+                CornerRadius="24">
+              <icons:FluentIcon
+                  Width="24"
+                  Height="24"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  Icon="ErrorCircle"
+                  IconVariant="Regular"
+                  Foreground="{DynamicResource WarningBrush}" />
+            </Border>
+            <TextBlock
+                FontSize="24"
+                FontWeight="SemiBold"
+                Text="{Binding StatusTitle}"
+                TextAlignment="Center"
+                TextWrapping="Wrap" />
+            <TextBlock
+                Classes="secondary"
+                FontSize="14"
+                LineHeight="22"
+                Text="{Binding StatusMessage}"
+                TextAlignment="Center"
+                TextWrapping="Wrap" />
+            <Button
+                Classes="accent"
+                Margin="0,12,0,0"
+                HorizontalAlignment="Center"
+                Command="{Binding RetryCommand}"
+                AutomationProperties.Name="과목 데이터 다시 불러오기">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <icons:FluentIcon Icon="ArrowClockwise" IconVariant="Regular" FontSize="18" />
+                <TextBlock VerticalAlignment="Center" Text="다시 시도" />
+              </StackPanel>
+            </Button>
+          </StackPanel>
+        </Grid>
+      </Border>
+    </Grid>
+    </Grid>
 
     <Border
-        Grid.Row="1"
-        Background="{DynamicResource SurfaceBrush}"
-        BorderBrush="{DynamicResource BorderBrush}"
-        BorderThickness="0,0,0,1"
-        AutomationProperties.LandmarkType="Navigation">
-      <Grid ColumnDefinitions="Auto,1,Auto" HorizontalAlignment="Left">
-        <TabStrip
-            Grid.Column="0"
-            Classes="plan-tabs"
-            ItemsSource="{Binding Plans}"
-            SelectedItem="{Binding ActivePlan, Mode=TwoWay}"
-            AutomationProperties.Name="계획 목록">
-          <TabStrip.ItemTemplate>
-            <DataTemplate x:DataType="models:PlanTabItem">
-              <TextBlock VerticalAlignment="Center" Text="{Binding DisplayName}" />
-            </DataTemplate>
-          </TabStrip.ItemTemplate>
-        </TabStrip>
-
-        <Border
-            Grid.Column="1"
-            Width="1"
-            Height="20"
-            VerticalAlignment="Center"
-            Background="{DynamicResource BorderBrush}" />
-
-        <Button
-            Grid.Column="2"
-            Classes="icon"
-            Margin="12,6"
-            Command="{Binding AddPlanCommand}"
-            AutomationProperties.Name="새 계획 추가"
-            ToolTip.Tip="새 계획 추가">
-          <icons:FluentIcon Icon="Add" IconVariant="Regular" FontSize="20" />
-        </Button>
-      </Grid>
+        ZIndex="10"
+        IsVisible="{Binding IsShutdownOverlayVisible}"
+        Background="{DynamicResource OverlayScrimBrush}"
+        AutomationProperties.LiveSetting="Assertive">
+      <Border
+          Width="440"
+          Padding="32"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center"
+          Background="{DynamicResource SurfaceBrush}"
+          BorderBrush="{DynamicResource BorderBrush}"
+          BorderThickness="1"
+          CornerRadius="12">
+        <StackPanel Spacing="14">
+          <ProgressBar
+              Height="4"
+              IsIndeterminate="True"
+              IsVisible="{Binding IsShutdownInProgress}" />
+          <Border
+              Width="44"
+              Height="44"
+              HorizontalAlignment="Center"
+              IsVisible="{Binding HasShutdownError}"
+              Background="{DynamicResource WarningSubtleBrush}"
+              CornerRadius="22">
+            <icons:FluentIcon
+                Width="22"
+                Height="22"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Icon="Warning"
+                IconVariant="Regular"
+                Foreground="{DynamicResource WarningBrush}" />
+          </Border>
+          <TextBlock
+              FontSize="21"
+              FontWeight="SemiBold"
+              Text="{Binding ShutdownTitle}"
+              TextAlignment="Center"
+              TextWrapping="Wrap" />
+          <TextBlock
+              Classes="secondary"
+              LineHeight="21"
+              Text="{Binding ShutdownMessage}"
+              TextAlignment="Center"
+              TextWrapping="Wrap" />
+          <Button
+              Classes="accent"
+              Margin="0,6,0,0"
+              HorizontalAlignment="Center"
+              IsVisible="{Binding HasShutdownError}"
+              Command="{Binding DismissShutdownErrorCommand}"
+              Content="계속 편집" />
+        </StackPanel>
+      </Border>
     </Border>
-
-    <SplitView
-        Grid.Row="2"
-        PanePlacement="Left"
-        DisplayMode="{Binding CoursePaneDisplayMode}"
-        IsPaneOpen="{Binding IsCoursePaneOpen, Mode=TwoWay}"
-        OpenPaneLength="{Binding CoursePaneWidth}"
-        PaneBackground="{DynamicResource SurfaceBrush}"
-        UseLightDismissOverlayMode="True">
-      <SplitView.Pane>
-        <views:CourseBrowserView />
-      </SplitView.Pane>
-
-      <SplitView.Content>
-        <SplitView
-            PanePlacement="Right"
-            DisplayMode="{Binding InspectorPaneDisplayMode}"
-            IsPaneOpen="{Binding IsInspectorPaneOpen, Mode=TwoWay}"
-            OpenPaneLength="{Binding InspectorPaneWidth}"
-            PaneBackground="{DynamicResource SurfaceBrush}"
-            UseLightDismissOverlayMode="True">
-          <SplitView.Pane>
-            <views:PlanInspectorView />
-          </SplitView.Pane>
-
-          <SplitView.Content>
-            <views:ScheduleWorkspaceView />
-          </SplitView.Content>
-        </SplitView>
-      </SplitView.Content>
-    </SplitView>
   </Grid>
 </Window>

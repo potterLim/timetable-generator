@@ -1,5 +1,6 @@
 <UserControl
     x:Class="TimetableGenerator.Desktop.Views.ScheduleWorkspaceView"
+    x:Name="WorkspaceRoot"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:icons="using:FluentIcons.Avalonia"
@@ -9,6 +10,14 @@
     Background="{DynamicResource WindowBackgroundBrush}"
     AutomationProperties.LandmarkType="Main"
     AutomationProperties.Name="추천 시간표">
+  <UserControl.Styles>
+    <Style Selector="TextBlock.export-status.success">
+      <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
+    </Style>
+    <Style Selector="TextBlock.export-status.error">
+      <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
+    </Style>
+  </UserControl.Styles>
   <Grid Margin="24,20,22,16" RowDefinitions="Auto,14,*,14,Auto">
     <Grid Grid.Row="0" ColumnDefinitions="*,Auto" RowDefinitions="Auto,10,Auto">
       <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="9">
@@ -23,7 +32,7 @@
             Icon="Info"
             IconVariant="Regular"
             Foreground="{DynamicResource TextSecondaryBrush}"
-            ToolTip.Tip="선호 조건을 반영해 정렬한 시간표입니다." />
+            ToolTip.Tip="선택한 과목에서 충돌 없는 분반 조합을 탐색합니다." />
       </StackPanel>
 
       <StackPanel
@@ -55,7 +64,7 @@
             VerticalAlignment="Center"
             Foreground="{DynamicResource AccentBrush}"
             FontWeight="SemiBold"
-            Text="공강 2일 · 오전 수업 없음" />
+            Text="{Binding RecommendationInsight}" />
       </StackPanel>
 
       <StackPanel
@@ -97,11 +106,12 @@
             x:Name="ExportScheduleButton"
             Classes="accent"
             Margin="4,0,0,0"
-            IsEnabled="False"
+            IsEnabled="{Binding HasScheduleEntries}"
+            Command="{Binding ExportCommand, ElementName=WorkspaceRoot}"
             AutomationProperties.AutomationId="ExportSchedule"
             AutomationProperties.Name="현재 시간표를 PNG로 저장"
-            AutomationProperties.HelpText="내보내기 서비스가 연결되면 사용할 수 있습니다."
-            ToolTip.Tip="내보내기 서비스 연결 후 사용할 수 있습니다.">
+            AutomationProperties.HelpText="현재 추천 시간표를 고해상도 PNG 파일로 저장합니다."
+            ToolTip.Tip="PNG로 저장">
           <StackPanel Orientation="Horizontal" Spacing="8">
             <icons:FluentIcon Icon="Save" IconVariant="Regular" FontSize="18" />
             <TextBlock VerticalAlignment="Center" Text="PNG로 저장" />
@@ -110,9 +120,119 @@
       </StackPanel>
     </Grid>
 
-    <views:ScheduleBoardView
-        Grid.Row="2"
-        DataContext="{Binding ActiveRecommendation}" />
+    <Grid Grid.Row="2">
+      <views:ScheduleBoardView
+          x:Name="ScheduleBoard"
+          DataContext="{Binding ActiveRecommendation}" />
+
+      <Border
+          Margin="1"
+          Padding="32"
+          IsVisible="{Binding IsScheduleEmpty}"
+          Background="{DynamicResource SurfaceBrush}"
+          CornerRadius="7">
+        <StackPanel
+            MaxWidth="430"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Spacing="10">
+          <Border
+              Width="48"
+              Height="48"
+              HorizontalAlignment="Center"
+              Background="{DynamicResource SubtleSurfaceBrush}"
+              CornerRadius="24">
+            <icons:FluentIcon
+                Width="23"
+                Height="23"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Icon="CalendarEmpty"
+                IconVariant="Regular"
+                Foreground="{DynamicResource TextSecondaryBrush}" />
+          </Border>
+          <TextBlock
+              Margin="0,4,0,0"
+              FontSize="19"
+              FontWeight="SemiBold"
+              Text="{Binding EmptyScheduleTitle}"
+              TextAlignment="Center"
+              TextWrapping="Wrap" />
+          <TextBlock
+              Classes="secondary"
+              LineHeight="21"
+              Text="{Binding EmptyScheduleMessage}"
+              TextAlignment="Center"
+          TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+
+      <Border
+          Margin="1"
+          Padding="32"
+          IsVisible="{Binding IsRecommendationCalculating}"
+          Background="{DynamicResource SurfaceBrush}"
+          CornerRadius="7"
+          AutomationProperties.LiveSetting="Polite">
+        <StackPanel
+            MaxWidth="430"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Spacing="14">
+          <ProgressBar
+              Width="180"
+              Height="4"
+              IsIndeterminate="True" />
+          <TextBlock
+              FontSize="18"
+              FontWeight="SemiBold"
+              Text="가능한 시간표를 계산하고 있어요"
+              TextAlignment="Center" />
+          <TextBlock
+              Classes="secondary"
+              Text="과목 수와 분반 조합에 따라 잠시 걸릴 수 있습니다. 앱의 다른 기능은 계속 사용할 수 있어요."
+              TextAlignment="Center"
+              TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+
+      <Border
+          Margin="1"
+          Padding="32"
+          IsVisible="{Binding HasRecommendationCalculationError}"
+          Background="{DynamicResource SurfaceBrush}"
+          CornerRadius="7"
+          AutomationProperties.LiveSetting="Assertive">
+        <StackPanel
+            MaxWidth="430"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Spacing="12">
+          <icons:FluentIcon
+              Width="28"
+              Height="28"
+              HorizontalAlignment="Center"
+              Icon="Warning"
+              IconVariant="Regular"
+              Foreground="{DynamicResource ErrorBrush}" />
+          <TextBlock
+              FontSize="18"
+              FontWeight="SemiBold"
+              Text="추천 시간표를 계산하지 못했어요"
+              TextAlignment="Center" />
+          <TextBlock
+              Classes="secondary"
+              Text="{Binding RecommendationCalculationError}"
+              TextAlignment="Center"
+              TextWrapping="Wrap" />
+          <Button
+              Classes="accent"
+              HorizontalAlignment="Center"
+              Command="{Binding RetryRecommendationCommand}"
+              Content="다시 계산" />
+        </StackPanel>
+      </Border>
+    </Grid>
 
     <StackPanel
         Grid.Row="4"
@@ -125,6 +245,11 @@
           Icon="Lightbulb"
           IconVariant="Regular"
           Foreground="{DynamicResource AccentBrush}" />
+      <TextBlock
+          x:Name="ExportStatusText"
+          Classes="caption export-status"
+          IsVisible="False"
+          AutomationProperties.LiveSetting="Polite" />
       <TextBlock
           Classes="caption"
           Text="원하는 과목을 추가하거나 제거해 더 많은 시간표를 추천받으세요." />

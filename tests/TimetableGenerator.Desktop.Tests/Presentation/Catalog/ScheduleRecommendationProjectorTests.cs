@@ -1,16 +1,14 @@
 using System;
-
 using TimetableGenerator.CatalogJson;
 using TimetableGenerator.Desktop.Presentation.Catalog;
 using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Scheduling;
+using Xunit;
 using ApplicationScheduleRecommendation =
     TimetableGenerator.Application.Scheduling.ScheduleRecommendation;
 using PresentationScheduleRecommendation =
     TimetableGenerator.Desktop.Presentation.Models.ScheduleRecommendation;
-
-using Xunit;
 
 namespace TimetableGenerator.Desktop.Tests.Presentation.Catalog;
 

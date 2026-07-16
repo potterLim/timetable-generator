@@ -1,20 +1,31 @@
 using System;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 
-using TimetableGenerator.Desktop.Presentation;
+using TimetableGenerator.Desktop.Presentation.Catalog;
 using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Planning;
 
 namespace TimetableGenerator.Desktop.Presentation.Models;
 
-internal sealed class PlanTabItem : ObservableObject
+internal sealed class PlanTabItem
 {
-    private static readonly CourseCredits CREDIT_LIMIT = new CourseCredits(19m);
+    public PlanningPlan Plan { get; }
 
-    public PlanId PlanId { get; }
+    public PlanId PlanId
+    {
+        get
+        {
+            return Plan.Id;
+        }
+    }
 
-    public PlanName Name { get; }
+    public PlanName Name
+    {
+        get
+        {
+            return Plan.Name;
+        }
+    }
 
     public string DisplayName
     {
@@ -32,7 +43,7 @@ internal sealed class PlanTabItem : ObservableObject
     {
         get
         {
-            return ScheduledCourses.Count;
+            return ScheduledCourses.Count + UnconfirmedCourses.Count;
         }
     }
 
@@ -40,23 +51,7 @@ internal sealed class PlanTabItem : ObservableObject
     {
         get
         {
-            return "수강 과목 (" + SelectedCourseCount + ")";
-        }
-    }
-
-    public decimal TotalCredits
-    {
-        get
-        {
-            return findTotalCredits().Value;
-        }
-    }
-
-    public decimal CreditLimit
-    {
-        get
-        {
-            return CREDIT_LIMIT.Value;
+            return "시간표 과목 (" + ScheduledCourses.Count + ")";
         }
     }
 
@@ -65,7 +60,7 @@ internal sealed class PlanTabItem : ObservableObject
         get
         {
             CourseCredits totalCredits = findTotalCredits();
-            return totalCredits + " / " + CREDIT_LIMIT + "학점";
+            return totalCredits + "학점 · " + SelectedCourseCount + "과목";
         }
     }
 
@@ -77,78 +72,73 @@ internal sealed class PlanTabItem : ObservableObject
         }
     }
 
-    public PlanTabItem(
-        PlanId planId,
-        PlanName name,
-        ObservableCollection<PlanCourseItem> scheduledCourses,
-        ObservableCollection<PlanCourseItem> unconfirmedCourses)
+    public bool HasUnconfirmedCourses
     {
-        if (planId.IsValid == false)
+        get
         {
-            throw new ArgumentException("Plan IDs must be valid.", nameof(planId));
+            return UnconfirmedCourses.Count > 0;
+        }
+    }
+
+    public PlanTabItem(
+        PlanningPlan plan,
+        CourseCatalogProjection catalogProjection)
+    {
+        if (plan == null)
+        {
+            throw new ArgumentNullException(nameof(plan));
         }
 
-        ArgumentNullException.ThrowIfNull(name);
-        ArgumentNullException.ThrowIfNull(scheduledCourses);
-        ArgumentNullException.ThrowIfNull(unconfirmedCourses);
+        if (catalogProjection == null)
+        {
+            throw new ArgumentNullException(nameof(catalogProjection));
+        }
 
-        PlanId = planId;
-        Name = name;
-        ScheduledCourses = scheduledCourses;
-        UnconfirmedCourses = unconfirmedCourses;
+        Plan = plan;
+        ScheduledCourses = new ObservableCollection<PlanCourseItem>();
+        UnconfirmedCourses = new ObservableCollection<PlanCourseItem>();
+        foreach (ScheduledCourseChoice choice in plan.ScheduledCourseChoices)
+        {
+            CatalogCourseProjection course = catalogProjection.FindCourseById(
+                choice.CourseId);
+            ScheduledCourses.Add(PlanCourseItem.CreateScheduled(course, choice));
+        }
 
-        ScheduledCourses.CollectionChanged += onCourseCollectionChanged;
-        UnconfirmedCourses.CollectionChanged += onCourseCollectionChanged;
+        foreach (UnscheduledOfferingSelection selection
+            in plan.UnscheduledOfferingSelections)
+        {
+            CatalogCourseProjection course = catalogProjection.FindCourseById(
+                selection.CourseId);
+            UnconfirmedCourses.Add(
+                PlanCourseItem.CreateTimeNotProvided(course, selection));
+        }
     }
 
     public bool ContainsCourse(CourseId courseId)
     {
-        return findCourseOrNull(ScheduledCourses, courseId) != null ||
-            findCourseOrNull(UnconfirmedCourses, courseId) != null;
-    }
-
-    public void AddCourse(PlanCourseItem course)
-    {
-        ArgumentNullException.ThrowIfNull(course);
-        if (ContainsCourse(course.CourseId))
+        if (courseId == null)
         {
-            return;
+            throw new ArgumentNullException(nameof(courseId));
         }
 
-        if (course.HasConfirmedSchedule)
+        foreach (ScheduledCourseChoice choice in Plan.ScheduledCourseChoices)
         {
-            ScheduledCourses.Add(course);
-        }
-        else
-        {
-            UnconfirmedCourses.Add(course);
-        }
-    }
-
-    public void RemoveCourse(PlanCourseItem course)
-    {
-        ArgumentNullException.ThrowIfNull(course);
-        if (ScheduledCourses.Remove(course))
-        {
-            return;
-        }
-
-        UnconfirmedCourses.Remove(course);
-    }
-
-    private static PlanCourseItem? findCourseOrNull(
-        ObservableCollection<PlanCourseItem> courses,
-        CourseId courseId)
-    {
-        foreach (PlanCourseItem course in courses)
-        {
-            if (course.CourseId == courseId)
+            if (choice.CourseId == courseId)
             {
-                return course;
+                return true;
             }
         }
 
-        return null;
+        foreach (UnscheduledOfferingSelection selection
+            in Plan.UnscheduledOfferingSelections)
+        {
+            if (selection.CourseId == courseId)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private CourseCredits findTotalCredits()
@@ -165,16 +155,5 @@ internal sealed class PlanTabItem : ObservableObject
         }
 
         return new CourseCredits(totalCreditValue);
-    }
-
-    private void onCourseCollectionChanged(
-        object? senderOrNull,
-        NotifyCollectionChangedEventArgs eventArgs)
-    {
-        raisePropertyChanged(nameof(SelectedCourseCount));
-        raisePropertyChanged(nameof(ScheduledCourseHeading));
-        raisePropertyChanged(nameof(TotalCredits));
-        raisePropertyChanged(nameof(CreditSummary));
-        raisePropertyChanged(nameof(UnconfirmedHeading));
     }
 }

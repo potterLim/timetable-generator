@@ -33,10 +33,13 @@ public sealed class CourseCatalogProjectorTests
         CatalogCourseProjection seminarCourse = projection.FindCourseById(
             new CourseId("course-seminar"));
         Assert.Empty(seminarCourse.ScheduledOfferingIds);
-        Assert.Single(seminarCourse.TimeNotProvidedOfferingIds);
+        Assert.Equal(2, seminarCourse.TimeNotProvidedOfferingIds.Count);
         Assert.Equal(
             new OfferingId("offering-seminar-unscheduled"),
             seminarCourse.TimeNotProvidedOfferingIds[0]);
+        Assert.Equal(
+            new OfferingId("offering-seminar-unscheduled-02"),
+            seminarCourse.TimeNotProvidedOfferingIds[1]);
     }
 
     [Fact]

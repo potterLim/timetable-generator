@@ -112,6 +112,11 @@ internal static class CatalogProjectionTestFixture
             seminarCourse.Id,
             new CourseSectionCode("01"),
             MeetingSchedule.NotProvided);
+        CatalogOffering secondSeminarOffering = new CatalogOffering(
+            new OfferingId("offering-seminar-unscheduled-02"),
+            seminarCourse.Id,
+            new CourseSectionCode("02"),
+            MeetingSchedule.NotProvided);
 
         IReadOnlyList<CatalogCourse> courses = createCourseOrder(
             programmingCourse,
@@ -121,6 +126,7 @@ internal static class CatalogProjectionTestFixture
             primaryOffering,
             alternativeOffering,
             seminarOffering,
+            secondSeminarOffering,
             courseOrder);
         CourseCatalog catalog = new CourseCatalog(
             new CatalogId("handong-global-university:2026-2:r0001"),
@@ -135,6 +141,7 @@ internal static class CatalogProjectionTestFixture
         metadata.Add(createPrimaryOfferingMetadata(primaryOffering.Id));
         metadata.Add(createAlternativeOfferingMetadata(alternativeOffering.Id));
         metadata.Add(createSeminarOfferingMetadata(seminarOffering.Id));
+        metadata.Add(createSecondSeminarOfferingMetadata(secondSeminarOffering.Id));
 
         InstitutionMetadata institution = new InstitutionMetadata(
             institutionId,
@@ -152,12 +159,12 @@ internal static class CatalogProjectionTestFixture
         CatalogConverterMetadata converter = new CatalogConverterMetadata(
             "catalog-converter",
             "1.0.0");
-        CatalogDocumentCounts counts = new CatalogDocumentCounts(2, 3, 2, 1);
+        CatalogDocumentCounts counts = new CatalogDocumentCounts(2, 4, 2, 2);
         CatalogDataQualityMetadata dataQuality = new CatalogDataQualityMetadata(
             EScheduleNormalizationSource.KoreanPeriodText,
             0,
-            2,
             3,
+            4,
             1,
             1,
             0,
@@ -210,6 +217,7 @@ internal static class CatalogProjectionTestFixture
         CatalogOffering primaryOffering,
         CatalogOffering alternativeOffering,
         CatalogOffering seminarOffering,
+        CatalogOffering secondSeminarOffering,
         ECatalogCourseOrder courseOrder)
     {
         if (courseOrder == ECatalogCourseOrder.Reversed)
@@ -217,6 +225,7 @@ internal static class CatalogProjectionTestFixture
             return new CatalogOffering[]
             {
                 seminarOffering,
+                secondSeminarOffering,
                 alternativeOffering,
                 primaryOffering,
             };
@@ -227,6 +236,7 @@ internal static class CatalogProjectionTestFixture
             primaryOffering,
             alternativeOffering,
             seminarOffering,
+            secondSeminarOffering,
         };
     }
 
@@ -280,6 +290,27 @@ internal static class CatalogProjectionTestFixture
             instruction,
             logistics,
             new SourceRecordNumber(3));
+    }
+
+    private static CatalogOfferingMetadata createSecondSeminarOfferingMetadata(
+        OfferingId offeringId)
+    {
+        CatalogOfferingClassificationMetadata classification =
+            CatalogOfferingClassificationMetadata.CreateWithoutGeneralEducationCategory(
+                ERequirementType.GeneralElective,
+                new OfferingUnitName("ICT창업학부"),
+                EInstructionSession.Daytime);
+        CatalogOfferingInstructionMetadata instruction = createInstruction(
+            InstructorAssignmentMetadata.NotProvided);
+        CatalogOfferingLogisticsMetadata logistics =
+            CatalogOfferingLogisticsMetadata.CreateWithoutProvidedSchedule(
+                LocationAssignmentMetadata.NotProvided);
+        return createMetadata(
+            offeringId,
+            classification,
+            instruction,
+            logistics,
+            new SourceRecordNumber(4));
     }
 
     private static CatalogOfferingMetadata createScheduledMetadata(
