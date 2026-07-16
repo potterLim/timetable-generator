@@ -404,27 +404,34 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
             return;
         }
 
-        try
+        foreach (WorkspaceGenerationFile generationFile in generationFiles)
         {
-            await readDocumentAsync(
-                generationFiles[0].Path,
-                cancellationToken).ConfigureAwait(false);
-        }
-        catch (UnsupportedWorkspaceSchemaVersionException exception)
-        {
-            throw new PlanningWorkspaceUpgradeRequiredException(
-                exception.SchemaVersion,
-                exception);
-        }
-        catch (WorkspaceDocumentSizeException exception)
-        {
-            throw new WorkspacePersistenceException(
-                "The latest workspace generation is too large to replace safely.",
-                exception);
-        }
-        catch (WorkspaceDocumentException)
-        {
-            // A malformed current-generation document cannot contain newer valid data.
+            try
+            {
+                PlanningWorkspaceDocument document = await readDocumentAsync(
+                    generationFile.Path,
+                    cancellationToken).ConfigureAwait(false);
+                if (document.Generation == generationFile.Generation)
+                {
+                    return;
+                }
+            }
+            catch (UnsupportedWorkspaceSchemaVersionException exception)
+            {
+                throw new PlanningWorkspaceUpgradeRequiredException(
+                    exception.SchemaVersion,
+                    exception);
+            }
+            catch (WorkspaceDocumentSizeException exception)
+            {
+                throw new WorkspacePersistenceException(
+                    "A newer workspace generation is too large to replace safely.",
+                    exception);
+            }
+            catch (WorkspaceDocumentException)
+            {
+                // Corrupt generations are skipped so older version markers remain visible.
+            }
         }
     }
 

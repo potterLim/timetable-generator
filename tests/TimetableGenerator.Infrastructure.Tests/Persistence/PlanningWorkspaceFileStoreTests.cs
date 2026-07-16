@@ -254,6 +254,56 @@ public sealed class PlanningWorkspaceFileStoreTests
     }
 
     [TestMethod]
+    public async Task CorruptNewestGenerationCannotHideAnOlderFutureSchemaFromSaveAsync()
+    {
+        string testDirectoryPath = createTestDirectoryPath();
+        try
+        {
+            PlanningWorkspaceFileStore store = createStore(testDirectoryPath);
+            await store.SaveAsync(createWorkspace("이전 시간표"), CancellationToken.None);
+            await store.SaveAsync(createWorkspace("미래 시간표"), CancellationToken.None);
+            string futurePath = getGenerationPath(testDirectoryPath, 2);
+            string futureContent = await File.ReadAllTextAsync(
+                futurePath,
+                CancellationToken.None);
+            futureContent = futureContent.Replace(
+                "\"schemaVersion\": 1,",
+                "\"schemaVersion\": 2,",
+                StringComparison.Ordinal);
+            await File.WriteAllTextAsync(
+                futurePath,
+                futureContent,
+                new UTF8Encoding(false),
+                CancellationToken.None);
+            await File.WriteAllTextAsync(
+                getGenerationPath(testDirectoryPath, 3),
+                "{ corrupt newest generation",
+                CancellationToken.None);
+            byte[][] contentBeforeSave = await readGenerationContentsAsync(
+                testDirectoryPath);
+
+            await Assert.ThrowsExactlyAsync<PlanningWorkspaceUpgradeRequiredException>(
+                () => store.LoadAsync(CancellationToken.None));
+            await Assert.ThrowsExactlyAsync<PlanningWorkspaceUpgradeRequiredException>(
+                () => store.SaveAsync(
+                    createWorkspace("덮어쓰면 안 되는 시간표"),
+                    CancellationToken.None));
+            byte[][] contentAfterSave = await readGenerationContentsAsync(
+                testDirectoryPath);
+
+            Assert.HasCount(contentBeforeSave.Length, contentAfterSave);
+            for (int index = 0; index < contentBeforeSave.Length; index++)
+            {
+                CollectionAssert.AreEqual(contentBeforeSave[index], contentAfterSave[index]);
+            }
+        }
+        finally
+        {
+            deleteTestDirectory(testDirectoryPath);
+        }
+    }
+
+    [TestMethod]
     public async Task InvalidTermFallsBackThroughTheTypedDocumentErrorPathAsync()
     {
         string testDirectoryPath = createTestDirectoryPath();
