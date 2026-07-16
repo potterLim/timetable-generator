@@ -72,8 +72,17 @@ public sealed class PersonalSchedule
                     nameof(timeRanges));
             }
 
+            ensureSupportedWeekday(timeRange.Day, timeRanges);
+
             foreach (WeeklyTimeRange copiedTimeRange in copiedTimeRanges)
             {
+                if (copiedTimeRange.TimeRange != timeRange.TimeRange)
+                {
+                    throw new ArgumentException(
+                        "One personal schedule must use the same time on every day.",
+                        nameof(timeRanges));
+                }
+
                 if (ScheduleConflictDetector.HasConflict(
                     copiedTimeRange,
                     timeRange))
@@ -96,6 +105,25 @@ public sealed class PersonalSchedule
 
         copiedTimeRanges.Sort(compareTimeRanges);
         return copiedTimeRanges.AsReadOnly();
+    }
+
+    private static void ensureSupportedWeekday(
+        EDay day,
+        IEnumerable<WeeklyTimeRange> timeRanges)
+    {
+        switch (day)
+        {
+            case EDay.Monday:
+            case EDay.Tuesday:
+            case EDay.Wednesday:
+            case EDay.Thursday:
+            case EDay.Friday:
+                return;
+            default:
+                throw new ArgumentException(
+                    "Personal schedules support weekdays only.",
+                    nameof(timeRanges));
+        }
     }
 
     private static int compareTimeRanges(

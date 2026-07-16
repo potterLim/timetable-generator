@@ -108,9 +108,31 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         mInspectorPaneDisplayMode = SplitViewDisplayMode.Inline;
         mCoursePaneWidth = EXTRA_WIDE_COURSE_PANE_WIDTH;
         mInspectorPaneWidth = EXTRA_WIDE_INSPECTOR_PANE_WIDTH;
+        mPersonalScheduleTitleDraft = string.Empty;
+        mPersonalScheduleSectionDraft = string.Empty;
+        mPersonalScheduleInstructorDraft = string.Empty;
+        mPersonalScheduleLocationDraft = string.Empty;
+        mPersonalScheduleValidationMessage = string.Empty;
+        mPersonalScheduleStartTime = new TimeSpan(12, 0, 0);
+        mPersonalScheduleEndTime = new TimeSpan(13, 0, 0);
 
         AddCourseCommand = new ParameterizedCommand<CourseSearchItem>(addCourse);
         RemoveCourseCommand = new ParameterizedCommand<PlanCourseItem>(removeCourse);
+        BeginAddPersonalScheduleCommand = new DelegateCommand(
+            beginAddPersonalSchedule);
+        BeginEditPersonalScheduleCommand =
+            new ParameterizedCommand<PersonalScheduleItem>(
+                beginEditPersonalSchedule);
+        SavePersonalScheduleCommand = new DelegateCommand(savePersonalSchedule);
+        CancelPersonalScheduleEditCommand = new DelegateCommand(
+            cancelPersonalScheduleEdit);
+        BeginDeletePersonalScheduleCommand =
+            new ParameterizedCommand<PersonalScheduleItem>(
+                beginDeletePersonalSchedule);
+        ConfirmDeletePersonalScheduleCommand = new DelegateCommand(
+            confirmDeletePersonalSchedule);
+        CancelDeletePersonalScheduleCommand = new DelegateCommand(
+            cancelDeletePersonalSchedule);
         AddPlanCommand = new DelegateCommand(addPlan);
         mPreviousRecommendationCommand = new DelegateCommand(
             selectPreviousRecommendation,

@@ -16,9 +16,14 @@ internal sealed partial class ScheduleBoardView : UserControl
 {
     private const int DAY_COUNT = 5;
     private const int MINIMUM_VISIBLE_PERIOD_COUNT = 6;
+    private const int TIME_INCREMENT_MINUTES = 5;
+    private const int HALF_HOUR_MINUTES = 30;
+    private const int DEFAULT_AXIS_START_MINUTE = 510;
+    private const int DEFAULT_AXIS_END_MINUTE = 1050;
+    private const int MINUTES_PER_DAY = 1440;
     private const double PERIOD_COLUMN_WIDTH = 72.0;
     private const double HEADER_ROW_HEIGHT = 42.0;
-    private const double MINIMUM_PERIOD_ROW_HEIGHT = 96.0;
+    private const double TIME_INCREMENT_ROW_HEIGHT = 5.333333333333333;
 
     private static readonly string[] DAY_NAMES =
     {
@@ -29,21 +34,11 @@ internal sealed partial class ScheduleBoardView : UserControl
         "금",
     };
 
-    private static readonly string[] PERIOD_TIME_RANGES =
-    {
-        "08:30–09:45",
-        "10:00–11:15",
-        "11:30–12:45",
-        "13:00–14:15",
-        "14:30–15:45",
-        "16:00–17:15",
-        "17:30–18:45",
-        "19:00–20:15",
-        "20:30–21:45",
-        "22:00–23:15",
-    };
-
     private readonly Grid mBoardGrid;
+
+    private int mAxisStartMinute;
+
+    private int mAxisEndMinute;
 
     internal int RenderedPeriodCount { get; private set; }
 
@@ -65,10 +60,20 @@ internal sealed partial class ScheduleBoardView : UserControl
         }
 
         mBoardGrid = boardGridOrNull;
+        mAxisStartMinute = DEFAULT_AXIS_START_MINUTE;
+        mAxisEndMinute = DEFAULT_AXIS_END_MINUTE;
         RenderedPeriodCount = MINIMUM_VISIBLE_PERIOD_COUNT;
         DataContextChanged += onDataContextChanged;
         AttachedToVisualTree += onAttachedToVisualTree;
         ActualThemeVariantChanged += onActualThemeVariantChanged;
+    }
+
+    private int AxisIncrementCount
+    {
+        get
+        {
+            return (mAxisEndMinute - mAxisStartMinute) / TIME_INCREMENT_MINUTES;
+        }
     }
 
     private void onDataContextChanged(object? senderOrNull, EventArgs eventArgs)
@@ -103,16 +108,17 @@ internal sealed partial class ScheduleBoardView : UserControl
     private void rebuildBoard()
     {
         ScheduleRecommendation? recommendationOrNull = DataContext as ScheduleRecommendation;
+        findTimeAxis(recommendationOrNull);
         RenderedPeriodCount = findRenderedPeriodCount(recommendationOrNull);
 
         mBoardGrid.Children.Clear();
         mBoardGrid.ColumnDefinitions.Clear();
         mBoardGrid.RowDefinitions.Clear();
         mBoardGrid.MinHeight = HEADER_ROW_HEIGHT
-            + (RenderedPeriodCount * MINIMUM_PERIOD_ROW_HEIGHT);
+            + (AxisIncrementCount * TIME_INCREMENT_ROW_HEIGHT);
 
         addGridDefinitions();
-        addBackgroundCells();
+        addGridGuides();
         addDayHeaders();
         addPeriodHeaders();
 
@@ -144,32 +150,55 @@ internal sealed partial class ScheduleBoardView : UserControl
         headerRow.Height = new GridLength(HEADER_ROW_HEIGHT, GridUnitType.Pixel);
         mBoardGrid.RowDefinitions.Add(headerRow);
 
-        for (int periodIndex = 0; periodIndex < RenderedPeriodCount; ++periodIndex)
+        for (int incrementIndex = 0;
+            incrementIndex < AxisIncrementCount;
+            ++incrementIndex)
         {
-            RowDefinition periodRow = new RowDefinition();
-            periodRow.Height = GridLength.Auto;
-            periodRow.MinHeight = MINIMUM_PERIOD_ROW_HEIGHT;
-            mBoardGrid.RowDefinitions.Add(periodRow);
+            RowDefinition timeRow = new RowDefinition();
+            timeRow.Height = new GridLength(
+                TIME_INCREMENT_ROW_HEIGHT,
+                GridUnitType.Pixel);
+            mBoardGrid.RowDefinitions.Add(timeRow);
         }
     }
 
-    private void addBackgroundCells()
+    private void addGridGuides()
     {
-        for (int rowIndex = 0; rowIndex <= RenderedPeriodCount; ++rowIndex)
+        for (int columnIndex = 0; columnIndex <= DAY_COUNT; ++columnIndex)
         {
-            for (int columnIndex = 0; columnIndex <= DAY_COUNT; ++columnIndex)
-            {
-                Border cellBorder = new Border();
-                cellBorder.BorderBrush = findBrush("BorderBrush");
-                cellBorder.BorderThickness = new Thickness(
-                    0.0,
-                    0.0,
-                    columnIndex < DAY_COUNT ? 1.0 : 0.0,
-                    rowIndex < RenderedPeriodCount ? 1.0 : 0.0);
-                Grid.SetRow(cellBorder, rowIndex);
-                Grid.SetColumn(cellBorder, columnIndex);
-                mBoardGrid.Children.Add(cellBorder);
-            }
+            Border columnGuide = new Border();
+            columnGuide.BorderBrush = findBrush("BorderBrush");
+            columnGuide.BorderThickness = new Thickness(
+                0.0,
+                0.0,
+                columnIndex < DAY_COUNT ? 1.0 : 0.0,
+                0.0);
+            Grid.SetRow(columnGuide, 0);
+            Grid.SetRowSpan(columnGuide, AxisIncrementCount + 1);
+            Grid.SetColumn(columnGuide, columnIndex);
+            mBoardGrid.Children.Add(columnGuide);
+        }
+
+        Border headerGuide = new Border();
+        headerGuide.BorderBrush = findBrush("BorderBrush");
+        headerGuide.BorderThickness = new Thickness(0.0, 0.0, 0.0, 1.0);
+        Grid.SetRow(headerGuide, 0);
+        Grid.SetColumnSpan(headerGuide, DAY_COUNT + 1);
+        mBoardGrid.Children.Add(headerGuide);
+
+        int firstGuideMinute = roundUp(mAxisStartMinute, HALF_HOUR_MINUTES);
+        for (int guideMinute = firstGuideMinute;
+            guideMinute < mAxisEndMinute;
+            guideMinute += HALF_HOUR_MINUTES)
+        {
+            int rowIndex = 1 + getRowOffset(guideMinute);
+            Border timeGuide = new Border();
+            timeGuide.BorderBrush = findBrush("BorderBrush");
+            timeGuide.BorderThickness = new Thickness(0.0, 1.0, 0.0, 0.0);
+            timeGuide.Opacity = guideMinute % 60 == 0 ? 0.72 : 0.38;
+            Grid.SetRow(timeGuide, rowIndex);
+            Grid.SetColumnSpan(timeGuide, DAY_COUNT + 1);
+            mBoardGrid.Children.Add(timeGuide);
         }
     }
 
@@ -191,30 +220,60 @@ internal sealed partial class ScheduleBoardView : UserControl
 
     private void addPeriodHeaders()
     {
-        for (int periodIndex = 0; periodIndex < RenderedPeriodCount; ++periodIndex)
+        for (int periodValue = 1; periodValue <= 10; ++periodValue)
         {
-            StackPanel periodHeader = new StackPanel();
-            periodHeader.Spacing = 4.0;
+            AcademicPeriod period = new AcademicPeriod(periodValue);
+            DailyTimeRange timeRange = AcademicPeriodTimeTable.GetTimeRange(period);
+            int startMinute = timeRange.Start.MinutesFromMidnight;
+            int endMinute = timeRange.End.MinutesFromMidnight;
+            if (startMinute < mAxisStartMinute || startMinute >= mAxisEndMinute)
+            {
+                continue;
+            }
+
+            int visibleEndMinute = Math.Min(endMinute, mAxisEndMinute);
+            TextBlock periodHeader = new TextBlock();
+            periodHeader.Text = periodValue + "교시\n" + timeRange.Start;
+            periodHeader.FontSize = 11.0;
+            periodHeader.FontWeight = FontWeight.SemiBold;
+            periodHeader.Foreground = findBrush("TextSecondaryBrush");
+            periodHeader.TextAlignment = TextAlignment.Center;
             periodHeader.HorizontalAlignment = HorizontalAlignment.Center;
-            periodHeader.VerticalAlignment = VerticalAlignment.Center;
-
-            TextBlock periodName = new TextBlock();
-            periodName.Text = (periodIndex + 1) + "교시";
-            periodName.FontWeight = FontWeight.SemiBold;
-            periodName.HorizontalAlignment = HorizontalAlignment.Center;
-            periodHeader.Children.Add(periodName);
-
-            TextBlock timeRange = new TextBlock();
-            timeRange.Text = PERIOD_TIME_RANGES[periodIndex];
-            timeRange.FontSize = 11.0;
-            timeRange.Foreground = findBrush("TextSecondaryBrush");
-            timeRange.HorizontalAlignment = HorizontalAlignment.Center;
-            periodHeader.Children.Add(timeRange);
-
-            Grid.SetRow(periodHeader, periodIndex + 1);
+            periodHeader.VerticalAlignment = VerticalAlignment.Top;
+            periodHeader.Margin = new Thickness(0.0, 7.0, 0.0, 0.0);
+            Grid.SetRow(periodHeader, 1 + getRowOffset(startMinute));
+            Grid.SetRowSpan(
+                periodHeader,
+                Math.Max(
+                    1,
+                    getRowOffsetCeiling(visibleEndMinute)
+                    - getRowOffset(startMinute)));
             Grid.SetColumn(periodHeader, 0);
             mBoardGrid.Children.Add(periodHeader);
         }
+    }
+
+    private void findTimeAxis(ScheduleRecommendation? recommendationOrNull)
+    {
+        int earliestMinute = DEFAULT_AXIS_START_MINUTE;
+        int latestMinute = DEFAULT_AXIS_END_MINUTE;
+        if (recommendationOrNull != null)
+        {
+            foreach (ScheduleEntry entry in recommendationOrNull.Entries)
+            {
+                earliestMinute = Math.Min(
+                    earliestMinute,
+                    entry.TimeRange.Start.MinutesFromMidnight);
+                latestMinute = Math.Max(
+                    latestMinute,
+                    entry.TimeRange.End.MinutesFromMidnight);
+            }
+        }
+
+        mAxisStartMinute = roundDown(earliestMinute, HALF_HOUR_MINUTES);
+        mAxisEndMinute = roundUp(latestMinute, HALF_HOUR_MINUTES);
+        mAxisStartMinute = Math.Max(0, mAxisStartMinute);
+        mAxisEndMinute = Math.Min(MINUTES_PER_DAY, mAxisEndMinute);
     }
 
     private static int findRenderedPeriodCount(
@@ -228,13 +287,36 @@ internal sealed partial class ScheduleBoardView : UserControl
 
         foreach (ScheduleEntry entry in recommendationOrNull.Entries)
         {
-            if (entry.Period.Value > renderedPeriodCount)
+            CourseScheduleEntry? courseEntryOrNull = entry as CourseScheduleEntry;
+            if (courseEntryOrNull != null
+                && courseEntryOrNull.Period.Value > renderedPeriodCount)
             {
-                renderedPeriodCount = entry.Period.Value;
+                renderedPeriodCount = courseEntryOrNull.Period.Value;
             }
         }
 
         return renderedPeriodCount;
+    }
+
+    private int getRowOffset(int minuteOfDay)
+    {
+        return (minuteOfDay - mAxisStartMinute) / TIME_INCREMENT_MINUTES;
+    }
+
+    private int getRowOffsetCeiling(int minuteOfDay)
+    {
+        int minuteOffset = minuteOfDay - mAxisStartMinute;
+        return (minuteOffset + TIME_INCREMENT_MINUTES - 1) / TIME_INCREMENT_MINUTES;
+    }
+
+    private static int roundDown(int value, int increment)
+    {
+        return (value / increment) * increment;
+    }
+
+    private static int roundUp(int value, int increment)
+    {
+        return ((value + increment - 1) / increment) * increment;
     }
 
     private IBrush findBrush(string resourceKey)

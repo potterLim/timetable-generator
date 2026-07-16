@@ -26,7 +26,10 @@ public sealed class ScheduleRecommendationProjectorTests
             ScheduleRecommendationProjector.Project(recommendation, catalogProjection);
 
         Assert.Equal(2, projectedRecommendation.Entries.Count);
-        ScheduleEntry mondayEntry = projectedRecommendation.Entries[0];
+        CourseScheduleEntry? mondayEntryOrNull =
+            projectedRecommendation.Entries[0] as CourseScheduleEntry;
+        Assert.NotNull(mondayEntryOrNull);
+        CourseScheduleEntry mondayEntry = mondayEntryOrNull;
         Assert.Equal("CSE10001", mondayEntry.Code);
         Assert.Equal("프로그래밍 I", mondayEntry.Name);
         Assert.Equal("홍길동 외 1명", mondayEntry.InstructorDisplayText);
@@ -38,7 +41,10 @@ public sealed class ScheduleRecommendationProjectorTests
             catalogProjection.FindCourseById(new CourseId("course-programming")).Accent,
             mondayEntry.Accent);
 
-        ScheduleEntry wednesdayEntry = projectedRecommendation.Entries[1];
+        CourseScheduleEntry? wednesdayEntryOrNull =
+            projectedRecommendation.Entries[1] as CourseScheduleEntry;
+        Assert.NotNull(wednesdayEntryOrNull);
+        CourseScheduleEntry wednesdayEntry = wednesdayEntryOrNull;
         Assert.Equal(EDay.Wednesday, wednesdayEntry.Day);
         Assert.Equal(new AcademicPeriod(2), wednesdayEntry.Period);
     }

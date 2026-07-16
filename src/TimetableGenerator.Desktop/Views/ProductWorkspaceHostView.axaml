@@ -243,5 +243,73 @@
         </Grid>
       </Border>
     </Border>
+
+    <Border
+        x:Name="PersonalScheduleEditorOverlay"
+        ZIndex="13"
+        IsVisible="{Binding IsPersonalScheduleOverlayVisible}"
+        Background="{DynamicResource OverlayScrimBrush}"
+        AutomationProperties.LiveSetting="Assertive">
+      <Border
+          x:Name="PersonalScheduleEditorDialog"
+          Width="560"
+          MaxWidth="560"
+          MaxHeight="760"
+          Margin="16"
+          Padding="28"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center"
+          Background="{DynamicResource ElevatedSurfaceBrush}"
+          BorderBrush="{DynamicResource BorderBrush}"
+          BorderThickness="1"
+          BoxShadow="0 18 48 0 #33000000"
+          CornerRadius="12">
+        <Grid>
+          <views:PersonalScheduleEditorView
+              IsVisible="{Binding IsPersonalScheduleEditorVisible}" />
+
+          <StackPanel
+              IsVisible="{Binding IsDeletePersonalScheduleConfirmationVisible}"
+              Spacing="14"
+              AutomationProperties.Name="개인 일정 삭제 확인">
+            <Border
+                Width="44"
+                Height="44"
+                HorizontalAlignment="Left"
+                Background="{DynamicResource ErrorSubtleBrush}"
+                CornerRadius="22">
+              <icons:FluentIcon
+                  Width="22"
+                  Height="22"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  Icon="Delete"
+                  IconVariant="Regular"
+                  Foreground="{DynamicResource ErrorBrush}" />
+            </Border>
+            <TextBlock
+                FontSize="21"
+                FontWeight="SemiBold"
+                Text="개인 일정을 삭제할까요?" />
+            <TextBlock
+                Classes="secondary"
+                LineHeight="21"
+                Text="{Binding PersonalScheduleDeletionDescription}"
+                TextWrapping="Wrap" />
+            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
+              <Button
+                  x:Name="CancelDeletePersonalScheduleButton"
+                  Classes="outline"
+                  Command="{Binding CancelDeletePersonalScheduleCommand}"
+                  Content="취소" />
+              <Button
+                  Classes="danger"
+                  Command="{Binding ConfirmDeletePersonalScheduleCommand}"
+                  Content="일정 삭제" />
+            </StackPanel>
+          </StackPanel>
+        </Grid>
+      </Border>
+    </Border>
   </Grid>
 </UserControl>

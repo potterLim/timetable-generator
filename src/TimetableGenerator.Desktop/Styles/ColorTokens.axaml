@@ -55,6 +55,8 @@
       <SolidColorBrush x:Key="CoursePurpleBorderBrush" Color="#957DC1" />
       <SolidColorBrush x:Key="CourseGreenBackgroundBrush" Color="#DDEFE8" />
       <SolidColorBrush x:Key="CourseGreenBorderBrush" Color="#6AAB8F" />
+      <SolidColorBrush x:Key="PersonalScheduleBackgroundBrush" Color="#EEEAE2" />
+      <SolidColorBrush x:Key="PersonalScheduleBorderBrush" Color="#81786D" />
       <SolidColorBrush x:Key="TitleBarBackgroundBrush" Color="#E7EFF8" />
       <SolidColorBrush x:Key="CaptionButtonBackground" Color="#DCE7F4" />
       <SolidColorBrush x:Key="CaptionButtonBorderBrush" Color="#D3E0F0" />
@@ -114,6 +116,8 @@
       <SolidColorBrush x:Key="CoursePurpleBorderBrush" Color="#7C689C" />
       <SolidColorBrush x:Key="CourseGreenBackgroundBrush" Color="#23362F" />
       <SolidColorBrush x:Key="CourseGreenBorderBrush" Color="#557E6F" />
+      <SolidColorBrush x:Key="PersonalScheduleBackgroundBrush" Color="#322F2A" />
+      <SolidColorBrush x:Key="PersonalScheduleBorderBrush" Color="#A49B8C" />
       <SolidColorBrush x:Key="TitleBarBackgroundBrush" Color="#1E1E1C" />
       <SolidColorBrush x:Key="CaptionButtonBackground" Color="#302F2B" />
       <SolidColorBrush x:Key="CaptionButtonBorderBrush" Color="#393731" />

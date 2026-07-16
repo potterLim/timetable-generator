@@ -65,7 +65,7 @@
             x:Name="RecommendationActions"
             Orientation="Horizontal"
             Spacing="10"
-            IsVisible="{Binding HasScheduleEntries}">
+            IsVisible="{Binding HasMultipleRecommendations}">
           <Button
               Classes="outline"
               Width="40"
@@ -95,6 +95,17 @@
             <icons:FluentIcon Icon="ChevronRight" IconVariant="Regular" FontSize="19" />
           </Button>
         </StackPanel>
+        <Button
+            x:Name="WorkspaceAddPersonalScheduleButton"
+            Classes="outline"
+            Command="{Binding BeginAddPersonalScheduleCommand}"
+            AutomationProperties.Name="개인 일정 추가"
+            ToolTip.Tip="개인 일정 추가">
+          <StackPanel Orientation="Horizontal" Spacing="7">
+            <icons:FluentIcon Icon="Add" IconVariant="Regular" FontSize="17" />
+            <TextBlock VerticalAlignment="Center" Text="일정 추가" />
+          </StackPanel>
+        </Button>
         <Button
             x:Name="OpenInspectorPaneButton"
             Classes="outline"
@@ -173,6 +184,18 @@
               Text="{Binding EmptyScheduleMessage}"
               TextAlignment="Center"
               TextWrapping="Wrap" />
+          <Button
+              x:Name="EmptyScheduleAddPersonalScheduleButton"
+              Classes="outline"
+              Margin="0,6,0,0"
+              HorizontalAlignment="Center"
+              Command="{Binding BeginAddPersonalScheduleCommand}"
+              AutomationProperties.Name="빈 시간표에 개인 일정 추가">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <icons:FluentIcon Icon="Add" IconVariant="Regular" FontSize="17" />
+              <TextBlock Text="개인 일정 추가" />
+            </StackPanel>
+          </Button>
         </StackPanel>
       </Border>
 
@@ -259,7 +282,7 @@
           AutomationProperties.LiveSetting="Polite" />
       <TextBlock
           Classes="caption"
-          Text="원하는 과목을 추가하거나 제거해 더 많은 시간표를 추천받으세요." />
+          Text="과목과 개인 일정을 조정해 나에게 맞는 시간표를 만들어 보세요." />
     </StackPanel>
   </Grid>
 </UserControl>

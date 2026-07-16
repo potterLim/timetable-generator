@@ -32,6 +32,11 @@
       <Setter Property="BorderBrush" Value="{DynamicResource CourseGreenBorderBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
     </Style>
+    <Style Selector="Button.schedule-card.personal">
+      <Setter Property="Background" Value="{DynamicResource PersonalScheduleBackgroundBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource PersonalScheduleBorderBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
   </UserControl.Styles>
 
   <Border

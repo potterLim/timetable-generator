@@ -46,6 +46,8 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private string mRecommendationCalculationError;
 
+    private bool mHasRecommendationConstraintConflict;
+
     public PresentationScheduleRecommendation ActiveRecommendation
     {
         get
@@ -80,11 +82,27 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
+    public bool HasMultipleRecommendations
+    {
+        get
+        {
+            return mRecommendations.Count > 1;
+        }
+    }
+
     public bool HasScheduleEntries
     {
         get
         {
             return ActiveRecommendation.Entries.Count > 0;
+        }
+    }
+
+    public bool HasRecommendationConstraintConflict
+    {
+        get
+        {
+            return mHasRecommendationConstraintConflict;
         }
     }
 
@@ -138,6 +156,11 @@ internal sealed partial class PlannerWorkspaceViewModel
                 return "추천 시간표를 계산하지 못했습니다.";
             }
 
+            if (HasRecommendationConstraintConflict)
+            {
+                return "개인 일정과 겹치지 않는 분반 조합을 찾지 못했습니다.";
+            }
+
             if (HasRecommendations == false)
             {
                 return "과목 선택을 바꾸면 충돌 없는 조합을 다시 계산합니다.";
@@ -150,15 +173,34 @@ internal sealed partial class PlannerWorkspaceViewModel
 
             HashSet<EDay> scheduledDays = new HashSet<EDay>();
             HashSet<string> courseCodes = new HashSet<string>(StringComparer.Ordinal);
+            HashSet<PersonalScheduleId> personalScheduleIds =
+                new HashSet<PersonalScheduleId>();
             foreach (ScheduleEntry entry in ActiveRecommendation.Entries)
             {
                 scheduledDays.Add(entry.Day);
-                courseCodes.Add(entry.Code);
+                CourseScheduleEntry? courseEntryOrNull =
+                    entry as CourseScheduleEntry;
+                if (courseEntryOrNull != null)
+                {
+                    courseCodes.Add(courseEntryOrNull.Code);
+                }
+
+                PersonalScheduleEntry? personalEntryOrNull =
+                    entry as PersonalScheduleEntry;
+                if (personalEntryOrNull != null)
+                {
+                    personalScheduleIds.Add(personalEntryOrNull.ScheduleId);
+                }
             }
 
             int freeWeekdayCount = 5 - scheduledDays.Count;
-            return courseCodes.Count
-                + "개 시간표 과목 · 공강 "
+            string insight = courseCodes.Count + "개 시간표 과목";
+            if (personalScheduleIds.Count > 0)
+            {
+                insight += " · 개인 일정 " + personalScheduleIds.Count + "개";
+            }
+
+            return insight + " · 공강 "
                 + freeWeekdayCount
                 + "일";
         }
@@ -287,6 +329,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         mRecommendationIndex = 0;
         mRecommendationCalculationState = ERecommendationCalculationState.Calculating;
         mRecommendationCalculationError = string.Empty;
+        mHasRecommendationConstraintConflict = false;
         notifyRecommendationChanged();
         notifyRecommendationCalculationStateChanged();
         mRecommendationRefreshTask = calculateRecommendationsAsync(
@@ -322,7 +365,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                 {
                     if (canApplyRecommendationResult(cancellationSource))
                     {
-                        applyRecommendationResult(result);
+                        applyRecommendationResult(result, planSnapshot);
                     }
                 });
         }
@@ -353,7 +396,9 @@ internal sealed partial class PlannerWorkspaceViewModel
                 cancellationSource);
     }
 
-    private void applyRecommendationResult(ScheduleRecommendationResult result)
+    private void applyRecommendationResult(
+        ScheduleRecommendationResult result,
+        PlanningPlan planSnapshot)
     {
         if (result.HasValidationError)
         {
@@ -379,6 +424,18 @@ internal sealed partial class PlannerWorkspaceViewModel
                 mCatalogProjection));
         }
 
+        bool hasSelectedScheduledCourses =
+            planSnapshot.ScheduledCourseChoices.Count > 0;
+        mHasRecommendationConstraintConflict = recommendations.Count == 0
+            && hasSelectedScheduledCourses
+            && planSnapshot.PersonalSchedules.Count > 0;
+        if (mHasRecommendationConstraintConflict)
+        {
+            recommendations.Add(
+                ScheduleRecommendationProjector.ProjectPersonalSchedules(
+                    planSnapshot.PersonalSchedules));
+        }
+
         mRecommendations = recommendations.AsReadOnly();
         mRecommendationIndex = 0;
         mRecommendationCalculationState = ERecommendationCalculationState.Ready;
@@ -395,6 +452,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         mRecommendationCalculationError =
             "과목 선택은 그대로 보존했습니다. 잠시 후 다시 계산해 주세요.";
         System.Diagnostics.Debug.WriteLine(exception);
+        mHasRecommendationConstraintConflict = false;
         notifyRecommendationChanged();
         notifyRecommendationCalculationStateChanged();
     }
@@ -404,6 +462,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         raisePropertyChanged(nameof(IsRecommendationCalculating));
         raisePropertyChanged(nameof(HasRecommendationCalculationError));
         raisePropertyChanged(nameof(RecommendationCalculationError));
+        raisePropertyChanged(nameof(HasRecommendationConstraintConflict));
         mRetryRecommendationCommand.NotifyCanExecuteChanged();
     }
 
@@ -412,6 +471,8 @@ internal sealed partial class PlannerWorkspaceViewModel
         raisePropertyChanged(nameof(ActiveRecommendation));
         raisePropertyChanged(nameof(RecommendationSummary));
         raisePropertyChanged(nameof(HasRecommendations));
+        raisePropertyChanged(nameof(HasMultipleRecommendations));
+        raisePropertyChanged(nameof(HasRecommendationConstraintConflict));
         raisePropertyChanged(nameof(HasScheduleEntries));
         raisePropertyChanged(nameof(IsScheduleEmpty));
         raisePropertyChanged(nameof(RecommendationInsight));

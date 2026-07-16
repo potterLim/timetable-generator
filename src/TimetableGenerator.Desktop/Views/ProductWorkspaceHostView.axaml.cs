@@ -53,6 +53,17 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         {
             focusPlanEditingControlWhenRequired();
         }
+        else if (eventArgs.PropertyName
+            == nameof(PlannerWorkspaceViewModel.IsPersonalScheduleEditorVisible))
+        {
+            focusPersonalScheduleControlWhenRequired();
+        }
+        else if (eventArgs.PropertyName
+            == nameof(
+                PlannerWorkspaceViewModel.IsDeletePersonalScheduleConfirmationVisible))
+        {
+            focusPersonalScheduleControlWhenRequired();
+        }
     }
 
     private void focusPlanEditingControlWhenRequired()
@@ -89,6 +100,50 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         {
             Button? cancelButtonOrNull = this.FindControl<Button>(
                 "CancelDeletePlanButton");
+            if (cancelButtonOrNull != null)
+            {
+                cancelButtonOrNull.Focus();
+            }
+        }
+    }
+
+    private void focusPersonalScheduleControlWhenRequired()
+    {
+        if (mWorkspaceOrNull == null
+            || mWorkspaceOrNull.IsPersonalScheduleOverlayVisible == false)
+        {
+            return;
+        }
+
+        Dispatcher.UIThread.Post(focusPersonalScheduleControl, DispatcherPriority.Input);
+    }
+
+    private void focusPersonalScheduleControl()
+    {
+        if (mWorkspaceOrNull == null)
+        {
+            return;
+        }
+
+        if (mWorkspaceOrNull.IsPersonalScheduleEditorVisible)
+        {
+            TextBox? editorOrNull = this.GetVisualDescendants()
+                .OfType<TextBox>()
+                .FirstOrDefault(
+                    static candidate => candidate.Name == "PersonalScheduleNameInput");
+            if (editorOrNull != null)
+            {
+                editorOrNull.Focus();
+                editorOrNull.SelectAll();
+            }
+
+            return;
+        }
+
+        if (mWorkspaceOrNull.IsDeletePersonalScheduleConfirmationVisible)
+        {
+            Button? cancelButtonOrNull = this.FindControl<Button>(
+                "CancelDeletePersonalScheduleButton");
             if (cancelButtonOrNull != null)
             {
                 cancelButtonOrNull.Focus();

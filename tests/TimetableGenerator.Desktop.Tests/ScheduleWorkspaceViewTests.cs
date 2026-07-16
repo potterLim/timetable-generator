@@ -81,7 +81,9 @@ public sealed class ScheduleWorkspaceViewTests
                 {
                     int scheduleRow = Grid.GetRow(scheduleCard);
                     scheduleRows.Add(scheduleRow);
-                    if (scheduleRow == 10)
+                    if (AutomationProperties.GetName(scheduleCard)?.Contains(
+                        "목요일 10교시",
+                        StringComparison.Ordinal) == true)
                     {
                         latestScheduleAccessibleNameOrNull =
                             AutomationProperties.GetName(scheduleCard);
@@ -90,11 +92,11 @@ public sealed class ScheduleWorkspaceViewTests
             }
 
             Assert.Equal(10, scheduleBoard.RenderedPeriodCount);
-            Assert.Equal(11, boardGrid.RowDefinitions.Count);
-            Assert.Contains(7, scheduleRows);
-            Assert.Contains(8, scheduleRows);
-            Assert.Contains(9, scheduleRows);
-            Assert.Contains(10, scheduleRows);
+            Assert.Equal(181, boardGrid.RowDefinitions.Count);
+            Assert.Contains(109, scheduleRows);
+            Assert.Contains(127, scheduleRows);
+            Assert.Contains(145, scheduleRows);
+            Assert.Contains(163, scheduleRows);
             Assert.Contains("목요일 10교시", latestScheduleAccessibleNameOrNull);
             Assert.True(scrollViewer.Extent.Height > scrollViewer.Viewport.Height);
         }
@@ -170,7 +172,7 @@ public sealed class ScheduleWorkspaceViewTests
             Assert.Equal(
                 LONG_NAME + Environment.NewLine + "선택하여 과목 상세 정보 보기",
                 ToolTip.GetTip(scheduleCard));
-            Assert.True(boardGridOrNull.RowDefinitions[1].ActualHeight > 96.0);
+            Assert.Equal(15, Grid.GetRowSpan(scheduleCard));
 
             FlyoutBase? detailsFlyoutOrNull = scheduleCard.Flyout;
             Assert.NotNull(detailsFlyoutOrNull);
@@ -421,7 +423,7 @@ public sealed class ScheduleWorkspaceViewTests
         EDay day,
         AcademicPeriod period)
     {
-        return new ScheduleEntry(
+        return new CourseScheduleEntry(
             new ScheduleCourseDetails(
                 new CourseCode("TST00100"),
                 new KoreanCourseName("저녁 수업"),
@@ -437,7 +439,7 @@ public sealed class ScheduleWorkspaceViewTests
         EDay day,
         AcademicPeriod period)
     {
-        return new ScheduleEntry(
+        return new CourseScheduleEntry(
             new ScheduleCourseDetails(
                 new CourseCode("UXD00100"),
                 new KoreanCourseName(
@@ -472,16 +474,11 @@ public sealed class ScheduleWorkspaceViewTests
                 cellOrNull = cell;
             }
 
-            if (child is StackPanel periodHeader)
+            if (child is TextBlock periodText
+                && periodText.Text != null
+                && periodText.Text.Contains("08:30", StringComparison.Ordinal))
             {
-                foreach (Control periodChild in periodHeader.Children)
-                {
-                    if (periodChild is TextBlock periodText &&
-                        periodText.Text == "08:30–09:45")
-                    {
-                        periodTimeOrNull = periodText;
-                    }
-                }
+                periodTimeOrNull = periodText;
             }
 
             if (child is Button scheduleCard)

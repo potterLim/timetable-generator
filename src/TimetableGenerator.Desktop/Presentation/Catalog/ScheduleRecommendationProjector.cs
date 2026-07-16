@@ -14,6 +14,34 @@ namespace TimetableGenerator.Desktop.Presentation.Catalog;
 
 internal static class ScheduleRecommendationProjector
 {
+    public static PresentationScheduleRecommendation ProjectPersonalSchedules(
+        IEnumerable<PersonalSchedule> personalSchedules)
+    {
+        if (personalSchedules == null)
+        {
+            throw new ArgumentNullException(nameof(personalSchedules));
+        }
+
+        List<ScheduleEntry> entries = new List<ScheduleEntry>();
+        foreach (PersonalSchedule personalSchedule in personalSchedules)
+        {
+            if (personalSchedule == null)
+            {
+                throw new ArgumentException(
+                    "Schedule projections cannot contain null personal schedules.",
+                    nameof(personalSchedules));
+            }
+
+            foreach (WeeklyTimeRange timeRange in personalSchedule.TimeRanges)
+            {
+                entries.Add(new PersonalScheduleEntry(personalSchedule, timeRange));
+            }
+        }
+
+        entries.Sort(compareScheduleEntries);
+        return new PresentationScheduleRecommendation(entries);
+    }
+
     public static PresentationScheduleRecommendation Project(
         ApplicationScheduleRecommendation recommendation,
         CourseCatalogProjection catalogProjection)
@@ -45,8 +73,23 @@ internal static class ScheduleRecommendationProjector
             validateUnscheduledSelection(selection, catalogProjection, selectedCourseIds);
         }
 
+        addPersonalScheduleEntries(recommendation.PersonalSchedules, entries);
+
         entries.Sort(compareScheduleEntries);
         return new PresentationScheduleRecommendation(entries);
+    }
+
+    private static void addPersonalScheduleEntries(
+        IEnumerable<PersonalSchedule> personalSchedules,
+        ICollection<ScheduleEntry> entries)
+    {
+        foreach (PersonalSchedule personalSchedule in personalSchedules)
+        {
+            foreach (WeeklyTimeRange timeRange in personalSchedule.TimeRanges)
+            {
+                entries.Add(new PersonalScheduleEntry(personalSchedule, timeRange));
+            }
+        }
     }
 
     private static void validateScheduledOffering(
@@ -145,7 +188,7 @@ internal static class ScheduleRecommendationProjector
 
         foreach (MeetingSlot slot in scheduledOffering.MeetingSlots)
         {
-            entries.Add(new ScheduleEntry(
+            entries.Add(new CourseScheduleEntry(
                 courseDetails,
                 slot.Day,
                 slot.Period,
@@ -168,10 +211,11 @@ internal static class ScheduleRecommendationProjector
 
     private static int compareScheduleEntries(ScheduleEntry left, ScheduleEntry right)
     {
-        int periodComparison = left.Period.Value.CompareTo(right.Period.Value);
-        if (periodComparison != 0)
+        int startComparison = left.TimeRange.Start.CompareTo(
+            right.TimeRange.Start);
+        if (startComparison != 0)
         {
-            return periodComparison;
+            return startComparison;
         }
 
         int dayComparison = left.Day.CompareTo(right.Day);
@@ -180,6 +224,29 @@ internal static class ScheduleRecommendationProjector
             return dayComparison;
         }
 
-        return string.Compare(left.Code, right.Code, StringComparison.Ordinal);
+        return string.Compare(
+            getEntrySortName(left),
+            getEntrySortName(right),
+            StringComparison.Ordinal);
+    }
+
+    private static string getEntrySortName(ScheduleEntry entry)
+    {
+        CourseScheduleEntry? courseEntryOrNull = entry as CourseScheduleEntry;
+        if (courseEntryOrNull != null)
+        {
+            return courseEntryOrNull.Code;
+        }
+
+        PersonalScheduleEntry? personalEntryOrNull = entry as PersonalScheduleEntry;
+        if (personalEntryOrNull != null)
+        {
+            return personalEntryOrNull.Title;
+        }
+
+        throw new ArgumentOutOfRangeException(
+            nameof(entry),
+            entry,
+            "Unknown schedule entry type.");
     }
 }

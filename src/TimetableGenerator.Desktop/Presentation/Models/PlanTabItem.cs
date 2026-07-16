@@ -73,6 +73,8 @@ internal sealed class PlanTabItem
 
     public ObservableCollection<PlanCourseItem> UnconfirmedCourses { get; }
 
+    public ObservableCollection<PersonalScheduleItem> PersonalSchedules { get; }
+
     public int SelectedCourseCount
     {
         get
@@ -86,6 +88,38 @@ internal sealed class PlanTabItem
         get
         {
             return SelectedCourseCount > 0;
+        }
+    }
+
+    public bool HasPersonalSchedules
+    {
+        get
+        {
+            return PersonalSchedules.Count > 0;
+        }
+    }
+
+    public bool IsCompletelyEmpty
+    {
+        get
+        {
+            return HasSelectedCourses == false && HasPersonalSchedules == false;
+        }
+    }
+
+    public bool HasOnlyPersonalSchedules
+    {
+        get
+        {
+            return HasSelectedCourses == false && HasPersonalSchedules;
+        }
+    }
+
+    public string PersonalScheduleHeading
+    {
+        get
+        {
+            return "개인 일정 (" + PersonalSchedules.Count + ")";
         }
     }
 
@@ -166,6 +200,7 @@ internal sealed class PlanTabItem
             canClose);
         ScheduledCourses = new ObservableCollection<PlanCourseItem>();
         UnconfirmedCourses = new ObservableCollection<PlanCourseItem>();
+        PersonalSchedules = new ObservableCollection<PersonalScheduleItem>();
         foreach (ScheduledCourseChoice choice in plan.ScheduledCourseChoices)
         {
             CatalogCourseProjection course = catalogProjection.FindCourseById(
@@ -180,6 +215,11 @@ internal sealed class PlanTabItem
                 selection.CourseId);
             UnconfirmedCourses.Add(
                 PlanCourseItem.CreateTimeNotProvided(course, selection));
+        }
+
+        foreach (PersonalSchedule personalSchedule in plan.PersonalSchedules)
+        {
+            PersonalSchedules.Add(new PersonalScheduleItem(personalSchedule));
         }
     }
 

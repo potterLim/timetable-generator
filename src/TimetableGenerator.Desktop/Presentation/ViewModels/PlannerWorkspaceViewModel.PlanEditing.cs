@@ -67,7 +67,8 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return IsPlanEditingOverlayVisible == false;
+            return IsPlanEditingOverlayVisible == false
+                && IsPersonalScheduleOverlayVisible == false;
         }
     }
 
@@ -188,6 +189,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
 
         requirePlanItem(plan);
+        closePersonalScheduleEditingState();
         closePlanEditingState();
         mSession.ActivatePlan(plan.PlanId);
         mActivePlan = plan;

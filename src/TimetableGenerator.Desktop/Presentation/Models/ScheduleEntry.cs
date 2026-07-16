@@ -1,72 +1,26 @@
 using System;
-
 using TimetableGenerator.Domain.Scheduling;
 
 namespace TimetableGenerator.Desktop.Presentation.Models;
 
-internal sealed class ScheduleEntry
+internal abstract class ScheduleEntry
 {
-    public ScheduleCourseDetails CourseDetails { get; }
-
-    public string Code
-    {
-        get
-        {
-            return CourseDetails.Code.Value;
-        }
-    }
-
-    public string Name
-    {
-        get
-        {
-            return CourseDetails.Name.Value;
-        }
-    }
-
-    public string InstructorDisplayText
-    {
-        get
-        {
-            return CourseDetails.InstructorSummary.Value;
-        }
-    }
-
-    public string LocationDisplayText
-    {
-        get
-        {
-            return CourseDetails.LocationSummary.Value;
-        }
-    }
-
     public EDay Day { get; }
 
-    public AcademicPeriod Period { get; }
+    public DailyTimeRange TimeRange { get; }
 
-    public ECourseAccent Accent { get; }
-
-    public ScheduleEntry(
-        ScheduleCourseDetails courseDetails,
-        EDay day,
-        AcademicPeriod period,
-        ECourseAccent accent)
+    protected ScheduleEntry(EDay day, DailyTimeRange timeRange)
     {
-        if (courseDetails == null)
-        {
-            throw new ArgumentNullException(nameof(courseDetails));
-        }
-
         ensureSupportedDay(day);
-        if (period.IsValid == false)
+        if (timeRange.IsValid == false)
         {
-            throw new ArgumentException("Academic periods must be valid.", nameof(period));
+            throw new ArgumentException(
+                "Schedule entries require a valid daily time range.",
+                nameof(timeRange));
         }
 
-        CourseDetails = courseDetails;
         Day = day;
-        Period = period;
-        Accent = accent;
+        TimeRange = timeRange;
     }
 
     private static void ensureSupportedDay(EDay day)
