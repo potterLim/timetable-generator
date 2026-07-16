@@ -1,0 +1,271 @@
+using System;
+using System.Collections.Generic;
+using TimetableGenerator.Domain.Catalogs;
+using TimetableGenerator.Domain.Planning;
+
+namespace TimetableGenerator.Application.Planning;
+
+public sealed class PlanningWorkspaceEditor
+{
+    public PlanningWorkspace ActivatePlan(
+        PlanningWorkspace workspace,
+        PlanId planId)
+    {
+        if (workspace == null)
+        {
+            throw new ArgumentNullException(nameof(workspace));
+        }
+
+        findPlanIndex(workspace, planId);
+        return new PlanningWorkspace(planId, workspace.Plans);
+    }
+
+    public PlanningWorkspace AddPlan(
+        PlanningWorkspace workspace,
+        PlanningPlan plan)
+    {
+        if (workspace == null)
+        {
+            throw new ArgumentNullException(nameof(workspace));
+        }
+
+        if (plan == null)
+        {
+            throw new ArgumentNullException(nameof(plan));
+        }
+
+        List<PlanningPlan> plans = new List<PlanningPlan>(workspace.Plans);
+        plans.Add(plan);
+        return new PlanningWorkspace(plan.Id, plans);
+    }
+
+    public PlanningWorkspace RenamePlan(
+        PlanningWorkspace workspace,
+        PlanId planId,
+        PlanName name)
+    {
+        if (workspace == null)
+        {
+            throw new ArgumentNullException(nameof(workspace));
+        }
+
+        if (name == null)
+        {
+            throw new ArgumentNullException(nameof(name));
+        }
+
+        PlanningPlan existingPlan = findPlan(workspace, planId);
+        PlanningPlan renamedPlan = new PlanningPlan(
+            existingPlan.Id,
+            name,
+            existingPlan.CatalogBinding,
+            existingPlan.ScheduledCourseChoices,
+            existingPlan.UnscheduledOfferingSelections);
+        return replacePlan(workspace, renamedPlan);
+    }
+
+    public PlanningWorkspace RemovePlan(
+        PlanningWorkspace workspace,
+        PlanId planId)
+    {
+        if (workspace == null)
+        {
+            throw new ArgumentNullException(nameof(workspace));
+        }
+
+        if (workspace.Plans.Count == 1)
+        {
+            throw new InvalidOperationException(
+                "A planning workspace must retain at least one plan.");
+        }
+
+        int removedPlanIndex = findPlanIndex(workspace, planId);
+        List<PlanningPlan> remainingPlans = new List<PlanningPlan>(workspace.Plans);
+        remainingPlans.RemoveAt(removedPlanIndex);
+
+        PlanId activePlanId = workspace.ActivePlanId;
+        if (activePlanId == planId)
+        {
+            int replacementIndex = removedPlanIndex;
+            if (replacementIndex >= remainingPlans.Count)
+            {
+                replacementIndex = remainingPlans.Count - 1;
+            }
+
+            activePlanId = remainingPlans[replacementIndex].Id;
+        }
+
+        return new PlanningWorkspace(activePlanId, remainingPlans);
+    }
+
+    public PlanningWorkspace AddScheduledCourseChoice(
+        PlanningWorkspace workspace,
+        PlanId planId,
+        ScheduledCourseChoice choice)
+    {
+        if (workspace == null)
+        {
+            throw new ArgumentNullException(nameof(workspace));
+        }
+
+        if (choice == null)
+        {
+            throw new ArgumentNullException(nameof(choice));
+        }
+
+        PlanningPlan existingPlan = findPlan(workspace, planId);
+        List<ScheduledCourseChoice> scheduledChoices =
+            new List<ScheduledCourseChoice>(existingPlan.ScheduledCourseChoices);
+        scheduledChoices.Add(choice);
+        PlanningPlan updatedPlan = new PlanningPlan(
+            existingPlan.Id,
+            existingPlan.Name,
+            existingPlan.CatalogBinding,
+            scheduledChoices,
+            existingPlan.UnscheduledOfferingSelections);
+        return replacePlan(workspace, updatedPlan);
+    }
+
+    public PlanningWorkspace AddUnscheduledOfferingSelection(
+        PlanningWorkspace workspace,
+        PlanId planId,
+        UnscheduledOfferingSelection selection)
+    {
+        if (workspace == null)
+        {
+            throw new ArgumentNullException(nameof(workspace));
+        }
+
+        if (selection == null)
+        {
+            throw new ArgumentNullException(nameof(selection));
+        }
+
+        PlanningPlan existingPlan = findPlan(workspace, planId);
+        List<UnscheduledOfferingSelection> selections =
+            new List<UnscheduledOfferingSelection>(
+                existingPlan.UnscheduledOfferingSelections);
+        selections.Add(selection);
+        PlanningPlan updatedPlan = new PlanningPlan(
+            existingPlan.Id,
+            existingPlan.Name,
+            existingPlan.CatalogBinding,
+            existingPlan.ScheduledCourseChoices,
+            selections);
+        return replacePlan(workspace, updatedPlan);
+    }
+
+    public PlanningWorkspace RemoveCourse(
+        PlanningWorkspace workspace,
+        PlanId planId,
+        CourseId courseId)
+    {
+        if (workspace == null)
+        {
+            throw new ArgumentNullException(nameof(workspace));
+        }
+
+        if (courseId == null)
+        {
+            throw new ArgumentNullException(nameof(courseId));
+        }
+
+        PlanningPlan existingPlan = findPlan(workspace, planId);
+        List<ScheduledCourseChoice> scheduledChoices =
+            copyScheduledChoicesExceptCourse(existingPlan, courseId);
+        List<UnscheduledOfferingSelection> unscheduledSelections =
+            copyUnscheduledSelectionsExceptCourse(existingPlan, courseId);
+        PlanningPlan updatedPlan = new PlanningPlan(
+            existingPlan.Id,
+            existingPlan.Name,
+            existingPlan.CatalogBinding,
+            scheduledChoices,
+            unscheduledSelections);
+        return replacePlan(workspace, updatedPlan);
+    }
+
+    private static PlanningPlan findPlan(
+        PlanningWorkspace workspace,
+        PlanId planId)
+    {
+        int planIndex = findPlanIndex(workspace, planId);
+        return workspace.Plans[planIndex];
+    }
+
+    private static int findPlanIndex(
+        PlanningWorkspace workspace,
+        PlanId planId)
+    {
+        if (planId.IsValid == false)
+        {
+            throw new ArgumentException(
+                "Planning workspace edits require a valid plan ID.",
+                nameof(planId));
+        }
+
+        for (int index = 0; index < workspace.Plans.Count; ++index)
+        {
+            if (workspace.Plans[index].Id == planId)
+            {
+                return index;
+            }
+        }
+
+        throw new KeyNotFoundException("The planning workspace does not contain the plan.");
+    }
+
+    private static PlanningWorkspace replacePlan(
+        PlanningWorkspace workspace,
+        PlanningPlan replacementPlan)
+    {
+        List<PlanningPlan> plans = new List<PlanningPlan>(workspace.Plans.Count);
+        foreach (PlanningPlan plan in workspace.Plans)
+        {
+            if (plan.Id == replacementPlan.Id)
+            {
+                plans.Add(replacementPlan);
+            }
+            else
+            {
+                plans.Add(plan);
+            }
+        }
+
+        return new PlanningWorkspace(workspace.ActivePlanId, plans);
+    }
+
+    private static List<ScheduledCourseChoice> copyScheduledChoicesExceptCourse(
+        PlanningPlan plan,
+        CourseId courseId)
+    {
+        List<ScheduledCourseChoice> choices = new List<ScheduledCourseChoice>();
+        foreach (ScheduledCourseChoice choice in plan.ScheduledCourseChoices)
+        {
+            if (choice.CourseId != courseId)
+            {
+                choices.Add(choice);
+            }
+        }
+
+        return choices;
+    }
+
+    private static List<UnscheduledOfferingSelection>
+        copyUnscheduledSelectionsExceptCourse(
+            PlanningPlan plan,
+            CourseId courseId)
+    {
+        List<UnscheduledOfferingSelection> selections =
+            new List<UnscheduledOfferingSelection>();
+        foreach (UnscheduledOfferingSelection selection
+            in plan.UnscheduledOfferingSelections)
+        {
+            if (selection.CourseId != courseId)
+            {
+                selections.Add(selection);
+            }
+        }
+
+        return selections;
+    }
+}
