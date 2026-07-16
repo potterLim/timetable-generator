@@ -9,7 +9,7 @@ namespace TimetableGenerator.Desktop.Tests.Storage;
 public sealed class ProductDataPathsTests
 {
     [AvaloniaFact]
-    public void ProductPathsKeepCatalogAndPlanningStateInSeparateDirectories()
+    public void ProductPathsKeepDurableStateInSeparateDirectories()
     {
         string rootPath = Path.Combine(
             Path.GetTempPath(),
@@ -24,6 +24,9 @@ public sealed class ProductDataPathsTests
         Assert.Equal(
             Path.Combine(rootPath, "Planning", "workspace-v1.json"),
             paths.Workspace.Value);
+        Assert.Equal(
+            Path.Combine(rootPath, "Settings", "appearance-v1.json"),
+            paths.AppearanceSettings.Value);
         Assert.Equal(Path.GetFullPath(rootPath), paths.Root.Value);
     }
 }

@@ -12,6 +12,7 @@ using Avalonia.Threading;
 
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Desktop.Product;
+using TimetableGenerator.Desktop.Tests.Presentation.Appearance;
 using TimetableGenerator.Desktop.Views;
 
 using Xunit;
@@ -29,7 +30,9 @@ public sealed class PlannerWorkspaceRenderTests
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         await workspace.RecommendationRefreshTask;
         ProductShellViewModel shell = PlannerWorkspaceTestFactory.CreateShell(workspace);
-        MainWindow window = new MainWindow(shell);
+        MainWindow window = new MainWindow(
+            shell,
+            ProductAppearanceTestFactory.CreateViewModel());
         window.Width = REFERENCE_WIDTH;
         window.Height = REFERENCE_HEIGHT;
         Assert.True(window.CanResize);
@@ -68,7 +71,9 @@ public sealed class PlannerWorkspaceRenderTests
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         await workspace.RecommendationRefreshTask;
         ProductShellViewModel shell = PlannerWorkspaceTestFactory.CreateShell(workspace);
-        MainWindow window = new MainWindow(shell);
+        MainWindow window = new MainWindow(
+            shell,
+            ProductAppearanceTestFactory.CreateViewModel());
         window.Width = REFERENCE_WIDTH;
         window.Height = REFERENCE_HEIGHT;
 

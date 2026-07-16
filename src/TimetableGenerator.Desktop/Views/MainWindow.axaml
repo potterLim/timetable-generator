@@ -1,5 +1,6 @@
 <Window
     x:Class="TimetableGenerator.Desktop.Views.MainWindow"
+    x:Name="ProductWindow"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:icons="using:FluentIcons.Avalonia"
@@ -31,7 +32,7 @@
         BorderThickness="0,0,0,1"
         AutomationProperties.LandmarkType="Banner"
         WindowDecorationProperties.ElementRole="TitleBar">
-      <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
+      <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
         <Grid
             Grid.Column="0"
             ColumnDefinitions="28,Auto"
@@ -41,7 +42,11 @@
               Grid.Column="0"
               Width="28"
               Height="28"
-              ClipToBounds="True">
+              Background="#FFFFFF"
+              BorderBrush="#D1D7E0"
+              BorderThickness="1"
+              ClipToBounds="True"
+              CornerRadius="3">
             <Image
                 Width="68"
                 Height="68"
@@ -68,6 +73,39 @@
                 Text="{Binding WorkspaceOrNull.InstitutionTermDisplayText}" />
           </StackPanel>
         </Grid>
+
+        <Button
+            x:Name="AppearanceButton"
+            Grid.Column="2"
+            Classes="icon"
+            Margin="0,0,8,0"
+            AutomationProperties.Name="화면 모드 설정"
+            ToolTip.Tip="화면 모드"
+            WindowDecorationProperties.ElementRole="User">
+          <Button.Flyout>
+            <Flyout Placement="BottomEdgeAlignedRight">
+              <views:AppearanceSettingsView
+                  DataContext="{Binding #ProductWindow.Appearance}" />
+            </Flyout>
+          </Button.Flyout>
+          <Grid>
+            <icons:FluentIcon
+                Icon="Desktop"
+                IconVariant="Regular"
+                FontSize="20"
+                IsVisible="{Binding #ProductWindow.Appearance.IsSystemThemeSelected}" />
+            <icons:FluentIcon
+                Icon="WeatherSunny"
+                IconVariant="Regular"
+                FontSize="20"
+                IsVisible="{Binding #ProductWindow.Appearance.IsLightThemeSelected}" />
+            <icons:FluentIcon
+                Icon="WeatherMoon"
+                IconVariant="Regular"
+                FontSize="20"
+                IsVisible="{Binding #ProductWindow.Appearance.IsDarkThemeSelected}" />
+          </Grid>
+        </Button>
       </Grid>
     </Border>
 

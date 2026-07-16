@@ -7,6 +7,7 @@ using Avalonia.Input;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Desktop.Presentation.Windowing;
 using TimetableGenerator.Desktop.Product;
+using TimetableGenerator.Desktop.Tests.Presentation.Appearance;
 using TimetableGenerator.Desktop.Views;
 using Xunit;
 
@@ -21,7 +22,9 @@ public sealed class WindowChromeInteractionTests
             PlannerWorkspaceTestFactory.CreateWorkspace();
         ProductShellViewModel shell =
             PlannerWorkspaceTestFactory.CreateShell(workspace);
-        MainWindow hostWindow = new MainWindow(shell);
+        MainWindow hostWindow = new MainWindow(
+            shell,
+            ProductAppearanceTestFactory.CreateViewModel());
 
         try
         {
@@ -30,10 +33,19 @@ public sealed class WindowChromeInteractionTests
             Border titleBar = findRequiredControl<Border>(
                 hostWindow,
                 "ProductTitleBar");
+            Button appearanceButton = findRequiredControl<Button>(
+                hostWindow,
+                "AppearanceButton");
 
             Assert.Equal(
                 WindowDecorationsElementRole.TitleBar,
                 WindowDecorationProperties.GetElementRole(titleBar));
+            Assert.Equal(
+                WindowDecorationsElementRole.User,
+                WindowDecorationProperties.GetElementRole(appearanceButton));
+            Assert.True(appearanceButton.IsHitTestVisible);
+            Assert.True(appearanceButton.Focusable);
+            Assert.NotNull(appearanceButton.Flyout);
 
             EWindowChromePlatform platform =
                 WindowChromeLayoutPolicy.FindCurrentPlatform();

@@ -9,6 +9,7 @@ using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 
+using TimetableGenerator.Desktop.Presentation.Appearance;
 using TimetableGenerator.Desktop.Presentation.Layout;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Desktop.Presentation.Windowing;
@@ -28,12 +29,18 @@ internal sealed partial class MainWindow : Window
 
     private bool mIsCloseAuthorized;
 
-    public MainWindow(ProductShellViewModel productShellViewModel)
+    public ProductAppearanceViewModel Appearance { get; }
+
+    public MainWindow(
+        ProductShellViewModel productShellViewModel,
+        ProductAppearanceViewModel appearance)
     {
         ArgumentNullException.ThrowIfNull(productShellViewModel);
+        ArgumentNullException.ThrowIfNull(appearance);
 
-        AvaloniaXamlLoader.Load(this);
         mProductShellViewModel = productShellViewModel;
+        Appearance = appearance;
+        AvaloniaXamlLoader.Load(this);
         DataContext = mProductShellViewModel;
         applyInitialWindowPlacement();
 
@@ -109,6 +116,8 @@ internal sealed partial class MainWindow : Window
                 await mProductShellViewModel.CompleteAutosaveAsync(
                     timeoutSource.Token);
             }
+
+            await Appearance.CompletePersistenceAsync();
 
             mIsCloseAuthorized = true;
             Close();

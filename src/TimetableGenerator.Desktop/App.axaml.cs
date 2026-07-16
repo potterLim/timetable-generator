@@ -6,6 +6,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
 using TimetableGenerator.Desktop.Configuration;
+using TimetableGenerator.Desktop.Presentation.Appearance;
 using TimetableGenerator.Desktop.Presentation.Windowing;
 using TimetableGenerator.Desktop.Product;
 using TimetableGenerator.Desktop.Storage;
@@ -42,17 +43,36 @@ internal sealed class App : Avalonia.Application
             ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
         if (desktopLifetimeOrNull != null)
         {
-            ProductShellViewModel productShell = createProductShell();
-            desktopLifetimeOrNull.MainWindow = new MainWindow(productShell);
+            ProductDataPaths dataPaths = new ProductDataPaths(
+                ProductDataRootPath.CreateDefault());
+            ProductShellViewModel productShell = createProductShell(dataPaths);
+            ProductAppearanceViewModel appearance =
+                createProductAppearance(dataPaths);
+            desktopLifetimeOrNull.MainWindow = new MainWindow(
+                productShell,
+                appearance);
         }
 
         base.OnFrameworkInitializationCompleted();
     }
 
-    private static ProductShellViewModel createProductShell()
+    private ProductAppearanceViewModel createProductAppearance(
+        ProductDataPaths dataPaths)
     {
-        ProductDataPaths dataPaths = new ProductDataPaths(
-            ProductDataRootPath.CreateDefault());
+        ProductAppearanceSettingsFileStore settingsStore =
+            new ProductAppearanceSettingsFileStore(
+                dataPaths.AppearanceSettings,
+                new ProductAppearanceSettingsJsonCodec());
+        AvaloniaProductThemeVariantService themeVariantService =
+            new AvaloniaProductThemeVariantService(this);
+        return new ProductAppearanceViewModel(
+            settingsStore,
+            themeVariantService);
+    }
+
+    private static ProductShellViewModel createProductShell(
+        ProductDataPaths dataPaths)
+    {
         CatalogSourceConfigurationPath configurationPath =
             new CatalogSourceConfigurationPath(
                 Path.Combine(
