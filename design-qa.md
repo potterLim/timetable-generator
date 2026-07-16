@@ -11,14 +11,17 @@
 - 최종 다크 화면 모드 메뉴: `tests/TimetableGenerator.Desktop.Tests/TestResults/theme-polish-2026-07-17/06-dark-appearance-final.png`
 - 최종 라이트 과목 선택 상태: `tests/TimetableGenerator.Desktop.Tests/TestResults/theme-polish-2026-07-17/07-light-selected-final.png`
 - 최종 다크 과목 선택 상태: `tests/TimetableGenerator.Desktop.Tests/TestResults/theme-polish-2026-07-17/05-dark-selected-product-button.png`
+- 최종 중앙 우선 Windows 화면: `tests/TimetableGenerator.Desktop.Tests/TestResults/layout-polish-2026-07-17/01-windows-selected-final.png`
+- 최종 반응형 인스펙터와 닫기 동작: `tests/TimetableGenerator.Desktop.Tests/TestResults/layout-polish-2026-07-17/03-inspector-dismiss-final.png`
 - 검증 창 크기: 1718 × 916 px, DWM 가시 프레임 캡처: 1702 × 908 px
+- 최종 레이아웃 검증 Windows 프레임: 1818 × 969 px
 
 ## 최종 판정
 
 - P0 차이: 0건
 - P1 차이: 0건
 - P2 차이: 0건
-- 레이아웃, 패널 비율, 상단 구조와 초기 밀도는 기준 시안과 일치한다. 시각 QA에서는 재배치보다 색상·표면·상태 마감에 집중했다.
+- 상단 구조와 초기 밀도는 기준 시안을 유지하면서 중앙 시간표를 제품의 주 작업 영역으로 재조정했다. 일반 데스크톱 폭에서는 계획 인스펙터가 필요할 때 열리는 오버레이가 되고, 충분히 넓은 창에서만 세 패널을 동시에 표시한다.
 
 ## 시각 체계
 
@@ -27,7 +30,20 @@
 - 주요 동작: 실제 Windows 게시본의 라이트·다크 `PNG로 저장` 버튼이 모두 `#0047FF`로 렌더링되는 것을 픽셀 확인했다. Avalonia 기본 accent 버튼 템플릿이 다크 전경색을 채움으로 재사용하던 문제는 제품 전용 ControlTheme으로 차단했다.
 - 컨트롤: TextBox, ComboBox, RadioButton, Flyout, ProgressBar, ScrollBar, Expander와 창 캡션 버튼이 제품 팔레트와 같은 Fluent 팔레트를 사용한다.
 - 상태: hover, pressed, selected, focus, success, warning, error와 course 카드 색을 역할별 토큰으로 분리했다. 조작 컨트롤 경계는 인접 표면 대비 3:1 이상, 일반 본문과 채움 위 텍스트는 4.5:1 이상을 자동 검증한다.
-- 시간표 카드: 좁은 요일 열에서도 긴 영문 담당교원 이름이 한 글자만 다음 줄로 떨어지지 않도록 본문 크기와 줄바꿈 정책을 조정했다. 상세 Flyout에는 전체 정보가 유지된다.
+- 시간표 카드: 좁은 요일 열에서도 긴 영문 담당교원 이름이 한 글자만 다음 줄로 떨어지지 않도록 본문 크기와 줄바꿈 정책을 조정했다. 과목명은 12 DIP SemiBold 한 줄을 유지하고, 정말 긴 이름만 말줄임표로 처리한다. 전체 이름은 접근성 이름, 툴팁과 상세 Flyout에 보존된다.
+
+## 반응형 작업 영역
+
+- 1600 DIP 이상에서는 과목 패널 312 DIP, 계획 패널 288 DIP를 Inline으로 유지한다.
+- 1280–1599 DIP에서는 과목 패널 312 DIP만 Inline으로 유지하고 계획 패널은 304 DIP 오버레이로 연다. 기본 1440 DIP 창에서 시간표가 중앙 폭을 우선 확보한다.
+- 더 작은 창에서는 기존 단계별 Overlay 전환을 유지하며, 오버레이 과목 패널과 계획 패널 모두 헤더에 명시적인 닫기 버튼을 제공한다.
+- 시간표 내부 좌우 여백은 각각 18 DIP, 교시 열은 72 DIP, 카드 바깥 여백은 4 DIP로 정리했다. Windows 게시본에서 `글로벌 기업가정신 입문`이 월·목 카드 모두 한 줄로 표시되는 것을 확인했다.
+
+## 타이포그래피
+
+- Avalonia Fluent의 조건부 Inter 선택을 제품 리소스에서 제거하고 `$Default` 시스템 UI 글꼴을 명시적으로 사용한다. 개발 PC의 설치 글꼴에 따라 줄폭과 굵기가 달라지지 않는다.
+- Windows 실측은 Latin `Segoe UI`, 한글 `Malgun Gothic`, emoji `Segoe UI Emoji` 폴백이다. macOS는 San Francisco 계열 시스템 UI 글꼴과 `Apple SD Gothic Neo` 폴백을 사용하도록 운영체제에 위임한다.
+- Window, TextBlock, Button, TextBox, ComboBox와 별도 PopupRoot의 Flyout까지 같은 글꼴 계약을 자동 검사한다.
 
 ## 동작과 접근성
 
@@ -43,16 +59,17 @@
 3. 화면 모드 선택 — 해결: 메뉴가 제품 표면 계층을 사용하며 세 모드의 선택 상태를 즉시 반영한다.
 4. 테마 전환 중 상태 유지 — 해결: 열린 작업 공간과 코드 생성 시간표가 창을 다시 열지 않고 새 팔레트로 갱신된다.
 5. 창 조작 — 해결: 네이티브 최소화·최대화·닫기와 제목 표시줄 드래그를 유지한다.
+6. 반응형 계획 확인 — 해결: 일반 창에서는 `내 계획` 버튼으로 인스펙터를 열고, 패널 헤더의 닫기 버튼·바깥 클릭·Esc로 닫을 수 있다.
 
 ## 회귀 검증
 
-- Release 솔루션 테스트 339개가 실패와 건너뜀 없이 통과했다.
+- Release 솔루션 테스트 342개가 실패와 건너뜀 없이 통과했다.
 - 제품 색상 토큰의 라이트·다크 대칭성, 텍스트·상태·경계·포커스 대비와 주요 동작의 실제 ContentPresenter 렌더링을 검사한다.
 - 채워진 시간표 상태에서 라이트→다크 전환 후 코드 생성 브러시가 교체되는지 검사한다.
 - `dotnet format --verify-no-changes`, `git diff --check`, Windows x64 self-contained 게시 검증을 통과했다.
-- 최종 Windows 실행 파일 SHA-256: `B92A9FBACBC8887788D63DD9F6B117DF135EFA719C4A0041DEFB91653216369C`
-- 최종 Windows ZIP SHA-256: `08EFB7224583A1D7DE6E0A60477703D225A05F6E663F5E954C0E33433B1D672C`
+- 최종 Windows 실행 파일 SHA-256: `55348F6D79D2BCF2E4AD21590C4C9D8DDF5108A8F445143B9A277145846DB5BA`
+- 최종 Windows ZIP SHA-256: `34D9533FBC0C08635840400A170EEE7D807C3629BF5D99C862492388322E1183`
 
-화면 캡처만으로 스크린리더 전체 동작이나 모든 WCAG 조건을 확정하지는 않는다. 운영체제 고대비 모드, 실제 Windows 10 기기, macOS Intel·Apple Silicon의 창 장식과 스크린리더 읽기 순서는 출시 전 실기 검증 대상으로 남긴다.
+화면 캡처만으로 스크린리더 전체 동작이나 모든 WCAG 조건을 확정하지는 않는다. 운영체제 고대비 모드, 실제 Windows 10 기기, macOS Intel·Apple Silicon의 창 장식·시스템 글꼴 폴백과 스크린리더 읽기 순서는 출시 전 실기 검증 대상으로 남긴다.
 
 final result: passed
