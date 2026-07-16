@@ -10,6 +10,7 @@ using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Desktop.Presentation.Sample;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Desktop.Views;
+using TimetableGenerator.Domain.Scheduling;
 
 using Xunit;
 
@@ -21,10 +22,10 @@ public sealed class ScheduleWorkspaceViewTests
     public void ScheduleBoardRendersEveningPeriodsInsideScrollableViewport()
     {
         List<ScheduleEntry> entries = new List<ScheduleEntry>();
-        entries.Add(createScheduleEntry(EAcademicDay.Monday, new AcademicPeriod(7)));
-        entries.Add(createScheduleEntry(EAcademicDay.Tuesday, new AcademicPeriod(8)));
-        entries.Add(createScheduleEntry(EAcademicDay.Wednesday, new AcademicPeriod(9)));
-        entries.Add(createScheduleEntry(EAcademicDay.Thursday, new AcademicPeriod(10)));
+        entries.Add(createScheduleEntry(EDay.Monday, new AcademicPeriod(7)));
+        entries.Add(createScheduleEntry(EDay.Tuesday, new AcademicPeriod(8)));
+        entries.Add(createScheduleEntry(EDay.Wednesday, new AcademicPeriod(9)));
+        entries.Add(createScheduleEntry(EDay.Thursday, new AcademicPeriod(10)));
 
         ScheduleBoardView scheduleBoard = new ScheduleBoardView();
         scheduleBoard.DataContext = new ScheduleRecommendation(entries);
@@ -139,7 +140,7 @@ public sealed class ScheduleWorkspaceViewTests
     }
 
     private static ScheduleEntry createScheduleEntry(
-        EAcademicDay day,
+        EDay day,
         AcademicPeriod period)
     {
         return new ScheduleEntry(

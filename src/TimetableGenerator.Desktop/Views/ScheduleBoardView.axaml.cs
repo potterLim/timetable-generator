@@ -9,6 +9,7 @@ using Avalonia.Media;
 using Avalonia.VisualTree;
 
 using TimetableGenerator.Desktop.Presentation.Models;
+using TimetableGenerator.Domain.Scheduling;
 
 namespace TimetableGenerator.Desktop.Views;
 
@@ -284,38 +285,38 @@ internal sealed partial class ScheduleBoardView : UserControl
         }
     }
 
-    private static int findDayColumn(EAcademicDay day)
+    private static int findDayColumn(EDay day)
     {
         switch (day)
         {
-            case EAcademicDay.Monday:
+            case EDay.Monday:
                 return 1;
-            case EAcademicDay.Tuesday:
+            case EDay.Tuesday:
                 return 2;
-            case EAcademicDay.Wednesday:
+            case EDay.Wednesday:
                 return 3;
-            case EAcademicDay.Thursday:
+            case EDay.Thursday:
                 return 4;
-            case EAcademicDay.Friday:
+            case EDay.Friday:
                 return 5;
             default:
                 throw new ArgumentOutOfRangeException(nameof(day), day, "Unknown academic day.");
         }
     }
 
-    private static string findDayName(EAcademicDay day)
+    private static string findDayName(EDay day)
     {
         switch (day)
         {
-            case EAcademicDay.Monday:
+            case EDay.Monday:
                 return "월";
-            case EAcademicDay.Tuesday:
+            case EDay.Tuesday:
                 return "화";
-            case EAcademicDay.Wednesday:
+            case EDay.Wednesday:
                 return "수";
-            case EAcademicDay.Thursday:
+            case EDay.Thursday:
                 return "목";
-            case EAcademicDay.Friday:
+            case EDay.Friday:
                 return "금";
             default:
                 throw new ArgumentOutOfRangeException(nameof(day), day, "Unknown academic day.");

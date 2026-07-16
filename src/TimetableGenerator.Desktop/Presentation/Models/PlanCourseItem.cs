@@ -1,3 +1,8 @@
+using System;
+
+using TimetableGenerator.Domain.Catalogs;
+using TimetableGenerator.Domain.Scheduling;
+
 namespace TimetableGenerator.Desktop.Presentation.Models;
 
 internal sealed class PlanCourseItem
@@ -10,13 +15,13 @@ internal sealed class PlanCourseItem
 
     public string InstructorDisplayText { get; }
 
-    public CreditCount Credits { get; }
+    public CourseCredits Credits { get; }
 
     public string CreditDisplayText
     {
         get
         {
-            return Credits.Value + "학점";
+            return Credits + "학점";
         }
     }
 
@@ -73,12 +78,14 @@ internal sealed class PlanCourseItem
         string code,
         string name,
         string instructorDisplayText,
-        CreditCount credits,
+        CourseCredits credits,
         string meetingDisplayText,
         string locationDisplayText,
         ECourseAccent accent,
         EMeetingScheduleStatus scheduleStatus)
     {
+        ArgumentNullException.ThrowIfNull(courseId);
+
         CourseId = courseId;
         Code = code;
         Name = name;

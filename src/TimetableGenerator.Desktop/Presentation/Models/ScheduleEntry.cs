@@ -1,3 +1,7 @@
+using System;
+
+using TimetableGenerator.Domain.Scheduling;
+
 namespace TimetableGenerator.Desktop.Presentation.Models;
 
 internal sealed class ScheduleEntry
@@ -10,7 +14,7 @@ internal sealed class ScheduleEntry
 
     public string LocationDisplayText { get; }
 
-    public EAcademicDay Day { get; }
+    public EDay Day { get; }
 
     public AcademicPeriod Period { get; }
 
@@ -21,10 +25,16 @@ internal sealed class ScheduleEntry
         string name,
         string instructorDisplayText,
         string locationDisplayText,
-        EAcademicDay day,
+        EDay day,
         AcademicPeriod period,
         ECourseAccent accent)
     {
+        ensureSupportedDay(day);
+        if (period.IsValid == false)
+        {
+            throw new ArgumentException("Academic periods must be valid.", nameof(period));
+        }
+
         Code = code;
         Name = name;
         InstructorDisplayText = instructorDisplayText;
@@ -32,5 +42,23 @@ internal sealed class ScheduleEntry
         Day = day;
         Period = period;
         Accent = accent;
+    }
+
+    private static void ensureSupportedDay(EDay day)
+    {
+        switch (day)
+        {
+            case EDay.Monday:
+            case EDay.Tuesday:
+            case EDay.Wednesday:
+            case EDay.Thursday:
+            case EDay.Friday:
+                return;
+            default:
+                throw new ArgumentOutOfRangeException(
+                    nameof(day),
+                    day,
+                    "The planning workspace supports weekdays only.");
+        }
     }
 }

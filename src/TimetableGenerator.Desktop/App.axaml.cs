@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
@@ -8,7 +7,7 @@ using TimetableGenerator.Desktop.Views;
 
 namespace TimetableGenerator.Desktop;
 
-internal sealed class App : Application
+internal sealed class App : Avalonia.Application
 {
     public override void Initialize()
     {

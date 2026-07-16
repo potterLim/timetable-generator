@@ -3,11 +3,16 @@ using System.Collections.ObjectModel;
 
 using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
+using TimetableGenerator.Domain.Catalogs;
+using TimetableGenerator.Domain.Planning;
+using TimetableGenerator.Domain.Scheduling;
 
 namespace TimetableGenerator.Desktop.Presentation.Sample;
 
 internal static class PlannerSampleStateFactory
 {
+    private const string COURSE_ID_PREFIX = "handong-global-university:";
+
     public static PlannerWorkspaceViewModel CreateWorkspace()
     {
         IReadOnlyList<CourseSearchItem> courses = createCourses();
@@ -29,7 +34,7 @@ internal static class PlannerSampleStateFactory
             ERequirementFilter.Required,
             ECourseAccent.Blue,
             EMeetingScheduleStatus.Scheduled,
-            new CreditCount(3)));
+            new CourseCredits(3m)));
         courses.Add(createCourse(
             "AIE23005",
             "인공지능 윤리",
@@ -40,7 +45,7 @@ internal static class PlannerSampleStateFactory
             ERequirementFilter.Elective,
             ECourseAccent.Purple,
             EMeetingScheduleStatus.Scheduled,
-            new CreditCount(3)));
+            new CourseCredits(3m)));
         courses.Add(createCourse(
             "GCS10004",
             "파이썬 프로그래밍",
@@ -51,7 +56,7 @@ internal static class PlannerSampleStateFactory
             ERequirementFilter.Required,
             ECourseAccent.Green,
             EMeetingScheduleStatus.Scheduled,
-            new CreditCount(3)));
+            new CourseCredits(3m)));
         courses.Add(createCourse(
             "AIE22004",
             "인간공학",
@@ -62,7 +67,7 @@ internal static class PlannerSampleStateFactory
             ERequirementFilter.Elective,
             ECourseAccent.Green,
             EMeetingScheduleStatus.Scheduled,
-            new CreditCount(3)));
+            new CourseCredits(3m)));
         courses.Add(createCourse(
             "AIE21001",
             "글로벌 기업가정신 입문",
@@ -73,7 +78,7 @@ internal static class PlannerSampleStateFactory
             ERequirementFilter.Required,
             ECourseAccent.Blue,
             EMeetingScheduleStatus.Scheduled,
-            new CreditCount(3)));
+            new CourseCredits(3m)));
         courses.Add(createCourse(
             "BFT10005",
             "회계학 원론",
@@ -84,7 +89,7 @@ internal static class PlannerSampleStateFactory
             ERequirementFilter.Required,
             ECourseAccent.Blue,
             EMeetingScheduleStatus.Scheduled,
-            new CreditCount(3)));
+            new CourseCredits(3m)));
         courses.Add(createCourse(
             "BFT30009",
             "세미나 3",
@@ -95,7 +100,7 @@ internal static class PlannerSampleStateFactory
             ERequirementFilter.Elective,
             ECourseAccent.Purple,
             EMeetingScheduleStatus.NotProvided,
-            new CreditCount(3)));
+            new CourseCredits(3m)));
         return courses.AsReadOnly();
     }
 
@@ -109,10 +114,10 @@ internal static class PlannerSampleStateFactory
         ERequirementFilter requirement,
         ECourseAccent accent,
         EMeetingScheduleStatus scheduleStatus,
-        CreditCount credits)
+        CourseCredits credits)
     {
         return new CourseSearchItem(
-            new CourseId(code),
+            new CourseId(COURSE_ID_PREFIX + code),
             code,
             name,
             instructorDisplayText,
@@ -143,12 +148,12 @@ internal static class PlannerSampleStateFactory
 
         List<PlanTabItem> plans = new List<PlanTabItem>();
         plans.Add(new PlanTabItem(
-            new PlanId(1),
+            PlanId.CreateNew(),
             new PlanName("공강 우선"),
             firstPlanCourses,
             firstPlanUnconfirmed));
         plans.Add(new PlanTabItem(
-            new PlanId(2),
+            PlanId.CreateNew(),
             new PlanName("교수 우선"),
             secondPlanCourses,
             new ObservableCollection<PlanCourseItem>()));
@@ -166,24 +171,24 @@ internal static class PlannerSampleStateFactory
     private static IReadOnlyList<ScheduleEntry> createPrimaryScheduleEntries()
     {
         List<ScheduleEntry> entries = new List<ScheduleEntry>();
-        entries.Add(createEntry("AIE21001", "글로벌 기업가정신 입문", "김한빛 · 3학점", "국제어문학관 102", EAcademicDay.Monday, new AcademicPeriod(1), ECourseAccent.Blue));
-        entries.Add(createEntry("AIE21001", "글로벌 기업가정신 입문", "김한빛 · 3학점", "국제어문학관 102", EAcademicDay.Friday, new AcademicPeriod(1), ECourseAccent.Blue));
-        entries.Add(createEntry("AIE23005", "인공지능 윤리", "최은별 · 3학점", "비전관 407", EAcademicDay.Tuesday, new AcademicPeriod(2), ECourseAccent.Purple));
-        entries.Add(createEntry("AIE22004", "인간공학", "박지유 · 3학점", "복지관 204", EAcademicDay.Thursday, new AcademicPeriod(2), ECourseAccent.Green));
-        entries.Add(createEntry("AIE22003", "프로그래밍 I", "이성훈 · 3학점", "공학관 301", EAcademicDay.Wednesday, new AcademicPeriod(3), ECourseAccent.Blue));
-        entries.Add(createEntry("AIE22003", "프로그래밍 I", "이성훈 · 3학점", "공학관 301", EAcademicDay.Wednesday, new AcademicPeriod(4), ECourseAccent.Blue));
-        entries.Add(createEntry("AIE22004", "인간공학", "박지유 · 3학점", "복지관 204", EAcademicDay.Monday, new AcademicPeriod(5), ECourseAccent.Green));
+        entries.Add(createEntry("AIE21001", "글로벌 기업가정신 입문", "김한빛 · 3학점", "국제어문학관 102", EDay.Monday, new AcademicPeriod(1), ECourseAccent.Blue));
+        entries.Add(createEntry("AIE21001", "글로벌 기업가정신 입문", "김한빛 · 3학점", "국제어문학관 102", EDay.Friday, new AcademicPeriod(1), ECourseAccent.Blue));
+        entries.Add(createEntry("AIE23005", "인공지능 윤리", "최은별 · 3학점", "비전관 407", EDay.Tuesday, new AcademicPeriod(2), ECourseAccent.Purple));
+        entries.Add(createEntry("AIE22004", "인간공학", "박지유 · 3학점", "복지관 204", EDay.Thursday, new AcademicPeriod(2), ECourseAccent.Green));
+        entries.Add(createEntry("AIE22003", "프로그래밍 I", "이성훈 · 3학점", "공학관 301", EDay.Wednesday, new AcademicPeriod(3), ECourseAccent.Blue));
+        entries.Add(createEntry("AIE22003", "프로그래밍 I", "이성훈 · 3학점", "공학관 301", EDay.Wednesday, new AcademicPeriod(4), ECourseAccent.Blue));
+        entries.Add(createEntry("AIE22004", "인간공학", "박지유 · 3학점", "복지관 204", EDay.Monday, new AcademicPeriod(5), ECourseAccent.Green));
         return entries.AsReadOnly();
     }
 
     private static IReadOnlyList<ScheduleEntry> createAlternativeScheduleEntries()
     {
         List<ScheduleEntry> entries = new List<ScheduleEntry>();
-        entries.Add(createEntry("AIE21001", "글로벌 기업가정신 입문", "김한빛 · 3학점", "국제어문학관 102", EAcademicDay.Tuesday, new AcademicPeriod(1), ECourseAccent.Blue));
-        entries.Add(createEntry("AIE23005", "인공지능 윤리", "최은별 · 3학점", "비전관 407", EAcademicDay.Thursday, new AcademicPeriod(2), ECourseAccent.Purple));
-        entries.Add(createEntry("AIE22004", "인간공학", "박지유 · 3학점", "복지관 204", EAcademicDay.Friday, new AcademicPeriod(3), ECourseAccent.Green));
-        entries.Add(createEntry("AIE22003", "프로그래밍 I", "이성훈 · 3학점", "공학관 301", EAcademicDay.Monday, new AcademicPeriod(4), ECourseAccent.Blue));
-        entries.Add(createEntry("AIE22003", "프로그래밍 I", "이성훈 · 3학점", "공학관 301", EAcademicDay.Wednesday, new AcademicPeriod(4), ECourseAccent.Blue));
+        entries.Add(createEntry("AIE21001", "글로벌 기업가정신 입문", "김한빛 · 3학점", "국제어문학관 102", EDay.Tuesday, new AcademicPeriod(1), ECourseAccent.Blue));
+        entries.Add(createEntry("AIE23005", "인공지능 윤리", "최은별 · 3학점", "비전관 407", EDay.Thursday, new AcademicPeriod(2), ECourseAccent.Purple));
+        entries.Add(createEntry("AIE22004", "인간공학", "박지유 · 3학점", "복지관 204", EDay.Friday, new AcademicPeriod(3), ECourseAccent.Green));
+        entries.Add(createEntry("AIE22003", "프로그래밍 I", "이성훈 · 3학점", "공학관 301", EDay.Monday, new AcademicPeriod(4), ECourseAccent.Blue));
+        entries.Add(createEntry("AIE22003", "프로그래밍 I", "이성훈 · 3학점", "공학관 301", EDay.Wednesday, new AcademicPeriod(4), ECourseAccent.Blue));
         return entries.AsReadOnly();
     }
 
@@ -192,7 +197,7 @@ internal static class PlannerSampleStateFactory
         string name,
         string instructorDisplayText,
         string locationDisplayText,
-        EAcademicDay day,
+        EDay day,
         AcademicPeriod period,
         ECourseAccent accent)
     {

@@ -3,12 +3,14 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
 using TimetableGenerator.Desktop.Presentation;
+using TimetableGenerator.Domain.Catalogs;
+using TimetableGenerator.Domain.Planning;
 
 namespace TimetableGenerator.Desktop.Presentation.Models;
 
 internal sealed class PlanTabItem : ObservableObject
 {
-    private const int CREDIT_LIMIT = 19;
+    private static readonly CourseCredits CREDIT_LIMIT = new CourseCredits(19m);
 
     public PlanId PlanId { get; }
 
@@ -42,30 +44,19 @@ internal sealed class PlanTabItem : ObservableObject
         }
     }
 
-    public int TotalCredits
+    public decimal TotalCredits
     {
         get
         {
-            int totalCredits = 0;
-            foreach (PlanCourseItem course in ScheduledCourses)
-            {
-                totalCredits += course.Credits.Value;
-            }
-
-            foreach (PlanCourseItem course in UnconfirmedCourses)
-            {
-                totalCredits += course.Credits.Value;
-            }
-
-            return totalCredits;
+            return findTotalCredits().Value;
         }
     }
 
-    public int CreditLimit
+    public decimal CreditLimit
     {
         get
         {
-            return CREDIT_LIMIT;
+            return CREDIT_LIMIT.Value;
         }
     }
 
@@ -73,7 +64,8 @@ internal sealed class PlanTabItem : ObservableObject
     {
         get
         {
-            return TotalCredits + " / " + CreditLimit + "학점";
+            CourseCredits totalCredits = findTotalCredits();
+            return totalCredits + " / " + CREDIT_LIMIT + "학점";
         }
     }
 
@@ -91,6 +83,15 @@ internal sealed class PlanTabItem : ObservableObject
         ObservableCollection<PlanCourseItem> scheduledCourses,
         ObservableCollection<PlanCourseItem> unconfirmedCourses)
     {
+        if (planId.IsValid == false)
+        {
+            throw new ArgumentException("Plan IDs must be valid.", nameof(planId));
+        }
+
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(scheduledCourses);
+        ArgumentNullException.ThrowIfNull(unconfirmedCourses);
+
         PlanId = planId;
         Name = name;
         ScheduledCourses = scheduledCourses;
@@ -148,6 +149,22 @@ internal sealed class PlanTabItem : ObservableObject
         }
 
         return null;
+    }
+
+    private CourseCredits findTotalCredits()
+    {
+        decimal totalCreditValue = 0m;
+        foreach (PlanCourseItem course in ScheduledCourses)
+        {
+            totalCreditValue += course.Credits.Value;
+        }
+
+        foreach (PlanCourseItem course in UnconfirmedCourses)
+        {
+            totalCreditValue += course.Credits.Value;
+        }
+
+        return new CourseCredits(totalCreditValue);
     }
 
     private void onCourseCollectionChanged(

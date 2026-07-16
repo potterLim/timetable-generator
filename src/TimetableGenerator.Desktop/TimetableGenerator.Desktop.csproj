@@ -10,6 +10,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TimetableGenerator.Domain\TimetableGenerator.Domain.csproj" />
+    <ProjectReference Include="..\TimetableGenerator.Infrastructure\TimetableGenerator.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Avalonia.Desktop" Version="12.1.0" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.0" />
     <PackageReference Include="FluentIcons.Avalonia" Version="2.1.333" />

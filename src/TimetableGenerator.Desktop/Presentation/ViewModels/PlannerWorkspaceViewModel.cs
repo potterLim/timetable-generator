@@ -7,6 +7,7 @@ using Avalonia.Controls;
 
 using TimetableGenerator.Desktop.Presentation.Layout;
 using TimetableGenerator.Desktop.Presentation.Models;
+using TimetableGenerator.Domain.Planning;
 
 namespace TimetableGenerator.Desktop.Presentation.ViewModels;
 
@@ -351,7 +352,7 @@ internal sealed class PlannerWorkspaceViewModel : ObservableObject
     {
         int nextPlanNumber = Plans.Count + 1;
         PlanTabItem newPlan = new PlanTabItem(
-            new PlanId(nextPlanNumber),
+            PlanId.CreateNew(),
             new PlanName("새 계획 " + nextPlanNumber),
             new ObservableCollection<PlanCourseItem>(),
             new ObservableCollection<PlanCourseItem>());
