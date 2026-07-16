@@ -10,6 +10,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimetableGenerator.HandongC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimetableGenerator.HandongCatalogGenerator.Tests", "tests\TimetableGenerator.HandongCatalogGenerator.Tests\TimetableGenerator.HandongCatalogGenerator.Tests.csproj", "{AA80E7A1-D922-448A-B213-921A99D012BC}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimetableGenerator.Domain", "src\TimetableGenerator.Domain\TimetableGenerator.Domain.csproj", "{50AF97F5-5A8B-493E-8782-F46027519535}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimetableGenerator.Domain.Tests", "tests\TimetableGenerator.Domain.Tests\TimetableGenerator.Domain.Tests.csproj", "{6A07E2CA-3FCC-47AC-A58D-E247BF6E5E7D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,8 +40,20 @@ Global
 		{AA80E7A1-D922-448A-B213-921A99D012BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA80E7A1-D922-448A-B213-921A99D012BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA80E7A1-D922-448A-B213-921A99D012BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50AF97F5-5A8B-493E-8782-F46027519535}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50AF97F5-5A8B-493E-8782-F46027519535}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50AF97F5-5A8B-493E-8782-F46027519535}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50AF97F5-5A8B-493E-8782-F46027519535}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A07E2CA-3FCC-47AC-A58D-E247BF6E5E7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A07E2CA-3FCC-47AC-A58D-E247BF6E5E7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A07E2CA-3FCC-47AC-A58D-E247BF6E5E7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A07E2CA-3FCC-47AC-A58D-E247BF6E5E7D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{50AF97F5-5A8B-493E-8782-F46027519535} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{6A07E2CA-3FCC-47AC-A58D-E247BF6E5E7D} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal
