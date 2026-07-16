@@ -7,6 +7,11 @@
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
+    <Content
+        Include="catalog-source.local.json"
+        Condition="Exists('catalog-source.local.json')"
+        CopyToOutputDirectory="PreserveNewest"
+        CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
