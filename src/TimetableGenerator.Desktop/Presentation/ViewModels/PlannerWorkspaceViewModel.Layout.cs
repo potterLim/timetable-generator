@@ -9,12 +9,18 @@ namespace TimetableGenerator.Desktop.Presentation.ViewModels;
 
 internal sealed partial class PlannerWorkspaceViewModel
 {
-    private const double COLLAPSED_COURSE_PANE_WIDTH = 320.0;
-    private const double COLLAPSED_INSPECTOR_PANE_WIDTH = 320.0;
-    private const double EXTRA_WIDE_COURSE_PANE_WIDTH = 352.0;
-    private const double EXTRA_WIDE_INSPECTOR_PANE_WIDTH = 312.0;
-    private const double WIDE_COURSE_PANE_WIDTH = 328.0;
-    private const double WIDE_INSPECTOR_PANE_WIDTH = 296.0;
+    private static readonly WorkspacePaneWidth COLLAPSED_COURSE_PANE_WIDTH =
+        new WorkspacePaneWidth(320.0);
+    private static readonly WorkspacePaneWidth COLLAPSED_INSPECTOR_PANE_WIDTH =
+        new WorkspacePaneWidth(304.0);
+    private static readonly WorkspacePaneWidth EXTRA_WIDE_COURSE_PANE_WIDTH =
+        new WorkspacePaneWidth(312.0);
+    private static readonly WorkspacePaneWidth EXTRA_WIDE_INSPECTOR_PANE_WIDTH =
+        new WorkspacePaneWidth(288.0);
+    private static readonly WorkspacePaneWidth WIDE_COURSE_PANE_WIDTH =
+        new WorkspacePaneWidth(312.0);
+    private static readonly WorkspacePaneWidth WIDE_INSPECTOR_PANE_WIDTH =
+        new WorkspacePaneWidth(304.0);
 
     private EWorkspaceLayoutMode mLayoutMode;
 
@@ -26,9 +32,9 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private SplitViewDisplayMode mInspectorPaneDisplayMode;
 
-    private double mCoursePaneWidth;
+    private WorkspacePaneWidth mCoursePaneWidth;
 
-    private double mInspectorPaneWidth;
+    private WorkspacePaneWidth mInspectorPaneWidth;
 
     public EWorkspaceLayoutMode LayoutMode
     {
@@ -82,7 +88,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return mCoursePaneWidth;
+            return mCoursePaneWidth.Value;
         }
     }
 
@@ -90,7 +96,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return mInspectorPaneWidth;
+            return mInspectorPaneWidth.Value;
         }
     }
 
@@ -106,7 +112,8 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return LayoutMode == EWorkspaceLayoutMode.Medium
+            return LayoutMode == EWorkspaceLayoutMode.Wide
+                || LayoutMode == EWorkspaceLayoutMode.Medium
                 || LayoutMode == EWorkspaceLayoutMode.Compact;
         }
     }
@@ -180,9 +187,9 @@ internal sealed partial class PlannerWorkspaceViewModel
                     WIDE_COURSE_PANE_WIDTH,
                     EPaneOpenState.Open);
                 setInspectorPaneState(
-                    SplitViewDisplayMode.Inline,
+                    SplitViewDisplayMode.Overlay,
                     WIDE_INSPECTOR_PANE_WIDTH,
-                    EPaneOpenState.Open);
+                    EPaneOpenState.Closed);
                 break;
             case EWorkspaceLayoutMode.Medium:
                 setCoursePaneState(
@@ -214,7 +221,7 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private void setCoursePaneState(
         SplitViewDisplayMode displayMode,
-        double paneWidth,
+        WorkspacePaneWidth paneWidth,
         EPaneOpenState paneOpenState)
     {
         mCoursePaneDisplayMode = displayMode;
@@ -226,7 +233,7 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private void setInspectorPaneState(
         SplitViewDisplayMode displayMode,
-        double paneWidth,
+        WorkspacePaneWidth paneWidth,
         EPaneOpenState paneOpenState)
     {
         mInspectorPaneDisplayMode = displayMode;

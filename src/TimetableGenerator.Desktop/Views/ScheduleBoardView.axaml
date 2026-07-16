@@ -6,9 +6,11 @@
     AutomationProperties.Name="주간 시간표">
   <UserControl.Styles>
     <Style Selector="Button.schedule-card">
-      <Setter Property="Margin" Value="6" />
-      <Setter Property="Padding" Value="9,8" />
+      <Setter Property="Margin" Value="4" />
+      <Setter Property="Padding" Value="7,8" />
       <Setter Property="MinHeight" Value="0" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="VerticalAlignment" Value="Stretch" />
       <Setter Property="HorizontalContentAlignment" Value="Stretch" />
       <Setter Property="VerticalContentAlignment" Value="Stretch" />
       <Setter Property="BorderThickness" Value="1" />

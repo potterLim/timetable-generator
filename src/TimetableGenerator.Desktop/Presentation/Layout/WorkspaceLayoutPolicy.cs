@@ -2,7 +2,7 @@ namespace TimetableGenerator.Desktop.Presentation.Layout;
 
 internal static class WorkspaceLayoutPolicy
 {
-    private const double EXTRA_WIDE_MINIMUM_WIDTH = 1_440.0;
+    private const double EXTRA_WIDE_MINIMUM_WIDTH = 1_600.0;
     private const double WIDE_MINIMUM_WIDTH = 1_280.0;
     private const double MEDIUM_MINIMUM_WIDTH = 1_080.0;
 

@@ -105,7 +105,7 @@ public sealed class ScheduleWorkspaceViewTests
     }
 
     [AvaloniaFact]
-    public void ScheduleCardOpensCompleteAccessibleDetailsWithoutEllipsis()
+    public void ScheduleCardKeepsCourseNameOnOneLineAndOpensCompleteDetails()
     {
         const string LONG_NAME = "사용자 경험과 인터페이스 설계를 위한 고급 프로젝트 실습";
         const string LONG_INSTRUCTOR = "김테스트, 박테스트 외 3명";
@@ -160,12 +160,16 @@ public sealed class ScheduleWorkspaceViewTests
             List<TextBlock> cardTexts = scheduleCard.GetVisualDescendants()
                 .OfType<TextBlock>()
                 .ToList();
-            Assert.Contains(cardTexts, textBlock => textBlock.Text == LONG_NAME);
+            TextBlock courseName = Assert.Single(
+                cardTexts,
+                textBlock => textBlock.Text == LONG_NAME);
+            Assert.Equal(TextWrapping.NoWrap, courseName.TextWrapping);
+            Assert.Equal(TextTrimming.CharacterEllipsis, courseName.TextTrimming);
             Assert.Contains(cardTexts, textBlock => textBlock.Text == LONG_INSTRUCTOR);
             Assert.Contains(cardTexts, textBlock => textBlock.Text == LONG_LOCATION);
-            Assert.All(
-                cardTexts,
-                textBlock => Assert.Equal(TextTrimming.None, textBlock.TextTrimming));
+            Assert.Equal(
+                LONG_NAME + Environment.NewLine + "선택하여 과목 상세 정보 보기",
+                ToolTip.GetTip(scheduleCard));
             Assert.True(boardGridOrNull.RowDefinitions[1].ActualHeight > 96.0);
 
             FlyoutBase? detailsFlyoutOrNull = scheduleCard.Flyout;

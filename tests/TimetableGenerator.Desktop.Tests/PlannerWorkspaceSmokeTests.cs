@@ -40,9 +40,29 @@ public sealed class PlannerWorkspaceSmokeTests
     {
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
 
+        workspace.applyWorkspaceWidth(new WorkspaceWidth(1_600.0));
+
+        Assert.Equal(EWorkspaceLayoutMode.ExtraWide, workspace.LayoutMode);
+        Assert.Equal(312.0, workspace.CoursePaneWidth);
+        Assert.Equal(288.0, workspace.InspectorPaneWidth);
+        Assert.True(workspace.IsCoursePaneOpen);
+        Assert.True(workspace.IsInspectorPaneOpen);
+        Assert.False(workspace.IsInspectorPaneToggleVisible);
+
+        workspace.applyWorkspaceWidth(new WorkspaceWidth(1_300.0));
+
+        Assert.Equal(EWorkspaceLayoutMode.Wide, workspace.LayoutMode);
+        Assert.Equal(312.0, workspace.CoursePaneWidth);
+        Assert.Equal(304.0, workspace.InspectorPaneWidth);
+        Assert.True(workspace.IsCoursePaneOpen);
+        Assert.False(workspace.IsInspectorPaneOpen);
+        Assert.True(workspace.IsInspectorPaneToggleVisible);
+
         workspace.applyWorkspaceWidth(new WorkspaceWidth(1_200.0));
 
         Assert.Equal(EWorkspaceLayoutMode.Medium, workspace.LayoutMode);
+        Assert.Equal(320.0, workspace.CoursePaneWidth);
+        Assert.Equal(304.0, workspace.InspectorPaneWidth);
         Assert.True(workspace.IsCoursePaneOpen);
         Assert.False(workspace.IsInspectorPaneOpen);
         Assert.True(workspace.IsInspectorPaneToggleVisible);
@@ -50,9 +70,31 @@ public sealed class PlannerWorkspaceSmokeTests
         workspace.applyWorkspaceWidth(new WorkspaceWidth(960.0));
 
         Assert.Equal(EWorkspaceLayoutMode.Compact, workspace.LayoutMode);
+        Assert.Equal(320.0, workspace.CoursePaneWidth);
+        Assert.Equal(304.0, workspace.InspectorPaneWidth);
         Assert.False(workspace.IsCoursePaneOpen);
         Assert.False(workspace.IsInspectorPaneOpen);
         Assert.True(workspace.IsCoursePaneToggleVisible);
+    }
+
+    [AvaloniaFact]
+    public void WorkspacePaneWidthRejectsInvalidValues()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(
+            delegate
+            {
+                new WorkspacePaneWidth(0.0);
+            });
+        Assert.Throws<ArgumentOutOfRangeException>(
+            delegate
+            {
+                new WorkspacePaneWidth(double.NaN);
+            });
+        Assert.Throws<ArgumentOutOfRangeException>(
+            delegate
+            {
+                new WorkspacePaneWidth(double.PositiveInfinity);
+            });
     }
 
     [AvaloniaFact]

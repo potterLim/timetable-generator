@@ -18,7 +18,7 @@
       <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
     </Style>
   </UserControl.Styles>
-  <Grid Margin="24,20,22,16" RowDefinitions="Auto,14,*,14,Auto">
+  <Grid Margin="18,20,18,16" RowDefinitions="Auto,14,*,14,Auto">
     <Grid Grid.Row="0" ColumnDefinitions="*,Auto" RowDefinitions="Auto,10,Auto">
       <TextBlock
           Grid.Row="0"

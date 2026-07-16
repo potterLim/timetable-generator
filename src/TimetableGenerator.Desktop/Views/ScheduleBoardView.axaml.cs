@@ -16,7 +16,7 @@ internal sealed partial class ScheduleBoardView : UserControl
 {
     private const int DAY_COUNT = 5;
     private const int MINIMUM_VISIBLE_PERIOD_COUNT = 6;
-    private const double PERIOD_COLUMN_WIDTH = 80.0;
+    private const double PERIOD_COLUMN_WIDTH = 72.0;
     private const double HEADER_ROW_HEIGHT = 42.0;
     private const double MINIMUM_PERIOD_ROW_HEIGHT = 96.0;
 

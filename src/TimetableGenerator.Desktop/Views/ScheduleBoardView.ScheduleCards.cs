@@ -32,7 +32,9 @@ internal sealed partial class ScheduleBoardView
         AutomationProperties.SetHelpText(
             scheduleCard,
             "선택하면 과목의 전체 시간, 담당교원, 강의실 정보를 엽니다.");
-        ToolTip.SetTip(scheduleCard, "과목 상세 정보 보기");
+        ToolTip.SetTip(
+            scheduleCard,
+            entry.Name + Environment.NewLine + "선택하여 과목 상세 정보 보기");
 
         Grid.SetRow(scheduleCard, entry.Period.Value);
         Grid.SetColumn(scheduleCard, findDayColumn(entry.Day));
@@ -67,7 +69,8 @@ internal sealed partial class ScheduleBoardView
 
         TextBlock name = createCardText(entry.Name, 12.0, FontWeight.SemiBold);
         name.Margin = new Thickness(0.0, 3.0, 0.0, 0.0);
-        name.TextWrapping = TextWrapping.Wrap;
+        name.TextWrapping = TextWrapping.NoWrap;
+        name.TextTrimming = TextTrimming.CharacterEllipsis;
         Grid.SetRow(name, 1);
         content.Children.Add(name);
 
