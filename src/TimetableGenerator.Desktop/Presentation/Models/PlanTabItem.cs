@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Windows.Input;
 
 using TimetableGenerator.Desktop.Presentation.Catalog;
 using TimetableGenerator.Domain.Catalogs;
@@ -9,6 +10,8 @@ namespace TimetableGenerator.Desktop.Presentation.Models;
 
 internal sealed class PlanTabItem
 {
+    private readonly EPlanCloseAvailability mCloseAvailability;
+
     public PlanningPlan Plan { get; }
 
     public PlanId PlanId
@@ -34,6 +37,24 @@ internal sealed class PlanTabItem
             return Name.Value;
         }
     }
+
+    public string CloseButtonAccessibleName
+    {
+        get
+        {
+            return DisplayName + " 계획 닫기";
+        }
+    }
+
+    public bool CanClose
+    {
+        get
+        {
+            return mCloseAvailability == EPlanCloseAvailability.Available;
+        }
+    }
+
+    public ICommand CloseCommand { get; }
 
     public ObservableCollection<PlanCourseItem> ScheduledCourses { get; }
 
@@ -82,7 +103,9 @@ internal sealed class PlanTabItem
 
     public PlanTabItem(
         PlanningPlan plan,
-        CourseCatalogProjection catalogProjection)
+        CourseCatalogProjection catalogProjection,
+        EPlanCloseAvailability closeAvailability,
+        Action<PlanTabItem> requestClosePlan)
     {
         if (plan == null)
         {
@@ -94,7 +117,24 @@ internal sealed class PlanTabItem
             throw new ArgumentNullException(nameof(catalogProjection));
         }
 
+        if (Enum.IsDefined(typeof(EPlanCloseAvailability), closeAvailability) == false)
+        {
+            throw new ArgumentOutOfRangeException(nameof(closeAvailability));
+        }
+
+        if (requestClosePlan == null)
+        {
+            throw new ArgumentNullException(nameof(requestClosePlan));
+        }
+
         Plan = plan;
+        mCloseAvailability = closeAvailability;
+        CloseCommand = new DelegateCommand(
+            delegate
+            {
+                requestClosePlan(this);
+            },
+            canClose);
         ScheduledCourses = new ObservableCollection<PlanCourseItem>();
         UnconfirmedCourses = new ObservableCollection<PlanCourseItem>();
         foreach (ScheduledCourseChoice choice in plan.ScheduledCourseChoices)
@@ -112,6 +152,11 @@ internal sealed class PlanTabItem
             UnconfirmedCourses.Add(
                 PlanCourseItem.CreateTimeNotProvided(course, selection));
         }
+    }
+
+    private bool canClose()
+    {
+        return CanClose;
     }
 
     public bool ContainsCourse(CourseId courseId)

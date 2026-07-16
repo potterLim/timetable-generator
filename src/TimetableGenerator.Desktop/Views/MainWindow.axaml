@@ -13,6 +13,10 @@
     MinHeight="640"
     Title="시간표"
     Icon="/Assets/AppIcon.png"
+    CanResize="True"
+    ExtendClientAreaToDecorationsHint="False"
+    ShowInTaskbar="True"
+    WindowDecorations="Full"
     WindowStartupLocation="CenterScreen"
     AutomationProperties.Name="{Binding AccessibleWindowName}">
   <Grid Background="{DynamicResource WindowBackgroundBrush}">
@@ -147,6 +151,59 @@
       </Border>
     </Grid>
     </Grid>
+
+    <Border
+        ZIndex="8"
+        MaxWidth="620"
+        Margin="24,24,24,28"
+        Padding="14,10,10,10"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Bottom"
+        IsVisible="{Binding HasProductNotice}"
+        Background="{DynamicResource SurfaceBrush}"
+        BorderBrush="{DynamicResource BorderBrush}"
+        BorderThickness="1"
+        BoxShadow="0 8 24 0 #24000000"
+        CornerRadius="8"
+        AutomationProperties.LiveSetting="Polite">
+      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+        <Border
+            Grid.Column="0"
+            Width="30"
+            Height="30"
+            Background="{DynamicResource AccentTintBrush}"
+            CornerRadius="15">
+          <icons:FluentIcon
+              Width="17"
+              Height="17"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Icon="Info"
+              IconVariant="Regular"
+              Foreground="{DynamicResource AccentBrush}" />
+        </Border>
+        <TextBlock
+            Grid.Column="1"
+            VerticalAlignment="Center"
+            FontSize="13"
+            LineHeight="19"
+            Text="{Binding ProductNotice}"
+            TextWrapping="Wrap" />
+        <Button
+            Grid.Column="2"
+            Classes="subtle icon"
+            Width="30"
+            Height="30"
+            Padding="0"
+            Command="{Binding DismissProductNoticeCommand}"
+            AutomationProperties.Name="알림 닫기">
+          <icons:FluentIcon
+              Icon="Dismiss"
+              IconVariant="Regular"
+              FontSize="16" />
+        </Button>
+      </Grid>
+    </Border>
 
     <Border
         ZIndex="10"

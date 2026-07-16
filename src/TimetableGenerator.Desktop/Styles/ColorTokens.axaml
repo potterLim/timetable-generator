@@ -23,6 +23,7 @@
       <SolidColorBrush x:Key="WarningBrush" Color="#B35C00" />
       <SolidColorBrush x:Key="WarningSubtleBrush" Color="#FFF4CE" />
       <SolidColorBrush x:Key="ErrorBrush" Color="#C42B1C" />
+      <SolidColorBrush x:Key="ErrorSubtleBrush" Color="#FDE7E9" />
       <SolidColorBrush x:Key="CourseBlueBackgroundBrush" Color="#F1F7FF" />
       <SolidColorBrush x:Key="CourseBlueBorderBrush" Color="#8DBCF4" />
       <SolidColorBrush x:Key="CourseBlueTextBrush" Color="#0F6CBD" />
@@ -55,6 +56,7 @@
       <SolidColorBrush x:Key="WarningBrush" Color="#F4B25F" />
       <SolidColorBrush x:Key="WarningSubtleBrush" Color="#44351E" />
       <SolidColorBrush x:Key="ErrorBrush" Color="#F1707B" />
+      <SolidColorBrush x:Key="ErrorSubtleBrush" Color="#442726" />
       <SolidColorBrush x:Key="CourseBlueBackgroundBrush" Color="#1A3148" />
       <SolidColorBrush x:Key="CourseBlueBorderBrush" Color="#356D9F" />
       <SolidColorBrush x:Key="CourseBlueTextBrush" Color="#86C4F5" />

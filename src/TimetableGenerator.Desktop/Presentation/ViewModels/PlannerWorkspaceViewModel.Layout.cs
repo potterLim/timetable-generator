@@ -133,6 +133,12 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     internal void closeOverlayPanes()
     {
+        if (IsPlanEditingOverlayVisible)
+        {
+            closePlanEditingState();
+            return;
+        }
+
         if (CoursePaneDisplayMode == SplitViewDisplayMode.Overlay)
         {
             IsCoursePaneOpen = false;

@@ -54,12 +54,6 @@
     <Setter Property="Background" Value="{DynamicResource PressedSurfaceBrush}" />
   </Style>
 
-  <Style Selector="Button.course-add:disabled">
-    <Setter Property="Opacity" Value="1" />
-    <Setter Property="Background" Value="Transparent" />
-    <Setter Property="BorderBrush" Value="Transparent" />
-  </Style>
-
   <Style Selector="Button.accent">
     <Setter Property="MinHeight" Value="40" />
     <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
@@ -101,6 +95,8 @@
   <Style Selector="ListBox.workspace-list">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="IsTabStop" Value="False" />
   </Style>
 
   <Style Selector="ListBox.workspace-list > ListBoxItem">
@@ -108,7 +104,8 @@
     <Setter Property="Margin" Value="0" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="Background" Value="Transparent" />
-    <Setter Property="FocusAdorner" Value="{x:Null}" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="IsTabStop" Value="False" />
   </Style>
 
   <Style Selector="ListBox.workspace-list > ListBoxItem:selected">

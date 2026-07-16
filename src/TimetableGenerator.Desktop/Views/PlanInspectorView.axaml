@@ -23,7 +23,7 @@
       Background="{DynamicResource SurfaceBrush}"
       BorderBrush="{DynamicResource BorderBrush}"
       BorderThickness="1,0,0,0">
-    <Grid Margin="22,20,22,18" RowDefinitions="Auto,Auto,Auto,12,Auto,18,1,14,Auto,8,*,14,1,12,Auto,14,1,14,Auto">
+    <Grid Margin="22,20,22,18" RowDefinitions="Auto,12,*">
       <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
         <TextBlock
             Classes="title"
@@ -58,8 +58,8 @@
                     IsEnabled="{Binding CanDeleteActivePlan}"
                     Command="{Binding BeginDeletePlanCommand}">
                   <StackPanel Orientation="Horizontal" Spacing="9">
-                    <icons:FluentIcon Icon="Delete" IconVariant="Regular" FontSize="17" />
-                    <TextBlock Text="계획 삭제" />
+                    <icons:FluentIcon Icon="Dismiss" IconVariant="Regular" FontSize="17" />
+                    <TextBlock Text="계획 닫기" />
                   </StackPanel>
                 </Button>
               </StackPanel>
@@ -68,181 +68,76 @@
         </Button>
       </Grid>
 
-      <Border
-          Grid.Row="1"
-          Margin="0,12,0,0"
-          Padding="12"
-          IsVisible="{Binding IsRenamingPlan}"
-          Background="{DynamicResource SubtleSurfaceBrush}"
-          BorderBrush="{DynamicResource BorderBrush}"
-          BorderThickness="1"
-          CornerRadius="7">
-        <StackPanel Spacing="9">
-          <TextBlock FontWeight="SemiBold" Text="계획 이름" />
-          <TextBox
-              MaxLength="80"
-              Text="{Binding PlanNameDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-              AutomationProperties.Name="계획 이름" />
-          <TextBlock
-              FontSize="12"
-              Foreground="{DynamicResource ErrorBrush}"
-              IsVisible="{Binding HasPlanNameValidationMessage}"
-              Text="{Binding PlanNameValidationMessage}" />
-          <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
-            <Button Classes="outline" Command="{Binding CancelRenamePlanCommand}" Content="취소" />
-            <Button Classes="accent" Command="{Binding ConfirmRenamePlanCommand}" Content="저장" />
-          </StackPanel>
-        </StackPanel>
-      </Border>
-
-      <Border
+      <ScrollViewer
+          x:Name="PlanInspectorScrollViewer"
           Grid.Row="2"
-          Margin="0,12,0,0"
-          Padding="12"
-          IsVisible="{Binding IsDeletePlanConfirmationVisible}"
-          Background="{DynamicResource SubtleSurfaceBrush}"
-          BorderBrush="{DynamicResource ErrorBrush}"
-          BorderThickness="1"
-          CornerRadius="7">
-        <StackPanel Spacing="9">
-          <TextBlock FontWeight="SemiBold" Text="이 계획을 삭제할까요?" />
+          HorizontalScrollBarVisibility="Disabled"
+          VerticalScrollBarVisibility="Auto">
+        <Grid RowDefinitions="Auto,18,1,14,Auto,8,Auto,14,1,12,Auto,14,1,14,Auto">
+          <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+            <TextBlock
+                VerticalAlignment="Center"
+                Classes="secondary"
+                Text="선택한 과목" />
+            <TextBlock
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                FontWeight="SemiBold"
+                Text="{Binding ActivePlan.CreditSummary}"
+                AutomationProperties.Name="선택한 과목과 학점" />
+          </Grid>
+
+          <Border Grid.Row="2" Background="{DynamicResource BorderBrush}" />
+
           <TextBlock
-              Classes="caption"
-              Text="선택한 과목과 추천 결과가 함께 삭제됩니다."
-              TextWrapping="Wrap" />
-          <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
-            <Button Classes="outline" Command="{Binding CancelDeletePlanCommand}" Content="취소" />
-            <Button
-                Background="{DynamicResource ErrorBrush}"
-                Foreground="White"
-                Command="{Binding ConfirmDeletePlanCommand}"
-                Content="삭제" />
-          </StackPanel>
-        </StackPanel>
-      </Border>
+              Grid.Row="4"
+              FontWeight="SemiBold"
+              Text="{Binding ActivePlan.ScheduledCourseHeading}" />
 
-      <Grid Grid.Row="4" ColumnDefinitions="*,Auto">
-        <TextBlock
-            VerticalAlignment="Center"
-            Classes="secondary"
-            Text="선택한 과목" />
-        <TextBlock
-            Grid.Column="1"
-            VerticalAlignment="Center"
-            FontWeight="SemiBold"
-            Text="{Binding ActivePlan.CreditSummary}"
-            AutomationProperties.Name="선택한 과목과 학점" />
-      </Grid>
-
-      <Border Grid.Row="6" Background="{DynamicResource BorderBrush}" />
-
-      <TextBlock
-          Grid.Row="8"
-          FontWeight="SemiBold"
-          Text="{Binding ActivePlan.ScheduledCourseHeading}" />
-
-      <ListBox
-          Grid.Row="10"
-          Classes="workspace-list"
-          ItemsSource="{Binding ActivePlan.ScheduledCourses}"
-          AutomationProperties.AutomationId="SelectedCourses"
-          AutomationProperties.Name="선택한 수강 과목">
-        <ListBox.ItemTemplate>
-          <DataTemplate DataType="models:PlanCourseItem">
-            <Border
-                Classes="plan-course"
-                Classes.blue="{Binding IsBlue}"
-                Classes.purple="{Binding IsPurple}"
-                Classes.green="{Binding IsGreen}"
-                MinHeight="91"
-                BorderThickness="3,0,0,1"
-                Background="{DynamicResource SurfaceBrush}">
-              <Grid Margin="13,9,7,8" ColumnDefinitions="*,36" RowDefinitions="Auto,Auto,Auto,Auto">
-                <TextBlock Grid.Row="0" Classes="caption" Text="{Binding Code}" />
-                <TextBlock
-                    Grid.Row="1"
-                    Margin="0,2,0,0"
-                    FontSize="15"
-                    FontWeight="SemiBold"
-                    Text="{Binding Name}"
-                    TextTrimming="CharacterEllipsis" />
-                <StackPanel Grid.Row="2" Margin="0,5,0,0" Orientation="Horizontal" Spacing="7">
-                  <TextBlock Classes="caption" Text="{Binding InstructorDisplayText}" />
-                  <TextBlock Classes="caption" Text="·" />
-                  <TextBlock Classes="caption" Text="{Binding CreditDisplayText}" />
-                </StackPanel>
-                <TextBlock
-                    Grid.Row="3"
-                    Margin="0,3,0,0"
-                    Classes="caption"
-                    Text="{Binding MeetingDisplayText}"
-                    TextTrimming="CharacterEllipsis" />
-                <Button
-                    Grid.Row="0"
-                    Grid.RowSpan="4"
-                    Grid.Column="1"
-                    Classes="icon"
-                    Width="32"
-                    Height="32"
-                    MinWidth="32"
-                    MinHeight="32"
-                    VerticalAlignment="Top"
-                    Command="{Binding DataContext.RemoveCourseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                    CommandParameter="{Binding}"
-                    AutomationProperties.Name="{Binding RemoveButtonAccessibleName}"
-                    ToolTip.Tip="계획에서 제거">
-                  <icons:FluentIcon Icon="Dismiss" IconVariant="Regular" FontSize="17" />
-                </Button>
-              </Grid>
-            </Border>
-          </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
-
-      <Border Grid.Row="12" Background="{DynamicResource BorderBrush}" />
-
-      <Expander
-          Grid.Row="14"
-          IsExpanded="True"
-          AutomationProperties.Name="시간 미정 과목">
-        <Expander.Header>
-          <StackPanel Orientation="Horizontal" Spacing="8">
-            <icons:FluentIcon
-                Width="18"
-                Height="18"
-                Icon="Warning"
-                IconVariant="Filled"
-                Foreground="{DynamicResource WarningBrush}" />
-            <TextBlock FontWeight="SemiBold" Text="{Binding ActivePlan.UnconfirmedHeading}" />
-          </StackPanel>
-        </Expander.Header>
-        <Grid RowDefinitions="Auto,Auto">
-          <TextBlock
-              Grid.Row="0"
-              Margin="0,8,0,2"
-              Classes="caption"
-              IsVisible="{Binding !ActivePlan.HasUnconfirmedCourses}"
-              Text="선택한 시간 미정 분반이 없습니다."
-              TextWrapping="Wrap" />
-          <ItemsControl Grid.Row="1" ItemsSource="{Binding ActivePlan.UnconfirmedCourses}">
-            <ItemsControl.ItemTemplate>
+          <ListBox
+              x:Name="ScheduledCoursesList"
+              Grid.Row="6"
+              Classes="workspace-list"
+              MaxHeight="360"
+              ItemsSource="{Binding ActivePlan.ScheduledCourses}"
+              AutomationProperties.AutomationId="SelectedCourses"
+              AutomationProperties.Name="선택한 수강 과목">
+            <ListBox.ItemsPanel>
+              <ItemsPanelTemplate>
+                <VirtualizingStackPanel />
+              </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
               <DataTemplate DataType="models:PlanCourseItem">
                 <Border
-                    Margin="0,7,0,0"
-                    Padding="12,9,6,9"
-                    CornerRadius="6"
-                    BorderBrush="{DynamicResource BorderBrush}"
-                    BorderThickness="1"
-                    Background="{DynamicResource SubtleSurfaceBrush}">
-                  <Grid ColumnDefinitions="*,34" RowDefinitions="Auto,Auto,Auto,Auto">
+                    Classes="plan-course"
+                    Classes.blue="{Binding IsBlue}"
+                    Classes.purple="{Binding IsPurple}"
+                    Classes.green="{Binding IsGreen}"
+                    MinHeight="91"
+                    BorderThickness="3,0,0,1"
+                    Background="{DynamicResource SurfaceBrush}">
+                  <Grid Margin="13,9,7,8" ColumnDefinitions="*,36" RowDefinitions="Auto,Auto,Auto,Auto">
                     <TextBlock Grid.Row="0" Classes="caption" Text="{Binding Code}" />
-                    <TextBlock Grid.Row="1" Margin="0,2,0,0" FontWeight="SemiBold" Text="{Binding Name}" />
-                    <StackPanel Grid.Row="2" Margin="0,4,0,0" Orientation="Horizontal" Spacing="7">
-                      <TextBlock Classes="caption" Text="{Binding InstructorDisplayText}" />
-                      <TextBlock Classes="caption" Text="·" />
-                      <TextBlock Classes="caption" Text="{Binding CreditDisplayText}" />
-                    </StackPanel>
-                    <TextBlock Grid.Row="3" Margin="0,3,0,0" Classes="caption" Text="{Binding MeetingDisplayText}" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Margin="0,2,0,0"
+                        FontSize="15"
+                        FontWeight="SemiBold"
+                        Text="{Binding Name}"
+                        TextWrapping="Wrap" />
+                    <TextBlock
+                        Grid.Row="2"
+                        Margin="0,5,0,0"
+                        Classes="caption"
+                        Text="{Binding InstructorCreditDisplayText}"
+                        TextWrapping="Wrap" />
+                    <TextBlock
+                        Grid.Row="3"
+                        Margin="0,3,0,0"
+                        Classes="caption"
+                        Text="{Binding ScheduleLocationDisplayText}"
+                        TextWrapping="Wrap" />
                     <Button
                         Grid.Row="0"
                         Grid.RowSpan="4"
@@ -252,6 +147,7 @@
                         Height="32"
                         MinWidth="32"
                         MinHeight="32"
+                        VerticalAlignment="Top"
                         Command="{Binding DataContext.RemoveCourseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         CommandParameter="{Binding}"
                         AutomationProperties.Name="{Binding RemoveButtonAccessibleName}"
@@ -261,35 +157,122 @@
                   </Grid>
                 </Border>
               </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-        </Grid>
-      </Expander>
+            </ListBox.ItemTemplate>
+          </ListBox>
 
-      <Border Grid.Row="16" Background="{DynamicResource BorderBrush}" />
+          <Border Grid.Row="8" Background="{DynamicResource BorderBrush}" />
 
-      <Border
-          Grid.Row="18"
-          Padding="12"
-          Background="{DynamicResource SubtleSurfaceBrush}"
-          CornerRadius="7">
-        <Grid ColumnDefinitions="22,*" ColumnSpacing="9">
-          <icons:FluentIcon
-              Grid.Column="0"
-              Icon="CheckmarkCircle"
-              IconVariant="Regular"
-              FontSize="18"
-              Foreground="{DynamicResource AccentBrush}" />
-          <StackPanel Grid.Column="1" Spacing="4">
-            <TextBlock FontWeight="SemiBold" Text="추천 기준" />
-            <TextBlock
-                Classes="caption"
-                LineHeight="18"
-                Text="선택한 분반 후보 중 시간이 겹치지 않는 조합만 표시합니다. 시간 미정 분반은 별도로 유지합니다."
-                TextWrapping="Wrap" />
-          </StackPanel>
+          <Expander
+              Grid.Row="10"
+              IsExpanded="True"
+              AutomationProperties.Name="시간 미정 과목">
+            <Expander.Header>
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <icons:FluentIcon
+                    Width="18"
+                    Height="18"
+                    Icon="Warning"
+                    IconVariant="Filled"
+                    Foreground="{DynamicResource WarningBrush}"
+                    IsVisible="{Binding ActivePlan.HasUnconfirmedCourses}" />
+                <icons:FluentIcon
+                    Width="18"
+                    Height="18"
+                    Icon="Clock"
+                    IconVariant="Regular"
+                    Foreground="{DynamicResource TextSecondaryBrush}"
+                    IsVisible="{Binding !ActivePlan.HasUnconfirmedCourses}" />
+                <TextBlock FontWeight="SemiBold" Text="{Binding ActivePlan.UnconfirmedHeading}" />
+              </StackPanel>
+            </Expander.Header>
+            <Grid RowDefinitions="Auto,Auto">
+              <TextBlock
+                  Grid.Row="0"
+                  Margin="0,8,0,2"
+                  Classes="caption"
+                  IsVisible="{Binding !ActivePlan.HasUnconfirmedCourses}"
+                  Text="선택한 시간 미정 분반이 없습니다."
+                  TextWrapping="Wrap" />
+              <ItemsControl Grid.Row="1" ItemsSource="{Binding ActivePlan.UnconfirmedCourses}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate DataType="models:PlanCourseItem">
+                    <Border
+                        Margin="0,7,0,0"
+                        Padding="12,9,6,9"
+                        CornerRadius="6"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1"
+                        Background="{DynamicResource SubtleSurfaceBrush}">
+                      <Grid ColumnDefinitions="*,34" RowDefinitions="Auto,Auto,Auto,Auto">
+                        <TextBlock Grid.Row="0" Classes="caption" Text="{Binding Code}" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Margin="0,2,0,0"
+                            FontWeight="SemiBold"
+                            Text="{Binding Name}"
+                            TextWrapping="Wrap" />
+                        <TextBlock
+                            Grid.Row="2"
+                            Margin="0,4,0,0"
+                            Classes="caption"
+                            Text="{Binding InstructorCreditDisplayText}"
+                            TextWrapping="Wrap" />
+                        <TextBlock
+                            Grid.Row="3"
+                            Margin="0,3,0,0"
+                            Classes="caption"
+                            Text="{Binding ScheduleLocationDisplayText}"
+                            TextWrapping="Wrap" />
+                        <Button
+                            Grid.Row="0"
+                            Grid.RowSpan="4"
+                            Grid.Column="1"
+                            Classes="icon"
+                            Width="32"
+                            Height="32"
+                            MinWidth="32"
+                            MinHeight="32"
+                            Command="{Binding DataContext.RemoveCourseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            CommandParameter="{Binding}"
+                            AutomationProperties.Name="{Binding RemoveButtonAccessibleName}"
+                            ToolTip.Tip="계획에서 제거">
+                          <icons:FluentIcon Icon="Dismiss" IconVariant="Regular" FontSize="17" />
+                        </Button>
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </Grid>
+          </Expander>
+
+          <Border Grid.Row="12" Background="{DynamicResource BorderBrush}" />
+
+          <Border
+              x:Name="RecommendationPolicyCard"
+              Grid.Row="14"
+              Padding="12"
+              Background="{DynamicResource SubtleSurfaceBrush}"
+              CornerRadius="7">
+            <Grid ColumnDefinitions="22,*" ColumnSpacing="9">
+              <icons:FluentIcon
+                  Grid.Column="0"
+                  Icon="CheckmarkCircle"
+                  IconVariant="Regular"
+                  FontSize="18"
+                  Foreground="{DynamicResource AccentBrush}" />
+              <StackPanel Grid.Column="1" Spacing="4">
+                <TextBlock FontWeight="SemiBold" Text="추천 기준" />
+                <TextBlock
+                    Classes="caption"
+                    LineHeight="18"
+                    Text="선택한 분반 후보 중 시간이 겹치지 않는 조합만 표시합니다. 시간 미정 분반은 별도로 유지합니다."
+                    TextWrapping="Wrap" />
+              </StackPanel>
+            </Grid>
+          </Border>
         </Grid>
-      </Border>
+      </ScrollViewer>
     </Grid>
   </Border>
 </UserControl>

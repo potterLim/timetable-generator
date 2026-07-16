@@ -136,18 +136,17 @@ internal static class ScheduleRecommendationProjector
             scheduledOffering.CourseId);
         CatalogOfferingProjection offeringProjection = catalogProjection.FindOfferingById(
             scheduledOffering.OfferingId);
-        string instructorAndCredits = offeringProjection.InstructorSummary
-            + " · "
-            + courseProjection.Course.Credits
-            + "학점";
+        ScheduleCourseDetails courseDetails = new ScheduleCourseDetails(
+            courseProjection.Course.Code,
+            courseProjection.Course.KoreanName,
+            courseProjection.Course.Credits,
+            new ScheduleInstructorSummary(offeringProjection.InstructorSummary),
+            new ScheduleLocationSummary(offeringProjection.LocationSummary));
 
         foreach (MeetingSlot slot in scheduledOffering.MeetingSlots)
         {
             entries.Add(new ScheduleEntry(
-                courseProjection.Course.Code.Value,
-                courseProjection.Course.KoreanName.Value,
-                instructorAndCredits,
-                offeringProjection.LocationSummary,
+                courseDetails,
                 slot.Day,
                 slot.Period,
                 courseProjection.Accent));

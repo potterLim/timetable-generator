@@ -43,15 +43,6 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         }
     }
 
-    public string CatalogRevisionDisplayText
-    {
-        get
-        {
-            return "과목 데이터 r"
-                + mCatalogProjection.Document.Catalog.Revision.Value.ToString("D4");
-        }
-    }
-
     public PlannerWorkspaceViewModel(
         CourseCatalogProjection catalogProjection,
         PlanningWorkspaceSession session,

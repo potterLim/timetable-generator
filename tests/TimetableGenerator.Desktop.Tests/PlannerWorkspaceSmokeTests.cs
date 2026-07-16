@@ -188,4 +188,54 @@ public sealed class PlannerWorkspaceSmokeTests
             workspace.Plans,
             plan => plan.DisplayName == "집중 수업 계획");
     }
+
+    [AvaloniaFact]
+    public void ClosingAPlanTargetsTheVisibleTabAndProtectsTheLastPlan()
+    {
+        using (PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace())
+        {
+            PlanTabItem activePlan = workspace.Plans[0];
+            PlanTabItem planToClose = workspace.Plans[1];
+            workspace.ActivePlan = activePlan;
+
+            Assert.True(planToClose.CanClose);
+            Assert.True(planToClose.CloseCommand.CanExecute(null));
+            Assert.Contains(planToClose.DisplayName, planToClose.CloseButtonAccessibleName);
+
+            planToClose.CloseCommand.Execute(null);
+
+            Assert.True(workspace.IsDeletePlanConfirmationVisible);
+            Assert.True(workspace.IsPlanEditingOverlayVisible);
+            Assert.False(workspace.IsWorkspaceInteractionEnabled);
+            Assert.Equal(planToClose.DisplayName, workspace.PlanPendingDeletionName);
+            Assert.Same(activePlan, workspace.ActivePlan);
+
+            workspace.ConfirmDeletePlanCommand.Execute(null);
+
+            PlanTabItem remainingPlan = Assert.Single(workspace.Plans);
+            Assert.Equal(activePlan.PlanId, remainingPlan.PlanId);
+            Assert.False(remainingPlan.CanClose);
+            Assert.False(remainingPlan.CloseCommand.CanExecute(null));
+            Assert.False(workspace.IsPlanEditingOverlayVisible);
+            Assert.True(workspace.IsWorkspaceInteractionEnabled);
+        }
+    }
+
+    [AvaloniaFact]
+    public void EscapeCancelsPlanEditingBeforeClosingResponsivePanes()
+    {
+        using (PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace())
+        {
+            workspace.BeginRenamePlanCommand.Execute(null);
+            Assert.True(workspace.IsPlanEditingOverlayVisible);
+
+            workspace.closeOverlayPanes();
+
+            Assert.False(workspace.IsRenamingPlan);
+            Assert.False(workspace.IsPlanEditingOverlayVisible);
+            Assert.True(workspace.IsWorkspaceInteractionEnabled);
+        }
+    }
 }

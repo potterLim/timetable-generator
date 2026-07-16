@@ -87,11 +87,17 @@
           Text="{Binding VisibleCourseHeading}" />
 
       <ListBox
+          x:Name="CourseResultsList"
           Grid.Row="10"
           Classes="workspace-list"
           ItemsSource="{Binding VisibleCourses}"
           AutomationProperties.AutomationId="CourseResults"
           AutomationProperties.Name="과목 검색 결과">
+        <ListBox.ItemsPanel>
+          <ItemsPanelTemplate>
+            <VirtualizingStackPanel />
+          </ItemsPanelTemplate>
+        </ListBox.ItemsPanel>
         <ListBox.ItemTemplate>
           <DataTemplate DataType="models:CourseSearchItem">
             <Border
@@ -115,24 +121,21 @@
                     FontSize="15"
                     FontWeight="SemiBold"
                     Text="{Binding Name}"
-                    TextTrimming="CharacterEllipsis" />
-                <StackPanel
+                    TextWrapping="Wrap" />
+                <TextBlock
                     Grid.Row="2"
                     Grid.Column="0"
                     Margin="0,5,0,0"
-                    Orientation="Horizontal"
-                    Spacing="7">
-                  <TextBlock Classes="caption" Text="{Binding InstructorDisplayText}" />
-                  <TextBlock Classes="caption" Text="·" />
-                  <TextBlock Classes="caption" Text="{Binding CreditDisplayText}" />
-                </StackPanel>
+                    Classes="caption"
+                    Text="{Binding InstructorCreditDisplayText}"
+                    TextWrapping="Wrap" />
                 <TextBlock
                     Grid.Row="3"
                     Grid.Column="0"
                     Margin="0,3,0,0"
                     Classes="caption"
-                    Text="{Binding MeetingDisplayText}"
-                    TextTrimming="CharacterEllipsis" />
+                    Text="{Binding MeetingLocationDisplayText}"
+                    TextWrapping="Wrap" />
 
                 <ComboBox
                     Grid.Row="4"
@@ -150,7 +153,8 @@
                       <TextBlock
                           MaxWidth="260"
                           Text="{Binding DisplayName}"
-                          TextTrimming="CharacterEllipsis" />
+                          TextTrimming="CharacterEllipsis"
+                          ToolTip.Tip="{Binding DisplayName}" />
                     </DataTemplate>
                   </ComboBox.ItemTemplate>
                 </ComboBox>
@@ -161,26 +165,35 @@
                     Grid.Column="1"
                     Classes="icon course-add"
                     VerticalAlignment="Center"
-                    IsEnabled="{Binding !IsAdded}"
+                    IsVisible="{Binding !IsAdded}"
                     Command="{Binding DataContext.AddCourseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                     CommandParameter="{Binding}"
                     AutomationProperties.Name="{Binding AddButtonAccessibleName}"
                     ToolTip.Tip="계획에 추가">
-                  <Grid>
-                    <icons:FluentIcon
-                        Icon="AddCircle"
-                        IconVariant="Regular"
-                        FontSize="22"
-                        Foreground="{DynamicResource AccentBrush}"
-                        IsVisible="{Binding !IsAdded}" />
-                    <icons:FluentIcon
-                        Icon="CheckmarkCircle"
-                        IconVariant="Filled"
-                        FontSize="22"
-                        Foreground="{DynamicResource SuccessBrush}"
-                        IsVisible="{Binding IsAdded}" />
-                  </Grid>
+                  <icons:FluentIcon
+                      Icon="AddCircle"
+                      IconVariant="Regular"
+                      FontSize="22"
+                      Foreground="{DynamicResource AccentBrush}" />
                 </Button>
+
+                <Border
+                    Grid.Row="0"
+                    Grid.RowSpan="4"
+                    Grid.Column="1"
+                    Width="36"
+                    Height="36"
+                    VerticalAlignment="Center"
+                    IsVisible="{Binding IsAdded}"
+                    AutomationProperties.Name="{Binding AddButtonAccessibleName}">
+                  <icons:FluentIcon
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      Icon="CheckmarkCircle"
+                      IconVariant="Filled"
+                      FontSize="22"
+                      Foreground="{DynamicResource SuccessBrush}" />
+                </Border>
               </Grid>
             </Border>
           </DataTemplate>

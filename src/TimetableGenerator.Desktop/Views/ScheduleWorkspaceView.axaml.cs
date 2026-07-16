@@ -42,6 +42,8 @@ internal sealed partial class ScheduleWorkspaceView : UserControl
 
     private async Task exportScheduleAsync()
     {
+        clearExportStatus();
+
         CancellationToken cancellationToken = mLifetimeCancellationSource.Token;
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -87,6 +89,12 @@ internal sealed partial class ScheduleWorkspaceView : UserControl
         options.DefaultExtension = "png";
         options.ShowOverwritePrompt = true;
         options.SuggestedFileName = createSuggestedFileName();
+        FilePickerFileType pngFileType = new FilePickerFileType("PNG 이미지");
+        pngFileType.Patterns = new string[] { "*.png" };
+        pngFileType.MimeTypes = new string[] { "image/png" };
+        pngFileType.AppleUniformTypeIdentifiers = new string[] { "public.png" };
+        options.FileTypeChoices = new FilePickerFileType[] { pngFileType };
+        options.SuggestedFileType = pngFileType;
         return options;
     }
 
@@ -118,6 +126,20 @@ internal sealed partial class ScheduleWorkspaceView : UserControl
         showExportStatus(
             "PNG를 저장하지 못했습니다. 다시 시도해 주세요.",
             EPngExportStatus.Failure);
+    }
+
+    private void clearExportStatus()
+    {
+        TextBlock? statusTextOrNull = this.FindControl<TextBlock>("ExportStatusText");
+        if (statusTextOrNull == null)
+        {
+            return;
+        }
+
+        statusTextOrNull.Text = string.Empty;
+        statusTextOrNull.IsVisible = false;
+        statusTextOrNull.Classes.Set("error", false);
+        statusTextOrNull.Classes.Set("success", false);
     }
 
     private void showExportStatus(string message, EPngExportStatus status)

@@ -1,7 +1,6 @@
 using System;
 
 using Avalonia;
-using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
@@ -19,7 +18,7 @@ internal sealed partial class ScheduleBoardView : UserControl
     private const int MINIMUM_VISIBLE_PERIOD_COUNT = 6;
     private const double PERIOD_COLUMN_WIDTH = 80.0;
     private const double HEADER_ROW_HEIGHT = 42.0;
-    private const double PERIOD_ROW_HEIGHT = 96.0;
+    private const double MINIMUM_PERIOD_ROW_HEIGHT = 96.0;
 
     private static readonly string[] DAY_NAMES =
     {
@@ -96,7 +95,8 @@ internal sealed partial class ScheduleBoardView : UserControl
         mBoardGrid.Children.Clear();
         mBoardGrid.ColumnDefinitions.Clear();
         mBoardGrid.RowDefinitions.Clear();
-        mBoardGrid.MinHeight = HEADER_ROW_HEIGHT + (RenderedPeriodCount * PERIOD_ROW_HEIGHT);
+        mBoardGrid.MinHeight = HEADER_ROW_HEIGHT
+            + (RenderedPeriodCount * MINIMUM_PERIOD_ROW_HEIGHT);
 
         addGridDefinitions();
         addBackgroundCells();
@@ -134,7 +134,8 @@ internal sealed partial class ScheduleBoardView : UserControl
         for (int periodIndex = 0; periodIndex < RenderedPeriodCount; ++periodIndex)
         {
             RowDefinition periodRow = new RowDefinition();
-            periodRow.Height = new GridLength(PERIOD_ROW_HEIGHT, GridUnitType.Pixel);
+            periodRow.Height = GridLength.Auto;
+            periodRow.MinHeight = MINIMUM_PERIOD_ROW_HEIGHT;
             mBoardGrid.RowDefinitions.Add(periodRow);
         }
     }
@@ -203,27 +204,6 @@ internal sealed partial class ScheduleBoardView : UserControl
         }
     }
 
-    private void addScheduleEntry(ScheduleEntry entry)
-    {
-        Button scheduleCard = new Button();
-        scheduleCard.Classes.Add("schedule-card");
-        scheduleCard.Classes.Add(findAccentClass(entry.Accent));
-        scheduleCard.Content = createScheduleEntryContent(entry);
-        scheduleCard.ZIndex = 1;
-
-        int periodIndex = entry.Period.Value - 1;
-        string accessibleName = entry.Code + ", " + entry.Name + ", " +
-            findDayName(entry.Day) + "요일 " + entry.Period.Value + "교시 " +
-            PERIOD_TIME_RANGES[periodIndex] + ", " + entry.InstructorDisplayText +
-            ", " + entry.LocationDisplayText;
-        AutomationProperties.SetName(scheduleCard, accessibleName);
-        ToolTip.SetTip(scheduleCard, accessibleName);
-
-        Grid.SetRow(scheduleCard, entry.Period.Value);
-        Grid.SetColumn(scheduleCard, findDayColumn(entry.Day));
-        mBoardGrid.Children.Add(scheduleCard);
-    }
-
     private static int findRenderedPeriodCount(
         ScheduleRecommendation? recommendationOrNull)
     {
@@ -242,93 +222,6 @@ internal sealed partial class ScheduleBoardView : UserControl
         }
 
         return renderedPeriodCount;
-    }
-
-    private static StackPanel createScheduleEntryContent(ScheduleEntry entry)
-    {
-        StackPanel content = new StackPanel();
-        content.Spacing = 3.0;
-
-        TextBlock code = new TextBlock();
-        code.Text = entry.Code;
-        code.FontSize = 11.0;
-        code.FontWeight = FontWeight.SemiBold;
-        code.TextTrimming = TextTrimming.CharacterEllipsis;
-        content.Children.Add(code);
-
-        TextBlock name = new TextBlock();
-        name.Text = entry.Name;
-        name.FontSize = 12.0;
-        name.FontWeight = FontWeight.SemiBold;
-        name.TextTrimming = TextTrimming.CharacterEllipsis;
-        content.Children.Add(name);
-
-        TextBlock instructor = new TextBlock();
-        instructor.Text = entry.InstructorDisplayText;
-        instructor.FontSize = 11.0;
-        instructor.TextTrimming = TextTrimming.CharacterEllipsis;
-        content.Children.Add(instructor);
-
-        TextBlock location = new TextBlock();
-        location.Text = entry.LocationDisplayText;
-        location.FontSize = 11.0;
-        location.TextTrimming = TextTrimming.CharacterEllipsis;
-        content.Children.Add(location);
-
-        return content;
-    }
-
-    private static string findAccentClass(ECourseAccent accent)
-    {
-        switch (accent)
-        {
-            case ECourseAccent.Blue:
-                return "blue";
-            case ECourseAccent.Purple:
-                return "purple";
-            case ECourseAccent.Green:
-                return "green";
-            default:
-                throw new ArgumentOutOfRangeException(nameof(accent), accent, "Unknown course accent.");
-        }
-    }
-
-    private static int findDayColumn(EDay day)
-    {
-        switch (day)
-        {
-            case EDay.Monday:
-                return 1;
-            case EDay.Tuesday:
-                return 2;
-            case EDay.Wednesday:
-                return 3;
-            case EDay.Thursday:
-                return 4;
-            case EDay.Friday:
-                return 5;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(day), day, "Unknown academic day.");
-        }
-    }
-
-    private static string findDayName(EDay day)
-    {
-        switch (day)
-        {
-            case EDay.Monday:
-                return "월";
-            case EDay.Tuesday:
-                return "화";
-            case EDay.Wednesday:
-                return "수";
-            case EDay.Thursday:
-                return "목";
-            case EDay.Friday:
-                return "금";
-            default:
-                throw new ArgumentOutOfRangeException(nameof(day), day, "Unknown academic day.");
-        }
     }
 
     private IBrush findBrush(string resourceKey)

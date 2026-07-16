@@ -28,9 +28,25 @@ internal sealed class PlanCourseItem
         }
     }
 
+    public string InstructorCreditDisplayText
+    {
+        get
+        {
+            return InstructorDisplayText + " · " + CreditDisplayText;
+        }
+    }
+
     public string MeetingDisplayText { get; }
 
     public string LocationDisplayText { get; }
+
+    public string ScheduleLocationDisplayText
+    {
+        get
+        {
+            return MeetingDisplayText + " · " + LocationDisplayText;
+        }
+    }
 
     public ECourseAccent Accent { get; }
 

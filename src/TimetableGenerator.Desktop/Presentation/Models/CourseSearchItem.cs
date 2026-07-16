@@ -72,9 +72,25 @@ internal sealed class CourseSearchItem : ObservableObject
         }
     }
 
+    public string InstructorCreditDisplayText
+    {
+        get
+        {
+            return InstructorDisplayText + " · " + CreditDisplayText;
+        }
+    }
+
     public string MeetingDisplayText { get; }
 
     public string LocationDisplayText { get; }
+
+    public string MeetingLocationDisplayText
+    {
+        get
+        {
+            return MeetingDisplayText + " · " + LocationDisplayText;
+        }
+    }
 
     public ECourseAccent Accent
     {

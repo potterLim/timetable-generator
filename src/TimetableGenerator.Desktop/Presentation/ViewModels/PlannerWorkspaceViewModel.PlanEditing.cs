@@ -17,7 +17,7 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private bool mIsRenamingPlan;
 
-    private bool mIsDeletePlanConfirmationVisible;
+    private PlanTabItem? mPlanPendingDeletionOrNull;
 
     private string mPlanNameDraft;
 
@@ -51,7 +51,50 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return mIsDeletePlanConfirmationVisible;
+            return mPlanPendingDeletionOrNull != null;
+        }
+    }
+
+    public bool IsPlanEditingOverlayVisible
+    {
+        get
+        {
+            return IsRenamingPlan || IsDeletePlanConfirmationVisible;
+        }
+    }
+
+    public bool IsWorkspaceInteractionEnabled
+    {
+        get
+        {
+            return IsPlanEditingOverlayVisible == false;
+        }
+    }
+
+    public string PlanPendingDeletionName
+    {
+        get
+        {
+            if (mPlanPendingDeletionOrNull == null)
+            {
+                return string.Empty;
+            }
+
+            return mPlanPendingDeletionOrNull.DisplayName;
+        }
+    }
+
+    public string PlanDeletionDescription
+    {
+        get
+        {
+            if (mPlanPendingDeletionOrNull == null)
+            {
+                return string.Empty;
+            }
+
+            return "‘" + mPlanPendingDeletionOrNull.DisplayName
+                + "’에 선택한 과목과 추천 결과가 이 기기에서 삭제됩니다.";
         }
     }
 
@@ -168,8 +211,8 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         PlanNameDraft = ActivePlan.DisplayName;
         clearPlanNameValidationMessage();
-        setRenamingPlanVisibility(true);
-        setDeletePlanConfirmationVisibility(false);
+        clearPlanPendingDeletion();
+        showRenamePlanEditor();
     }
 
     private void confirmRenamePlan()
@@ -185,7 +228,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             PlanName newName = new PlanName(PlanNameDraft);
             mSession.RenamePlan(ActivePlan.PlanId, newName);
             rebuildPlanItemsAndNotify();
-            setRenamingPlanVisibility(false);
+            hideRenamePlanEditor();
             afterWorkspaceMutation();
         }
         catch (ArgumentException)
@@ -200,38 +243,46 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         PlanNameDraft = ActivePlan.DisplayName;
         clearPlanNameValidationMessage();
-        setRenamingPlanVisibility(false);
+        hideRenamePlanEditor();
     }
 
     private void beginDeletePlan()
     {
-        if (CanDeleteActivePlan == false)
+        requestClosePlan(ActivePlan);
+    }
+
+    private void requestClosePlan(PlanTabItem plan)
+    {
+        throwIfDisposed();
+        requirePlanItem(plan);
+        if (Plans.Count <= 1)
         {
             return;
         }
 
-        setDeletePlanConfirmationVisibility(true);
-        setRenamingPlanVisibility(false);
+        hideRenamePlanEditor();
+        mPlanPendingDeletionOrNull = plan;
+        raisePlanEditingStateChanged();
     }
 
     private void confirmDeletePlan()
     {
         throwIfDisposed();
-        if (IsDeletePlanConfirmationVisible == false
-            || CanDeleteActivePlan == false)
+        PlanTabItem? planPendingDeletionOrNull = mPlanPendingDeletionOrNull;
+        if (planPendingDeletionOrNull == null || Plans.Count <= 1)
         {
             return;
         }
 
-        mSession.RemovePlan(ActivePlan.PlanId);
+        mSession.RemovePlan(planPendingDeletionOrNull.PlanId);
+        clearPlanPendingDeletion();
         rebuildPlanItemsAndNotify();
-        setDeletePlanConfirmationVisibility(false);
         afterWorkspaceMutation();
     }
 
     private void cancelDeletePlan()
     {
-        setDeletePlanConfirmationVisibility(false);
+        clearPlanPendingDeletion();
     }
 
     private bool canDeletePlan()
@@ -241,8 +292,8 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private void closePlanEditingState()
     {
-        setRenamingPlanVisibility(false);
-        setDeletePlanConfirmationVisibility(false);
+        hideRenamePlanEditor();
+        clearPlanPendingDeletion();
         clearPlanNameValidationMessage();
     }
 
@@ -259,13 +310,24 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private void rebuildPlanItems()
     {
+        EPlanCloseAvailability closeAvailability =
+            EPlanCloseAvailability.Unavailable;
+        if (mSession.Workspace.Plans.Count > 1)
+        {
+            closeAvailability = EPlanCloseAvailability.Available;
+        }
+
         mIsRebuildingPlanItems = true;
         try
         {
             Plans.Clear();
             foreach (PlanningPlan plan in mSession.Workspace.Plans)
             {
-                Plans.Add(new PlanTabItem(plan, mCatalogProjection));
+                Plans.Add(new PlanTabItem(
+                    plan,
+                    mCatalogProjection,
+                    closeAvailability,
+                    requestClosePlan));
             }
         }
         finally
@@ -303,17 +365,40 @@ internal sealed partial class PlannerWorkspaceViewModel
             nameof(plan));
     }
 
-    private void setRenamingPlanVisibility(bool isVisible)
+    private void showRenamePlanEditor()
     {
-        setProperty(ref mIsRenamingPlan, isVisible, nameof(IsRenamingPlan));
+        if (setProperty(ref mIsRenamingPlan, true, nameof(IsRenamingPlan)))
+        {
+            raisePlanEditingStateChanged();
+        }
     }
 
-    private void setDeletePlanConfirmationVisibility(bool isVisible)
+    private void hideRenamePlanEditor()
     {
-        setProperty(
-            ref mIsDeletePlanConfirmationVisible,
-            isVisible,
-            nameof(IsDeletePlanConfirmationVisible));
+        if (setProperty(ref mIsRenamingPlan, false, nameof(IsRenamingPlan)))
+        {
+            raisePlanEditingStateChanged();
+        }
+    }
+
+    private void clearPlanPendingDeletion()
+    {
+        if (mPlanPendingDeletionOrNull == null)
+        {
+            return;
+        }
+
+        mPlanPendingDeletionOrNull = null;
+        raisePlanEditingStateChanged();
+    }
+
+    private void raisePlanEditingStateChanged()
+    {
+        raisePropertyChanged(nameof(IsDeletePlanConfirmationVisible));
+        raisePropertyChanged(nameof(IsPlanEditingOverlayVisible));
+        raisePropertyChanged(nameof(IsWorkspaceInteractionEnabled));
+        raisePropertyChanged(nameof(PlanPendingDeletionName));
+        raisePropertyChanged(nameof(PlanDeletionDescription));
     }
 
     private void clearPlanNameValidationMessage()
