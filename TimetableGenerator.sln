@@ -22,6 +22,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimetableGenerator.Applicat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimetableGenerator.Application.Tests", "tests\TimetableGenerator.Application.Tests\TimetableGenerator.Application.Tests.csproj", "{849836D6-2623-4169-A34A-4A6D0D0851DD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimetableGenerator.Infrastructure", "src\TimetableGenerator.Infrastructure\TimetableGenerator.Infrastructure.csproj", "{D7A3C57D-2E42-44F4-AD60-34AD591EF4D0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimetableGenerator.Infrastructure.Tests", "tests\TimetableGenerator.Infrastructure.Tests\TimetableGenerator.Infrastructure.Tests.csproj", "{4FFB6884-9382-42C1-97F6-24E1FCE138CB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,6 +64,14 @@ Global
 		{849836D6-2623-4169-A34A-4A6D0D0851DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{849836D6-2623-4169-A34A-4A6D0D0851DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{849836D6-2623-4169-A34A-4A6D0D0851DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7A3C57D-2E42-44F4-AD60-34AD591EF4D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7A3C57D-2E42-44F4-AD60-34AD591EF4D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7A3C57D-2E42-44F4-AD60-34AD591EF4D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7A3C57D-2E42-44F4-AD60-34AD591EF4D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4FFB6884-9382-42C1-97F6-24E1FCE138CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FFB6884-9382-42C1-97F6-24E1FCE138CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FFB6884-9382-42C1-97F6-24E1FCE138CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FFB6884-9382-42C1-97F6-24E1FCE138CB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -69,5 +81,7 @@ Global
 		{6A07E2CA-3FCC-47AC-A58D-E247BF6E5E7D} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{C093E56B-5D14-4F03-B7E0-7E9D070E4D9F} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{849836D6-2623-4169-A34A-4A6D0D0851DD} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{D7A3C57D-2E42-44F4-AD60-34AD591EF4D0} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{4FFB6884-9382-42C1-97F6-24E1FCE138CB} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal

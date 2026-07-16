@@ -1,0 +1,10 @@
+<Project Sdk="MSTest.Sdk/4.0.2">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\TimetableGenerator.Infrastructure\TimetableGenerator.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>
