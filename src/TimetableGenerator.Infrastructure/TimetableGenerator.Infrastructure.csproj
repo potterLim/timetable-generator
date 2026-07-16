@@ -5,6 +5,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TimetableGenerator.Application\TimetableGenerator.Application.csproj" />
+    <ProjectReference Include="..\TimetableGenerator.CatalogJson\TimetableGenerator.CatalogJson.csproj" />
     <ProjectReference Include="..\TimetableGenerator.Domain\TimetableGenerator.Domain.csproj" />
   </ItemGroup>
 </Project>
