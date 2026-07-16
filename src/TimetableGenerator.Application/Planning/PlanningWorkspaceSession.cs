@@ -74,10 +74,7 @@ public sealed class PlanningWorkspaceSession
             throw new ArgumentNullException(nameof(name));
         }
 
-        PlanCatalogBinding binding = new PlanCatalogBinding(
-            mCatalog.Id,
-            mCatalog.Term,
-            mCatalog.Revision);
+        PlanCatalogBinding binding = mWorkspace.GetActivePlan().CatalogBinding;
         PlanningPlan plan = new PlanningPlan(
             planId,
             name,
@@ -165,8 +162,16 @@ public sealed class PlanningWorkspaceSession
 
     private void validateWorkspace(PlanningWorkspace workspace)
     {
+        PlanCatalogBinding sharedBinding = workspace.Plans[0].CatalogBinding;
         foreach (PlanningPlan plan in workspace.Plans)
         {
+            if (plan.CatalogBinding != sharedBinding)
+            {
+                throw new ArgumentException(
+                    "Every session plan must share one catalog artifact binding.",
+                    nameof(workspace));
+            }
+
             validatePlan(plan);
         }
     }

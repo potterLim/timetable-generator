@@ -38,7 +38,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
         CourseCatalog newCatalog = createCompatibleCatalog();
 
         PlanningWorkspaceCatalogRebindResult result =
-            PlanningWorkspaceCatalogRebinder.TryRebind(newCatalog, workspace);
+            tryRebind(newCatalog, workspace);
 
         Assert.IsTrue(result.IsRebound);
         Assert.AreEqual(EPlanningWorkspaceCatalogRebindStatus.Rebound, result.Status);
@@ -64,7 +64,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
     }
 
     [TestMethod]
-    public void TryRebindAcceptsAnEmptyPlanForANewAcademicTerm()
+    public void TryRebindRejectsAnEmptyPlanForANewAcademicTerm()
     {
         CourseCatalog originalCatalog = createOriginalCatalog();
         PlanningPlan plan = createPlan(
@@ -95,13 +95,41 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             });
 
         PlanningWorkspaceCatalogRebindResult result =
-            PlanningWorkspaceCatalogRebinder.TryRebind(nextTermCatalog, workspace);
+            tryRebind(nextTermCatalog, workspace);
 
-        Assert.IsTrue(result.IsRebound);
-        Assert.IsNotNull(result.ReboundWorkspaceOrNull);
-        Assert.AreEqual(
-            nextTermCatalog.Term,
-            result.ReboundWorkspaceOrNull.GetActivePlan().CatalogBinding.Term);
+        assertFailure(
+            result,
+            EPlanningWorkspaceCatalogRebindStatus.AcademicTermMismatch);
+    }
+
+    [TestMethod]
+    public void TryRebindRejectsAnEmptyPlanFromAnotherInstitution()
+    {
+        CourseCatalog originalCatalog = createOriginalCatalog();
+        PlanningPlan plan = createPlan(
+            originalCatalog,
+            "빈 계획",
+            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<UnscheduledOfferingSelection>());
+        PlanningWorkspace workspace = new PlanningWorkspace(
+            plan.Id,
+            new PlanningPlan[] { plan });
+        CourseCatalog otherInstitutionCatalog = createCatalog(
+            "another-university:2026-2:r0002",
+            new InstitutionId("another-university"),
+            "2026-2",
+            2,
+            originalCatalog.Courses,
+            originalCatalog.Offerings);
+
+        PlanningWorkspaceCatalogRebindResult result =
+            tryRebind(
+                otherInstitutionCatalog,
+                workspace);
+
+        assertFailure(
+            result,
+            EPlanningWorkspaceCatalogRebindStatus.InstitutionMismatch);
     }
 
     [TestMethod]
@@ -129,7 +157,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             new PlanningPlan[] { firstPlan, secondPlan });
 
         PlanningWorkspaceCatalogRebindResult result =
-            PlanningWorkspaceCatalogRebinder.TryRebind(
+            tryRebind(
                 createCompatibleCatalog(),
                 workspace);
 
@@ -138,6 +166,37 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             EPlanningWorkspaceCatalogRebindStatus.MixedCatalogBindings);
         Assert.AreSame(firstPlan, workspace.Plans[0]);
         Assert.AreSame(secondPlan, workspace.Plans[1]);
+    }
+
+    [TestMethod]
+    public void TryRebindRejectsChangedArtifactAtCurrentRevision()
+    {
+        CourseCatalog catalog = createOriginalCatalog();
+        PlanningPlan plan = createPlan(
+            catalog,
+            "기본 계획",
+            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<UnscheduledOfferingSelection>());
+        PlanningWorkspace workspace = new PlanningWorkspace(
+            plan.Id,
+            new PlanningPlan[] { plan });
+        PlanCatalogBinding changedArtifactBinding = new PlanCatalogBinding(
+            catalog.Id,
+            catalog.InstitutionId,
+            catalog.Term,
+            catalog.Revision,
+            new CatalogArtifactSha256(new string('b', 64)));
+
+        PlanningWorkspaceCatalogRebindResult result =
+            PlanningWorkspaceCatalogRebinder.TryRebind(
+                catalog,
+                changedArtifactBinding,
+                workspace);
+
+        assertFailure(
+            result,
+            EPlanningWorkspaceCatalogRebindStatus
+                .CatalogArtifactSha256Mismatch);
     }
 
     [TestMethod]
@@ -161,7 +220,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             new CatalogOffering[] { otherOffering });
 
         PlanningWorkspaceCatalogRebindResult result =
-            PlanningWorkspaceCatalogRebinder.TryRebind(
+            tryRebind(
                 incompatibleCatalog,
                 workspace);
 
@@ -192,7 +251,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             offerings);
 
         PlanningWorkspaceCatalogRebindResult result =
-            PlanningWorkspaceCatalogRebinder.TryRebind(
+            tryRebind(
                 incompatibleCatalog,
                 workspace);
 
@@ -222,7 +281,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             new CatalogOffering[] { mismatchedOffering });
 
         PlanningWorkspaceCatalogRebindResult result =
-            PlanningWorkspaceCatalogRebinder.TryRebind(
+            tryRebind(
                 incompatibleCatalog,
                 workspace);
 
@@ -250,7 +309,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             new CatalogOffering[] { unscheduledOffering });
 
         PlanningWorkspaceCatalogRebindResult result =
-            PlanningWorkspaceCatalogRebinder.TryRebind(
+            tryRebind(
                 incompatibleCatalog,
                 workspace);
 
@@ -289,7 +348,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             new CatalogOffering[] { scheduledOffering });
 
         PlanningWorkspaceCatalogRebindResult result =
-            PlanningWorkspaceCatalogRebinder.TryRebind(
+            tryRebind(
                 incompatibleCatalog,
                 workspace);
 
@@ -337,7 +396,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             });
 
         PlanningWorkspaceCatalogRebindResult result =
-            PlanningWorkspaceCatalogRebinder.TryRebind(
+            tryRebind(
                 incompatibleCatalog,
                 workspace);
 
@@ -360,9 +419,20 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             new PlanningPlan[] { plan });
 
         Assert.ThrowsExactly<ArgumentNullException>(
-            () => PlanningWorkspaceCatalogRebinder.TryRebind(null!, workspace));
+            () => PlanningWorkspaceCatalogRebinder.TryRebind(
+                null!,
+                createBinding(catalog),
+                workspace));
         Assert.ThrowsExactly<ArgumentNullException>(
-            () => PlanningWorkspaceCatalogRebinder.TryRebind(catalog, null!));
+            () => PlanningWorkspaceCatalogRebinder.TryRebind(
+                catalog,
+                null!,
+                workspace));
+        Assert.ThrowsExactly<ArgumentNullException>(
+            () => PlanningWorkspaceCatalogRebinder.TryRebind(
+                catalog,
+                createBinding(catalog),
+                null!));
     }
 
     private static CourseCatalog createOriginalCatalog()
@@ -406,9 +476,26 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
         IEnumerable<CatalogCourse> courses,
         IEnumerable<CatalogOffering> offerings)
     {
+        return createCatalog(
+            catalogIdValue,
+            new InstitutionId("handong-global-university"),
+            termValue,
+            revisionValue,
+            courses,
+            offerings);
+    }
+
+    private static CourseCatalog createCatalog(
+        string catalogIdValue,
+        InstitutionId institutionId,
+        string termValue,
+        int revisionValue,
+        IEnumerable<CatalogCourse> courses,
+        IEnumerable<CatalogOffering> offerings)
+    {
         return new CourseCatalog(
             new CatalogId(catalogIdValue),
-            new InstitutionId("handong-global-university"),
+            institutionId,
             new InstitutionName("한동대학교"),
             AcademicTerm.Parse(termValue),
             new CatalogRevision(revisionValue),
@@ -436,8 +523,10 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
     {
         PlanCatalogBinding binding = new PlanCatalogBinding(
             catalog.Id,
+            catalog.InstitutionId,
             catalog.Term,
-            catalog.Revision);
+            catalog.Revision,
+            createArtifactSha256(catalog));
         return new PlanningPlan(
             PlanId.CreateNew(),
             new PlanName(name),
@@ -463,8 +552,14 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
         Assert.AreEqual(originalPlan.Id, reboundPlan.Id);
         Assert.AreSame(originalPlan.Name, reboundPlan.Name);
         Assert.AreEqual(catalog.Id, reboundPlan.CatalogBinding.CatalogId);
+        Assert.AreEqual(
+            catalog.InstitutionId,
+            reboundPlan.CatalogBinding.InstitutionId);
         Assert.AreEqual(catalog.Term, reboundPlan.CatalogBinding.Term);
         Assert.AreEqual(catalog.Revision, reboundPlan.CatalogBinding.Revision);
+        Assert.AreEqual(
+            createArtifactSha256(catalog),
+            reboundPlan.CatalogBinding.ArtifactSha256);
     }
 
     private static void assertFailure(
@@ -474,5 +569,32 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
         Assert.IsFalse(result.IsRebound);
         Assert.AreEqual(expectedStatus, result.Status);
         Assert.IsNull(result.ReboundWorkspaceOrNull);
+    }
+
+    private static PlanningWorkspaceCatalogRebindResult tryRebind(
+        CourseCatalog catalog,
+        PlanningWorkspace workspace)
+    {
+        return PlanningWorkspaceCatalogRebinder.TryRebind(
+            catalog,
+            createBinding(catalog),
+            workspace);
+    }
+
+    private static PlanCatalogBinding createBinding(CourseCatalog catalog)
+    {
+        return new PlanCatalogBinding(
+            catalog.Id,
+            catalog.InstitutionId,
+            catalog.Term,
+            catalog.Revision,
+            createArtifactSha256(catalog));
+    }
+
+    private static CatalogArtifactSha256 createArtifactSha256(
+        CourseCatalog catalog)
+    {
+        char hexCharacter = catalog.Revision.Value == 1 ? 'a' : 'b';
+        return new CatalogArtifactSha256(new string(hexCharacter, 64));
     }
 }

@@ -1,5 +1,7 @@
 using System;
 using TimetableGenerator.CatalogJson;
+using TimetableGenerator.Domain.Catalogs;
+using TimetableGenerator.Domain.Planning;
 
 namespace TimetableGenerator.Infrastructure.Catalogs;
 
@@ -60,5 +62,17 @@ public sealed class VerifiedCatalogPackage
             index,
             entry,
             document);
+    }
+
+    public PlanCatalogBinding CreatePlanCatalogBinding()
+    {
+        CatalogArtifactSha256 artifactSha256 =
+            new CatalogArtifactSha256(Entry.File.Sha256.HexValue);
+        return new PlanCatalogBinding(
+            Entry.CatalogId,
+            Entry.Institution.Id,
+            Entry.Term,
+            Entry.Revision,
+            artifactSha256);
     }
 }

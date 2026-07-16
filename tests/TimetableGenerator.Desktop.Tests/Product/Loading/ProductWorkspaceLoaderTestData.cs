@@ -10,6 +10,12 @@ namespace TimetableGenerator.Desktop.Tests.Product.Loading;
 
 internal static class ProductWorkspaceLoaderTestData
 {
+    private static readonly InstitutionId DEFAULT_INSTITUTION_ID =
+        new InstitutionId("handong-global-university");
+    private static readonly AcademicTerm DEFAULT_TERM = AcademicTerm.Parse("2026-2");
+    private static readonly CourseCode DEFAULT_COURSE_CODE =
+        new CourseCode("CSE00001");
+
     private const string COURSE_ID = "handong-global-university:CSE00001";
     private const string OFFERING_ID =
         "handong-global-university:2026-2:CSE00001:01";
@@ -17,16 +23,33 @@ internal static class ProductWorkspaceLoaderTestData
     public static VerifiedCatalogPackage CreateCatalogPackage(
         CatalogRevision revision)
     {
-        if (revision.IsValid == false)
-        {
-            throw new ArgumentException(
-                "Test catalogs require a valid revision.",
-                nameof(revision));
-        }
+        return createCatalogPackage(
+            revision,
+            DEFAULT_INSTITUTION_ID,
+            DEFAULT_TERM,
+            DEFAULT_COURSE_CODE);
+    }
 
-        byte[] catalogBytes = createCatalogBytes(revision);
-        byte[] indexBytes = createIndexBytes(revision, catalogBytes);
-        return VerifiedCatalogPackage.ReadAndVerify(indexBytes, catalogBytes);
+    public static VerifiedCatalogPackage CreateCatalogPackage(
+        CatalogRevision revision,
+        InstitutionId institutionId,
+        AcademicTerm term)
+    {
+        return createCatalogPackage(
+            revision,
+            institutionId,
+            term,
+            DEFAULT_COURSE_CODE);
+    }
+
+    public static VerifiedCatalogPackage CreateCatalogPackageWithoutSavedCourse(
+        CatalogRevision revision)
+    {
+        return createCatalogPackage(
+            revision,
+            DEFAULT_INSTITUTION_ID,
+            DEFAULT_TERM,
+            new CourseCode("CSE99999"));
     }
 
     public static PlanningWorkspace CreateEmptyWorkspace(CatalogRevision revision)
@@ -71,10 +94,68 @@ internal static class ProductWorkspaceLoaderTestData
             new PlanningPlan[] { firstPlan, secondPlan });
     }
 
-    private static byte[] createCatalogBytes(CatalogRevision revision)
+    private static VerifiedCatalogPackage createCatalogPackage(
+        CatalogRevision revision,
+        InstitutionId institutionId,
+        AcademicTerm term,
+        CourseCode courseCode)
     {
-        string catalogId = createCatalogId(revision);
+        if (revision.IsValid == false)
+        {
+            throw new ArgumentException(
+                "Test catalogs require a valid revision.",
+                nameof(revision));
+        }
+
+        if (institutionId == null)
+        {
+            throw new ArgumentNullException(nameof(institutionId));
+        }
+
+        if (term.IsValid == false)
+        {
+            throw new ArgumentException(
+                "Test catalogs require a valid academic term.",
+                nameof(term));
+        }
+
+        if (courseCode == null)
+        {
+            throw new ArgumentNullException(nameof(courseCode));
+        }
+
+        byte[] catalogBytes = createCatalogBytes(
+            revision,
+            institutionId,
+            term,
+            courseCode);
+        byte[] indexBytes = createIndexBytes(
+            revision,
+            institutionId,
+            term,
+            catalogBytes);
+        return VerifiedCatalogPackage.ReadAndVerify(indexBytes, catalogBytes);
+    }
+
+    private static byte[] createCatalogBytes(
+        CatalogRevision revision,
+        InstitutionId institutionId,
+        AcademicTerm term,
+        CourseCode courseCode)
+    {
+        string catalogId = createCatalogId(revision, institutionId, term);
+        string courseId = institutionId.Value + ":" + courseCode.Value;
+        string offeringId = institutionId.Value
+            + ":"
+            + term.Id
+            + ":"
+            + courseCode.Value
+            + ":01";
         string revisionText = revision.Value.ToString(CultureInfo.InvariantCulture);
+        string academicYearText = term.AcademicYear.Value.ToString(
+            CultureInfo.InvariantCulture);
+        string semesterText = term.Semester.Value.ToString(
+            CultureInfo.InvariantCulture);
         string json = $$"""
             {
               "documentType": "courseCatalog",
@@ -82,20 +163,20 @@ internal static class ProductWorkspaceLoaderTestData
               "catalogId": "{{catalogId}}",
               "revision": {{revisionText}},
               "institution": {
-                "id": "handong-global-university",
+                "id": "{{institutionId.Value}}",
                 "name": {
                   "ko": "한동대학교",
                   "en": "Handong Global University"
                 }
               },
               "term": {
-                "id": "2026-2",
-                "academicYear": 2026,
-                "semester": 2
+                "id": "{{term.Id}}",
+                "academicYear": {{academicYearText}},
+                "semester": {{semesterText}}
               },
               "source": {
-                "providerId": "handong-global-university",
-                "logicalFileName": "hgu-2026-2-source.xls",
+                "providerId": "{{institutionId.Value}}",
+                "logicalFileName": "hgu-{{term.Id}}-source.xls",
                 "declaredExtension": "xls",
                 "detectedMediaType": "text/html",
                 "declaredCharset": "ks_c_5601-1987",
@@ -125,8 +206,8 @@ internal static class ProductWorkspaceLoaderTestData
               },
               "courses": [
                 {
-                  "courseId": "{{COURSE_ID}}",
-                  "code": "CSE00001",
+                  "courseId": "{{courseId}}",
+                  "code": "{{courseCode.Value}}",
                   "name": {
                     "ko": "자료구조",
                     "en": "Data Structures"
@@ -136,8 +217,8 @@ internal static class ProductWorkspaceLoaderTestData
               ],
               "offerings": [
                 {
-                  "offeringId": "{{OFFERING_ID}}",
-                  "courseId": "{{COURSE_ID}}",
+                  "offeringId": "{{offeringId}}",
+                  "courseId": "{{courseId}}",
                   "sectionCode": "01",
                   "requirementType": "majorRequired",
                   "offeringUnitName": "AI컴퓨터전자학부",
@@ -183,10 +264,16 @@ internal static class ProductWorkspaceLoaderTestData
 
     private static byte[] createIndexBytes(
         CatalogRevision revision,
+        InstitutionId institutionId,
+        AcademicTerm term,
         byte[] catalogBytes)
     {
-        string catalogId = createCatalogId(revision);
+        string catalogId = createCatalogId(revision, institutionId, term);
         string revisionText = revision.Value.ToString(CultureInfo.InvariantCulture);
+        string academicYearText = term.AcademicYear.Value.ToString(
+            CultureInfo.InvariantCulture);
+        string semesterText = term.Semester.Value.ToString(
+            CultureInfo.InvariantCulture);
         CatalogFileSize fileSize = new CatalogFileSize(catalogBytes.LongLength);
         Sha256Digest sha256 = Sha256Digest.Compute(catalogBytes);
         string json = $$"""
@@ -199,20 +286,20 @@ internal static class ProductWorkspaceLoaderTestData
                   "catalogId": "{{catalogId}}",
                   "catalogSchemaVersion": 1,
                   "institution": {
-                    "id": "handong-global-university",
+                    "id": "{{institutionId.Value}}",
                     "name": {
                       "ko": "한동대학교",
                       "en": "Handong Global University"
                     }
                   },
                   "term": {
-                    "id": "2026-2",
-                    "academicYear": 2026,
-                    "semester": 2
+                    "id": "{{term.Id}}",
+                    "academicYear": {{academicYearText}},
+                    "semester": {{semesterText}}
                   },
                   "revision": {{revisionText}},
                   "file": {
-                    "relativePath": "handong-global-university/2026-2/catalog-{{revision.FileComponent}}.json",
+                    "relativePath": "{{institutionId.Value}}/{{term.Id}}/catalog-{{revision.FileComponent}}.json",
                     "mediaType": "application/json",
                     "charset": "utf-8",
                     "contentEncoding": "identity",
@@ -259,14 +346,19 @@ internal static class ProductWorkspaceLoaderTestData
 
     private static PlanCatalogBinding createCatalogBinding(CatalogRevision revision)
     {
-        return new PlanCatalogBinding(
-            new CatalogId(createCatalogId(revision)),
-            AcademicTerm.Parse("2026-2"),
-            revision);
+        return CreateCatalogPackage(revision).CreatePlanCatalogBinding();
     }
 
     private static string createCatalogId(CatalogRevision revision)
     {
-        return "handong-global-university:2026-2:" + revision.FileComponent;
+        return createCatalogId(revision, DEFAULT_INSTITUTION_ID, DEFAULT_TERM);
+    }
+
+    private static string createCatalogId(
+        CatalogRevision revision,
+        InstitutionId institutionId,
+        AcademicTerm term)
+    {
+        return institutionId.Value + ":" + term.Id + ":" + revision.FileComponent;
     }
 }

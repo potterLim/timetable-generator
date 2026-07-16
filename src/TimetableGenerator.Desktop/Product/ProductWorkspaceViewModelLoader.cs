@@ -25,7 +25,7 @@ internal sealed class ProductWorkspaceViewModelLoader : IProductWorkspaceLoader
         mDataLoader = dataLoader;
     }
 
-    public async Task<PlannerWorkspaceViewModel> LoadAsync(
+    public async Task<ProductWorkspacePresentation> LoadAsync(
         CancellationToken cancellationToken)
     {
         ProductWorkspaceLoadResult loadResult = await mDataLoader.LoadAsync(
@@ -40,10 +40,16 @@ internal sealed class ProductWorkspaceViewModelLoader : IProductWorkspaceLoader
         IScheduleRecommendationProvider recommendationProvider =
             new CatalogScheduleRecommendationProvider(
                 loadResult.CatalogPackage.Document.Catalog);
-        return new PlannerWorkspaceViewModel(
+        PlannerWorkspaceViewModel workspace = new PlannerWorkspaceViewModel(
             catalogProjection,
             session,
             autosaveQueue,
             recommendationProvider);
+        return new ProductWorkspacePresentation(
+            workspace,
+            loadResult.CatalogPackage,
+            loadResult.Workspace,
+            loadResult.CatalogOrigin,
+            loadResult.RecoveryFlags);
     }
 }

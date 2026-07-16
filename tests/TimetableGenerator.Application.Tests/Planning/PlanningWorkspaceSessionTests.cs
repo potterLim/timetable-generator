@@ -97,8 +97,12 @@ public sealed class PlanningWorkspaceSessionTests
         PlanningPlan plan = workspace.GetActivePlan();
         Assert.AreEqual(newPlanId, plan.Id);
         Assert.AreEqual(catalog.Id, plan.CatalogBinding.CatalogId);
+        Assert.AreEqual(catalog.InstitutionId, plan.CatalogBinding.InstitutionId);
         Assert.AreEqual(catalog.Term, plan.CatalogBinding.Term);
         Assert.AreEqual(catalog.Revision, plan.CatalogBinding.Revision);
+        Assert.AreEqual(
+            new CatalogArtifactSha256(new string('a', 64)),
+            plan.CatalogBinding.ArtifactSha256);
     }
 
     [TestMethod]
@@ -107,8 +111,10 @@ public sealed class PlanningWorkspaceSessionTests
         CourseCatalog catalog = createCatalog();
         PlanCatalogBinding mismatchedBinding = new PlanCatalogBinding(
             catalog.Id,
+            catalog.InstitutionId,
             catalog.Term,
-            new CatalogRevision(2));
+            new CatalogRevision(2),
+            new CatalogArtifactSha256(new string('a', 64)));
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlanWithBinding(
             mismatchedBinding,
             Array.Empty<ScheduledCourseChoice>(),
@@ -116,6 +122,34 @@ public sealed class PlanningWorkspaceSessionTests
         PlanningWorkspace workspace = new PlanningWorkspace(
             plan.Id,
             new PlanningPlan[] { plan });
+
+        Assert.ThrowsExactly<ArgumentException>(
+            () => new PlanningWorkspaceSession(catalog, workspace));
+    }
+
+    [TestMethod]
+    public void ConstructorRejectsMixedArtifactBindingsAtSameRevision()
+    {
+        CourseCatalog catalog = createCatalog();
+        PlanningPlan firstPlan = ScheduleRecommendationTestData.CreatePlan(
+            catalog,
+            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<UnscheduledOfferingSelection>());
+        PlanCatalogBinding changedArtifactBinding = new PlanCatalogBinding(
+            catalog.Id,
+            catalog.InstitutionId,
+            catalog.Term,
+            catalog.Revision,
+            new CatalogArtifactSha256(new string('b', 64)));
+        PlanningPlan secondPlan = new PlanningPlan(
+            PlanId.CreateNew(),
+            new PlanName("둘째 시간표"),
+            changedArtifactBinding,
+            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<UnscheduledOfferingSelection>());
+        PlanningWorkspace workspace = new PlanningWorkspace(
+            firstPlan.Id,
+            new PlanningPlan[] { firstPlan, secondPlan });
 
         Assert.ThrowsExactly<ArgumentException>(
             () => new PlanningWorkspaceSession(catalog, workspace));

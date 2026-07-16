@@ -93,8 +93,12 @@ public sealed class PlanningWorkspaceJsonCodec
         writer.WriteString("name", plan.Name.Value);
         writer.WriteStartObject("catalog");
         writer.WriteString("catalogId", plan.CatalogBinding.CatalogId.Value);
+        writer.WriteString("institutionId", plan.CatalogBinding.InstitutionId.Value);
         writer.WriteString("term", plan.CatalogBinding.Term.Id);
         writer.WriteNumber("revision", plan.CatalogBinding.Revision.Value);
+        writer.WriteString(
+            "artifactSha256",
+            plan.CatalogBinding.ArtifactSha256.HexValue);
         writer.WriteEndObject();
         writer.WriteStartArray("scheduledChoices");
         foreach (ScheduledCourseChoice choice in plan.ScheduledCourseChoices)
@@ -215,14 +219,33 @@ public sealed class PlanningWorkspaceJsonCodec
         Dictionary<string, JsonElement> properties = readExactObject(
             element,
             "plan.catalog",
-            new string[] { "catalogId", "term", "revision" });
+            new string[]
+            {
+                "catalogId",
+                "institutionId",
+                "term",
+                "revision",
+                "artifactSha256",
+            });
         CatalogId catalogId = new CatalogId(
             readString(properties["catalogId"], "plan.catalog.catalogId"));
+        InstitutionId institutionId = new InstitutionId(
+            readString(properties["institutionId"], "plan.catalog.institutionId"));
         AcademicTerm term = AcademicTerm.Parse(
             readString(properties["term"], "plan.catalog.term"));
         CatalogRevision revision = new CatalogRevision(
             readInt32(properties["revision"], "plan.catalog.revision"));
-        return new PlanCatalogBinding(catalogId, term, revision);
+        CatalogArtifactSha256 artifactSha256 =
+            new CatalogArtifactSha256(
+                readString(
+                    properties["artifactSha256"],
+                    "plan.catalog.artifactSha256"));
+        return new PlanCatalogBinding(
+            catalogId,
+            institutionId,
+            term,
+            revision,
+            artifactSha256);
     }
 
     private static IReadOnlyList<ScheduledCourseChoice> readScheduledChoices(

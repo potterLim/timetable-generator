@@ -129,8 +129,10 @@ public sealed class PlanningPlanTests
     {
         return new PlanCatalogBinding(
             new CatalogId("handong-global-university:2026-2:r0001"),
+            new InstitutionId("handong-global-university"),
             AcademicTerm.Parse("2026-2"),
-            new CatalogRevision(1));
+            new CatalogRevision(1),
+            new CatalogArtifactSha256(new string('a', 64)));
     }
 
     private static CourseId createCourseId(string courseCodeValue)

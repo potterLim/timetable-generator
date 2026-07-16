@@ -8,11 +8,15 @@ using TimetableGenerator.Desktop.Presentation.Catalog;
 using TimetableGenerator.Desktop.Presentation.Recommendations;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Desktop.Product;
+using TimetableGenerator.Desktop.Product.CatalogUpdates;
+using TimetableGenerator.Desktop.Product.Loading;
 using TimetableGenerator.Desktop.Storage;
 using TimetableGenerator.Desktop.Tests.Presentation.Catalog;
 using TimetableGenerator.Desktop.Tests.Product;
+using TimetableGenerator.Desktop.Tests.Product.Loading;
 using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Planning;
+using TimetableGenerator.Infrastructure.Catalogs;
 
 namespace TimetableGenerator.Desktop.Tests;
 
@@ -38,6 +42,89 @@ internal static class PlannerWorkspaceTestFactory
         return createWorkspace(document, recommendationProvider);
     }
 
+    public static ProductShellViewModel CreateShell(
+        PlannerWorkspaceViewModel workspace)
+    {
+        QueueProductWorkspaceLoader loader = new QueueProductWorkspaceLoader(
+            new Func<CancellationToken, Task<ProductWorkspacePresentation>>[]
+            {
+                delegate
+                {
+                    return Task.FromResult(CreatePresentation(workspace));
+                },
+            });
+        QueueProductCatalogUpdateService catalogUpdateService =
+            new QueueProductCatalogUpdateService(
+                new Func<
+                    VerifiedCatalogPackage,
+                    PlanningWorkspace,
+                    CancellationToken,
+                    Task<ProductCatalogUpdateResult>>[]
+                {
+                    delegate
+                    {
+                        ProductCatalogUpdateResult updateResult =
+                            new ProductCatalogUpdateResult(
+                                EProductCatalogUpdateStatus.Current,
+                                new CatalogRevision(1));
+                        return Task.FromResult(updateResult);
+                    },
+                });
+        return new ProductShellViewModel(loader, catalogUpdateService);
+    }
+
+    public static ProductWorkspacePresentation CreatePresentation(
+        PlannerWorkspaceViewModel workspace)
+    {
+        return CreatePresentation(
+            workspace,
+            EProductCatalogOrigin.OfflineCache);
+    }
+
+    public static ProductWorkspacePresentation CreatePresentation(
+        PlannerWorkspaceViewModel workspace,
+        EProductCatalogOrigin catalogOrigin)
+    {
+        if (workspace == null)
+        {
+            throw new ArgumentNullException(nameof(workspace));
+        }
+
+        CatalogRevision revision = new CatalogRevision(1);
+        VerifiedCatalogPackage activeCatalogPackage =
+            ProductWorkspaceLoaderTestData.CreateCatalogPackage(revision);
+        PlanningWorkspace workspaceSnapshot =
+            ProductWorkspaceLoaderTestData.CreateEmptyWorkspace(revision);
+        return new ProductWorkspacePresentation(
+            workspace,
+            activeCatalogPackage,
+            workspaceSnapshot,
+            catalogOrigin,
+            EProductWorkspaceRecoveryFlags.None);
+    }
+
+    public static ProductWorkspacePresentation CreatePresentationWithRecoveryFlags(
+        PlannerWorkspaceViewModel workspace,
+        EProductWorkspaceRecoveryFlags recoveryFlags)
+    {
+        if (workspace == null)
+        {
+            throw new ArgumentNullException(nameof(workspace));
+        }
+
+        CatalogRevision revision = new CatalogRevision(1);
+        VerifiedCatalogPackage activeCatalogPackage =
+            ProductWorkspaceLoaderTestData.CreateCatalogPackage(revision);
+        PlanningWorkspace workspaceSnapshot =
+            ProductWorkspaceLoaderTestData.CreateEmptyWorkspace(revision);
+        return new ProductWorkspacePresentation(
+            workspace,
+            activeCatalogPackage,
+            workspaceSnapshot,
+            EProductCatalogOrigin.OfflineCache,
+            recoveryFlags);
+    }
+
     private static PlannerWorkspaceViewModel createWorkspace(
         CourseCatalogDocument document,
         IScheduleRecommendationProvider recommendationProvider)
@@ -56,27 +143,15 @@ internal static class PlannerWorkspaceTestFactory
             recommendationProvider);
     }
 
-    public static ProductShellViewModel CreateShell(
-        PlannerWorkspaceViewModel workspace)
-    {
-        QueueProductWorkspaceLoader loader = new QueueProductWorkspaceLoader(
-            new Func<CancellationToken, Task<PlannerWorkspaceViewModel>>[]
-            {
-                delegate
-                {
-                    return Task.FromResult(workspace);
-                },
-            });
-        return new ProductShellViewModel(loader);
-    }
-
     private static PlanningWorkspace createPlanningWorkspace(
         CourseCatalogDocument document)
     {
         PlanCatalogBinding binding = new PlanCatalogBinding(
             document.Catalog.Id,
+            document.Catalog.InstitutionId,
             document.Catalog.Term,
-            document.Catalog.Revision);
+            document.Catalog.Revision,
+            new CatalogArtifactSha256(new string('a', 64)));
         CourseId programmingCourseId = new CourseId("course-programming");
         ScheduledCourseChoice programmingChoice = new ScheduledCourseChoice(
             programmingCourseId,

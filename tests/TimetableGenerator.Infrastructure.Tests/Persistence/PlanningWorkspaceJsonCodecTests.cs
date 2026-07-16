@@ -27,11 +27,23 @@ public sealed class PlanningWorkspaceJsonCodecTests
 
         CollectionAssert.AreEqual(firstContent, secondContent);
         StringAssert.Contains(json, "기본 시간표");
+        StringAssert.Contains(
+            json,
+            "\"institutionId\": \"handong-global-university\"");
+        StringAssert.Contains(
+            json,
+            "\"artifactSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"");
         Assert.AreEqual(new WorkspaceGeneration(7), restoredDocument.Generation);
         Assert.AreEqual(workspace.ActivePlanId, restoredWorkspace.ActivePlanId);
         Assert.HasCount(2, restoredWorkspace.Plans);
         Assert.HasCount(1, restoredWorkspace.Plans[0].ScheduledCourseChoices);
         Assert.HasCount(1, restoredWorkspace.Plans[0].UnscheduledOfferingSelections);
+        Assert.AreEqual(
+            new InstitutionId("handong-global-university"),
+            restoredWorkspace.Plans[0].CatalogBinding.InstitutionId);
+        Assert.AreEqual(
+            new CatalogArtifactSha256(new string('a', 64)),
+            restoredWorkspace.Plans[0].CatalogBinding.ArtifactSha256);
         Assert.AreEqual(
             "handong-global-university:2026-2:CSE30002:01",
             restoredWorkspace.Plans[0]
@@ -81,11 +93,25 @@ public sealed class PlanningWorkspaceJsonCodecTests
             "11111111-1111-1111-1111-111111111111",
             "not-a-guid",
             StringComparison.Ordinal);
+        string missingArtifactSha256Json = validJson.Replace(
+            "\"artifactSha256\"",
+            "\"removedArtifactSha256\"",
+            StringComparison.Ordinal);
+        string invalidArtifactSha256Json = validJson.Replace(
+            new string('a', 64),
+            "not-a-sha256",
+            StringComparison.Ordinal);
 
         Assert.ThrowsExactly<WorkspaceDocumentException>(
             () => codec.Deserialize(Encoding.UTF8.GetBytes(missingPlansJson)));
         Assert.ThrowsExactly<WorkspaceDocumentException>(
             () => codec.Deserialize(Encoding.UTF8.GetBytes(invalidPlanIdJson)));
+        Assert.ThrowsExactly<WorkspaceDocumentException>(
+            () => codec.Deserialize(
+                Encoding.UTF8.GetBytes(missingArtifactSha256Json)));
+        Assert.ThrowsExactly<WorkspaceDocumentException>(
+            () => codec.Deserialize(
+                Encoding.UTF8.GetBytes(invalidArtifactSha256Json)));
         Assert.ThrowsExactly<WorkspaceDocumentException>(
             () => codec.Deserialize(ReadOnlyMemory<byte>.Empty));
     }
@@ -104,8 +130,10 @@ public sealed class PlanningWorkspaceJsonCodecTests
     {
         PlanCatalogBinding catalogBinding = new PlanCatalogBinding(
             new CatalogId("handong-global-university:2026-2:r0001"),
+            new InstitutionId("handong-global-university"),
             AcademicTerm.Parse("2026-2"),
-            new CatalogRevision(1));
+            new CatalogRevision(1),
+            new CatalogArtifactSha256(new string('a', 64)));
         PlanningPlan firstPlan = new PlanningPlan(
             new PlanId(Guid.Parse("11111111-1111-1111-1111-111111111111")),
             new PlanName(firstPlanName),

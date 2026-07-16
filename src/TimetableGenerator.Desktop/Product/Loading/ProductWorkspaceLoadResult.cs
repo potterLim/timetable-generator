@@ -131,13 +131,11 @@ internal sealed class ProductWorkspaceLoadResult
         VerifiedCatalogPackage catalogPackage,
         PlanningWorkspace workspace)
     {
+        PlanCatalogBinding packageBinding = catalogPackage.CreatePlanCatalogBinding();
         foreach (PlanningPlan plan in workspace.Plans)
         {
             PlanCatalogBinding binding = plan.CatalogBinding;
-            bool hasMatchingBinding = binding.CatalogId == catalogPackage.Entry.CatalogId
-                && binding.Term == catalogPackage.Entry.Term
-                && binding.Revision == catalogPackage.Entry.Revision;
-            if (hasMatchingBinding == false)
+            if (binding != packageBinding)
             {
                 throw new ArgumentException(
                     "Every loaded plan must be bound to the loaded catalog.",

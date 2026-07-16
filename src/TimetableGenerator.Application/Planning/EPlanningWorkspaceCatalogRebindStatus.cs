@@ -9,4 +9,8 @@ public enum EPlanningWorkspaceCatalogRebindStatus
     OfferingCourseMismatch = 4,
     ScheduledChoiceHasNoProvidedTime = 5,
     UnscheduledSelectionHasProvidedTime = 6,
+    InstitutionMismatch = 7,
+    AcademicTermMismatch = 8,
+    CatalogRevisionNotNewer = 9,
+    CatalogArtifactSha256Mismatch = 10,
 }

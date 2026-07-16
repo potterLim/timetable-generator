@@ -58,8 +58,10 @@ internal static class CatalogProjectionTestFixture
             new UnscheduledOfferingSelection(seminarCourseId, seminarOfferingId);
         PlanCatalogBinding catalogBinding = new PlanCatalogBinding(
             document.Catalog.Id,
+            document.Catalog.InstitutionId,
             document.Catalog.Term,
-            document.Catalog.Revision);
+            document.Catalog.Revision,
+            new CatalogArtifactSha256(new string('a', 64)));
         PlanningPlan plan = new PlanningPlan(
             PlanId.CreateNew(),
             new PlanName("프로젝션 테스트"),

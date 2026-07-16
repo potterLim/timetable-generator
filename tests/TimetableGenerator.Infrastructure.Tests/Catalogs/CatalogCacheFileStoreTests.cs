@@ -124,21 +124,43 @@ public sealed class CatalogCacheFileStoreTests
             VerifiedCatalogPackage package =
                 CatalogSynchronizationTestDocuments.CreateVerifiedPackage();
             await store.SaveAsync(package, CancellationToken.None);
+            PlanCatalogBinding packageBinding = package.CreatePlanCatalogBinding();
             PlanCatalogBinding differentCatalogIdBinding = new PlanCatalogBinding(
                 new CatalogId("another-university:2026-2:r0001"),
+                package.Entry.Institution.Id,
                 package.Entry.Term,
-                package.Entry.Revision);
+                package.Entry.Revision,
+                packageBinding.ArtifactSha256);
+            PlanCatalogBinding differentInstitutionBinding = new PlanCatalogBinding(
+                package.Entry.CatalogId,
+                new InstitutionId("another-university"),
+                package.Entry.Term,
+                package.Entry.Revision,
+                packageBinding.ArtifactSha256);
             PlanCatalogBinding differentTermBinding = new PlanCatalogBinding(
                 package.Entry.CatalogId,
+                package.Entry.Institution.Id,
                 AcademicTerm.Parse("2027-1"),
-                package.Entry.Revision);
+                package.Entry.Revision,
+                packageBinding.ArtifactSha256);
             PlanCatalogBinding differentRevisionBinding = new PlanCatalogBinding(
                 package.Entry.CatalogId,
+                package.Entry.Institution.Id,
                 package.Entry.Term,
-                new CatalogRevision(2));
+                new CatalogRevision(2),
+                packageBinding.ArtifactSha256);
+            PlanCatalogBinding differentArtifactBinding = new PlanCatalogBinding(
+                package.Entry.CatalogId,
+                package.Entry.Institution.Id,
+                package.Entry.Term,
+                package.Entry.Revision,
+                new CatalogArtifactSha256(new string('0', 64)));
 
             CatalogCacheLoadResult catalogIdResult = await store.LoadMatchingAsync(
                 differentCatalogIdBinding,
+                CancellationToken.None);
+            CatalogCacheLoadResult institutionResult = await store.LoadMatchingAsync(
+                differentInstitutionBinding,
                 CancellationToken.None);
             CatalogCacheLoadResult termResult = await store.LoadMatchingAsync(
                 differentTermBinding,
@@ -146,10 +168,15 @@ public sealed class CatalogCacheFileStoreTests
             CatalogCacheLoadResult revisionResult = await store.LoadMatchingAsync(
                 differentRevisionBinding,
                 CancellationToken.None);
+            CatalogCacheLoadResult artifactResult = await store.LoadMatchingAsync(
+                differentArtifactBinding,
+                CancellationToken.None);
 
             Assert.AreEqual(ECatalogCacheLoadStatus.NotFound, catalogIdResult.Status);
+            Assert.AreEqual(ECatalogCacheLoadStatus.NotFound, institutionResult.Status);
             Assert.AreEqual(ECatalogCacheLoadStatus.NotFound, termResult.Status);
             Assert.AreEqual(ECatalogCacheLoadStatus.NotFound, revisionResult.Status);
+            Assert.AreEqual(ECatalogCacheLoadStatus.NotFound, artifactResult.Status);
         }
         finally
         {
@@ -420,6 +447,51 @@ public sealed class CatalogCacheFileStoreTests
     }
 
     [TestMethod]
+    public async Task ProtectedWorkspaceGenerationSurvivesCatalogStagingAsync()
+    {
+        string testDirectoryPath = createTestDirectoryPath();
+        try
+        {
+            CatalogCacheFileStore store = createStore(testDirectoryPath);
+            VerifiedCatalogPackage protectedPackage =
+                CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithKoreanName(
+                    "보호할 자료구조");
+            PlanCatalogBinding protectedBinding = createBinding(protectedPackage);
+            await store.SaveAsync(protectedPackage, CancellationToken.None);
+            for (int revisionValue = 2; revisionValue <= 7; ++revisionValue)
+            {
+                VerifiedCatalogPackage stagedPackage =
+                    CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithRevision(
+                        new CatalogRevision(revisionValue),
+                        "새 자료구조 " + revisionValue);
+                await store.SaveRetainingAsync(
+                    stagedPackage,
+                    protectedBinding,
+                    CancellationToken.None);
+            }
+
+            string[] generationPaths = Directory.GetFiles(
+                testDirectoryPath,
+                "catalog.g*.cache");
+            CatalogCacheLoadResult protectedLoad = await store.LoadMatchingAsync(
+                protectedBinding,
+                CancellationToken.None);
+
+            Assert.HasCount(6, generationPaths);
+            Assert.IsTrue(File.Exists(getGenerationPath(testDirectoryPath, 1L)));
+            Assert.IsFalse(File.Exists(getGenerationPath(testDirectoryPath, 2L)));
+            Assert.IsTrue(File.Exists(getGenerationPath(testDirectoryPath, 7L)));
+            Assert.AreEqual(
+                protectedPackage.Entry.Revision,
+                protectedLoad.GetPackage().Entry.Revision);
+        }
+        finally
+        {
+            deleteTestDirectory(testDirectoryPath);
+        }
+    }
+
+    [TestMethod]
     public async Task CanceledLoadDoesNotReturnNotFoundAsync()
     {
         string testDirectoryPath = createTestDirectoryPath();
@@ -491,10 +563,7 @@ public sealed class CatalogCacheFileStoreTests
 
     private static PlanCatalogBinding createBinding(VerifiedCatalogPackage package)
     {
-        return new PlanCatalogBinding(
-            package.Entry.CatalogId,
-            package.Entry.Term,
-            package.Entry.Revision);
+        return package.CreatePlanCatalogBinding();
     }
 
     private static CatalogSynchronizationLimits createLimits()

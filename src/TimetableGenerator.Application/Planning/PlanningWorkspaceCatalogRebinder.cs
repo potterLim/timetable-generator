@@ -9,6 +9,7 @@ public static class PlanningWorkspaceCatalogRebinder
 {
     public static PlanningWorkspaceCatalogRebindResult TryRebind(
         CourseCatalog newCatalog,
+        PlanCatalogBinding newBinding,
         PlanningWorkspace workspace)
     {
         if (newCatalog == null)
@@ -16,15 +17,35 @@ public static class PlanningWorkspaceCatalogRebinder
             throw new ArgumentNullException(nameof(newCatalog));
         }
 
+        if (newBinding == null)
+        {
+            throw new ArgumentNullException(nameof(newBinding));
+        }
+
         if (workspace == null)
         {
             throw new ArgumentNullException(nameof(workspace));
         }
 
+        requireBindingMatchesCatalog(newCatalog, newBinding);
+
         if (hasMixedCatalogBindings(workspace))
         {
             return PlanningWorkspaceCatalogRebindResult.createFailure(
                 EPlanningWorkspaceCatalogRebindStatus.MixedCatalogBindings);
+        }
+
+        PlanCatalogBinding currentBinding = workspace.Plans[0].CatalogBinding;
+        EPlanningCatalogTransitionStatus transitionStatus =
+            PlanningCatalogTransitionPolicy.EvaluateTransition(
+                currentBinding,
+                newBinding);
+        EPlanningWorkspaceCatalogRebindStatus? transitionFailureOrNull =
+            getTransitionFailureOrNull(transitionStatus);
+        if (transitionFailureOrNull.HasValue)
+        {
+            return PlanningWorkspaceCatalogRebindResult.createFailure(
+                transitionFailureOrNull.Value);
         }
 
         Dictionary<CourseId, CatalogCourse> coursesById = createCoursesById(newCatalog);
@@ -39,15 +60,53 @@ public static class PlanningWorkspaceCatalogRebinder
             return PlanningWorkspaceCatalogRebindResult.createFailure(validationStatus);
         }
 
-        PlanCatalogBinding newBinding = new PlanCatalogBinding(
-            newCatalog.Id,
-            newCatalog.Term,
-            newCatalog.Revision);
         List<PlanningPlan> reboundPlans = createReboundPlans(workspace, newBinding);
         PlanningWorkspace reboundWorkspace = new PlanningWorkspace(
             workspace.ActivePlanId,
             reboundPlans);
         return PlanningWorkspaceCatalogRebindResult.createRebound(reboundWorkspace);
+    }
+
+    private static void requireBindingMatchesCatalog(
+        CourseCatalog catalog,
+        PlanCatalogBinding binding)
+    {
+        bool hasMatchingCatalogIdentity = binding.CatalogId == catalog.Id
+            && binding.InstitutionId == catalog.InstitutionId
+            && binding.Term == catalog.Term
+            && binding.Revision == catalog.Revision;
+        if (hasMatchingCatalogIdentity == false)
+        {
+            throw new ArgumentException(
+                "The new catalog binding must identify the supplied course catalog.",
+                nameof(binding));
+        }
+    }
+
+    private static EPlanningWorkspaceCatalogRebindStatus?
+        getTransitionFailureOrNull(
+            EPlanningCatalogTransitionStatus transitionStatus)
+    {
+        switch (transitionStatus)
+        {
+            case EPlanningCatalogTransitionStatus.ExactMatch:
+            case EPlanningCatalogTransitionStatus.UpgradeEligible:
+                return null;
+            case EPlanningCatalogTransitionStatus.InstitutionMismatch:
+                return EPlanningWorkspaceCatalogRebindStatus.InstitutionMismatch;
+            case EPlanningCatalogTransitionStatus.AcademicTermMismatch:
+                return EPlanningWorkspaceCatalogRebindStatus.AcademicTermMismatch;
+            case EPlanningCatalogTransitionStatus.RevisionNotNewer:
+                return EPlanningWorkspaceCatalogRebindStatus.CatalogRevisionNotNewer;
+            case EPlanningCatalogTransitionStatus.ArtifactSha256Mismatch:
+                return EPlanningWorkspaceCatalogRebindStatus
+                    .CatalogArtifactSha256Mismatch;
+            default:
+                throw new ArgumentOutOfRangeException(
+                    nameof(transitionStatus),
+                    transitionStatus,
+                    "Unknown catalog transition status.");
+        }
     }
 
     private static bool hasMixedCatalogBindings(PlanningWorkspace workspace)

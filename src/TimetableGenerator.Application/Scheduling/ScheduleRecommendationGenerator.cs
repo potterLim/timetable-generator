@@ -124,9 +124,12 @@ public sealed class ScheduleRecommendationGenerator
         PlanCatalogBinding catalogBinding)
     {
         bool hasMatchingCatalogId = catalog.Id == catalogBinding.CatalogId;
+        bool hasMatchingInstitutionId =
+            catalog.InstitutionId == catalogBinding.InstitutionId;
         bool hasMatchingTerm = catalog.Term == catalogBinding.Term;
         bool hasMatchingRevision = catalog.Revision == catalogBinding.Revision;
         if (hasMatchingCatalogId == false
+            || hasMatchingInstitutionId == false
             || hasMatchingTerm == false
             || hasMatchingRevision == false)
         {

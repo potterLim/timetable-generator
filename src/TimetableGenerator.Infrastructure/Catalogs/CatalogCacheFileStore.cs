@@ -158,6 +158,33 @@ public sealed class CatalogCacheFileStore
         VerifiedCatalogPackage package,
         CancellationToken cancellationToken)
     {
+        await saveAsync(package, null, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task SaveRetainingAsync(
+        VerifiedCatalogPackage package,
+        PlanCatalogBinding protectedBinding,
+        CancellationToken cancellationToken)
+    {
+        if (package == null)
+        {
+            throw new ArgumentNullException(nameof(package));
+        }
+
+        if (protectedBinding == null)
+        {
+            throw new ArgumentNullException(nameof(protectedBinding));
+        }
+
+        await saveAsync(package, protectedBinding, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task saveAsync(
+        VerifiedCatalogPackage package,
+        PlanCatalogBinding? protectedBindingOrNull,
+        CancellationToken cancellationToken)
+    {
         if (package == null)
         {
             throw new ArgumentNullException(nameof(package));
@@ -170,7 +197,10 @@ public sealed class CatalogCacheFileStore
             using (FileStream processLock = await acquireCrossProcessLockAsync(
                 cancellationToken).ConfigureAwait(false))
             {
-                await saveWithoutLockAsync(package, cancellationToken).ConfigureAwait(false);
+                await saveWithoutLockAsync(
+                    package,
+                    protectedBindingOrNull,
+                    cancellationToken).ConfigureAwait(false);
             }
         }
         catch (OperationCanceledException)
@@ -218,6 +248,13 @@ public sealed class CatalogCacheFileStore
         return exception is IOException
             || exception is UnauthorizedAccessException
             || exception is CatalogCacheDocumentException;
+    }
+
+    private static bool isRetentionReadException(Exception exception)
+    {
+        return isRecoverableGenerationException(exception)
+            || exception is CatalogCacheDocumentSizeException
+            || exception is UnsupportedCatalogCacheSchemaVersionException;
     }
 
     private static async Task writeDurableFileAsync(
@@ -430,6 +467,7 @@ public sealed class CatalogCacheFileStore
 
     private async Task saveWithoutLockAsync(
         VerifiedCatalogPackage package,
+        PlanCatalogBinding? protectedBindingOrNull,
         CancellationToken cancellationToken)
     {
         List<CatalogCacheGenerationFile> generationFiles = getGenerationFiles();
@@ -484,7 +522,8 @@ public sealed class CatalogCacheFileStore
                     new InvalidDataException(finalPath));
             }
 
-            pruneOldGenerations();
+            await pruneOldGenerationsAsync(protectedBindingOrNull)
+                .ConfigureAwait(false);
         }
         finally
         {
@@ -544,9 +583,7 @@ public sealed class CatalogCacheFileStore
         VerifiedCatalogPackage package,
         PlanCatalogBinding catalogBinding)
     {
-        return package.Entry.CatalogId == catalogBinding.CatalogId
-            && package.Entry.Term == catalogBinding.Term
-            && package.Entry.Revision == catalogBinding.Revision;
+        return package.CreatePlanCatalogBinding() == catalogBinding;
     }
 
     private static void requireMatchingGeneration(
@@ -575,16 +612,45 @@ public sealed class CatalogCacheFileStore
         return Path.Combine(mDirectoryPath, fileName);
     }
 
-    private void pruneOldGenerations()
+    private async Task pruneOldGenerationsAsync(
+        PlanCatalogBinding? protectedBindingOrNull)
     {
         try
         {
             List<CatalogCacheGenerationFile> generationFiles = getGenerationFiles();
-            for (int index = MAXIMUM_RETAINED_GENERATIONS;
-                index < generationFiles.Count;
-                ++index)
+            bool hasRetainedProtectedGeneration = false;
+            for (int index = 0; index < generationFiles.Count; ++index)
             {
-                tryDeleteFile(generationFiles[index].Path);
+                CatalogCacheGenerationFile generationFile = generationFiles[index];
+                bool shouldRetain = index < MAXIMUM_RETAINED_GENERATIONS;
+                if (protectedBindingOrNull != null
+                    && hasRetainedProtectedGeneration == false)
+                {
+                    try
+                    {
+                        CatalogCacheDocument document = await readDocumentAsync(
+                            generationFile.Path,
+                            CancellationToken.None).ConfigureAwait(false);
+                        requireMatchingGeneration(document, generationFile);
+                        if (hasMatchingCatalogBinding(
+                            document.Package,
+                            protectedBindingOrNull))
+                        {
+                            shouldRetain = true;
+                            hasRetainedProtectedGeneration = true;
+                        }
+                    }
+                    catch (Exception exception) when (
+                        isRetentionReadException(exception))
+                    {
+                        shouldRetain = true;
+                    }
+                }
+
+                if (shouldRetain == false)
+                {
+                    tryDeleteFile(generationFile.Path);
+                }
             }
         }
         catch (Exception exception) when (isFileSystemException(exception))

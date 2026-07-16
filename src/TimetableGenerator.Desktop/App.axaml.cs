@@ -6,7 +6,6 @@ using Avalonia.Markup.Xaml;
 
 using TimetableGenerator.Desktop.Configuration;
 using TimetableGenerator.Desktop.Product;
-using TimetableGenerator.Desktop.Product.Loading;
 using TimetableGenerator.Desktop.Storage;
 using TimetableGenerator.Desktop.Views;
 
@@ -44,11 +43,8 @@ internal sealed class App : Avalonia.Application
                 Path.Combine(
                     AppContext.BaseDirectory,
                     CATALOG_CONFIGURATION_FILE_NAME));
-        ProductWorkspaceLoader dataLoader = ProductWorkspaceLoader.Create(
+        return ProductCompositionRoot.CreateShell(
             dataPaths,
             configurationPath);
-        ProductWorkspaceViewModelLoader viewModelLoader =
-            new ProductWorkspaceViewModelLoader(dataLoader);
-        return new ProductShellViewModel(viewModelLoader);
     }
 }

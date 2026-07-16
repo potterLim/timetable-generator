@@ -452,8 +452,10 @@ public sealed class PlanningWorkspaceFileStoreTests
             Guid.Parse("11111111-1111-1111-1111-111111111111"));
         PlanCatalogBinding binding = new PlanCatalogBinding(
             new CatalogId("handong-global-university:2026-2:r0001"),
+            new InstitutionId("handong-global-university"),
             AcademicTerm.Parse("2026-2"),
-            new CatalogRevision(1));
+            new CatalogRevision(1),
+            new CatalogArtifactSha256(new string('a', 64)));
         PlanningPlan plan = new PlanningPlan(
             planId,
             new PlanName(name),

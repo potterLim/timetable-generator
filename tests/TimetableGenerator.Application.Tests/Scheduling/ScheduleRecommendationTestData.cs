@@ -61,8 +61,10 @@ internal static class ScheduleRecommendationTestData
     {
         PlanCatalogBinding catalogBinding = new PlanCatalogBinding(
             catalog.Id,
+            catalog.InstitutionId,
             catalog.Term,
-            catalog.Revision);
+            catalog.Revision,
+            new CatalogArtifactSha256(new string('a', 64)));
         return CreatePlanWithBinding(
             catalogBinding,
             scheduledChoices,

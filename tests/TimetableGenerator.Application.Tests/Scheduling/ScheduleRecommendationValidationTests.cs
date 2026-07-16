@@ -17,8 +17,10 @@ public sealed class ScheduleRecommendationValidationTests
         CourseCatalog catalog = createCatalogWithScheduledOfferings();
         PlanCatalogBinding mismatchedBinding = new PlanCatalogBinding(
             new CatalogId("handong-global-university:2026-2:r0002"),
+            catalog.InstitutionId,
             catalog.Term,
-            new CatalogRevision(2));
+            new CatalogRevision(2),
+            new CatalogArtifactSha256(new string('a', 64)));
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlanWithBinding(
             mismatchedBinding,
             new ScheduledCourseChoice[]
