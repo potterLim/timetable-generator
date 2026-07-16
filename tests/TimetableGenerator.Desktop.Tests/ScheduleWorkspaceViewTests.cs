@@ -32,6 +32,13 @@ namespace TimetableGenerator.Desktop.Tests;
 
 public sealed class ScheduleWorkspaceViewTests
 {
+    private static readonly ColorToken BORDER =
+        new ColorToken("BorderBrush");
+    private static readonly ColorToken TEXT_SECONDARY =
+        new ColorToken("TextSecondaryBrush");
+    private static readonly ColorToken ACCENT =
+        new ColorToken("AccentBrush");
+
     [AvaloniaFact]
     public void ScheduleBoardRendersEveningPeriodsInsideScrollableViewport()
     {
@@ -220,13 +227,13 @@ public sealed class ScheduleWorkspaceViewTests
             RenderedScheduleBrushes darkBrushes = findRenderedScheduleBrushes(
                 scheduleBoard);
             SolidColorBrush expectedDarkBorder = findRequiredThemeBrush(
-                "BorderBrush",
+                BORDER,
                 ThemeVariant.Dark);
             SolidColorBrush expectedDarkSecondary = findRequiredThemeBrush(
-                "TextSecondaryBrush",
+                TEXT_SECONDARY,
                 ThemeVariant.Dark);
             SolidColorBrush expectedDarkAccent = findRequiredThemeBrush(
-                "AccentBrush",
+                ACCENT,
                 ThemeVariant.Dark);
 
             Assert.NotSame(lightBrushes.ScheduleCard, darkBrushes.ScheduleCard);
@@ -509,7 +516,7 @@ public sealed class ScheduleWorkspaceViewTests
     }
 
     private static SolidColorBrush findRequiredThemeBrush(
-        string resourceKey,
+        ColorToken colorToken,
         ThemeVariant themeVariant)
     {
         Avalonia.Application? applicationOrNull = Avalonia.Application.Current;
@@ -522,12 +529,16 @@ public sealed class ScheduleWorkspaceViewTests
 
         object? resourceOrNull;
         bool hasResource = applicationOrNull.TryGetResource(
-            resourceKey,
+            colorToken.Value,
             themeVariant,
             out resourceOrNull);
-        Assert.True(hasResource, "Missing brush resource: " + resourceKey);
+        Assert.True(
+            hasResource,
+            "Missing brush resource: " + colorToken.Value);
         return Assert.IsType<SolidColorBrush>(resourceOrNull);
     }
+
+    private readonly record struct ColorToken(string Value);
 
     private readonly record struct RenderedScheduleBrushes(
         Button ScheduleCard,

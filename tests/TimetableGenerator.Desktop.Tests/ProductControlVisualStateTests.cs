@@ -15,6 +15,22 @@ namespace TimetableGenerator.Desktop.Tests;
 
 public sealed class ProductControlVisualStateTests
 {
+    private static readonly ControlStyleClass PRIMARY_ACTION_STYLE =
+        new ControlStyleClass("accent");
+    private static readonly ControlStyleClass DANGER_ACTION_STYLE =
+        new ControlStyleClass("danger");
+    private static readonly ControlStyleClass OUTLINE_ACTION_STYLE =
+        new ControlStyleClass("outline");
+
+    private static readonly ColorToken PRIMARY_ACTION_FILL =
+        new ColorToken("ProductPrimaryActionFillBrush");
+    private static readonly ColorToken ON_PRIMARY_ACTION_FILL =
+        new ColorToken("ProductOnPrimaryActionFillBrush");
+    private static readonly ColorToken DANGER_ACTION_FILL =
+        new ColorToken("ProductDangerActionFillBrush");
+    private static readonly ColorToken CONTROL_BORDER =
+        new ColorToken("ControlBorderBrush");
+
     [AvaloniaFact]
     public void ProductPrimaryActionUsesFilledBrandColorForApplicationDarkTheme()
     {
@@ -28,7 +44,7 @@ public sealed class ProductControlVisualStateTests
 
         ThemeVariant? previousThemeVariantOrNull =
             applicationOrNull.RequestedThemeVariant;
-        Button primaryAction = createButton("accent");
+        Button primaryAction = createButton(PRIMARY_ACTION_STYLE);
         Window window = new Window();
         window.Content = primaryAction;
 
@@ -40,11 +56,11 @@ public sealed class ProductControlVisualStateTests
 
             assertButtonBrush(
                 primaryAction.Background,
-                "ProductPrimaryActionFillBrush",
+                PRIMARY_ACTION_FILL,
                 ThemeVariant.Dark);
             assertRenderedButtonBackground(
                 primaryAction,
-                "ProductPrimaryActionFillBrush",
+                PRIMARY_ACTION_FILL,
                 ThemeVariant.Dark);
         }
         finally
@@ -57,9 +73,9 @@ public sealed class ProductControlVisualStateTests
     [AvaloniaFact]
     public void ProductActionStylesResolveProductTokensAcrossThemeChanges()
     {
-        Button primaryAction = createButton("accent");
-        Button dangerAction = createButton("danger");
-        Button outlineAction = createButton("outline");
+        Button primaryAction = createButton(PRIMARY_ACTION_STYLE);
+        Button dangerAction = createButton(DANGER_ACTION_STYLE);
+        Button outlineAction = createButton(OUTLINE_ACTION_STYLE);
         StackPanel actions = new StackPanel();
         actions.Children.Add(primaryAction);
         actions.Children.Add(dangerAction);
@@ -76,27 +92,27 @@ public sealed class ProductControlVisualStateTests
 
             assertButtonBrush(
                 primaryAction.Background,
-                "ProductPrimaryActionFillBrush",
+                PRIMARY_ACTION_FILL,
                 ThemeVariant.Light);
             assertRenderedButtonBackground(
                 primaryAction,
-                "ProductPrimaryActionFillBrush",
+                PRIMARY_ACTION_FILL,
                 ThemeVariant.Light);
             assertButtonBrush(
                 primaryAction.Foreground,
-                "ProductOnPrimaryActionFillBrush",
+                ON_PRIMARY_ACTION_FILL,
                 ThemeVariant.Light);
             assertButtonBrush(
                 dangerAction.Background,
-                "ProductDangerActionFillBrush",
+                DANGER_ACTION_FILL,
                 ThemeVariant.Light);
             assertRenderedButtonBackground(
                 dangerAction,
-                "ProductDangerActionFillBrush",
+                DANGER_ACTION_FILL,
                 ThemeVariant.Light);
             assertButtonBrush(
                 outlineAction.BorderBrush,
-                "ControlBorderBrush",
+                CONTROL_BORDER,
                 ThemeVariant.Light);
 
             window.RequestedThemeVariant = ThemeVariant.Dark;
@@ -104,27 +120,27 @@ public sealed class ProductControlVisualStateTests
 
             assertButtonBrush(
                 primaryAction.Background,
-                "ProductPrimaryActionFillBrush",
+                PRIMARY_ACTION_FILL,
                 ThemeVariant.Dark);
             assertRenderedButtonBackground(
                 primaryAction,
-                "ProductPrimaryActionFillBrush",
+                PRIMARY_ACTION_FILL,
                 ThemeVariant.Dark);
             assertButtonBrush(
                 primaryAction.Foreground,
-                "ProductOnPrimaryActionFillBrush",
+                ON_PRIMARY_ACTION_FILL,
                 ThemeVariant.Dark);
             assertButtonBrush(
                 dangerAction.Background,
-                "ProductDangerActionFillBrush",
+                DANGER_ACTION_FILL,
                 ThemeVariant.Dark);
             assertRenderedButtonBackground(
                 dangerAction,
-                "ProductDangerActionFillBrush",
+                DANGER_ACTION_FILL,
                 ThemeVariant.Dark);
             assertButtonBrush(
                 outlineAction.BorderBrush,
-                "ControlBorderBrush",
+                CONTROL_BORDER,
                 ThemeVariant.Dark);
 
             bool isPrimaryActionFocused = primaryAction.Focus();
@@ -132,7 +148,7 @@ public sealed class ProductControlVisualStateTests
             Dispatcher.UIThread.RunJobs();
             assertButtonBrush(
                 primaryAction.Background,
-                "ProductPrimaryActionFillBrush",
+                PRIMARY_ACTION_FILL,
                 ThemeVariant.Dark);
         }
         finally
@@ -141,30 +157,30 @@ public sealed class ProductControlVisualStateTests
         }
     }
 
-    private static Button createButton(string styleClass)
+    private static Button createButton(ControlStyleClass styleClass)
     {
         Button button = new Button();
-        button.Classes.Add(styleClass);
-        button.Content = styleClass;
+        button.Classes.Add(styleClass.Value);
+        button.Content = styleClass.Value;
         return button;
     }
 
     private static void assertButtonBrush(
         IBrush? actualBrushOrNull,
-        string expectedResourceKey,
+        ColorToken expectedColorToken,
         ThemeVariant themeVariant)
     {
         SolidColorBrush actualBrush = Assert.IsType<SolidColorBrush>(
             actualBrushOrNull);
         SolidColorBrush expectedBrush = findRequiredThemeBrush(
-            expectedResourceKey,
+            expectedColorToken,
             themeVariant);
         Assert.Equal(expectedBrush.Color, actualBrush.Color);
     }
 
     private static void assertRenderedButtonBackground(
         Button button,
-        string expectedResourceKey,
+        ColorToken expectedColorToken,
         ThemeVariant themeVariant)
     {
         ContentPresenter contentPresenter = button.GetVisualDescendants()
@@ -172,12 +188,12 @@ public sealed class ProductControlVisualStateTests
             .Single();
         assertButtonBrush(
             contentPresenter.Background,
-            expectedResourceKey,
+            expectedColorToken,
             themeVariant);
     }
 
     private static SolidColorBrush findRequiredThemeBrush(
-        string resourceKey,
+        ColorToken colorToken,
         ThemeVariant themeVariant)
     {
         Avalonia.Application? applicationOrNull = Avalonia.Application.Current;
@@ -190,10 +206,16 @@ public sealed class ProductControlVisualStateTests
 
         object? resourceOrNull;
         bool hasResource = applicationOrNull.TryGetResource(
-            resourceKey,
+            colorToken.Value,
             themeVariant,
             out resourceOrNull);
-        Assert.True(hasResource, "Missing brush resource: " + resourceKey);
+        Assert.True(
+            hasResource,
+            "Missing brush resource: " + colorToken.Value);
         return Assert.IsType<SolidColorBrush>(resourceOrNull);
     }
+
+    private readonly record struct ColorToken(string Value);
+
+    private readonly record struct ControlStyleClass(string Value);
 }
