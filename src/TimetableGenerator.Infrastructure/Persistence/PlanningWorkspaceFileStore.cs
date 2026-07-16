@@ -5,31 +5,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using TimetableGenerator.Application.Planning;
 using TimetableGenerator.Domain.Planning;
+using TimetableGenerator.Infrastructure.Storage;
 
 namespace TimetableGenerator.Infrastructure.Persistence;
 
 public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
 {
-    private const int FILE_BUFFER_SIZE = 16_384;
-    private const int MAXIMUM_RETAINED_GENERATIONS = 5;
-    private const int MAXIMUM_LOCK_ATTEMPTS = 100;
-    private const int LOCK_RETRY_DELAY_MILLISECONDS = 50;
-
-    private readonly string mDirectoryPath;
-
-    private readonly string mBaseFileName;
-
-    private readonly string mFileExtension;
-
-    private readonly string mGenerationSearchPattern;
-
-    private readonly string mLockPath;
+    private readonly GenerationFileStorage mFileStorage;
 
     private readonly PlanningWorkspaceJsonCodec mCodec;
 
     private readonly WorkspaceDocumentSizeLimit mDocumentSizeLimit;
-
-    private readonly SemaphoreSlim mAccessGate;
 
     public PlanningWorkspaceFileStore(
         WorkspaceFilePath basePath,
@@ -61,28 +47,25 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
                 nameof(basePath));
         }
 
-        mDirectoryPath = directoryPathOrNull;
-        mBaseFileName = Path.GetFileNameWithoutExtension(basePath.Value);
-        mFileExtension = Path.GetExtension(basePath.Value);
-        mGenerationSearchPattern = mBaseFileName + ".g*" + mFileExtension;
-        mLockPath = Path.Combine(mDirectoryPath, mBaseFileName + ".lock");
+        GenerationFileStoragePath storagePath = new GenerationFileStoragePath(
+            basePath.Value);
+        mFileStorage = new GenerationFileStorage(storagePath);
         mCodec = codec;
         mDocumentSizeLimit = documentSizeLimit;
-        mAccessGate = new SemaphoreSlim(1, 1);
     }
 
     public async Task<PlanningWorkspaceLoadResult> LoadAsync(
         CancellationToken cancellationToken)
     {
-        if (Directory.Exists(mDirectoryPath) == false)
+        if (mFileStorage.HasDirectory() == false)
         {
             return PlanningWorkspaceLoadResult.CreateNotFound();
         }
 
-        await mAccessGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            using (FileStream processLock = await acquireCrossProcessLockAsync(
+            using (GenerationFileStorageAccess storageAccess =
+                await mFileStorage.AcquireExistingDirectoryAsync(
                 cancellationToken).ConfigureAwait(false))
             {
                 return await loadWithoutLockAsync(cancellationToken).ConfigureAwait(false);
@@ -100,15 +83,18 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
         {
             throw;
         }
-        catch (Exception exception) when (isFileSystemException(exception))
+        catch (GenerationFileStorageLockException exception)
+        {
+            throw new WorkspacePersistenceException(
+                "Another application instance is using the planning workspace.",
+                exception.Failure);
+        }
+        catch (Exception exception) when (
+            FileSystemExceptionClassifier.IsFileSystemException(exception))
         {
             throw new WorkspacePersistenceException(
                 "The planning workspace generations could not be loaded.",
                 exception);
-        }
-        finally
-        {
-            mAccessGate.Release();
         }
     }
 
@@ -121,11 +107,10 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
             throw new ArgumentNullException(nameof(workspace));
         }
 
-        await mAccessGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            Directory.CreateDirectory(mDirectoryPath);
-            using (FileStream processLock = await acquireCrossProcessLockAsync(
+            using (GenerationFileStorageAccess storageAccess =
+                await mFileStorage.AcquireCreatingDirectoryAsync(
                 cancellationToken).ConfigureAwait(false))
             {
                 await saveWithoutLockAsync(workspace, cancellationToken)
@@ -140,30 +125,19 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
         {
             throw;
         }
-        catch (Exception exception) when (isFileSystemException(exception))
+        catch (GenerationFileStorageLockException exception)
+        {
+            throw new WorkspacePersistenceException(
+                "Another application instance is using the planning workspace.",
+                exception.Failure);
+        }
+        catch (Exception exception) when (
+            FileSystemExceptionClassifier.IsFileSystemException(exception))
         {
             throw new WorkspacePersistenceException(
                 "The planning workspace could not be saved atomically.",
                 exception);
         }
-        finally
-        {
-            mAccessGate.Release();
-        }
-    }
-
-    private static int compareGenerationFilesDescending(
-        WorkspaceGenerationFile first,
-        WorkspaceGenerationFile second)
-    {
-        return second.Generation.Value.CompareTo(first.Generation.Value);
-    }
-
-    private static bool isFileSystemException(Exception exception)
-    {
-        return exception is IOException
-            || exception is UnauthorizedAccessException
-            || exception is NotSupportedException;
     }
 
     private static bool isRecoverableGenerationException(Exception exception)
@@ -173,105 +147,26 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
             || exception is WorkspaceDocumentException;
     }
 
-    private static async Task writeDurableFileAsync(
-        string path,
-        ReadOnlyMemory<byte> content,
-        CancellationToken cancellationToken)
-    {
-        FileOptions fileOptions = FileOptions.Asynchronous | FileOptions.WriteThrough;
-        using (FileStream outputStream = new FileStream(
-            path,
-            FileMode.CreateNew,
-            FileAccess.Write,
-            FileShare.None,
-            FILE_BUFFER_SIZE,
-            fileOptions))
-        {
-            await outputStream.WriteAsync(content, cancellationToken).ConfigureAwait(false);
-            await outputStream.FlushAsync(cancellationToken).ConfigureAwait(false);
-            outputStream.Flush(true);
-        }
-    }
-
-    private async Task<FileStream> acquireCrossProcessLockAsync(
-        CancellationToken cancellationToken)
-    {
-        IOException? lastExceptionOrNull = null;
-        for (int attempt = 0; attempt < MAXIMUM_LOCK_ATTEMPTS; attempt++)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                return new FileStream(
-                    mLockPath,
-                    FileMode.OpenOrCreate,
-                    FileAccess.ReadWrite,
-                    FileShare.None,
-                    1,
-                    FileOptions.Asynchronous);
-            }
-            catch (IOException exception)
-            {
-                lastExceptionOrNull = exception;
-                await Task.Delay(
-                    LOCK_RETRY_DELAY_MILLISECONDS,
-                    cancellationToken).ConfigureAwait(false);
-            }
-        }
-
-        InvalidOperationException fallbackException = new InvalidOperationException(
-            "The workspace lock attempt ended without an I/O exception.");
-        Exception innerException = fallbackException;
-        if (lastExceptionOrNull != null)
-        {
-            innerException = lastExceptionOrNull;
-        }
-
-        throw new WorkspacePersistenceException(
-            "Another application instance is using the planning workspace.",
-            innerException);
-    }
-
-    private List<WorkspaceGenerationFile> getGenerationFiles()
-    {
-        List<WorkspaceGenerationFile> generationFiles =
-            new List<WorkspaceGenerationFile>();
-        IEnumerable<string> paths = Directory.EnumerateFiles(
-            mDirectoryPath,
-            mGenerationSearchPattern,
-            SearchOption.TopDirectoryOnly);
-        foreach (string path in paths)
-        {
-            WorkspaceGeneration generation;
-            if (tryParseGenerationPath(path, out generation))
-            {
-                generationFiles.Add(new WorkspaceGenerationFile(generation, path));
-            }
-        }
-
-        generationFiles.Sort(compareGenerationFilesDescending);
-        return generationFiles;
-    }
-
     private async Task<PlanningWorkspaceLoadResult> loadWithoutLockAsync(
         CancellationToken cancellationToken)
     {
-        List<WorkspaceGenerationFile> generationFiles = getGenerationFiles();
+        IReadOnlyList<GenerationFile> generationFiles =
+            mFileStorage.GetGenerationFiles();
         if (generationFiles.Count == 0)
         {
             return PlanningWorkspaceLoadResult.CreateNotFound();
         }
 
         List<Exception> failures = new List<Exception>();
-        for (int index = 0; index < generationFiles.Count; index++)
+        for (int index = 0; index < generationFiles.Count; ++index)
         {
-            WorkspaceGenerationFile generationFile = generationFiles[index];
+            GenerationFile generationFile = generationFiles[index];
             try
             {
                 PlanningWorkspaceDocument document = await readDocumentAsync(
                     generationFile.Path,
                     cancellationToken).ConfigureAwait(false);
-                if (document.Generation != generationFile.Generation)
+                if (document.Generation.Value != generationFile.Generation.Value)
                 {
                     throw new WorkspaceDocumentException(
                         "The workspace document generation does not match its file name.");
@@ -304,10 +199,10 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
     }
 
     private async Task<PlanningWorkspaceDocument> readDocumentAsync(
-        string path,
+        GenerationFilePath path,
         CancellationToken cancellationToken)
     {
-        FileInfo fileInfo = new FileInfo(path);
+        FileInfo fileInfo = new FileInfo(path.Value);
         long documentLength = fileInfo.Length;
         if (documentLength > mDocumentSizeLimit.Bytes)
         {
@@ -315,7 +210,7 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
                 "The planning workspace document exceeds the product size limit.");
         }
 
-        byte[] content = await File.ReadAllBytesAsync(path, cancellationToken)
+        byte[] content = await File.ReadAllBytesAsync(path.Value, cancellationToken)
             .ConfigureAwait(false);
         return mCodec.Deserialize(content);
     }
@@ -324,15 +219,13 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
         PlanningWorkspace workspace,
         CancellationToken cancellationToken)
     {
-        List<WorkspaceGenerationFile> generationFiles = getGenerationFiles();
+        IReadOnlyList<GenerationFile> generationFiles =
+            mFileStorage.GetGenerationFiles();
         await ensureLatestGenerationAllowsSaveAsync(
             generationFiles,
             cancellationToken).ConfigureAwait(false);
-        WorkspaceGeneration nextGeneration = new WorkspaceGeneration(1);
-        if (generationFiles.Count > 0)
-        {
-            nextGeneration = generationFiles[0].Generation.GetNext();
-        }
+        WorkspaceGeneration nextGeneration = getNextGeneration(generationFiles);
+        FileGeneration nextFileGeneration = new FileGeneration(nextGeneration.Value);
 
         PlanningWorkspaceDocument document = new PlanningWorkspaceDocument(
             nextGeneration,
@@ -345,58 +238,38 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
                 new InvalidOperationException(content.LongLength.ToString()));
         }
 
-        string finalPath = createGenerationPath(nextGeneration);
-        string temporaryPath = finalPath + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        GenerationFile committedGeneration = await mFileStorage.CommitAsync(
+            nextFileGeneration,
+            content,
+            cancellationToken).ConfigureAwait(false);
+
+        PlanningWorkspaceDocument verifiedDocument;
         try
         {
-            await writeDurableFileAsync(
-                temporaryPath,
-                content,
-                cancellationToken).ConfigureAwait(false);
-            cancellationToken.ThrowIfCancellationRequested();
-            File.Move(temporaryPath, finalPath);
-
-            PlanningWorkspaceDocument verifiedDocument;
-            try
-            {
-                verifiedDocument = await readDocumentAsync(
-                    finalPath,
-                    CancellationToken.None).ConfigureAwait(false);
-            }
-            catch (Exception exception) when (isRecoverableGenerationException(exception))
-            {
-                tryDeleteFile(finalPath);
-                throw new WorkspacePersistenceException(
-                    "The committed workspace generation could not be read back.",
-                    exception);
-            }
-
-            if (verifiedDocument.Generation != nextGeneration)
-            {
-                throw new WorkspacePersistenceException(
-                    "The committed workspace generation could not be verified.",
-                    new InvalidDataException(finalPath));
-            }
-
-            pruneOldGenerations();
+            verifiedDocument = await readDocumentAsync(
+                committedGeneration.Path,
+                CancellationToken.None).ConfigureAwait(false);
         }
-        finally
+        catch (Exception exception) when (isRecoverableGenerationException(exception))
         {
-            tryDeleteFile(temporaryPath);
+            mFileStorage.TryDeleteGeneration(committedGeneration);
+            throw new WorkspacePersistenceException(
+                "The committed workspace generation could not be read back.",
+                exception);
         }
-    }
 
-    private string createGenerationPath(WorkspaceGeneration generation)
-    {
-        string fileName = mBaseFileName
-            + "."
-            + generation.FileComponent
-            + mFileExtension;
-        return Path.Combine(mDirectoryPath, fileName);
+        if (verifiedDocument.Generation != nextGeneration)
+        {
+            throw new WorkspacePersistenceException(
+                "The committed workspace generation could not be verified.",
+                new InvalidDataException(committedGeneration.Path.Value));
+        }
+
+        mFileStorage.PruneGenerations();
     }
 
     private async Task ensureLatestGenerationAllowsSaveAsync(
-        IReadOnlyList<WorkspaceGenerationFile> generationFiles,
+        IReadOnlyList<GenerationFile> generationFiles,
         CancellationToken cancellationToken)
     {
         if (generationFiles.Count == 0)
@@ -404,14 +277,14 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
             return;
         }
 
-        foreach (WorkspaceGenerationFile generationFile in generationFiles)
+        foreach (GenerationFile generationFile in generationFiles)
         {
             try
             {
                 PlanningWorkspaceDocument document = await readDocumentAsync(
                     generationFile.Path,
                     cancellationToken).ConfigureAwait(false);
-                if (document.Generation == generationFile.Generation)
+                if (document.Generation.Value == generationFile.Generation.Value)
                 {
                     return;
                 }
@@ -435,54 +308,17 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
         }
     }
 
-    private void pruneOldGenerations()
+    private static WorkspaceGeneration getNextGeneration(
+        IReadOnlyList<GenerationFile> generationFiles)
     {
-        try
+        if (generationFiles.Count == 0)
         {
-            List<WorkspaceGenerationFile> generationFiles = getGenerationFiles();
-            for (int index = MAXIMUM_RETAINED_GENERATIONS;
-                index < generationFiles.Count;
-                index++)
-            {
-                tryDeleteFile(generationFiles[index].Path);
-            }
-        }
-        catch (Exception exception) when (isFileSystemException(exception))
-        {
-            // Retention cleanup is non-critical after a new generation is verified.
-        }
-    }
-
-    private bool tryParseGenerationPath(
-        string path,
-        out WorkspaceGeneration generation)
-    {
-        generation = default(WorkspaceGeneration);
-        string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(path);
-        string expectedPrefix = mBaseFileName + ".";
-        if (fileNameWithoutExtension.StartsWith(
-            expectedPrefix,
-            StringComparison.Ordinal) == false)
-        {
-            return false;
+            return new WorkspaceGeneration(1L);
         }
 
-        string generationComponent = fileNameWithoutExtension.Substring(
-            expectedPrefix.Length);
-        return WorkspaceGeneration.TryParseFileComponent(
-            generationComponent,
-            out generation);
+        WorkspaceGeneration latestGeneration = new WorkspaceGeneration(
+            generationFiles[0].Generation.Value);
+        return latestGeneration.GetNext();
     }
 
-    private void tryDeleteFile(string path)
-    {
-        try
-        {
-            File.Delete(path);
-        }
-        catch (Exception exception) when (isFileSystemException(exception))
-        {
-            // A stale temporary or old generation is safer than masking the primary result.
-        }
-    }
 }

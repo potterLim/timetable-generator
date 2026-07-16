@@ -554,6 +554,37 @@ public sealed class CatalogCacheFileStoreTests
         }
     }
 
+    [TestMethod]
+    public async Task ExhaustedGenerationRangeKeepsTheCatalogSpecificFailureAsync()
+    {
+        string testDirectoryPath = createTestDirectoryPath();
+        try
+        {
+            CatalogCacheFileStore store = createStore(testDirectoryPath);
+            await store.SaveAsync(
+                CatalogSynchronizationTestDocuments.CreateVerifiedPackage(),
+                CancellationToken.None);
+            File.Move(
+                getGenerationPath(testDirectoryPath, 1L),
+                getGenerationPath(testDirectoryPath, long.MaxValue));
+
+            InvalidOperationException exception =
+                await Assert.ThrowsExactlyAsync<InvalidOperationException>(
+                    () => store.SaveAsync(
+                        CatalogSynchronizationTestDocuments
+                            .CreateVerifiedPackageWithKoreanName("새 자료구조"),
+                        CancellationToken.None));
+
+            Assert.AreEqual(
+                "The catalog cache generation range is exhausted.",
+                exception.Message);
+        }
+        finally
+        {
+            deleteTestDirectory(testDirectoryPath);
+        }
+    }
+
     private static CatalogCacheFileStore createStore(string testDirectoryPath)
     {
         CatalogCacheFilePath cachePath = new CatalogCacheFilePath(

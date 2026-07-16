@@ -428,6 +428,36 @@ public sealed class PlanningWorkspaceFileStoreTests
         }
     }
 
+    [TestMethod]
+    public async Task ExhaustedGenerationRangeKeepsTheWorkspaceSpecificFailureAsync()
+    {
+        string testDirectoryPath = createTestDirectoryPath();
+        try
+        {
+            PlanningWorkspaceFileStore store = createStore(testDirectoryPath);
+            await store.SaveAsync(
+                createWorkspace("기존 시간표"),
+                CancellationToken.None);
+            File.Move(
+                getGenerationPath(testDirectoryPath, 1L),
+                getGenerationPath(testDirectoryPath, long.MaxValue));
+
+            InvalidOperationException exception =
+                await Assert.ThrowsExactlyAsync<InvalidOperationException>(
+                    () => store.SaveAsync(
+                        createWorkspace("새 시간표"),
+                        CancellationToken.None));
+
+            Assert.AreEqual(
+                "The planning workspace generation range is exhausted.",
+                exception.Message);
+        }
+        finally
+        {
+            deleteTestDirectory(testDirectoryPath);
+        }
+    }
+
     private static PlanningWorkspaceFileStore createStore(string testDirectoryPath)
     {
         return createStore(
