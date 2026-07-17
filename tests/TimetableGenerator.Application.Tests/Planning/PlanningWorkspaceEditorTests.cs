@@ -49,12 +49,13 @@ public sealed class PlanningWorkspaceEditorTests
     [TestMethod]
     public void RenamePlanPreservesItsCatalogAndChoices()
     {
-        ScheduledCourseChoice choice = ScheduleRecommendationTestData.CreateChoice(
-            "AAA10001",
-            "01");
+        CourseChoiceGroup choiceGroup =
+            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                "AAA10001",
+                "01");
         PlanningPlan plan = createPlan(
             "변경 전",
-            new ScheduledCourseChoice[] { choice },
+            new CourseChoiceGroup[] { choiceGroup },
             Array.Empty<UnscheduledOfferingSelection>());
         PlanningWorkspace workspace = new PlanningWorkspace(
             plan.Id,
@@ -69,11 +70,11 @@ public sealed class PlanningWorkspaceEditorTests
         PlanningPlan renamedPlan = result.GetActivePlan();
         Assert.AreEqual("변경 후", renamedPlan.Name.Value);
         Assert.AreSame(plan.CatalogBinding, renamedPlan.CatalogBinding);
-        Assert.AreSame(choice, renamedPlan.ScheduledCourseChoices[0]);
+        Assert.AreSame(choiceGroup, renamedPlan.CourseChoiceGroups[0]);
     }
 
     [TestMethod]
-    public void AddScheduledChoiceUpdatesOnlyTheRequestedPlan()
+    public void AddCourseChoiceGroupUpdatesOnlyTheRequestedPlan()
     {
         PlanningPlan firstPlan = createPlan("첫 계획");
         PlanningPlan secondPlan = createPlan("둘째 계획");
@@ -81,18 +82,19 @@ public sealed class PlanningWorkspaceEditorTests
             firstPlan.Id,
             new PlanningPlan[] { firstPlan, secondPlan });
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
-        ScheduledCourseChoice addedChoice = ScheduleRecommendationTestData.CreateChoice(
-            "AAA10001",
-            "01",
-            "02");
+        CourseChoiceGroup addedChoiceGroup =
+            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                "AAA10001",
+                "01",
+                "02");
 
-        PlanningWorkspace result = editor.AddScheduledCourseChoice(
+        PlanningWorkspace result = editor.AddCourseChoiceGroup(
             workspace,
             firstPlan.Id,
-            addedChoice);
+            addedChoiceGroup);
 
-        Assert.HasCount(1, result.Plans[0].ScheduledCourseChoices);
-        Assert.AreSame(addedChoice, result.Plans[0].ScheduledCourseChoices[0]);
+        Assert.HasCount(1, result.Plans[0].CourseChoiceGroups);
+        Assert.AreSame(addedChoiceGroup, result.Plans[0].CourseChoiceGroups[0]);
         Assert.AreSame(secondPlan, result.Plans[1]);
     }
 
@@ -115,7 +117,7 @@ public sealed class PlanningWorkspaceEditorTests
             selection);
 
         PlanningPlan updatedPlan = result.GetActivePlan();
-        Assert.IsEmpty(updatedPlan.ScheduledCourseChoices);
+        Assert.IsEmpty(updatedPlan.CourseChoiceGroups);
         Assert.HasCount(1, updatedPlan.UnscheduledOfferingSelections);
         Assert.AreSame(selection, updatedPlan.UnscheduledOfferingSelections[0]);
     }
@@ -123,15 +125,17 @@ public sealed class PlanningWorkspaceEditorTests
     [TestMethod]
     public void RemoveCourseRemovesEitherScheduleStatus()
     {
-        ScheduledCourseChoice scheduledChoice =
-            ScheduleRecommendationTestData.CreateChoice("AAA10001", "01");
+        CourseChoiceGroup scheduledChoiceGroup =
+            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                "AAA10001",
+                "01");
         UnscheduledOfferingSelection unscheduledSelection =
             ScheduleRecommendationTestData.CreateUnscheduledSelection(
                 "BBB10001",
                 "01");
         PlanningPlan plan = createPlan(
             "기본 계획",
-            new ScheduledCourseChoice[] { scheduledChoice },
+            new CourseChoiceGroup[] { scheduledChoiceGroup },
             new UnscheduledOfferingSelection[] { unscheduledSelection });
         PlanningWorkspace workspace = new PlanningWorkspace(
             plan.Id,
@@ -141,24 +145,26 @@ public sealed class PlanningWorkspaceEditorTests
         PlanningWorkspace withoutScheduled = editor.RemoveCourse(
             workspace,
             plan.Id,
-            scheduledChoice.CourseId);
+            scheduledChoiceGroup.CourseCandidates[0].CourseId);
         PlanningWorkspace withoutEither = editor.RemoveCourse(
             withoutScheduled,
             plan.Id,
             unscheduledSelection.CourseId);
 
-        Assert.IsEmpty(withoutEither.GetActivePlan().ScheduledCourseChoices);
+        Assert.IsEmpty(withoutEither.GetActivePlan().CourseChoiceGroups);
         Assert.IsEmpty(withoutEither.GetActivePlan().UnscheduledOfferingSelections);
     }
 
     [TestMethod]
     public void PersonalScheduleLifecycleUpdatesOnlyTheRequestedPlan()
     {
-        ScheduledCourseChoice existingChoice =
-            ScheduleRecommendationTestData.CreateChoice("AAA10001", "01");
+        CourseChoiceGroup existingChoiceGroup =
+            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                "AAA10001",
+                "01");
         PlanningPlan firstPlan = createPlan(
             "첫 계획",
-            new ScheduledCourseChoice[] { existingChoice },
+            new CourseChoiceGroup[] { existingChoiceGroup },
             Array.Empty<UnscheduledOfferingSelection>());
         PlanningPlan secondPlan = createPlan("둘째 계획");
         PlanningWorkspace workspace = new PlanningWorkspace(
@@ -187,17 +193,21 @@ public sealed class PlanningWorkspaceEditorTests
 
         Assert.HasCount(1, withSchedule.Plans[0].PersonalSchedules);
         Assert.AreSame(addedSchedule, withSchedule.Plans[0].PersonalSchedules[0]);
-        Assert.AreSame(existingChoice, withSchedule.Plans[0].ScheduledCourseChoices[0]);
+        Assert.AreSame(
+            existingChoiceGroup,
+            withSchedule.Plans[0].CourseChoiceGroups[0]);
         Assert.AreSame(secondPlan, withSchedule.Plans[1]);
         Assert.AreEqual(secondPlan.Id, withSchedule.ActivePlanId);
         Assert.AreSame(updatedSchedule, withUpdate.Plans[0].PersonalSchedules[0]);
-        Assert.AreSame(existingChoice, withUpdate.Plans[0].ScheduledCourseChoices[0]);
+        Assert.AreSame(
+            existingChoiceGroup,
+            withUpdate.Plans[0].CourseChoiceGroups[0]);
         Assert.AreSame(secondPlan, withUpdate.Plans[1]);
         Assert.AreEqual(secondPlan.Id, withUpdate.ActivePlanId);
         Assert.IsEmpty(withoutSchedule.Plans[0].PersonalSchedules);
         Assert.AreSame(
-            existingChoice,
-            withoutSchedule.Plans[0].ScheduledCourseChoices[0]);
+            existingChoiceGroup,
+            withoutSchedule.Plans[0].CourseChoiceGroups[0]);
         Assert.AreSame(secondPlan, withoutSchedule.Plans[1]);
         Assert.AreEqual(secondPlan.Id, withoutSchedule.ActivePlanId);
     }
@@ -210,20 +220,22 @@ public sealed class PlanningWorkspaceEditorTests
             "고정 일정");
         PlanningPlan plan = createPlan(
             "기본 계획",
-            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<CourseChoiceGroup>(),
             Array.Empty<UnscheduledOfferingSelection>(),
             new PersonalSchedule[] { existingSchedule });
         PlanningWorkspace workspace = new PlanningWorkspace(
             plan.Id,
             new PlanningPlan[] { plan });
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
-        ScheduledCourseChoice choice =
-            ScheduleRecommendationTestData.CreateChoice("AAA10001", "01");
+        CourseChoiceGroup choiceGroup =
+            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                "AAA10001",
+                "01");
 
-        PlanningWorkspace withCourse = editor.AddScheduledCourseChoice(
+        PlanningWorkspace withCourse = editor.AddCourseChoiceGroup(
             workspace,
             plan.Id,
-            choice);
+            choiceGroup);
         PlanningWorkspace renamed = editor.RenamePlan(
             withCourse,
             plan.Id,
@@ -231,7 +243,7 @@ public sealed class PlanningWorkspaceEditorTests
         PlanningWorkspace withoutCourse = editor.RemoveCourse(
             renamed,
             plan.Id,
-            choice.CourseId);
+            choiceGroup.CourseCandidates[0].CourseId);
 
         Assert.AreSame(
             existingSchedule,
@@ -280,25 +292,25 @@ public sealed class PlanningWorkspaceEditorTests
     {
         return createPlan(
             name,
-            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<CourseChoiceGroup>(),
             Array.Empty<UnscheduledOfferingSelection>());
     }
 
     private static PlanningPlan createPlan(
         string name,
-        ScheduledCourseChoice[] scheduledChoices,
+        CourseChoiceGroup[] courseChoiceGroups,
         UnscheduledOfferingSelection[] unscheduledSelections)
     {
         return createPlan(
             name,
-            scheduledChoices,
+            courseChoiceGroups,
             unscheduledSelections,
             Array.Empty<PersonalSchedule>());
     }
 
     private static PlanningPlan createPlan(
         string name,
-        ScheduledCourseChoice[] scheduledChoices,
+        CourseChoiceGroup[] courseChoiceGroups,
         UnscheduledOfferingSelection[] unscheduledSelections,
         PersonalSchedule[] personalSchedules)
     {
@@ -313,7 +325,7 @@ public sealed class PlanningWorkspaceEditorTests
             new PlanName(name),
             binding,
             new PlanningPlanContent(
-                scheduledChoices,
+                courseChoiceGroups,
                 unscheduledSelections,
                 personalSchedules));
     }

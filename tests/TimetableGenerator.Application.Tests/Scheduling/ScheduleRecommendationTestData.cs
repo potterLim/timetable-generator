@@ -172,6 +172,24 @@ internal static class ScheduleRecommendationTestData
             offeringCandidates);
     }
 
+    public static CourseChoiceGroup CreateCourseChoiceGroup(
+        string courseCodeValue,
+        params string[] sectionCodeValues)
+    {
+        List<OfferingId> offeringIds = new List<OfferingId>();
+        foreach (string sectionCodeValue in sectionCodeValues)
+        {
+            offeringIds.Add(CreateOfferingId(
+                courseCodeValue,
+                sectionCodeValue));
+        }
+
+        return CourseChoiceGroup.CreateWithAcceptableOfferings(
+            CourseChoiceGroupId.CreateNew(),
+            CreateCourseId(courseCodeValue),
+            offeringIds);
+    }
+
     public static UnscheduledOfferingSelection CreateUnscheduledSelection(
         string courseCodeValue,
         string sectionCodeValue)

@@ -9,8 +9,6 @@ public sealed class PlanningPlanContent
 {
     private readonly IReadOnlyList<CourseChoiceGroup> mCourseChoiceGroups;
 
-    private readonly IReadOnlyList<ScheduledCourseChoice> mScheduledCourseChoices;
-
     private readonly IReadOnlyList<UnscheduledOfferingSelection>
         mUnscheduledOfferingSelections;
 
@@ -21,14 +19,6 @@ public sealed class PlanningPlanContent
         get
         {
             return mCourseChoiceGroups;
-        }
-    }
-
-    public IReadOnlyList<ScheduledCourseChoice> ScheduledCourseChoices
-    {
-        get
-        {
-            return mScheduledCourseChoices;
         }
     }
 
@@ -85,8 +75,6 @@ public sealed class PlanningPlanContent
             courseChoiceGroups,
             selectedCourseIds,
             selectedOfferingIds);
-        mScheduledCourseChoices = createScheduledCourseChoiceCompatibilityView(
-            mCourseChoiceGroups);
         mUnscheduledOfferingSelections = copyAndValidateUnscheduledOfferingSelections(
             unscheduledOfferingSelections,
             selectedCourseIds,
@@ -114,9 +102,10 @@ public sealed class PlanningPlanContent
             }
 
             courseChoiceGroups.Add(
-                CourseChoiceGroup.CreateFromScheduledCourseChoice(
+                CourseChoiceGroup.CreateWithAcceptableOfferings(
                     CourseChoiceGroupId.CreateNew(),
-                    scheduledCourseChoice));
+                    scheduledCourseChoice.CourseId,
+                    scheduledCourseChoice.OfferingIds));
         }
 
         return courseChoiceGroups.AsReadOnly();
@@ -171,43 +160,6 @@ public sealed class PlanningPlanContent
         }
 
         return copiedGroups.AsReadOnly();
-    }
-
-    private static IReadOnlyList<ScheduledCourseChoice>
-        createScheduledCourseChoiceCompatibilityView(
-            IEnumerable<CourseChoiceGroup> courseChoiceGroups)
-    {
-        List<ScheduledCourseChoice> scheduledCourseChoices =
-            new List<ScheduledCourseChoice>();
-        foreach (CourseChoiceGroup courseChoiceGroup in courseChoiceGroups)
-        {
-            if (courseChoiceGroup.LegacyScheduledChoiceOrNull != null)
-            {
-                scheduledCourseChoices.Add(
-                    courseChoiceGroup.LegacyScheduledChoiceOrNull);
-                continue;
-            }
-
-            foreach (CourseCandidate courseCandidate
-                in courseChoiceGroup.CourseCandidates)
-            {
-                List<OfferingId> eligibleOfferingIds = new List<OfferingId>();
-                foreach (OfferingCandidate offeringCandidate
-                    in courseCandidate.OfferingCandidates)
-                {
-                    if (offeringCandidate.IsEligible)
-                    {
-                        eligibleOfferingIds.Add(offeringCandidate.OfferingId);
-                    }
-                }
-
-                scheduledCourseChoices.Add(new ScheduledCourseChoice(
-                    courseCandidate.CourseId,
-                    eligibleOfferingIds));
-            }
-        }
-
-        return scheduledCourseChoices.AsReadOnly();
     }
 
     private static IReadOnlyList<UnscheduledOfferingSelection>

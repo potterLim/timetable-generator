@@ -21,35 +21,50 @@ public sealed class PlanningPlanTests
     }
 
     [TestMethod]
-    public void ScheduledCourseChoiceRequiresUniqueOfferingsAndDefensivelyCopiesThem()
+    public void CourseChoiceGroupRequiresUniqueOfferingsAndDefensivelyCopiesThem()
     {
         CourseId courseId = createCourseId("CSE30001");
         OfferingId firstOfferingId = createOfferingId("CSE30001", "01");
-        List<OfferingId> mutableOfferingIds = new List<OfferingId>()
+        List<OfferingCandidate> mutableOfferingCandidates =
+            new List<OfferingCandidate>()
         {
-            firstOfferingId,
+            new OfferingCandidate(
+                firstOfferingId,
+                EOfferingPreference.Acceptable),
         };
-        ScheduledCourseChoice choice = new ScheduledCourseChoice(
+        CourseCandidate courseCandidate = new CourseCandidate(
             courseId,
-            mutableOfferingIds);
+            mutableOfferingCandidates);
 
-        mutableOfferingIds.Add(createOfferingId("CSE30001", "02"));
+        mutableOfferingCandidates.Add(new OfferingCandidate(
+            createOfferingId("CSE30001", "02"),
+            EOfferingPreference.Acceptable));
 
-        Assert.HasCount(1, choice.OfferingIds);
+        Assert.HasCount(1, courseCandidate.OfferingCandidates);
         Assert.ThrowsExactly<ArgumentException>(
-            () => new ScheduledCourseChoice(courseId, Array.Empty<OfferingId>()));
-        Assert.ThrowsExactly<ArgumentException>(
-            () => new ScheduledCourseChoice(
+            () => new CourseCandidate(
                 courseId,
-                new OfferingId[] { firstOfferingId, firstOfferingId }));
+                Array.Empty<OfferingCandidate>()));
+        Assert.ThrowsExactly<ArgumentException>(
+            () => new CourseCandidate(
+                courseId,
+                new OfferingCandidate[]
+                {
+                    new OfferingCandidate(
+                        firstOfferingId,
+                        EOfferingPreference.Acceptable),
+                    new OfferingCandidate(
+                        firstOfferingId,
+                        EOfferingPreference.Preferred),
+                }));
     }
 
     [TestMethod]
-    public void PlanKeepsUnscheduledSelectionsOutsideScheduledChoices()
+    public void PlanKeepsUnscheduledSelectionsOutsideCourseChoiceGroups()
     {
-        ScheduledCourseChoice scheduledChoice = new ScheduledCourseChoice(
-            createCourseId("CSE30001"),
-            new OfferingId[] { createOfferingId("CSE30001", "01") });
+        CourseChoiceGroup courseChoiceGroup = createCourseChoiceGroup(
+            "CSE30001",
+            "01");
         UnscheduledOfferingSelection unscheduledSelection =
             new UnscheduledOfferingSelection(
                 createCourseId("CSE30002"),
@@ -58,10 +73,10 @@ public sealed class PlanningPlanTests
         PlanningPlan plan = createPlan(
             PlanId.CreateNew(),
             "기본 시간표",
-            new ScheduledCourseChoice[] { scheduledChoice },
+            new CourseChoiceGroup[] { courseChoiceGroup },
             new UnscheduledOfferingSelection[] { unscheduledSelection });
 
-        Assert.HasCount(1, plan.ScheduledCourseChoices);
+        Assert.HasCount(1, plan.CourseChoiceGroups);
         Assert.HasCount(1, plan.UnscheduledOfferingSelections);
         Assert.IsTrue(plan.HasUnscheduledOfferingSelections);
         Assert.AreEqual(
@@ -73,12 +88,12 @@ public sealed class PlanningPlanTests
     public void PlanRejectsDuplicateAndMixedCourseSelections()
     {
         CourseId courseId = createCourseId("CSE30001");
-        ScheduledCourseChoice firstChoice = new ScheduledCourseChoice(
-            courseId,
-            new OfferingId[] { createOfferingId("CSE30001", "01") });
-        ScheduledCourseChoice duplicateCourseChoice = new ScheduledCourseChoice(
-            courseId,
-            new OfferingId[] { createOfferingId("CSE30001", "02") });
+        CourseChoiceGroup firstChoiceGroup = createCourseChoiceGroup(
+            "CSE30001",
+            "01");
+        CourseChoiceGroup duplicateCourseChoiceGroup = createCourseChoiceGroup(
+            "CSE30001",
+            "02");
         UnscheduledOfferingSelection mixedSelection = new UnscheduledOfferingSelection(
             courseId,
             createOfferingId("CSE30001", "03"));
@@ -87,13 +102,17 @@ public sealed class PlanningPlanTests
             () => createPlan(
                 PlanId.CreateNew(),
                 "중복 과목",
-                new ScheduledCourseChoice[] { firstChoice, duplicateCourseChoice },
+                new CourseChoiceGroup[]
+                {
+                    firstChoiceGroup,
+                    duplicateCourseChoiceGroup,
+                },
                 Array.Empty<UnscheduledOfferingSelection>()));
         Assert.ThrowsExactly<ArgumentException>(
             () => createPlan(
                 PlanId.CreateNew(),
                 "혼합 과목",
-                new ScheduledCourseChoice[] { firstChoice },
+                new CourseChoiceGroup[] { firstChoiceGroup },
                 new UnscheduledOfferingSelection[] { mixedSelection }));
     }
 
@@ -103,10 +122,10 @@ public sealed class PlanningPlanTests
         PlanningPlan plan = createPlan(
             PlanId.CreateNew(),
             "새 시간표",
-            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<CourseChoiceGroup>(),
             Array.Empty<UnscheduledOfferingSelection>());
 
-        Assert.IsEmpty(plan.ScheduledCourseChoices);
+        Assert.IsEmpty(plan.CourseChoiceGroups);
         Assert.IsEmpty(plan.UnscheduledOfferingSelections);
         Assert.IsFalse(plan.HasUnscheduledOfferingSelections);
     }
@@ -114,7 +133,7 @@ public sealed class PlanningPlanTests
     private static PlanningPlan createPlan(
         PlanId planId,
         string planName,
-        IEnumerable<ScheduledCourseChoice> scheduledCourseChoices,
+        IEnumerable<CourseChoiceGroup> courseChoiceGroups,
         IEnumerable<UnscheduledOfferingSelection> unscheduledOfferingSelections)
     {
         return new PlanningPlan(
@@ -122,9 +141,26 @@ public sealed class PlanningPlanTests
             new PlanName(planName),
             createCatalogBinding(),
             new PlanningPlanContent(
-                scheduledCourseChoices,
+                courseChoiceGroups,
                 unscheduledOfferingSelections,
                 Array.Empty<PersonalSchedule>()));
+    }
+
+    private static CourseChoiceGroup createCourseChoiceGroup(
+        string courseCodeValue,
+        string sectionCodeValue)
+    {
+        CourseId courseId = createCourseId(courseCodeValue);
+        OfferingCandidate offeringCandidate = new OfferingCandidate(
+            createOfferingId(courseCodeValue, sectionCodeValue),
+            EOfferingPreference.Acceptable);
+        CourseCandidate courseCandidate = new CourseCandidate(
+            courseId,
+            new OfferingCandidate[] { offeringCandidate });
+        return new CourseChoiceGroup(
+            CourseChoiceGroupId.CreateNew(),
+            ECourseChoiceCardinality.ExactlyOne,
+            new CourseCandidate[] { courseCandidate });
     }
 
     private static PlanCatalogBinding createCatalogBinding()

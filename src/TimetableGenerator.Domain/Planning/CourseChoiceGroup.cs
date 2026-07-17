@@ -8,8 +8,6 @@ public sealed class CourseChoiceGroup
 {
     private readonly IReadOnlyList<CourseCandidate> mCourseCandidates;
 
-    private readonly ScheduledCourseChoice? mLegacyScheduledChoiceOrNull;
-
     public CourseChoiceGroupId Id { get; }
 
     public ECourseChoiceCardinality Cardinality { get; }
@@ -22,27 +20,10 @@ public sealed class CourseChoiceGroup
         }
     }
 
-    internal ScheduledCourseChoice? LegacyScheduledChoiceOrNull
-    {
-        get
-        {
-            return mLegacyScheduledChoiceOrNull;
-        }
-    }
-
     public CourseChoiceGroup(
         CourseChoiceGroupId id,
         ECourseChoiceCardinality cardinality,
         IEnumerable<CourseCandidate> courseCandidates)
-        : this(id, cardinality, courseCandidates, null)
-    {
-    }
-
-    private CourseChoiceGroup(
-        CourseChoiceGroupId id,
-        ECourseChoiceCardinality cardinality,
-        IEnumerable<CourseCandidate> courseCandidates,
-        ScheduledCourseChoice? legacyScheduledChoiceOrNull)
     {
         if (id.IsValid == false)
         {
@@ -104,20 +85,26 @@ public sealed class CourseChoiceGroup
         Id = id;
         Cardinality = cardinality;
         mCourseCandidates = copiedCandidates.AsReadOnly();
-        mLegacyScheduledChoiceOrNull = legacyScheduledChoiceOrNull;
     }
 
-    public static CourseChoiceGroup CreateFromScheduledCourseChoice(
+    public static CourseChoiceGroup CreateWithAcceptableOfferings(
         CourseChoiceGroupId id,
-        ScheduledCourseChoice scheduledCourseChoice)
+        CourseId courseId,
+        IEnumerable<OfferingId> offeringIds)
     {
-        if (scheduledCourseChoice == null)
+        if (courseId == null)
         {
-            throw new ArgumentNullException(nameof(scheduledCourseChoice));
+            throw new ArgumentNullException(nameof(courseId));
         }
 
-        List<OfferingCandidate> offeringCandidates = new List<OfferingCandidate>();
-        foreach (OfferingId offeringId in scheduledCourseChoice.OfferingIds)
+        if (offeringIds == null)
+        {
+            throw new ArgumentNullException(nameof(offeringIds));
+        }
+
+        List<OfferingCandidate> offeringCandidates =
+            new List<OfferingCandidate>();
+        foreach (OfferingId offeringId in offeringIds)
         {
             offeringCandidates.Add(new OfferingCandidate(
                 offeringId,
@@ -125,12 +112,11 @@ public sealed class CourseChoiceGroup
         }
 
         CourseCandidate courseCandidate = new CourseCandidate(
-            scheduledCourseChoice.CourseId,
+            courseId,
             offeringCandidates);
         return new CourseChoiceGroup(
             id,
             ECourseChoiceCardinality.ExactlyOne,
-            new CourseCandidate[] { courseCandidate },
-            scheduledCourseChoice);
+            new CourseCandidate[] { courseCandidate });
     }
 }

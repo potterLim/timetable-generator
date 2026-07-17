@@ -21,14 +21,6 @@ public sealed class PlanningPlan
         }
     }
 
-    public IReadOnlyList<ScheduledCourseChoice> ScheduledCourseChoices
-    {
-        get
-        {
-            return Content.ScheduledCourseChoices;
-        }
-    }
-
     public IReadOnlyList<UnscheduledOfferingSelection> UnscheduledOfferingSelections
     {
         get

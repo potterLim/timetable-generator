@@ -7,28 +7,6 @@ namespace TimetableGenerator.Application.Planning;
 
 public sealed partial class PlanningWorkspaceEditor
 {
-    public PlanningWorkspace AddScheduledCourseChoice(
-        PlanningWorkspace workspace,
-        PlanId planId,
-        ScheduledCourseChoice choice)
-    {
-        if (workspace == null)
-        {
-            throw new ArgumentNullException(nameof(workspace));
-        }
-
-        if (choice == null)
-        {
-            throw new ArgumentNullException(nameof(choice));
-        }
-
-        CourseChoiceGroup courseChoiceGroup =
-            CourseChoiceGroup.CreateFromScheduledCourseChoice(
-                CourseChoiceGroupId.CreateNew(),
-                choice);
-        return AddCourseChoiceGroup(workspace, planId, courseChoiceGroup);
-    }
-
     public PlanningWorkspace AddCourseChoiceGroup(
         PlanningWorkspace workspace,
         PlanId planId,

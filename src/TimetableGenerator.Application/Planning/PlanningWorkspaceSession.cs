@@ -110,13 +110,12 @@ public sealed class PlanningWorkspaceSession
         switch (selection.Kind)
         {
             case EPlanningCourseSelectionKind.ScheduledAlternatives:
-                ScheduledCourseChoice choice = new ScheduledCourseChoice(
-                    selection.CourseId,
-                    selection.GetScheduledOfferingIds());
-                editedWorkspace = mEditor.AddScheduledCourseChoice(
+                CourseChoiceGroup courseChoiceGroup =
+                    createCourseChoiceGroup(selection);
+                editedWorkspace = mEditor.AddCourseChoiceGroup(
                     mWorkspace,
                     mWorkspace.ActivePlanId,
-                    choice);
+                    courseChoiceGroup);
                 break;
             case EPlanningCourseSelectionKind.TimeNotProvidedOffering:
                 UnscheduledOfferingSelection unscheduledSelection =
@@ -258,6 +257,15 @@ public sealed class PlanningWorkspaceSession
 
             validatePlan(plan);
         }
+    }
+
+    private static CourseChoiceGroup createCourseChoiceGroup(
+        PlanningCourseSelection selection)
+    {
+        return CourseChoiceGroup.CreateWithAcceptableOfferings(
+            CourseChoiceGroupId.CreateNew(),
+            selection.CourseId,
+            selection.GetScheduledOfferingIds());
     }
 
     private void validatePlan(PlanningPlan plan)

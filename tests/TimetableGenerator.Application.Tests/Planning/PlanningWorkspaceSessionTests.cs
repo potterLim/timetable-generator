@@ -32,7 +32,7 @@ public sealed class PlanningWorkspaceSessionTests
             new ScheduleRecommendationLimit(10),
             CancellationToken.None);
 
-        Assert.HasCount(1, session.Workspace.GetActivePlan().ScheduledCourseChoices);
+        Assert.HasCount(1, session.Workspace.GetActivePlan().CourseChoiceGroups);
         Assert.HasCount(2, result.Recommendations);
         Assert.AreEqual(
             ERecommendationVerificationStatus.ConfirmedConflictFree,
@@ -78,7 +78,7 @@ public sealed class PlanningWorkspaceSessionTests
 
         Assert.ThrowsExactly<ArgumentException>(
             () => session.AddCourse(invalidSelection));
-        Assert.IsEmpty(session.Workspace.GetActivePlan().ScheduledCourseChoices);
+        Assert.IsEmpty(session.Workspace.GetActivePlan().CourseChoiceGroups);
         Assert.IsEmpty(
             session.Workspace.GetActivePlan().UnscheduledOfferingSelections);
     }

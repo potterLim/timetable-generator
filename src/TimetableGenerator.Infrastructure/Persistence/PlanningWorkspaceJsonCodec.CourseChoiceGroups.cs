@@ -147,9 +147,10 @@ public sealed partial class PlanningWorkspaceJsonCodec
                 scheduledChoice.CourseId,
                 choiceIndex);
             courseChoiceGroups.Add(
-                CourseChoiceGroup.CreateFromScheduledCourseChoice(
+                CourseChoiceGroup.CreateWithAcceptableOfferings(
                     groupId,
-                    scheduledChoice));
+                    scheduledChoice.CourseId,
+                    scheduledChoice.OfferingIds));
         }
 
         return courseChoiceGroups.AsReadOnly();

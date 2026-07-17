@@ -41,7 +41,7 @@ public sealed class PlanningWorkspaceJsonCodecTests
         Assert.AreEqual(new WorkspaceGeneration(7), restoredDocument.Generation);
         Assert.AreEqual(workspace.ActivePlanId, restoredWorkspace.ActivePlanId);
         Assert.HasCount(2, restoredWorkspace.Plans);
-        Assert.HasCount(1, restoredWorkspace.Plans[0].ScheduledCourseChoices);
+        Assert.HasCount(1, restoredWorkspace.Plans[0].CourseChoiceGroups);
         Assert.HasCount(1, restoredWorkspace.Plans[0].UnscheduledOfferingSelections);
         Assert.HasCount(1, restoredWorkspace.Plans[0].PersonalSchedules);
         PersonalSchedule restoredPersonalSchedule =
@@ -315,11 +315,10 @@ public sealed class PlanningWorkspaceJsonCodecTests
         Assert.AreEqual(
             EOfferingPreference.Acceptable,
             restoredGroup.CourseCandidates[1].OfferingCandidates[0].Preference);
-        Assert.HasCount(
-            1,
-            restoredDocument.Workspace.Plans[0]
-                .ScheduledCourseChoices[0]
-                .OfferingIds);
+        Assert.IsTrue(
+            restoredGroup.CourseCandidates[0].OfferingCandidates[0].IsEligible);
+        Assert.IsFalse(
+            restoredGroup.CourseCandidates[0].OfferingCandidates[1].IsEligible);
     }
 
     private static byte[] createContent(

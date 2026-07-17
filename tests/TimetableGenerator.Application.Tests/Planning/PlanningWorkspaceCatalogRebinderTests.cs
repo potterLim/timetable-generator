@@ -27,6 +27,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             "첫 계획",
             new ScheduledCourseChoice[] { scheduledChoice },
             Array.Empty<UnscheduledOfferingSelection>());
+        CourseChoiceGroup scheduledChoiceGroup = firstPlan.CourseChoiceGroups[0];
         PlanningPlan secondPlan = createPlan(
             originalCatalog,
             "둘째 계획",
@@ -56,8 +57,8 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             reboundWorkspaceOrNull.Plans[1],
             newCatalog);
         Assert.AreSame(
-            scheduledChoice,
-            reboundWorkspaceOrNull.Plans[0].ScheduledCourseChoices[0]);
+            scheduledChoiceGroup,
+            reboundWorkspaceOrNull.Plans[0].CourseChoiceGroups[0]);
         Assert.AreSame(
             unscheduledSelection,
             reboundWorkspaceOrNull.Plans[1].UnscheduledOfferingSelections[0]);
