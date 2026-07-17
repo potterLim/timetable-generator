@@ -146,7 +146,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 Assert.Equal(
                     new string[]
                     {
-                        "시간표 내보내기 검증",
+                        "시간표 내보내기 검증(01분반)",
                         "테스트 강의실",
                         "테스트 교수",
                     },
@@ -162,6 +162,11 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                     textBlock => Assert.Equal(
                         TextAlignment.Center,
                         textBlock.TextAlignment));
+                Assert.Equal(14.0, exportCardTexts[0].FontSize);
+                Assert.Equal(18.0, exportCardTexts[0].LineHeight);
+                Assert.Equal(2, exportCardTexts[0].MaxLines);
+                Assert.Equal(6.0, exportCardTexts[1].Margin.Top);
+                Assert.Equal(2.0, exportCardTexts[2].Margin.Top);
 
                 AvaloniaControlPngExporter exporter =
                     new AvaloniaControlPngExporter(PngExportScale.Create(1.0));
@@ -236,8 +241,10 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                     .OfType<TextBlock>()
                     .ToList();
                 Assert.Equal(
-                    new string[] { "프로그래밍 I" },
+                    new string[] { "프로그래밍 I(02분반)" },
                     exportCardTexts.Select(textBlock => textBlock.Text));
+                Assert.Single(exportCardContent.RowDefinitions);
+                Assert.Single(exportCardContent.Children);
                 Assert.DoesNotContain(
                     exportCardTexts,
                     textBlock => textBlock.Text == "교수 정보 없음");
@@ -337,6 +344,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 new ScheduleLocationSummary(
                     LocationAssignmentMetadata.CreateAssigned(
                         new ClassroomDisplayText("테스트 강의실")))),
+            new CourseSectionCode("01"),
             day,
             period,
             ECourseAccent.Blue);

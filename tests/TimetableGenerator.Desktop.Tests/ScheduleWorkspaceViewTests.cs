@@ -252,6 +252,7 @@ public sealed class ScheduleWorkspaceViewTests
     public void CourseScheduleCardPrioritizesTitleLocationThenInstructorAndKeepsDetails()
     {
         const string LONG_NAME = "사용자 경험과 인터페이스 설계를 위한 고급 프로젝트 실습";
+        const string LONG_TITLE = LONG_NAME + "(01분반)";
         const string LONG_INSTRUCTOR = "김테스트, 박테스트 외 3명";
         const string LONG_LOCATION = "느헤미야홀 401호 공동 프로젝트 스튜디오";
 
@@ -297,6 +298,7 @@ public sealed class ScheduleWorkspaceViewTests
 
             Button scheduleCard = scheduleCardOrNull;
             Assert.Contains(LONG_NAME, AutomationProperties.GetName(scheduleCard));
+            Assert.Contains("01분반", AutomationProperties.GetName(scheduleCard));
             Assert.Contains("3학점", AutomationProperties.GetName(scheduleCard));
             Assert.Equal(
                 "선택하면 과목의 전체 시간, 교수, 강의실 정보를 엽니다.",
@@ -321,10 +323,12 @@ public sealed class ScheduleWorkspaceViewTests
                 textBlock => textBlock.Text == "3학점");
             TextBlock courseName = Assert.Single(
                 cardTexts,
-                textBlock => textBlock.Text == LONG_NAME);
+                textBlock => textBlock.Text == LONG_TITLE);
             Assert.Equal(0, Grid.GetRow(courseName));
             Assert.Equal(TextAlignment.Center, courseName.TextAlignment);
             Assert.Equal(TextWrapping.Wrap, courseName.TextWrapping);
+            Assert.Equal(14.0, courseName.FontSize);
+            Assert.Equal(18.0, courseName.LineHeight);
             Assert.Equal(2, courseName.MaxLines);
             Assert.Equal(TextTrimming.CharacterEllipsis, courseName.TextTrimming);
             TextBlock instructor = Assert.Single(
@@ -335,6 +339,8 @@ public sealed class ScheduleWorkspaceViewTests
                 textBlock => textBlock.Text == LONG_LOCATION);
             Assert.Equal(1, Grid.GetRow(location));
             Assert.Equal(2, Grid.GetRow(instructor));
+            Assert.Equal(6.0, location.Margin.Top);
+            Assert.Equal(2.0, instructor.Margin.Top);
             Assert.Equal(TextAlignment.Center, location.TextAlignment);
             Assert.Equal(TextAlignment.Center, instructor.TextAlignment);
             Assert.True(courseName.FontSize > location.FontSize);
@@ -346,7 +352,7 @@ public sealed class ScheduleWorkspaceViewTests
             Assert.Equal(TextTrimming.CharacterEllipsis, instructor.TextTrimming);
             Assert.Equal(TextTrimming.CharacterEllipsis, location.TextTrimming);
             Assert.Equal(
-                LONG_NAME + Environment.NewLine + "선택하여 과목 상세 정보 보기",
+                LONG_TITLE + Environment.NewLine + "선택하여 과목 상세 정보 보기",
                 ToolTip.GetTip(scheduleCard));
             Assert.Equal(15, Grid.GetRowSpan(scheduleCard));
 
@@ -438,21 +444,31 @@ public sealed class ScheduleWorkspaceViewTests
                 LOCATION_ONLY_NAME);
             assertVisualCourseCardTexts(
                 locationOnlyCard,
-                new string[] { LOCATION_ONLY_NAME, "오석관 301" });
+                new string[] { LOCATION_ONLY_NAME + "(01분반)", "오석관 301" });
+            Grid locationOnlyContent = Assert.IsType<Grid>(
+                locationOnlyCard.Content);
+            TextBlock locationOnlyLocation = Assert.IsType<TextBlock>(
+                locationOnlyContent.Children[1]);
+            Assert.Equal(6.0, locationOnlyLocation.Margin.Top);
 
             Button instructorOnlyCard = findCourseCardByName(
                 scheduleBoard,
                 INSTRUCTOR_ONLY_NAME);
             assertVisualCourseCardTexts(
                 instructorOnlyCard,
-                new string[] { INSTRUCTOR_ONLY_NAME, "김테스트" });
+                new string[] { INSTRUCTOR_ONLY_NAME + "(01분반)", "김테스트" });
+            Grid instructorOnlyContent = Assert.IsType<Grid>(
+                instructorOnlyCard.Content);
+            TextBlock instructorOnlyInstructor = Assert.IsType<TextBlock>(
+                instructorOnlyContent.Children[1]);
+            Assert.Equal(6.0, instructorOnlyInstructor.Margin.Top);
 
             Button titleOnlyCard = findCourseCardByName(
                 scheduleBoard,
                 TITLE_ONLY_NAME);
             assertVisualCourseCardTexts(
                 titleOnlyCard,
-                new string[] { TITLE_ONLY_NAME });
+                new string[] { TITLE_ONLY_NAME + "(01분반)" });
             Assert.Contains(
                 "교수 미정",
                 AutomationProperties.GetName(titleOnlyCard));
@@ -498,7 +514,7 @@ public sealed class ScheduleWorkspaceViewTests
                 "프로그래밍 I");
             assertVisualCourseCardTexts(
                 projectedCard,
-                new string[] { "프로그래밍 I" });
+                new string[] { "프로그래밍 I(02분반)" });
             Assert.Contains(
                 "교수 정보 없음",
                 AutomationProperties.GetName(projectedCard));
@@ -755,6 +771,7 @@ public sealed class ScheduleWorkspaceViewTests
                 new ScheduleLocationSummary(
                     LocationAssignmentMetadata.CreateAssigned(
                         new ClassroomDisplayText("테스트 강의실")))),
+            new CourseSectionCode("01"),
             day,
             period,
             ECourseAccent.Blue);
@@ -778,6 +795,7 @@ public sealed class ScheduleWorkspaceViewTests
                     LocationAssignmentMetadata.CreateAssigned(
                         new ClassroomDisplayText(
                             "느헤미야홀 401호 공동 프로젝트 스튜디오")))),
+            new CourseSectionCode("01"),
             day,
             period,
             ECourseAccent.Blue);
@@ -797,6 +815,7 @@ public sealed class ScheduleWorkspaceViewTests
                 new CourseCredits(3m),
                 instructorSummary,
                 locationSummary),
+            new CourseSectionCode("01"),
             day,
             new AcademicPeriod(1),
             ECourseAccent.Blue);

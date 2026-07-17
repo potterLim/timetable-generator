@@ -1,4 +1,6 @@
 using System;
+
+using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Scheduling;
 
 namespace TimetableGenerator.Desktop.Presentation.Models;
@@ -6,6 +8,8 @@ namespace TimetableGenerator.Desktop.Presentation.Models;
 internal sealed class CourseScheduleEntry : ScheduleEntry
 {
     public ScheduleCourseDetails CourseDetails { get; }
+
+    public CourseSectionCode SectionCode { get; }
 
     public string Code
     {
@@ -20,6 +24,22 @@ internal sealed class CourseScheduleEntry : ScheduleEntry
         get
         {
             return CourseDetails.Name.Value;
+        }
+    }
+
+    public string SectionDisplayText
+    {
+        get
+        {
+            return SectionCode.Value + "분반";
+        }
+    }
+
+    public string TitleDisplayText
+    {
+        get
+        {
+            return Name + "(" + SectionDisplayText + ")";
         }
     }
 
@@ -61,6 +81,7 @@ internal sealed class CourseScheduleEntry : ScheduleEntry
 
     public CourseScheduleEntry(
         ScheduleCourseDetails courseDetails,
+        CourseSectionCode sectionCode,
         EDay day,
         AcademicPeriod period,
         ECourseAccent accent)
@@ -71,12 +92,18 @@ internal sealed class CourseScheduleEntry : ScheduleEntry
             throw new ArgumentNullException(nameof(courseDetails));
         }
 
+        if (sectionCode == null)
+        {
+            throw new ArgumentNullException(nameof(sectionCode));
+        }
+
         if (period.IsValid == false)
         {
             throw new ArgumentException("Academic periods must be valid.", nameof(period));
         }
 
         CourseDetails = courseDetails;
+        SectionCode = sectionCode;
         Period = period;
         Accent = accent;
     }

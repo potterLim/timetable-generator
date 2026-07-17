@@ -12,11 +12,11 @@ namespace TimetableGenerator.Desktop.Views;
 
 internal sealed partial class ScheduleBoardView
 {
-    private const double COURSE_CARD_TITLE_FONT_SIZE = 13.0;
-    private const double COURSE_CARD_TITLE_LINE_HEIGHT = 16.5;
+    private const double COURSE_CARD_TITLE_FONT_SIZE = 14.0;
+    private const double COURSE_CARD_TITLE_LINE_HEIGHT = 18.0;
     private const double COURSE_CARD_LOCATION_FONT_SIZE = 11.5;
     private const double COURSE_CARD_INSTRUCTOR_FONT_SIZE = 10.5;
-    private const double COURSE_CARD_PRIMARY_GAP = 4.0;
+    private const double COURSE_CARD_PRIMARY_GAP = 6.0;
     private const double COURSE_CARD_SECONDARY_GAP = 2.0;
 
     private void configureCourseCard(
@@ -28,6 +28,7 @@ internal sealed partial class ScheduleBoardView
         scheduleCard.Flyout = createCourseEntryFlyout(entry);
 
         string accessibleName = entry.Code + ", "
+            + entry.SectionDisplayText + ", "
             + entry.CourseDetails.CreditsDisplayText + ", "
             + entry.Name + ", "
             + ScheduleBoardDayRange.FindFullDayDisplayName(entry.Day) + " "
@@ -40,7 +41,9 @@ internal sealed partial class ScheduleBoardView
             "선택하면 과목의 전체 시간, 교수, 강의실 정보를 엽니다.");
         ToolTip.SetTip(
             scheduleCard,
-            entry.Name + Environment.NewLine + "선택하여 과목 상세 정보 보기");
+            entry.TitleDisplayText
+                + Environment.NewLine
+                + "선택하여 과목 상세 정보 보기");
     }
 
     private Grid createCourseEntryContent(CourseScheduleEntry entry)
@@ -51,7 +54,7 @@ internal sealed partial class ScheduleBoardView
         content.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
 
         TextBlock name = createCardText(
-            entry.Name,
+            entry.TitleDisplayText,
             COURSE_CARD_TITLE_FONT_SIZE,
             FontWeight.SemiBold);
         name.HorizontalAlignment = HorizontalAlignment.Stretch;
@@ -112,7 +115,11 @@ internal sealed partial class ScheduleBoardView
     {
         StackPanel details = createDetailsPanel();
         TextBlock identity = createFlyoutIdentity(
-            entry.Code + " · " + entry.CourseDetails.CreditsDisplayText,
+            entry.Code
+                + " · "
+                + entry.SectionDisplayText
+                + " · "
+                + entry.CourseDetails.CreditsDisplayText,
             "AccentBrush");
         details.Children.Add(identity);
         details.Children.Add(createFlyoutTitle(entry.Name));

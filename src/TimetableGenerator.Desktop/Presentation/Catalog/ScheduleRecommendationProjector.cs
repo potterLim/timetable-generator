@@ -192,6 +192,7 @@ internal static class ScheduleRecommendationProjector
         {
             entries.Add(new CourseScheduleEntry(
                 courseDetails,
+                scheduledOffering.SectionCode,
                 slot.Day,
                 slot.Period,
                 courseProjection.Accent));
