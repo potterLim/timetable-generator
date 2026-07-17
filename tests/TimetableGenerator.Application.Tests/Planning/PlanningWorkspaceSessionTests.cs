@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TimetableGenerator.Application.Planning;
@@ -13,6 +14,8 @@ namespace TimetableGenerator.Application.Tests.Planning;
 [TestClass]
 public sealed class PlanningWorkspaceSessionTests
 {
+    private const int COMBINATORIAL_GROUP_COUNT = 24;
+
     [TestMethod]
     public void ScheduledSelectionUsesEverySectionAsARecommendationAlternative()
     {
@@ -208,6 +211,69 @@ public sealed class PlanningWorkspaceSessionTests
 
         Assert.ThrowsExactly<ArgumentException>(
             () => new PlanningWorkspaceSession(catalog, workspace));
+    }
+
+    [TestMethod]
+    public void ConstructorValidatesReferencesWithoutSearchingScheduleCombinations()
+    {
+        List<CatalogCourse> courses = new List<CatalogCourse>();
+        List<CatalogOffering> offerings = new List<CatalogOffering>();
+        List<CourseChoiceGroup> groups = new List<CourseChoiceGroup>();
+        for (int groupIndex = 0;
+            groupIndex < COMBINATORIAL_GROUP_COUNT;
+            ++groupIndex)
+        {
+            string courseCodeValue = "AAA" + (groupIndex + 1).ToString("D5");
+            EDay day = (EDay)((groupIndex / 10) + 1);
+            int periodValue = (groupIndex % 10) + 1;
+            MeetingSlot slot = ScheduleRecommendationTestData.CreateMeetingSlot(
+                day,
+                periodValue);
+            courses.Add(ScheduleRecommendationTestData.CreateCourse(courseCodeValue));
+            offerings.Add(ScheduleRecommendationTestData.CreateScheduledOffering(
+                courseCodeValue,
+                "01",
+                new MeetingSlot[] { slot }));
+            offerings.Add(ScheduleRecommendationTestData.CreateScheduledOffering(
+                courseCodeValue,
+                "02",
+                new MeetingSlot[] { slot }));
+            groups.Add(ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                courseCodeValue,
+                "01",
+                "02"));
+        }
+
+        CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(
+            courses,
+            offerings);
+        MeetingSlot blockedSlot = ScheduleRecommendationTestData.CreateMeetingSlot(
+            EDay.Wednesday,
+            4);
+        DailyTimeRange blockedTimeRange = AcademicPeriodTimeTable.GetTimeRange(
+            blockedSlot.Period);
+        PersonalSchedule blockingSchedule = new PersonalSchedule(
+            PersonalScheduleId.CreateNew(),
+            new PersonalScheduleTitle("마지막 후보 차단"),
+            new WeeklyTimeRange[]
+            {
+                new WeeklyTimeRange(blockedSlot.Day, blockedTimeRange),
+            },
+            PersonalScheduleDetails.CreateEmpty());
+        PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
+            catalog,
+            groups,
+            Array.Empty<UnscheduledOfferingSelection>(),
+            new PersonalSchedule[] { blockingSchedule });
+        PlanningWorkspace workspace = new PlanningWorkspace(
+            plan.Id,
+            new PlanningPlan[] { plan });
+
+        PlanningWorkspaceSession session = new PlanningWorkspaceSession(
+            catalog,
+            workspace);
+
+        Assert.AreSame(workspace, session.Workspace);
     }
 
     private static CourseCatalog createCatalog()

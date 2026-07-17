@@ -13,6 +13,8 @@ public sealed class PlanningWorkspaceSession
 
     private readonly PlanningWorkspaceEditor mEditor;
 
+    private readonly PlanCatalogValidator mPlanCatalogValidator;
+
     private readonly ScheduleRecommendationGenerator mRecommendationGenerator;
 
     private PlanningWorkspace mWorkspace;
@@ -49,6 +51,7 @@ public sealed class PlanningWorkspaceSession
 
         mCatalog = catalog;
         mEditor = new PlanningWorkspaceEditor();
+        mPlanCatalogValidator = new PlanCatalogValidator(catalog);
         mRecommendationGenerator = new ScheduleRecommendationGenerator();
         validateWorkspace(workspace);
         mWorkspace = workspace;
@@ -270,19 +273,13 @@ public sealed class PlanningWorkspaceSession
 
     private void validatePlan(PlanningPlan plan)
     {
-        ScheduleRecommendationRequest request = new ScheduleRecommendationRequest(
-            mCatalog,
-            plan,
-            new ScheduleRecommendationLimit(1));
-        ScheduleRecommendationResult result =
-            mRecommendationGenerator.GenerateRecommendations(
-                request,
-                CancellationToken.None);
-        if (result.HasValidationError)
+        PlanCatalogValidationResult validationResult =
+            mPlanCatalogValidator.Validate(plan);
+        if (validationResult.IsValid == false)
         {
             throw new ArgumentException(
                 "The planning workspace does not match its course catalog: "
-                + result.ValidationError
+                + validationResult.Error
                 + ".",
                 nameof(plan));
         }
