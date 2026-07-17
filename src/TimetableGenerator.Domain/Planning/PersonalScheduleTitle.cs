@@ -4,7 +4,7 @@ namespace TimetableGenerator.Domain.Planning;
 
 public sealed record PersonalScheduleTitle
 {
-    private const int MAXIMUM_LENGTH = 80;
+    public const int MAXIMUM_LENGTH = 80;
 
     public string Value { get; }
 

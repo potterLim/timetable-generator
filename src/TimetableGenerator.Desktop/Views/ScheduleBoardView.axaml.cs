@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 using TimetableGenerator.Desktop.Presentation.Models;
@@ -18,12 +19,13 @@ internal sealed partial class ScheduleBoardView : UserControl
     private const int MINIMUM_VISIBLE_PERIOD_COUNT = 6;
     private const int TIME_INCREMENT_MINUTES = 5;
     private const int HALF_HOUR_MINUTES = 30;
+    private const int HOUR_MINUTES = 60;
     private const int DEFAULT_AXIS_START_MINUTE = 510;
     private const int DEFAULT_AXIS_END_MINUTE = 1050;
     private const int MINUTES_PER_DAY = 1440;
     private const double PERIOD_COLUMN_WIDTH = 72.0;
     private const double HEADER_ROW_HEIGHT = 42.0;
-    private const double TIME_INCREMENT_ROW_HEIGHT = 5.333333333333333;
+    private const double TIME_INCREMENT_ROW_HEIGHT = 8.0;
 
     private static readonly string[] DAY_NAMES =
     {
@@ -36,6 +38,12 @@ internal sealed partial class ScheduleBoardView : UserControl
 
     private readonly Grid mBoardGrid;
 
+    private readonly StackPanel mBoardExportSurface;
+
+    private readonly Border mPersonalScheduleLegendSurface;
+
+    private readonly StackPanel mPersonalScheduleLegendEntries;
+
     private int mAxisStartMinute;
 
     private int mAxisEndMinute;
@@ -46,26 +54,8 @@ internal sealed partial class ScheduleBoardView : UserControl
     {
         get
         {
-            return mBoardGrid;
+            return mBoardExportSurface;
         }
-    }
-
-    public ScheduleBoardView()
-    {
-        AvaloniaXamlLoader.Load(this);
-        Grid? boardGridOrNull = this.FindControl<Grid>("BoardGrid");
-        if (boardGridOrNull == null)
-        {
-            throw new InvalidOperationException("The schedule board grid was not initialized.");
-        }
-
-        mBoardGrid = boardGridOrNull;
-        mAxisStartMinute = DEFAULT_AXIS_START_MINUTE;
-        mAxisEndMinute = DEFAULT_AXIS_END_MINUTE;
-        RenderedPeriodCount = MINIMUM_VISIBLE_PERIOD_COUNT;
-        DataContextChanged += onDataContextChanged;
-        AttachedToVisualTree += onAttachedToVisualTree;
-        ActualThemeVariantChanged += onActualThemeVariantChanged;
     }
 
     private int AxisIncrementCount
@@ -74,6 +64,37 @@ internal sealed partial class ScheduleBoardView : UserControl
         {
             return (mAxisEndMinute - mAxisStartMinute) / TIME_INCREMENT_MINUTES;
         }
+    }
+
+    public ScheduleBoardView()
+    {
+        AvaloniaXamlLoader.Load(this);
+        StackPanel? boardExportSurfaceOrNull = this.FindControl<StackPanel>(
+            "BoardExportSurface");
+        Grid? boardGridOrNull = this.FindControl<Grid>("BoardGrid");
+        Border? personalScheduleLegendSurfaceOrNull = this.FindControl<Border>(
+            "PersonalScheduleLegendSurface");
+        StackPanel? personalScheduleLegendEntriesOrNull =
+            this.FindControl<StackPanel>("PersonalScheduleLegendEntries");
+        if (boardExportSurfaceOrNull == null
+            || boardGridOrNull == null
+            || personalScheduleLegendSurfaceOrNull == null
+            || personalScheduleLegendEntriesOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The schedule board export surface was not initialized.");
+        }
+
+        mBoardExportSurface = boardExportSurfaceOrNull;
+        mBoardGrid = boardGridOrNull;
+        mPersonalScheduleLegendSurface = personalScheduleLegendSurfaceOrNull;
+        mPersonalScheduleLegendEntries = personalScheduleLegendEntriesOrNull;
+        mAxisStartMinute = DEFAULT_AXIS_START_MINUTE;
+        mAxisEndMinute = DEFAULT_AXIS_END_MINUTE;
+        RenderedPeriodCount = MINIMUM_VISIBLE_PERIOD_COUNT;
+        DataContextChanged += onDataContextChanged;
+        AttachedToVisualTree += onAttachedToVisualTree;
+        ActualThemeVariantChanged += onActualThemeVariantChanged;
     }
 
     private void onDataContextChanged(object? senderOrNull, EventArgs eventArgs)
@@ -97,7 +118,22 @@ internal sealed partial class ScheduleBoardView : UserControl
         object? senderOrNull,
         EventArgs eventArgs)
     {
-        if (VisualRoot == null)
+        Dispatcher.UIThread.Post(
+            rebuildBoardAfterThemeChange,
+            DispatcherPriority.Render);
+    }
+
+    private void rebuildBoardAfterThemeChange()
+    {
+        object? borderBrushOrNull;
+        bool hasBorderBrush = ResourceNodeExtensions.TryFindResource(
+            this,
+            "BorderBrush",
+            ActualThemeVariant,
+            out borderBrushOrNull);
+        if (VisualRoot == null
+            || hasBorderBrush == false
+            || borderBrushOrNull is not IBrush)
         {
             return;
         }
@@ -107,7 +143,11 @@ internal sealed partial class ScheduleBoardView : UserControl
 
     private void rebuildBoard()
     {
-        ScheduleRecommendation? recommendationOrNull = DataContext as ScheduleRecommendation;
+        ScheduleBoardPresentation? presentationOrNull =
+            DataContext as ScheduleBoardPresentation;
+        ScheduleRecommendation? recommendationOrNull = presentationOrNull == null
+            ? null
+            : presentationOrNull.Schedule;
         findTimeAxis(recommendationOrNull);
         RenderedPeriodCount = findRenderedPeriodCount(recommendationOrNull);
 
@@ -121,9 +161,11 @@ internal sealed partial class ScheduleBoardView : UserControl
         addGridGuides();
         addDayHeaders();
         addPeriodHeaders();
+        addOutOfPeriodTimeHeaders();
 
         if (recommendationOrNull == null)
         {
+            rebuildPersonalScheduleLegend(null);
             return;
         }
 
@@ -131,6 +173,8 @@ internal sealed partial class ScheduleBoardView : UserControl
         {
             addScheduleEntry(entry);
         }
+
+        rebuildPersonalScheduleLegend(recommendationOrNull);
     }
 
     private void addGridDefinitions()
@@ -220,7 +264,9 @@ internal sealed partial class ScheduleBoardView : UserControl
 
     private void addPeriodHeaders()
     {
-        for (int periodValue = 1; periodValue <= 10; ++periodValue)
+        for (int periodValue = AcademicPeriod.MINIMUM_VALUE;
+            periodValue <= AcademicPeriod.MAXIMUM_VALUE;
+            ++periodValue)
         {
             AcademicPeriod period = new AcademicPeriod(periodValue);
             DailyTimeRange timeRange = AcademicPeriodTimeTable.GetTimeRange(period);
@@ -251,6 +297,54 @@ internal sealed partial class ScheduleBoardView : UserControl
             Grid.SetColumn(periodHeader, 0);
             mBoardGrid.Children.Add(periodHeader);
         }
+    }
+
+    private void addOutOfPeriodTimeHeaders()
+    {
+        DailyTimeRange firstPeriod = AcademicPeriodTimeTable.GetTimeRange(
+            new AcademicPeriod(AcademicPeriod.MINIMUM_VALUE));
+        DailyTimeRange lastPeriod = AcademicPeriodTimeTable.GetTimeRange(
+            new AcademicPeriod(AcademicPeriod.MAXIMUM_VALUE));
+        int earlyLabelEndMinute = Math.Min(
+            mAxisEndMinute,
+            firstPeriod.Start.MinutesFromMidnight);
+        for (int labelMinute = mAxisStartMinute;
+            labelMinute < earlyLabelEndMinute;
+            labelMinute += HOUR_MINUTES)
+        {
+            addOutOfPeriodTimeHeader(labelMinute);
+        }
+
+        int lateLabelStartMinute = Math.Max(
+            mAxisStartMinute,
+            roundUp(
+                lastPeriod.End.MinutesFromMidnight,
+                HALF_HOUR_MINUTES));
+        for (int labelMinute = lateLabelStartMinute;
+            labelMinute < mAxisEndMinute;
+            labelMinute += HOUR_MINUTES)
+        {
+            addOutOfPeriodTimeHeader(labelMinute);
+        }
+    }
+
+    private void addOutOfPeriodTimeHeader(int minuteOfDay)
+    {
+        ScheduleTime time = new ScheduleTime(
+            minuteOfDay / HOUR_MINUTES,
+            minuteOfDay % HOUR_MINUTES);
+        TextBlock timeHeader = new TextBlock();
+        timeHeader.Text = time.ToString();
+        timeHeader.FontSize = 10.5;
+        timeHeader.Foreground = findBrush("TextSecondaryBrush");
+        timeHeader.TextAlignment = TextAlignment.Center;
+        timeHeader.HorizontalAlignment = HorizontalAlignment.Center;
+        timeHeader.VerticalAlignment = VerticalAlignment.Top;
+        timeHeader.Margin = new Thickness(0.0, 5.0, 0.0, 0.0);
+        Grid.SetRow(timeHeader, 1 + getRowOffset(minuteOfDay));
+        Grid.SetRowSpan(timeHeader, HOUR_MINUTES / TIME_INCREMENT_MINUTES);
+        Grid.SetColumn(timeHeader, 0);
+        mBoardGrid.Children.Add(timeHeader);
     }
 
     private void findTimeAxis(ScheduleRecommendation? recommendationOrNull)

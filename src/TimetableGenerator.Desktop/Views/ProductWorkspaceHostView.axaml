@@ -158,7 +158,10 @@
           BorderBrush="{DynamicResource BorderBrush}"
           BorderThickness="1"
           BoxShadow="0 18 48 0 #33000000"
-          CornerRadius="12">
+           CornerRadius="12"
+           KeyboardNavigation.TabNavigation="Cycle"
+           AutomationProperties.ControlTypeOverride="Window"
+           AutomationProperties.Name="계획 편집 대화상자">
         <Grid>
           <StackPanel
               IsVisible="{Binding IsRenamingPlan}"
@@ -261,11 +264,15 @@
           VerticalAlignment="Center"
           Background="{DynamicResource ElevatedSurfaceBrush}"
           BorderBrush="{DynamicResource BorderBrush}"
-          BorderThickness="1"
-          BoxShadow="0 18 48 0 #33000000"
-          CornerRadius="12">
+           BorderThickness="1"
+           BoxShadow="0 18 48 0 #33000000"
+           CornerRadius="12"
+           KeyboardNavigation.TabNavigation="Cycle"
+           AutomationProperties.ControlTypeOverride="Window"
+           AutomationProperties.Name="개인 일정 대화상자">
         <Grid>
           <views:PersonalScheduleEditorView
+              x:Name="PersonalScheduleEditor"
               IsVisible="{Binding IsPersonalScheduleEditorVisible}" />
 
           <StackPanel

@@ -95,7 +95,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             }
 
             return "‘" + mPlanPendingDeletionOrNull.DisplayName
-                + "’의 과목과 추천 결과가 삭제됩니다.";
+                + "’의 과목, 개인 일정, 추천 결과가 모두 삭제됩니다.";
         }
     }
 

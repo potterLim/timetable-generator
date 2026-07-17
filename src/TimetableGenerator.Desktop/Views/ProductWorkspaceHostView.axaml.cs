@@ -9,6 +9,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
+using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 
 namespace TimetableGenerator.Desktop.Views;
@@ -17,26 +18,67 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
 {
     private PlannerWorkspaceViewModel? mWorkspaceOrNull;
 
+    private Control? mPersonalScheduleFocusReturnTargetOrNull;
+
+    private bool mWasPersonalScheduleOverlayVisible;
+
+    private bool mIsAttachedToVisualTree;
+
     public ProductWorkspaceHostView()
     {
         AvaloniaXamlLoader.Load(this);
         DataContextChanged += onDataContextChanged;
+        AttachedToVisualTree += onAttachedToVisualTree;
         DetachedFromVisualTree += onDetachedFromVisualTree;
         KeyDown += onKeyDown;
     }
 
     private void onDataContextChanged(object? senderOrNull, EventArgs eventArgs)
     {
+        if (mIsAttachedToVisualTree == false)
+        {
+            disconnectWorkspace();
+            return;
+        }
+
+        connectWorkspace(DataContext as PlannerWorkspaceViewModel);
+    }
+
+    private void onAttachedToVisualTree(
+        object? senderOrNull,
+        VisualTreeAttachmentEventArgs eventArgs)
+    {
+        mIsAttachedToVisualTree = true;
+        connectWorkspace(DataContext as PlannerWorkspaceViewModel);
+    }
+
+    private void connectWorkspace(PlannerWorkspaceViewModel? workspaceOrNull)
+    {
+        if (ReferenceEquals(mWorkspaceOrNull, workspaceOrNull))
+        {
+            return;
+        }
+
+        disconnectWorkspace();
+        mWorkspaceOrNull = workspaceOrNull;
+        if (mWorkspaceOrNull == null)
+        {
+            return;
+        }
+
+        mWorkspaceOrNull.PropertyChanged += onWorkspacePropertyChanged;
+        mWasPersonalScheduleOverlayVisible =
+            mWorkspaceOrNull.IsPersonalScheduleOverlayVisible;
+        focusPlanEditingControlWhenRequired();
+        focusPersonalScheduleControlWhenRequired();
+    }
+
+    private void disconnectWorkspace()
+    {
         if (mWorkspaceOrNull != null)
         {
             mWorkspaceOrNull.PropertyChanged -= onWorkspacePropertyChanged;
-        }
-
-        mWorkspaceOrNull = DataContext as PlannerWorkspaceViewModel;
-        if (mWorkspaceOrNull != null)
-        {
-            mWorkspaceOrNull.PropertyChanged += onWorkspacePropertyChanged;
-            focusPlanEditingControlWhenRequired();
+            mWorkspaceOrNull = null;
         }
     }
 
@@ -56,13 +98,18 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         else if (eventArgs.PropertyName
             == nameof(PlannerWorkspaceViewModel.IsPersonalScheduleEditorVisible))
         {
-            focusPersonalScheduleControlWhenRequired();
+            handlePersonalScheduleOverlayStateChanged();
         }
         else if (eventArgs.PropertyName
             == nameof(
                 PlannerWorkspaceViewModel.IsDeletePersonalScheduleConfirmationVisible))
         {
-            focusPersonalScheduleControlWhenRequired();
+            handlePersonalScheduleOverlayStateChanged();
+        }
+        else if (eventArgs.PropertyName
+            == nameof(PlannerWorkspaceViewModel.PersonalScheduleValidationError))
+        {
+            focusPersonalScheduleValidationControlWhenRequired();
         }
     }
 
@@ -118,6 +165,35 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         Dispatcher.UIThread.Post(focusPersonalScheduleControl, DispatcherPriority.Input);
     }
 
+    private void handlePersonalScheduleOverlayStateChanged()
+    {
+        if (mWorkspaceOrNull == null)
+        {
+            return;
+        }
+
+        bool isOverlayVisible = mWorkspaceOrNull.IsPersonalScheduleOverlayVisible;
+        if (isOverlayVisible && mWasPersonalScheduleOverlayVisible == false)
+        {
+            TopLevel? topLevelOrNull = TopLevel.GetTopLevel(this);
+            if (topLevelOrNull != null)
+            {
+                mPersonalScheduleFocusReturnTargetOrNull =
+                    topLevelOrNull.FocusManager?.GetFocusedElement() as Control;
+            }
+        }
+
+        if (isOverlayVisible == false && mWasPersonalScheduleOverlayVisible)
+        {
+            Dispatcher.UIThread.Post(
+                restorePersonalScheduleFocus,
+                DispatcherPriority.Input);
+        }
+
+        mWasPersonalScheduleOverlayVisible = isOverlayVisible;
+        focusPersonalScheduleControlWhenRequired();
+    }
+
     private void focusPersonalScheduleControl()
     {
         if (mWorkspaceOrNull == null)
@@ -127,14 +203,12 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
 
         if (mWorkspaceOrNull.IsPersonalScheduleEditorVisible)
         {
-            TextBox? editorOrNull = this.GetVisualDescendants()
-                .OfType<TextBox>()
-                .FirstOrDefault(
-                    static candidate => candidate.Name == "PersonalScheduleNameInput");
+            PersonalScheduleEditorView? editorOrNull =
+                this.FindControl<PersonalScheduleEditorView>(
+                    "PersonalScheduleEditor");
             if (editorOrNull != null)
             {
-                editorOrNull.Focus();
-                editorOrNull.SelectAll();
+                editorOrNull.focusInitialInput();
             }
 
             return;
@@ -149,6 +223,59 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
                 cancelButtonOrNull.Focus();
             }
         }
+    }
+
+    private void focusPersonalScheduleValidationControlWhenRequired()
+    {
+        if (mWorkspaceOrNull == null
+            || mWorkspaceOrNull.IsPersonalScheduleEditorVisible == false
+            || mWorkspaceOrNull.PersonalScheduleValidationError
+                == EPersonalScheduleDraftValidationError.None)
+        {
+            return;
+        }
+
+        Dispatcher.UIThread.Post(
+            focusPersonalScheduleValidationControl,
+            DispatcherPriority.Input);
+    }
+
+    private void focusPersonalScheduleValidationControl()
+    {
+        if (mWorkspaceOrNull == null)
+        {
+            return;
+        }
+
+        PersonalScheduleEditorView? editorOrNull =
+            this.FindControl<PersonalScheduleEditorView>(
+                "PersonalScheduleEditor");
+        if (editorOrNull != null)
+        {
+            editorOrNull.focusValidationTarget(
+                mWorkspaceOrNull.PersonalScheduleValidationError);
+        }
+    }
+
+    private void restorePersonalScheduleFocus()
+    {
+        Control? returnTargetOrNull = mPersonalScheduleFocusReturnTargetOrNull;
+        mPersonalScheduleFocusReturnTargetOrNull = null;
+        if (returnTargetOrNull != null
+            && returnTargetOrNull.IsVisible
+            && returnTargetOrNull.IsEnabled
+            && returnTargetOrNull.IsAttachedToVisualTree()
+            && returnTargetOrNull.Focus())
+        {
+            return;
+        }
+
+        Button? addButtonOrNull = this.GetVisualDescendants()
+            .OfType<Button>()
+            .FirstOrDefault(
+                static candidate => candidate.Name
+                    == "WorkspaceAddPersonalScheduleButton");
+        addButtonOrNull?.Focus();
     }
 
     private void onKeyDown(object? senderOrNull, KeyEventArgs eventArgs)
@@ -183,13 +310,9 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         object? senderOrNull,
         VisualTreeAttachmentEventArgs eventArgs)
     {
-        DataContextChanged -= onDataContextChanged;
-        DetachedFromVisualTree -= onDetachedFromVisualTree;
-        KeyDown -= onKeyDown;
-        if (mWorkspaceOrNull != null)
-        {
-            mWorkspaceOrNull.PropertyChanged -= onWorkspacePropertyChanged;
-            mWorkspaceOrNull = null;
-        }
+        mIsAttachedToVisualTree = false;
+        disconnectWorkspace();
+        mPersonalScheduleFocusReturnTargetOrNull = null;
+        mWasPersonalScheduleOverlayVisible = false;
     }
 }

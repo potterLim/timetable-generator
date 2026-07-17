@@ -122,8 +122,8 @@
         <Button
             x:Name="ExportScheduleButton"
             Classes="accent"
-            IsVisible="{Binding HasScheduleEntries}"
-            IsEnabled="{Binding HasScheduleEntries}"
+            IsVisible="{Binding CanExportSchedule}"
+            IsEnabled="{Binding CanExportSchedule}"
             Command="{Binding ExportCommand, ElementName=WorkspaceRoot}"
             AutomationProperties.AutomationId="ExportSchedule"
             AutomationProperties.Name="현재 시간표를 PNG로 저장"
@@ -143,7 +143,7 @@
           IsVisible="{Binding HasScheduleEntries}">
         <views:ScheduleBoardView
             x:Name="ScheduleBoard"
-            DataContext="{Binding ActiveRecommendation}" />
+            DataContext="{Binding DisplayedScheduleBoard}" />
       </Grid>
 
       <Border

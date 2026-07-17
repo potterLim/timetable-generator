@@ -5,8 +5,9 @@ namespace TimetableGenerator.Domain.Scheduling;
 
 public readonly record struct AcademicPeriod
 {
-    private const int MINIMUM_PERIOD = 1;
-    private const int MAXIMUM_PERIOD = 10;
+    public const int MINIMUM_VALUE = 1;
+
+    public const int MAXIMUM_VALUE = 10;
 
     public int Value { get; }
 
@@ -14,13 +15,13 @@ public readonly record struct AcademicPeriod
     {
         get
         {
-            return Value >= MINIMUM_PERIOD && Value <= MAXIMUM_PERIOD;
+            return Value >= MINIMUM_VALUE && Value <= MAXIMUM_VALUE;
         }
     }
 
     public AcademicPeriod(int value)
     {
-        if (value < MINIMUM_PERIOD || value > MAXIMUM_PERIOD)
+        if (value < MINIMUM_VALUE || value > MAXIMUM_VALUE)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(value),

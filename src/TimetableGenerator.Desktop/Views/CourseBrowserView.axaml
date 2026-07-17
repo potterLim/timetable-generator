@@ -4,7 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:icons="using:FluentIcons.Avalonia"
     xmlns:models="using:TimetableGenerator.Desktop.Presentation.Models"
-    x:CompileBindings="False"
+    xmlns:viewModels="using:TimetableGenerator.Desktop.Presentation.ViewModels"
+    x:DataType="viewModels:PlannerWorkspaceViewModel"
     AutomationProperties.LandmarkType="Search"
     AutomationProperties.Name="과목 찾기">
   <UserControl.Styles>
@@ -78,7 +79,7 @@
             AutomationProperties.AutomationId="DepartmentFilter"
             AutomationProperties.Name="학부 필터">
           <ComboBox.ItemTemplate>
-            <DataTemplate>
+            <DataTemplate x:DataType="models:CourseUnitFilterOption">
               <TextBlock Text="{Binding DisplayName}" />
             </DataTemplate>
           </ComboBox.ItemTemplate>
@@ -91,7 +92,7 @@
             AutomationProperties.AutomationId="RequirementFilter"
             AutomationProperties.Name="이수 구분 필터">
           <ComboBox.ItemTemplate>
-            <DataTemplate>
+            <DataTemplate x:DataType="models:RequirementFilterOption">
               <TextBlock Text="{Binding DisplayName}" />
             </DataTemplate>
           </ComboBox.ItemTemplate>
@@ -119,7 +120,7 @@
           </ItemsPanelTemplate>
         </ListBox.ItemsPanel>
         <ListBox.ItemTemplate>
-          <DataTemplate DataType="models:CourseSearchItem">
+          <DataTemplate x:DataType="models:CourseSearchItem">
             <Border
                 Classes="course-item"
                 Classes.added="{Binding IsAdded}"
@@ -166,7 +167,7 @@
                     IsVisible="{Binding HasMultipleSelectionOptions}"
                     AutomationProperties.Name="추가할 분반 선택">
                   <ComboBox.ItemTemplate>
-                    <DataTemplate DataType="models:CourseSelectionOption">
+                    <DataTemplate x:DataType="models:CourseSelectionOption">
                       <TextBlock
                           MaxWidth="260"
                           Text="{Binding DisplayName}"
@@ -183,7 +184,7 @@
                     Classes="icon course-add"
                     VerticalAlignment="Center"
                     IsVisible="{Binding !IsAdded}"
-                    Command="{Binding DataContext.AddCourseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).AddCourseCommand}"
                     CommandParameter="{Binding}"
                     AutomationProperties.Name="{Binding AddButtonAccessibleName}"
                     ToolTip.Tip="계획에 추가">

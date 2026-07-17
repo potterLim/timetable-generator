@@ -56,12 +56,13 @@ internal sealed class PersonalScheduleItem
 
             if (Schedule.Details.InstructorOrNull != null)
             {
-                details.Add(Schedule.Details.InstructorOrNull.Value);
+                details.Add(
+                    "담당교원 " + Schedule.Details.InstructorOrNull.Value);
             }
 
             if (Schedule.Details.LocationOrNull != null)
             {
-                details.Add(Schedule.Details.LocationOrNull.Value);
+                details.Add("장소 " + Schedule.Details.LocationOrNull.Value);
             }
 
             return string.Join(" · ", details);

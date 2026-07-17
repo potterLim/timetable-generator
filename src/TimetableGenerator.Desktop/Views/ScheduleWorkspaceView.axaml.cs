@@ -107,13 +107,15 @@ internal sealed partial class ScheduleWorkspaceView : UserControl
             return "시간표.png";
         }
 
-        string fileName = workspaceOrNull.ActivePlan.DisplayName;
+        string fileName = workspaceOrNull.AcademicTermDisplayText
+            + "-시간표-"
+            + workspaceOrNull.ActivePlan.DisplayName;
         foreach (char invalidCharacter in Path.GetInvalidFileNameChars())
         {
             fileName = fileName.Replace(invalidCharacter, '-');
         }
 
-        return "시간표-" + fileName + ".png";
+        return fileName + ".png";
     }
 
     private void showExportFailure(Exception exception)

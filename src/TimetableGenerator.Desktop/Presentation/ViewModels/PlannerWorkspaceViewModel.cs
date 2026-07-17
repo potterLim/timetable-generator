@@ -43,6 +43,14 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         }
     }
 
+    public string AcademicTermDisplayText
+    {
+        get
+        {
+            return mCatalogProjection.Document.Catalog.Term.Id;
+        }
+    }
+
     public PlannerWorkspaceViewModel(
         CourseCatalogProjection catalogProjection,
         PlanningWorkspaceSession session,
@@ -82,6 +90,7 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         mRecommendationProvider = recommendationProvider;
         mAllCourses = createCourseItems(catalogProjection);
         mRecommendations = Array.Empty<PresentationScheduleRecommendation>();
+        mPersonalSchedulePreview = EMPTY_RECOMMENDATION;
 
         VisibleCourses = new ObservableCollection<CourseSearchItem>();
         UnitFilters = createUnitFilters(catalogProjection);
@@ -112,9 +121,9 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         mPersonalScheduleSectionDraft = string.Empty;
         mPersonalScheduleInstructorDraft = string.Empty;
         mPersonalScheduleLocationDraft = string.Empty;
-        mPersonalScheduleValidationMessage = string.Empty;
-        mPersonalScheduleStartTime = new TimeSpan(12, 0, 0);
-        mPersonalScheduleEndTime = new TimeSpan(13, 0, 0);
+        mPersonalScheduleValidationError = EPersonalScheduleDraftValidationError.None;
+        mPersonalScheduleStartTimeOrNull = DEFAULT_PERSONAL_SCHEDULE_START_TIME;
+        mPersonalScheduleEndTimeOrNull = DEFAULT_PERSONAL_SCHEDULE_END_TIME;
 
         AddCourseCommand = new ParameterizedCommand<CourseSearchItem>(addCourse);
         RemoveCourseCommand = new ParameterizedCommand<PlanCourseItem>(removeCourse);

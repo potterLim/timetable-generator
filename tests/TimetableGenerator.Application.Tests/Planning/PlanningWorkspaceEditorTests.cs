@@ -4,6 +4,7 @@ using TimetableGenerator.Application.Planning;
 using TimetableGenerator.Application.Tests.Scheduling;
 using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Planning;
+using TimetableGenerator.Domain.Scheduling;
 
 namespace TimetableGenerator.Application.Tests.Planning;
 
@@ -151,6 +152,99 @@ public sealed class PlanningWorkspaceEditorTests
     }
 
     [TestMethod]
+    public void PersonalScheduleLifecycleUpdatesOnlyTheRequestedPlan()
+    {
+        ScheduledCourseChoice existingChoice =
+            ScheduleRecommendationTestData.CreateChoice("AAA10001", "01");
+        PlanningPlan firstPlan = createPlan(
+            "첫 계획",
+            new ScheduledCourseChoice[] { existingChoice },
+            Array.Empty<UnscheduledOfferingSelection>());
+        PlanningPlan secondPlan = createPlan("둘째 계획");
+        PlanningWorkspace workspace = new PlanningWorkspace(
+            secondPlan.Id,
+            new PlanningPlan[] { firstPlan, secondPlan });
+        PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
+        PersonalSchedule addedSchedule = createPersonalSchedule(
+            PersonalScheduleId.CreateNew(),
+            "랩 미팅");
+
+        PlanningWorkspace withSchedule = editor.AddPersonalSchedule(
+            workspace,
+            firstPlan.Id,
+            addedSchedule);
+        PersonalSchedule updatedSchedule = createPersonalSchedule(
+            addedSchedule.Id,
+            "연구실 주간 회의");
+        PlanningWorkspace withUpdate = editor.UpdatePersonalSchedule(
+            withSchedule,
+            firstPlan.Id,
+            updatedSchedule);
+        PlanningWorkspace withoutSchedule = editor.RemovePersonalSchedule(
+            withUpdate,
+            firstPlan.Id,
+            updatedSchedule.Id);
+
+        Assert.HasCount(1, withSchedule.Plans[0].PersonalSchedules);
+        Assert.AreSame(addedSchedule, withSchedule.Plans[0].PersonalSchedules[0]);
+        Assert.AreSame(existingChoice, withSchedule.Plans[0].ScheduledCourseChoices[0]);
+        Assert.AreSame(secondPlan, withSchedule.Plans[1]);
+        Assert.AreEqual(secondPlan.Id, withSchedule.ActivePlanId);
+        Assert.AreSame(updatedSchedule, withUpdate.Plans[0].PersonalSchedules[0]);
+        Assert.AreSame(existingChoice, withUpdate.Plans[0].ScheduledCourseChoices[0]);
+        Assert.AreSame(secondPlan, withUpdate.Plans[1]);
+        Assert.AreEqual(secondPlan.Id, withUpdate.ActivePlanId);
+        Assert.IsEmpty(withoutSchedule.Plans[0].PersonalSchedules);
+        Assert.AreSame(
+            existingChoice,
+            withoutSchedule.Plans[0].ScheduledCourseChoices[0]);
+        Assert.AreSame(secondPlan, withoutSchedule.Plans[1]);
+        Assert.AreEqual(secondPlan.Id, withoutSchedule.ActivePlanId);
+    }
+
+    [TestMethod]
+    public void CourseAndPlanEditsPreservePersonalSchedules()
+    {
+        PersonalSchedule existingSchedule = createPersonalSchedule(
+            PersonalScheduleId.CreateNew(),
+            "고정 일정");
+        PlanningPlan plan = createPlan(
+            "기본 계획",
+            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<UnscheduledOfferingSelection>(),
+            new PersonalSchedule[] { existingSchedule });
+        PlanningWorkspace workspace = new PlanningWorkspace(
+            plan.Id,
+            new PlanningPlan[] { plan });
+        PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
+        ScheduledCourseChoice choice =
+            ScheduleRecommendationTestData.CreateChoice("AAA10001", "01");
+
+        PlanningWorkspace withCourse = editor.AddScheduledCourseChoice(
+            workspace,
+            plan.Id,
+            choice);
+        PlanningWorkspace renamed = editor.RenamePlan(
+            withCourse,
+            plan.Id,
+            new PlanName("이름 변경"));
+        PlanningWorkspace withoutCourse = editor.RemoveCourse(
+            renamed,
+            plan.Id,
+            choice.CourseId);
+
+        Assert.AreSame(
+            existingSchedule,
+            withCourse.GetActivePlan().PersonalSchedules[0]);
+        Assert.AreSame(
+            existingSchedule,
+            renamed.GetActivePlan().PersonalSchedules[0]);
+        Assert.AreSame(
+            existingSchedule,
+            withoutCourse.GetActivePlan().PersonalSchedules[0]);
+    }
+
+    [TestMethod]
     public void RemoveActivePlanSelectsItsNearestRemainingNeighbor()
     {
         PlanningPlan firstPlan = createPlan("첫 계획");
@@ -195,6 +289,19 @@ public sealed class PlanningWorkspaceEditorTests
         ScheduledCourseChoice[] scheduledChoices,
         UnscheduledOfferingSelection[] unscheduledSelections)
     {
+        return createPlan(
+            name,
+            scheduledChoices,
+            unscheduledSelections,
+            Array.Empty<PersonalSchedule>());
+    }
+
+    private static PlanningPlan createPlan(
+        string name,
+        ScheduledCourseChoice[] scheduledChoices,
+        UnscheduledOfferingSelection[] unscheduledSelections,
+        PersonalSchedule[] personalSchedules)
+    {
         PlanCatalogBinding binding = new PlanCatalogBinding(
             new CatalogId("handong-global-university:2026-2:r0001"),
             new InstitutionId("handong-global-university"),
@@ -208,6 +315,22 @@ public sealed class PlanningWorkspaceEditorTests
             new PlanningPlanContent(
                 scheduledChoices,
                 unscheduledSelections,
-                Array.Empty<PersonalSchedule>()));
+                personalSchedules));
+    }
+
+    private static PersonalSchedule createPersonalSchedule(
+        PersonalScheduleId id,
+        string title)
+    {
+        WeeklyTimeRange timeRange = new WeeklyTimeRange(
+            EDay.Wednesday,
+            new DailyTimeRange(
+                new ScheduleTime(12, 0),
+                new ScheduleTime(13, 0)));
+        return new PersonalSchedule(
+            id,
+            new PersonalScheduleTitle(title),
+            new WeeklyTimeRange[] { timeRange },
+            PersonalScheduleDetails.CreateEmpty());
     }
 }

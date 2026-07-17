@@ -4,7 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:icons="using:FluentIcons.Avalonia"
     xmlns:models="using:TimetableGenerator.Desktop.Presentation.Models"
-    x:CompileBindings="False"
+    xmlns:viewModels="using:TimetableGenerator.Desktop.Presentation.ViewModels"
+    x:DataType="viewModels:PlannerWorkspaceViewModel"
     AutomationProperties.LandmarkType="Complementary"
     AutomationProperties.Name="내 계획">
   <UserControl.Styles>
@@ -178,7 +179,7 @@
               </ItemsPanelTemplate>
             </ListBox.ItemsPanel>
             <ListBox.ItemTemplate>
-              <DataTemplate DataType="models:PlanCourseItem">
+              <DataTemplate x:DataType="models:PlanCourseItem">
                 <Border
                     Classes="plan-course"
                     Classes.blue="{Binding IsBlue}"
@@ -218,7 +219,7 @@
                         MinWidth="32"
                         MinHeight="32"
                         VerticalAlignment="Top"
-                        Command="{Binding DataContext.RemoveCourseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                        Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).RemoveCourseCommand}"
                         CommandParameter="{Binding}"
                         AutomationProperties.Name="{Binding RemoveButtonAccessibleName}"
                         ToolTip.Tip="계획에서 제거">
@@ -248,7 +249,7 @@
             </Expander.Header>
             <ItemsControl ItemsSource="{Binding ActivePlan.UnconfirmedCourses}">
               <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="models:PlanCourseItem">
+                <DataTemplate x:DataType="models:PlanCourseItem">
                   <Border
                       Margin="0,7,0,0"
                       Padding="12,9,6,9"
@@ -270,7 +271,7 @@
                           Height="32"
                           MinWidth="32"
                           MinHeight="32"
-                          Command="{Binding DataContext.RemoveCourseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                          Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).RemoveCourseCommand}"
                           CommandParameter="{Binding}"
                           AutomationProperties.Name="{Binding RemoveButtonAccessibleName}"
                           ToolTip.Tip="계획에서 제거">
@@ -326,7 +327,7 @@
               ItemsSource="{Binding ActivePlan.PersonalSchedules}"
               AutomationProperties.Name="개인 일정 목록">
             <ItemsControl.ItemTemplate>
-              <DataTemplate DataType="models:PersonalScheduleItem">
+              <DataTemplate x:DataType="models:PersonalScheduleItem">
                 <Border
                     Margin="0,0,0,8"
                     Padding="12,10,6,10"
@@ -334,7 +335,7 @@
                     BorderBrush="{DynamicResource PersonalScheduleBorderBrush}"
                     BorderThickness="1"
                     Background="{DynamicResource PersonalScheduleBackgroundBrush}">
-                  <Grid ColumnDefinitions="*,34,34" RowDefinitions="Auto,Auto,Auto">
+                  <Grid ColumnDefinitions="*,42,42" RowDefinitions="Auto,Auto,Auto">
                     <TextBlock
                         Grid.Row="0"
                         FontSize="14"
@@ -358,12 +359,12 @@
                         Grid.RowSpan="3"
                         Grid.Column="1"
                         Classes="icon"
-                        Width="32"
-                        Height="32"
-                        MinWidth="32"
-                        MinHeight="32"
+                        Width="40"
+                        Height="40"
+                        MinWidth="40"
+                        MinHeight="40"
                         VerticalAlignment="Top"
-                        Command="{Binding DataContext.BeginEditPersonalScheduleCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                        Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).BeginEditPersonalScheduleCommand}"
                         CommandParameter="{Binding}"
                         AutomationProperties.Name="{Binding EditButtonAccessibleName}"
                         ToolTip.Tip="일정 수정">
@@ -374,12 +375,12 @@
                         Grid.RowSpan="3"
                         Grid.Column="2"
                         Classes="icon"
-                        Width="32"
-                        Height="32"
-                        MinWidth="32"
-                        MinHeight="32"
+                        Width="40"
+                        Height="40"
+                        MinWidth="40"
+                        MinHeight="40"
                         VerticalAlignment="Top"
-                        Command="{Binding DataContext.BeginDeletePersonalScheduleCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                        Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).BeginDeletePersonalScheduleCommand}"
                         CommandParameter="{Binding}"
                         AutomationProperties.Name="{Binding RemoveButtonAccessibleName}"
                         ToolTip.Tip="일정 삭제">

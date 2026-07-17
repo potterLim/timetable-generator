@@ -10,6 +10,7 @@ using TimetableGenerator.Application.Scheduling;
 using TimetableGenerator.Desktop.Presentation.Catalog;
 using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Desktop.Presentation.Recommendations;
+using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Planning;
 using TimetableGenerator.Domain.Scheduling;
 using ApplicationScheduleRecommendation =
@@ -36,6 +37,8 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private IReadOnlyList<PresentationScheduleRecommendation> mRecommendations;
 
+    private PresentationScheduleRecommendation mPersonalSchedulePreview;
+
     private int mRecommendationIndex;
 
     private CancellationTokenSource mRecommendationCancellationSource;
@@ -46,7 +49,7 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private string mRecommendationCalculationError;
 
-    private bool mHasRecommendationConstraintConflict;
+    private bool mHasUnsatisfiedScheduleConstraints;
 
     public PresentationScheduleRecommendation ActiveRecommendation
     {
@@ -58,6 +61,29 @@ internal sealed partial class PlannerWorkspaceViewModel
             }
 
             return mRecommendations[mRecommendationIndex];
+        }
+    }
+
+    public PresentationScheduleRecommendation DisplayedSchedule
+    {
+        get
+        {
+            return mRecommendations.Count == 0
+                ? mPersonalSchedulePreview
+                : ActiveRecommendation;
+        }
+    }
+
+    public ScheduleBoardPresentation DisplayedScheduleBoard
+    {
+        get
+        {
+            CourseCatalog catalog = mCatalogProjection.Document.Catalog;
+            return new ScheduleBoardPresentation(
+                DisplayedSchedule,
+                ActivePlan.Name,
+                catalog.InstitutionName,
+                catalog.Term);
         }
     }
 
@@ -94,15 +120,23 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return ActiveRecommendation.Entries.Count > 0;
+            return DisplayedSchedule.Entries.Count > 0;
         }
     }
 
-    public bool HasRecommendationConstraintConflict
+    public bool HasUnsatisfiedScheduleConstraints
     {
         get
         {
-            return mHasRecommendationConstraintConflict;
+            return mHasUnsatisfiedScheduleConstraints;
+        }
+    }
+
+    public bool CanExportSchedule
+    {
+        get
+        {
+            return HasScheduleEntries && HasUnsatisfiedScheduleConstraints == false;
         }
     }
 
@@ -156,9 +190,15 @@ internal sealed partial class PlannerWorkspaceViewModel
                 return "추천 시간표를 계산하지 못했습니다.";
             }
 
-            if (HasRecommendationConstraintConflict)
+            if (HasUnsatisfiedScheduleConstraints)
             {
-                return "개인 일정과 겹치지 않는 분반 조합을 찾지 못했습니다.";
+                if (ActivePlan.HasPersonalSchedules)
+                {
+                    return "선택한 과목과 개인 일정을 모두 반영할 수 없습니다. "
+                        + "개인 일정만 미리 보여드리니 겹치는 과목이나 일정을 조정해 주세요.";
+                }
+
+                return "선택한 과목 조합을 함께 배치할 수 없습니다.";
             }
 
             if (HasRecommendations == false)
@@ -175,7 +215,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             HashSet<string> courseCodes = new HashSet<string>(StringComparer.Ordinal);
             HashSet<PersonalScheduleId> personalScheduleIds =
                 new HashSet<PersonalScheduleId>();
-            foreach (ScheduleEntry entry in ActiveRecommendation.Entries)
+            foreach (ScheduleEntry entry in DisplayedSchedule.Entries)
             {
                 scheduledDays.Add(entry.Day);
                 CourseScheduleEntry? courseEntryOrNull =
@@ -326,10 +366,11 @@ internal sealed partial class PlannerWorkspaceViewModel
         PlanningPlan planSnapshot = mSession.Workspace.GetActivePlan();
 
         mRecommendations = Array.Empty<PresentationScheduleRecommendation>();
+        mPersonalSchedulePreview = EMPTY_RECOMMENDATION;
         mRecommendationIndex = 0;
         mRecommendationCalculationState = ERecommendationCalculationState.Calculating;
         mRecommendationCalculationError = string.Empty;
-        mHasRecommendationConstraintConflict = false;
+        mHasUnsatisfiedScheduleConstraints = false;
         notifyRecommendationChanged();
         notifyRecommendationCalculationStateChanged();
         mRecommendationRefreshTask = calculateRecommendationsAsync(
@@ -426,14 +467,18 @@ internal sealed partial class PlannerWorkspaceViewModel
 
         bool hasSelectedScheduledCourses =
             planSnapshot.ScheduledCourseChoices.Count > 0;
-        mHasRecommendationConstraintConflict = recommendations.Count == 0
-            && hasSelectedScheduledCourses
-            && planSnapshot.PersonalSchedules.Count > 0;
-        if (mHasRecommendationConstraintConflict)
+        mHasUnsatisfiedScheduleConstraints = recommendations.Count == 0
+            && hasSelectedScheduledCourses;
+        if (recommendations.Count == 0
+            && planSnapshot.PersonalSchedules.Count > 0)
         {
-            recommendations.Add(
+            mPersonalSchedulePreview =
                 ScheduleRecommendationProjector.ProjectPersonalSchedules(
-                    planSnapshot.PersonalSchedules));
+                planSnapshot.PersonalSchedules);
+        }
+        else
+        {
+            mPersonalSchedulePreview = EMPTY_RECOMMENDATION;
         }
 
         mRecommendations = recommendations.AsReadOnly();
@@ -447,12 +492,13 @@ internal sealed partial class PlannerWorkspaceViewModel
     private void showRecommendationFailure(Exception exception)
     {
         mRecommendations = Array.Empty<PresentationScheduleRecommendation>();
+        mPersonalSchedulePreview = EMPTY_RECOMMENDATION;
         mRecommendationIndex = 0;
         mRecommendationCalculationState = ERecommendationCalculationState.Failed;
         mRecommendationCalculationError =
             "과목 선택은 그대로 보존했습니다. 잠시 후 다시 계산해 주세요.";
         System.Diagnostics.Debug.WriteLine(exception);
-        mHasRecommendationConstraintConflict = false;
+        mHasUnsatisfiedScheduleConstraints = false;
         notifyRecommendationChanged();
         notifyRecommendationCalculationStateChanged();
     }
@@ -462,17 +508,21 @@ internal sealed partial class PlannerWorkspaceViewModel
         raisePropertyChanged(nameof(IsRecommendationCalculating));
         raisePropertyChanged(nameof(HasRecommendationCalculationError));
         raisePropertyChanged(nameof(RecommendationCalculationError));
-        raisePropertyChanged(nameof(HasRecommendationConstraintConflict));
+        raisePropertyChanged(nameof(HasUnsatisfiedScheduleConstraints));
+        raisePropertyChanged(nameof(CanExportSchedule));
         mRetryRecommendationCommand.NotifyCanExecuteChanged();
     }
 
     private void notifyRecommendationChanged()
     {
         raisePropertyChanged(nameof(ActiveRecommendation));
+        raisePropertyChanged(nameof(DisplayedSchedule));
+        raisePropertyChanged(nameof(DisplayedScheduleBoard));
         raisePropertyChanged(nameof(RecommendationSummary));
         raisePropertyChanged(nameof(HasRecommendations));
         raisePropertyChanged(nameof(HasMultipleRecommendations));
-        raisePropertyChanged(nameof(HasRecommendationConstraintConflict));
+        raisePropertyChanged(nameof(HasUnsatisfiedScheduleConstraints));
+        raisePropertyChanged(nameof(CanExportSchedule));
         raisePropertyChanged(nameof(HasScheduleEntries));
         raisePropertyChanged(nameof(IsScheduleEmpty));
         raisePropertyChanged(nameof(RecommendationInsight));

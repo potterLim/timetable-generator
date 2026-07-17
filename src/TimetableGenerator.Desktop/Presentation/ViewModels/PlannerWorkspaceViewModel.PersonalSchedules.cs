@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Domain.Planning;
@@ -9,6 +10,12 @@ namespace TimetableGenerator.Desktop.Presentation.ViewModels;
 
 internal sealed partial class PlannerWorkspaceViewModel
 {
+    private static readonly TimeSpan DEFAULT_PERSONAL_SCHEDULE_START_TIME =
+        new TimeSpan(12, 0, 0);
+
+    private static readonly TimeSpan DEFAULT_PERSONAL_SCHEDULE_END_TIME =
+        new TimeSpan(13, 0, 0);
+
     private PersonalScheduleId? mEditingPersonalScheduleIdOrNull;
 
     private PersonalScheduleItem? mPersonalSchedulePendingDeletionOrNull;
@@ -33,11 +40,11 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private bool mIsFridaySelected;
 
-    private TimeSpan mPersonalScheduleStartTime;
+    private TimeSpan? mPersonalScheduleStartTimeOrNull;
 
-    private TimeSpan mPersonalScheduleEndTime;
+    private TimeSpan? mPersonalScheduleEndTimeOrNull;
 
-    private string mPersonalScheduleValidationMessage;
+    private EPersonalScheduleDraftValidationError mPersonalScheduleValidationError;
 
     public bool IsPersonalScheduleEditorVisible
     {
@@ -79,7 +86,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         get
         {
             return "‘" + ActivePlan.DisplayName
-                + "’ 계획의 모든 추천 시간표에만 적용됩니다.";
+                + "’ 계획에만 저장되며, 추천 시간표를 계산할 때 고정 시간으로 반영됩니다.";
         }
     }
 
@@ -93,6 +100,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
+    [AllowNull]
     public string PersonalScheduleTitleDraft
     {
         get
@@ -108,6 +116,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
+    [AllowNull]
     public string PersonalScheduleSectionDraft
     {
         get
@@ -123,6 +132,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
+    [AllowNull]
     public string PersonalScheduleInstructorDraft
     {
         get
@@ -138,6 +148,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
+    [AllowNull]
     public string PersonalScheduleLocationDraft
     {
         get
@@ -228,32 +239,32 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
-    public TimeSpan PersonalScheduleStartTime
+    public TimeSpan? PersonalScheduleStartTimeOrNull
     {
         get
         {
-            return mPersonalScheduleStartTime;
+            return mPersonalScheduleStartTimeOrNull;
         }
         set
         {
-            if (setProperty(ref mPersonalScheduleStartTime, value))
+            if (setProperty(ref mPersonalScheduleStartTimeOrNull, value))
             {
-                clearPersonalScheduleValidationMessage();
+                clearPersonalScheduleValidationError();
             }
         }
     }
 
-    public TimeSpan PersonalScheduleEndTime
+    public TimeSpan? PersonalScheduleEndTimeOrNull
     {
         get
         {
-            return mPersonalScheduleEndTime;
+            return mPersonalScheduleEndTimeOrNull;
         }
         set
         {
-            if (setProperty(ref mPersonalScheduleEndTime, value))
+            if (setProperty(ref mPersonalScheduleEndTimeOrNull, value))
             {
-                clearPersonalScheduleValidationMessage();
+                clearPersonalScheduleValidationError();
             }
         }
     }
@@ -262,7 +273,16 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return mPersonalScheduleValidationMessage;
+            return getPersonalScheduleValidationMessage(
+                mPersonalScheduleValidationError);
+        }
+    }
+
+    public EPersonalScheduleDraftValidationError PersonalScheduleValidationError
+    {
+        get
+        {
+            return mPersonalScheduleValidationError;
         }
     }
 
@@ -270,7 +290,8 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return PersonalScheduleValidationMessage.Length > 0;
+            return PersonalScheduleValidationError
+                != EPersonalScheduleDraftValidationError.None;
         }
     }
 
@@ -284,7 +305,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             }
 
             return "‘" + mPersonalSchedulePendingDeletionOrNull.Title
-                + "’ 일정을 이 계획의 추천 시간표와 PNG에서 제거합니다.";
+                + "’ 일정을 이 계획에서 삭제합니다. 추천 시간표와 PNG에서도 사라집니다.";
         }
     }
 
@@ -327,8 +348,8 @@ internal sealed partial class PlannerWorkspaceViewModel
         mPersonalScheduleTitleDraft = schedule.Title.Value;
         setSelectedDays(schedule.TimeRanges);
         DailyTimeRange timeRange = schedule.TimeRanges[0].TimeRange;
-        mPersonalScheduleStartTime = createTimeSpan(timeRange.Start);
-        mPersonalScheduleEndTime = createTimeSpan(timeRange.End);
+        mPersonalScheduleStartTimeOrNull = createTimeSpan(timeRange.Start);
+        mPersonalScheduleEndTimeOrNull = createTimeSpan(timeRange.End);
         mPersonalScheduleSectionDraft = getSectionValue(schedule.Details);
         mPersonalScheduleInstructorDraft = getInstructorValue(schedule.Details);
         mPersonalScheduleLocationDraft = getLocationValue(schedule.Details);
@@ -340,28 +361,33 @@ internal sealed partial class PlannerWorkspaceViewModel
     private void savePersonalSchedule()
     {
         throwIfDisposed();
-        try
+        EPersonalScheduleDraftValidationError validationError =
+            validatePersonalScheduleDraft();
+        if (validationError != EPersonalScheduleDraftValidationError.None)
         {
-            PersonalSchedule personalSchedule = createPersonalScheduleFromDraft();
-            ensurePersonalScheduleDoesNotOverlap(personalSchedule);
-            if (mEditingPersonalScheduleIdOrNull.HasValue)
-            {
-                mSession.UpdatePersonalSchedule(personalSchedule);
-            }
-            else
-            {
-                mSession.AddPersonalSchedule(personalSchedule);
-            }
+            showPersonalScheduleValidationError(validationError);
+            return;
+        }
 
-            closePersonalScheduleEditor();
-            afterPlanContentMutation();
-        }
-        catch (ArgumentException exception)
+        PersonalSchedule personalSchedule = createPersonalScheduleFromDraft();
+        if (hasPersonalScheduleOverlap(personalSchedule))
         {
-            mPersonalScheduleValidationMessage = getValidationMessage(exception);
-            raisePropertyChanged(nameof(PersonalScheduleValidationMessage));
-            raisePropertyChanged(nameof(HasPersonalScheduleValidationMessage));
+            showPersonalScheduleValidationError(
+                EPersonalScheduleDraftValidationError.Overlap);
+            return;
         }
+
+        if (mEditingPersonalScheduleIdOrNull.HasValue)
+        {
+            mSession.UpdatePersonalSchedule(personalSchedule);
+        }
+        else
+        {
+            mSession.AddPersonalSchedule(personalSchedule);
+        }
+
+        closePersonalScheduleEditor();
+        afterPlanContentMutation();
     }
 
     private void cancelPersonalScheduleEdit()
@@ -410,82 +436,6 @@ internal sealed partial class PlannerWorkspaceViewModel
         raisePersonalScheduleOverlayStateChanged();
     }
 
-    private PersonalSchedule createPersonalScheduleFromDraft()
-    {
-        PersonalScheduleId scheduleId = mEditingPersonalScheduleIdOrNull.HasValue
-            ? mEditingPersonalScheduleIdOrNull.Value
-            : PersonalScheduleId.CreateNew();
-        PersonalScheduleTitle title = new PersonalScheduleTitle(
-            PersonalScheduleTitleDraft);
-        ScheduleTime start = createScheduleTime(PersonalScheduleStartTime);
-        ScheduleTime end = createScheduleTime(PersonalScheduleEndTime);
-        DailyTimeRange timeRange = new DailyTimeRange(start, end);
-        if (timeRange.DurationMinutes < 15)
-        {
-            throw new ArgumentException("Personal schedules require 15 minutes.");
-        }
-
-        IReadOnlyList<WeeklyTimeRange> timeRanges = createSelectedTimeRanges(timeRange);
-        PersonalScheduleDetails details = new PersonalScheduleDetails(
-            createSectionOrNull(PersonalScheduleSectionDraft),
-            createInstructorOrNull(PersonalScheduleInstructorDraft),
-            createLocationOrNull(PersonalScheduleLocationDraft));
-        return new PersonalSchedule(scheduleId, title, timeRanges, details);
-    }
-
-    private IReadOnlyList<WeeklyTimeRange> createSelectedTimeRanges(
-        DailyTimeRange timeRange)
-    {
-        List<WeeklyTimeRange> timeRanges = new List<WeeklyTimeRange>();
-        addSelectedTimeRange(timeRanges, IsMondaySelected, EDay.Monday, timeRange);
-        addSelectedTimeRange(timeRanges, IsTuesdaySelected, EDay.Tuesday, timeRange);
-        addSelectedTimeRange(timeRanges, IsWednesdaySelected, EDay.Wednesday, timeRange);
-        addSelectedTimeRange(timeRanges, IsThursdaySelected, EDay.Thursday, timeRange);
-        addSelectedTimeRange(timeRanges, IsFridaySelected, EDay.Friday, timeRange);
-        if (timeRanges.Count == 0)
-        {
-            throw new ArgumentException("A weekday must be selected.");
-        }
-
-        return timeRanges.AsReadOnly();
-    }
-
-    private static void addSelectedTimeRange(
-        ICollection<WeeklyTimeRange> timeRanges,
-        bool isSelected,
-        EDay day,
-        DailyTimeRange timeRange)
-    {
-        if (isSelected)
-        {
-            timeRanges.Add(new WeeklyTimeRange(day, timeRange));
-        }
-    }
-
-    private void ensurePersonalScheduleDoesNotOverlap(PersonalSchedule candidate)
-    {
-        foreach (PersonalSchedule existing in ActivePlan.Plan.PersonalSchedules)
-        {
-            if (existing.Id == candidate.Id)
-            {
-                continue;
-            }
-
-            foreach (WeeklyTimeRange existingRange in existing.TimeRanges)
-            {
-                foreach (WeeklyTimeRange candidateRange in candidate.TimeRanges)
-                {
-                    if (ScheduleConflictDetector.HasConflict(
-                        existingRange,
-                        candidateRange))
-                    {
-                        throw new ArgumentException("Personal schedules overlap.");
-                    }
-                }
-            }
-        }
-    }
-
     private PersonalSchedule findPersonalSchedule(PersonalScheduleId scheduleId)
     {
         foreach (PersonalSchedule schedule in ActivePlan.Plan.PersonalSchedules)
@@ -524,114 +474,6 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
-    private void clearPersonalScheduleDraft()
-    {
-        mEditingPersonalScheduleIdOrNull = null;
-        mPersonalScheduleTitleDraft = string.Empty;
-        mPersonalScheduleSectionDraft = string.Empty;
-        mPersonalScheduleInstructorDraft = string.Empty;
-        mPersonalScheduleLocationDraft = string.Empty;
-        mIsMondaySelected = false;
-        mIsTuesdaySelected = false;
-        mIsWednesdaySelected = false;
-        mIsThursdaySelected = false;
-        mIsFridaySelected = false;
-        mPersonalScheduleStartTime = new TimeSpan(12, 0, 0);
-        mPersonalScheduleEndTime = new TimeSpan(13, 0, 0);
-        mPersonalScheduleValidationMessage = string.Empty;
-        raisePersonalScheduleDraftChanged();
-    }
-
-    private void setSelectedDays(IEnumerable<WeeklyTimeRange> timeRanges)
-    {
-        foreach (WeeklyTimeRange timeRange in timeRanges)
-        {
-            switch (timeRange.Day)
-            {
-                case EDay.Monday:
-                    mIsMondaySelected = true;
-                    break;
-                case EDay.Tuesday:
-                    mIsTuesdaySelected = true;
-                    break;
-                case EDay.Wednesday:
-                    mIsWednesdaySelected = true;
-                    break;
-                case EDay.Thursday:
-                    mIsThursdaySelected = true;
-                    break;
-                case EDay.Friday:
-                    mIsFridaySelected = true;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(
-                        nameof(timeRanges),
-                        timeRange.Day,
-                        "The personal schedule editor supports weekdays only.");
-            }
-        }
-    }
-
-    private void setDraftString(
-        ref string field,
-        string value,
-        string propertyName)
-    {
-        string normalizedValue = value;
-        if (normalizedValue == null)
-        {
-            normalizedValue = string.Empty;
-        }
-
-        if (setProperty(ref field, normalizedValue, propertyName))
-        {
-            clearPersonalScheduleValidationMessage();
-        }
-    }
-
-    private void setDaySelection(
-        ref bool field,
-        bool value,
-        string propertyName)
-    {
-        if (setProperty(ref field, value, propertyName))
-        {
-            clearPersonalScheduleValidationMessage();
-        }
-    }
-
-    private void clearPersonalScheduleValidationMessage()
-    {
-        if (mPersonalScheduleValidationMessage.Length == 0)
-        {
-            return;
-        }
-
-        mPersonalScheduleValidationMessage = string.Empty;
-        raisePropertyChanged(nameof(PersonalScheduleValidationMessage));
-        raisePropertyChanged(nameof(HasPersonalScheduleValidationMessage));
-    }
-
-    private void raisePersonalScheduleDraftChanged()
-    {
-        raisePropertyChanged(nameof(PersonalScheduleTitleDraft));
-        raisePropertyChanged(nameof(PersonalScheduleSectionDraft));
-        raisePropertyChanged(nameof(PersonalScheduleInstructorDraft));
-        raisePropertyChanged(nameof(PersonalScheduleLocationDraft));
-        raisePropertyChanged(nameof(IsMondaySelected));
-        raisePropertyChanged(nameof(IsTuesdaySelected));
-        raisePropertyChanged(nameof(IsWednesdaySelected));
-        raisePropertyChanged(nameof(IsThursdaySelected));
-        raisePropertyChanged(nameof(IsFridaySelected));
-        raisePropertyChanged(nameof(PersonalScheduleStartTime));
-        raisePropertyChanged(nameof(PersonalScheduleEndTime));
-        raisePropertyChanged(nameof(PersonalScheduleValidationMessage));
-        raisePropertyChanged(nameof(HasPersonalScheduleValidationMessage));
-        raisePropertyChanged(nameof(PersonalScheduleEditorHeading));
-        raisePropertyChanged(nameof(PersonalScheduleEditorDescription));
-        raisePropertyChanged(nameof(PersonalScheduleSaveButtonText));
-    }
-
     private void raisePersonalScheduleOverlayStateChanged()
     {
         raisePropertyChanged(nameof(IsPersonalScheduleEditorVisible));
@@ -641,94 +483,4 @@ internal sealed partial class PlannerWorkspaceViewModel
         raisePropertyChanged(nameof(PersonalScheduleDeletionDescription));
     }
 
-    private static ScheduleTime createScheduleTime(TimeSpan value)
-    {
-        if (value.Days != 0 || value.Seconds != 0 || value.Milliseconds != 0)
-        {
-            throw new ArgumentException("Schedule times must use minute precision.");
-        }
-
-        return new ScheduleTime(value.Hours, value.Minutes);
-    }
-
-    private static TimeSpan createTimeSpan(ScheduleTime value)
-    {
-        return new TimeSpan(value.Hour, value.Minute, 0);
-    }
-
-    private static PersonalScheduleSection? createSectionOrNull(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return null;
-        }
-
-        return new PersonalScheduleSection(value);
-    }
-
-    private static PersonalScheduleInstructor? createInstructorOrNull(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return null;
-        }
-
-        return new PersonalScheduleInstructor(value);
-    }
-
-    private static PersonalScheduleLocation? createLocationOrNull(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return null;
-        }
-
-        return new PersonalScheduleLocation(value);
-    }
-
-    private static string getSectionValue(PersonalScheduleDetails details)
-    {
-        return details.SectionOrNull == null
-            ? string.Empty
-            : details.SectionOrNull.Value;
-    }
-
-    private static string getInstructorValue(PersonalScheduleDetails details)
-    {
-        return details.InstructorOrNull == null
-            ? string.Empty
-            : details.InstructorOrNull.Value;
-    }
-
-    private static string getLocationValue(PersonalScheduleDetails details)
-    {
-        return details.LocationOrNull == null
-            ? string.Empty
-            : details.LocationOrNull.Value;
-    }
-
-    private static string getValidationMessage(ArgumentException exception)
-    {
-        if (exception.Message.Contains("overlap", StringComparison.OrdinalIgnoreCase))
-        {
-            return "같은 요일과 시간에 다른 개인 일정이 있습니다.";
-        }
-
-        if (exception.Message.Contains("weekday", StringComparison.OrdinalIgnoreCase))
-        {
-            return "적용할 요일을 하나 이상 선택해 주세요.";
-        }
-
-        if (exception.Message.Contains("end after", StringComparison.OrdinalIgnoreCase))
-        {
-            return "종료 시간은 시작 시간보다 늦어야 합니다.";
-        }
-
-        if (exception.Message.Contains("15 minutes", StringComparison.OrdinalIgnoreCase))
-        {
-            return "개인 일정은 15분 이상으로 입력해 주세요.";
-        }
-
-        return "일정 이름과 시간을 확인해 주세요. 이름은 1~80자로 입력할 수 있습니다.";
-    }
 }

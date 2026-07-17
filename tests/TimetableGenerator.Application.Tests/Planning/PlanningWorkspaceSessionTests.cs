@@ -106,6 +106,59 @@ public sealed class PlanningWorkspaceSessionTests
     }
 
     [TestMethod]
+    public void PersonalSchedulesRemainOwnedByTheirActivePlan()
+    {
+        CourseCatalog catalog = createCatalog();
+        PlanningWorkspaceSession session = createEmptySession(catalog);
+        PersonalSchedule firstPlanSchedule = createPersonalSchedule(
+            PersonalScheduleId.CreateNew(),
+            "첫 계획 일정");
+        session.AddPersonalSchedule(firstPlanSchedule);
+        session.AddPlan(PlanId.CreateNew(), new PlanName("둘째 계획"));
+        PersonalScheduleId secondScheduleId = PersonalScheduleId.CreateNew();
+        PersonalSchedule secondPlanSchedule = createPersonalSchedule(
+            secondScheduleId,
+            "둘째 계획 일정");
+
+        session.AddPersonalSchedule(secondPlanSchedule);
+        session.UpdatePersonalSchedule(
+            createPersonalSchedule(secondScheduleId, "수정한 둘째 일정"));
+        session.RemovePersonalSchedule(secondScheduleId);
+
+        Assert.HasCount(1, session.Workspace.Plans[0].PersonalSchedules);
+        Assert.AreSame(
+            firstPlanSchedule,
+            session.Workspace.Plans[0].PersonalSchedules[0]);
+        Assert.IsEmpty(session.Workspace.GetActivePlan().PersonalSchedules);
+    }
+
+    [TestMethod]
+    public void RejectedPersonalScheduleDoesNotMutateTheSession()
+    {
+        CourseCatalog catalog = createCatalog();
+        PlanningWorkspaceSession session = createEmptySession(catalog);
+        PersonalSchedule existingSchedule = createPersonalSchedule(
+            PersonalScheduleId.CreateNew(),
+            "기존 일정");
+        session.AddPersonalSchedule(existingSchedule);
+        PlanningWorkspace workspaceBeforeRejectedEdit = session.Workspace;
+        PersonalSchedule overlappingSchedule = createPersonalSchedule(
+            PersonalScheduleId.CreateNew(),
+            "겹치는 일정",
+            new ScheduleTime(12, 30),
+            new ScheduleTime(13, 30));
+
+        Assert.ThrowsExactly<ArgumentException>(
+            () => session.AddPersonalSchedule(overlappingSchedule));
+
+        Assert.AreSame(workspaceBeforeRejectedEdit, session.Workspace);
+        Assert.HasCount(1, session.Workspace.GetActivePlan().PersonalSchedules);
+        Assert.AreSame(
+            existingSchedule,
+            session.Workspace.GetActivePlan().PersonalSchedules[0]);
+    }
+
+    [TestMethod]
     public void ConstructorRejectsWorkspaceFromAnotherCatalogRevision()
     {
         CourseCatalog catalog = createCatalog();
@@ -207,5 +260,32 @@ public sealed class PlanningWorkspaceSessionTests
             plan.Id,
             new PlanningPlan[] { plan });
         return new PlanningWorkspaceSession(catalog, workspace);
+    }
+
+    private static PersonalSchedule createPersonalSchedule(
+        PersonalScheduleId id,
+        string title)
+    {
+        return createPersonalSchedule(
+            id,
+            title,
+            new ScheduleTime(12, 0),
+            new ScheduleTime(13, 0));
+    }
+
+    private static PersonalSchedule createPersonalSchedule(
+        PersonalScheduleId id,
+        string title,
+        ScheduleTime start,
+        ScheduleTime end)
+    {
+        WeeklyTimeRange timeRange = new WeeklyTimeRange(
+            EDay.Wednesday,
+            new DailyTimeRange(start, end));
+        return new PersonalSchedule(
+            id,
+            new PersonalScheduleTitle(title),
+            new WeeklyTimeRange[] { timeRange },
+            PersonalScheduleDetails.CreateEmpty());
     }
 }

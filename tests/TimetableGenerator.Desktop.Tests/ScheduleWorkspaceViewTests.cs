@@ -24,6 +24,7 @@ using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Desktop.Views;
 using TimetableGenerator.Domain.Catalogs;
+using TimetableGenerator.Domain.Planning;
 using TimetableGenerator.Domain.Scheduling;
 
 using Xunit;
@@ -49,7 +50,8 @@ public sealed class ScheduleWorkspaceViewTests
         entries.Add(createScheduleEntry(EDay.Thursday, new AcademicPeriod(10)));
 
         ScheduleBoardView scheduleBoard = new ScheduleBoardView();
-        scheduleBoard.DataContext = new ScheduleRecommendation(entries);
+        scheduleBoard.DataContext = createScheduleBoardPresentation(
+            new ScheduleRecommendation(entries));
 
         Window window = new Window();
         window.Width = 800.0;
@@ -117,8 +119,8 @@ public sealed class ScheduleWorkspaceViewTests
             EDay.Monday,
             new AcademicPeriod(1));
         ScheduleBoardView scheduleBoard = new ScheduleBoardView();
-        scheduleBoard.DataContext = new ScheduleRecommendation(
-            new ScheduleEntry[] { entry });
+        scheduleBoard.DataContext = createScheduleBoardPresentation(
+            new ScheduleRecommendation(new ScheduleEntry[] { entry }));
 
         Window window = new Window();
         window.Width = 660.0;
@@ -210,8 +212,8 @@ public sealed class ScheduleWorkspaceViewTests
             EDay.Monday,
             new AcademicPeriod(1));
         ScheduleBoardView scheduleBoard = new ScheduleBoardView();
-        scheduleBoard.DataContext = new ScheduleRecommendation(
-            new ScheduleEntry[] { entry });
+        scheduleBoard.DataContext = createScheduleBoardPresentation(
+            new ScheduleRecommendation(new ScheduleEntry[] { entry }));
 
         Window window = new Window();
         window.Width = 800.0;
@@ -268,7 +270,8 @@ public sealed class ScheduleWorkspaceViewTests
         List<ScheduleEntry> entries = new List<ScheduleEntry>();
         entries.Add(createLongScheduleEntry(EDay.Thursday, new AcademicPeriod(10)));
         ScheduleBoardView scheduleBoard = new ScheduleBoardView();
-        scheduleBoard.DataContext = new ScheduleRecommendation(entries);
+        scheduleBoard.DataContext = createScheduleBoardPresentation(
+            new ScheduleRecommendation(entries));
 
         Window window = new Window();
         window.Width = 800.0;
@@ -417,6 +420,16 @@ public sealed class ScheduleWorkspaceViewTests
             {
                 new AcademicPeriod(11);
             });
+    }
+
+    private static ScheduleBoardPresentation createScheduleBoardPresentation(
+        ScheduleRecommendation schedule)
+    {
+        return new ScheduleBoardPresentation(
+            schedule,
+            new PlanName("테스트 계획"),
+            new InstitutionName("한동대학교"),
+            AcademicTerm.Parse("2026-2"));
     }
 
     private static ScheduleEntry createScheduleEntry(

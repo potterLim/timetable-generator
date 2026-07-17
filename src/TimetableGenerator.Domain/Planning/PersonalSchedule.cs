@@ -6,6 +6,10 @@ namespace TimetableGenerator.Domain.Planning;
 
 public sealed class PersonalSchedule
 {
+    public const int TIME_INCREMENT_MINUTES = 5;
+
+    public const int MINIMUM_DURATION_MINUTES = 15;
+
     private readonly IReadOnlyList<WeeklyTimeRange> mTimeRanges;
 
     public PersonalScheduleId Id { get; }
@@ -73,6 +77,7 @@ public sealed class PersonalSchedule
             }
 
             ensureSupportedWeekday(timeRange.Day, timeRanges);
+            ensureSupportedTimeRange(timeRange, timeRanges);
 
             foreach (WeeklyTimeRange copiedTimeRange in copiedTimeRanges)
             {
@@ -105,6 +110,29 @@ public sealed class PersonalSchedule
 
         copiedTimeRanges.Sort(compareTimeRanges);
         return copiedTimeRanges.AsReadOnly();
+    }
+
+    private static void ensureSupportedTimeRange(
+        WeeklyTimeRange timeRange,
+        IEnumerable<WeeklyTimeRange> timeRanges)
+    {
+        bool hasSupportedStartMinute =
+            timeRange.TimeRange.Start.Minute % TIME_INCREMENT_MINUTES == 0;
+        bool hasSupportedEndMinute =
+            timeRange.TimeRange.End.Minute % TIME_INCREMENT_MINUTES == 0;
+        if (hasSupportedStartMinute == false || hasSupportedEndMinute == false)
+        {
+            throw new ArgumentException(
+                "Personal schedules require five-minute time increments.",
+                nameof(timeRanges));
+        }
+
+        if (timeRange.TimeRange.DurationMinutes < MINIMUM_DURATION_MINUTES)
+        {
+            throw new ArgumentException(
+                "Personal schedules require a duration of at least 15 minutes.",
+                nameof(timeRanges));
+        }
     }
 
     private static void ensureSupportedWeekday(

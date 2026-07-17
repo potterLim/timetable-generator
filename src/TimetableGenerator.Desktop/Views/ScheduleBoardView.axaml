@@ -2,6 +2,8 @@
     x:Class="TimetableGenerator.Desktop.Views.ScheduleBoardView"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:models="using:TimetableGenerator.Desktop.Presentation.Models"
+    x:DataType="models:ScheduleBoardPresentation"
     MinHeight="260"
     AutomationProperties.Name="주간 시간표">
   <UserControl.Styles>
@@ -33,9 +35,15 @@
       <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
     </Style>
     <Style Selector="Button.schedule-card.personal">
+      <Setter Property="Padding" Value="7,4" />
       <Setter Property="Background" Value="{DynamicResource PersonalScheduleBackgroundBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource PersonalScheduleBorderBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+    <Style Selector="Button.schedule-card.personal.compact">
+      <Setter Property="Margin" Value="3,0" />
+      <Setter Property="Padding" Value="5,0" />
+      <Setter Property="CornerRadius" Value="4" />
     </Style>
   </UserControl.Styles>
 
@@ -50,9 +58,53 @@
         HorizontalScrollBarVisibility="Disabled"
         VerticalScrollBarVisibility="Auto"
         AutomationProperties.Name="시간표 교시 스크롤">
-      <Grid
-          x:Name="BoardGrid"
-          Background="{DynamicResource ElevatedSurfaceBrush}" />
+      <StackPanel
+          x:Name="BoardExportSurface"
+          Background="{DynamicResource ElevatedSurfaceBrush}">
+        <Border
+            Padding="18,15"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="0,0,0,1"
+            Background="{DynamicResource ElevatedSurfaceBrush}">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <StackPanel Spacing="3">
+              <TextBlock
+                  FontSize="17"
+                  FontWeight="SemiBold"
+                  Text="{Binding PlanName.Value}"
+                  TextTrimming="CharacterEllipsis" />
+              <TextBlock
+                  Classes="caption"
+                  Text="{Binding InstitutionTermDisplayText}" />
+            </StackPanel>
+            <TextBlock
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                Classes="caption"
+                Text="주간 시간표" />
+          </Grid>
+        </Border>
+        <Grid
+            x:Name="BoardGrid"
+            Background="{DynamicResource ElevatedSurfaceBrush}" />
+        <Border
+            x:Name="PersonalScheduleLegendSurface"
+            Padding="16,14"
+            IsVisible="False"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="0,1,0,0"
+            Background="{DynamicResource ElevatedSurfaceBrush}">
+          <StackPanel Spacing="10">
+            <TextBlock
+                FontSize="12"
+                FontWeight="SemiBold"
+                Text="개인 일정 세부 정보" />
+            <StackPanel
+                x:Name="PersonalScheduleLegendEntries"
+                Spacing="8" />
+          </StackPanel>
+        </Border>
+      </StackPanel>
     </ScrollViewer>
   </Border>
 </UserControl>

@@ -44,6 +44,9 @@ public sealed class PlanningWorkspaceJsonCodecTests
         Assert.HasCount(1, restoredWorkspace.Plans[0].PersonalSchedules);
         PersonalSchedule restoredPersonalSchedule =
             restoredWorkspace.Plans[0].PersonalSchedules[0];
+        Assert.HasCount(2, restoredPersonalSchedule.TimeRanges);
+        Assert.AreEqual(EDay.Wednesday, restoredPersonalSchedule.TimeRanges[0].Day);
+        Assert.AreEqual(EDay.Friday, restoredPersonalSchedule.TimeRanges[1].Day);
         Assert.AreEqual("A", restoredPersonalSchedule.Details.SectionOrNull?.Value);
         Assert.AreEqual("김교수", restoredPersonalSchedule.Details.InstructorOrNull?.Value);
         Assert.AreEqual("느헤미야홀", restoredPersonalSchedule.Details.LocationOrNull?.Value);
@@ -123,6 +126,28 @@ public sealed class PlanningWorkspaceJsonCodecTests
                 Encoding.UTF8.GetBytes(invalidArtifactSha256Json)));
         Assert.ThrowsExactly<WorkspaceDocumentException>(
             () => codec.Deserialize(ReadOnlyMemory<byte>.Empty));
+    }
+
+    [TestMethod]
+    public void CodecRejectsPersonalSchedulesOutsideSupportedTimePolicy()
+    {
+        PlanningWorkspaceJsonCodec codec = new PlanningWorkspaceJsonCodec();
+        string validJson = Encoding.UTF8.GetString(
+            createContent(codec, "기본 시간표"));
+        string impreciseTimeJson = validJson.Replace(
+            "\"start\": \"12:20\"",
+            "\"start\": \"12:21\"",
+            StringComparison.Ordinal);
+        string tooShortDurationJson = validJson.Replace(
+            "\"end\": \"13:20\"",
+            "\"end\": \"12:30\"",
+            StringComparison.Ordinal);
+
+        Assert.ThrowsExactly<WorkspaceDocumentException>(
+            () => codec.Deserialize(Encoding.UTF8.GetBytes(impreciseTimeJson)));
+        Assert.ThrowsExactly<WorkspaceDocumentException>(
+            () => codec.Deserialize(
+                Encoding.UTF8.GetBytes(tooShortDurationJson)));
     }
 
     [TestMethod]
@@ -225,16 +250,20 @@ public sealed class PlanningWorkspaceJsonCodecTests
             new PersonalScheduleSection("A"),
             new PersonalScheduleInstructor("김교수"),
             new PersonalScheduleLocation("느헤미야홀"));
-        WeeklyTimeRange timeRange = new WeeklyTimeRange(
+        DailyTimeRange sharedTimeRange = new DailyTimeRange(
+            new ScheduleTime(12, 20),
+            new ScheduleTime(13, 20));
+        WeeklyTimeRange wednesdayTimeRange = new WeeklyTimeRange(
             EDay.Wednesday,
-            new DailyTimeRange(
-                new ScheduleTime(12, 20),
-                new ScheduleTime(13, 20)));
+            sharedTimeRange);
+        WeeklyTimeRange fridayTimeRange = new WeeklyTimeRange(
+            EDay.Friday,
+            sharedTimeRange);
         return new PersonalSchedule(
             new PersonalScheduleId(
                 Guid.Parse("33333333-3333-3333-3333-333333333333")),
             new PersonalScheduleTitle("랩 미팅"),
-            new WeeklyTimeRange[] { timeRange },
+            new WeeklyTimeRange[] { wednesdayTimeRange, fridayTimeRange },
             details);
     }
 }
