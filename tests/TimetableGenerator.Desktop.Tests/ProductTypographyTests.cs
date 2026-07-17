@@ -14,10 +14,10 @@ public sealed class ProductTypographyTests
 {
     private const string PRODUCT_FONT_RESOURCE_KEY = "ProductSystemFontFamily";
     private const string FLUENT_FONT_RESOURCE_KEY = "ContentControlThemeFontFamily";
-    private const string PLATFORM_DEFAULT_FONT_NAME = "$Default";
+    private const string PRODUCT_FONT_FAMILY_NAME = "Pretendard";
 
     [AvaloniaFact]
-    public void ProductTextUsesThePlatformSystemFontContract()
+    public void AppliesBundledPretendardAcrossProductText()
     {
         FontFamily productFontFamily = findRequiredFontFamily(
             PRODUCT_FONT_RESOURCE_KEY);
@@ -52,7 +52,7 @@ public sealed class ProductTypographyTests
             actionFlyout.ShowAt(action);
             Dispatcher.UIThread.RunJobs();
 
-            Assert.Equal(PLATFORM_DEFAULT_FONT_NAME, productFontFamily.Name);
+            Assert.Equal(PRODUCT_FONT_FAMILY_NAME, productFontFamily.Name);
             Assert.Equal(productFontFamily, fluentFontFamily);
             Assert.Equal(productFontFamily, window.FontFamily);
             Assert.Equal(productFontFamily, text.FontFamily);
@@ -66,6 +66,39 @@ public sealed class ProductTypographyTests
         {
             actionFlyout.Hide();
             window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void ResolvesBundledPretendardProductWeights()
+    {
+        FontFamily productFontFamily = findRequiredFontFamily(
+            PRODUCT_FONT_RESOURCE_KEY);
+        FontWeight[] productFontWeights = new FontWeight[]
+        {
+            FontWeight.Normal,
+            FontWeight.Medium,
+            FontWeight.SemiBold,
+            FontWeight.Bold,
+        };
+
+        foreach (FontWeight productFontWeight in productFontWeights)
+        {
+            Typeface productTypeface = new Typeface(
+                productFontFamily,
+                FontStyle.Normal,
+                productFontWeight);
+            GlyphTypeface? resolvedTypefaceOrNull;
+            bool hasResolvedTypeface = FontManager.Current.TryGetGlyphTypeface(
+                productTypeface,
+                out resolvedTypefaceOrNull);
+
+            Assert.True(hasResolvedTypeface);
+            Assert.NotNull(resolvedTypefaceOrNull);
+            Assert.Equal(
+                PRODUCT_FONT_FAMILY_NAME,
+                resolvedTypefaceOrNull.TypographicFamilyName);
+            Assert.Equal(productFontWeight, resolvedTypefaceOrNull.Weight);
         }
     }
 

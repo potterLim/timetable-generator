@@ -29,6 +29,9 @@ function Publish-WindowsTarget {
         -NoRestore:$NoRestore
 
     $executablePath = Join-Path $publishPath "$ExecutableName.exe"
+    $pretendardLicensePath = Join-Path `
+        $publishPath `
+        "ThirdPartyNotices/Pretendard-LICENSE.txt"
     $nativeBinaryPaths = @(
         $executablePath,
         (Join-Path $publishPath "coreclr.dll"),
@@ -39,6 +42,7 @@ function Publish-WindowsTarget {
         Assert-NonEmptyFile -Path $nativeBinaryPath
         Assert-WindowsX64PeBinary -Path $nativeBinaryPath
     }
+    Assert-NonEmptyFile -Path $pretendardLicensePath
 
     Remove-DebugSymbols -Path $publishPath
 
@@ -101,6 +105,16 @@ function Publish-MacOSTarget {
         -ProductVersion $ProductVersion `
         -NoRestore:$NoRestore
 
+    $publishedThirdPartyNoticesPath = Join-Path $macOSPath "ThirdPartyNotices"
+    $bundledThirdPartyNoticesPath = Join-Path $resourcesPath "ThirdPartyNotices"
+    $publishedPretendardLicensePath = Join-Path `
+        $publishedThirdPartyNoticesPath `
+        "Pretendard-LICENSE.txt"
+    Assert-NonEmptyFile -Path $publishedPretendardLicensePath
+    Move-Item `
+        -LiteralPath $publishedThirdPartyNoticesPath `
+        -Destination $bundledThirdPartyNoticesPath
+
     $infoPlist = [System.IO.File]::ReadAllText($InfoPlistTemplatePath)
     $infoPlist = $infoPlist.Replace("__EXECUTABLE_NAME__", $ExecutableName)
     $infoPlist = $infoPlist.Replace("__BUNDLE_IDENTIFIER__", $BundleIdentifier)
@@ -113,6 +127,9 @@ function Publish-MacOSTarget {
     $utf8WithoutBom = [System.Text.UTF8Encoding]::new($false)
     [System.IO.File]::WriteAllText($infoPlistPath, $infoPlist, $utf8WithoutBom)
     $macOSIconPath = Join-Path $resourcesPath "AppIcon.icns"
+    $pretendardLicensePath = Join-Path `
+        $bundledThirdPartyNoticesPath `
+        "Pretendard-LICENSE.txt"
     New-MacOSAppIcon -SourcePath $AppIconPath -DestinationPath $macOSIconPath
 
     $executablePath = Join-Path $macOSPath $ExecutableName
@@ -120,6 +137,7 @@ function Publish-MacOSTarget {
     Assert-NonEmptyFile -Path (Join-Path $macOSPath "libcoreclr.dylib")
     Assert-NonEmptyFile -Path $infoPlistPath
     Assert-NonEmptyFile -Path $macOSIconPath
+    Assert-NonEmptyFile -Path $pretendardLicensePath
     Assert-MacOSPublishedBinaryArchitectures `
         -Path $macOSPath `
         -RuntimeIdentifier $RuntimeIdentifier

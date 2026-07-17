@@ -38,6 +38,8 @@ pwsh ./scripts/publish-desktop.ps1 `
 
 `catalog-source.local.json`이 Desktop 프로젝트에 있으면 게시 산출물에도 포함됩니다. 이 파일은 Git에서 무시되지만 앱이 서버에 접속하려면 최종 사용자에게 보이는 설정입니다. 비밀 키를 넣지 말고, 공개 전 archive 안의 주소가 의도한 배포 환경을 가리키는지 확인합니다.
 
+제품에 포함된 Pretendard 글꼴은 SIL Open Font License 1.1을 따릅니다. Windows 산출물에는 `ThirdPartyNotices/Pretendard-LICENSE.txt`, macOS 앱에는 `Contents/Resources/ThirdPartyNotices/Pretendard-LICENSE.txt`로 원문 라이선스를 함께 제공하며, 게시 스크립트는 해당 파일이 없거나 비어 있으면 실패합니다.
+
 ## 자동 검증 범위
 
 게시 스크립트는 다음 조건을 만족하지 않으면 실패합니다.
@@ -47,6 +49,7 @@ pwsh ./scripts/publish-desktop.ps1 `
 - macOS apphost가 대상 CPU의 64비트 Mach-O이고 `libcoreclr.dylib`을 포함함
 - `.app/Contents/MacOS`, `Resources`, `Info.plist`의 번들 구조가 완전함
 - `AppIcon.icns`에 16px부터 1024px까지 필요한 PNG 해상도가 모두 포함됨
+- Pretendard 원문 라이선스가 운영체제별 고지 위치에 포함됨
 - 제품 archive에 PDB 디버그 심볼이 없음
 - macOS에서 실행할 때 `Info.plist`가 `plutil` 검사를 통과함
 

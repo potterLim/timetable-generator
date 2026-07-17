@@ -44,9 +44,9 @@
 
 ## 타이포그래피
 
-- Avalonia Fluent의 조건부 Inter 선택을 제품 리소스에서 제거하고 `$Default` 시스템 UI 글꼴을 명시적으로 사용한다. 개발 PC의 설치 글꼴에 따라 줄폭과 굵기가 달라지지 않는다.
-- Windows 실측은 Latin `Segoe UI`, 한글 `Malgun Gothic`, emoji `Segoe UI Emoji` 폴백이다. macOS는 San Francisco 계열 시스템 UI 글꼴과 `Apple SD Gothic Neo` 폴백을 사용하도록 운영체제에 위임한다.
-- Window, TextBlock, Button, TextBox, ComboBox와 별도 PopupRoot의 Flyout까지 같은 글꼴 계약을 자동 검사한다.
+- Pretendard 1.3.9의 Regular 400, Medium 500, SemiBold 600, Bold 700 정적 글꼴을 앱에 포함하고 모든 제품 텍스트의 기본 글꼴로 사용한다. 설치된 운영체제 글꼴과 무관하게 Windows와 macOS에서 동일한 글자 폭과 굵기 체계를 유지한다.
+- Window, TextBlock, Button, TextBox, ComboBox와 별도 PopupRoot의 Flyout까지 같은 Pretendard 계약을 상속한다. FluentIcons 전용 glyph 글꼴은 아이콘 손상을 막기 위해 이 계약에서 제외한다.
+- 헤드리스 Skia 환경에서 네 제품 굵기가 각각 Pretendard의 실제 타입페이스로 해석되는지 자동 검사한다. 원문 SIL Open Font License 1.1은 운영체제별 배포 산출물의 `ThirdPartyNotices` 위치에 포함한다.
 
 ## 동작과 접근성
 
