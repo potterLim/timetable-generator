@@ -80,7 +80,7 @@ public sealed class PlanningWorkspaceSession
             name,
             binding,
             new PlanningPlanContent(
-                Array.Empty<ScheduledCourseChoice>(),
+                Array.Empty<CourseChoiceGroup>(),
                 Array.Empty<UnscheduledOfferingSelection>(),
                 Array.Empty<PersonalSchedule>()));
         mWorkspace = mEditor.AddPlan(mWorkspace, plan);
@@ -137,6 +137,50 @@ public sealed class PlanningWorkspaceSession
 
         validatePlan(editedWorkspace.GetActivePlan());
         mWorkspace = editedWorkspace;
+        return mWorkspace;
+    }
+
+    public PlanningWorkspace AddCourseChoiceGroup(
+        CourseChoiceGroup courseChoiceGroup)
+    {
+        if (courseChoiceGroup == null)
+        {
+            throw new ArgumentNullException(nameof(courseChoiceGroup));
+        }
+
+        PlanningWorkspace editedWorkspace = mEditor.AddCourseChoiceGroup(
+            mWorkspace,
+            mWorkspace.ActivePlanId,
+            courseChoiceGroup);
+        validatePlan(editedWorkspace.GetActivePlan());
+        mWorkspace = editedWorkspace;
+        return mWorkspace;
+    }
+
+    public PlanningWorkspace UpdateCourseChoiceGroup(
+        CourseChoiceGroup courseChoiceGroup)
+    {
+        if (courseChoiceGroup == null)
+        {
+            throw new ArgumentNullException(nameof(courseChoiceGroup));
+        }
+
+        PlanningWorkspace editedWorkspace = mEditor.UpdateCourseChoiceGroup(
+            mWorkspace,
+            mWorkspace.ActivePlanId,
+            courseChoiceGroup);
+        validatePlan(editedWorkspace.GetActivePlan());
+        mWorkspace = editedWorkspace;
+        return mWorkspace;
+    }
+
+    public PlanningWorkspace RemoveCourseChoiceGroup(
+        CourseChoiceGroupId courseChoiceGroupId)
+    {
+        mWorkspace = mEditor.RemoveCourseChoiceGroup(
+            mWorkspace,
+            mWorkspace.ActivePlanId,
+            courseChoiceGroupId);
         return mWorkspace;
     }
 

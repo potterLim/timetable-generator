@@ -89,6 +89,40 @@ internal static class ScheduleRecommendationTestData
                 personalSchedules));
     }
 
+    public static PlanningPlan CreatePlan(
+        CourseCatalog catalog,
+        IEnumerable<CourseChoiceGroup> courseChoiceGroups,
+        IEnumerable<UnscheduledOfferingSelection> unscheduledSelections)
+    {
+        return CreatePlan(
+            catalog,
+            courseChoiceGroups,
+            unscheduledSelections,
+            Array.Empty<PersonalSchedule>());
+    }
+
+    public static PlanningPlan CreatePlan(
+        CourseCatalog catalog,
+        IEnumerable<CourseChoiceGroup> courseChoiceGroups,
+        IEnumerable<UnscheduledOfferingSelection> unscheduledSelections,
+        IEnumerable<PersonalSchedule> personalSchedules)
+    {
+        PlanCatalogBinding catalogBinding = new PlanCatalogBinding(
+            catalog.Id,
+            catalog.InstitutionId,
+            catalog.Term,
+            catalog.Revision,
+            new CatalogArtifactSha256(new string('a', 64)));
+        return new PlanningPlan(
+            PlanId.CreateNew(),
+            new PlanName("기본 시간표"),
+            catalogBinding,
+            new PlanningPlanContent(
+                courseChoiceGroups,
+                unscheduledSelections,
+                personalSchedules));
+    }
+
     public static PlanningPlan CreatePlanWithBinding(
         PlanCatalogBinding catalogBinding,
         IEnumerable<ScheduledCourseChoice> scheduledChoices,
@@ -117,6 +151,25 @@ internal static class ScheduleRecommendationTestData
         return new ScheduledCourseChoice(
             CreateCourseId(courseCodeValue),
             offeringIds);
+    }
+
+    public static CourseCandidate CreateCourseCandidate(
+        string courseCodeValue,
+        EOfferingPreference preference,
+        params string[] sectionCodeValues)
+    {
+        List<OfferingCandidate> offeringCandidates =
+            new List<OfferingCandidate>();
+        foreach (string sectionCodeValue in sectionCodeValues)
+        {
+            offeringCandidates.Add(new OfferingCandidate(
+                CreateOfferingId(courseCodeValue, sectionCodeValue),
+                preference));
+        }
+
+        return new CourseCandidate(
+            CreateCourseId(courseCodeValue),
+            offeringCandidates);
     }
 
     public static UnscheduledOfferingSelection CreateUnscheduledSelection(

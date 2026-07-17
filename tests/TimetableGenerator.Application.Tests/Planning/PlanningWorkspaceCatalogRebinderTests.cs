@@ -64,6 +64,106 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
     }
 
     [TestMethod]
+    public void TryRebindPreservesCrossCourseCandidatesAndPreferences()
+    {
+        CatalogCourse firstCourse =
+            ScheduleRecommendationTestData.CreateCourse("AAA10001");
+        CatalogCourse secondCourse =
+            ScheduleRecommendationTestData.CreateCourse("BBB10001");
+        CatalogOffering preferredOffering =
+            ScheduleRecommendationTestData.CreateScheduledOffering(
+                "AAA10001",
+                "01",
+                createMondaySlot());
+        CatalogOffering excludedOffering =
+            ScheduleRecommendationTestData.CreateScheduledOffering(
+                "AAA10001",
+                "02",
+                new MeetingSlot[]
+                {
+                    ScheduleRecommendationTestData.CreateMeetingSlot(
+                        EDay.Tuesday,
+                        1),
+                });
+        CatalogOffering acceptableOffering =
+            ScheduleRecommendationTestData.CreateScheduledOffering(
+                "BBB10001",
+                "01",
+                new MeetingSlot[]
+                {
+                    ScheduleRecommendationTestData.CreateMeetingSlot(
+                        EDay.Wednesday,
+                        1),
+                });
+        CatalogCourse[] courses = new CatalogCourse[] { firstCourse, secondCourse };
+        CatalogOffering[] offerings = new CatalogOffering[]
+        {
+            preferredOffering,
+            excludedOffering,
+            acceptableOffering,
+        };
+        CourseCatalog originalCatalog = createCatalog(
+            "handong-global-university:2026-2:r0001",
+            "2026-2",
+            1,
+            courses,
+            offerings);
+        CourseCatalog newCatalog = createCatalog(
+            "handong-global-university:2026-2:r0002",
+            "2026-2",
+            2,
+            courses,
+            offerings);
+        CourseCandidate firstCandidate = new CourseCandidate(
+            firstCourse.Id,
+            new OfferingCandidate[]
+            {
+                new OfferingCandidate(
+                    preferredOffering.Id,
+                    EOfferingPreference.Preferred),
+                new OfferingCandidate(
+                    excludedOffering.Id,
+                    EOfferingPreference.Excluded),
+            });
+        CourseCandidate secondCandidate = new CourseCandidate(
+            secondCourse.Id,
+            new OfferingCandidate[]
+            {
+                new OfferingCandidate(
+                    acceptableOffering.Id,
+                    EOfferingPreference.Acceptable),
+            });
+        CourseChoiceGroup group = new CourseChoiceGroup(
+            CourseChoiceGroupId.CreateNew(),
+            ECourseChoiceCardinality.ExactlyOne,
+            new CourseCandidate[] { firstCandidate, secondCandidate });
+        PlanningPlan plan = new PlanningPlan(
+            PlanId.CreateNew(),
+            new PlanName("선택 계획"),
+            createBinding(originalCatalog),
+            new PlanningPlanContent(
+                new CourseChoiceGroup[] { group },
+                Array.Empty<UnscheduledOfferingSelection>(),
+                Array.Empty<PersonalSchedule>()));
+        PlanningWorkspace workspace = new PlanningWorkspace(
+            plan.Id,
+            new PlanningPlan[] { plan });
+
+        PlanningWorkspaceCatalogRebindResult result = tryRebind(
+            newCatalog,
+            workspace);
+
+        Assert.IsTrue(result.IsRebound);
+        Assert.IsNotNull(result.ReboundWorkspaceOrNull);
+        CourseChoiceGroup reboundGroup =
+            result.ReboundWorkspaceOrNull.Plans[0].CourseChoiceGroups[0];
+        Assert.AreSame(group, reboundGroup);
+        Assert.AreEqual(
+            EOfferingPreference.Excluded,
+            reboundGroup.CourseCandidates[0].OfferingCandidates[1].Preference);
+    }
+
+    [TestMethod]
     public void TryRebindRejectsAnEmptyPlanForANewAcademicTerm()
     {
         CourseCatalog originalCatalog = createOriginalCatalog();

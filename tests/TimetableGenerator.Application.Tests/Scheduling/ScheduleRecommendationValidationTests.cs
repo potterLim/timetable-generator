@@ -75,6 +75,40 @@ public sealed class ScheduleRecommendationValidationTests
     }
 
     [TestMethod]
+    public void GenerateRecommendationsValidatesExcludedOfferingReferences()
+    {
+        CourseCatalog catalog = createCatalogWithScheduledOfferings();
+        CourseCandidate courseCandidate = new CourseCandidate(
+            ScheduleRecommendationTestData.CreateCourseId("AAA10001"),
+            new OfferingCandidate[]
+            {
+                new OfferingCandidate(
+                    ScheduleRecommendationTestData.CreateOfferingId(
+                        "AAA10001",
+                        "01"),
+                    EOfferingPreference.Preferred),
+                new OfferingCandidate(
+                    ScheduleRecommendationTestData.CreateOfferingId(
+                        "AAA10001",
+                        "09"),
+                    EOfferingPreference.Excluded),
+            });
+        CourseChoiceGroup group = new CourseChoiceGroup(
+            CourseChoiceGroupId.CreateNew(),
+            ECourseChoiceCardinality.ExactlyOne,
+            new CourseCandidate[] { courseCandidate });
+        PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
+            catalog,
+            new CourseChoiceGroup[] { group },
+            Array.Empty<UnscheduledOfferingSelection>());
+
+        assertValidationError(
+            catalog,
+            plan,
+            EPlanCatalogValidationError.OfferingNotFound);
+    }
+
+    [TestMethod]
     public void GenerateRecommendationsRejectsOfferingCourseMismatch()
     {
         CourseCatalog catalog = createCatalogWithScheduledOfferings();

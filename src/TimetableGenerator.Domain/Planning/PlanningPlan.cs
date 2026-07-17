@@ -13,6 +13,14 @@ public sealed class PlanningPlan
 
     public PlanningPlanContent Content { get; }
 
+    public IReadOnlyList<CourseChoiceGroup> CourseChoiceGroups
+    {
+        get
+        {
+            return Content.CourseChoiceGroups;
+        }
+    }
+
     public IReadOnlyList<ScheduledCourseChoice> ScheduledCourseChoices
     {
         get

@@ -6,15 +6,15 @@ namespace TimetableGenerator.Application.Scheduling;
 
 internal sealed class PlanCatalogValidationResult
 {
-    private readonly IReadOnlyList<ValidatedScheduleChoice> mScheduledChoices;
+    private readonly IReadOnlyList<ValidatedCourseChoiceGroup> mCourseChoiceGroups;
 
     private readonly IReadOnlyList<UnscheduledOfferingSelection> mUnscheduledSelections;
 
-    public IReadOnlyList<ValidatedScheduleChoice> ScheduledChoices
+    public IReadOnlyList<ValidatedCourseChoiceGroup> CourseChoiceGroups
     {
         get
         {
-            return mScheduledChoices;
+            return mCourseChoiceGroups;
         }
     }
 
@@ -37,13 +37,13 @@ internal sealed class PlanCatalogValidationResult
     }
 
     private PlanCatalogValidationResult(
-        IEnumerable<ValidatedScheduleChoice> scheduledChoices,
+        IEnumerable<ValidatedCourseChoiceGroup> courseChoiceGroups,
         IEnumerable<UnscheduledOfferingSelection> unscheduledSelections,
         EPlanCatalogValidationError error)
     {
-        if (scheduledChoices == null)
+        if (courseChoiceGroups == null)
         {
-            throw new ArgumentNullException(nameof(scheduledChoices));
+            throw new ArgumentNullException(nameof(courseChoiceGroups));
         }
 
         if (unscheduledSelections == null)
@@ -56,17 +56,17 @@ internal sealed class PlanCatalogValidationResult
             throw new ArgumentOutOfRangeException(nameof(error));
         }
 
-        mScheduledChoices = copyScheduledChoices(scheduledChoices);
+        mCourseChoiceGroups = copyCourseChoiceGroups(courseChoiceGroups);
         mUnscheduledSelections = copyUnscheduledSelections(unscheduledSelections);
         Error = error;
     }
 
     public static PlanCatalogValidationResult CreateValid(
-        IEnumerable<ValidatedScheduleChoice> scheduledChoices,
+        IEnumerable<ValidatedCourseChoiceGroup> courseChoiceGroups,
         IEnumerable<UnscheduledOfferingSelection> unscheduledSelections)
     {
         return new PlanCatalogValidationResult(
-            scheduledChoices,
+            courseChoiceGroups,
             unscheduledSelections,
             EPlanCatalogValidationError.None);
     }
@@ -80,21 +80,22 @@ internal sealed class PlanCatalogValidationResult
         }
 
         return new PlanCatalogValidationResult(
-            Array.Empty<ValidatedScheduleChoice>(),
+            Array.Empty<ValidatedCourseChoiceGroup>(),
             Array.Empty<UnscheduledOfferingSelection>(),
             error);
     }
 
-    private static IReadOnlyList<ValidatedScheduleChoice> copyScheduledChoices(
-        IEnumerable<ValidatedScheduleChoice> scheduledChoices)
+    private static IReadOnlyList<ValidatedCourseChoiceGroup> copyCourseChoiceGroups(
+        IEnumerable<ValidatedCourseChoiceGroup> courseChoiceGroups)
     {
-        List<ValidatedScheduleChoice> copiedChoices = new List<ValidatedScheduleChoice>();
-        foreach (ValidatedScheduleChoice choice in scheduledChoices)
+        List<ValidatedCourseChoiceGroup> copiedGroups =
+            new List<ValidatedCourseChoiceGroup>();
+        foreach (ValidatedCourseChoiceGroup courseChoiceGroup in courseChoiceGroups)
         {
-            copiedChoices.Add(choice);
+            copiedGroups.Add(courseChoiceGroup);
         }
 
-        return copiedChoices.AsReadOnly();
+        return copiedGroups.AsReadOnly();
     }
 
     private static IReadOnlyList<UnscheduledOfferingSelection> copyUnscheduledSelections(

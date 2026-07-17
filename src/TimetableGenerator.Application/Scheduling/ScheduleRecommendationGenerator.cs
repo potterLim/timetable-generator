@@ -30,7 +30,7 @@ public sealed class ScheduleRecommendationGenerator
             return ScheduleRecommendationResult.createInvalidPlan(validationResult.Error);
         }
 
-        if (validationResult.ScheduledChoices.Count == 0)
+        if (validationResult.CourseChoiceGroups.Count == 0)
         {
             return createResultWithoutScheduledChoices(
                 validationResult.UnscheduledSelections,
@@ -39,12 +39,12 @@ public sealed class ScheduleRecommendationGenerator
 
         ScheduleRecommendationGenerationState state =
             new ScheduleRecommendationGenerationState(
-                validationResult.ScheduledChoices,
+                validationResult.CourseChoiceGroups,
                 validationResult.UnscheduledSelections,
                 request.Plan.PersonalSchedules,
                 request.MaximumRecommendationCount,
                 cancellationToken);
-        generateRecommendationsRecursive(state, 0);
+        generateRecommendations(state);
 
         if (state.Completion == EScheduleRecommendationCompletion.Canceled)
         {
@@ -70,7 +70,8 @@ public sealed class ScheduleRecommendationGenerator
         ScheduleRecommendation recommendation = new ScheduleRecommendation(
             Array.Empty<ScheduledOffering>(),
             unscheduledSelections,
-            personalSchedules);
+            personalSchedules,
+            RecommendationScore.ZERO);
         return ScheduleRecommendationResult.createCompleted(
             new ScheduleRecommendation[] { recommendation },
             EScheduleRecommendationCompletion.Completed);
@@ -90,16 +91,17 @@ public sealed class ScheduleRecommendationGenerator
         Dictionary<CourseId, CatalogCourse> coursesById = createCoursesById(request.Catalog);
         Dictionary<OfferingId, CatalogOffering> offeringsById = createOfferingsById(
             request.Catalog);
-        List<ValidatedScheduleChoice> validatedChoices =
-            new List<ValidatedScheduleChoice>();
+        List<ValidatedCourseChoiceGroup> validatedGroups =
+            new List<ValidatedCourseChoiceGroup>();
 
-        foreach (ScheduledCourseChoice choice in request.Plan.ScheduledCourseChoices)
+        foreach (CourseChoiceGroup courseChoiceGroup
+            in request.Plan.CourseChoiceGroups)
         {
-            EPlanCatalogValidationError choiceError = validateScheduledChoice(
-                choice,
+            EPlanCatalogValidationError choiceError = validateCourseChoiceGroup(
+                courseChoiceGroup,
                 coursesById,
                 offeringsById,
-                validatedChoices);
+                validatedGroups);
             if (choiceError != EPlanCatalogValidationError.None)
             {
                 return PlanCatalogValidationResult.CreateInvalid(choiceError);
@@ -120,7 +122,7 @@ public sealed class ScheduleRecommendationGenerator
         }
 
         return PlanCatalogValidationResult.CreateValid(
-            validatedChoices,
+            validatedGroups,
             request.Plan.UnscheduledOfferingSelections);
     }
 
@@ -170,43 +172,55 @@ public sealed class ScheduleRecommendationGenerator
         return offeringsById;
     }
 
-    private static EPlanCatalogValidationError validateScheduledChoice(
-        ScheduledCourseChoice choice,
+    private static EPlanCatalogValidationError validateCourseChoiceGroup(
+        CourseChoiceGroup courseChoiceGroup,
         IReadOnlyDictionary<CourseId, CatalogCourse> coursesById,
         IReadOnlyDictionary<OfferingId, CatalogOffering> offeringsById,
-        ICollection<ValidatedScheduleChoice> validatedChoices)
+        ICollection<ValidatedCourseChoiceGroup> validatedGroups)
     {
-        if (coursesById.ContainsKey(choice.CourseId) == false)
+        List<ValidatedOfferingCandidate> validatedCandidates =
+            new List<ValidatedOfferingCandidate>();
+        foreach (CourseCandidate courseCandidate
+            in courseChoiceGroup.CourseCandidates)
         {
-            return EPlanCatalogValidationError.CourseNotFound;
+            if (coursesById.ContainsKey(courseCandidate.CourseId) == false)
+            {
+                return EPlanCatalogValidationError.CourseNotFound;
+            }
+
+            foreach (OfferingCandidate offeringCandidate
+                in courseCandidate.OfferingCandidates)
+            {
+                CatalogOffering? catalogOfferingOrNull;
+                bool hasOffering = offeringsById.TryGetValue(
+                    offeringCandidate.OfferingId,
+                    out catalogOfferingOrNull);
+                if (hasOffering == false || catalogOfferingOrNull == null)
+                {
+                    return EPlanCatalogValidationError.OfferingNotFound;
+                }
+
+                if (catalogOfferingOrNull.CourseId != courseCandidate.CourseId)
+                {
+                    return EPlanCatalogValidationError.OfferingCourseMismatch;
+                }
+
+                if (catalogOfferingOrNull.MeetingSchedule.IsScheduled == false)
+                {
+                    return EPlanCatalogValidationError
+                        .ScheduledChoiceHasNoProvidedTime;
+                }
+
+                if (offeringCandidate.IsEligible)
+                {
+                    validatedCandidates.Add(new ValidatedOfferingCandidate(
+                        new ScheduledOffering(catalogOfferingOrNull),
+                        offeringCandidate.Preference));
+                }
+            }
         }
 
-        List<ScheduledOffering> scheduledOfferings = new List<ScheduledOffering>();
-        foreach (OfferingId offeringId in choice.OfferingIds)
-        {
-            CatalogOffering? catalogOfferingOrNull;
-            bool hasOffering = offeringsById.TryGetValue(
-                offeringId,
-                out catalogOfferingOrNull);
-            if (hasOffering == false || catalogOfferingOrNull == null)
-            {
-                return EPlanCatalogValidationError.OfferingNotFound;
-            }
-
-            if (catalogOfferingOrNull.CourseId != choice.CourseId)
-            {
-                return EPlanCatalogValidationError.OfferingCourseMismatch;
-            }
-
-            if (catalogOfferingOrNull.MeetingSchedule.IsScheduled == false)
-            {
-                return EPlanCatalogValidationError.ScheduledChoiceHasNoProvidedTime;
-            }
-
-            scheduledOfferings.Add(new ScheduledOffering(catalogOfferingOrNull));
-        }
-
-        validatedChoices.Add(new ValidatedScheduleChoice(scheduledOfferings));
+        validatedGroups.Add(new ValidatedCourseChoiceGroup(validatedCandidates));
         return EPlanCatalogValidationError.None;
     }
 
@@ -242,90 +256,88 @@ public sealed class ScheduleRecommendationGenerator
         return EPlanCatalogValidationError.None;
     }
 
-    private static EGenerationTraversalDecision generateRecommendationsRecursive(
-        ScheduleRecommendationGenerationState state,
-        int choiceIndex)
+    private static void generateRecommendations(
+        ScheduleRecommendationGenerationState state)
     {
-        if (state.ShouldStop)
-        {
-            return EGenerationTraversalDecision.Stop;
-        }
-
-        if (state.CancellationToken.IsCancellationRequested)
-        {
-            state.MarkCanceled();
-            return EGenerationTraversalDecision.Stop;
-        }
-
-        if (choiceIndex >= state.ScheduledChoices.Count)
-        {
-            return addCompletedRecommendation(state);
-        }
-
-        ValidatedScheduleChoice choice = state.ScheduledChoices[choiceIndex];
-        foreach (ScheduledOffering offering in choice.Offerings)
+        while (state.HasPendingNodes() && state.ShouldStop == false)
         {
             if (state.CancellationToken.IsCancellationRequested)
             {
                 state.MarkCanceled();
-                return EGenerationTraversalDecision.Stop;
+                return;
             }
 
-            if (canAddOffering(state, offering) == false)
+            ScheduleSearchNode node = state.DequeueNode();
+            if (node.NextGroupIndex >= state.CourseChoiceGroups.Count)
             {
+                bool hasReachedLimit = addCompletedRecommendation(state, node);
+                if (hasReachedLimit)
+                {
+                    state.MarkMaximumRecommendationCountReached();
+                    return;
+                }
+
                 continue;
             }
 
-            addOffering(state, offering);
-            try
+            ValidatedCourseChoiceGroup courseChoiceGroup =
+                state.CourseChoiceGroups[node.NextGroupIndex];
+            foreach (ValidatedOfferingCandidate offeringCandidate
+                in courseChoiceGroup.OfferingCandidates)
             {
-                EGenerationTraversalDecision traversalDecision =
-                    generateRecommendationsRecursive(state, choiceIndex + 1);
-                if (traversalDecision == EGenerationTraversalDecision.Stop)
+                if (state.CancellationToken.IsCancellationRequested)
                 {
-                    return EGenerationTraversalDecision.Stop;
+                    state.MarkCanceled();
+                    return;
                 }
-            }
-            finally
-            {
-                removeOffering(state, offering);
+
+                if (canAddOffering(
+                    node,
+                    offeringCandidate.Offering,
+                    state.PersonalSchedules) == false)
+                {
+                    continue;
+                }
+
+                ScheduleSearchNode childNode = node.CreateChild(offeringCandidate);
+                state.EnqueueNode(childNode);
             }
         }
-
-        return EGenerationTraversalDecision.Continue;
     }
 
-    private static EGenerationTraversalDecision addCompletedRecommendation(
-        ScheduleRecommendationGenerationState state)
+    private static bool addCompletedRecommendation(
+        ScheduleRecommendationGenerationState state,
+        ScheduleSearchNode node)
     {
         if (state.Recommendations.Count >= state.MaximumRecommendationCount.Value)
         {
-            state.MarkMaximumRecommendationCountReached();
-            return EGenerationTraversalDecision.Stop;
+            return true;
         }
 
         ScheduleRecommendation recommendation = new ScheduleRecommendation(
-            state.SelectedOfferings,
+            node.SelectedOfferings,
             state.UnscheduledSelections,
-            state.PersonalSchedules);
+            state.PersonalSchedules,
+            node.Score);
         state.Recommendations.Add(recommendation);
-        return EGenerationTraversalDecision.Continue;
+        return false;
     }
 
     private static bool canAddOffering(
-        ScheduleRecommendationGenerationState state,
-        ScheduledOffering offering)
+        ScheduleSearchNode node,
+        ScheduledOffering offering,
+        IReadOnlyList<PersonalSchedule> personalSchedules)
     {
         foreach (MeetingSlot slot in offering.MeetingSlots)
         {
-            if (state.OccupiedSlots.Contains(slot))
+            if (node.OccupiedSlots.Contains(slot))
             {
                 return false;
             }
 
             WeeklyTimeRange offeringTimeRange =
                 AcademicPeriodTimeTable.GetWeeklyTimeRange(slot);
-            foreach (PersonalSchedule personalSchedule in state.PersonalSchedules)
+            foreach (PersonalSchedule personalSchedule in personalSchedules)
             {
                 foreach (WeeklyTimeRange personalTimeRange
                     in personalSchedule.TimeRanges)
@@ -341,45 +353,5 @@ public sealed class ScheduleRecommendationGenerator
         }
 
         return true;
-    }
-
-    private static void addOffering(
-        ScheduleRecommendationGenerationState state,
-        ScheduledOffering offering)
-    {
-        state.SelectedOfferings.Add(offering);
-        foreach (MeetingSlot slot in offering.MeetingSlots)
-        {
-            bool hasAddedSlot = state.OccupiedSlots.Add(slot);
-            if (hasAddedSlot == false)
-            {
-                throw new InvalidOperationException(
-                    "A previously validated meeting slot could not be reserved.");
-            }
-        }
-    }
-
-    private static void removeOffering(
-        ScheduleRecommendationGenerationState state,
-        ScheduledOffering offering)
-    {
-        int selectedOfferingIndex = state.SelectedOfferings.Count - 1;
-        ScheduledOffering selectedOffering = state.SelectedOfferings[selectedOfferingIndex];
-        if (ReferenceEquals(selectedOffering, offering) == false)
-        {
-            throw new InvalidOperationException(
-                "The schedule recommendation rollback order was corrupted.");
-        }
-
-        state.SelectedOfferings.RemoveAt(selectedOfferingIndex);
-        foreach (MeetingSlot slot in offering.MeetingSlots)
-        {
-            bool hasRemovedSlot = state.OccupiedSlots.Remove(slot);
-            if (hasRemovedSlot == false)
-            {
-                throw new InvalidOperationException(
-                    "A reserved meeting slot could not be released.");
-            }
-        }
     }
 }

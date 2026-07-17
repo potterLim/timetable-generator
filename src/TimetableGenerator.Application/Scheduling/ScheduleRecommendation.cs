@@ -40,10 +40,13 @@ public sealed class ScheduleRecommendation
 
     public ERecommendationVerificationStatus VerificationStatus { get; }
 
+    public RecommendationScore Score { get; }
+
     internal ScheduleRecommendation(
         IEnumerable<ScheduledOffering> scheduledOfferings,
         IEnumerable<UnscheduledOfferingSelection> unscheduledSelections,
-        IEnumerable<PersonalSchedule> personalSchedules)
+        IEnumerable<PersonalSchedule> personalSchedules,
+        RecommendationScore score)
     {
         if (scheduledOfferings == null)
         {
@@ -58,6 +61,13 @@ public sealed class ScheduleRecommendation
         if (personalSchedules == null)
         {
             throw new ArgumentNullException(nameof(personalSchedules));
+        }
+
+        if (score.IsValid == false)
+        {
+            throw new ArgumentException(
+                "Schedule recommendations require a valid score.",
+                nameof(score));
         }
 
         IReadOnlyList<ScheduledOffering> copiedScheduledOfferings =
@@ -80,6 +90,7 @@ public sealed class ScheduleRecommendation
         mScheduledOfferings = copiedScheduledOfferings;
         mUnscheduledSelections = copiedUnscheduledSelections;
         mPersonalSchedules = copiedPersonalSchedules;
+        Score = score;
         VerificationStatus = copiedUnscheduledSelections.Count == 0
             ? ERecommendationVerificationStatus.ConfirmedConflictFree
             : ERecommendationVerificationStatus.RequiresManualReview;

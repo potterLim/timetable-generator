@@ -5,7 +5,7 @@ using TimetableGenerator.Domain.Planning;
 
 namespace TimetableGenerator.Application.Planning;
 
-public sealed class PlanningWorkspaceEditor
+public sealed partial class PlanningWorkspaceEditor
 {
     public PlanningWorkspace ActivatePlan(
         PlanningWorkspace workspace,
@@ -97,36 +97,6 @@ public sealed class PlanningWorkspaceEditor
         return new PlanningWorkspace(activePlanId, remainingPlans);
     }
 
-    public PlanningWorkspace AddScheduledCourseChoice(
-        PlanningWorkspace workspace,
-        PlanId planId,
-        ScheduledCourseChoice choice)
-    {
-        if (workspace == null)
-        {
-            throw new ArgumentNullException(nameof(workspace));
-        }
-
-        if (choice == null)
-        {
-            throw new ArgumentNullException(nameof(choice));
-        }
-
-        PlanningPlan existingPlan = findPlan(workspace, planId);
-        List<ScheduledCourseChoice> scheduledChoices =
-            new List<ScheduledCourseChoice>(existingPlan.ScheduledCourseChoices);
-        scheduledChoices.Add(choice);
-        PlanningPlan updatedPlan = new PlanningPlan(
-            existingPlan.Id,
-            existingPlan.Name,
-            existingPlan.CatalogBinding,
-            new PlanningPlanContent(
-                scheduledChoices,
-                existingPlan.UnscheduledOfferingSelections,
-                existingPlan.PersonalSchedules));
-        return replacePlan(workspace, updatedPlan);
-    }
-
     public PlanningWorkspace AddUnscheduledOfferingSelection(
         PlanningWorkspace workspace,
         PlanId planId,
@@ -152,7 +122,7 @@ public sealed class PlanningWorkspaceEditor
             existingPlan.Name,
             existingPlan.CatalogBinding,
             new PlanningPlanContent(
-                existingPlan.ScheduledCourseChoices,
+                existingPlan.CourseChoiceGroups,
                 selections,
                 existingPlan.PersonalSchedules));
         return replacePlan(workspace, updatedPlan);
@@ -174,8 +144,8 @@ public sealed class PlanningWorkspaceEditor
         }
 
         PlanningPlan existingPlan = findPlan(workspace, planId);
-        List<ScheduledCourseChoice> scheduledChoices =
-            copyScheduledChoicesExceptCourse(existingPlan, courseId);
+        List<CourseChoiceGroup> courseChoiceGroups =
+            copyCourseChoiceGroupsExceptCourse(existingPlan, courseId);
         List<UnscheduledOfferingSelection> unscheduledSelections =
             copyUnscheduledSelectionsExceptCourse(existingPlan, courseId);
         PlanningPlan updatedPlan = new PlanningPlan(
@@ -183,7 +153,7 @@ public sealed class PlanningWorkspaceEditor
             existingPlan.Name,
             existingPlan.CatalogBinding,
             new PlanningPlanContent(
-                scheduledChoices,
+                courseChoiceGroups,
                 unscheduledSelections,
                 existingPlan.PersonalSchedules));
         return replacePlan(workspace, updatedPlan);
@@ -349,7 +319,7 @@ public sealed class PlanningWorkspaceEditor
         IEnumerable<PersonalSchedule> personalSchedules)
     {
         PlanningPlanContent content = new PlanningPlanContent(
-            existingPlan.ScheduledCourseChoices,
+            existingPlan.CourseChoiceGroups,
             existingPlan.UnscheduledOfferingSelections,
             personalSchedules);
         PlanningPlan updatedPlan = new PlanningPlan(
@@ -358,22 +328,6 @@ public sealed class PlanningWorkspaceEditor
             existingPlan.CatalogBinding,
             content);
         return replacePlan(workspace, updatedPlan);
-    }
-
-    private static List<ScheduledCourseChoice> copyScheduledChoicesExceptCourse(
-        PlanningPlan plan,
-        CourseId courseId)
-    {
-        List<ScheduledCourseChoice> choices = new List<ScheduledCourseChoice>();
-        foreach (ScheduledCourseChoice choice in plan.ScheduledCourseChoices)
-        {
-            if (choice.CourseId != courseId)
-            {
-                choices.Add(choice);
-            }
-        }
-
-        return choices;
     }
 
     private static List<UnscheduledOfferingSelection>

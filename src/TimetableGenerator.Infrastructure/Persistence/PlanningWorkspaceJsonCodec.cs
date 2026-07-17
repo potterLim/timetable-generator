@@ -9,9 +9,10 @@ using TimetableGenerator.Domain.Scheduling;
 
 namespace TimetableGenerator.Infrastructure.Persistence;
 
-public sealed class PlanningWorkspaceJsonCodec
+public sealed partial class PlanningWorkspaceJsonCodec
 {
-    private const int CURRENT_SCHEMA_VERSION = 2;
+    private const int CURRENT_SCHEMA_VERSION = 3;
+    private const int PERSONAL_SCHEDULE_SCHEMA_VERSION = 2;
     private const int LEGACY_SCHEMA_VERSION = 1;
 
     public byte[] Serialize(PlanningWorkspaceDocument document)
@@ -135,19 +136,10 @@ public sealed class PlanningWorkspaceJsonCodec
             "artifactSha256",
             plan.CatalogBinding.ArtifactSha256.HexValue);
         writer.WriteEndObject();
-        writer.WriteStartArray("scheduledChoices");
-        foreach (ScheduledCourseChoice choice in plan.ScheduledCourseChoices)
+        writer.WriteStartArray("courseChoiceGroups");
+        foreach (CourseChoiceGroup courseChoiceGroup in plan.CourseChoiceGroups)
         {
-            writer.WriteStartObject();
-            writer.WriteString("courseId", choice.CourseId.Value);
-            writer.WriteStartArray("offeringIds");
-            foreach (OfferingId offeringId in choice.OfferingIds)
-            {
-                writer.WriteStringValue(offeringId.Value);
-            }
-
-            writer.WriteEndArray();
-            writer.WriteEndObject();
+            writeCourseChoiceGroup(writer, courseChoiceGroup);
         }
 
         writer.WriteEndArray();
@@ -178,6 +170,7 @@ public sealed class PlanningWorkspaceJsonCodec
         switch (schemaVersion)
         {
             case LEGACY_SCHEMA_VERSION:
+            case PERSONAL_SCHEDULE_SCHEMA_VERSION:
             case CURRENT_SCHEMA_VERSION:
                 return readWorkspaceVersion(element, schemaVersion);
             default:
@@ -251,7 +244,7 @@ public sealed class PlanningWorkspaceJsonCodec
                 "unscheduledSelections",
             };
         }
-        else
+        else if (schemaVersion == PERSONAL_SCHEDULE_SCHEMA_VERSION)
         {
             expectedPropertyNames = new string[]
             {
@@ -259,6 +252,18 @@ public sealed class PlanningWorkspaceJsonCodec
                 "name",
                 "catalog",
                 "scheduledChoices",
+                "unscheduledSelections",
+                "personalSchedules",
+            };
+        }
+        else
+        {
+            expectedPropertyNames = new string[]
+            {
+                "id",
+                "name",
+                "catalog",
+                "courseChoiceGroups",
                 "unscheduledSelections",
                 "personalSchedules",
             };
@@ -271,8 +276,20 @@ public sealed class PlanningWorkspaceJsonCodec
         PlanId planId = readPlanId(properties["id"], "plan.id");
         PlanName planName = new PlanName(readString(properties["name"], "plan.name"));
         PlanCatalogBinding catalogBinding = readCatalogBinding(properties["catalog"]);
-        IReadOnlyList<ScheduledCourseChoice> scheduledChoices =
-            readScheduledChoices(properties["scheduledChoices"]);
+        IReadOnlyList<CourseChoiceGroup> courseChoiceGroups;
+        if (schemaVersion == CURRENT_SCHEMA_VERSION)
+        {
+            courseChoiceGroups = readCourseChoiceGroups(
+                properties["courseChoiceGroups"]);
+        }
+        else
+        {
+            IReadOnlyList<ScheduledCourseChoice> scheduledChoices =
+                readScheduledChoices(properties["scheduledChoices"]);
+            courseChoiceGroups = migrateScheduledChoices(
+                planId,
+                scheduledChoices);
+        }
         IReadOnlyList<UnscheduledOfferingSelection> unscheduledSelections =
             readUnscheduledSelections(properties["unscheduledSelections"]);
         IReadOnlyList<PersonalSchedule> personalSchedules;
@@ -290,7 +307,7 @@ public sealed class PlanningWorkspaceJsonCodec
             planName,
             catalogBinding,
             new PlanningPlanContent(
-                scheduledChoices,
+                courseChoiceGroups,
                 unscheduledSelections,
                 personalSchedules));
     }

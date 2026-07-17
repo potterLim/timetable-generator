@@ -7,12 +7,22 @@ namespace TimetableGenerator.Domain.Planning;
 
 public sealed class PlanningPlanContent
 {
+    private readonly IReadOnlyList<CourseChoiceGroup> mCourseChoiceGroups;
+
     private readonly IReadOnlyList<ScheduledCourseChoice> mScheduledCourseChoices;
 
     private readonly IReadOnlyList<UnscheduledOfferingSelection>
         mUnscheduledOfferingSelections;
 
     private readonly IReadOnlyList<PersonalSchedule> mPersonalSchedules;
+
+    public IReadOnlyList<CourseChoiceGroup> CourseChoiceGroups
+    {
+        get
+        {
+            return mCourseChoiceGroups;
+        }
+    }
 
     public IReadOnlyList<ScheduledCourseChoice> ScheduledCourseChoices
     {
@@ -42,10 +52,21 @@ public sealed class PlanningPlanContent
         IEnumerable<ScheduledCourseChoice> scheduledCourseChoices,
         IEnumerable<UnscheduledOfferingSelection> unscheduledOfferingSelections,
         IEnumerable<PersonalSchedule> personalSchedules)
+        : this(
+            createCourseChoiceGroups(scheduledCourseChoices),
+            unscheduledOfferingSelections,
+            personalSchedules)
     {
-        if (scheduledCourseChoices == null)
+    }
+
+    public PlanningPlanContent(
+        IEnumerable<CourseChoiceGroup> courseChoiceGroups,
+        IEnumerable<UnscheduledOfferingSelection> unscheduledOfferingSelections,
+        IEnumerable<PersonalSchedule> personalSchedules)
+    {
+        if (courseChoiceGroups == null)
         {
-            throw new ArgumentNullException(nameof(scheduledCourseChoices));
+            throw new ArgumentNullException(nameof(courseChoiceGroups));
         }
 
         if (unscheduledOfferingSelections == null)
@@ -60,10 +81,12 @@ public sealed class PlanningPlanContent
 
         HashSet<CourseId> selectedCourseIds = new HashSet<CourseId>();
         HashSet<OfferingId> selectedOfferingIds = new HashSet<OfferingId>();
-        mScheduledCourseChoices = copyAndValidateScheduledCourseChoices(
-            scheduledCourseChoices,
+        mCourseChoiceGroups = copyAndValidateCourseChoiceGroups(
+            courseChoiceGroups,
             selectedCourseIds,
             selectedOfferingIds);
+        mScheduledCourseChoices = createScheduledCourseChoiceCompatibilityView(
+            mCourseChoiceGroups);
         mUnscheduledOfferingSelections = copyAndValidateUnscheduledOfferingSelections(
             unscheduledOfferingSelections,
             selectedCourseIds,
@@ -71,13 +94,17 @@ public sealed class PlanningPlanContent
         mPersonalSchedules = copyAndValidatePersonalSchedules(personalSchedules);
     }
 
-    private static IReadOnlyList<ScheduledCourseChoice> copyAndValidateScheduledCourseChoices(
-        IEnumerable<ScheduledCourseChoice> scheduledCourseChoices,
-        ISet<CourseId> selectedCourseIds,
-        ISet<OfferingId> selectedOfferingIds)
+    private static IReadOnlyList<CourseChoiceGroup> createCourseChoiceGroups(
+        IEnumerable<ScheduledCourseChoice> scheduledCourseChoices)
     {
-        List<ScheduledCourseChoice> copiedChoices = new List<ScheduledCourseChoice>();
-        foreach (ScheduledCourseChoice scheduledCourseChoice in scheduledCourseChoices)
+        if (scheduledCourseChoices == null)
+        {
+            throw new ArgumentNullException(nameof(scheduledCourseChoices));
+        }
+
+        List<CourseChoiceGroup> courseChoiceGroups = new List<CourseChoiceGroup>();
+        foreach (ScheduledCourseChoice scheduledCourseChoice
+            in scheduledCourseChoices)
         {
             if (scheduledCourseChoice == null)
             {
@@ -86,27 +113,101 @@ public sealed class PlanningPlanContent
                     nameof(scheduledCourseChoices));
             }
 
-            if (selectedCourseIds.Add(scheduledCourseChoice.CourseId) == false)
+            courseChoiceGroups.Add(
+                CourseChoiceGroup.CreateFromScheduledCourseChoice(
+                    CourseChoiceGroupId.CreateNew(),
+                    scheduledCourseChoice));
+        }
+
+        return courseChoiceGroups.AsReadOnly();
+    }
+
+    private static IReadOnlyList<CourseChoiceGroup> copyAndValidateCourseChoiceGroups(
+        IEnumerable<CourseChoiceGroup> courseChoiceGroups,
+        ISet<CourseId> selectedCourseIds,
+        ISet<OfferingId> selectedOfferingIds)
+    {
+        List<CourseChoiceGroup> copiedGroups = new List<CourseChoiceGroup>();
+        HashSet<CourseChoiceGroupId> groupIds = new HashSet<CourseChoiceGroupId>();
+        foreach (CourseChoiceGroup courseChoiceGroup in courseChoiceGroups)
+        {
+            if (courseChoiceGroup == null)
             {
                 throw new ArgumentException(
-                    "Planning plans cannot select the same course more than once.",
-                    nameof(scheduledCourseChoices));
+                    "Planning plans cannot contain null course choice groups.",
+                    nameof(courseChoiceGroups));
             }
 
-            foreach (OfferingId offeringId in scheduledCourseChoice.OfferingIds)
+            if (groupIds.Add(courseChoiceGroup.Id) == false)
             {
-                if (selectedOfferingIds.Add(offeringId) == false)
+                throw new ArgumentException(
+                    "Planning plans cannot contain duplicate course choice group IDs.",
+                    nameof(courseChoiceGroups));
+            }
+
+            foreach (CourseCandidate courseCandidate
+                in courseChoiceGroup.CourseCandidates)
+            {
+                if (selectedCourseIds.Add(courseCandidate.CourseId) == false)
                 {
                     throw new ArgumentException(
-                        "Planning plans cannot select the same offering more than once.",
-                        nameof(scheduledCourseChoices));
+                        "Planning plans cannot select the same course more than once.",
+                        nameof(courseChoiceGroups));
+                }
+
+                foreach (OfferingCandidate offeringCandidate
+                    in courseCandidate.OfferingCandidates)
+                {
+                    if (selectedOfferingIds.Add(offeringCandidate.OfferingId) == false)
+                    {
+                        throw new ArgumentException(
+                            "Planning plans cannot select the same offering more than once.",
+                            nameof(courseChoiceGroups));
+                    }
                 }
             }
 
-            copiedChoices.Add(scheduledCourseChoice);
+            copiedGroups.Add(courseChoiceGroup);
         }
 
-        return copiedChoices.AsReadOnly();
+        return copiedGroups.AsReadOnly();
+    }
+
+    private static IReadOnlyList<ScheduledCourseChoice>
+        createScheduledCourseChoiceCompatibilityView(
+            IEnumerable<CourseChoiceGroup> courseChoiceGroups)
+    {
+        List<ScheduledCourseChoice> scheduledCourseChoices =
+            new List<ScheduledCourseChoice>();
+        foreach (CourseChoiceGroup courseChoiceGroup in courseChoiceGroups)
+        {
+            if (courseChoiceGroup.LegacyScheduledChoiceOrNull != null)
+            {
+                scheduledCourseChoices.Add(
+                    courseChoiceGroup.LegacyScheduledChoiceOrNull);
+                continue;
+            }
+
+            foreach (CourseCandidate courseCandidate
+                in courseChoiceGroup.CourseCandidates)
+            {
+                List<OfferingId> eligibleOfferingIds = new List<OfferingId>();
+                foreach (OfferingCandidate offeringCandidate
+                    in courseCandidate.OfferingCandidates)
+                {
+                    if (offeringCandidate.IsEligible)
+                    {
+                        eligibleOfferingIds.Add(offeringCandidate.OfferingId);
+                    }
+                }
+
+                scheduledCourseChoices.Add(new ScheduledCourseChoice(
+                    courseCandidate.CourseId,
+                    eligibleOfferingIds));
+            }
+        }
+
+        return scheduledCourseChoices.AsReadOnly();
     }
 
     private static IReadOnlyList<UnscheduledOfferingSelection>

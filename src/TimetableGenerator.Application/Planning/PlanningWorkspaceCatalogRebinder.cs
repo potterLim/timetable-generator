@@ -174,12 +174,13 @@ public static class PlanningWorkspaceCatalogRebinder
         IReadOnlyDictionary<CourseId, CatalogCourse> coursesById,
         IReadOnlyDictionary<OfferingId, CatalogOffering> offeringsById)
     {
-        foreach (ScheduledCourseChoice choice in plan.ScheduledCourseChoices)
+        foreach (CourseChoiceGroup courseChoiceGroup in plan.CourseChoiceGroups)
         {
-            EPlanningWorkspaceCatalogRebindStatus choiceStatus = validateScheduledChoice(
-                choice,
-                coursesById,
-                offeringsById);
+            EPlanningWorkspaceCatalogRebindStatus choiceStatus =
+                validateCourseChoiceGroup(
+                    courseChoiceGroup,
+                    coursesById,
+                    offeringsById);
             if (choiceStatus != EPlanningWorkspaceCatalogRebindStatus.Rebound)
             {
                 return choiceStatus;
@@ -203,33 +204,42 @@ public static class PlanningWorkspaceCatalogRebinder
         return EPlanningWorkspaceCatalogRebindStatus.Rebound;
     }
 
-    private static EPlanningWorkspaceCatalogRebindStatus validateScheduledChoice(
-        ScheduledCourseChoice choice,
+    private static EPlanningWorkspaceCatalogRebindStatus validateCourseChoiceGroup(
+        CourseChoiceGroup courseChoiceGroup,
         IReadOnlyDictionary<CourseId, CatalogCourse> coursesById,
         IReadOnlyDictionary<OfferingId, CatalogOffering> offeringsById)
     {
-        if (coursesById.ContainsKey(choice.CourseId) == false)
+        foreach (CourseCandidate courseCandidate
+            in courseChoiceGroup.CourseCandidates)
         {
-            return EPlanningWorkspaceCatalogRebindStatus.CourseNotFound;
-        }
-
-        foreach (OfferingId offeringId in choice.OfferingIds)
-        {
-            CatalogOffering? offeringOrNull;
-            bool hasOffering = offeringsById.TryGetValue(offeringId, out offeringOrNull);
-            if (hasOffering == false || offeringOrNull == null)
+            if (coursesById.ContainsKey(courseCandidate.CourseId) == false)
             {
-                return EPlanningWorkspaceCatalogRebindStatus.OfferingNotFound;
+                return EPlanningWorkspaceCatalogRebindStatus.CourseNotFound;
             }
 
-            if (offeringOrNull.CourseId != choice.CourseId)
+            foreach (OfferingCandidate offeringCandidate
+                in courseCandidate.OfferingCandidates)
             {
-                return EPlanningWorkspaceCatalogRebindStatus.OfferingCourseMismatch;
-            }
+                CatalogOffering? offeringOrNull;
+                bool hasOffering = offeringsById.TryGetValue(
+                    offeringCandidate.OfferingId,
+                    out offeringOrNull);
+                if (hasOffering == false || offeringOrNull == null)
+                {
+                    return EPlanningWorkspaceCatalogRebindStatus.OfferingNotFound;
+                }
 
-            if (offeringOrNull.MeetingSchedule.IsScheduled == false)
-            {
-                return EPlanningWorkspaceCatalogRebindStatus.ScheduledChoiceHasNoProvidedTime;
+                if (offeringOrNull.CourseId != courseCandidate.CourseId)
+                {
+                    return EPlanningWorkspaceCatalogRebindStatus
+                        .OfferingCourseMismatch;
+                }
+
+                if (offeringOrNull.MeetingSchedule.IsScheduled == false)
+                {
+                    return EPlanningWorkspaceCatalogRebindStatus
+                        .ScheduledChoiceHasNoProvidedTime;
+                }
             }
         }
 
