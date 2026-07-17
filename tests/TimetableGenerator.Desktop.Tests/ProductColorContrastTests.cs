@@ -42,10 +42,16 @@ public sealed class ProductColorContrastTests
         new ColorToken("ControlSurfaceBrush");
     private static readonly ColorToken COURSE_BLUE_BACKGROUND =
         new ColorToken("CourseBlueBackgroundBrush");
+    private static readonly ColorToken COURSE_BLUE_BORDER =
+        new ColorToken("CourseBlueBorderBrush");
     private static readonly ColorToken COURSE_GREEN_BACKGROUND =
         new ColorToken("CourseGreenBackgroundBrush");
+    private static readonly ColorToken COURSE_GREEN_BORDER =
+        new ColorToken("CourseGreenBorderBrush");
     private static readonly ColorToken COURSE_PURPLE_BACKGROUND =
         new ColorToken("CoursePurpleBackgroundBrush");
+    private static readonly ColorToken COURSE_PURPLE_BORDER =
+        new ColorToken("CoursePurpleBorderBrush");
     private static readonly ColorToken ELEVATED_SURFACE =
         new ColorToken("ElevatedSurfaceBrush");
     private static readonly ColorToken ERROR =
@@ -70,8 +76,30 @@ public sealed class ProductColorContrastTests
         new ColorToken("ProductOnDangerActionFillBrush");
     private static readonly ColorToken PANE_SURFACE =
         new ColorToken("PaneSurfaceBrush");
+    private static readonly ColorToken PERSONAL_SCHEDULE_BACKGROUND =
+        new ColorToken("PersonalScheduleBackgroundBrush");
+    private static readonly ColorToken PERSONAL_SCHEDULE_BORDER =
+        new ColorToken("PersonalScheduleBorderBrush");
     private static readonly ColorToken PRESSED_SURFACE =
         new ColorToken("PressedSurfaceBrush");
+    private static readonly ColorToken PREFERENCE_ACCEPTABLE_BORDER =
+        new ColorToken("PreferenceAcceptableBorderBrush");
+    private static readonly ColorToken PREFERENCE_ACCEPTABLE_FILL =
+        new ColorToken("PreferenceAcceptableFillBrush");
+    private static readonly ColorToken PREFERENCE_ACCEPTABLE_FOREGROUND =
+        new ColorToken("PreferenceAcceptableForegroundBrush");
+    private static readonly ColorToken PREFERENCE_EXCLUDED_BORDER =
+        new ColorToken("PreferenceExcludedBorderBrush");
+    private static readonly ColorToken PREFERENCE_EXCLUDED_FILL =
+        new ColorToken("PreferenceExcludedFillBrush");
+    private static readonly ColorToken PREFERENCE_EXCLUDED_FOREGROUND =
+        new ColorToken("PreferenceExcludedForegroundBrush");
+    private static readonly ColorToken PREFERENCE_PREFERRED_BORDER =
+        new ColorToken("PreferencePreferredBorderBrush");
+    private static readonly ColorToken PREFERENCE_PREFERRED_FILL =
+        new ColorToken("PreferencePreferredFillBrush");
+    private static readonly ColorToken PREFERENCE_PREFERRED_FOREGROUND =
+        new ColorToken("PreferencePreferredForegroundBrush");
     private static readonly ColorToken SUBTLE_SURFACE =
         new ColorToken("SubtleSurfaceBrush");
     private static readonly ColorToken SUCCESS =
@@ -135,12 +163,23 @@ public sealed class ProductColorContrastTests
         new ColorToken("ProductDangerActionHoverFillBrush"),
         new ColorToken("ProductDangerActionPressedFillBrush"),
         new ColorToken("ProductOnDangerActionFillBrush"),
+        new ColorToken("PreferencePreferredFillBrush"),
+        new ColorToken("PreferencePreferredBorderBrush"),
+        new ColorToken("PreferencePreferredForegroundBrush"),
+        new ColorToken("PreferenceAcceptableFillBrush"),
+        new ColorToken("PreferenceAcceptableBorderBrush"),
+        new ColorToken("PreferenceAcceptableForegroundBrush"),
+        new ColorToken("PreferenceExcludedFillBrush"),
+        new ColorToken("PreferenceExcludedBorderBrush"),
+        new ColorToken("PreferenceExcludedForegroundBrush"),
         new ColorToken("CourseBlueBackgroundBrush"),
         new ColorToken("CourseBlueBorderBrush"),
         new ColorToken("CoursePurpleBackgroundBrush"),
         new ColorToken("CoursePurpleBorderBrush"),
         new ColorToken("CourseGreenBackgroundBrush"),
         new ColorToken("CourseGreenBorderBrush"),
+        new ColorToken("PersonalScheduleBackgroundBrush"),
+        new ColorToken("PersonalScheduleBorderBrush"),
         new ColorToken("TitleBarBackgroundBrush"),
         new ColorToken("CaptionButtonBackground"),
         new ColorToken("CaptionButtonBorderBrush"),
@@ -220,7 +259,7 @@ public sealed class ProductColorContrastTests
     }
 
     [AvaloniaFact]
-    public void PrimaryActionPaletteKeepsLightBrandBlueAndSoftensDarkStates()
+    public void PrimaryActionPaletteUsesCalmProductBluesInBothThemes()
     {
         SolidColorBrush lightFill = findRequiredBrush(
             ACCENT_FILL,
@@ -235,10 +274,10 @@ public sealed class ProductColorContrastTests
             ACCENT_FILL_PRESSED,
             ThemeVariant.Dark);
 
-        Assert.Equal(Color.Parse("#0047FF"), lightFill.Color);
-        Assert.Equal(Color.Parse("#1B4FDE"), darkFill.Color);
-        Assert.Equal(Color.Parse("#2D59E4"), darkHover.Color);
-        Assert.Equal(Color.Parse("#1745CC"), darkPressed.Color);
+        Assert.Equal(Color.Parse("#0969DA"), lightFill.Color);
+        Assert.Equal(Color.Parse("#1D5FBF"), darkFill.Color);
+        Assert.Equal(Color.Parse("#2468C9"), darkHover.Color);
+        Assert.Equal(Color.Parse("#174A96"), darkPressed.Color);
     }
 
     [AvaloniaFact]
@@ -276,6 +315,10 @@ public sealed class ProductColorContrastTests
             bodyText(ThemeVariant.Light, TEXT_PRIMARY, COURSE_BLUE_BACKGROUND),
             bodyText(ThemeVariant.Light, TEXT_PRIMARY, COURSE_PURPLE_BACKGROUND),
             bodyText(ThemeVariant.Light, TEXT_PRIMARY, COURSE_GREEN_BACKGROUND),
+            bodyText(
+                ThemeVariant.Light,
+                TEXT_PRIMARY,
+                PERSONAL_SCHEDULE_BACKGROUND),
             bodyText(ThemeVariant.Dark, ACCENT, PANE_SURFACE),
             bodyText(ThemeVariant.Dark, ACCENT, SURFACE),
             bodyText(ThemeVariant.Dark, ACCENT_HOVER, PANE_SURFACE),
@@ -284,6 +327,34 @@ public sealed class ProductColorContrastTests
             bodyText(ThemeVariant.Dark, TEXT_PRIMARY, COURSE_BLUE_BACKGROUND),
             bodyText(ThemeVariant.Dark, TEXT_PRIMARY, COURSE_PURPLE_BACKGROUND),
             bodyText(ThemeVariant.Dark, TEXT_PRIMARY, COURSE_GREEN_BACKGROUND),
+            bodyText(
+                ThemeVariant.Dark,
+                TEXT_PRIMARY,
+                PERSONAL_SCHEDULE_BACKGROUND),
+            bodyText(
+                ThemeVariant.Light,
+                PREFERENCE_PREFERRED_FOREGROUND,
+                PREFERENCE_PREFERRED_FILL),
+            bodyText(
+                ThemeVariant.Light,
+                PREFERENCE_ACCEPTABLE_FOREGROUND,
+                PREFERENCE_ACCEPTABLE_FILL),
+            bodyText(
+                ThemeVariant.Light,
+                PREFERENCE_EXCLUDED_FOREGROUND,
+                PREFERENCE_EXCLUDED_FILL),
+            bodyText(
+                ThemeVariant.Dark,
+                PREFERENCE_PREFERRED_FOREGROUND,
+                PREFERENCE_PREFERRED_FILL),
+            bodyText(
+                ThemeVariant.Dark,
+                PREFERENCE_ACCEPTABLE_FOREGROUND,
+                PREFERENCE_ACCEPTABLE_FILL),
+            bodyText(
+                ThemeVariant.Dark,
+                PREFERENCE_EXCLUDED_FOREGROUND,
+                PREFERENCE_EXCLUDED_FILL),
         };
 
         assertContrastRequirements(contrastRequirements);
@@ -314,6 +385,62 @@ public sealed class ProductColorContrastTests
             nonText(ThemeVariant.Dark, FOCUS_ON_FILL_STROKE, ACCENT_FILL_HOVER),
             nonText(ThemeVariant.Dark, FOCUS_ON_FILL_STROKE, ACCENT_FILL_PRESSED),
             nonText(ThemeVariant.Dark, FOCUS_ON_FILL_STROKE, ERROR_FILL),
+            nonText(
+                ThemeVariant.Light,
+                PREFERENCE_PREFERRED_BORDER,
+                SURFACE),
+            nonText(
+                ThemeVariant.Light,
+                PREFERENCE_ACCEPTABLE_BORDER,
+                PREFERENCE_ACCEPTABLE_FILL),
+            nonText(
+                ThemeVariant.Light,
+                PREFERENCE_EXCLUDED_BORDER,
+                PREFERENCE_EXCLUDED_FILL),
+            nonText(
+                ThemeVariant.Dark,
+                PREFERENCE_PREFERRED_BORDER,
+                SURFACE),
+            nonText(
+                ThemeVariant.Dark,
+                PREFERENCE_ACCEPTABLE_BORDER,
+                PREFERENCE_ACCEPTABLE_FILL),
+            nonText(
+                ThemeVariant.Dark,
+                PREFERENCE_EXCLUDED_BORDER,
+                PREFERENCE_EXCLUDED_FILL),
+            nonText(
+                ThemeVariant.Light,
+                COURSE_BLUE_BORDER,
+                COURSE_BLUE_BACKGROUND),
+            nonText(
+                ThemeVariant.Light,
+                COURSE_PURPLE_BORDER,
+                COURSE_PURPLE_BACKGROUND),
+            nonText(
+                ThemeVariant.Light,
+                COURSE_GREEN_BORDER,
+                COURSE_GREEN_BACKGROUND),
+            nonText(
+                ThemeVariant.Light,
+                PERSONAL_SCHEDULE_BORDER,
+                PERSONAL_SCHEDULE_BACKGROUND),
+            nonText(
+                ThemeVariant.Dark,
+                COURSE_BLUE_BORDER,
+                COURSE_BLUE_BACKGROUND),
+            nonText(
+                ThemeVariant.Dark,
+                COURSE_PURPLE_BORDER,
+                COURSE_PURPLE_BACKGROUND),
+            nonText(
+                ThemeVariant.Dark,
+                COURSE_GREEN_BORDER,
+                COURSE_GREEN_BACKGROUND),
+            nonText(
+                ThemeVariant.Dark,
+                PERSONAL_SCHEDULE_BORDER,
+                PERSONAL_SCHEDULE_BACKGROUND),
         };
 
         assertContrastRequirements(contrastRequirements);

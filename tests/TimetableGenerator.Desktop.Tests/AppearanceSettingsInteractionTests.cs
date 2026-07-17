@@ -43,13 +43,17 @@ public sealed class AppearanceSettingsInteractionTests
             Assert.Equal("ProductThemePreference", systemOption.GroupName);
             Assert.Equal(systemOption.GroupName, darkOption.GroupName);
             Assert.Equal(
-                "시스템 모드 사용",
+                "시스템 설정에 맞춰 화면 모드 사용",
                 AutomationProperties.GetName(systemOption));
             Assert.Equal(
                 "다크 모드 사용",
                 AutomationProperties.GetName(darkOption));
             Assert.True(systemOption.MinHeight >= 44.0);
             Assert.True(darkOption.MinHeight >= 44.0);
+            Assert.Equal("시스템 설정 사용", systemOption.Content);
+            Assert.Equal(
+                Avalonia.Layout.VerticalAlignment.Center,
+                systemOption.VerticalContentAlignment);
             Assert.True(systemOption.IsChecked);
             Assert.False(darkOption.IsChecked);
 

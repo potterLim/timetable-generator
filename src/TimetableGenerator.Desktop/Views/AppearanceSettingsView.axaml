@@ -4,42 +4,33 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:appearance="using:TimetableGenerator.Desktop.Presentation.Appearance"
     x:DataType="appearance:ProductAppearanceViewModel"
-    Width="276"
+    Width="252"
     AutomationProperties.Name="화면 모드 설정">
-  <StackPanel Margin="4" Spacing="4">
-    <StackPanel Margin="12,8,12,10" Spacing="4">
+  <StackPanel Margin="4" Spacing="2">
+    <StackPanel Margin="12,10,12,6">
       <TextBlock
           FontSize="16"
           FontWeight="SemiBold"
           Text="화면 모드" />
-      <TextBlock
-          Classes="secondary"
-          FontSize="12"
-          LineHeight="18"
-          Text="시스템은 Windows 또는 macOS 설정을 따릅니다."
-          TextWrapping="Wrap" />
     </StackPanel>
 
     <RadioButton
         x:Name="SystemThemeOption"
-        MinHeight="44"
-        Padding="12,8"
+        Classes="appearance-option"
         GroupName="ProductThemePreference"
         IsChecked="{Binding IsSystemThemeSelected, Mode=TwoWay}"
-        Content="시스템"
-        AutomationProperties.Name="시스템 모드 사용" />
+        Content="시스템 설정 사용"
+        AutomationProperties.Name="시스템 설정에 맞춰 화면 모드 사용" />
     <RadioButton
         x:Name="LightThemeOption"
-        MinHeight="44"
-        Padding="12,8"
+        Classes="appearance-option"
         GroupName="ProductThemePreference"
         IsChecked="{Binding IsLightThemeSelected, Mode=TwoWay}"
         Content="라이트"
         AutomationProperties.Name="라이트 모드 사용" />
     <RadioButton
         x:Name="DarkThemeOption"
-        MinHeight="44"
-        Padding="12,8"
+        Classes="appearance-option"
         GroupName="ProductThemePreference"
         IsChecked="{Binding IsDarkThemeSelected, Mode=TwoWay}"
         Content="다크"

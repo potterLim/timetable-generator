@@ -28,6 +28,60 @@
         <Setter Property="Opacity" Value="0.45" />
       </Style>
     </ControlTheme>
+    <ControlTheme x:Key="ProductPreferenceRadioButtonTheme" TargetType="RadioButton">
+      <Setter Property="RenderTransform" Value="none" />
+      <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <ContentPresenter
+              x:Name="PART_ContentPresenter"
+              Background="{TemplateBinding Background}"
+              BorderBrush="{TemplateBinding BorderBrush}"
+              BorderThickness="{TemplateBinding BorderThickness}"
+              CornerRadius="{TemplateBinding CornerRadius}"
+              Content="{TemplateBinding Content}"
+              ContentTemplate="{TemplateBinding ContentTemplate}"
+              Foreground="{TemplateBinding Foreground}"
+              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+              Padding="{TemplateBinding Padding}"
+              RecognizesAccessKey="True"
+              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+        </ControlTemplate>
+      </Setter>
+      <Style Selector="^:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.98)" />
+      </Style>
+      <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Opacity" Value="0.45" />
+      </Style>
+    </ControlTheme>
+    <ControlTheme x:Key="ProductSegmentedToggleButtonTheme" TargetType="ToggleButton">
+      <Setter Property="RenderTransform" Value="none" />
+      <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <ContentPresenter
+              x:Name="PART_ContentPresenter"
+              Background="{TemplateBinding Background}"
+              BorderBrush="{TemplateBinding BorderBrush}"
+              BorderThickness="{TemplateBinding BorderThickness}"
+              CornerRadius="{TemplateBinding CornerRadius}"
+              Content="{TemplateBinding Content}"
+              ContentTemplate="{TemplateBinding ContentTemplate}"
+              Foreground="{TemplateBinding Foreground}"
+              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+              Padding="{TemplateBinding Padding}"
+              RecognizesAccessKey="True"
+              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+        </ControlTemplate>
+      </Setter>
+      <Style Selector="^:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.98)" />
+      </Style>
+      <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Opacity" Value="0.45" />
+      </Style>
+    </ControlTheme>
   </Styles.Resources>
 
   <Style Selector="Window">
@@ -195,6 +249,24 @@
 
   <Style Selector="RadioButton">
     <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="RadioButton.appearance-option">
+    <Setter Property="MinHeight" Value="44" />
+    <Setter Property="Padding" Value="12,0" />
+    <Setter Property="FontWeight" Value="Medium" />
+  </Style>
+
+  <Style Selector="RadioButton.appearance-option:checked">
+    <Setter Property="Background" Value="{DynamicResource AccentTintBrush}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
+  <Style Selector="RadioButton.appearance-option:focus-visible">
+    <Setter Property="BorderBrush" Value="{DynamicResource ProductFocusStrokeBrush}" />
+    <Setter Property="BorderThickness" Value="2" />
   </Style>
 
   <Style Selector="RadioButton:pointerover">
