@@ -39,7 +39,7 @@ internal sealed class CourseScheduleEntry : ScheduleEntry
     {
         get
         {
-            return Name + "(" + SectionDisplayText + ")";
+            return Name + "(" + SectionCode.Value + ")";
         }
     }
 

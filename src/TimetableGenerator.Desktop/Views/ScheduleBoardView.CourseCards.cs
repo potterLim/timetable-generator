@@ -56,7 +56,7 @@ internal sealed partial class ScheduleBoardView
         TextBlock name = createCardText(
             entry.TitleDisplayText,
             COURSE_CARD_TITLE_FONT_SIZE,
-            FontWeight.SemiBold);
+            FontWeight.Bold);
         name.HorizontalAlignment = HorizontalAlignment.Stretch;
         name.LineHeight = COURSE_CARD_TITLE_LINE_HEIGHT;
         name.MaxLines = 2;

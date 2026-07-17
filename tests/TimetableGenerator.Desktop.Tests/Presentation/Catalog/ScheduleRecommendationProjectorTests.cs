@@ -34,7 +34,7 @@ public sealed class ScheduleRecommendationProjectorTests
         Assert.Equal("프로그래밍 I", mondayEntry.Name);
         Assert.Equal(new CourseSectionCode("01"), mondayEntry.SectionCode);
         Assert.Equal("01분반", mondayEntry.SectionDisplayText);
-        Assert.Equal("프로그래밍 I(01분반)", mondayEntry.TitleDisplayText);
+        Assert.Equal("프로그래밍 I(01)", mondayEntry.TitleDisplayText);
         Assert.Equal("홍길동 외 1명", mondayEntry.InstructorDisplayText);
         Assert.Equal("오석관 301", mondayEntry.LocationDisplayText);
         Assert.True(mondayEntry.HasConfirmedInstructor);
