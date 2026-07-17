@@ -1,0 +1,49 @@
+<UserControl
+    x:Class="TimetableGenerator.Desktop.Views.ProductTimePicker"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    MinHeight="42"
+    Focusable="False">
+  <UserControl.Styles>
+    <Style Selector="ComboBox.time-segment">
+      <Setter Property="MinHeight" Value="40" />
+      <Setter Property="Padding" Value="10,7" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="CornerRadius" Value="0" />
+    </Style>
+  </UserControl.Styles>
+
+  <Border
+      Background="{DynamicResource ControlSurfaceBrush}"
+      BorderBrush="{DynamicResource ControlBorderBrush}"
+      BorderThickness="1"
+      CornerRadius="7">
+    <Grid ColumnDefinitions="90,1,64,1,64">
+      <ComboBox
+          x:Name="MeridiemInput"
+          Grid.Column="0"
+          Classes="time-segment"
+          TabIndex="0" />
+      <Border
+          Grid.Column="1"
+          Margin="0,8"
+          Background="{DynamicResource ControlBorderBrush}" />
+      <ComboBox
+          x:Name="HourInput"
+          Grid.Column="2"
+          Classes="time-segment"
+          TabIndex="1" />
+      <Border
+          Grid.Column="3"
+          Margin="0,8"
+          Background="{DynamicResource ControlBorderBrush}" />
+      <ComboBox
+          x:Name="MinuteInput"
+          Grid.Column="4"
+          Classes="time-segment"
+          TabIndex="2" />
+    </Grid>
+  </Border>
+</UserControl>

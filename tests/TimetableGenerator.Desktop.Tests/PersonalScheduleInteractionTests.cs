@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 using Avalonia.Automation;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Threading;
@@ -32,10 +33,10 @@ public sealed class PersonalScheduleInteractionTests
         {
             workspace.BeginAddPersonalScheduleCommand.Execute(null);
             workspace.PersonalScheduleTitleDraft = "랩 미팅";
-            workspace.IsTuesdaySelected = true;
-            workspace.IsThursdaySelected = true;
-            workspace.PersonalScheduleStartTimeOrNull = new TimeSpan(18, 0, 0);
-            workspace.PersonalScheduleEndTimeOrNull = new TimeSpan(19, 30, 0);
+            selectPersonalScheduleDay(workspace, EDay.Tuesday);
+            selectPersonalScheduleDay(workspace, EDay.Thursday);
+            workspace.PersonalScheduleStartTimeOrNull = new ScheduleTime(18, 0);
+            workspace.PersonalScheduleEndTimeOrNull = new ScheduleTime(19, 30);
             workspace.PersonalScheduleSectionDraft = "A";
             workspace.PersonalScheduleInstructorDraft = "김교수";
             workspace.PersonalScheduleLocationDraft = "느헤미야홀";
@@ -167,6 +168,73 @@ public sealed class PersonalScheduleInteractionTests
     }
 
     [AvaloniaFact]
+    public void EditorSupportsTheWholeWeekAndUsesLocalizedTimeOrder()
+    {
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+        ProductWorkspaceHostView host = new ProductWorkspaceHostView();
+        host.DataContext = workspace;
+        Window window = new Window();
+        window.Width = 1200.0;
+        window.Height = 760.0;
+        window.Content = host;
+
+        try
+        {
+            window.Show();
+            workspace.BeginAddPersonalScheduleCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            ToggleButton[] dayInputs = host.GetVisualDescendants()
+                .OfType<ToggleButton>()
+                .Where(
+                    candidate => candidate.DataContext
+                        is PersonalScheduleDayOption)
+                .ToArray();
+            Assert.Equal(7, dayInputs.Length);
+            Assert.Contains(
+                dayInputs,
+                candidate => AutomationProperties.GetAutomationId(candidate)
+                    == "PersonalScheduleSaturdayInput");
+            Assert.Contains(
+                dayInputs,
+                candidate => AutomationProperties.GetAutomationId(candidate)
+                    == "PersonalScheduleSundayInput");
+
+            ProductTimePicker startTimeInput = host.GetVisualDescendants()
+                .OfType<ProductTimePicker>()
+                .Single(
+                    candidate => candidate.Name
+                        == "PersonalScheduleStartTimeInput");
+            string?[] segmentNames = startTimeInput.GetVisualDescendants()
+                .OfType<ComboBox>()
+                .Select(AutomationProperties.GetName)
+                .ToArray();
+            Assert.Equal(
+                new string?[]
+                {
+                    "시작 시간 오전 또는 오후",
+                    "시작 시간 시",
+                    "시작 시간 분",
+                },
+                segmentNames);
+
+            workspace.PersonalScheduleTitleDraft = "주말 랩 미팅";
+            selectPersonalScheduleDay(workspace, EDay.Sunday);
+            workspace.SavePersonalScheduleCommand.Execute(null);
+
+            PersonalSchedule savedSchedule = Assert.Single(
+                workspace.ActivePlan.Plan.PersonalSchedules);
+            Assert.Equal(EDay.Sunday, Assert.Single(savedSchedule.TimeRanges).Day);
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
     public void ClearedRequiredTimeIsRejectedAndFocused()
     {
         PlannerWorkspaceViewModel workspace =
@@ -184,14 +252,14 @@ public sealed class PersonalScheduleInteractionTests
             workspace.BeginAddPersonalScheduleCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
             workspace.PersonalScheduleTitleDraft = "점심 약속";
-            workspace.IsWednesdaySelected = true;
-            TimePicker startTimeInput = host.GetVisualDescendants()
-                .OfType<TimePicker>()
+            selectPersonalScheduleDay(workspace, EDay.Wednesday);
+            ProductTimePicker startTimeInput = host.GetVisualDescendants()
+                .OfType<ProductTimePicker>()
                 .Single(
                     candidate => candidate.Name
                         == "PersonalScheduleStartTimeInput");
 
-            startTimeInput.SelectedTime = null;
+            startTimeInput.SelectedTimeOrNull = null;
             Dispatcher.UIThread.RunJobs();
             workspace.SavePersonalScheduleCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
@@ -228,10 +296,10 @@ public sealed class PersonalScheduleInteractionTests
             workspace.BeginAddPersonalScheduleCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
             workspace.PersonalScheduleTitleDraft = "점심 약속";
-            workspace.IsWednesdaySelected = true;
-            workspace.PersonalScheduleEndTimeOrNull = new TimeSpan(13, 1, 0);
-            TimePicker endTimeInput = host.GetVisualDescendants()
-                .OfType<TimePicker>()
+            selectPersonalScheduleDay(workspace, EDay.Wednesday);
+            workspace.PersonalScheduleEndTimeOrNull = new ScheduleTime(13, 1);
+            ProductTimePicker endTimeInput = host.GetVisualDescendants()
+                .OfType<ProductTimePicker>()
                 .Single(
                     candidate => candidate.Name
                         == "PersonalScheduleEndTimeInput");
@@ -259,7 +327,7 @@ public sealed class PersonalScheduleInteractionTests
             PlannerWorkspaceTestFactory.CreateWorkspace();
         workspace.BeginAddPersonalScheduleCommand.Execute(null);
         workspace.PersonalScheduleTitleDraft = "랩 미팅";
-        workspace.IsTuesdaySelected = true;
+        selectPersonalScheduleDay(workspace, EDay.Tuesday);
         workspace.SavePersonalScheduleCommand.Execute(null);
         ProductWorkspaceHostView host = new ProductWorkspaceHostView();
         host.DataContext = workspace;
@@ -525,14 +593,14 @@ public sealed class PersonalScheduleInteractionTests
                 workspace,
                 "월요일 고정 일정",
                 EDay.Monday,
-                new TimeSpan(8, 30, 0),
-                new TimeSpan(9, 45, 0));
+                new ScheduleTime(8, 30),
+                new ScheduleTime(9, 45));
             addPersonalSchedule(
                 workspace,
                 "화요일 고정 일정",
                 EDay.Tuesday,
-                new TimeSpan(11, 30, 0),
-                new TimeSpan(12, 45, 0));
+                new ScheduleTime(11, 30),
+                new ScheduleTime(12, 45));
 
             await workspace.RecommendationRefreshTask;
 
@@ -568,44 +636,33 @@ public sealed class PersonalScheduleInteractionTests
         PlannerWorkspaceViewModel workspace,
         string title,
         EDay day,
-        TimeSpan start,
-        TimeSpan end)
+        ScheduleTime start,
+        ScheduleTime end)
     {
         workspace.BeginAddPersonalScheduleCommand.Execute(null);
         workspace.PersonalScheduleTitleDraft = title;
-        setSelectedDay(workspace, day);
+        selectPersonalScheduleDay(workspace, day);
         workspace.PersonalScheduleStartTimeOrNull = start;
         workspace.PersonalScheduleEndTimeOrNull = end;
         workspace.SavePersonalScheduleCommand.Execute(null);
     }
 
-    private static void setSelectedDay(
+    private static void selectPersonalScheduleDay(
         PlannerWorkspaceViewModel workspace,
         EDay day)
     {
-        switch (day)
+        PersonalScheduleDayOption? matchingOptionOrNull =
+            workspace.PersonalScheduleDayOptions.FirstOrDefault(
+                option => option.Day == day);
+        if (matchingOptionOrNull == null)
         {
-            case EDay.Monday:
-                workspace.IsMondaySelected = true;
-                break;
-            case EDay.Tuesday:
-                workspace.IsTuesdaySelected = true;
-                break;
-            case EDay.Wednesday:
-                workspace.IsWednesdaySelected = true;
-                break;
-            case EDay.Thursday:
-                workspace.IsThursdaySelected = true;
-                break;
-            case EDay.Friday:
-                workspace.IsFridaySelected = true;
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(day),
-                    day,
-                    "The test supports weekdays only.");
+            throw new ArgumentOutOfRangeException(
+                nameof(day),
+                day,
+                "The personal schedule day option was not found.");
         }
+
+        matchingOptionOrNull.IsSelected = true;
     }
 
     private static TControl findRequiredControl<TControl>(

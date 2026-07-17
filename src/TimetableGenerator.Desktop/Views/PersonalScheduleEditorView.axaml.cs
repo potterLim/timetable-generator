@@ -7,6 +7,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
 
 using TimetableGenerator.Desktop.Presentation.Models;
+using TimetableGenerator.Domain.Scheduling;
 
 namespace TimetableGenerator.Desktop.Views;
 
@@ -14,11 +15,9 @@ internal sealed partial class PersonalScheduleEditorView : UserControl
 {
     private readonly TextBox mNameInput;
 
-    private readonly ToggleButton mMondayInput;
+    private readonly ProductTimePicker mStartTimeInput;
 
-    private readonly TimePicker mStartTimeInput;
-
-    private readonly TimePicker mEndTimeInput;
+    private readonly ProductTimePicker mEndTimeInput;
 
     private readonly TextBox mSectionInput;
 
@@ -30,11 +29,9 @@ internal sealed partial class PersonalScheduleEditorView : UserControl
     {
         AvaloniaXamlLoader.Load(this);
         mNameInput = findRequiredControl<TextBox>("PersonalScheduleNameInput");
-        mMondayInput = findRequiredControl<ToggleButton>(
-            "PersonalScheduleMondayInput");
-        mStartTimeInput = findRequiredControl<TimePicker>(
+        mStartTimeInput = findRequiredControl<ProductTimePicker>(
             "PersonalScheduleStartTimeInput");
-        mEndTimeInput = findRequiredControl<TimePicker>(
+        mEndTimeInput = findRequiredControl<ProductTimePicker>(
             "PersonalScheduleEndTimeInput");
         mSectionInput = findRequiredControl<TextBox>(
             "PersonalScheduleSectionInput");
@@ -61,7 +58,7 @@ internal sealed partial class PersonalScheduleEditorView : UserControl
                 target = mNameInput;
                 break;
             case EPersonalScheduleDraftValidationError.DayRequired:
-                target = mMondayInput;
+                target = findDayInput(EDay.Monday);
                 break;
             case EPersonalScheduleDraftValidationError.StartTimeRequired:
             case EPersonalScheduleDraftValidationError.StartTimePrecisionInvalid:
@@ -110,6 +107,23 @@ internal sealed partial class PersonalScheduleEditorView : UserControl
                     && candidate.IsVisible
                     && candidate.IsEnabled);
         focusableDescendantOrNull?.Focus();
+    }
+
+    private ToggleButton findDayInput(EDay day)
+    {
+        ToggleButton? dayInputOrNull = this.GetVisualDescendants()
+            .OfType<ToggleButton>()
+            .FirstOrDefault(
+                candidate => candidate.DataContext
+                    is PersonalScheduleDayOption dayOption
+                    && dayOption.Day == day);
+        if (dayInputOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The personal schedule day input was not found: " + day);
+        }
+
+        return dayInputOrNull;
     }
 
     private TControl findRequiredControl<TControl>(string name)

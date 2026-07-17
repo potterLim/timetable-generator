@@ -114,12 +114,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             return EPersonalScheduleDraftValidationError.TitleInvalid;
         }
 
-        bool hasSelectedDay = IsMondaySelected
-            || IsTuesdaySelected
-            || IsWednesdaySelected
-            || IsThursdaySelected
-            || IsFridaySelected;
-        if (hasSelectedDay == false)
+        if (hasSelectedPersonalScheduleDay() == false)
         {
             return EPersonalScheduleDraftValidationError.DayRequired;
         }
@@ -134,8 +129,8 @@ internal sealed partial class PlannerWorkspaceViewModel
             return EPersonalScheduleDraftValidationError.EndTimeRequired;
         }
 
-        TimeSpan startTime = PersonalScheduleStartTimeOrNull.Value;
-        TimeSpan endTime = PersonalScheduleEndTimeOrNull.Value;
+        ScheduleTime startTime = PersonalScheduleStartTimeOrNull.Value;
+        ScheduleTime endTime = PersonalScheduleEndTimeOrNull.Value;
         if (hasSupportedTimePrecision(startTime) == false)
         {
             return EPersonalScheduleDraftValidationError.StartTimePrecisionInvalid;
@@ -146,13 +141,14 @@ internal sealed partial class PlannerWorkspaceViewModel
             return EPersonalScheduleDraftValidationError.EndTimePrecisionInvalid;
         }
 
-        if (endTime <= startTime)
+        if (endTime.CompareTo(startTime) <= 0)
         {
             return EPersonalScheduleDraftValidationError.EndNotAfterStart;
         }
 
-        TimeSpan duration = endTime - startTime;
-        if (duration.TotalMinutes < PersonalSchedule.MINIMUM_DURATION_MINUTES)
+        int durationMinutes = endTime.MinutesFromMidnight
+            - startTime.MinutesFromMidnight;
+        if (durationMinutes < PersonalSchedule.MINIMUM_DURATION_MINUTES)
         {
             return EPersonalScheduleDraftValidationError.DurationTooShort;
         }
@@ -181,14 +177,11 @@ internal sealed partial class PlannerWorkspaceViewModel
         return EPersonalScheduleDraftValidationError.None;
     }
 
-    private static bool hasSupportedTimePrecision(TimeSpan value)
+    private static bool hasSupportedTimePrecision(ScheduleTime value)
     {
-        bool isInsideOneDay = value >= TimeSpan.Zero
-            && value < TimeSpan.FromDays(1.0);
-        bool hasMinutePrecision = value.Ticks % TimeSpan.TicksPerMinute == 0;
-        bool usesSupportedIncrement = value.Minutes
+        bool usesSupportedIncrement = value.Minute
             % PersonalSchedule.TIME_INCREMENT_MINUTES == 0;
-        return isInsideOneDay && hasMinutePrecision && usesSupportedIncrement;
+        return value.IsValid && usesSupportedIncrement;
     }
 
     private static bool hasInvalidOptionalPersonalScheduleText(

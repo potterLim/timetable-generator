@@ -10,11 +10,14 @@ namespace TimetableGenerator.Desktop.Presentation.ViewModels;
 
 internal sealed partial class PlannerWorkspaceViewModel
 {
-    private static readonly TimeSpan DEFAULT_PERSONAL_SCHEDULE_START_TIME =
-        new TimeSpan(12, 0, 0);
+    private static readonly ScheduleTime DEFAULT_PERSONAL_SCHEDULE_START_TIME =
+        new ScheduleTime(12, 0);
 
-    private static readonly TimeSpan DEFAULT_PERSONAL_SCHEDULE_END_TIME =
-        new TimeSpan(13, 0, 0);
+    private static readonly ScheduleTime DEFAULT_PERSONAL_SCHEDULE_END_TIME =
+        new ScheduleTime(13, 0);
+
+    private readonly IReadOnlyList<PersonalScheduleDayOption>
+        mPersonalScheduleDayOptions;
 
     private PersonalScheduleId? mEditingPersonalScheduleIdOrNull;
 
@@ -30,19 +33,9 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private string mPersonalScheduleLocationDraft;
 
-    private bool mIsMondaySelected;
+    private ScheduleTime? mPersonalScheduleStartTimeOrNull;
 
-    private bool mIsTuesdaySelected;
-
-    private bool mIsWednesdaySelected;
-
-    private bool mIsThursdaySelected;
-
-    private bool mIsFridaySelected;
-
-    private TimeSpan? mPersonalScheduleStartTimeOrNull;
-
-    private TimeSpan? mPersonalScheduleEndTimeOrNull;
+    private ScheduleTime? mPersonalScheduleEndTimeOrNull;
 
     private EPersonalScheduleDraftValidationError mPersonalScheduleValidationError;
 
@@ -164,82 +157,15 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
-    public bool IsMondaySelected
+    public IReadOnlyList<PersonalScheduleDayOption> PersonalScheduleDayOptions
     {
         get
         {
-            return mIsMondaySelected;
-        }
-        set
-        {
-            setDaySelection(
-                ref mIsMondaySelected,
-                value,
-                nameof(IsMondaySelected));
+            return mPersonalScheduleDayOptions;
         }
     }
 
-    public bool IsTuesdaySelected
-    {
-        get
-        {
-            return mIsTuesdaySelected;
-        }
-        set
-        {
-            setDaySelection(
-                ref mIsTuesdaySelected,
-                value,
-                nameof(IsTuesdaySelected));
-        }
-    }
-
-    public bool IsWednesdaySelected
-    {
-        get
-        {
-            return mIsWednesdaySelected;
-        }
-        set
-        {
-            setDaySelection(
-                ref mIsWednesdaySelected,
-                value,
-                nameof(IsWednesdaySelected));
-        }
-    }
-
-    public bool IsThursdaySelected
-    {
-        get
-        {
-            return mIsThursdaySelected;
-        }
-        set
-        {
-            setDaySelection(
-                ref mIsThursdaySelected,
-                value,
-                nameof(IsThursdaySelected));
-        }
-    }
-
-    public bool IsFridaySelected
-    {
-        get
-        {
-            return mIsFridaySelected;
-        }
-        set
-        {
-            setDaySelection(
-                ref mIsFridaySelected,
-                value,
-                nameof(IsFridaySelected));
-        }
-    }
-
-    public TimeSpan? PersonalScheduleStartTimeOrNull
+    public ScheduleTime? PersonalScheduleStartTimeOrNull
     {
         get
         {
@@ -254,7 +180,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
-    public TimeSpan? PersonalScheduleEndTimeOrNull
+    public ScheduleTime? PersonalScheduleEndTimeOrNull
     {
         get
         {
@@ -348,8 +274,8 @@ internal sealed partial class PlannerWorkspaceViewModel
         mPersonalScheduleTitleDraft = schedule.Title.Value;
         setSelectedDays(schedule.TimeRanges);
         DailyTimeRange timeRange = schedule.TimeRanges[0].TimeRange;
-        mPersonalScheduleStartTimeOrNull = createTimeSpan(timeRange.Start);
-        mPersonalScheduleEndTimeOrNull = createTimeSpan(timeRange.End);
+        mPersonalScheduleStartTimeOrNull = timeRange.Start;
+        mPersonalScheduleEndTimeOrNull = timeRange.End;
         mPersonalScheduleSectionDraft = getSectionValue(schedule.Details);
         mPersonalScheduleInstructorDraft = getInstructorValue(schedule.Details);
         mPersonalScheduleLocationDraft = getLocationValue(schedule.Details);

@@ -12,7 +12,7 @@ namespace TimetableGenerator.Domain.Tests.Planning;
 public sealed class PersonalScheduleTests
 {
     [TestMethod]
-    public void ScheduleDefensivelyCopiesAndSortsWeekdayRanges()
+    public void ScheduleDefensivelyCopiesAndSortsRepeatedDayRanges()
     {
         DailyTimeRange timeRange = createTimeRange(
             new ScheduleTime(12, 0),
@@ -72,7 +72,7 @@ public sealed class PersonalScheduleTests
     }
 
     [TestMethod]
-    public void ScheduleRequiresWeekdaysAndOneSharedRepeatedTime()
+    public void ScheduleSupportsTheWholeWeekAndRequiresOneSharedRepeatedTime()
     {
         DailyTimeRange noon = createTimeRange(
             new ScheduleTime(12, 0),
@@ -81,8 +81,21 @@ public sealed class PersonalScheduleTests
             new ScheduleTime(18, 0),
             new ScheduleTime(19, 0));
 
-        Assert.ThrowsExactly<ArgumentException>(
-            () => createSchedule(PersonalScheduleId.CreateNew(), EDay.Saturday, noon));
+        PersonalSchedule weekendSchedule = new PersonalSchedule(
+            PersonalScheduleId.CreateNew(),
+            new PersonalScheduleTitle("주말 일정"),
+            new WeeklyTimeRange[]
+            {
+                new WeeklyTimeRange(EDay.Sunday, noon),
+                new WeeklyTimeRange(EDay.Saturday, noon),
+            },
+            PersonalScheduleDetails.CreateEmpty());
+
+        Assert.HasCount(2, weekendSchedule.TimeRanges);
+        Assert.AreEqual(EDay.Saturday, weekendSchedule.TimeRanges[0].Day);
+        Assert.AreEqual(EDay.Sunday, weekendSchedule.TimeRanges[1].Day);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
+            () => createSchedule(PersonalScheduleId.CreateNew(), EDay.None, noon));
         Assert.ThrowsExactly<ArgumentException>(
             () => new PersonalSchedule(
                 PersonalScheduleId.CreateNew(),

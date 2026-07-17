@@ -8,6 +8,19 @@ namespace TimetableGenerator.Desktop.Presentation.ViewModels;
 
 internal sealed partial class PlannerWorkspaceViewModel
 {
+    private static readonly IReadOnlyList<EDay> PERSONAL_SCHEDULE_DAYS =
+        Array.AsReadOnly(
+            new EDay[]
+            {
+                EDay.Monday,
+                EDay.Tuesday,
+                EDay.Wednesday,
+                EDay.Thursday,
+                EDay.Friday,
+                EDay.Saturday,
+                EDay.Sunday,
+            });
+
     private PersonalSchedule createPersonalScheduleFromDraft()
     {
         PersonalScheduleId scheduleId = mEditingPersonalScheduleIdOrNull.HasValue
@@ -15,15 +28,13 @@ internal sealed partial class PlannerWorkspaceViewModel
             : PersonalScheduleId.CreateNew();
         PersonalScheduleTitle title = new PersonalScheduleTitle(
             PersonalScheduleTitleDraft);
-        TimeSpan startTime = getRequiredTime(
+        ScheduleTime startTime = getRequiredTime(
             PersonalScheduleStartTimeOrNull,
             nameof(PersonalScheduleStartTimeOrNull));
-        TimeSpan endTime = getRequiredTime(
+        ScheduleTime endTime = getRequiredTime(
             PersonalScheduleEndTimeOrNull,
             nameof(PersonalScheduleEndTimeOrNull));
-        ScheduleTime start = createScheduleTime(startTime);
-        ScheduleTime end = createScheduleTime(endTime);
-        DailyTimeRange timeRange = new DailyTimeRange(start, end);
+        DailyTimeRange timeRange = new DailyTimeRange(startTime, endTime);
         IReadOnlyList<WeeklyTimeRange> timeRanges = createSelectedTimeRanges(timeRange);
         PersonalScheduleDetails details = new PersonalScheduleDetails(
             createSectionOrNull(PersonalScheduleSectionDraft),
@@ -36,29 +47,12 @@ internal sealed partial class PlannerWorkspaceViewModel
         DailyTimeRange timeRange)
     {
         List<WeeklyTimeRange> timeRanges = new List<WeeklyTimeRange>();
-        if (IsMondaySelected)
+        foreach (PersonalScheduleDayOption dayOption in PersonalScheduleDayOptions)
         {
-            timeRanges.Add(new WeeklyTimeRange(EDay.Monday, timeRange));
-        }
-
-        if (IsTuesdaySelected)
-        {
-            timeRanges.Add(new WeeklyTimeRange(EDay.Tuesday, timeRange));
-        }
-
-        if (IsWednesdaySelected)
-        {
-            timeRanges.Add(new WeeklyTimeRange(EDay.Wednesday, timeRange));
-        }
-
-        if (IsThursdaySelected)
-        {
-            timeRanges.Add(new WeeklyTimeRange(EDay.Thursday, timeRange));
-        }
-
-        if (IsFridaySelected)
-        {
-            timeRanges.Add(new WeeklyTimeRange(EDay.Friday, timeRange));
+            if (dayOption.IsSelected)
+            {
+                timeRanges.Add(new WeeklyTimeRange(dayOption.Day, timeRange));
+            }
         }
 
         return timeRanges.AsReadOnly();
@@ -71,11 +65,11 @@ internal sealed partial class PlannerWorkspaceViewModel
         mPersonalScheduleSectionDraft = string.Empty;
         mPersonalScheduleInstructorDraft = string.Empty;
         mPersonalScheduleLocationDraft = string.Empty;
-        mIsMondaySelected = false;
-        mIsTuesdaySelected = false;
-        mIsWednesdaySelected = false;
-        mIsThursdaySelected = false;
-        mIsFridaySelected = false;
+        foreach (PersonalScheduleDayOption dayOption in PersonalScheduleDayOptions)
+        {
+            dayOption.IsSelected = false;
+        }
+
         mPersonalScheduleStartTimeOrNull = DEFAULT_PERSONAL_SCHEDULE_START_TIME;
         mPersonalScheduleEndTimeOrNull = DEFAULT_PERSONAL_SCHEDULE_END_TIME;
         mPersonalScheduleValidationError = EPersonalScheduleDraftValidationError.None;
@@ -86,30 +80,62 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         foreach (WeeklyTimeRange timeRange in timeRanges)
         {
-            switch (timeRange.Day)
+            PersonalScheduleDayOption dayOption =
+                findPersonalScheduleDayOption(timeRange.Day);
+            dayOption.IsSelected = true;
+        }
+    }
+
+    private IReadOnlyList<PersonalScheduleDayOption>
+        createPersonalScheduleDayOptions()
+    {
+        List<PersonalScheduleDayOption> dayOptions =
+            new List<PersonalScheduleDayOption>();
+        foreach (EDay day in PERSONAL_SCHEDULE_DAYS)
+        {
+            PersonalScheduleDayOption dayOption =
+                new PersonalScheduleDayOption(day);
+            dayOption.SelectionChanged += onPersonalScheduleDaySelectionChanged;
+            dayOptions.Add(dayOption);
+        }
+
+        return dayOptions.AsReadOnly();
+    }
+
+    private PersonalScheduleDayOption findPersonalScheduleDayOption(EDay day)
+    {
+        foreach (PersonalScheduleDayOption dayOption in PersonalScheduleDayOptions)
+        {
+            if (dayOption.Day == day)
             {
-                case EDay.Monday:
-                    mIsMondaySelected = true;
-                    break;
-                case EDay.Tuesday:
-                    mIsTuesdaySelected = true;
-                    break;
-                case EDay.Wednesday:
-                    mIsWednesdaySelected = true;
-                    break;
-                case EDay.Thursday:
-                    mIsThursdaySelected = true;
-                    break;
-                case EDay.Friday:
-                    mIsFridaySelected = true;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(
-                        nameof(timeRanges),
-                        timeRange.Day,
-                        "The personal schedule editor supports weekdays only.");
+                return dayOption;
             }
         }
+
+        throw new ArgumentOutOfRangeException(
+            nameof(day),
+            day,
+            "The personal schedule editor requires a day from Monday through Sunday.");
+    }
+
+    private bool hasSelectedPersonalScheduleDay()
+    {
+        foreach (PersonalScheduleDayOption dayOption in PersonalScheduleDayOptions)
+        {
+            if (dayOption.IsSelected)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void onPersonalScheduleDaySelectionChanged(
+        object? senderOrNull,
+        EventArgs eventArguments)
+    {
+        clearPersonalScheduleValidationError();
     }
 
     private void setDraftString(
@@ -128,17 +154,6 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
 
         if (setProperty(ref field, normalizedValue, propertyName))
-        {
-            clearPersonalScheduleValidationError();
-        }
-    }
-
-    private void setDaySelection(
-        ref bool field,
-        bool value,
-        string propertyName)
-    {
-        if (setProperty(ref field, value, propertyName))
         {
             clearPersonalScheduleValidationError();
         }
@@ -164,11 +179,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         raisePropertyChanged(nameof(PersonalScheduleSectionDraft));
         raisePropertyChanged(nameof(PersonalScheduleInstructorDraft));
         raisePropertyChanged(nameof(PersonalScheduleLocationDraft));
-        raisePropertyChanged(nameof(IsMondaySelected));
-        raisePropertyChanged(nameof(IsTuesdaySelected));
-        raisePropertyChanged(nameof(IsWednesdaySelected));
-        raisePropertyChanged(nameof(IsThursdaySelected));
-        raisePropertyChanged(nameof(IsFridaySelected));
+        raisePropertyChanged(nameof(PersonalScheduleDayOptions));
         raisePropertyChanged(nameof(PersonalScheduleStartTimeOrNull));
         raisePropertyChanged(nameof(PersonalScheduleEndTimeOrNull));
         raisePropertyChanged(nameof(PersonalScheduleValidationMessage));
@@ -179,18 +190,8 @@ internal sealed partial class PlannerWorkspaceViewModel
         raisePropertyChanged(nameof(PersonalScheduleSaveButtonText));
     }
 
-    private static ScheduleTime createScheduleTime(TimeSpan value)
-    {
-        if (value.Days != 0 || value.Seconds != 0 || value.Milliseconds != 0)
-        {
-            throw new ArgumentException("Schedule times must use minute precision.");
-        }
-
-        return new ScheduleTime(value.Hours, value.Minutes);
-    }
-
-    private static TimeSpan getRequiredTime(
-        TimeSpan? valueOrNull,
+    private static ScheduleTime getRequiredTime(
+        ScheduleTime? valueOrNull,
         string propertyName)
     {
         if (valueOrNull.HasValue == false)
@@ -200,11 +201,6 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
 
         return valueOrNull.Value;
-    }
-
-    private static TimeSpan createTimeSpan(ScheduleTime value)
-    {
-        return new TimeSpan(value.Hour, value.Minute, 0);
     }
 
     private static PersonalScheduleSection? createSectionOrNull(string value)

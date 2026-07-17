@@ -117,6 +117,7 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         mInspectorPaneDisplayMode = SplitViewDisplayMode.Inline;
         mCoursePaneWidth = EXTRA_WIDE_COURSE_PANE_WIDTH;
         mInspectorPaneWidth = EXTRA_WIDE_INSPECTOR_PANE_WIDTH;
+        mPersonalScheduleDayOptions = createPersonalScheduleDayOptions();
         mPersonalScheduleTitleDraft = string.Empty;
         mPersonalScheduleSectionDraft = string.Empty;
         mPersonalScheduleInstructorDraft = string.Empty;

@@ -76,7 +76,7 @@ public sealed class PersonalSchedule
                     nameof(timeRanges));
             }
 
-            ensureSupportedWeekday(timeRange.Day, timeRanges);
+            ensureSupportedDay(timeRange.Day, timeRanges);
             ensureSupportedTimeRange(timeRange, timeRanges);
 
             foreach (WeeklyTimeRange copiedTimeRange in copiedTimeRanges)
@@ -135,7 +135,7 @@ public sealed class PersonalSchedule
         }
     }
 
-    private static void ensureSupportedWeekday(
+    private static void ensureSupportedDay(
         EDay day,
         IEnumerable<WeeklyTimeRange> timeRanges)
     {
@@ -146,10 +146,12 @@ public sealed class PersonalSchedule
             case EDay.Wednesday:
             case EDay.Thursday:
             case EDay.Friday:
+            case EDay.Saturday:
+            case EDay.Sunday:
                 return;
             default:
                 throw new ArgumentException(
-                    "Personal schedules support weekdays only.",
+                    "Personal schedules require a day from Monday through Sunday.",
                     nameof(timeRanges));
         }
     }

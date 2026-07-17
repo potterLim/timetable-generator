@@ -3,13 +3,15 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:icons="using:FluentIcons.Avalonia"
+    xmlns:models="using:TimetableGenerator.Desktop.Presentation.Models"
     xmlns:viewModels="using:TimetableGenerator.Desktop.Presentation.ViewModels"
+    xmlns:views="using:TimetableGenerator.Desktop.Views"
     x:DataType="viewModels:PlannerWorkspaceViewModel"
     KeyboardNavigation.TabNavigation="Cycle"
     AutomationProperties.Name="개인 일정 편집기">
   <UserControl.Styles>
     <Style Selector="ToggleButton.day-option">
-      <Setter Property="MinWidth" Value="52" />
+      <Setter Property="MinWidth" Value="44" />
       <Setter Property="MinHeight" Value="40" />
       <Setter Property="Padding" Value="10,7" />
       <Setter Property="Background" Value="{DynamicResource ControlSurfaceBrush}" />
@@ -58,69 +60,42 @@
             <TextBlock FontWeight="SemiBold" Text="요일 (필수)" />
             <TextBlock Classes="caption" Text="반복할 요일을 여러 개 선택할 수 있습니다." />
           </StackPanel>
-          <UniformGrid Columns="5" Rows="1">
-            <ToggleButton
-                x:Name="PersonalScheduleMondayInput"
-                Classes="day-option"
-                Margin="0,0,6,0"
-                IsChecked="{Binding IsMondaySelected, Mode=TwoWay}"
-                Content="월"
-                AutomationProperties.AutomationId="PersonalScheduleMondayInput"
-                AutomationProperties.Name="월요일" />
-            <ToggleButton
-                x:Name="PersonalScheduleTuesdayInput"
-                Classes="day-option"
-                Margin="0,0,6,0"
-                IsChecked="{Binding IsTuesdaySelected, Mode=TwoWay}"
-                Content="화"
-                AutomationProperties.AutomationId="PersonalScheduleTuesdayInput"
-                AutomationProperties.Name="화요일" />
-            <ToggleButton
-                x:Name="PersonalScheduleWednesdayInput"
-                Classes="day-option"
-                Margin="0,0,6,0"
-                IsChecked="{Binding IsWednesdaySelected, Mode=TwoWay}"
-                Content="수"
-                AutomationProperties.AutomationId="PersonalScheduleWednesdayInput"
-                AutomationProperties.Name="수요일" />
-            <ToggleButton
-                x:Name="PersonalScheduleThursdayInput"
-                Classes="day-option"
-                Margin="0,0,6,0"
-                IsChecked="{Binding IsThursdaySelected, Mode=TwoWay}"
-                Content="목"
-                AutomationProperties.AutomationId="PersonalScheduleThursdayInput"
-                AutomationProperties.Name="목요일" />
-            <ToggleButton
-                x:Name="PersonalScheduleFridayInput"
-                Classes="day-option"
-                IsChecked="{Binding IsFridaySelected, Mode=TwoWay}"
-                Content="금"
-                AutomationProperties.AutomationId="PersonalScheduleFridayInput"
-                AutomationProperties.Name="금요일" />
-          </UniformGrid>
+          <ItemsControl ItemsSource="{Binding PersonalScheduleDayOptions}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <UniformGrid Columns="7" Rows="1" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="models:PersonalScheduleDayOption">
+                <ToggleButton
+                    Classes="day-option"
+                    Margin="3,0"
+                    IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                    Content="{Binding ShortName}"
+                    AutomationProperties.AutomationId="{Binding AutomationId}"
+                    AutomationProperties.Name="{Binding AccessibleName}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
         </StackPanel>
 
         <Grid ColumnDefinitions="*,16,*">
           <StackPanel Grid.Column="0" Spacing="7">
             <TextBlock FontWeight="SemiBold" Text="시작 (필수)" />
-            <TimePicker
+            <views:ProductTimePicker
                 x:Name="PersonalScheduleStartTimeInput"
-                MinHeight="42"
-                MinuteIncrement="5"
-                UseSeconds="False"
-                SelectedTime="{Binding PersonalScheduleStartTimeOrNull, Mode=TwoWay}"
+                AccessibleContextName="시작 시간"
+                SelectedTimeOrNull="{Binding PersonalScheduleStartTimeOrNull, Mode=TwoWay}"
                 AutomationProperties.AutomationId="PersonalScheduleStartTimeInput"
                 AutomationProperties.Name="개인 일정 시작 시간" />
           </StackPanel>
           <StackPanel Grid.Column="2" Spacing="7">
             <TextBlock FontWeight="SemiBold" Text="종료 (필수)" />
-            <TimePicker
+            <views:ProductTimePicker
                 x:Name="PersonalScheduleEndTimeInput"
-                MinHeight="42"
-                MinuteIncrement="5"
-                UseSeconds="False"
-                SelectedTime="{Binding PersonalScheduleEndTimeOrNull, Mode=TwoWay}"
+                AccessibleContextName="종료 시간"
+                SelectedTimeOrNull="{Binding PersonalScheduleEndTimeOrNull, Mode=TwoWay}"
                 AutomationProperties.AutomationId="PersonalScheduleEndTimeInput"
                 AutomationProperties.Name="개인 일정 종료 시간" />
           </StackPanel>
