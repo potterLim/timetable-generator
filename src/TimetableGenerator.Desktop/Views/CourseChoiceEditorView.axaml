@@ -35,12 +35,27 @@
       <Setter Property="BorderBrush" Value="{DynamicResource PreferencePreferredBorderBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource PreferencePreferredForegroundBrush}" />
     </Style>
+    <Style Selector="RadioButton.preference-choice.preferred:checked:pointerover, RadioButton.preference-choice.preferred:checked:pressed">
+      <Setter Property="Background" Value="{DynamicResource PreferencePreferredFillBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource PreferencePreferredBorderBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource PreferencePreferredForegroundBrush}" />
+    </Style>
     <Style Selector="RadioButton.preference-choice.acceptable:checked">
       <Setter Property="Background" Value="{DynamicResource PreferenceAcceptableFillBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource PreferenceAcceptableBorderBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource PreferenceAcceptableForegroundBrush}" />
     </Style>
+    <Style Selector="RadioButton.preference-choice.acceptable:checked:pointerover, RadioButton.preference-choice.acceptable:checked:pressed">
+      <Setter Property="Background" Value="{DynamicResource PreferenceAcceptableFillBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource PreferenceAcceptableBorderBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource PreferenceAcceptableForegroundBrush}" />
+    </Style>
     <Style Selector="RadioButton.preference-choice.excluded:checked">
+      <Setter Property="Background" Value="{DynamicResource PreferenceExcludedFillBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource PreferenceExcludedBorderBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource PreferenceExcludedForegroundBrush}" />
+    </Style>
+    <Style Selector="RadioButton.preference-choice.excluded:checked:pointerover, RadioButton.preference-choice.excluded:checked:pressed">
       <Setter Property="Background" Value="{DynamicResource PreferenceExcludedFillBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource PreferenceExcludedBorderBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource PreferenceExcludedForegroundBrush}" />

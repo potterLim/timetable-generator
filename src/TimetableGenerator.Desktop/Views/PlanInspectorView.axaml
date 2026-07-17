@@ -25,8 +25,8 @@
       <Setter Property="CornerRadius" Value="10" />
     </Style>
     <Style Selector="Border.course-choice-group.alternative">
-      <Setter Property="Background" Value="{DynamicResource AccentTintBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+      <Setter Property="Background" Value="{DynamicResource SelectionSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SelectionIndicatorBrush}" />
     </Style>
   </UserControl.Styles>
 

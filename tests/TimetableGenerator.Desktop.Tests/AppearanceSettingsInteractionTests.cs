@@ -10,6 +10,7 @@ using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -75,7 +76,7 @@ public sealed class AppearanceSettingsInteractionTests
             assertIndicatorHasSelectedSurfaceInset(darkOption);
             Assert.True(systemOption.IsChecked);
             Assert.False(darkOption.IsChecked);
-            assertCheckedOptionRetainsSurfaceOnPointerOver(
+            assertCheckedOptionUsesSelectedHoverSurface(
                 window,
                 systemOption);
 
@@ -197,14 +198,19 @@ public sealed class AppearanceSettingsInteractionTests
         Assert.InRange(indicatorOriginOrNull.Value.X, 8.0, 10.0);
     }
 
-    private static void assertCheckedOptionRetainsSurfaceOnPointerOver(
+    private static void assertCheckedOptionUsesSelectedHoverSurface(
         Window window,
         RadioButton option)
     {
         Border rootBorder = option.GetVisualDescendants()
             .OfType<Border>()
             .Single(candidate => candidate.Name == "RootBorder");
-        Color restingColor = getRequiredSolidColor(rootBorder.Background);
+        Color restingColor = getRequiredApplicationColor(
+            "SelectionSurfaceBrush",
+            option.ActualThemeVariant);
+        Assert.Equal(
+            restingColor,
+            getRequiredSolidColor(rootBorder.Background));
         Point? optionOriginOrNull = option.TranslatePoint(
             new Point(0.0, 0.0),
             window);
@@ -223,8 +229,32 @@ public sealed class AppearanceSettingsInteractionTests
 
         Assert.True(option.IsPointerOver);
         Assert.Equal(
-            restingColor,
+            getRequiredApplicationColor(
+                "SelectionHoverSurfaceBrush",
+                option.ActualThemeVariant),
             getRequiredSolidColor(rootBorder.Background));
+    }
+
+    private static Color getRequiredApplicationColor(
+        string resourceKey,
+        ThemeVariant themeVariant)
+    {
+        Avalonia.Application? applicationOrNull = Avalonia.Application.Current;
+        Assert.NotNull(applicationOrNull);
+        if (applicationOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The Avalonia test application was not initialized.");
+        }
+
+        object? resourceOrNull;
+        bool hasResource = applicationOrNull.TryGetResource(
+            resourceKey,
+            themeVariant,
+            out resourceOrNull);
+        Assert.True(hasResource);
+
+        return getRequiredSolidColor(resourceOrNull as IBrush);
     }
 
     private static Color getRequiredSolidColor(IBrush? brushOrNull)

@@ -19,13 +19,18 @@
       <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
     </Style>
     <Style Selector="Border.course-item.added">
-      <Setter Property="Background" Value="{DynamicResource AccentTintBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+      <Setter Property="Background" Value="{DynamicResource SelectionSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SelectionIndicatorBrush}" />
       <Setter Property="BorderThickness" Value="3,0,0,0" />
     </Style>
-    <Style Selector="Border.course-item.added:pointerover, Border.course-item.added:pressed">
-      <Setter Property="Background" Value="{DynamicResource AccentTintBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+    <Style Selector="Border.course-item.added:pointerover">
+      <Setter Property="Background" Value="{DynamicResource SelectionHoverSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SelectionIndicatorBrush}" />
+      <Setter Property="BorderThickness" Value="3,0,0,0" />
+    </Style>
+    <Style Selector="Border.course-item.added:pressed">
+      <Setter Property="Background" Value="{DynamicResource SelectionPressedSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SelectionIndicatorBrush}" />
       <Setter Property="BorderThickness" Value="3,0,0,0" />
     </Style>
   </UserControl.Styles>

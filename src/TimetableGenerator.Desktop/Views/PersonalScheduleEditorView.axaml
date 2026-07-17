@@ -29,9 +29,17 @@
       <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
     </Style>
     <Style Selector="ToggleButton.day-option:checked">
-      <Setter Property="Background" Value="{DynamicResource AccentTintBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+      <Setter Property="Background" Value="{DynamicResource SelectionSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SelectionIndicatorBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+    <Style Selector="ToggleButton.day-option:checked:pointerover">
+      <Setter Property="Background" Value="{DynamicResource SelectionHoverSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SelectionIndicatorBrush}" />
+    </Style>
+    <Style Selector="ToggleButton.day-option:checked:pressed">
+      <Setter Property="Background" Value="{DynamicResource SelectionPressedSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SelectionIndicatorBrush}" />
     </Style>
     <Style Selector="ToggleButton.day-option:focus-visible">
       <Setter Property="BorderBrush" Value="{DynamicResource ProductFocusStrokeBrush}" />

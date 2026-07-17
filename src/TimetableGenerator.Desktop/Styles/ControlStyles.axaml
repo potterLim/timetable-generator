@@ -267,16 +267,28 @@
   </Style>
 
   <Style Selector="RadioButton.appearance-option:checked">
-    <Setter Property="Background" Value="{DynamicResource AccentTintBrush}" />
+    <Setter Property="Background" Value="{DynamicResource SelectionSurfaceBrush}" />
     <Setter Property="FontWeight" Value="SemiBold" />
   </Style>
 
   <Style Selector="RadioButton.appearance-option:checked /template/ Border#RootBorder">
-    <Setter Property="Background" Value="{DynamicResource AccentTintBrush}" />
+    <Setter Property="Background" Value="{DynamicResource SelectionSurfaceBrush}" />
+  </Style>
+
+  <Style Selector="RadioButton.appearance-option:checked:pointerover">
+    <Setter Property="Background" Value="{DynamicResource SelectionHoverSurfaceBrush}" />
   </Style>
 
   <Style Selector="RadioButton.appearance-option:checked:pointerover /template/ Border#RootBorder">
-    <Setter Property="Background" Value="{DynamicResource AccentTintBrush}" />
+    <Setter Property="Background" Value="{DynamicResource SelectionHoverSurfaceBrush}" />
+  </Style>
+
+  <Style Selector="RadioButton.appearance-option:checked:pressed">
+    <Setter Property="Background" Value="{DynamicResource SelectionPressedSurfaceBrush}" />
+  </Style>
+
+  <Style Selector="RadioButton.appearance-option:checked:pressed /template/ Border#RootBorder">
+    <Setter Property="Background" Value="{DynamicResource SelectionPressedSurfaceBrush}" />
   </Style>
 
   <Style Selector="RadioButton.appearance-option:focus-visible">

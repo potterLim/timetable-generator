@@ -11,6 +11,7 @@ using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -234,7 +235,11 @@ public sealed class WorkspacePanelAccessibilityTests
                 Dispatcher.UIThread.RunJobs();
 
                 Assert.Contains("added", courseCard.Classes);
-                Color restingColor = getRequiredSolidColor(courseCard.Background);
+                Assert.Equal(
+                    getRequiredApplicationColor(
+                        "SelectionSurfaceBrush",
+                        courseCard.ActualThemeVariant),
+                    getRequiredSolidColor(courseCard.Background));
                 assertTransparent(itemPresenter.Background);
 
                 Point? cardOriginOrNull = courseCard.TranslatePoint(
@@ -256,7 +261,9 @@ public sealed class WorkspacePanelAccessibilityTests
 
                 Assert.True(courseCard.IsPointerOver);
                 Assert.Equal(
-                    restingColor,
+                    getRequiredApplicationColor(
+                        "SelectionHoverSurfaceBrush",
+                        courseCard.ActualThemeVariant),
                     getRequiredSolidColor(courseCard.Background));
                 assertTransparent(itemPresenter.Background);
             }
@@ -409,6 +416,28 @@ public sealed class WorkspacePanelAccessibilityTests
         }
 
         return solidBrushOrNull.Color;
+    }
+
+    private static Color getRequiredApplicationColor(
+        string resourceKey,
+        ThemeVariant themeVariant)
+    {
+        Avalonia.Application? applicationOrNull = Avalonia.Application.Current;
+        Assert.NotNull(applicationOrNull);
+        if (applicationOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The Avalonia test application was not initialized.");
+        }
+
+        object? resourceOrNull;
+        bool hasResource = applicationOrNull.TryGetResource(
+            resourceKey,
+            themeVariant,
+            out resourceOrNull);
+        Assert.True(hasResource);
+
+        return getRequiredSolidColor(resourceOrNull as IBrush);
     }
 
     private static void assertTransparent(IBrush? brushOrNull)

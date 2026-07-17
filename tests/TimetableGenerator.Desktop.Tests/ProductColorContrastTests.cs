@@ -36,6 +36,14 @@ public sealed class ProductColorContrastTests
         new ColorToken("AccentPressedBrush");
     private static readonly ColorToken ACCENT_TINT =
         new ColorToken("AccentTintBrush");
+    private static readonly ColorToken SELECTION_SURFACE =
+        new ColorToken("SelectionSurfaceBrush");
+    private static readonly ColorToken SELECTION_HOVER_SURFACE =
+        new ColorToken("SelectionHoverSurfaceBrush");
+    private static readonly ColorToken SELECTION_PRESSED_SURFACE =
+        new ColorToken("SelectionPressedSurfaceBrush");
+    private static readonly ColorToken SELECTION_INDICATOR =
+        new ColorToken("SelectionIndicatorBrush");
     private static readonly ColorToken CONTROL_BORDER =
         new ColorToken("ControlBorderBrush");
     private static readonly ColorToken CONTROL_SURFACE =
@@ -148,6 +156,10 @@ public sealed class ProductColorContrastTests
         new ColorToken("AccentHoverBrush"),
         new ColorToken("AccentPressedBrush"),
         new ColorToken("AccentTintBrush"),
+        new ColorToken("SelectionSurfaceBrush"),
+        new ColorToken("SelectionHoverSurfaceBrush"),
+        new ColorToken("SelectionPressedSurfaceBrush"),
+        new ColorToken("SelectionIndicatorBrush"),
         new ColorToken("ProductPrimaryActionFillBrush"),
         new ColorToken("ProductPrimaryActionHoverFillBrush"),
         new ColorToken("ProductPrimaryActionPressedFillBrush"),
@@ -219,6 +231,15 @@ public sealed class ProductColorContrastTests
             bodyText(ThemeVariant.Light, TEXT_SECONDARY, SUBTLE_SURFACE),
             bodyText(ThemeVariant.Light, TEXT_SECONDARY, HOVER_SURFACE),
             bodyText(ThemeVariant.Light, TEXT_SECONDARY, ACCENT_TINT),
+            bodyText(ThemeVariant.Light, TEXT_SECONDARY, SELECTION_SURFACE),
+            bodyText(
+                ThemeVariant.Light,
+                TEXT_SECONDARY,
+                SELECTION_HOVER_SURFACE),
+            bodyText(
+                ThemeVariant.Light,
+                TEXT_SECONDARY,
+                SELECTION_PRESSED_SURFACE),
             bodyText(ThemeVariant.Light, TEXT_TERTIARY, CONTROL_SURFACE),
             bodyText(ThemeVariant.Dark, TEXT_PRIMARY, WINDOW_BACKGROUND),
             bodyText(ThemeVariant.Dark, TEXT_PRIMARY, PANE_SURFACE),
@@ -230,6 +251,15 @@ public sealed class ProductColorContrastTests
             bodyText(ThemeVariant.Dark, TEXT_SECONDARY, SUBTLE_SURFACE),
             bodyText(ThemeVariant.Dark, TEXT_SECONDARY, HOVER_SURFACE),
             bodyText(ThemeVariant.Dark, TEXT_SECONDARY, ACCENT_TINT),
+            bodyText(ThemeVariant.Dark, TEXT_SECONDARY, SELECTION_SURFACE),
+            bodyText(
+                ThemeVariant.Dark,
+                TEXT_SECONDARY,
+                SELECTION_HOVER_SURFACE),
+            bodyText(
+                ThemeVariant.Dark,
+                TEXT_SECONDARY,
+                SELECTION_PRESSED_SURFACE),
             bodyText(ThemeVariant.Dark, TEXT_TERTIARY, CONTROL_SURFACE),
         };
 
@@ -274,10 +304,27 @@ public sealed class ProductColorContrastTests
             ACCENT_FILL_PRESSED,
             ThemeVariant.Dark);
 
-        Assert.Equal(Color.Parse("#0969DA"), lightFill.Color);
-        Assert.Equal(Color.Parse("#1D5FBF"), darkFill.Color);
-        Assert.Equal(Color.Parse("#2468C9"), darkHover.Color);
-        Assert.Equal(Color.Parse("#174A96"), darkPressed.Color);
+        Assert.Equal(Color.Parse("#0A60C8"), lightFill.Color);
+        Assert.Equal(Color.Parse("#1B63C9"), darkFill.Color);
+        Assert.Equal(Color.Parse("#236ED4"), darkHover.Color);
+        Assert.Equal(Color.Parse("#154C9D"), darkPressed.Color);
+    }
+
+    [AvaloniaFact]
+    public void SelectedSurfacesUseAConsistentModernBlueHierarchy()
+    {
+        assertSelectionPalette(
+            ThemeVariant.Light,
+            Color.Parse("#E6F0FF"),
+            Color.Parse("#D9E8FF"),
+            Color.Parse("#CBDEFF"),
+            Color.Parse("#0A60C8"));
+        assertSelectionPalette(
+            ThemeVariant.Dark,
+            Color.Parse("#182C49"),
+            Color.Parse("#1E385C"),
+            Color.Parse("#254672"),
+            Color.Parse("#69A9FF"));
     }
 
     [AvaloniaFact]
@@ -312,6 +359,15 @@ public sealed class ProductColorContrastTests
             bodyText(ThemeVariant.Light, ACCENT_HOVER, PANE_SURFACE),
             bodyText(ThemeVariant.Light, ACCENT_PRESSED, PANE_SURFACE),
             bodyText(ThemeVariant.Light, TEXT_PRIMARY, ACCENT_TINT),
+            bodyText(ThemeVariant.Light, TEXT_PRIMARY, SELECTION_SURFACE),
+            bodyText(
+                ThemeVariant.Light,
+                TEXT_PRIMARY,
+                SELECTION_HOVER_SURFACE),
+            bodyText(
+                ThemeVariant.Light,
+                TEXT_PRIMARY,
+                SELECTION_PRESSED_SURFACE),
             bodyText(ThemeVariant.Light, TEXT_PRIMARY, COURSE_BLUE_BACKGROUND),
             bodyText(ThemeVariant.Light, TEXT_PRIMARY, COURSE_PURPLE_BACKGROUND),
             bodyText(ThemeVariant.Light, TEXT_PRIMARY, COURSE_GREEN_BACKGROUND),
@@ -324,6 +380,15 @@ public sealed class ProductColorContrastTests
             bodyText(ThemeVariant.Dark, ACCENT_HOVER, PANE_SURFACE),
             bodyText(ThemeVariant.Dark, ACCENT_PRESSED, PANE_SURFACE),
             bodyText(ThemeVariant.Dark, TEXT_PRIMARY, ACCENT_TINT),
+            bodyText(ThemeVariant.Dark, TEXT_PRIMARY, SELECTION_SURFACE),
+            bodyText(
+                ThemeVariant.Dark,
+                TEXT_PRIMARY,
+                SELECTION_HOVER_SURFACE),
+            bodyText(
+                ThemeVariant.Dark,
+                TEXT_PRIMARY,
+                SELECTION_PRESSED_SURFACE),
             bodyText(ThemeVariant.Dark, TEXT_PRIMARY, COURSE_BLUE_BACKGROUND),
             bodyText(ThemeVariant.Dark, TEXT_PRIMARY, COURSE_PURPLE_BACKGROUND),
             bodyText(ThemeVariant.Dark, TEXT_PRIMARY, COURSE_GREEN_BACKGROUND),
@@ -377,6 +442,30 @@ public sealed class ProductColorContrastTests
             nonText(ThemeVariant.Dark, FOCUS_STROKE, PANE_SURFACE),
             nonText(ThemeVariant.Dark, FOCUS_STROKE, HOVER_SURFACE),
             nonText(ThemeVariant.Dark, FOCUS_STROKE, PRESSED_SURFACE),
+            nonText(
+                ThemeVariant.Light,
+                SELECTION_INDICATOR,
+                SELECTION_SURFACE),
+            nonText(
+                ThemeVariant.Light,
+                SELECTION_INDICATOR,
+                SELECTION_HOVER_SURFACE),
+            nonText(
+                ThemeVariant.Light,
+                SELECTION_INDICATOR,
+                SELECTION_PRESSED_SURFACE),
+            nonText(
+                ThemeVariant.Dark,
+                SELECTION_INDICATOR,
+                SELECTION_SURFACE),
+            nonText(
+                ThemeVariant.Dark,
+                SELECTION_INDICATOR,
+                SELECTION_HOVER_SURFACE),
+            nonText(
+                ThemeVariant.Dark,
+                SELECTION_INDICATOR,
+                SELECTION_PRESSED_SURFACE),
             nonText(ThemeVariant.Light, FOCUS_ON_FILL_STROKE, ACCENT_FILL),
             nonText(ThemeVariant.Light, FOCUS_ON_FILL_STROKE, ACCENT_FILL_HOVER),
             nonText(ThemeVariant.Light, FOCUS_ON_FILL_STROKE, ACCENT_FILL_PRESSED),
@@ -477,6 +566,27 @@ public sealed class ProductColorContrastTests
         {
             assertContrastRequirement(contrastRequirement);
         }
+    }
+
+    private static void assertSelectionPalette(
+        ThemeVariant themeVariant,
+        Color expectedSurface,
+        Color expectedHoverSurface,
+        Color expectedPressedSurface,
+        Color expectedIndicator)
+    {
+        Assert.Equal(
+            expectedSurface,
+            findRequiredBrush(SELECTION_SURFACE, themeVariant).Color);
+        Assert.Equal(
+            expectedHoverSurface,
+            findRequiredBrush(SELECTION_HOVER_SURFACE, themeVariant).Color);
+        Assert.Equal(
+            expectedPressedSurface,
+            findRequiredBrush(SELECTION_PRESSED_SURFACE, themeVariant).Color);
+        Assert.Equal(
+            expectedIndicator,
+            findRequiredBrush(SELECTION_INDICATOR, themeVariant).Color);
     }
 
     private static void assertContrastRequirement(
