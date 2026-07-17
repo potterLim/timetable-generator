@@ -9,6 +9,7 @@ internal sealed class ScheduleBoardTimeAxis
 {
     private const int DEFAULT_START_MINUTE = 510;
     private const int DEFAULT_END_MINUTE = 1_140;
+    private const int PNG_EXPORT_DEFAULT_END_MINUTE = 960;
     private const int LAYOUT_INCREMENT_MINUTES = 5;
     private const int GUIDE_INCREMENT_MINUTES = 30;
     private const int MINUTES_PER_DAY = 1_440;
@@ -63,10 +64,23 @@ internal sealed class ScheduleBoardTimeAxis
     public static ScheduleBoardTimeAxis CreateForEntries(
         IReadOnlyList<ScheduleEntry> entries)
     {
+        return createForEntries(entries, DEFAULT_END_MINUTE);
+    }
+
+    public static ScheduleBoardTimeAxis CreateForPngExport(
+        IReadOnlyList<ScheduleEntry> entries)
+    {
+        return createForEntries(entries, PNG_EXPORT_DEFAULT_END_MINUTE);
+    }
+
+    private static ScheduleBoardTimeAxis createForEntries(
+        IReadOnlyList<ScheduleEntry> entries,
+        int defaultEndMinute)
+    {
         ArgumentNullException.ThrowIfNull(entries);
 
         int earliestMinute = DEFAULT_START_MINUTE;
-        int latestMinute = DEFAULT_END_MINUTE;
+        int latestMinute = defaultEndMinute;
         foreach (ScheduleEntry entry in entries)
         {
             earliestMinute = Math.Min(

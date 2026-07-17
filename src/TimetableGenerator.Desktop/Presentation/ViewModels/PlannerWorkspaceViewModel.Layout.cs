@@ -122,6 +122,8 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     public ICommand ToggleInspectorPaneCommand { get; }
 
+    public ICommand OpenInspectorPaneCommand { get; }
+
     internal void applyWorkspaceWidth(WorkspaceWidth workspaceWidth)
     {
         EWorkspaceLayoutMode newLayoutMode = WorkspaceLayoutPolicy.FindLayoutMode(
@@ -177,6 +179,11 @@ internal sealed partial class PlannerWorkspaceViewModel
     private void toggleInspectorPane()
     {
         IsInspectorPaneOpen = IsInspectorPaneOpen == false;
+    }
+
+    private void openInspectorPane()
+    {
+        IsInspectorPaneOpen = true;
     }
 
     private void configurePanesForLayoutMode()

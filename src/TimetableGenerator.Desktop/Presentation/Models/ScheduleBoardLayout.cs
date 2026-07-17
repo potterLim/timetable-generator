@@ -36,4 +36,13 @@ internal sealed class ScheduleBoardLayout
             ScheduleBoardDayRange.CreateForEntries(entries),
             ScheduleBoardTimeAxis.CreateForEntries(entries));
     }
+
+    public static ScheduleBoardLayout CreateForPngExport(
+        IReadOnlyList<ScheduleEntry> entries)
+    {
+        ArgumentNullException.ThrowIfNull(entries);
+        return new ScheduleBoardLayout(
+            ScheduleBoardDayRange.CreateForEntries(entries),
+            ScheduleBoardTimeAxis.CreateForPngExport(entries));
+    }
 }

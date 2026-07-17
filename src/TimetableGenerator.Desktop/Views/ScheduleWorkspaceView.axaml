@@ -49,7 +49,7 @@
             VerticalAlignment="Center"
             Foreground="{DynamicResource AccentBrush}"
             FontWeight="SemiBold"
-            IsVisible="{Binding HasScheduleEntries}"
+            IsVisible="{Binding CanExportSchedule}"
             Text="{Binding RecommendationInsight}"
             TextTrimming="CharacterEllipsis"
             TextWrapping="NoWrap"
@@ -141,9 +141,48 @@
       </StackPanel>
     </Grid>
 
-    <Grid Grid.Row="2">
+    <Grid Grid.Row="2" RowDefinitions="Auto,*">
+      <Border
+          x:Name="UnsatisfiedPersonalScheduleBanner"
+          Grid.Row="0"
+          Margin="0,0,0,12"
+          Padding="14,11"
+          IsVisible="{Binding HasUnsatisfiedPersonalSchedulePreview}"
+          Background="{DynamicResource WarningSubtleBrush}"
+          CornerRadius="7"
+          AutomationProperties.LiveSetting="Polite">
+        <Grid ColumnDefinitions="Auto,12,*,16,Auto">
+          <icons:FluentIcon
+              Grid.Column="0"
+              Width="20"
+              Height="20"
+              VerticalAlignment="Center"
+              Icon="Warning"
+              IconVariant="Regular"
+              Foreground="{DynamicResource WarningBrush}" />
+          <StackPanel Grid.Column="2" Spacing="2" VerticalAlignment="Center">
+            <TextBlock
+                FontWeight="SemiBold"
+                Text="과목은 배치하지 못했습니다" />
+            <TextBlock
+                Classes="caption"
+                Text="아래에는 개인 일정만 표시됩니다. 겹치는 일정이나 분반 선택을 조정해 보세요."
+                TextTrimming="CharacterEllipsis"
+                TextWrapping="NoWrap" />
+          </StackPanel>
+          <Button
+              Grid.Column="4"
+              Classes="outline"
+              VerticalAlignment="Center"
+              Command="{Binding OpenInspectorPaneCommand}"
+              Content="내 계획 확인"
+              AutomationProperties.Name="충돌한 과목 선택을 내 계획에서 확인" />
+        </Grid>
+      </Border>
+
       <Grid
           x:Name="ScheduleBoardContainer"
+          Grid.Row="1"
           IsVisible="{Binding HasScheduleEntries}">
         <views:ScheduleBoardView
             x:Name="ScheduleBoard"
@@ -152,6 +191,8 @@
 
       <Border
           x:Name="ScheduleEmptyState"
+          Grid.Row="0"
+          Grid.RowSpan="2"
           Padding="32"
           IsVisible="{Binding IsScheduleEmpty}"
           Background="Transparent">
@@ -203,6 +244,63 @@
       </Border>
 
       <Border
+          x:Name="UnsatisfiedScheduleEmptyState"
+          Grid.Row="0"
+          Grid.RowSpan="2"
+          Padding="32"
+          IsVisible="{Binding IsUnsatisfiedScheduleEmpty}"
+          Background="Transparent"
+          AutomationProperties.LiveSetting="Polite">
+        <StackPanel
+            MaxWidth="460"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Spacing="10">
+          <Border
+              Width="46"
+              Height="46"
+              HorizontalAlignment="Center"
+              Background="{DynamicResource WarningSubtleBrush}"
+              CornerRadius="23">
+            <icons:FluentIcon
+                Width="22"
+                Height="22"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Icon="Warning"
+                IconVariant="Regular"
+                Foreground="{DynamicResource WarningBrush}" />
+          </Border>
+          <TextBlock
+              Margin="0,4,0,0"
+              FontSize="20"
+              FontWeight="SemiBold"
+              Text="현재 선택으로 만들 수 있는 시간표가 없습니다"
+              TextAlignment="Center"
+              TextWrapping="NoWrap" />
+          <TextBlock
+              Classes="secondary"
+              Text="겹치는 일정이나 제외한 분반을 확인해 보세요."
+              TextAlignment="Center"
+              TextWrapping="NoWrap" />
+          <Button
+              x:Name="UnsatisfiedScheduleOpenPlanButton"
+              Classes="outline"
+              Margin="0,6,0,0"
+              HorizontalAlignment="Center"
+              Command="{Binding OpenInspectorPaneCommand}"
+              AutomationProperties.Name="충돌한 과목 선택을 내 계획에서 확인">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <icons:FluentIcon Icon="PanelRight" IconVariant="Regular" FontSize="17" />
+              <TextBlock Text="내 계획 확인" />
+            </StackPanel>
+          </Button>
+        </StackPanel>
+      </Border>
+
+      <Border
+          Grid.Row="0"
+          Grid.RowSpan="2"
           Padding="32"
           IsVisible="{Binding IsRecommendationCalculating}"
           Background="Transparent"
@@ -230,6 +328,8 @@
       </Border>
 
       <Border
+          Grid.Row="0"
+          Grid.RowSpan="2"
           Padding="32"
           IsVisible="{Binding HasRecommendationCalculationError}"
           Background="Transparent"
@@ -268,12 +368,20 @@
     <StackPanel
         x:Name="RecommendationFooter"
         Grid.Row="4"
-        IsVisible="{Binding HasScheduleEntries}">
+        IsVisible="{Binding CanExportSchedule}">
       <TextBlock
           x:Name="ExportStatusText"
           Classes="caption export-status"
           IsVisible="False"
           AutomationProperties.LiveSetting="Polite" />
     </StackPanel>
+
+    <Canvas
+        x:Name="PngExportHost"
+        Grid.Row="0"
+        Grid.RowSpan="5"
+        ZIndex="-1"
+        IsHitTestVisible="False"
+        Opacity="0" />
   </Grid>
 </UserControl>

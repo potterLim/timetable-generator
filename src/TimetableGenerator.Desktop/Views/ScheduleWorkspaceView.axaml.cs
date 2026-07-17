@@ -64,16 +64,21 @@ internal sealed partial class ScheduleWorkspaceView : UserControl
 
         ScheduleBoardView? scheduleBoardOrNull = this.FindControl<ScheduleBoardView>(
             "ScheduleBoard");
-        if (scheduleBoardOrNull == null)
+        Canvas? pngExportHostOrNull = this.FindControl<Canvas>("PngExportHost");
+        if (scheduleBoardOrNull == null || pngExportHostOrNull == null)
         {
             throw new InvalidOperationException(
-                "The schedule board could not be found for PNG export.");
+                "The schedule board export surface could not be prepared.");
         }
 
+        using (ScheduleBoardPngExportSnapshot snapshot =
+            ScheduleBoardPngExportSnapshot.Create(
+                pngExportHostOrNull,
+                scheduleBoardOrNull))
         using (Stream destinationStream = await destinationFileOrNull.OpenWriteAsync())
         {
             await mPngExporter.ExportControlAsync(
-                scheduleBoardOrNull.PngExportSurface,
+                snapshot.Surface,
                 destinationStream,
                 cancellationToken);
             await destinationStream.FlushAsync(cancellationToken);

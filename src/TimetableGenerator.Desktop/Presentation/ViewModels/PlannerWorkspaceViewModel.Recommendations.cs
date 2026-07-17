@@ -146,8 +146,26 @@ internal sealed partial class PlannerWorkspaceViewModel
         get
         {
             return HasScheduleEntries == false
+                && HasUnsatisfiedScheduleConstraints == false
                 && IsRecommendationCalculating == false
                 && HasRecommendationCalculationError == false;
+        }
+    }
+
+    public bool IsUnsatisfiedScheduleEmpty
+    {
+        get
+        {
+            return HasUnsatisfiedScheduleConstraints
+                && HasScheduleEntries == false;
+        }
+    }
+
+    public bool HasUnsatisfiedPersonalSchedulePreview
+    {
+        get
+        {
+            return HasUnsatisfiedScheduleConstraints && HasScheduleEntries;
         }
     }
 
@@ -211,13 +229,16 @@ internal sealed partial class PlannerWorkspaceViewModel
                 return "시간 미정 과목은 내 계획에 보관됩니다.";
             }
 
-            HashSet<EDay> scheduledDays = new HashSet<EDay>();
+            HashSet<EDay> scheduledWeekdays = new HashSet<EDay>();
             HashSet<string> courseCodes = new HashSet<string>(StringComparer.Ordinal);
             HashSet<PersonalScheduleId> personalScheduleIds =
                 new HashSet<PersonalScheduleId>();
             foreach (ScheduleEntry entry in DisplayedSchedule.Entries)
             {
-                scheduledDays.Add(entry.Day);
+                if (isWeekday(entry.Day))
+                {
+                    scheduledWeekdays.Add(entry.Day);
+                }
                 CourseScheduleEntry? courseEntryOrNull =
                     entry as CourseScheduleEntry;
                 if (courseEntryOrNull != null)
@@ -233,7 +254,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                 }
             }
 
-            int freeWeekdayCount = 5 - scheduledDays.Count;
+            int freeWeekdayCount = 5 - scheduledWeekdays.Count;
             string insight = courseCodes.Count + "개 시간표 과목";
             if (personalScheduleIds.Count > 0)
             {
@@ -328,6 +349,27 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
 
         notifyRecommendationChanged();
+    }
+
+    private static bool isWeekday(EDay day)
+    {
+        switch (day)
+        {
+            case EDay.Monday:
+            case EDay.Tuesday:
+            case EDay.Wednesday:
+            case EDay.Thursday:
+            case EDay.Friday:
+                return true;
+            case EDay.Saturday:
+            case EDay.Sunday:
+                return false;
+            default:
+                throw new ArgumentOutOfRangeException(
+                    nameof(day),
+                    day,
+                    "Schedule recommendations require a defined weekday.");
+        }
     }
 
     private void selectNextRecommendation()
@@ -528,6 +570,8 @@ internal sealed partial class PlannerWorkspaceViewModel
         raisePropertyChanged(nameof(RecommendationCalculationError));
         raisePropertyChanged(nameof(HasUnsatisfiedScheduleConstraints));
         raisePropertyChanged(nameof(CanExportSchedule));
+        raisePropertyChanged(nameof(IsUnsatisfiedScheduleEmpty));
+        raisePropertyChanged(nameof(HasUnsatisfiedPersonalSchedulePreview));
         mRetryRecommendationCommand.NotifyCanExecuteChanged();
     }
 
@@ -543,6 +587,8 @@ internal sealed partial class PlannerWorkspaceViewModel
         raisePropertyChanged(nameof(CanExportSchedule));
         raisePropertyChanged(nameof(HasScheduleEntries));
         raisePropertyChanged(nameof(IsScheduleEmpty));
+        raisePropertyChanged(nameof(IsUnsatisfiedScheduleEmpty));
+        raisePropertyChanged(nameof(HasUnsatisfiedPersonalSchedulePreview));
         raisePropertyChanged(nameof(RecommendationInsight));
         raisePropertyChanged(nameof(EmptyScheduleTitle));
         raisePropertyChanged(nameof(EmptyScheduleMessage));

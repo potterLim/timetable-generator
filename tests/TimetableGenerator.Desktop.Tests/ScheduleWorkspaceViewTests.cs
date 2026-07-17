@@ -292,9 +292,21 @@ public sealed class ScheduleWorkspaceViewTests
 
             Button scheduleCard = scheduleCardOrNull;
             Assert.Contains(LONG_NAME, AutomationProperties.GetName(scheduleCard));
+            Assert.Contains("3학점", AutomationProperties.GetName(scheduleCard));
             Assert.Equal(
                 "선택하면 과목의 전체 시간, 교수, 강의실 정보를 엽니다.",
                 AutomationProperties.GetHelpText(scheduleCard));
+
+            Grid cardContent = Assert.IsType<Grid>(scheduleCard.Content);
+            Assert.Equal(4, cardContent.RowDefinitions.Count);
+            Assert.True(cardContent.RowDefinitions[2].Height.IsStar);
+            Grid metadata = Assert.Single(
+                cardContent.Children.OfType<Grid>(),
+                grid => Grid.GetRow(grid) == 3);
+            Assert.Equal(2, metadata.ColumnDefinitions.Count);
+            Assert.Equal(
+                metadata.ColumnDefinitions[0].Width,
+                metadata.ColumnDefinitions[1].Width);
 
             List<TextBlock> cardTexts = scheduleCard.GetVisualDescendants()
                 .OfType<TextBlock>()
@@ -306,6 +318,15 @@ public sealed class ScheduleWorkspaceViewTests
             Assert.Equal(TextTrimming.CharacterEllipsis, courseName.TextTrimming);
             Assert.Contains(cardTexts, textBlock => textBlock.Text == LONG_INSTRUCTOR);
             Assert.Contains(cardTexts, textBlock => textBlock.Text == LONG_LOCATION);
+            TextBlock instructor = Assert.Single(
+                cardTexts,
+                textBlock => textBlock.Text == LONG_INSTRUCTOR);
+            TextBlock location = Assert.Single(
+                cardTexts,
+                textBlock => textBlock.Text == LONG_LOCATION);
+            Assert.Equal(TextTrimming.CharacterEllipsis, instructor.TextTrimming);
+            Assert.Equal(TextTrimming.CharacterEllipsis, location.TextTrimming);
+            Assert.Equal(TextAlignment.Right, location.TextAlignment);
             Assert.Equal(
                 LONG_NAME + Environment.NewLine + "선택하여 과목 상세 정보 보기",
                 ToolTip.GetTip(scheduleCard));
