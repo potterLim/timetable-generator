@@ -31,11 +31,27 @@ internal sealed class CourseScheduleEntry : ScheduleEntry
         }
     }
 
+    public bool HasConfirmedInstructor
+    {
+        get
+        {
+            return CourseDetails.InstructorSummary.IsConfirmed;
+        }
+    }
+
     public string LocationDisplayText
     {
         get
         {
             return CourseDetails.LocationSummary.Value;
+        }
+    }
+
+    public bool HasAssignedLocation
+    {
+        get
+        {
+            return CourseDetails.LocationSummary.IsAssigned;
         }
     }
 

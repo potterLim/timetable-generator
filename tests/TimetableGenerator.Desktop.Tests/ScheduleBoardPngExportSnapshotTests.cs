@@ -19,14 +19,19 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
+using TimetableGenerator.CatalogJson;
 using TimetableGenerator.Desktop.Exporting;
+using TimetableGenerator.Desktop.Presentation.Catalog;
 using TimetableGenerator.Desktop.Presentation.Models;
+using TimetableGenerator.Desktop.Tests.Presentation.Catalog;
 using TimetableGenerator.Desktop.Views;
 using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Planning;
 using TimetableGenerator.Domain.Scheduling;
 
 using Xunit;
+using ApplicationScheduleRecommendation =
+    TimetableGenerator.Application.Scheduling.ScheduleRecommendation;
 
 namespace TimetableGenerator.Desktop.Tests;
 
@@ -132,6 +137,32 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 assertWeekendHeadersArePresent(boardGrid);
                 assertDayColumnsMeetMinimumWidth(boardGrid, 132.0);
 
+                Button exportCard = Assert.Single(
+                    boardGrid.Children.OfType<Button>());
+                Grid exportCardContent = Assert.IsType<Grid>(exportCard.Content);
+                List<TextBlock> exportCardTexts = exportCardContent.Children
+                    .OfType<TextBlock>()
+                    .ToList();
+                Assert.Equal(
+                    new string[]
+                    {
+                        "시간표 내보내기 검증",
+                        "테스트 강의실",
+                        "테스트 교수",
+                    },
+                    exportCardTexts.Select(textBlock => textBlock.Text));
+                Assert.DoesNotContain(
+                    exportCardTexts,
+                    textBlock => textBlock.Text == "TST00100");
+                Assert.DoesNotContain(
+                    exportCardTexts,
+                    textBlock => textBlock.Text == "3학점");
+                Assert.All(
+                    exportCardTexts,
+                    textBlock => Assert.Equal(
+                        TextAlignment.Center,
+                        textBlock.TextAlignment));
+
                 AvaloniaControlPngExporter exporter =
                     new AvaloniaControlPngExporter(PngExportScale.Create(1.0));
                 using (MemoryStream destinationStream = new MemoryStream())
@@ -149,6 +180,82 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                         Assert.Equal(
                             (int)Math.Ceiling(snapshot.Surface.Bounds.Height),
                             bitmap.PixelSize.Height);
+                        assertBitmapContainsOpaqueContent(bitmap);
+                    }
+                }
+            }
+
+            Assert.Empty(exportHost.Children);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task ProjectedUnavailableMetadataIsOmittedFromPngExportCardAsync()
+    {
+        CourseCatalogDocument document = CatalogProjectionTestFixture.CreateDocument();
+        CourseCatalogProjection catalogProjection = CourseCatalogProjector.Project(document);
+        ApplicationScheduleRecommendation recommendation =
+            CatalogProjectionTestFixture.CreateScheduledRecommendation(
+                document,
+                new CourseId("course-programming"),
+                new OfferingId("offering-programming-alternative"));
+        ScheduleRecommendation projectedRecommendation =
+            ScheduleRecommendationProjector.Project(
+                recommendation,
+                catalogProjection);
+        ScheduleBoardView sourceBoard = createSourceBoard(
+            projectedRecommendation.Entries);
+        Canvas exportHost = new Canvas();
+        exportHost.IsHitTestVisible = false;
+        exportHost.Opacity = 0.0;
+        exportHost.ZIndex = -1;
+        Grid root = new Grid();
+        root.Children.Add(exportHost);
+        root.Children.Add(sourceBoard);
+        Window window = createWindow(root, ThemeVariant.Light);
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            using (ScheduleBoardPngExportSnapshot snapshot =
+                ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
+            {
+                Dispatcher.UIThread.RunJobs();
+
+                Grid boardGrid = findBoardGrid(snapshot.Surface);
+                Button exportCard = Assert.Single(
+                    boardGrid.Children.OfType<Button>());
+                Grid exportCardContent = Assert.IsType<Grid>(exportCard.Content);
+                List<TextBlock> exportCardTexts = exportCardContent.Children
+                    .OfType<TextBlock>()
+                    .ToList();
+                Assert.Equal(
+                    new string[] { "프로그래밍 I" },
+                    exportCardTexts.Select(textBlock => textBlock.Text));
+                Assert.DoesNotContain(
+                    exportCardTexts,
+                    textBlock => textBlock.Text == "교수 정보 없음");
+                Assert.DoesNotContain(
+                    exportCardTexts,
+                    textBlock => textBlock.Text == "강의실 미정");
+
+                AvaloniaControlPngExporter exporter =
+                    new AvaloniaControlPngExporter(PngExportScale.Create(1.0));
+                using (MemoryStream destinationStream = new MemoryStream())
+                {
+                    await exporter.ExportControlAsync(
+                        snapshot.Surface,
+                        destinationStream,
+                        CancellationToken.None);
+                    destinationStream.Position = 0L;
+                    using (Bitmap bitmap = new Bitmap(destinationStream))
+                    {
                         assertBitmapContainsOpaqueContent(bitmap);
                     }
                 }
@@ -223,8 +330,13 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 new CourseCode("TST00100"),
                 new KoreanCourseName("시간표 내보내기 검증"),
                 new CourseCredits(3m),
-                new ScheduleInstructorSummary("테스트 교수"),
-                new ScheduleLocationSummary("테스트 강의실")),
+                new ScheduleInstructorSummary(
+                    InstructorAssignmentMetadata.CreateConfirmed(
+                        new InstructorDisplayText("테스트 교수"),
+                        new AdditionalInstructorCount(0))),
+                new ScheduleLocationSummary(
+                    LocationAssignmentMetadata.CreateAssigned(
+                        new ClassroomDisplayText("테스트 강의실")))),
             day,
             period,
             ECourseAccent.Blue);

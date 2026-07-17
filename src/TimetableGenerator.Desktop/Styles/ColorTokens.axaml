@@ -68,7 +68,6 @@
       <SolidColorBrush x:Key="CoursePurpleBorderBrush" Color="#8066AD" />
       <SolidColorBrush x:Key="CourseGreenBackgroundBrush" Color="#E8F6EE" />
       <SolidColorBrush x:Key="CourseGreenBorderBrush" Color="#43805F" />
-      <SolidColorBrush x:Key="ScheduleCardBadgeBackgroundBrush" Color="#BFFFFFFF" />
       <SolidColorBrush x:Key="PersonalScheduleBackgroundBrush" Color="#EEF0FF" />
       <SolidColorBrush x:Key="PersonalScheduleBorderBrush" Color="#6D75B4" />
       <SolidColorBrush x:Key="TitleBarBackgroundBrush" Color="#FAFBFC" />
@@ -143,7 +142,6 @@
       <SolidColorBrush x:Key="CoursePurpleBorderBrush" Color="#A98AD6" />
       <SolidColorBrush x:Key="CourseGreenBackgroundBrush" Color="#1B3028" />
       <SolidColorBrush x:Key="CourseGreenBorderBrush" Color="#61A47F" />
-      <SolidColorBrush x:Key="ScheduleCardBadgeBackgroundBrush" Color="#52080D14" />
       <SolidColorBrush x:Key="PersonalScheduleBackgroundBrush" Color="#252A43" />
       <SolidColorBrush x:Key="PersonalScheduleBorderBrush" Color="#8A91CD" />
       <SolidColorBrush x:Key="TitleBarBackgroundBrush" Color="#12151A" />

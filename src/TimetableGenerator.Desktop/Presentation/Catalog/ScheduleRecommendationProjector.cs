@@ -183,8 +183,10 @@ internal static class ScheduleRecommendationProjector
             courseProjection.Course.Code,
             courseProjection.Course.KoreanName,
             courseProjection.Course.Credits,
-            new ScheduleInstructorSummary(offeringProjection.InstructorSummary),
-            new ScheduleLocationSummary(offeringProjection.LocationSummary));
+            new ScheduleInstructorSummary(
+                offeringProjection.Metadata.Instruction.InstructorAssignment),
+            new ScheduleLocationSummary(
+                offeringProjection.Metadata.Logistics.Location));
 
         foreach (MeetingSlot slot in scheduledOffering.MeetingSlots)
         {

@@ -34,6 +34,14 @@ public sealed class ScheduleRecommendationProjectorTests
         Assert.Equal("프로그래밍 I", mondayEntry.Name);
         Assert.Equal("홍길동 외 1명", mondayEntry.InstructorDisplayText);
         Assert.Equal("오석관 301", mondayEntry.LocationDisplayText);
+        Assert.True(mondayEntry.HasConfirmedInstructor);
+        Assert.True(mondayEntry.HasAssignedLocation);
+        Assert.Equal(
+            EInstructorAssignmentStatus.Confirmed,
+            mondayEntry.CourseDetails.InstructorSummary.AssignmentStatus);
+        Assert.Equal(
+            ELocationAssignmentStatus.Assigned,
+            mondayEntry.CourseDetails.LocationSummary.AssignmentStatus);
         Assert.Equal(new CourseCredits(3m), mondayEntry.CourseDetails.Credits);
         Assert.Equal(EDay.Monday, mondayEntry.Day);
         Assert.Equal(new AcademicPeriod(1), mondayEntry.Period);
@@ -47,6 +55,66 @@ public sealed class ScheduleRecommendationProjectorTests
         CourseScheduleEntry wednesdayEntry = wednesdayEntryOrNull;
         Assert.Equal(EDay.Wednesday, wednesdayEntry.Day);
         Assert.Equal(new AcademicPeriod(2), wednesdayEntry.Period);
+    }
+
+    [Fact]
+    public void ProjectPreservesUnavailableInstructorAndLocationStates()
+    {
+        CourseCatalogDocument notProvidedDocument =
+            CatalogProjectionTestFixture.CreateDocument();
+        CourseCatalogProjection notProvidedCatalog = CourseCatalogProjector.Project(
+            notProvidedDocument);
+        ApplicationScheduleRecommendation notProvidedRecommendation =
+            CatalogProjectionTestFixture.CreateScheduledRecommendation(
+                notProvidedDocument,
+                new CourseId("course-programming"),
+                new OfferingId("offering-programming-alternative"));
+
+        PresentationScheduleRecommendation notProvidedProjection =
+            ScheduleRecommendationProjector.Project(
+                notProvidedRecommendation,
+                notProvidedCatalog);
+
+        CourseScheduleEntry notProvidedEntry = Assert.IsType<CourseScheduleEntry>(
+            Assert.Single(notProvidedProjection.Entries));
+        Assert.False(notProvidedEntry.HasConfirmedInstructor);
+        Assert.False(notProvidedEntry.HasAssignedLocation);
+        Assert.Equal("교수 정보 없음", notProvidedEntry.InstructorDisplayText);
+        Assert.Equal("강의실 미정", notProvidedEntry.LocationDisplayText);
+        Assert.Equal(
+            EInstructorAssignmentStatus.NotProvided,
+            notProvidedEntry.CourseDetails.InstructorSummary.AssignmentStatus);
+        Assert.Equal(
+            ELocationAssignmentStatus.NotProvided,
+            notProvidedEntry.CourseDetails.LocationSummary.AssignmentStatus);
+
+        CourseCatalogDocument unconfirmedDocument =
+            CatalogProjectionTestFixture.CreateDocumentWithScheduledAlternativeCourse();
+        CourseCatalogProjection unconfirmedCatalog = CourseCatalogProjector.Project(
+            unconfirmedDocument);
+        ApplicationScheduleRecommendation unconfirmedRecommendation =
+            CatalogProjectionTestFixture.CreateScheduledRecommendation(
+                unconfirmedDocument,
+                new CourseId("course-seminar"),
+                new OfferingId("offering-seminar-unscheduled"));
+
+        PresentationScheduleRecommendation unconfirmedProjection =
+            ScheduleRecommendationProjector.Project(
+                unconfirmedRecommendation,
+                unconfirmedCatalog);
+
+        CourseScheduleEntry unconfirmedEntry = Assert.IsType<CourseScheduleEntry>(
+            Assert.Single(unconfirmedProjection.Entries));
+        Assert.False(unconfirmedEntry.HasConfirmedInstructor);
+        Assert.False(unconfirmedEntry.HasAssignedLocation);
+        Assert.Equal("교수 미정", unconfirmedEntry.InstructorDisplayText);
+        Assert.Equal("강의실 미정", unconfirmedEntry.LocationDisplayText);
+        Assert.Equal(
+            EInstructorAssignmentStatus.Unconfirmed,
+            unconfirmedEntry.CourseDetails.InstructorSummary.AssignmentStatus);
+        Assert.Equal(
+            ELocationAssignmentStatus.NotProvided,
+            unconfirmedEntry.CourseDetails.LocationSummary.AssignmentStatus);
     }
 
     [Fact]

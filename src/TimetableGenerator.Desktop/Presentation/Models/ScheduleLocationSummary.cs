@@ -1,27 +1,33 @@
 using System;
 
+using TimetableGenerator.CatalogJson;
+using TimetableGenerator.Desktop.Presentation.Catalog;
+
 namespace TimetableGenerator.Desktop.Presentation.Models;
 
 internal sealed record ScheduleLocationSummary
 {
     public string Value { get; }
 
-    public ScheduleLocationSummary(string value)
+    public ELocationAssignmentStatus AssignmentStatus { get; }
+
+    public bool IsAssigned
     {
-        if (value == null)
+        get
         {
-            throw new ArgumentNullException(nameof(value));
+            return AssignmentStatus == ELocationAssignmentStatus.Assigned;
+        }
+    }
+
+    public ScheduleLocationSummary(LocationAssignmentMetadata locationAssignment)
+    {
+        if (locationAssignment == null)
+        {
+            throw new ArgumentNullException(nameof(locationAssignment));
         }
 
-        string normalizedValue = value.Trim();
-        if (normalizedValue.Length == 0)
-        {
-            throw new ArgumentException(
-                "Schedule location summaries cannot be empty.",
-                nameof(value));
-        }
-
-        Value = normalizedValue;
+        Value = CatalogSummaryFormatter.FormatLocationSummary(locationAssignment);
+        AssignmentStatus = locationAssignment.Status;
     }
 
     public override string ToString()

@@ -69,6 +69,11 @@ internal static class CatalogProjectionTestFixture
 
     public static ScheduleRecommendation CreateRecommendation(CourseCatalogDocument document)
     {
+        if (document == null)
+        {
+            throw new ArgumentNullException(nameof(document));
+        }
+
         CourseId programmingCourseId = new CourseId("course-programming");
         OfferingId primaryOfferingId = new OfferingId("offering-programming-primary");
         CourseId seminarCourseId = new CourseId("course-seminar");
@@ -81,6 +86,49 @@ internal static class CatalogProjectionTestFixture
                 new OfferingId[] { primaryOfferingId });
         UnscheduledOfferingSelection unscheduledSelection =
             new UnscheduledOfferingSelection(seminarCourseId, seminarOfferingId);
+        PlanningPlanContent content = new PlanningPlanContent(
+            new CourseChoiceGroup[] { courseChoiceGroup },
+            new UnscheduledOfferingSelection[] { unscheduledSelection },
+            Array.Empty<PersonalSchedule>());
+        return generateRecommendation(document, content);
+    }
+
+    public static ScheduleRecommendation CreateScheduledRecommendation(
+        CourseCatalogDocument document,
+        CourseId courseId,
+        OfferingId offeringId)
+    {
+        if (document == null)
+        {
+            throw new ArgumentNullException(nameof(document));
+        }
+
+        if (courseId == null)
+        {
+            throw new ArgumentNullException(nameof(courseId));
+        }
+
+        if (offeringId == null)
+        {
+            throw new ArgumentNullException(nameof(offeringId));
+        }
+
+        CourseChoiceGroup courseChoiceGroup =
+            CourseChoiceGroup.CreateWithAcceptableOfferings(
+                CourseChoiceGroupId.CreateNew(),
+                courseId,
+                new OfferingId[] { offeringId });
+        PlanningPlanContent content = new PlanningPlanContent(
+            new CourseChoiceGroup[] { courseChoiceGroup },
+            Array.Empty<UnscheduledOfferingSelection>(),
+            Array.Empty<PersonalSchedule>());
+        return generateRecommendation(document, content);
+    }
+
+    private static ScheduleRecommendation generateRecommendation(
+        CourseCatalogDocument document,
+        PlanningPlanContent content)
+    {
         PlanCatalogBinding catalogBinding = new PlanCatalogBinding(
             document.Catalog.Id,
             document.Catalog.InstitutionId,
@@ -91,10 +139,7 @@ internal static class CatalogProjectionTestFixture
             PlanId.CreateNew(),
             new PlanName("프로젝션 테스트"),
             catalogBinding,
-            new PlanningPlanContent(
-                new CourseChoiceGroup[] { courseChoiceGroup },
-                new UnscheduledOfferingSelection[] { unscheduledSelection },
-                Array.Empty<PersonalSchedule>()));
+            content);
         ScheduleRecommendationRequest request = new ScheduleRecommendationRequest(
             document.Catalog,
             plan,

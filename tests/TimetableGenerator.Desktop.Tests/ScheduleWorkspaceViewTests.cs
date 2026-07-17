@@ -19,16 +19,21 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
+using TimetableGenerator.CatalogJson;
 using TimetableGenerator.Desktop.Exporting;
 using TimetableGenerator.Desktop.Presentation;
+using TimetableGenerator.Desktop.Presentation.Catalog;
 using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
+using TimetableGenerator.Desktop.Tests.Presentation.Catalog;
 using TimetableGenerator.Desktop.Views;
 using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Planning;
 using TimetableGenerator.Domain.Scheduling;
 
 using Xunit;
+using ApplicationScheduleRecommendation =
+    TimetableGenerator.Application.Scheduling.ScheduleRecommendation;
 
 namespace TimetableGenerator.Desktop.Tests;
 
@@ -244,7 +249,7 @@ public sealed class ScheduleWorkspaceViewTests
     }
 
     [AvaloniaFact]
-    public void ScheduleCardKeepsCourseNameOnOneLineAndOpensCompleteDetails()
+    public void CourseScheduleCardPrioritizesTitleLocationThenInstructorAndKeepsDetails()
     {
         const string LONG_NAME = "사용자 경험과 인터페이스 설계를 위한 고급 프로젝트 실습";
         const string LONG_INSTRUCTOR = "김테스트, 박테스트 외 3명";
@@ -298,35 +303,48 @@ public sealed class ScheduleWorkspaceViewTests
                 AutomationProperties.GetHelpText(scheduleCard));
 
             Grid cardContent = Assert.IsType<Grid>(scheduleCard.Content);
-            Assert.Equal(4, cardContent.RowDefinitions.Count);
-            Assert.True(cardContent.RowDefinitions[2].Height.IsStar);
-            Grid metadata = Assert.Single(
-                cardContent.Children.OfType<Grid>(),
-                grid => Grid.GetRow(grid) == 3);
-            Assert.Equal(2, metadata.ColumnDefinitions.Count);
-            Assert.Equal(
-                metadata.ColumnDefinitions[0].Width,
-                metadata.ColumnDefinitions[1].Width);
+            Assert.Equal(VerticalAlignment.Center, cardContent.VerticalAlignment);
+            Assert.Equal(3, cardContent.RowDefinitions.Count);
+            Assert.All(
+                cardContent.RowDefinitions,
+                rowDefinition => Assert.True(rowDefinition.Height.IsAuto));
 
             List<TextBlock> cardTexts = scheduleCard.GetVisualDescendants()
                 .OfType<TextBlock>()
                 .ToList();
+            Assert.Equal(3, cardTexts.Count);
+            Assert.DoesNotContain(
+                cardTexts,
+                textBlock => textBlock.Text == "UXD00100");
+            Assert.DoesNotContain(
+                cardTexts,
+                textBlock => textBlock.Text == "3학점");
             TextBlock courseName = Assert.Single(
                 cardTexts,
                 textBlock => textBlock.Text == LONG_NAME);
-            Assert.Equal(TextWrapping.NoWrap, courseName.TextWrapping);
+            Assert.Equal(0, Grid.GetRow(courseName));
+            Assert.Equal(TextAlignment.Center, courseName.TextAlignment);
+            Assert.Equal(TextWrapping.Wrap, courseName.TextWrapping);
+            Assert.Equal(2, courseName.MaxLines);
             Assert.Equal(TextTrimming.CharacterEllipsis, courseName.TextTrimming);
-            Assert.Contains(cardTexts, textBlock => textBlock.Text == LONG_INSTRUCTOR);
-            Assert.Contains(cardTexts, textBlock => textBlock.Text == LONG_LOCATION);
             TextBlock instructor = Assert.Single(
                 cardTexts,
                 textBlock => textBlock.Text == LONG_INSTRUCTOR);
             TextBlock location = Assert.Single(
                 cardTexts,
                 textBlock => textBlock.Text == LONG_LOCATION);
+            Assert.Equal(1, Grid.GetRow(location));
+            Assert.Equal(2, Grid.GetRow(instructor));
+            Assert.Equal(TextAlignment.Center, location.TextAlignment);
+            Assert.Equal(TextAlignment.Center, instructor.TextAlignment);
+            Assert.True(courseName.FontSize > location.FontSize);
+            Assert.True(location.FontSize > instructor.FontSize);
+            Assert.Equal(FontWeight.SemiBold, courseName.FontWeight);
+            Assert.Equal(FontWeight.Medium, location.FontWeight);
+            Assert.Equal(FontWeight.Normal, instructor.FontWeight);
+            Assert.NotSame(location.Foreground, instructor.Foreground);
             Assert.Equal(TextTrimming.CharacterEllipsis, instructor.TextTrimming);
             Assert.Equal(TextTrimming.CharacterEllipsis, location.TextTrimming);
-            Assert.Equal(TextAlignment.Right, location.TextAlignment);
             Assert.Equal(
                 LONG_NAME + Environment.NewLine + "선택하여 과목 상세 정보 보기",
                 ToolTip.GetTip(scheduleCard));
@@ -354,6 +372,139 @@ public sealed class ScheduleWorkspaceViewTests
             Dispatcher.UIThread.RunJobs();
             Assert.True(detailsFlyoutOrNull.IsOpen);
             detailsFlyoutOrNull.Hide();
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void CourseScheduleCardOmitsUnavailableMetadataWithoutEmptyRows()
+    {
+        const string LOCATION_ONLY_NAME = "장소만 제공된 과목";
+        const string INSTRUCTOR_ONLY_NAME = "교수만 제공된 과목";
+        const string TITLE_ONLY_NAME = "세부 정보가 없는 과목";
+
+        ScheduleEntry locationOnlyEntry = createMetadataAvailabilityEntry(
+            new CourseCode("LOC00100"),
+            new KoreanCourseName(LOCATION_ONLY_NAME),
+            EDay.Monday,
+            new ScheduleInstructorSummary(
+                InstructorAssignmentMetadata.NotProvided),
+            new ScheduleLocationSummary(
+                LocationAssignmentMetadata.CreateAssigned(
+                    new ClassroomDisplayText("오석관 301"))));
+        ScheduleEntry instructorOnlyEntry = createMetadataAvailabilityEntry(
+            new CourseCode("INS00100"),
+            new KoreanCourseName(INSTRUCTOR_ONLY_NAME),
+            EDay.Tuesday,
+            new ScheduleInstructorSummary(
+                InstructorAssignmentMetadata.CreateConfirmed(
+                    new InstructorDisplayText("김테스트"),
+                    new AdditionalInstructorCount(0))),
+            new ScheduleLocationSummary(
+                LocationAssignmentMetadata.NotProvided));
+        ScheduleEntry titleOnlyEntry = createMetadataAvailabilityEntry(
+            new CourseCode("NON00100"),
+            new KoreanCourseName(TITLE_ONLY_NAME),
+            EDay.Wednesday,
+            new ScheduleInstructorSummary(
+                InstructorAssignmentMetadata.Unconfirmed),
+            new ScheduleLocationSummary(
+                LocationAssignmentMetadata.NotProvided));
+        ScheduleBoardView scheduleBoard = new ScheduleBoardView();
+        scheduleBoard.DataContext = createScheduleBoardPresentation(
+            new ScheduleRecommendation(
+                new ScheduleEntry[]
+                {
+                    locationOnlyEntry,
+                    instructorOnlyEntry,
+                    titleOnlyEntry,
+                }));
+
+        Window window = new Window();
+        window.Width = 900.0;
+        window.Height = 420.0;
+        window.Content = scheduleBoard;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Button locationOnlyCard = findCourseCardByName(
+                scheduleBoard,
+                LOCATION_ONLY_NAME);
+            assertVisualCourseCardTexts(
+                locationOnlyCard,
+                new string[] { LOCATION_ONLY_NAME, "오석관 301" });
+
+            Button instructorOnlyCard = findCourseCardByName(
+                scheduleBoard,
+                INSTRUCTOR_ONLY_NAME);
+            assertVisualCourseCardTexts(
+                instructorOnlyCard,
+                new string[] { INSTRUCTOR_ONLY_NAME, "김테스트" });
+
+            Button titleOnlyCard = findCourseCardByName(
+                scheduleBoard,
+                TITLE_ONLY_NAME);
+            assertVisualCourseCardTexts(
+                titleOnlyCard,
+                new string[] { TITLE_ONLY_NAME });
+            Assert.Contains(
+                "교수 미정",
+                AutomationProperties.GetName(titleOnlyCard));
+            Assert.Contains(
+                "강의실 미정",
+                AutomationProperties.GetName(titleOnlyCard));
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void ProjectedUnavailableMetadataIsOmittedFromScheduleCard()
+    {
+        CourseCatalogDocument document = CatalogProjectionTestFixture.CreateDocument();
+        CourseCatalogProjection catalogProjection = CourseCatalogProjector.Project(document);
+        ApplicationScheduleRecommendation recommendation =
+            CatalogProjectionTestFixture.CreateScheduledRecommendation(
+                document,
+                new CourseId("course-programming"),
+                new OfferingId("offering-programming-alternative"));
+        ScheduleRecommendation projectedRecommendation =
+            ScheduleRecommendationProjector.Project(
+                recommendation,
+                catalogProjection);
+        ScheduleBoardView scheduleBoard = new ScheduleBoardView();
+        scheduleBoard.DataContext = createScheduleBoardPresentation(
+            projectedRecommendation);
+        Window window = new Window();
+        window.Width = 900.0;
+        window.Height = 420.0;
+        window.Content = scheduleBoard;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Button projectedCard = findCourseCardByName(
+                scheduleBoard,
+                "프로그래밍 I");
+            assertVisualCourseCardTexts(
+                projectedCard,
+                new string[] { "프로그래밍 I" });
+            Assert.Contains(
+                "교수 정보 없음",
+                AutomationProperties.GetName(projectedCard));
+            Assert.Contains(
+                "강의실 미정",
+                AutomationProperties.GetName(projectedCard));
         }
         finally
         {
@@ -597,8 +748,13 @@ public sealed class ScheduleWorkspaceViewTests
                 new CourseCode("TST00100"),
                 new KoreanCourseName("저녁 수업"),
                 new CourseCredits(3m),
-                new ScheduleInstructorSummary("테스트 교수"),
-                new ScheduleLocationSummary("테스트 강의실")),
+                new ScheduleInstructorSummary(
+                    InstructorAssignmentMetadata.CreateConfirmed(
+                        new InstructorDisplayText("테스트 교수"),
+                        new AdditionalInstructorCount(0))),
+                new ScheduleLocationSummary(
+                    LocationAssignmentMetadata.CreateAssigned(
+                        new ClassroomDisplayText("테스트 강의실")))),
             day,
             period,
             ECourseAccent.Blue);
@@ -614,12 +770,103 @@ public sealed class ScheduleWorkspaceViewTests
                 new KoreanCourseName(
                     "사용자 경험과 인터페이스 설계를 위한 고급 프로젝트 실습"),
                 new CourseCredits(3m),
-                new ScheduleInstructorSummary("김테스트, 박테스트 외 3명"),
+                new ScheduleInstructorSummary(
+                    InstructorAssignmentMetadata.CreateConfirmed(
+                        new InstructorDisplayText("김테스트, 박테스트 외 3명"),
+                        new AdditionalInstructorCount(3))),
                 new ScheduleLocationSummary(
-                    "느헤미야홀 401호 공동 프로젝트 스튜디오")),
+                    LocationAssignmentMetadata.CreateAssigned(
+                        new ClassroomDisplayText(
+                            "느헤미야홀 401호 공동 프로젝트 스튜디오")))),
             day,
             period,
             ECourseAccent.Blue);
+    }
+
+    private static ScheduleEntry createMetadataAvailabilityEntry(
+        CourseCode code,
+        KoreanCourseName name,
+        EDay day,
+        ScheduleInstructorSummary instructorSummary,
+        ScheduleLocationSummary locationSummary)
+    {
+        return new CourseScheduleEntry(
+            new ScheduleCourseDetails(
+                code,
+                name,
+                new CourseCredits(3m),
+                instructorSummary,
+                locationSummary),
+            day,
+            new AcademicPeriod(1),
+            ECourseAccent.Blue);
+    }
+
+    private static Button findCourseCardByName(
+        ScheduleBoardView scheduleBoard,
+        string courseName)
+    {
+        Grid? boardGridOrNull = scheduleBoard.FindControl<Grid>("BoardGrid");
+        Assert.NotNull(boardGridOrNull);
+        if (boardGridOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The rendered schedule grid was not found.");
+        }
+
+        Button? matchingCardOrNull = null;
+        foreach (Button scheduleCard in boardGridOrNull.Children.OfType<Button>())
+        {
+            string? accessibleNameOrNull = AutomationProperties.GetName(scheduleCard);
+            if (accessibleNameOrNull != null
+                && accessibleNameOrNull.Contains(
+                    courseName,
+                    StringComparison.Ordinal))
+            {
+                matchingCardOrNull = scheduleCard;
+                break;
+            }
+        }
+
+        Assert.NotNull(matchingCardOrNull);
+        if (matchingCardOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The requested course schedule card was not found.");
+        }
+
+        return matchingCardOrNull;
+    }
+
+    private static void assertVisualCourseCardTexts(
+        Button scheduleCard,
+        IReadOnlyList<string> expectedTexts)
+    {
+        Grid cardContent = Assert.IsType<Grid>(scheduleCard.Content);
+        Assert.Equal(VerticalAlignment.Center, cardContent.VerticalAlignment);
+        Assert.Equal(expectedTexts.Count, cardContent.RowDefinitions.Count);
+        Assert.Equal(expectedTexts.Count, cardContent.Children.Count);
+
+        for (int index = 0; index < expectedTexts.Count; ++index)
+        {
+            TextBlock textBlock = Assert.IsType<TextBlock>(cardContent.Children[index]);
+            Assert.Equal(expectedTexts[index], textBlock.Text);
+            Assert.Equal(index, Grid.GetRow(textBlock));
+            Assert.Equal(TextAlignment.Center, textBlock.TextAlignment);
+        }
+
+        IReadOnlyList<string> unavailableTexts = new string[]
+        {
+            "교수 정보 없음",
+            "교수 미정",
+            "강의실 미정",
+        };
+        foreach (string unavailableText in unavailableTexts)
+        {
+            Assert.DoesNotContain(
+                cardContent.Children.OfType<TextBlock>(),
+                textBlock => textBlock.Text == unavailableText);
+        }
     }
 
     private static RenderedScheduleBrushes findRenderedScheduleBrushes(

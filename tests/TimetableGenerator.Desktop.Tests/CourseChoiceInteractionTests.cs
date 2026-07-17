@@ -76,6 +76,11 @@ public sealed class CourseChoiceInteractionTests
 
             CourseOfferingPreferenceItem preferredOffering = draft.Offerings[0];
             CourseOfferingPreferenceItem excludedOffering = draft.Offerings[1];
+            Assert.Equal("교수 정보 없음", excludedOffering.InstructorDisplayText);
+            Assert.Equal("강의실 미정", excludedOffering.LocationDisplayText);
+            Assert.Equal(
+                "교수 정보 없음 · 강의실 미정",
+                excludedOffering.LogisticsDisplayText);
             preferredOffering.SelectPreferredCommand.Execute(null);
             preferredOffering.SelectPreferredCommand.Execute(null);
             excludedOffering.SelectAcceptableCommand.Execute(null);

@@ -12,6 +12,13 @@ namespace TimetableGenerator.Desktop.Views;
 
 internal sealed partial class ScheduleBoardView
 {
+    private const double COURSE_CARD_TITLE_FONT_SIZE = 13.0;
+    private const double COURSE_CARD_TITLE_LINE_HEIGHT = 16.5;
+    private const double COURSE_CARD_LOCATION_FONT_SIZE = 11.5;
+    private const double COURSE_CARD_INSTRUCTOR_FONT_SIZE = 10.5;
+    private const double COURSE_CARD_PRIMARY_GAP = 4.0;
+    private const double COURSE_CARD_SECONDARY_GAP = 2.0;
+
     private void configureCourseCard(
         Button scheduleCard,
         CourseScheduleEntry entry)
@@ -39,74 +46,65 @@ internal sealed partial class ScheduleBoardView
     private Grid createCourseEntryContent(CourseScheduleEntry entry)
     {
         Grid content = new Grid();
-        content.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-        content.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-        content.RowDefinitions.Add(new RowDefinition(
-            new GridLength(1.0, GridUnitType.Star)));
+        content.HorizontalAlignment = HorizontalAlignment.Stretch;
+        content.VerticalAlignment = VerticalAlignment.Center;
         content.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
 
-        Grid identity = new Grid();
-        identity.ColumnDefinitions.Add(new ColumnDefinition(
-            new GridLength(1.0, GridUnitType.Star)));
-        identity.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
-
-        TextBlock code = createCardText(entry.Code, 10.5, FontWeight.SemiBold);
-        code.Margin = new Thickness(0.0, 0.0, 6.0, 0.0);
-        code.Foreground = findBrush("TextSecondaryBrush");
-        identity.Children.Add(code);
-
-        TextBlock credits = createCardText(
-            entry.CourseDetails.CreditsDisplayText,
-            9.5,
+        TextBlock name = createCardText(
+            entry.Name,
+            COURSE_CARD_TITLE_FONT_SIZE,
             FontWeight.SemiBold);
-        credits.Foreground = findBrush("TextSecondaryBrush");
-        Border creditsBadge = new Border();
-        creditsBadge.Padding = new Thickness(5.0, 1.0);
-        creditsBadge.CornerRadius = new CornerRadius(8.0);
-        creditsBadge.Background = findBrush("ScheduleCardBadgeBackgroundBrush");
-        creditsBadge.HorizontalAlignment = HorizontalAlignment.Right;
-        creditsBadge.Child = credits;
-        Grid.SetColumn(creditsBadge, 1);
-        identity.Children.Add(creditsBadge);
-        content.Children.Add(identity);
-
-        TextBlock name = createCardText(entry.Name, 12.5, FontWeight.SemiBold);
-        name.Margin = new Thickness(0.0, 4.0, 0.0, 0.0);
-        name.TextWrapping = TextWrapping.NoWrap;
+        name.HorizontalAlignment = HorizontalAlignment.Stretch;
+        name.LineHeight = COURSE_CARD_TITLE_LINE_HEIGHT;
+        name.MaxLines = 2;
+        name.TextAlignment = TextAlignment.Center;
+        name.TextWrapping = TextWrapping.Wrap;
         name.TextTrimming = TextTrimming.CharacterEllipsis;
-        Grid.SetRow(name, 1);
         content.Children.Add(name);
 
-        Grid metadata = new Grid();
-        metadata.ColumnDefinitions.Add(new ColumnDefinition(
-            new GridLength(1.0, GridUnitType.Star)));
-        metadata.ColumnDefinitions.Add(new ColumnDefinition(
-            new GridLength(1.0, GridUnitType.Star)));
-        metadata.ColumnSpacing = 8.0;
-        metadata.Margin = new Thickness(0.0, 6.0, 0.0, 0.0);
+        int nextRowIndex = 1;
+        if (entry.HasAssignedLocation)
+        {
+            content.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+            TextBlock location = createCardText(
+                entry.LocationDisplayText,
+                COURSE_CARD_LOCATION_FONT_SIZE,
+                FontWeight.Medium);
+            location.Margin = new Thickness(
+                0.0,
+                COURSE_CARD_PRIMARY_GAP,
+                0.0,
+                0.0);
+            location.HorizontalAlignment = HorizontalAlignment.Stretch;
+            location.Foreground = findBrush("TextPrimaryBrush");
+            location.TextAlignment = TextAlignment.Center;
+            location.TextWrapping = TextWrapping.NoWrap;
+            location.TextTrimming = TextTrimming.CharacterEllipsis;
+            Grid.SetRow(location, nextRowIndex);
+            content.Children.Add(location);
+            ++nextRowIndex;
+        }
 
-        TextBlock instructor = createCardText(
-            entry.InstructorDisplayText,
-            9.5,
-            FontWeight.Medium);
-        instructor.Foreground = findBrush("TextSecondaryBrush");
-        instructor.TextWrapping = TextWrapping.NoWrap;
-        instructor.TextTrimming = TextTrimming.CharacterEllipsis;
-        metadata.Children.Add(instructor);
+        if (entry.HasConfirmedInstructor)
+        {
+            content.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+            TextBlock instructor = createCardText(
+                entry.InstructorDisplayText,
+                COURSE_CARD_INSTRUCTOR_FONT_SIZE,
+                FontWeight.Normal);
+            double instructorTopMargin = entry.HasAssignedLocation
+                ? COURSE_CARD_SECONDARY_GAP
+                : COURSE_CARD_PRIMARY_GAP;
+            instructor.Margin = new Thickness(0.0, instructorTopMargin, 0.0, 0.0);
+            instructor.HorizontalAlignment = HorizontalAlignment.Stretch;
+            instructor.Foreground = findBrush("TextSecondaryBrush");
+            instructor.TextAlignment = TextAlignment.Center;
+            instructor.TextWrapping = TextWrapping.NoWrap;
+            instructor.TextTrimming = TextTrimming.CharacterEllipsis;
+            Grid.SetRow(instructor, nextRowIndex);
+            content.Children.Add(instructor);
+        }
 
-        TextBlock location = createCardText(
-            entry.LocationDisplayText,
-            9.5,
-            FontWeight.Normal);
-        location.Foreground = findBrush("TextTertiaryBrush");
-        location.TextAlignment = TextAlignment.Right;
-        location.TextWrapping = TextWrapping.NoWrap;
-        location.TextTrimming = TextTrimming.CharacterEllipsis;
-        Grid.SetColumn(location, 1);
-        metadata.Children.Add(location);
-
-        Grid.SetRow(metadata, 3);
-        content.Children.Add(metadata);
         return content;
     }
 

@@ -31,7 +31,7 @@
     <Style Selector="Button.schedule-card">
       <Setter Property="Theme" Value="{StaticResource ProductScheduleCardButtonTheme}" />
       <Setter Property="Margin" Value="4" />
-      <Setter Property="Padding" Value="7,8" />
+      <Setter Property="Padding" Value="8" />
       <Setter Property="MinHeight" Value="0" />
       <Setter Property="HorizontalAlignment" Value="Stretch" />
       <Setter Property="VerticalAlignment" Value="Stretch" />

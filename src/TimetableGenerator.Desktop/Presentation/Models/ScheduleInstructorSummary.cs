@@ -1,27 +1,34 @@
 using System;
 
+using TimetableGenerator.CatalogJson;
+using TimetableGenerator.Desktop.Presentation.Catalog;
+
 namespace TimetableGenerator.Desktop.Presentation.Models;
 
 internal sealed record ScheduleInstructorSummary
 {
     public string Value { get; }
 
-    public ScheduleInstructorSummary(string value)
+    public EInstructorAssignmentStatus AssignmentStatus { get; }
+
+    public bool IsConfirmed
     {
-        if (value == null)
+        get
         {
-            throw new ArgumentNullException(nameof(value));
+            return AssignmentStatus == EInstructorAssignmentStatus.Confirmed;
+        }
+    }
+
+    public ScheduleInstructorSummary(
+        InstructorAssignmentMetadata instructorAssignment)
+    {
+        if (instructorAssignment == null)
+        {
+            throw new ArgumentNullException(nameof(instructorAssignment));
         }
 
-        string normalizedValue = value.Trim();
-        if (normalizedValue.Length == 0)
-        {
-            throw new ArgumentException(
-                "Schedule instructor summaries cannot be empty.",
-                nameof(value));
-        }
-
-        Value = normalizedValue;
+        Value = CatalogSummaryFormatter.FormatInstructorSummary(instructorAssignment);
+        AssignmentStatus = instructorAssignment.Status;
     }
 
     public override string ToString()
