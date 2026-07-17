@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Avalonia.Controls;
@@ -8,12 +9,17 @@ using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
+using Avalonia.Styling;
 using Avalonia.Threading;
 
+using TimetableGenerator.CatalogJson;
+using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Desktop.Product;
 using TimetableGenerator.Desktop.Tests.Presentation.Appearance;
+using TimetableGenerator.Desktop.Tests.Presentation.Catalog;
 using TimetableGenerator.Desktop.Views;
+using TimetableGenerator.Domain.Catalogs;
 
 using Xunit;
 
@@ -88,6 +94,64 @@ public sealed class PlannerWorkspaceRenderTests
         finally
         {
             window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void CourseChoiceEditorRendersInLightAndDarkThemes()
+    {
+        CourseCatalogDocument document = CatalogProjectionTestFixture
+            .CreateDocumentWithScheduledAlternativeCourse();
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace(document);
+        workspace.ActivePlan = workspace.Plans[1];
+        ProductShellViewModel shell = PlannerWorkspaceTestFactory.CreateShell(
+            workspace);
+        MainWindow window = new MainWindow(
+            shell,
+            ProductAppearanceTestFactory.CreateViewModel());
+        window.Width = REFERENCE_WIDTH;
+        window.Height = REFERENCE_HEIGHT;
+
+        try
+        {
+            window.RequestedThemeVariant = ThemeVariant.Light;
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            workspace.SearchText = "프로그래밍";
+            CourseSearchItem programming = Assert.Single(
+                workspace.VisibleCourses);
+            workspace.AddCourseCommand.Execute(programming);
+            CourseChoiceDraftCourseItem programmingDraft = Assert.Single(
+                workspace.CourseChoiceDraftCourses);
+            programmingDraft.Offerings[0].SelectPreferredCommand.Execute(null);
+            workspace.AlternativeCourseSearchText = "세미나";
+            CourseChoiceAlternativeSearchItem seminar = Assert.Single(
+                workspace.AlternativeCourseSearchResults);
+            workspace.AddAlternativeCourseCommand.Execute(seminar);
+            CourseChoiceDraftCourseItem seminarDraft = workspace
+                .CourseChoiceDraftCourses
+                .Single(candidate => candidate.Name == "세미나 3");
+            seminarDraft.Offerings[0].SelectAcceptableCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(workspace.IsCourseChoiceEditorVisible);
+            Assert.Equal("수강 선택 설정", workspace.CourseChoiceEditorTitle);
+            saveRenderedFrame(
+                window,
+                "course-choice-editor-light-1487x1058.png");
+
+            window.RequestedThemeVariant = ThemeVariant.Dark;
+            Dispatcher.UIThread.RunJobs();
+            saveRenderedFrame(
+                window,
+                "course-choice-editor-dark-1487x1058.png");
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
         }
     }
 

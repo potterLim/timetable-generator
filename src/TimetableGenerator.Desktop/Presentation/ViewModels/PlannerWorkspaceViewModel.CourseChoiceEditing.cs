@@ -47,7 +47,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         {
             return mEditingCourseChoiceGroupIdOrNull.HasValue
                 ? "수강 선택 수정"
-                : "분반 선호 설정";
+                : "수강 선택 설정";
         }
     }
 
@@ -57,7 +57,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         {
             if (CourseChoiceDraftCourses.Count > 1)
             {
-                return "각 과목의 분반 선호를 정하면 이 중 한 과목만 시간표에 배치합니다.";
+                return "각 과목에서 들을 수 있는 분반을 정하세요. 추천 시간표마다 이 중 한 과목만 배치합니다.";
             }
 
             return "듣고 싶은 분반은 선호 또는 가능으로 표시하고, 원하지 않는 분반은 제외하세요.";
