@@ -68,9 +68,9 @@ public sealed class AppearanceSettingsInteractionTests
             Assert.Equal(
                 Avalonia.Layout.VerticalAlignment.Center,
                 systemOption.VerticalContentAlignment);
-            assertIndicatorAndContentAreVerticallyAligned(systemOption);
-            assertIndicatorAndContentAreVerticallyAligned(lightOption);
-            assertIndicatorAndContentAreVerticallyAligned(darkOption);
+            assertIndicatorAndContentUseProductSpacing(systemOption);
+            assertIndicatorAndContentUseProductSpacing(lightOption);
+            assertIndicatorAndContentUseProductSpacing(darkOption);
             assertIndicatorHasSelectedSurfaceInset(systemOption);
             assertIndicatorHasSelectedSurfaceInset(lightOption);
             assertIndicatorHasSelectedSurfaceInset(darkOption);
@@ -146,7 +146,7 @@ public sealed class AppearanceSettingsInteractionTests
         }
     }
 
-    private static void assertIndicatorAndContentAreVerticallyAligned(
+    private static void assertIndicatorAndContentUseProductSpacing(
         RadioButton option)
     {
         Visual indicator = option.GetVisualDescendants()
@@ -173,10 +173,14 @@ public sealed class AppearanceSettingsInteractionTests
             + (indicator.Bounds.Height / 2.0);
         double presenterCenterY = presenterOriginOrNull.Value.Y
             + (presenter.Bounds.Height / 2.0);
+        double horizontalGap = presenterOriginOrNull.Value.X
+            - indicatorOriginOrNull.Value.X
+            - indicator.Bounds.Width;
+        Assert.InRange(horizontalGap, 7.5, 8.5);
         Assert.InRange(
-            Math.Abs(indicatorCenterY - presenterCenterY),
-            0.0,
-            1.0);
+            indicatorCenterY - presenterCenterY,
+            0.5,
+            1.5);
     }
 
     private static void assertIndicatorHasSelectedSurfaceInset(

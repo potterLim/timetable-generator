@@ -39,7 +39,7 @@
       Background="{DynamicResource PaneSurfaceBrush}"
       BorderBrush="{DynamicResource PaneDividerBrush}"
       BorderThickness="0,0,1,0">
-    <Grid Margin="18,20,16,14" RowDefinitions="Auto,14,40,12,40,14,1,16,Auto,8,*">
+    <Grid Margin="18,20,16,14" RowDefinitions="Auto,14,40,12,88,14,1,16,Auto,8,*">
       <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
         <TextBlock
             Classes="title"
@@ -81,9 +81,11 @@
             IsHitTestVisible="False" />
       </Grid>
 
-      <Grid Grid.Row="4" ColumnDefinitions="*,12,*">
+      <Grid Grid.Row="4" RowDefinitions="40,8,40">
         <ComboBox
-            Grid.Column="0"
+            x:Name="DepartmentFilter"
+            Grid.Row="0"
+            HorizontalAlignment="Stretch"
             ItemsSource="{Binding UnitFilters}"
             SelectedItem="{Binding SelectedUnitFilter, Mode=TwoWay}"
             AutomationProperties.AutomationId="DepartmentFilter"
@@ -100,7 +102,9 @@
         </ComboBox>
 
         <ComboBox
-            Grid.Column="2"
+            x:Name="RequirementFilter"
+            Grid.Row="2"
+            HorizontalAlignment="Stretch"
             ItemsSource="{Binding RequirementFilters}"
             SelectedItem="{Binding SelectedRequirementFilter, Mode=TwoWay}"
             AutomationProperties.AutomationId="RequirementFilter"

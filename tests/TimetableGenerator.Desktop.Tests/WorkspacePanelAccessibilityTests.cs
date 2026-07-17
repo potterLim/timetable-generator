@@ -157,6 +157,28 @@ public sealed class WorkspacePanelAccessibilityTests
                     VerticalAlignment.Center,
                     searchBox.VerticalContentAlignment);
 
+                ComboBox departmentFilter = findRequiredControl<ComboBox>(
+                    courseBrowser,
+                    "DepartmentFilter");
+                ComboBox requirementFilter = findRequiredControl<ComboBox>(
+                    courseBrowser,
+                    "RequirementFilter");
+                Assert.Equal(
+                    searchBox.Bounds.Width,
+                    departmentFilter.Bounds.Width,
+                    3);
+                Assert.Equal(
+                    departmentFilter.Bounds.Width,
+                    requirementFilter.Bounds.Width,
+                    3);
+                Assert.Equal(
+                    departmentFilter.Bounds.X,
+                    requirementFilter.Bounds.X,
+                    3);
+                Assert.True(
+                    requirementFilter.Bounds.Top
+                        >= departmentFilter.Bounds.Bottom + 7.5);
+
                 ComboBox[] selectors = courseBrowser.GetVisualDescendants()
                     .OfType<ComboBox>()
                     .ToArray();
