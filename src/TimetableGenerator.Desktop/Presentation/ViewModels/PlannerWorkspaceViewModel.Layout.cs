@@ -140,6 +140,12 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     internal void closeOverlayPanes()
     {
+        if (IsCourseChoiceEditorVisible)
+        {
+            closeCourseChoiceEditingState();
+            return;
+        }
+
         if (IsPersonalScheduleOverlayVisible)
         {
             closePersonalScheduleEditingState();

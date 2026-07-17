@@ -22,6 +22,10 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
 
     private bool mWasPersonalScheduleOverlayVisible;
 
+    private Control? mCourseChoiceFocusReturnTargetOrNull;
+
+    private bool mWasCourseChoiceEditorVisible;
+
     private bool mIsAttachedToVisualTree;
 
     public ProductWorkspaceHostView()
@@ -69,8 +73,11 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         mWorkspaceOrNull.PropertyChanged += onWorkspacePropertyChanged;
         mWasPersonalScheduleOverlayVisible =
             mWorkspaceOrNull.IsPersonalScheduleOverlayVisible;
+        mWasCourseChoiceEditorVisible =
+            mWorkspaceOrNull.IsCourseChoiceEditorVisible;
         focusPlanEditingControlWhenRequired();
         focusPersonalScheduleControlWhenRequired();
+        focusCourseChoiceControlWhenRequired();
     }
 
     private void disconnectWorkspace()
@@ -110,6 +117,11 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
             == nameof(PlannerWorkspaceViewModel.PersonalScheduleValidationError))
         {
             focusPersonalScheduleValidationControlWhenRequired();
+        }
+        else if (eventArgs.PropertyName
+            == nameof(PlannerWorkspaceViewModel.IsCourseChoiceEditorVisible))
+        {
+            handleCourseChoiceEditorStateChanged();
         }
     }
 
@@ -278,8 +290,95 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         addButtonOrNull?.Focus();
     }
 
+    private void focusCourseChoiceControlWhenRequired()
+    {
+        if (mWorkspaceOrNull == null
+            || mWorkspaceOrNull.IsCourseChoiceEditorVisible == false)
+        {
+            return;
+        }
+
+        Dispatcher.UIThread.Post(focusCourseChoiceControl, DispatcherPriority.Input);
+    }
+
+    private void handleCourseChoiceEditorStateChanged()
+    {
+        if (mWorkspaceOrNull == null)
+        {
+            return;
+        }
+
+        bool isEditorVisible = mWorkspaceOrNull.IsCourseChoiceEditorVisible;
+        if (isEditorVisible && mWasCourseChoiceEditorVisible == false)
+        {
+            TopLevel? topLevelOrNull = TopLevel.GetTopLevel(this);
+            if (topLevelOrNull != null)
+            {
+                mCourseChoiceFocusReturnTargetOrNull =
+                    topLevelOrNull.FocusManager?.GetFocusedElement() as Control;
+            }
+        }
+
+        if (isEditorVisible == false && mWasCourseChoiceEditorVisible)
+        {
+            Dispatcher.UIThread.Post(
+                restoreCourseChoiceFocus,
+                DispatcherPriority.Input);
+        }
+
+        mWasCourseChoiceEditorVisible = isEditorVisible;
+        focusCourseChoiceControlWhenRequired();
+    }
+
+    private void focusCourseChoiceControl()
+    {
+        CourseChoiceEditorView? editorOrNull =
+            this.FindControl<CourseChoiceEditorView>("CourseChoiceEditor");
+        editorOrNull?.focusInitialInput();
+    }
+
+    private void restoreCourseChoiceFocus()
+    {
+        Control? returnTargetOrNull = mCourseChoiceFocusReturnTargetOrNull;
+        mCourseChoiceFocusReturnTargetOrNull = null;
+        if (returnTargetOrNull != null
+            && returnTargetOrNull.IsVisible
+            && returnTargetOrNull.IsEnabled
+            && returnTargetOrNull.IsAttachedToVisualTree()
+            && returnTargetOrNull.Focus())
+        {
+            return;
+        }
+
+        Button? editButtonOrNull = this.GetVisualDescendants()
+            .OfType<Button>()
+            .FirstOrDefault(
+                static candidate => candidate.Name
+                    == "CourseChoiceGroupEditButton"
+                    || candidate.Name
+                    == "AlternativeCourseChoiceGroupEditButton");
+        if (editButtonOrNull != null && editButtonOrNull.Focus())
+        {
+            return;
+        }
+
+        focusCourseSearchBox();
+    }
+
     private void onKeyDown(object? senderOrNull, KeyEventArgs eventArgs)
     {
+        if (mWorkspaceOrNull != null
+            && mWorkspaceOrNull.IsCourseChoiceEditorVisible)
+        {
+            if (eventArgs.Key == Key.Escape)
+            {
+                mWorkspaceOrNull.closeOverlayPanes();
+                eventArgs.Handled = true;
+            }
+
+            return;
+        }
+
         bool isFindShortcut = eventArgs.Key == Key.F
             && (eventArgs.KeyModifiers.HasFlag(KeyModifiers.Control)
                 || eventArgs.KeyModifiers.HasFlag(KeyModifiers.Meta));
@@ -314,5 +413,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         disconnectWorkspace();
         mPersonalScheduleFocusReturnTargetOrNull = null;
         mWasPersonalScheduleOverlayVisible = false;
+        mCourseChoiceFocusReturnTargetOrNull = null;
+        mWasCourseChoiceEditorVisible = false;
     }
 }

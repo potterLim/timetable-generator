@@ -128,7 +128,11 @@ internal sealed class CourseSearchItem : ObservableObject
                     nameof(value));
             }
 
-            setProperty(ref mSelectedSelectionOption, value);
+            if (setProperty(ref mSelectedSelectionOption, value))
+            {
+                raisePropertyChanged(nameof(AddButtonAccessibleName));
+                raisePropertyChanged(nameof(AddButtonToolTipText));
+            }
         }
     }
 
@@ -137,6 +141,22 @@ internal sealed class CourseSearchItem : ObservableObject
         get
         {
             return SelectionOptions.Count > 1;
+        }
+    }
+
+    public bool IsSelectedOptionTimeNotProvided
+    {
+        get
+        {
+            return SelectedSelectionOption.IsTimeNotProvided;
+        }
+    }
+
+    public int ScheduledOfferingCount
+    {
+        get
+        {
+            return Projection.ScheduledOfferingIds.Count;
         }
     }
 
@@ -189,7 +209,35 @@ internal sealed class CourseSearchItem : ObservableObject
                 return Name + "은 현재 계획에 추가되어 있습니다.";
             }
 
+            if (IsSelectedOptionTimeNotProvided)
+            {
+                return Name + "의 선택한 시간 미정 분반을 현재 계획에 추가";
+            }
+
+            if (ScheduledOfferingCount > 1)
+            {
+                return Name + "의 분반 선호 설정 열기";
+            }
+
             return Name + "을 현재 계획에 추가";
+        }
+    }
+
+    public string AddButtonToolTipText
+    {
+        get
+        {
+            if (IsSelectedOptionTimeNotProvided)
+            {
+                return "시간 미정 분반 추가";
+            }
+
+            if (ScheduledOfferingCount > 1)
+            {
+                return "분반 선호 설정";
+            }
+
+            return "계획에 추가";
         }
     }
 
@@ -240,21 +288,11 @@ internal sealed class CourseSearchItem : ObservableObject
         return SelectedSelectionOption.Selection;
     }
 
-    public void MarkAdded()
-    {
-        setSelectionState(ESelectionState.Selected);
-    }
-
-    public void MarkRemoved()
-    {
-        setSelectionState(ESelectionState.NotSelected);
-    }
-
     public void SynchronizeSelection(PlanningCourseSelection? selectionOrNull)
     {
         if (selectionOrNull == null)
         {
-            MarkRemoved();
+            markRemoved();
             return;
         }
 
@@ -274,7 +312,7 @@ internal sealed class CourseSearchItem : ObservableObject
         }
 
         SelectedSelectionOption = matchingOptionOrNull;
-        MarkAdded();
+        markAdded();
     }
 
     private static List<CourseSelectionOption> createSelectionOptions(
@@ -289,7 +327,7 @@ internal sealed class CourseSearchItem : ObservableObject
                     projection.ScheduledOfferingIds);
             string scheduledDisplayName = "시간표가 있는 "
                 + projection.ScheduledOfferingIds.Count
-                + "개 분반에서 자동 선택";
+                + "개 분반의 선호 설정";
             options.Add(new CourseSelectionOption(
                 scheduledSelection,
                 EMeetingScheduleStatus.Scheduled,
@@ -360,7 +398,7 @@ internal sealed class CourseSearchItem : ObservableObject
 
         if (scheduledCount > 0)
         {
-            return scheduledCount + "개 분반의 시간 조합을 자동 탐색";
+            return scheduledCount + "개 분반 · 선호할 분반을 직접 설정";
         }
 
         return timeNotProvidedCount + "개 시간 미정 분반 중 직접 선택";
@@ -454,12 +492,23 @@ internal sealed class CourseSearchItem : ObservableObject
             "Unknown planning course selection kind.");
     }
 
+    private void markAdded()
+    {
+        setSelectionState(ESelectionState.Selected);
+    }
+
+    private void markRemoved()
+    {
+        setSelectionState(ESelectionState.NotSelected);
+    }
+
     private void setSelectionState(ESelectionState selectionState)
     {
         bool isAdded = selectionState == ESelectionState.Selected;
         if (setProperty(ref mIsAdded, isAdded, nameof(IsAdded)))
         {
             raisePropertyChanged(nameof(AddButtonAccessibleName));
+            raisePropertyChanged(nameof(AddButtonToolTipText));
             raisePropertyChanged(nameof(IsSelectionEnabled));
         }
     }

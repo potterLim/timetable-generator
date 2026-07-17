@@ -252,6 +252,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     private void beginAddPersonalSchedule()
     {
         throwIfDisposed();
+        closeCourseChoiceEditingState();
         closePlanEditingState();
         clearPersonalScheduleDraft();
         mEditingPersonalScheduleIdOrNull = null;
@@ -268,6 +269,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
 
         PersonalSchedule schedule = findPersonalSchedule(scheduleItem.Id);
+        closeCourseChoiceEditingState();
         closePlanEditingState();
         clearPersonalScheduleDraft();
         mEditingPersonalScheduleIdOrNull = schedule.Id;

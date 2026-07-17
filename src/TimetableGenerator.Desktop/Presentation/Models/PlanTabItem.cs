@@ -69,7 +69,7 @@ internal sealed class PlanTabItem
 
     public ICommand CloseCommand { get; }
 
-    public ObservableCollection<PlanCourseItem> ScheduledCourses { get; }
+    public ObservableCollection<PlanCourseChoiceGroupItem> CourseChoiceGroups { get; }
 
     public ObservableCollection<PlanCourseItem> UnconfirmedCourses { get; }
 
@@ -79,7 +79,7 @@ internal sealed class PlanTabItem
     {
         get
         {
-            return ScheduledCourses.Count + UnconfirmedCourses.Count;
+            return CourseChoiceGroups.Count + UnconfirmedCourses.Count;
         }
     }
 
@@ -127,7 +127,7 @@ internal sealed class PlanTabItem
     {
         get
         {
-            return ScheduledCourses.Count > 0;
+            return CourseChoiceGroups.Count > 0;
         }
     }
 
@@ -135,7 +135,7 @@ internal sealed class PlanTabItem
     {
         get
         {
-            return "시간표 과목 (" + ScheduledCourses.Count + ")";
+            return "수강 선택 (" + CourseChoiceGroups.Count + ")";
         }
     }
 
@@ -143,8 +143,15 @@ internal sealed class PlanTabItem
     {
         get
         {
-            CourseCredits totalCredits = findTotalCredits();
-            return totalCredits + "학점 · " + SelectedCourseCount + "과목";
+            CourseCredits minimumCredits = findMinimumCredits();
+            CourseCredits maximumCredits = findMaximumCredits();
+            string creditText = minimumCredits.ToString();
+            if (minimumCredits != maximumCredits)
+            {
+                creditText += "–" + maximumCredits;
+            }
+
+            return creditText + "학점 · " + SelectedCourseCount + "과목";
         }
     }
 
@@ -198,14 +205,14 @@ internal sealed class PlanTabItem
                 requestClosePlan(this);
             },
             canClose);
-        ScheduledCourses = new ObservableCollection<PlanCourseItem>();
+        CourseChoiceGroups = new ObservableCollection<PlanCourseChoiceGroupItem>();
         UnconfirmedCourses = new ObservableCollection<PlanCourseItem>();
         PersonalSchedules = new ObservableCollection<PersonalScheduleItem>();
-        foreach (ScheduledCourseChoice choice in plan.ScheduledCourseChoices)
+        foreach (CourseChoiceGroup group in plan.CourseChoiceGroups)
         {
-            CatalogCourseProjection course = catalogProjection.FindCourseById(
-                choice.CourseId);
-            ScheduledCourses.Add(PlanCourseItem.CreateScheduled(course, choice));
+            CourseChoiceGroups.Add(new PlanCourseChoiceGroupItem(
+                group,
+                catalogProjection));
         }
 
         foreach (UnscheduledOfferingSelection selection
@@ -223,11 +230,6 @@ internal sealed class PlanTabItem
         }
     }
 
-    private bool canClose()
-    {
-        return CanClose;
-    }
-
     public bool ContainsCourse(CourseId courseId)
     {
         if (courseId == null)
@@ -235,11 +237,14 @@ internal sealed class PlanTabItem
             throw new ArgumentNullException(nameof(courseId));
         }
 
-        foreach (ScheduledCourseChoice choice in Plan.ScheduledCourseChoices)
+        foreach (CourseChoiceGroup group in Plan.CourseChoiceGroups)
         {
-            if (choice.CourseId == courseId)
+            foreach (CourseCandidate candidate in group.CourseCandidates)
             {
-                return true;
+                if (candidate.CourseId == courseId)
+                {
+                    return true;
+                }
             }
         }
 
@@ -255,12 +260,33 @@ internal sealed class PlanTabItem
         return false;
     }
 
-    private CourseCredits findTotalCredits()
+    private bool canClose()
+    {
+        return CanClose;
+    }
+
+    private CourseCredits findMinimumCredits()
     {
         decimal totalCreditValue = 0m;
-        foreach (PlanCourseItem course in ScheduledCourses)
+        foreach (PlanCourseChoiceGroupItem group in CourseChoiceGroups)
+        {
+            totalCreditValue += group.MinimumCredits.Value;
+        }
+
+        foreach (PlanCourseItem course in UnconfirmedCourses)
         {
             totalCreditValue += course.Credits.Value;
+        }
+
+        return new CourseCredits(totalCreditValue);
+    }
+
+    private CourseCredits findMaximumCredits()
+    {
+        decimal totalCreditValue = 0m;
+        foreach (PlanCourseChoiceGroupItem group in CourseChoiceGroups)
+        {
+            totalCreditValue += group.MaximumCredits.Value;
         }
 
         foreach (PlanCourseItem course in UnconfirmedCourses)

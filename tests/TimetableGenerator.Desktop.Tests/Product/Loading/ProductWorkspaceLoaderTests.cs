@@ -153,7 +153,7 @@ public sealed class ProductWorkspaceLoaderTests
             Assert.Equal(EProductCatalogOrigin.OfflineCache, result.CatalogOrigin);
             Assert.True(result.WasWorkspaceCreated);
             Assert.Equal("나의 시간표", activePlan.Name.Value);
-            Assert.Empty(activePlan.ScheduledCourseChoices);
+            Assert.Empty(activePlan.CourseChoiceGroups);
             Assert.Empty(activePlan.UnscheduledOfferingSelections);
             Assert.Equal(catalogPackage.Entry.CatalogId, activePlan.CatalogBinding.CatalogId);
             Assert.Equal(
@@ -374,7 +374,7 @@ public sealed class ProductWorkspaceLoaderTests
             Assert.Equal(latestRevision, reboundPlan.CatalogBinding.Revision);
             Assert.True(result.WasWorkspaceCatalogRebound);
             Assert.False(result.WasCatalogCacheRecovered);
-            Assert.Single(reboundPlan.ScheduledCourseChoices);
+            Assert.Single(reboundPlan.CourseChoiceGroups);
             Assert.Same(
                 result.Workspace,
                 Assert.Single(context.WorkspaceStore.SavedWorkspaces));
@@ -412,7 +412,12 @@ public sealed class ProductWorkspaceLoaderTests
             Assert.Equal(0, context.CatalogDownloader.DownloadCount);
             Assert.Equal(
                 "missing-offering",
-                workspace.GetActivePlan().ScheduledCourseChoices[0].OfferingIds[0].Value);
+                workspace.GetActivePlan()
+                    .CourseChoiceGroups[0]
+                    .CourseCandidates[0]
+                    .OfferingCandidates[0]
+                    .OfferingId
+                    .Value);
         }
     }
 

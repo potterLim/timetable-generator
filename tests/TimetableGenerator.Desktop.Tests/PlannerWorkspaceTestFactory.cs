@@ -42,6 +42,19 @@ internal static class PlannerWorkspaceTestFactory
         return createWorkspace(document, recommendationProvider);
     }
 
+    public static PlannerWorkspaceViewModel CreateWorkspace(
+        CourseCatalogDocument document)
+    {
+        if (document == null)
+        {
+            throw new ArgumentNullException(nameof(document));
+        }
+
+        IScheduleRecommendationProvider recommendationProvider =
+            new CatalogScheduleRecommendationProvider(document.Catalog);
+        return createWorkspace(document, recommendationProvider);
+    }
+
     public static ProductShellViewModel CreateShell(
         PlannerWorkspaceViewModel workspace)
     {

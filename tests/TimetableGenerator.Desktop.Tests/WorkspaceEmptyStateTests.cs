@@ -54,9 +54,9 @@ public sealed class WorkspaceEmptyStateTests
             assertPopulatedScheduleState(scheduleWorkspace);
             assertPopulatedInspectorState(planInspector);
 
-            PlanCourseItem scheduledCourse = Assert.Single(
-                workspace.ActivePlan.ScheduledCourses);
-            workspace.RemoveCourseCommand.Execute(scheduledCourse);
+            PlanCourseChoiceGroupItem scheduledCourseGroup = Assert.Single(
+                workspace.ActivePlan.CourseChoiceGroups);
+            workspace.RemoveCourseChoiceGroupCommand.Execute(scheduledCourseGroup);
             workspace.SearchText = "세미나";
             CourseSearchItem seminar = Assert.Single(workspace.VisibleCourses);
             workspace.AddCourseCommand.Execute(seminar);

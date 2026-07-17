@@ -256,7 +256,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                 return "첫 과목을 추가해 보세요";
             }
 
-            if (ActivePlan.ScheduledCourses.Count == 0)
+            if (ActivePlan.CourseChoiceGroups.Count == 0)
             {
                 return "시간표가 있는 과목이 없습니다";
             }
@@ -274,7 +274,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                 return "왼쪽 과목 목록에서 +를 누르면 가능한 시간표를 자동으로 찾아드려요.";
             }
 
-            if (ActivePlan.ScheduledCourses.Count == 0)
+            if (ActivePlan.CourseChoiceGroups.Count == 0)
             {
                 return "시간 미정 과목은 내 계획에 그대로 보관했습니다.";
             }
@@ -467,7 +467,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
 
         bool hasSelectedScheduledCourses =
-            planSnapshot.ScheduledCourseChoices.Count > 0;
+            planSnapshot.CourseChoiceGroups.Count > 0;
         mHasUnsatisfiedScheduleConstraints = recommendations.Count == 0
             && hasSelectedScheduledCourses;
         if (recommendations.Count == 0

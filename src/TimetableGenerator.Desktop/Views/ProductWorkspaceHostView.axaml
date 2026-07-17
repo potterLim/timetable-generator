@@ -248,8 +248,35 @@
     </Border>
 
     <Border
-        x:Name="PersonalScheduleEditorOverlay"
+        x:Name="CourseChoiceEditorOverlay"
         ZIndex="13"
+        IsVisible="{Binding IsCourseChoiceEditorVisible}"
+        Background="{DynamicResource OverlayScrimBrush}"
+        AutomationProperties.LiveSetting="Assertive">
+      <Border
+          x:Name="CourseChoiceEditorDialog"
+          Width="820"
+          MaxWidth="820"
+          MaxHeight="860"
+          Margin="16"
+          Padding="28"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center"
+          Background="{DynamicResource ElevatedSurfaceBrush}"
+          BorderBrush="{DynamicResource BorderBrush}"
+          BorderThickness="1"
+          BoxShadow="0 18 48 0 #33000000"
+          CornerRadius="12"
+          KeyboardNavigation.TabNavigation="Cycle"
+          AutomationProperties.ControlTypeOverride="Window"
+          AutomationProperties.Name="수강 선택 대화상자">
+        <views:CourseChoiceEditorView x:Name="CourseChoiceEditor" />
+      </Border>
+    </Border>
+
+    <Border
+        x:Name="PersonalScheduleEditorOverlay"
+        ZIndex="14"
         IsVisible="{Binding IsPersonalScheduleOverlayVisible}"
         Background="{DynamicResource OverlayScrimBrush}"
         AutomationProperties.LiveSetting="Assertive">

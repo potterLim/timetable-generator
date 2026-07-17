@@ -93,6 +93,10 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         mPersonalSchedulePreview = EMPTY_RECOMMENDATION;
 
         VisibleCourses = new ObservableCollection<CourseSearchItem>();
+        CourseChoiceDraftCourses =
+            new ObservableCollection<CourseChoiceDraftCourseItem>();
+        AlternativeCourseSearchResults =
+            new ObservableCollection<CourseChoiceAlternativeSearchItem>();
         UnitFilters = createUnitFilters(catalogProjection);
         RequirementFilters = createRequirementFilters(catalogProjection);
         Plans = new ObservableCollection<PlanTabItem>();
@@ -125,9 +129,30 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         mPersonalScheduleValidationError = EPersonalScheduleDraftValidationError.None;
         mPersonalScheduleStartTimeOrNull = DEFAULT_PERSONAL_SCHEDULE_START_TIME;
         mPersonalScheduleEndTimeOrNull = DEFAULT_PERSONAL_SCHEDULE_END_TIME;
+        mAlternativeCourseSearchText = string.Empty;
 
         AddCourseCommand = new ParameterizedCommand<CourseSearchItem>(addCourse);
         RemoveCourseCommand = new ParameterizedCommand<PlanCourseItem>(removeCourse);
+        BeginEditCourseChoiceGroupCommand =
+            new ParameterizedCommand<PlanCourseChoiceGroupItem>(
+                beginEditCourseChoiceGroup);
+        RemoveCourseChoiceGroupCommand =
+            new ParameterizedCommand<PlanCourseChoiceGroupItem>(
+                removeCourseChoiceGroup);
+        RemoveCourseChoiceDraftCourseCommand =
+            new ParameterizedCommand<CourseChoiceDraftCourseItem>(
+                removeCourseChoiceDraftCourse);
+        AddAlternativeCourseCommand =
+            new ParameterizedCommand<CourseChoiceAlternativeSearchItem>(
+                addAlternativeCourse);
+        mSaveCourseChoiceCommand = new DelegateCommand(
+            saveCourseChoice,
+            delegate
+            {
+                return CanSaveCourseChoice;
+            });
+        CancelCourseChoiceEditCommand = new DelegateCommand(
+            cancelCourseChoiceEdit);
         BeginAddPersonalScheduleCommand = new DelegateCommand(
             beginAddPersonalSchedule);
         BeginEditPersonalScheduleCommand =

@@ -18,6 +18,16 @@
     <Style Selector="Border.plan-course.green">
       <Setter Property="BorderBrush" Value="{DynamicResource CourseGreenBorderBrush}" />
     </Style>
+    <Style Selector="Border.course-choice-group">
+      <Setter Property="Background" Value="{DynamicResource PaneSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="10" />
+    </Style>
+    <Style Selector="Border.course-choice-group.alternative">
+      <Setter Property="Background" Value="{DynamicResource AccentTintBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+    </Style>
   </UserControl.Styles>
 
   <Border
@@ -168,65 +178,144 @@
           <ListBox
               x:Name="ScheduledCoursesList"
               Classes="workspace-list"
-              MaxHeight="360"
               IsVisible="{Binding ActivePlan.HasScheduledCourses}"
-              ItemsSource="{Binding ActivePlan.ScheduledCourses}"
+              ItemsSource="{Binding ActivePlan.CourseChoiceGroups}"
               AutomationProperties.AutomationId="SelectedCourses"
-              AutomationProperties.Name="선택한 수강 과목">
-            <ListBox.ItemsPanel>
-              <ItemsPanelTemplate>
-                <VirtualizingStackPanel />
-              </ItemsPanelTemplate>
-            </ListBox.ItemsPanel>
+              AutomationProperties.Name="선택한 수강 선택">
             <ListBox.ItemTemplate>
-              <DataTemplate x:DataType="models:PlanCourseItem">
-                <Border
-                    Classes="plan-course"
-                    Classes.blue="{Binding IsBlue}"
-                    Classes.purple="{Binding IsPurple}"
-                    Classes.green="{Binding IsGreen}"
-                    MinHeight="91"
-                    BorderThickness="3,0,0,1"
-                    Background="{DynamicResource PaneSurfaceBrush}">
-                  <Grid Margin="13,9,7,8" ColumnDefinitions="*,36" RowDefinitions="Auto,Auto,Auto,Auto">
-                    <TextBlock Grid.Row="0" Classes="caption" Text="{Binding Code}" />
-                    <TextBlock
-                        Grid.Row="1"
-                        Margin="0,2,0,0"
-                        FontSize="15"
-                        FontWeight="SemiBold"
-                        Text="{Binding Name}"
-                        TextWrapping="Wrap" />
-                    <TextBlock
-                        Grid.Row="2"
-                        Margin="0,5,0,0"
-                        Classes="caption"
-                        Text="{Binding InstructorCreditDisplayText}"
-                        TextWrapping="Wrap" />
-                    <TextBlock
-                        Grid.Row="3"
-                        Margin="0,3,0,0"
-                        Classes="caption"
-                        Text="{Binding ScheduleLocationDisplayText}"
-                        TextWrapping="Wrap" />
-                    <Button
-                        Grid.Row="0"
-                        Grid.RowSpan="4"
-                        Grid.Column="1"
-                        Classes="icon"
-                        Width="32"
-                        Height="32"
-                        MinWidth="32"
-                        MinHeight="32"
-                        VerticalAlignment="Top"
-                        Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).RemoveCourseCommand}"
-                        CommandParameter="{Binding}"
-                        AutomationProperties.Name="{Binding RemoveButtonAccessibleName}"
-                        ToolTip.Tip="계획에서 제거">
-                      <icons:FluentIcon Icon="Dismiss" IconVariant="Regular" FontSize="17" />
-                    </Button>
-                  </Grid>
-                </Border>
+              <DataTemplate x:DataType="models:PlanCourseChoiceGroupItem">
+                <Grid>
+                  <Border
+                      Classes="plan-course"
+                      Classes.blue="{Binding SingleCourse.IsBlue}"
+                      Classes.purple="{Binding SingleCourse.IsPurple}"
+                      Classes.green="{Binding SingleCourse.IsGreen}"
+                      Margin="0,0,0,10"
+                      Padding="12,10,7,10"
+                      IsVisible="{Binding IsSingleCourseGroup}"
+                      Background="{DynamicResource SubtleSurfaceBrush}"
+                      BorderThickness="3,1,1,1"
+                      CornerRadius="9">
+                    <Grid ColumnDefinitions="*,34,34" ColumnSpacing="2">
+                      <StackPanel Grid.Column="0" Spacing="3">
+                        <StackPanel Orientation="Horizontal" Spacing="7">
+                          <TextBlock Classes="caption" Text="{Binding SingleCourse.Code}" />
+                          <TextBlock Classes="caption" Text="{Binding SingleCourse.CreditDisplayText}" />
+                        </StackPanel>
+                        <TextBlock
+                            FontSize="15"
+                            FontWeight="SemiBold"
+                            Text="{Binding SingleCourse.Name}"
+                            TextWrapping="Wrap" />
+                        <TextBlock Classes="caption" Text="{Binding SingleCourse.PreferenceSummary}" />
+                        <TextBlock Classes="caption" Text="{Binding SingleCourse.OfferingSummary}" />
+                      </StackPanel>
+                      <Button
+                          x:Name="CourseChoiceGroupEditButton"
+                          Grid.Column="1"
+                          Classes="icon"
+                          Width="32"
+                          Height="32"
+                          MinWidth="32"
+                          MinHeight="32"
+                          Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).BeginEditCourseChoiceGroupCommand}"
+                          CommandParameter="{Binding}"
+                          AutomationProperties.Name="{Binding EditButtonAccessibleName}"
+                          ToolTip.Tip="분반 선호 수정">
+                        <icons:FluentIcon Icon="Edit" IconVariant="Regular" FontSize="16" />
+                      </Button>
+                      <Button
+                          Grid.Column="2"
+                          Classes="icon"
+                          Width="32"
+                          Height="32"
+                          MinWidth="32"
+                          MinHeight="32"
+                          Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).RemoveCourseChoiceGroupCommand}"
+                          CommandParameter="{Binding}"
+                          AutomationProperties.Name="{Binding RemoveButtonAccessibleName}"
+                          ToolTip.Tip="계획에서 삭제">
+                        <icons:FluentIcon Icon="Delete" IconVariant="Regular" FontSize="16" />
+                      </Button>
+                    </Grid>
+                  </Border>
+
+                  <Border
+                      Classes="course-choice-group alternative"
+                      Margin="0,0,0,10"
+                      IsVisible="{Binding IsAlternativeGroup}">
+                    <StackPanel>
+                      <Grid Margin="12,9,7,8" ColumnDefinitions="*,34,34" ColumnSpacing="2">
+                        <StackPanel Grid.Column="0" Spacing="2">
+                          <TextBlock
+                              FontWeight="SemiBold"
+                              Foreground="{DynamicResource AccentBrush}"
+                              Text="이 중 하나" />
+                          <TextBlock
+                              Classes="caption"
+                              Text="{Binding Description}"
+                              TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Button
+                            x:Name="AlternativeCourseChoiceGroupEditButton"
+                            Grid.Column="1"
+                            Classes="icon"
+                            Width="32"
+                            Height="32"
+                            MinWidth="32"
+                            MinHeight="32"
+                            Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).BeginEditCourseChoiceGroupCommand}"
+                            CommandParameter="{Binding}"
+                            AutomationProperties.Name="{Binding EditButtonAccessibleName}"
+                            ToolTip.Tip="대안 과목과 분반 선호 수정">
+                          <icons:FluentIcon Icon="Edit" IconVariant="Regular" FontSize="16" />
+                        </Button>
+                        <Button
+                            Grid.Column="2"
+                            Classes="icon"
+                            Width="32"
+                            Height="32"
+                            MinWidth="32"
+                            MinHeight="32"
+                            Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).RemoveCourseChoiceGroupCommand}"
+                            CommandParameter="{Binding}"
+                            AutomationProperties.Name="{Binding RemoveButtonAccessibleName}"
+                            ToolTip.Tip="대안 묶음을 계획에서 삭제">
+                          <icons:FluentIcon Icon="Delete" IconVariant="Regular" FontSize="16" />
+                        </Button>
+                      </Grid>
+
+                    <ItemsControl ItemsSource="{Binding Courses}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="models:PlanCourseChoiceCandidateItem">
+                          <Border
+                              Classes="plan-course"
+                              Classes.blue="{Binding IsBlue}"
+                              Classes.purple="{Binding IsPurple}"
+                              Classes.green="{Binding IsGreen}"
+                              Padding="12,9"
+                              Background="{DynamicResource PaneSurfaceBrush}"
+                              BorderThickness="3,1,1,0">
+                            <StackPanel Spacing="3">
+                              <StackPanel Orientation="Horizontal" Spacing="7">
+                                <TextBlock Classes="caption" Text="{Binding Code}" />
+                                <TextBlock Classes="caption" Text="{Binding CreditDisplayText}" />
+                              </StackPanel>
+                              <TextBlock
+                                  FontSize="15"
+                                  FontWeight="SemiBold"
+                                  Text="{Binding Name}"
+                                  TextWrapping="Wrap" />
+                              <TextBlock Classes="caption" Text="{Binding PreferenceSummary}" />
+                              <TextBlock Classes="caption" Text="{Binding OfferingSummary}" />
+                            </StackPanel>
+                          </Border>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    </StackPanel>
+                  </Border>
+                </Grid>
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>

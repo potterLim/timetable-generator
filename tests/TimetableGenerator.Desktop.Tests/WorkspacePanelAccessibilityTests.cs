@@ -117,7 +117,7 @@ public sealed class WorkspacePanelAccessibilityTests
                 workspace.AddCourseCommand);
             assertListDelegatesFocusToCommand(
                 scheduledCourses,
-                workspace.RemoveCourseCommand);
+                workspace.RemoveCourseChoiceGroupCommand);
         }
         finally
         {

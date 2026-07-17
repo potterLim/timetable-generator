@@ -164,8 +164,14 @@ internal sealed partial class PlannerWorkspaceViewModel
             return;
         }
 
-        mSession.AddCourse(course.CreateSelection());
-        afterPlanContentMutation();
+        if (course.IsSelectedOptionTimeNotProvided)
+        {
+            mSession.AddCourse(course.CreateSelection());
+            afterPlanContentMutation();
+            return;
+        }
+
+        addScheduledCourse(course);
     }
 
     private void removeCourse(PlanCourseItem course)
@@ -198,38 +204,37 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private void synchronizeCourseSelectionState()
     {
-        PlanningPlan activePlan = ActivePlan.Plan;
         foreach (CourseSearchItem course in mAllCourses)
         {
-            PlanningCourseSelection? selectionOrNull = findCourseSelectionOrNull(
-                activePlan,
-                course.CourseId);
-            course.SynchronizeSelection(selectionOrNull);
+            course.SynchronizeSelection(
+                findActiveCourseSelectionOrNull(course));
         }
     }
 
-    private static PlanningCourseSelection? findCourseSelectionOrNull(
-        PlanningPlan plan,
-        CourseId courseId)
+    private PlanningCourseSelection? findActiveCourseSelectionOrNull(
+        CourseSearchItem course)
     {
-        foreach (ScheduledCourseChoice choice in plan.ScheduledCourseChoices)
-        {
-            if (choice.CourseId == courseId)
-            {
-                return PlanningCourseSelection.CreateScheduledAlternatives(
-                    choice.CourseId,
-                    choice.OfferingIds);
-            }
-        }
-
         foreach (UnscheduledOfferingSelection selection
-            in plan.UnscheduledOfferingSelections)
+            in ActivePlan.Plan.UnscheduledOfferingSelections)
         {
-            if (selection.CourseId == courseId)
+            if (selection.CourseId == course.CourseId)
             {
                 return PlanningCourseSelection.CreateTimeNotProvidedOffering(
                     selection.CourseId,
                     selection.OfferingId);
+            }
+        }
+
+        foreach (CourseChoiceGroup group in ActivePlan.Plan.CourseChoiceGroups)
+        {
+            foreach (CourseCandidate candidate in group.CourseCandidates)
+            {
+                if (candidate.CourseId == course.CourseId)
+                {
+                    return PlanningCourseSelection.CreateScheduledAlternatives(
+                        candidate.CourseId,
+                        course.Projection.ScheduledOfferingIds);
+                }
             }
         }
 

@@ -20,7 +20,24 @@ internal static class CatalogProjectionTestFixture
                 new MeetingSlot(EDay.Wednesday, new AcademicPeriod(2)),
                 new MeetingSlot(EDay.Monday, new AcademicPeriod(1)),
             });
-        return createDocument(primarySchedule, ECatalogCourseOrder.Original);
+        return createDocument(
+            primarySchedule,
+            ECatalogCourseOrder.Original,
+            false);
+    }
+
+    public static CourseCatalogDocument CreateDocumentWithScheduledAlternativeCourse()
+    {
+        MeetingSchedule primarySchedule = MeetingSchedule.CreateScheduled(
+            new MeetingSlot[]
+            {
+                new MeetingSlot(EDay.Wednesday, new AcademicPeriod(2)),
+                new MeetingSlot(EDay.Monday, new AcademicPeriod(1)),
+            });
+        return createDocument(
+            primarySchedule,
+            ECatalogCourseOrder.Original,
+            true);
     }
 
     public static CourseCatalogDocument CreateDocumentWithChangedPrimarySchedule()
@@ -30,7 +47,10 @@ internal static class CatalogProjectionTestFixture
             {
                 new MeetingSlot(EDay.Monday, new AcademicPeriod(4)),
             });
-        return createDocument(changedSchedule, ECatalogCourseOrder.Original);
+        return createDocument(
+            changedSchedule,
+            ECatalogCourseOrder.Original,
+            false);
     }
 
     public static CourseCatalogDocument CreateReorderedDocument()
@@ -41,7 +61,10 @@ internal static class CatalogProjectionTestFixture
                 new MeetingSlot(EDay.Wednesday, new AcademicPeriod(2)),
                 new MeetingSlot(EDay.Monday, new AcademicPeriod(1)),
             });
-        return createDocument(primarySchedule, ECatalogCourseOrder.Reversed);
+        return createDocument(
+            primarySchedule,
+            ECatalogCourseOrder.Reversed,
+            false);
     }
 
     public static ScheduleRecommendation CreateRecommendation(CourseCatalogDocument document)
@@ -90,7 +113,8 @@ internal static class CatalogProjectionTestFixture
 
     private static CourseCatalogDocument createDocument(
         MeetingSchedule primarySchedule,
-        ECatalogCourseOrder courseOrder)
+        ECatalogCourseOrder courseOrder,
+        bool hasScheduledSeminarOffering)
     {
         InstitutionId institutionId = new InstitutionId("handong-global-university");
         InstitutionName institutionName = new InstitutionName("한동대학교");
@@ -111,11 +135,18 @@ internal static class CatalogProjectionTestFixture
                 {
                     new MeetingSlot(EDay.Tuesday, new AcademicPeriod(3)),
                 }));
+        MeetingSchedule seminarSchedule = hasScheduledSeminarOffering
+            ? MeetingSchedule.CreateScheduled(
+                new MeetingSlot[]
+                {
+                    new MeetingSlot(EDay.Friday, new AcademicPeriod(4)),
+                })
+            : MeetingSchedule.NotProvided;
         CatalogOffering seminarOffering = new CatalogOffering(
             new OfferingId("offering-seminar-unscheduled"),
             seminarCourse.Id,
             new CourseSectionCode("01"),
-            MeetingSchedule.NotProvided);
+            seminarSchedule);
         CatalogOffering secondSeminarOffering = new CatalogOffering(
             new OfferingId("offering-seminar-unscheduled-02"),
             seminarCourse.Id,
@@ -144,7 +175,10 @@ internal static class CatalogProjectionTestFixture
         List<CatalogOfferingMetadata> metadata = new List<CatalogOfferingMetadata>();
         metadata.Add(createPrimaryOfferingMetadata(primaryOffering.Id));
         metadata.Add(createAlternativeOfferingMetadata(alternativeOffering.Id));
-        metadata.Add(createSeminarOfferingMetadata(seminarOffering.Id));
+        metadata.Add(
+            hasScheduledSeminarOffering
+                ? createScheduledSeminarOfferingMetadata(seminarOffering.Id)
+                : createSeminarOfferingMetadata(seminarOffering.Id));
         metadata.Add(createSecondSeminarOfferingMetadata(secondSeminarOffering.Id));
 
         InstitutionMetadata institution = new InstitutionMetadata(
@@ -166,8 +200,10 @@ internal static class CatalogProjectionTestFixture
         CatalogDocumentCounts counts = new CatalogDocumentCounts(
             new CatalogCourseCount(2),
             new CatalogOfferingCount(4),
-            new CatalogScheduledOfferingCount(2),
-            new CatalogMeetingNotProvidedCount(2));
+            new CatalogScheduledOfferingCount(
+                hasScheduledSeminarOffering ? 3 : 2),
+            new CatalogMeetingNotProvidedCount(
+                hasScheduledSeminarOffering ? 1 : 2));
         CatalogDataQualityMetadata dataQuality = new CatalogDataQualityMetadata(
             EScheduleNormalizationSource.KoreanPeriodText,
             new CatalogSourceEnglishScheduleMismatchCount(0),
@@ -297,6 +333,19 @@ internal static class CatalogProjectionTestFixture
             classification,
             instruction,
             logistics,
+            new SourceRecordNumber(3));
+    }
+
+    private static CatalogOfferingMetadata createScheduledSeminarOfferingMetadata(
+        OfferingId offeringId)
+    {
+        return createScheduledMetadata(
+            offeringId,
+            ERequirementType.GeneralElective,
+            new OfferingUnitName("ICT창업학부"),
+            InstructorAssignmentMetadata.Unconfirmed,
+            LocationAssignmentMetadata.NotProvided,
+            new KoreanScheduleSourceText("금4"),
             new SourceRecordNumber(3));
     }
 
