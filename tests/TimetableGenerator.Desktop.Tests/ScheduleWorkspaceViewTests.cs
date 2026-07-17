@@ -12,6 +12,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
@@ -33,6 +34,8 @@ namespace TimetableGenerator.Desktop.Tests;
 
 public sealed class ScheduleWorkspaceViewTests
 {
+    private const double SCROLLBAR_GUTTER_WIDTH = 16.0;
+
     private static readonly ColorToken BORDER =
         new ColorToken("BorderBrush");
     private static readonly ColorToken TEXT_SECONDARY =
@@ -109,6 +112,11 @@ public sealed class ScheduleWorkspaceViewTests
                 latestScheduleAccessibleNameOrNull);
             Assert.DoesNotContain("교시", latestScheduleAccessibleNameOrNull);
             Assert.True(scrollViewer.Extent.Height > scrollViewer.Viewport.Height);
+            assertBoardReservesScrollbarGutter(
+                scheduleBoard,
+                boardGrid,
+                scrollViewer);
+            assertDayColumnsAreEqual(boardGrid);
         }
         finally
         {
@@ -154,6 +162,7 @@ public sealed class ScheduleWorkspaceViewTests
 
             Assert.Same(presentation.Layout, scheduleBoard.RenderedLayout);
             Assert.Equal(8, boardGridOrNull.ColumnDefinitions.Count);
+            assertDayColumnsAreEqual(boardGridOrNull);
             Assert.Contains(dayHeaders, textBlock => textBlock.Text == "토");
             Assert.Contains(dayHeaders, textBlock => textBlock.Text == "일");
             Assert.Equal(7, Grid.GetColumn(scheduleCard));
@@ -213,6 +222,19 @@ public sealed class ScheduleWorkspaceViewTests
                 textBlock => textBlock.Text?.Contains(
                     "교시",
                     StringComparison.Ordinal) == true);
+            Assert.All(
+                timeLabels,
+                timeLabel => Assert.Equal(
+                    VerticalAlignment.Center,
+                    timeLabel.VerticalAlignment));
+            Assert.All(
+                timeLabels,
+                timeLabel => Assert.Equal(new Thickness(0.0), timeLabel.Margin));
+            Assert.All(
+                timeLabels,
+                timeLabel => assertTimeLabelIsCenteredInItsRows(
+                    boardGridOrNull,
+                    timeLabel));
             Assert.Equal(127, boardGridOrNull.RowDefinitions.Count);
         }
         finally
@@ -640,6 +662,95 @@ public sealed class ScheduleWorkspaceViewTests
             cellBorder,
             timeLabel,
             detailAccent);
+    }
+
+    private static void assertBoardReservesScrollbarGutter(
+        ScheduleBoardView scheduleBoard,
+        Grid boardGrid,
+        ScrollViewer scrollViewer)
+    {
+        Border? exportSurfaceOrNull = scheduleBoard.FindControl<Border>(
+            "BoardExportSurface");
+        ScrollBar? verticalScrollBarOrNull = scrollViewer.GetVisualDescendants()
+            .OfType<ScrollBar>()
+            .SingleOrDefault(scrollBar => scrollBar.Orientation == Orientation.Vertical);
+        Assert.NotNull(exportSurfaceOrNull);
+        Assert.NotNull(verticalScrollBarOrNull);
+        if (exportSurfaceOrNull == null || verticalScrollBarOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The timetable scrollbar geometry was not available.");
+        }
+
+        Border exportSurface = exportSurfaceOrNull;
+        ScrollBar verticalScrollBar = verticalScrollBarOrNull;
+        Assert.True(verticalScrollBar.IsEffectivelyVisible);
+        Assert.Equal(
+            new Thickness(0.0, 0.0, 1.0, 0.0),
+            exportSurface.BorderThickness);
+        Assert.InRange(
+            scrollViewer.Viewport.Width - exportSurface.Bounds.Width,
+            SCROLLBAR_GUTTER_WIDTH - 0.5,
+            SCROLLBAR_GUTTER_WIDTH + 0.5);
+
+        Point? exportOriginOrNull = exportSurface.TranslatePoint(
+            new Point(0.0, 0.0),
+            scheduleBoard);
+        Point? scrollBarOriginOrNull = verticalScrollBar.TranslatePoint(
+            new Point(0.0, 0.0),
+            scheduleBoard);
+        Assert.NotNull(exportOriginOrNull);
+        Assert.NotNull(scrollBarOriginOrNull);
+        if (exportOriginOrNull == null || scrollBarOriginOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The timetable surface position was not available.");
+        }
+
+        double exportRight = exportOriginOrNull.Value.X + exportSurface.Bounds.Width;
+        Assert.True(exportRight <= scrollBarOriginOrNull.Value.X + 0.5);
+        Assert.Equal(
+            exportSurface.Bounds.Width - exportSurface.BorderThickness.Right,
+            boardGrid.Bounds.Width,
+            3);
+    }
+
+    private static void assertDayColumnsAreEqual(Grid boardGrid)
+    {
+        Assert.True(boardGrid.ColumnDefinitions.Count > 1);
+        double firstDayWidth = boardGrid.ColumnDefinitions[1].ActualWidth;
+        for (int columnIndex = 2;
+            columnIndex < boardGrid.ColumnDefinitions.Count;
+            ++columnIndex)
+        {
+            double dayWidth = boardGrid.ColumnDefinitions[columnIndex].ActualWidth;
+            Assert.InRange(Math.Abs(firstDayWidth - dayWidth), 0.0, 1.0);
+        }
+    }
+
+    private static void assertTimeLabelIsCenteredInItsRows(
+        Grid boardGrid,
+        TextBlock timeLabel)
+    {
+        int firstRowIndex = Grid.GetRow(timeLabel);
+        int rowSpan = Grid.GetRowSpan(timeLabel);
+        double rowTop = 0.0;
+        for (int rowIndex = 0; rowIndex < firstRowIndex; ++rowIndex)
+        {
+            rowTop += boardGrid.RowDefinitions[rowIndex].ActualHeight;
+        }
+
+        double occupiedHeight = 0.0;
+        for (int rowIndex = firstRowIndex;
+            rowIndex < firstRowIndex + rowSpan;
+            ++rowIndex)
+        {
+            occupiedHeight += boardGrid.RowDefinitions[rowIndex].ActualHeight;
+        }
+
+        double expectedCenterY = rowTop + (occupiedHeight / 2.0);
+        double labelCenterY = timeLabel.Bounds.Top + (timeLabel.Bounds.Height / 2.0);
+        Assert.InRange(Math.Abs(expectedCenterY - labelCenterY), 0.0, 0.5);
     }
 
     private static SolidColorBrush findRequiredThemeBrush(

@@ -55,56 +55,64 @@
       Background="{DynamicResource ElevatedSurfaceBrush}">
     <ScrollViewer
         x:Name="ScheduleScrollViewer"
+        HorizontalContentAlignment="Stretch"
         HorizontalScrollBarVisibility="Disabled"
         VerticalScrollBarVisibility="Auto"
         AutomationProperties.Name="시간표 시간 스크롤">
-      <StackPanel
-          x:Name="BoardExportSurface"
-          Background="{DynamicResource ElevatedSurfaceBrush}">
+      <Grid x:Name="BoardViewportLayout" ColumnDefinitions="*,16">
         <Border
-            Padding="18,15"
+            x:Name="BoardExportSurface"
+            Grid.Column="0"
             BorderBrush="{DynamicResource BorderBrush}"
-            BorderThickness="0,0,0,1"
+            BorderThickness="0,0,1,0"
             Background="{DynamicResource ElevatedSurfaceBrush}">
-          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
-            <StackPanel Spacing="3">
-              <TextBlock
-                  FontSize="17"
-                  FontWeight="SemiBold"
-                  Text="{Binding PlanName.Value}"
-                  TextTrimming="CharacterEllipsis" />
-              <TextBlock
-                  Classes="caption"
-                  Text="{Binding InstitutionTermDisplayText}" />
-            </StackPanel>
-            <TextBlock
-                Grid.Column="1"
-                VerticalAlignment="Center"
-                Classes="caption"
-                Text="주간 시간표" />
-          </Grid>
-        </Border>
-        <Grid
-            x:Name="BoardGrid"
-            Background="{DynamicResource ElevatedSurfaceBrush}" />
-        <Border
-            x:Name="PersonalScheduleLegendSurface"
-            Padding="16,14"
-            IsVisible="False"
-            BorderBrush="{DynamicResource BorderBrush}"
-            BorderThickness="0,1,0,0"
-            Background="{DynamicResource ElevatedSurfaceBrush}">
-          <StackPanel Spacing="10">
-            <TextBlock
-                FontSize="12"
-                FontWeight="SemiBold"
-                Text="개인 일정 세부 정보" />
-            <StackPanel
-                x:Name="PersonalScheduleLegendEntries"
-                Spacing="8" />
+          <StackPanel Background="{DynamicResource ElevatedSurfaceBrush}">
+            <Border
+                Padding="18,15"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Background="{DynamicResource ElevatedSurfaceBrush}">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                <StackPanel Spacing="3">
+                  <TextBlock
+                      FontSize="17"
+                      FontWeight="SemiBold"
+                      Text="{Binding PlanName.Value}"
+                      TextTrimming="CharacterEllipsis" />
+                  <TextBlock
+                      Classes="caption"
+                      Text="{Binding InstitutionTermDisplayText}" />
+                </StackPanel>
+                <TextBlock
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Classes="caption"
+                    Text="주간 시간표" />
+              </Grid>
+            </Border>
+            <Grid
+                x:Name="BoardGrid"
+                Background="{DynamicResource ElevatedSurfaceBrush}" />
+            <Border
+                x:Name="PersonalScheduleLegendSurface"
+                Padding="16,14"
+                IsVisible="False"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,1,0,0"
+                Background="{DynamicResource ElevatedSurfaceBrush}">
+              <StackPanel Spacing="10">
+                <TextBlock
+                    FontSize="12"
+                    FontWeight="SemiBold"
+                    Text="개인 일정 세부 정보" />
+                <StackPanel
+                    x:Name="PersonalScheduleLegendEntries"
+                    Spacing="8" />
+              </StackPanel>
+            </Border>
           </StackPanel>
         </Border>
-      </StackPanel>
+      </Grid>
     </ScrollViewer>
   </Border>
 </UserControl>

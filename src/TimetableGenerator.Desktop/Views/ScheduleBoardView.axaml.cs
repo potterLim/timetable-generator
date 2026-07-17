@@ -20,7 +20,7 @@ internal sealed partial class ScheduleBoardView : UserControl
 
     private readonly Grid mBoardGrid;
 
-    private readonly StackPanel mBoardExportSurface;
+    private readonly Border mBoardExportSurface;
 
     private readonly Border mPersonalScheduleLegendSurface;
 
@@ -47,7 +47,7 @@ internal sealed partial class ScheduleBoardView : UserControl
     public ScheduleBoardView()
     {
         AvaloniaXamlLoader.Load(this);
-        StackPanel? boardExportSurfaceOrNull = this.FindControl<StackPanel>(
+        Border? boardExportSurfaceOrNull = this.FindControl<Border>(
             "BoardExportSurface");
         Grid? boardGridOrNull = this.FindControl<Grid>("BoardGrid");
         Border? personalScheduleLegendSurfaceOrNull = this.FindControl<Border>(
@@ -263,8 +263,8 @@ internal sealed partial class ScheduleBoardView : UserControl
             timeHeader.Foreground = findBrush("TextSecondaryBrush");
             timeHeader.TextAlignment = TextAlignment.Center;
             timeHeader.HorizontalAlignment = HorizontalAlignment.Center;
-            timeHeader.VerticalAlignment = VerticalAlignment.Top;
-            timeHeader.Margin = new Thickness(0.0, 5.0, 0.0, 0.0);
+            timeHeader.VerticalAlignment = VerticalAlignment.Center;
+            timeHeader.Margin = new Thickness(0.0);
             int rowOffset =
                 mRenderedLayout.TimeAxis.FindBoundaryRowOffset(labelTime);
             Grid.SetRow(timeHeader, 1 + rowOffset);
