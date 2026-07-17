@@ -71,8 +71,10 @@ internal sealed class PlanTabItem
 
     public ObservableCollection<PlanCourseChoiceGroupItem> CourseChoiceGroups { get; }
 
-    public ObservableCollection<TimeNotProvidedCourseItem>
-        TimeNotProvidedCourses { get; }
+    public ObservableCollection<TimeNotProvidedCourseItem> TimeNotProvidedCourses
+    {
+        get;
+    }
 
     public ObservableCollection<PersonalScheduleItem> PersonalSchedules { get; }
 

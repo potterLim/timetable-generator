@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 using Avalonia;
 using Avalonia.Automation;
@@ -18,6 +19,10 @@ internal sealed partial class ProductTimePicker : UserControl
 
     private const string DEFAULT_ACCESSIBLE_CONTEXT_NAME = "시간";
 
+    [SuppressMessage(
+        "Style",
+        "IDE1006:Naming Styles",
+        Justification = "Avalonia requires the {PropertyName}Property field convention.")]
     public static readonly StyledProperty<ScheduleTime?>
         SelectedTimeOrNullProperty = AvaloniaProperty.Register<
             ProductTimePicker,
@@ -25,6 +30,10 @@ internal sealed partial class ProductTimePicker : UserControl
                 nameof(SelectedTimeOrNull),
                 defaultBindingMode: BindingMode.TwoWay);
 
+    [SuppressMessage(
+        "Style",
+        "IDE1006:Naming Styles",
+        Justification = "Avalonia requires the {PropertyName}Property field convention.")]
     public static readonly StyledProperty<string>
         AccessibleContextNameProperty = AvaloniaProperty.Register<
             ProductTimePicker,
