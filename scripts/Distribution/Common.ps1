@@ -240,6 +240,8 @@ function Invoke-SelfContainedPublish {
         "--self-contained", "true",
         "--output", $DestinationPath,
         "--nologo",
+        "/m:1",
+        "/nodeReuse:false",
         "-p:Version=$ProductVersion",
         "-p:ContinuousIntegrationBuild=true",
         "-p:DebugSymbols=false",
