@@ -171,11 +171,6 @@
                 FontSize="21"
                 FontWeight="SemiBold"
                 Text="계획 이름 바꾸기" />
-            <TextBlock
-                Classes="secondary"
-                LineHeight="21"
-                Text="구분하기 쉬운 이름을 입력하세요. 이름은 언제든 다시 바꿀 수 있습니다."
-                TextWrapping="Wrap" />
             <TextBox
                 x:Name="PlanNameEditor"
                 MaxLength="80"

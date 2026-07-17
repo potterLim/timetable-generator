@@ -122,7 +122,7 @@ internal sealed class CourseOfferingPreferenceItem : ObservableObject
     {
         get
         {
-            return SectionDisplayText + "을 선호 분반으로 설정";
+            return SectionDisplayText + " 선호";
         }
     }
 
@@ -130,7 +130,7 @@ internal sealed class CourseOfferingPreferenceItem : ObservableObject
     {
         get
         {
-            return SectionDisplayText + "을 가능한 분반으로 설정";
+            return SectionDisplayText + " 가능";
         }
     }
 
@@ -138,7 +138,7 @@ internal sealed class CourseOfferingPreferenceItem : ObservableObject
     {
         get
         {
-            return SectionDisplayText + "을 제외할 분반으로 설정";
+            return SectionDisplayText + " 제외";
         }
     }
 

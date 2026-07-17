@@ -1,7 +1,6 @@
 using System.Linq;
 
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
@@ -17,8 +16,8 @@ internal sealed partial class CourseChoiceEditorView : UserControl
 
     internal void focusInitialInput()
     {
-        ToggleButton? firstPreferenceButtonOrNull = this.GetVisualDescendants()
-            .OfType<ToggleButton>()
+        RadioButton? firstPreferenceButtonOrNull = this.GetVisualDescendants()
+            .OfType<RadioButton>()
             .FirstOrDefault(
                 static candidate => candidate.Classes.Contains("preference-choice"));
         if (firstPreferenceButtonOrNull != null

@@ -57,10 +57,10 @@ internal sealed partial class PlannerWorkspaceViewModel
         {
             if (CourseChoiceDraftCourses.Count > 1)
             {
-                return "각 과목에서 들을 수 있는 분반을 정하세요. 추천 시간표마다 이 중 한 과목만 배치합니다.";
+                return "과목별 분반을 정하면 이 중 한 과목만 추천합니다.";
             }
 
-            return "듣고 싶은 분반은 선호 또는 가능으로 표시하고, 원하지 않는 분반은 제외하세요.";
+            return "선호 분반을 우선하고, 가능 분반은 대안으로 사용합니다.";
         }
     }
 
@@ -143,7 +143,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return "각 과목에서 최소 한 분반을 선호 또는 가능으로 선택해 주세요.";
+            return "과목마다 선호 또는 가능 분반을 하나 이상 선택하세요.";
         }
     }
 

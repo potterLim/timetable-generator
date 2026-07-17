@@ -638,7 +638,9 @@ public sealed class PersonalScheduleInteractionTests
             Assert.False(workspace.CanExportSchedule);
             Assert.Empty(workspace.ActiveRecommendation.Entries);
             Assert.NotEmpty(workspace.DisplayedSchedule.Entries);
-            Assert.Contains("개인 일정만 미리", workspace.RecommendationInsight);
+            Assert.Equal(
+                "겹치는 과목이나 개인 일정을 조정하세요.",
+                workspace.RecommendationInsight);
         }
     }
 

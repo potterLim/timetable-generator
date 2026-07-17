@@ -79,7 +79,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         get
         {
             return "‘" + ActivePlan.DisplayName
-                + "’ 계획에만 저장되며, 추천 시간표를 계산할 때 고정 시간으로 반영됩니다.";
+                + "’ 계획에만 반영됩니다.";
         }
     }
 

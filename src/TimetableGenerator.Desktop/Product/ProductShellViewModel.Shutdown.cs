@@ -97,8 +97,8 @@ internal sealed partial class ProductShellViewModel
     {
         throwIfDisposed();
         mShutdownState = EShutdownPresentationState.Saving;
-        mShutdownTitle = "변경 사항을 저장하고 있어요";
-        mShutdownMessage = "안전하게 저장한 뒤 창을 닫습니다.";
+        mShutdownTitle = "변경 사항 저장 중";
+        mShutdownMessage = "저장한 뒤 창을 닫습니다.";
         raiseShutdownPropertiesChanged();
     }
 
@@ -111,7 +111,7 @@ internal sealed partial class ProductShellViewModel
 
         throwIfDisposed();
         mShutdownState = EShutdownPresentationState.Failed;
-        mShutdownTitle = "저장하지 못해 창을 닫지 않았어요";
+        mShutdownTitle = "저장하지 못해 창을 닫지 않았습니다";
         if (exception is OperationCanceledException)
         {
             mShutdownMessage =

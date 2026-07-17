@@ -183,7 +183,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         {
             if (IsRecommendationCalculating)
             {
-                return "가능한 분반 조합을 계산하고 있습니다.";
+                return "가능한 시간표 계산 중";
             }
 
             if (HasRecommendationCalculationError)
@@ -195,8 +195,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             {
                 if (ActivePlan.HasPersonalSchedules)
                 {
-                    return "선택한 과목과 개인 일정을 모두 반영할 수 없습니다. "
-                        + "개인 일정만 미리 보여드리니 겹치는 과목이나 일정을 조정해 주세요.";
+                    return "겹치는 과목이나 개인 일정을 조정하세요.";
                 }
 
                 return "선택한 과목 조합을 함께 배치할 수 없습니다.";
@@ -204,12 +203,12 @@ internal sealed partial class PlannerWorkspaceViewModel
 
             if (HasRecommendations == false)
             {
-                return "과목 선택을 바꾸면 충돌 없는 조합을 다시 계산합니다.";
+                return "과목 선택을 바꾸면 시간표를 다시 계산합니다.";
             }
 
             if (HasScheduleEntries == false)
             {
-                return "시간 미정 과목은 충돌 자동 검증에서 제외됩니다.";
+                return "시간 미정 과목은 내 계획에 보관됩니다.";
             }
 
             HashSet<EDay> scheduledDays = new HashSet<EDay>();
@@ -253,7 +252,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         {
             if (ActivePlan.SelectedCourseCount == 0)
             {
-                return "첫 과목을 추가해 보세요";
+                return "과목을 추가해 시작하세요";
             }
 
             if (ActivePlan.CourseChoiceGroups.Count == 0)
@@ -271,15 +270,15 @@ internal sealed partial class PlannerWorkspaceViewModel
         {
             if (ActivePlan.SelectedCourseCount == 0)
             {
-                return "왼쪽 과목 목록에서 +를 누르면 가능한 시간표를 자동으로 찾아드려요.";
+                return "과목을 추가하면 가능한 시간표를 자동으로 만듭니다.";
             }
 
             if (ActivePlan.CourseChoiceGroups.Count == 0)
             {
-                return "시간 미정 과목은 내 계획에 그대로 보관했습니다.";
+                return "시간 미정 과목은 내 계획에 보관됩니다.";
             }
 
-            return "겹치는 과목을 제거하거나 분반 후보를 조정해 주세요.";
+            return "겹치는 과목을 빼거나 분반 선호를 바꾸세요.";
         }
     }
 
@@ -497,7 +496,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         mRecommendationIndex = 0;
         mRecommendationCalculationState = ERecommendationCalculationState.Failed;
         mRecommendationCalculationError =
-            "과목 선택은 그대로 보존했습니다. 잠시 후 다시 계산해 주세요.";
+            "과목 선택은 유지됩니다. 다시 계산해 보세요.";
         System.Diagnostics.Debug.WriteLine(exception);
         mHasUnsatisfiedScheduleConstraints = false;
         notifyRecommendationChanged();

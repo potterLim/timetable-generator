@@ -9,40 +9,48 @@
     AutomationProperties.AutomationId="CourseChoiceEditor"
     AutomationProperties.Name="수강 선택 편집기">
   <UserControl.Styles>
-    <Style Selector="ToggleButton.preference-choice">
+    <Style Selector="RadioButton.preference-choice">
+      <Setter Property="Theme" Value="{StaticResource ProductPreferenceRadioButtonTheme}" />
       <Setter Property="Width" Value="62" />
       <Setter Property="Height" Value="36" />
       <Setter Property="MinWidth" Value="62" />
       <Setter Property="MinHeight" Value="36" />
       <Setter Property="Padding" Value="10,0" />
+      <Setter Property="CornerRadius" Value="5" />
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
-      <Setter Property="BorderThickness" Value="2" />
+      <Setter Property="BorderThickness" Value="1" />
       <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
       <Setter Property="HorizontalContentAlignment" Value="Center" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
-    <Style Selector="ToggleButton.preference-choice:pointerover">
+    <Style Selector="RadioButton.preference-choice:pointerover">
       <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
     </Style>
-    <Style Selector="ToggleButton.preference-choice:checked">
-      <Setter Property="Background" Value="{DynamicResource AccentTintBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+    <Style Selector="RadioButton.preference-choice:checked">
       <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
-    <Style Selector="ToggleButton.preference-choice:focus-visible">
+    <Style Selector="RadioButton.preference-choice.preferred:checked">
+      <Setter Property="Background" Value="{DynamicResource PreferencePreferredFillBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource PreferencePreferredBorderBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource PreferencePreferredForegroundBrush}" />
+    </Style>
+    <Style Selector="RadioButton.preference-choice.acceptable:checked">
+      <Setter Property="Background" Value="{DynamicResource PreferenceAcceptableFillBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource PreferenceAcceptableBorderBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource PreferenceAcceptableForegroundBrush}" />
+    </Style>
+    <Style Selector="RadioButton.preference-choice.excluded:checked">
+      <Setter Property="Background" Value="{DynamicResource PreferenceExcludedFillBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource PreferenceExcludedBorderBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource PreferenceExcludedForegroundBrush}" />
+    </Style>
+    <Style Selector="RadioButton.preference-choice:focus-visible">
       <Setter Property="BorderBrush" Value="{DynamicResource ProductFocusStrokeBrush}" />
       <Setter Property="BorderThickness" Value="2" />
     </Style>
-    <Style Selector="ToggleButton.preference-choice.excluded:checked">
-      <Setter Property="Background" Value="{DynamicResource SubtleSurfaceBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource TextTertiaryBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
-    </Style>
-    <Style Selector="ToggleButton.preference-choice.excluded:checked:focus-visible">
-      <Setter Property="BorderBrush" Value="{DynamicResource ProductFocusStrokeBrush}" />
-      <Setter Property="BorderThickness" Value="2" />
+    <Style Selector="RadioButton.preference-choice.preferred:checked:focus-visible">
+      <Setter Property="BorderBrush" Value="{DynamicResource ProductFocusOnFillStrokeBrush}" />
     </Style>
   </UserControl.Styles>
 
@@ -57,9 +65,10 @@
         <TextBlock
             MaxWidth="680"
             Classes="secondary"
-            LineHeight="21"
             Text="{Binding CourseChoiceEditorDescription}"
-            TextWrapping="Wrap" />
+            TextTrimming="CharacterEllipsis"
+            TextWrapping="NoWrap"
+            ToolTip.Tip="{Binding CourseChoiceEditorDescription}" />
       </StackPanel>
       <Button
           x:Name="CloseCourseChoiceEditorButton"
@@ -81,16 +90,6 @@
         HorizontalScrollBarVisibility="Disabled"
         VerticalScrollBarVisibility="Auto">
       <StackPanel Margin="0,0,8,0" Spacing="14">
-        <Border
-            Padding="12,10"
-            Background="{DynamicResource AccentTintBrush}"
-            CornerRadius="8">
-          <TextBlock
-              Classes="caption"
-              LineHeight="18"
-              Text="선호 분반을 먼저 추천하고, 충돌하면 가능 분반을 사용합니다. 제외한 분반은 추천하지 않습니다."
-              TextWrapping="Wrap" />
-        </Border>
         <ItemsControl ItemsSource="{Binding CourseChoiceDraftCourses}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="models:CourseChoiceDraftCourseItem">
@@ -113,7 +112,9 @@
                           FontSize="17"
                           FontWeight="SemiBold"
                           Text="{Binding Name}"
-                          TextWrapping="Wrap" />
+                          TextTrimming="CharacterEllipsis"
+                          TextWrapping="NoWrap"
+                          ToolTip.Tip="{Binding Name}" />
                     </StackPanel>
                     <Button
                         Grid.Column="1"
@@ -156,24 +157,27 @@
                                 Orientation="Horizontal"
                                 Spacing="6"
                                 VerticalAlignment="Center">
-                              <ToggleButton
-                                  Classes="preference-choice"
+                              <RadioButton
+                                  Classes="preference-choice preferred"
                                   IsChecked="{Binding IsPreferred, Mode=OneWay}"
                                   Command="{Binding SelectPreferredCommand}"
                                   Content="선호"
-                                  AutomationProperties.Name="{Binding PreferredButtonAccessibleName}" />
-                              <ToggleButton
-                                  Classes="preference-choice"
+                                  AutomationProperties.Name="{Binding PreferredButtonAccessibleName}"
+                                  AutomationProperties.HelpText="추천에서 가장 먼저 사용합니다." />
+                              <RadioButton
+                                  Classes="preference-choice acceptable"
                                   IsChecked="{Binding IsAcceptable, Mode=OneWay}"
                                   Command="{Binding SelectAcceptableCommand}"
                                   Content="가능"
-                                  AutomationProperties.Name="{Binding AcceptableButtonAccessibleName}" />
-                              <ToggleButton
+                                  AutomationProperties.Name="{Binding AcceptableButtonAccessibleName}"
+                                  AutomationProperties.HelpText="선호 분반과 충돌할 때 사용합니다." />
+                              <RadioButton
                                   Classes="preference-choice excluded"
                                   IsChecked="{Binding IsExcluded, Mode=OneWay}"
                                   Command="{Binding SelectExcludedCommand}"
                                   Content="제외"
-                                  AutomationProperties.Name="{Binding ExcludedButtonAccessibleName}" />
+                                  AutomationProperties.Name="{Binding ExcludedButtonAccessibleName}"
+                                  AutomationProperties.HelpText="추천 시간표에 포함하지 않습니다." />
                             </StackPanel>
                           </Grid>
                         </Border>
@@ -194,11 +198,13 @@
             CornerRadius="10">
           <StackPanel Spacing="10">
             <StackPanel Spacing="3">
-              <TextBlock FontWeight="SemiBold" Text="대안 과목 추가" />
+              <TextBlock FontWeight="SemiBold" Text="대안 과목" />
               <TextBlock
                   Classes="caption"
-                  Text="서로 다른 과목 중 하나만 들으면 되는 경우 과목을 검색해 같은 선택으로 묶으세요."
-                  TextWrapping="Wrap" />
+                  Text="여러 과목 중 하나만 들으면 될 때 같은 선택으로 묶으세요."
+                  TextTrimming="CharacterEllipsis"
+                  TextWrapping="NoWrap"
+                  ToolTip.Tip="여러 과목 중 하나만 들으면 될 때 같은 선택으로 묶으세요." />
             </StackPanel>
             <Grid>
               <TextBox
@@ -261,8 +267,8 @@
             <TextBlock
                 Classes="caption"
                 IsVisible="{Binding HasNoAlternativeCourseSearchResults}"
-                Text="검색 결과가 없다면 이미 다른 수강 선택에 포함되었거나 시간 정보가 없는 과목일 수 있습니다."
-                TextWrapping="Wrap" />
+                Text="추가할 수 있는 과목이 없습니다."
+                TextWrapping="NoWrap" />
           </StackPanel>
         </Border>
       </StackPanel>
@@ -285,7 +291,9 @@
             Classes="caption"
             VerticalAlignment="Center"
             Text="{Binding CourseChoiceValidationMessage}"
-            TextWrapping="Wrap" />
+            TextTrimming="CharacterEllipsis"
+            TextWrapping="NoWrap"
+            ToolTip.Tip="{Binding CourseChoiceValidationMessage}" />
       </StackPanel>
       <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
         <Button

@@ -45,11 +45,15 @@
           </StackPanel>
         </Button>
         <TextBlock
+            MaxWidth="420"
             VerticalAlignment="Center"
             Foreground="{DynamicResource AccentBrush}"
             FontWeight="SemiBold"
             IsVisible="{Binding HasScheduleEntries}"
-            Text="{Binding RecommendationInsight}" />
+            Text="{Binding RecommendationInsight}"
+            TextTrimming="CharacterEllipsis"
+            TextWrapping="NoWrap"
+            ToolTip.Tip="{Binding RecommendationInsight}" />
       </StackPanel>
 
       <StackPanel
@@ -177,13 +181,12 @@
               FontWeight="SemiBold"
               Text="{Binding EmptyScheduleTitle}"
               TextAlignment="Center"
-              TextWrapping="Wrap" />
+              TextWrapping="NoWrap" />
           <TextBlock
               Classes="secondary"
-              LineHeight="21"
               Text="{Binding EmptyScheduleMessage}"
               TextAlignment="Center"
-              TextWrapping="Wrap" />
+              TextWrapping="NoWrap" />
           <Button
               x:Name="EmptyScheduleAddPersonalScheduleButton"
               Classes="outline"
@@ -216,13 +219,13 @@
           <TextBlock
               FontSize="18"
               FontWeight="SemiBold"
-              Text="가능한 시간표를 계산하고 있어요"
+              Text="가능한 시간표 계산 중"
               TextAlignment="Center" />
           <TextBlock
               Classes="secondary"
-              Text="과목 수와 분반 조합에 따라 잠시 걸릴 수 있습니다. 앱의 다른 기능은 계속 사용할 수 있어요."
+              Text="분반 조합이 많으면 잠시 걸릴 수 있습니다."
               TextAlignment="Center"
-              TextWrapping="Wrap" />
+              TextWrapping="NoWrap" />
         </StackPanel>
       </Border>
 
@@ -246,13 +249,13 @@
           <TextBlock
               FontSize="18"
               FontWeight="SemiBold"
-              Text="추천 시간표를 계산하지 못했어요"
+              Text="추천 시간표를 계산하지 못했습니다"
               TextAlignment="Center" />
           <TextBlock
               Classes="secondary"
               Text="{Binding RecommendationCalculationError}"
               TextAlignment="Center"
-              TextWrapping="Wrap" />
+              TextWrapping="NoWrap" />
           <Button
               Classes="accent"
               HorizontalAlignment="Center"
@@ -265,24 +268,12 @@
     <StackPanel
         x:Name="RecommendationFooter"
         Grid.Row="4"
-        Orientation="Horizontal"
-        Spacing="8"
-        IsVisible="{Binding HasScheduleEntries}"
-        VerticalAlignment="Center">
-      <icons:FluentIcon
-          Width="18"
-          Height="18"
-          Icon="Lightbulb"
-          IconVariant="Regular"
-          Foreground="{DynamicResource AccentBrush}" />
+        IsVisible="{Binding HasScheduleEntries}">
       <TextBlock
           x:Name="ExportStatusText"
           Classes="caption export-status"
           IsVisible="False"
           AutomationProperties.LiveSetting="Polite" />
-      <TextBlock
-          Classes="caption"
-          Text="과목과 개인 일정을 조정해 나에게 맞는 시간표를 만들어 보세요." />
     </StackPanel>
   </Grid>
 </UserControl>

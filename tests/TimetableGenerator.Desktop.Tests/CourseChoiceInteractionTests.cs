@@ -4,7 +4,6 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
@@ -260,13 +259,13 @@ public sealed class CourseChoiceInteractionTests
             Grid workspaceSurface = findRequiredControl<Grid>(
                 host,
                 "WorkspaceSurface");
-            ToggleButton[] preferenceButtons = host.GetVisualDescendants()
-                .OfType<ToggleButton>()
+            RadioButton[] preferenceButtons = host.GetVisualDescendants()
+                .OfType<RadioButton>()
                 .Where(
                     candidate => candidate.Classes.Contains(
                         "preference-choice"))
                 .ToArray();
-            ToggleButton firstPreferenceButton = preferenceButtons[0];
+            RadioButton firstPreferenceButton = preferenceButtons[0];
 
             Assert.True(overlay.IsVisible);
             Assert.False(workspaceSurface.IsEnabled);
@@ -285,8 +284,11 @@ public sealed class CourseChoiceInteractionTests
             Assert.Equal("제외", preferenceButtons[2].Content);
             Assert.Equal(true, preferenceButtons[2].IsChecked);
             Assert.Equal(
-                "01분반을 선호 분반으로 설정",
+                "01분반 선호",
                 AutomationProperties.GetName(preferenceButtons[0]));
+            Assert.Equal(
+                "추천에서 가장 먼저 사용합니다.",
+                AutomationProperties.GetHelpText(preferenceButtons[0]));
             assertBrushUsesResource(
                 preferenceButtons[1].BorderBrush,
                 "ControlBorderBrush",
@@ -300,7 +302,7 @@ public sealed class CourseChoiceInteractionTests
                 host.GetVisualDescendants().OfType<TextBlock>(),
                 candidate => candidate.Text != null
                     && candidate.Text.StartsWith(
-                        "선호 분반을 먼저 추천하고",
+                        "선호 분반을 우선하고",
                         StringComparison.Ordinal));
 
             Assert.True(preferenceButtons[2].Focus(NavigationMethod.Tab));
@@ -316,6 +318,24 @@ public sealed class CourseChoiceInteractionTests
 
             Assert.Equal(true, preferenceButtons[0].IsChecked);
             Assert.Equal(false, preferenceButtons[2].IsChecked);
+            assertBrushUsesResource(
+                preferenceButtons[0].Background,
+                "PreferencePreferredFillBrush",
+                window.ActualThemeVariant);
+            assertBrushUsesResource(
+                preferenceButtons[0].Foreground,
+                "PreferencePreferredForegroundBrush",
+                window.ActualThemeVariant);
+            assertBrushUsesResource(
+                preferenceButtons[0].BorderBrush,
+                "PreferencePreferredBorderBrush",
+                window.ActualThemeVariant);
+            Assert.True(preferenceButtons[0].Focus(NavigationMethod.Tab));
+            Dispatcher.UIThread.RunJobs();
+            assertBrushUsesResource(
+                preferenceButtons[0].BorderBrush,
+                "ProductFocusOnFillStrokeBrush",
+                window.ActualThemeVariant);
 
             window.KeyPress(
                 Key.Escape,

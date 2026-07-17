@@ -11,21 +11,31 @@
     AutomationProperties.Name="개인 일정 편집기">
   <UserControl.Styles>
     <Style Selector="ToggleButton.day-option">
+      <Setter Property="Theme" Value="{StaticResource ProductSegmentedToggleButtonTheme}" />
       <Setter Property="MinWidth" Value="0" />
       <Setter Property="MinHeight" Value="42" />
       <Setter Property="Padding" Value="8,0" />
+      <Setter Property="CornerRadius" Value="5" />
       <Setter Property="HorizontalAlignment" Value="Stretch" />
       <Setter Property="HorizontalContentAlignment" Value="Center" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
       <Setter Property="Background" Value="{DynamicResource ControlSurfaceBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
       <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
       <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="ToggleButton.day-option:pointerover">
+      <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
     </Style>
     <Style Selector="ToggleButton.day-option:checked">
       <Setter Property="Background" Value="{DynamicResource AccentTintBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+    <Style Selector="ToggleButton.day-option:focus-visible">
+      <Setter Property="BorderBrush" Value="{DynamicResource ProductFocusStrokeBrush}" />
+      <Setter Property="BorderThickness" Value="2" />
     </Style>
     <Style Selector="ItemsControl.day-options > ContentPresenter">
       <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -41,9 +51,10 @@
             Text="{Binding PersonalScheduleEditorHeading}" />
         <TextBlock
             Classes="secondary"
-            LineHeight="20"
             Text="{Binding PersonalScheduleEditorDescription}"
-            TextWrapping="Wrap" />
+            TextTrimming="CharacterEllipsis"
+            TextWrapping="NoWrap"
+            ToolTip.Tip="{Binding PersonalScheduleEditorDescription}" />
       </StackPanel>
       <Button
           x:Name="ClosePersonalScheduleEditorButton"
@@ -80,7 +91,7 @@
         <StackPanel Spacing="8">
           <StackPanel Spacing="3">
             <TextBlock FontWeight="SemiBold" Text="요일 (필수)" />
-            <TextBlock Classes="caption" Text="반복할 요일을 여러 개 선택할 수 있습니다." />
+            <TextBlock Classes="caption" Text="여러 요일을 선택할 수 있습니다." />
           </StackPanel>
           <ItemsControl
               Classes="day-options"
@@ -126,10 +137,7 @@
 
         <Border Height="1" Background="{DynamicResource BorderBrush}" />
 
-        <StackPanel Spacing="4">
-          <TextBlock FontWeight="SemiBold" Text="세부 정보" />
-          <TextBlock Classes="caption" Text="필요한 항목만 입력하세요." />
-        </StackPanel>
+        <TextBlock FontWeight="SemiBold" Text="세부 정보" />
 
         <Grid ColumnDefinitions="*,20,*">
           <StackPanel Grid.Column="0" Spacing="7">

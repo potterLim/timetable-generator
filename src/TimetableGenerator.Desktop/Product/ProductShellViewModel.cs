@@ -133,8 +133,8 @@ internal sealed partial class ProductShellViewModel : ObservableObject, IDisposa
         mCatalogUpdateCancellationSource = new CancellationTokenSource();
         mCatalogUpdateTask = Task.CompletedTask;
         mState = EProductShellState.Loading;
-        mStatusTitle = "시간표를 준비하고 있어요";
-        mStatusMessage = "과목 데이터와 저장된 계획을 안전하게 확인하는 중입니다.";
+        mStatusTitle = "시간표 준비 중";
+        mStatusMessage = "과목 데이터와 저장된 계획을 확인하고 있습니다.";
         mShutdownState = EShutdownPresentationState.Idle;
         mShutdownTitle = string.Empty;
         mShutdownMessage = string.Empty;
@@ -226,8 +226,8 @@ internal sealed partial class ProductShellViewModel : ObservableObject, IDisposa
 
         mWorkspaceOrNull = null;
         mState = EProductShellState.Loading;
-        mStatusTitle = "시간표를 준비하고 있어요";
-        mStatusMessage = "과목 데이터와 저장된 계획을 안전하게 확인하는 중입니다.";
+        mStatusTitle = "시간표 준비 중";
+        mStatusMessage = "과목 데이터와 저장된 계획을 확인하고 있습니다.";
         mCatalogUpdateNotice = string.Empty;
         mStartupRecoveryFlags = EProductWorkspaceRecoveryFlags.None;
         raiseStatePropertiesChanged();

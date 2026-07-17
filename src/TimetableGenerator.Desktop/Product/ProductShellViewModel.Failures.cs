@@ -14,7 +14,7 @@ internal sealed partial class ProductShellViewModel
     {
         mWorkspaceOrNull = null;
         mState = EProductShellState.Error;
-        mStatusTitle = "과목 데이터를 불러오지 못했어요";
+        mStatusTitle = "과목 데이터를 불러오지 못했습니다";
         mStatusMessage = findFailureMessage(exception);
         raiseStatePropertiesChanged();
         raisePropertyChanged(nameof(WorkspaceOrNull));

@@ -139,13 +139,12 @@
               <TextBlock
                   Margin="0,4,0,0"
                   FontWeight="SemiBold"
-                  Text="아직 계획이 비어 있습니다"
-                  TextWrapping="Wrap" />
+                  Text="계획이 비어 있습니다"
+                  TextWrapping="NoWrap" />
               <TextBlock
                   Classes="caption"
-                  LineHeight="18"
-                  Text="과목을 고르거나 개인 일정을 추가해 나만의 시간표를 시작하세요."
-                  TextWrapping="Wrap" />
+                  Text="과목이나 개인 일정을 추가해 시작하세요."
+                  TextWrapping="NoWrap" />
               <Button
                   Classes="outline"
                   Margin="0,4,0,0"
@@ -166,8 +165,8 @@
               CornerRadius="7">
             <TextBlock
                 Classes="caption"
-                Text="선택한 과목은 없습니다. 개인 일정만으로도 시간표를 저장할 수 있어요."
-                TextWrapping="Wrap" />
+                Text="과목 없이 개인 일정만 저장할 수 있습니다."
+                TextWrapping="NoWrap" />
           </Border>
 
           <TextBlock
@@ -206,9 +205,10 @@
                             FontSize="15"
                             FontWeight="SemiBold"
                             Text="{Binding SingleCourse.Name}"
-                            TextWrapping="Wrap" />
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="NoWrap"
+                            ToolTip.Tip="{Binding SingleCourse.Name}" />
                         <TextBlock Classes="caption" Text="{Binding SingleCourse.PreferenceSummary}" />
-                        <TextBlock Classes="caption" Text="{Binding SingleCourse.OfferingSummary}" />
                       </StackPanel>
                       <Button
                           x:Name="CourseChoiceGroupEditButton"
@@ -254,7 +254,9 @@
                           <TextBlock
                               Classes="caption"
                               Text="{Binding Description}"
-                              TextWrapping="Wrap" />
+                              TextTrimming="CharacterEllipsis"
+                              TextWrapping="NoWrap"
+                              ToolTip.Tip="{Binding Description}" />
                         </StackPanel>
                         <Button
                             x:Name="AlternativeCourseChoiceGroupEditButton"
@@ -305,9 +307,10 @@
                                   FontSize="15"
                                   FontWeight="SemiBold"
                                   Text="{Binding Name}"
-                                  TextWrapping="Wrap" />
+                                  TextTrimming="CharacterEllipsis"
+                                  TextWrapping="NoWrap"
+                                  ToolTip.Tip="{Binding Name}" />
                               <TextBlock Classes="caption" Text="{Binding PreferenceSummary}" />
-                              <TextBlock Classes="caption" Text="{Binding OfferingSummary}" />
                             </StackPanel>
                           </Border>
                         </DataTemplate>
@@ -405,9 +408,10 @@
               CornerRadius="7">
             <TextBlock
                 Classes="caption"
-                LineHeight="18"
-                Text="식사, 랩 미팅, 고정 약속처럼 수업 외 시간을 미리 비워둘 수 있어요."
-                TextWrapping="Wrap" />
+                Text="식사·랩 미팅·고정 약속을 시간표에 추가하세요."
+                TextTrimming="CharacterEllipsis"
+                TextWrapping="NoWrap"
+                ToolTip.Tip="식사·랩 미팅·고정 약속을 시간표에 추가하세요." />
           </Border>
 
           <ItemsControl
@@ -430,7 +434,8 @@
                         FontSize="14"
                         FontWeight="SemiBold"
                         Text="{Binding Title}"
-                        TextTrimming="CharacterEllipsis" />
+                        TextTrimming="CharacterEllipsis"
+                        ToolTip.Tip="{Binding Title}" />
                     <TextBlock
                         Grid.Row="1"
                         Margin="0,4,0,0"
@@ -442,7 +447,9 @@
                         Classes="caption"
                         IsVisible="{Binding HasDetails}"
                         Text="{Binding DetailsSummary}"
-                        TextWrapping="Wrap" />
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap"
+                        ToolTip.Tip="{Binding DetailsSummary}" />
                     <Button
                         Grid.Row="0"
                         Grid.RowSpan="3"
@@ -498,9 +505,8 @@
                 <TextBlock FontWeight="SemiBold" Text="추천 기준" />
                 <TextBlock
                     Classes="caption"
-                    LineHeight="18"
-                    Text="과목과 개인 일정이 겹치지 않는 분반 조합만 추천합니다. 시간 미정 과목은 별도로 보관합니다."
-                    TextWrapping="Wrap" />
+                    Text="겹치지 않는 분반만 추천합니다."
+                    TextWrapping="NoWrap" />
               </StackPanel>
             </Grid>
           </Border>
