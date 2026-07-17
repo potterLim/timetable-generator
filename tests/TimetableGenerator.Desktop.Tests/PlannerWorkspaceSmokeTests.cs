@@ -142,6 +142,22 @@ public sealed class PlannerWorkspaceSmokeTests
     }
 
     [AvaloniaFact]
+    public void MultiOfferingCourseUsesOneConciseMetadataLine()
+    {
+        using (PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace())
+        {
+            workspace.SearchText = "프로그래밍";
+            CourseSearchItem programming = Assert.Single(
+                workspace.VisibleCourses);
+
+            Assert.False(programming.HasSingleOfferingDetails);
+            Assert.Empty(programming.SingleOfferingDetailsDisplayText);
+            Assert.Equal("2개 분반 · 3학점", programming.InstructorCreditDisplayText);
+        }
+    }
+
+    [AvaloniaFact]
     public async Task PlanSwitchRestoresThePersistedOfferingSelectionAsync()
     {
         using (PlannerWorkspaceViewModel workspace =

@@ -8,8 +8,8 @@ namespace TimetableGenerator.Desktop.Presentation.Catalog;
 
 internal static class CatalogSummaryFormatter
 {
-    private const string INSTRUCTOR_UNCONFIRMED_SUMMARY = "담당교원 미확정";
-    private const string INSTRUCTOR_NOT_PROVIDED_SUMMARY = "담당교원 정보 없음";
+    private const string INSTRUCTOR_UNCONFIRMED_SUMMARY = "교수 미정";
+    private const string INSTRUCTOR_NOT_PROVIDED_SUMMARY = "교수 정보 없음";
     private const string LOCATION_NOT_PROVIDED_SUMMARY = "강의실 미정";
     private const string SCHEDULE_NOT_PROVIDED_SUMMARY =
         "시간 미정 (충돌 자동 검증 제외)";

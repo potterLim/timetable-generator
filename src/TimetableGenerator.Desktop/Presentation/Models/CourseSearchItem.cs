@@ -80,15 +80,13 @@ internal sealed class CourseSearchItem : ObservableObject
         }
     }
 
-    public string MeetingDisplayText { get; }
+    public string SingleOfferingDetailsDisplayText { get; }
 
-    public string LocationDisplayText { get; }
-
-    public string MeetingLocationDisplayText
+    public bool HasSingleOfferingDetails
     {
         get
         {
-            return MeetingDisplayText + " · " + LocationDisplayText;
+            return Projection.Offerings.Count == 1;
         }
     }
 
@@ -261,8 +259,7 @@ internal sealed class CourseSearchItem : ObservableObject
             selectionOptions);
         mSelectedSelectionOption = mSelectionOptions[0];
         InstructorDisplayText = createInstructorSummary(projection);
-        MeetingDisplayText = createMeetingSummary(projection);
-        LocationDisplayText = createLocationSummary(projection);
+        SingleOfferingDetailsDisplayText = createSingleOfferingDetails(projection);
         mSearchIndex = createSearchIndex(projection);
     }
 
@@ -379,39 +376,16 @@ internal sealed class CourseSearchItem : ObservableObject
         return projection.Offerings.Count + "개 분반";
     }
 
-    private static string createMeetingSummary(CatalogCourseProjection projection)
+    private static string createSingleOfferingDetails(
+        CatalogCourseProjection projection)
     {
-        int scheduledCount = projection.ScheduledOfferingIds.Count;
-        int timeNotProvidedCount = projection.TimeNotProvidedOfferingIds.Count;
-        if (projection.Offerings.Count == 1)
+        if (projection.Offerings.Count != 1)
         {
-            return projection.Offerings[0].ScheduleSummary;
+            return string.Empty;
         }
 
-        if (scheduledCount > 0 && timeNotProvidedCount > 0)
-        {
-            return scheduledCount
-                + "개 시간표 분반 · 시간 미정 "
-                + timeNotProvidedCount
-                + "개";
-        }
-
-        if (scheduledCount > 0)
-        {
-            return scheduledCount + "개 분반 · 선호할 분반을 직접 설정";
-        }
-
-        return timeNotProvidedCount + "개 시간 미정 분반 중 직접 선택";
-    }
-
-    private static string createLocationSummary(CatalogCourseProjection projection)
-    {
-        if (projection.Offerings.Count == 1)
-        {
-            return projection.Offerings[0].LocationSummary;
-        }
-
-        return "분반별 강의실";
+        CatalogOfferingProjection offering = projection.Offerings[0];
+        return offering.ScheduleSummary + " · " + offering.LocationSummary;
     }
 
     private static string createSearchIndex(CatalogCourseProjection projection)

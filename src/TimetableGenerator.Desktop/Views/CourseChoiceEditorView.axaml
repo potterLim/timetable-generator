@@ -10,12 +10,17 @@
     AutomationProperties.Name="수강 선택 편집기">
   <UserControl.Styles>
     <Style Selector="ToggleButton.preference-choice">
+      <Setter Property="Width" Value="62" />
+      <Setter Property="Height" Value="36" />
       <Setter Property="MinWidth" Value="62" />
-      <Setter Property="MinHeight" Value="34" />
-      <Setter Property="Padding" Value="10,6" />
+      <Setter Property="MinHeight" Value="36" />
+      <Setter Property="Padding" Value="10,0" />
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
+      <Setter Property="BorderThickness" Value="2" />
       <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
     <Style Selector="ToggleButton.preference-choice:pointerover">
       <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
@@ -198,7 +203,7 @@
             <Grid>
               <TextBox
                   x:Name="AlternativeCourseSearchBox"
-                  Padding="36,8,10,8"
+                  Padding="36,0,12,0"
                   Text="{Binding AlternativeCourseSearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                   PlaceholderText="과목명 또는 코드 검색"
                   AutomationProperties.AutomationId="AlternativeCourseSearchBox"
@@ -236,9 +241,9 @@
                         </StackPanel>
                         <Button
                             Grid.Column="1"
-                            Classes="subtle"
-                            MinHeight="34"
-                            Padding="10,6"
+                            Classes="outline"
+                            MinHeight="36"
+                            Padding="10,0"
                             Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).AddAlternativeCourseCommand}"
                             CommandParameter="{Binding}"
                             AutomationProperties.Name="{Binding AddButtonAccessibleName}">

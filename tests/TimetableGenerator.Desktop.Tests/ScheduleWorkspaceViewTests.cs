@@ -271,7 +271,7 @@ public sealed class ScheduleWorkspaceViewTests
             Button scheduleCard = scheduleCardOrNull;
             Assert.Contains(LONG_NAME, AutomationProperties.GetName(scheduleCard));
             Assert.Equal(
-                "선택하면 과목의 전체 시간, 담당교원, 강의실 정보를 엽니다.",
+                "선택하면 과목의 전체 시간, 교수, 강의실 정보를 엽니다.",
                 AutomationProperties.GetHelpText(scheduleCard));
 
             List<TextBlock> cardTexts = scheduleCard.GetVisualDescendants()

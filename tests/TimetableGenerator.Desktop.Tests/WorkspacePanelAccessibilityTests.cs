@@ -7,6 +7,7 @@ using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -123,6 +124,69 @@ public sealed class WorkspacePanelAccessibilityTests
         {
             window.Close();
             workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
+    public void CourseBrowserInputsAlignAndMultiOfferingCardsStayConcise()
+    {
+        using (PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace())
+        {
+            workspace.SearchText = "프로그래밍";
+            CourseBrowserView courseBrowser = new CourseBrowserView();
+            courseBrowser.DataContext = workspace;
+            Window window = createPanelWindow(courseBrowser);
+
+            try
+            {
+                window.Show();
+                Dispatcher.UIThread.RunJobs();
+
+                TextBox searchBox = findRequiredControl<TextBox>(
+                    courseBrowser,
+                    "CourseSearchBox");
+                Assert.Equal(
+                    new Thickness(36.0, 0.0, 12.0, 0.0),
+                    searchBox.Padding);
+                Assert.Equal(
+                    VerticalAlignment.Center,
+                    searchBox.VerticalContentAlignment);
+
+                ComboBox[] selectors = courseBrowser.GetVisualDescendants()
+                    .OfType<ComboBox>()
+                    .ToArray();
+                Assert.NotEmpty(selectors);
+                Assert.All(
+                    selectors,
+                    selector => Assert.True(selector.MinHeight >= 40.0));
+                Assert.All(
+                    selectors,
+                    selector => Assert.Equal(
+                        VerticalAlignment.Center,
+                        selector.VerticalContentAlignment));
+
+                TextBlock[] visibleTexts = courseBrowser.GetVisualDescendants()
+                    .OfType<TextBlock>()
+                    .Where(candidate => candidate.IsVisible)
+                    .ToArray();
+                Assert.DoesNotContain(
+                    visibleTexts,
+                    candidate => candidate.Text != null
+                        && candidate.Text.Contains(
+                            "선호할 분반",
+                            StringComparison.Ordinal));
+                Assert.DoesNotContain(
+                    visibleTexts,
+                    candidate => candidate.Text != null
+                        && candidate.Text.Contains(
+                            "분반별 강의실",
+                            StringComparison.Ordinal));
+            }
+            finally
+            {
+                window.Close();
+            }
         }
     }
 

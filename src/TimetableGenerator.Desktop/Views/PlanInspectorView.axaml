@@ -385,7 +385,7 @@
                 Grid.Column="1"
                 Classes="subtle"
                 MinHeight="36"
-                Padding="10,6"
+                Padding="10,0"
                 Command="{Binding BeginAddPersonalScheduleCommand}"
                 AutomationProperties.AutomationId="AddPersonalSchedule"
                 AutomationProperties.Name="개인 일정 추가"
