@@ -56,8 +56,7 @@ internal sealed class PersonalScheduleItem
 
             if (Schedule.Details.InstructorOrNull != null)
             {
-                details.Add(
-                    "담당교원 " + Schedule.Details.InstructorOrNull.Value);
+                details.Add("담당 " + Schedule.Details.InstructorOrNull.Value);
             }
 
             if (Schedule.Details.LocationOrNull != null)

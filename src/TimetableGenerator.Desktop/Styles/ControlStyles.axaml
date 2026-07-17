@@ -62,6 +62,13 @@
     <Setter Property="CornerRadius" Value="6" />
     <Setter Property="Padding" Value="14,7" />
     <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="ToggleButton">
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
   </Style>
 
   <Style Selector="Button.icon">
@@ -128,6 +135,20 @@
     <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
   </Style>
 
+  <Style Selector="Button.subtle">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+  </Style>
+
+  <Style Selector="Button.subtle:pointerover">
+    <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
+  </Style>
+
+  <Style Selector="Button.subtle:pressed">
+    <Setter Property="Background" Value="{DynamicResource PressedSurfaceBrush}" />
+  </Style>
+
   <Style Selector="Button:focus-visible">
     <Setter Property="BorderBrush" Value="{DynamicResource ProductFocusStrokeBrush}" />
     <Setter Property="BorderThickness" Value="2" />
@@ -143,6 +164,17 @@
     <Setter Property="Background" Value="{DynamicResource ControlSurfaceBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+  </Style>
+
+  <Style Selector="TextBox">
+    <Setter Property="Padding" Value="12,0" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="ComboBox">
+    <Setter Property="Padding" Value="12,0" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
   </Style>
 
   <Style Selector="TextBox:pointerover, ComboBox:pointerover">

@@ -4,6 +4,7 @@ using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Headless.XUnit;
+using Avalonia.Layout;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -55,6 +56,20 @@ public sealed class ProductTimePickerTests
                 AutomationProperties.GetName(segments[0]));
             Assert.Equal("시간 시", AutomationProperties.GetName(segments[1]));
             Assert.Equal("시간 분", AutomationProperties.GetName(segments[2]));
+            Assert.True(timePicker.MinWidth >= 280.0);
+            Assert.All(
+                segments,
+                segment => Assert.True(segment.MinHeight >= 42.0));
+            Assert.All(
+                segments,
+                segment => Assert.Equal(
+                    VerticalAlignment.Center,
+                    segment.VerticalContentAlignment));
+            Assert.All(
+                segments,
+                segment => Assert.Equal(
+                    HorizontalAlignment.Center,
+                    segment.HorizontalContentAlignment));
 
             segments[0].SelectedIndex = 1;
             segments[1].SelectedIndex = 1;

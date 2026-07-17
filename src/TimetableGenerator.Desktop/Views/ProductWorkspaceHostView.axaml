@@ -282,8 +282,8 @@
         AutomationProperties.LiveSetting="Assertive">
       <Border
           x:Name="PersonalScheduleEditorDialog"
-          Width="560"
-          MaxWidth="560"
+          Width="680"
+          MaxWidth="680"
           MaxHeight="760"
           Margin="16"
           Padding="28"

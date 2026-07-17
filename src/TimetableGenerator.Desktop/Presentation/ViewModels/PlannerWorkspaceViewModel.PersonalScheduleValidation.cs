@@ -82,7 +82,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                     + PersonalScheduleSection.MAXIMUM_LENGTH
                     + "자 이내로 입력해 주세요.";
             case EPersonalScheduleDraftValidationError.InstructorInvalid:
-                return "담당교원은 줄바꿈 없이 "
+                return "교수·담당자는 줄바꿈 없이 "
                     + PersonalScheduleInstructor.MAXIMUM_LENGTH
                     + "자 이내로 입력해 주세요.";
             case EPersonalScheduleDraftValidationError.LocationInvalid:

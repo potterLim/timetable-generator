@@ -7,6 +7,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -115,6 +116,11 @@ public sealed class PersonalScheduleInteractionTests
             TextBox nameInput = host.GetVisualDescendants()
                 .OfType<TextBox>()
                 .Single(candidate => candidate.Name == "PersonalScheduleNameInput");
+            TextBox instructorInput = host.GetVisualDescendants()
+                .OfType<TextBox>()
+                .Single(
+                    candidate => candidate.Name
+                        == "PersonalScheduleInstructorInput");
             Grid rootWorkspaceSurface = findRequiredControl<Grid>(
                 host,
                 "WorkspaceSurface");
@@ -125,7 +131,13 @@ public sealed class PersonalScheduleInteractionTests
             Assert.Equal(
                 "PersonalScheduleNameInput",
                 AutomationProperties.GetAutomationId(nameInput));
-            Assert.Equal(560.0, dialog.Bounds.Width);
+            Assert.Equal(
+                "개인 일정 교수 또는 담당자",
+                AutomationProperties.GetName(instructorInput));
+            Assert.Equal(
+                VerticalAlignment.Center,
+                instructorInput.VerticalContentAlignment);
+            Assert.Equal(680.0, dialog.Bounds.Width);
             Assert.Equal(
                 KeyboardNavigationMode.Cycle,
                 KeyboardNavigation.GetTabNavigation(dialog));
@@ -138,6 +150,14 @@ public sealed class PersonalScheduleInteractionTests
             Assert.Equal(
                 "개인 일정 대화상자",
                 AutomationProperties.GetName(dialog));
+            Button closeButton = host.GetVisualDescendants()
+                .OfType<Button>()
+                .Single(
+                    candidate => candidate.Name
+                        == "ClosePersonalScheduleEditorButton");
+            Assert.Equal(
+                "개인 일정 편집기 닫기",
+                AutomationProperties.GetName(closeButton));
 
             workspace.SavePersonalScheduleCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
@@ -200,6 +220,14 @@ public sealed class PersonalScheduleInteractionTests
                 dayInputs,
                 candidate => AutomationProperties.GetAutomationId(candidate)
                     == "PersonalScheduleSundayInput");
+            Assert.All(
+                dayInputs,
+                candidate => Assert.True(candidate.Bounds.Width >= 76.0));
+            Assert.All(
+                dayInputs,
+                candidate => Assert.Equal(
+                    VerticalAlignment.Center,
+                    candidate.VerticalContentAlignment));
 
             ProductTimePicker startTimeInput = host.GetVisualDescendants()
                 .OfType<ProductTimePicker>()

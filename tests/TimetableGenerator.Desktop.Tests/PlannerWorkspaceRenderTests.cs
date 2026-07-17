@@ -20,6 +20,7 @@ using TimetableGenerator.Desktop.Tests.Presentation.Appearance;
 using TimetableGenerator.Desktop.Tests.Presentation.Catalog;
 using TimetableGenerator.Desktop.Views;
 using TimetableGenerator.Domain.Catalogs;
+using TimetableGenerator.Domain.Scheduling;
 
 using Xunit;
 
@@ -147,6 +148,57 @@ public sealed class PlannerWorkspaceRenderTests
             saveRenderedFrame(
                 window,
                 "course-choice-editor-dark-1487x1058.png");
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
+    public void PersonalScheduleEditorRendersInLightAndDarkThemes()
+    {
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+        ProductShellViewModel shell = PlannerWorkspaceTestFactory.CreateShell(
+            workspace);
+        MainWindow window = new MainWindow(
+            shell,
+            ProductAppearanceTestFactory.CreateViewModel());
+        window.Width = REFERENCE_WIDTH;
+        window.Height = REFERENCE_HEIGHT;
+
+        try
+        {
+            window.RequestedThemeVariant = ThemeVariant.Light;
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            workspace.BeginAddPersonalScheduleCommand.Execute(null);
+            workspace.PersonalScheduleTitleDraft = "연구실 정기 미팅";
+            workspace.PersonalScheduleDayOptions
+                .Single(option => option.Day == EDay.Tuesday)
+                .IsSelected = true;
+            workspace.PersonalScheduleDayOptions
+                .Single(option => option.Day == EDay.Thursday)
+                .IsSelected = true;
+            workspace.PersonalScheduleStartTimeOrNull = new ScheduleTime(18, 0);
+            workspace.PersonalScheduleEndTimeOrNull = new ScheduleTime(19, 30);
+            workspace.PersonalScheduleSectionDraft = "A";
+            workspace.PersonalScheduleInstructorDraft = "김 교수";
+            workspace.PersonalScheduleLocationDraft = "느헤미야홀 101호";
+            Dispatcher.UIThread.RunJobs();
+
+            saveRenderedFrame(
+                window,
+                "personal-schedule-editor-light-1487x1058.png");
+
+            window.RequestedThemeVariant = ThemeVariant.Dark;
+            Dispatcher.UIThread.RunJobs();
+            saveRenderedFrame(
+                window,
+                "personal-schedule-editor-dark-1487x1058.png");
         }
         finally
         {
