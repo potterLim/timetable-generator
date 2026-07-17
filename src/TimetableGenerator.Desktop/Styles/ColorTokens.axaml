@@ -90,7 +90,7 @@
       <SolidColorBrush x:Key="SubtleSurfaceBrush" Color="#21262D" />
       <SolidColorBrush x:Key="HoverSurfaceBrush" Color="#272E38" />
       <SolidColorBrush x:Key="PressedSurfaceBrush" Color="#303843" />
-      <SolidColorBrush x:Key="OverlayScrimBrush" Color="#B3000000" />
+      <SolidColorBrush x:Key="OverlayScrimBrush" Color="#8F000000" />
       <SolidColorBrush x:Key="BorderBrush" Color="#30363D" />
       <SolidColorBrush x:Key="PaneDividerBrush" Color="#3D444D" />
       <SolidColorBrush x:Key="StrongBorderBrush" Color="#484F58" />

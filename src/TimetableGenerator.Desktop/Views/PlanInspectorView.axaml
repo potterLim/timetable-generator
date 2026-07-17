@@ -296,7 +296,7 @@
                               Classes.purple="{Binding IsPurple}"
                               Classes.green="{Binding IsGreen}"
                               Padding="12,9"
-                              Background="{DynamicResource PaneSurfaceBrush}"
+                              Background="{DynamicResource SubtleSurfaceBrush}"
                               BorderThickness="3,1,1,0">
                             <StackPanel Spacing="3">
                               <StackPanel Orientation="Horizontal" Spacing="7">

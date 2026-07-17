@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -212,6 +213,12 @@ public sealed class PersonalScheduleInteractionTests
                         is PersonalScheduleDayOption)
                 .ToArray();
             Assert.Equal(7, dayInputs.Length);
+            ItemsControl dayOptions = dayInputs[0]
+                .GetVisualAncestors()
+                .OfType<ItemsControl>()
+                .Single(
+                    candidate => AutomationProperties.GetName(candidate)
+                        == "요일 선택");
             Assert.Contains(
                 dayInputs,
                 candidate => AutomationProperties.GetAutomationId(candidate)
@@ -228,6 +235,65 @@ public sealed class PersonalScheduleInteractionTests
                 candidate => Assert.Equal(
                     VerticalAlignment.Center,
                     candidate.VerticalContentAlignment));
+            (double Left, double Width)[] dayInputGeometry = dayInputs
+                .Select(
+                    candidate =>
+                    {
+                        Avalonia.Point? originOrNull = candidate.TranslatePoint(
+                            new Avalonia.Point(0.0, 0.0),
+                            dayOptions);
+                        Assert.NotNull(originOrNull);
+                        if (originOrNull == null)
+                        {
+                            throw new InvalidOperationException(
+                                "The day option geometry could not be resolved.");
+                        }
+
+                        return (
+                            Left: originOrNull.Value.X,
+                            Width: candidate.Bounds.Width);
+                    })
+                .OrderBy(geometry => geometry.Left)
+                .ToArray();
+            double minimumDayWidth = dayInputGeometry.Min(
+                geometry => geometry.Width);
+            double maximumDayWidth = dayInputGeometry.Max(
+                geometry => geometry.Width);
+            Assert.InRange(
+                maximumDayWidth - minimumDayWidth,
+                0.0,
+                0.01);
+            Assert.All(
+                dayInputGeometry,
+                geometry =>
+                {
+                    Assert.True(geometry.Left >= 0.0);
+                    Assert.True(
+                        geometry.Left + geometry.Width
+                            <= dayOptions.Bounds.Width + 0.01);
+                });
+            double leadingMargin = dayInputGeometry[0].Left;
+            (double Left, double Width) lastDay = dayInputGeometry[^1];
+            double trailingMargin = dayOptions.Bounds.Width
+                - (lastDay.Left + lastDay.Width);
+            Assert.InRange(leadingMargin, 2.5, 4.5);
+            Assert.InRange(trailingMargin, 2.5, 4.5);
+            Assert.InRange(
+                Math.Abs(leadingMargin - trailingMargin),
+                0.0,
+                1.0);
+            for (int dayIndex = 0;
+                dayIndex < dayInputGeometry.Length - 1;
+                ++dayIndex)
+            {
+                (double Left, double Width) currentDay =
+                    dayInputGeometry[dayIndex];
+                (double Left, double Width) nextDay =
+                    dayInputGeometry[dayIndex + 1];
+                double gap = nextDay.Left
+                    - (currentDay.Left + currentDay.Width);
+                Assert.InRange(gap, 7.0, 9.0);
+            }
 
             ProductTimePicker startTimeInput = host.GetVisualDescendants()
                 .OfType<ProductTimePicker>()

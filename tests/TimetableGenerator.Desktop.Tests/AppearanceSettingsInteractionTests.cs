@@ -1,13 +1,20 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
+
+using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
+
 using TimetableGenerator.Desktop.Presentation.Appearance;
 using TimetableGenerator.Desktop.Product.Appearance;
 using TimetableGenerator.Desktop.Tests.Presentation.Appearance;
 using TimetableGenerator.Desktop.Views;
+
 using Xunit;
 
 namespace TimetableGenerator.Desktop.Tests;
@@ -36,6 +43,9 @@ public sealed class AppearanceSettingsInteractionTests
             RadioButton systemOption = findRequiredControl<RadioButton>(
                 view,
                 "SystemThemeOption");
+            RadioButton lightOption = findRequiredControl<RadioButton>(
+                view,
+                "LightThemeOption");
             RadioButton darkOption = findRequiredControl<RadioButton>(
                 view,
                 "DarkThemeOption");
@@ -54,6 +64,9 @@ public sealed class AppearanceSettingsInteractionTests
             Assert.Equal(
                 Avalonia.Layout.VerticalAlignment.Center,
                 systemOption.VerticalContentAlignment);
+            assertIndicatorAndContentAreVerticallyAligned(systemOption);
+            assertIndicatorAndContentAreVerticallyAligned(lightOption);
+            assertIndicatorAndContentAreVerticallyAligned(darkOption);
             Assert.True(systemOption.IsChecked);
             Assert.False(darkOption.IsChecked);
 
@@ -121,6 +134,39 @@ public sealed class AppearanceSettingsInteractionTests
         {
             window.Close();
         }
+    }
+
+    private static void assertIndicatorAndContentAreVerticallyAligned(
+        RadioButton option)
+    {
+        Visual indicator = option.GetVisualDescendants()
+            .Single(candidate => candidate.Name == "OuterEllipse");
+        ContentPresenter presenter = option.GetVisualDescendants()
+            .OfType<ContentPresenter>()
+            .Single(candidate => candidate.Name == "PART_ContentPresenter");
+        Point? indicatorOriginOrNull = indicator.TranslatePoint(
+            new Point(0.0, 0.0),
+            option);
+        Point? presenterOriginOrNull = presenter.TranslatePoint(
+            new Point(0.0, 0.0),
+            option);
+
+        Assert.NotNull(indicatorOriginOrNull);
+        Assert.NotNull(presenterOriginOrNull);
+        if (indicatorOriginOrNull == null || presenterOriginOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The appearance option geometry could not be resolved.");
+        }
+
+        double indicatorCenterY = indicatorOriginOrNull.Value.Y
+            + (indicator.Bounds.Height / 2.0);
+        double presenterCenterY = presenterOriginOrNull.Value.Y
+            + (presenter.Bounds.Height / 2.0);
+        Assert.InRange(
+            Math.Abs(indicatorCenterY - presenterCenterY),
+            0.0,
+            1.0);
     }
 
     private static TControl findRequiredControl<TControl>(

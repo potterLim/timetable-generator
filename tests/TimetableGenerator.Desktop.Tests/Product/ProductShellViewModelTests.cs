@@ -344,7 +344,7 @@ public sealed class ProductShellViewModelTests
 
             Assert.True(shell.HasError);
             Assert.Null(shell.WorkspaceOrNull);
-        Assert.Equal("과목 데이터를 불러오지 못했습니다", shell.StatusTitle);
+            Assert.Equal("과목 데이터를 불러오지 못했습니다", shell.StatusTitle);
             Assert.Contains("배포 설정", shell.StatusMessage);
         }
     }

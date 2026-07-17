@@ -38,6 +38,7 @@
       <Setter Property="BorderThickness" Value="2" />
     </Style>
     <Style Selector="ItemsControl.day-options > ContentPresenter">
+      <Setter Property="Margin" Value="4,0" />
       <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     </Style>
   </UserControl.Styles>
@@ -94,11 +95,14 @@
             <TextBlock Classes="caption" Text="여러 요일을 선택할 수 있습니다." />
           </StackPanel>
           <ItemsControl
+              x:Name="PersonalScheduleDayOptions"
               Classes="day-options"
-              ItemsSource="{Binding PersonalScheduleDayOptions}">
+              ItemsSource="{Binding PersonalScheduleDayOptions}"
+              AutomationProperties.Name="요일 선택"
+              AutomationProperties.HelpText="필수 항목이며 여러 요일을 선택할 수 있습니다.">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
-                <UniformGrid Columns="7" Rows="1" ColumnSpacing="8" />
+                <UniformGrid Columns="7" Rows="1" />
               </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
