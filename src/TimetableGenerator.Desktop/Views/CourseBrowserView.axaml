@@ -23,6 +23,11 @@
       <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
       <Setter Property="BorderThickness" Value="3,0,0,0" />
     </Style>
+    <Style Selector="Border.course-item.added:pointerover, Border.course-item.added:pressed">
+      <Setter Property="Background" Value="{DynamicResource AccentTintBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+      <Setter Property="BorderThickness" Value="3,0,0,0" />
+    </Style>
   </UserControl.Styles>
 
   <Border

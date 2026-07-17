@@ -6,7 +6,10 @@ using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -67,8 +70,14 @@ public sealed class AppearanceSettingsInteractionTests
             assertIndicatorAndContentAreVerticallyAligned(systemOption);
             assertIndicatorAndContentAreVerticallyAligned(lightOption);
             assertIndicatorAndContentAreVerticallyAligned(darkOption);
+            assertIndicatorHasSelectedSurfaceInset(systemOption);
+            assertIndicatorHasSelectedSurfaceInset(lightOption);
+            assertIndicatorHasSelectedSurfaceInset(darkOption);
             Assert.True(systemOption.IsChecked);
             Assert.False(darkOption.IsChecked);
+            assertCheckedOptionRetainsSurfaceOnPointerOver(
+                window,
+                systemOption);
 
             darkOption.IsChecked = true;
             await appearance.CompletePersistenceAsync();
@@ -167,6 +176,68 @@ public sealed class AppearanceSettingsInteractionTests
             Math.Abs(indicatorCenterY - presenterCenterY),
             0.0,
             1.0);
+    }
+
+    private static void assertIndicatorHasSelectedSurfaceInset(
+        RadioButton option)
+    {
+        Visual indicator = option.GetVisualDescendants()
+            .Single(candidate => candidate.Name == "OuterEllipse");
+        Point? indicatorOriginOrNull = indicator.TranslatePoint(
+            new Point(0.0, 0.0),
+            option);
+
+        Assert.NotNull(indicatorOriginOrNull);
+        if (indicatorOriginOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The appearance option indicator position could not be resolved.");
+        }
+
+        Assert.InRange(indicatorOriginOrNull.Value.X, 8.0, 10.0);
+    }
+
+    private static void assertCheckedOptionRetainsSurfaceOnPointerOver(
+        Window window,
+        RadioButton option)
+    {
+        Border rootBorder = option.GetVisualDescendants()
+            .OfType<Border>()
+            .Single(candidate => candidate.Name == "RootBorder");
+        Color restingColor = getRequiredSolidColor(rootBorder.Background);
+        Point? optionOriginOrNull = option.TranslatePoint(
+            new Point(0.0, 0.0),
+            window);
+
+        Assert.NotNull(optionOriginOrNull);
+        if (optionOriginOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The appearance option position could not be resolved.");
+        }
+
+        Point optionCenter = optionOriginOrNull.Value
+            + new Vector(option.Bounds.Width / 2.0, option.Bounds.Height / 2.0);
+        window.MouseMove(optionCenter, RawInputModifiers.None);
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.True(option.IsPointerOver);
+        Assert.Equal(
+            restingColor,
+            getRequiredSolidColor(rootBorder.Background));
+    }
+
+    private static Color getRequiredSolidColor(IBrush? brushOrNull)
+    {
+        ISolidColorBrush? solidBrushOrNull = brushOrNull as ISolidColorBrush;
+        Assert.NotNull(solidBrushOrNull);
+        if (solidBrushOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The appearance option surface was not a solid color.");
+        }
+
+        return solidBrushOrNull.Color;
     }
 
     private static TControl findRequiredControl<TControl>(

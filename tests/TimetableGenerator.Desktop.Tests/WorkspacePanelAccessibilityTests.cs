@@ -5,9 +5,12 @@ using System.Windows.Input;
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -191,6 +194,80 @@ public sealed class WorkspacePanelAccessibilityTests
     }
 
     [AvaloniaFact]
+    public void AddedCourseKeepsItsSurfaceAcrossListAndPointerStates()
+    {
+        using (PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace())
+        {
+            CourseBrowserView courseBrowser = new CourseBrowserView();
+            courseBrowser.DataContext = workspace;
+            Window window = createPanelWindow(courseBrowser);
+
+            try
+            {
+                window.Show();
+                Dispatcher.UIThread.RunJobs();
+
+                ListBox courseResults = findRequiredControl<ListBox>(
+                    courseBrowser,
+                    "CourseResultsList");
+                Control? itemContainerOrNull = courseResults.ContainerFromIndex(0);
+                Assert.NotNull(itemContainerOrNull);
+                if (itemContainerOrNull == null)
+                {
+                    throw new InvalidOperationException(
+                        "The first course result was not realized.");
+                }
+
+                Border courseCard = itemContainerOrNull
+                    .GetVisualDescendants()
+                    .OfType<Border>()
+                    .Single(candidate => candidate.Classes.Contains("course-item"));
+                ContentPresenter itemPresenter = itemContainerOrNull
+                    .GetVisualChildren()
+                    .OfType<ContentPresenter>()
+                    .Single(candidate => candidate.Name == "PART_ContentPresenter");
+                CourseSearchItem course = workspace.VisibleCourses[0];
+
+                workspace.AddCourseCommand.Execute(course);
+                courseResults.SelectedIndex = 0;
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.Contains("added", courseCard.Classes);
+                Color restingColor = getRequiredSolidColor(courseCard.Background);
+                assertTransparent(itemPresenter.Background);
+
+                Point? cardOriginOrNull = courseCard.TranslatePoint(
+                    new Point(0.0, 0.0),
+                    window);
+                Assert.NotNull(cardOriginOrNull);
+                if (cardOriginOrNull == null)
+                {
+                    throw new InvalidOperationException(
+                        "The course card position could not be resolved.");
+                }
+
+                Point cardCenter = cardOriginOrNull.Value
+                    + new Vector(
+                        courseCard.Bounds.Width / 2.0,
+                        courseCard.Bounds.Height / 2.0);
+                window.MouseMove(cardCenter, RawInputModifiers.None);
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.True(courseCard.IsPointerOver);
+                Assert.Equal(
+                    restingColor,
+                    getRequiredSolidColor(courseCard.Background));
+                assertTransparent(itemPresenter.Background);
+            }
+            finally
+            {
+                window.Close();
+            }
+        }
+    }
+
+    [AvaloniaFact]
     public void ResponsivePaneHeadersExposeDismissActions()
     {
         PlannerWorkspaceViewModel workspace =
@@ -319,5 +396,36 @@ public sealed class WorkspacePanelAccessibilityTests
         Dispatcher.UIThread.RunJobs();
         Assert.True(nestedActionOrNull.IsKeyboardFocusWithin);
         Assert.Equal(new Thickness(2.0), nestedActionOrNull.BorderThickness);
+    }
+
+    private static Color getRequiredSolidColor(IBrush? brushOrNull)
+    {
+        ISolidColorBrush? solidBrushOrNull = brushOrNull as ISolidColorBrush;
+        Assert.NotNull(solidBrushOrNull);
+        if (solidBrushOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The course card surface was not a solid color.");
+        }
+
+        return solidBrushOrNull.Color;
+    }
+
+    private static void assertTransparent(IBrush? brushOrNull)
+    {
+        if (brushOrNull == null)
+        {
+            return;
+        }
+
+        ISolidColorBrush? solidBrushOrNull = brushOrNull as ISolidColorBrush;
+        Assert.NotNull(solidBrushOrNull);
+        if (solidBrushOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The list item surface was not a solid color.");
+        }
+
+        Assert.Equal(byte.MinValue, solidBrushOrNull.Color.A);
     }
 }

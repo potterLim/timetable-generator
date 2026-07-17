@@ -261,13 +261,22 @@
     <Setter Property="FontWeight" Value="Medium" />
   </Style>
 
-  <Style Selector="RadioButton.appearance-option /template/ Grid > Grid">
+  <Style Selector="RadioButton.appearance-option /template/ Border#RootBorder > Grid">
+    <Setter Property="Margin" Value="8,0,0,0" />
     <Setter Property="VerticalAlignment" Value="Center" />
   </Style>
 
   <Style Selector="RadioButton.appearance-option:checked">
     <Setter Property="Background" Value="{DynamicResource AccentTintBrush}" />
     <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
+  <Style Selector="RadioButton.appearance-option:checked /template/ Border#RootBorder">
+    <Setter Property="Background" Value="{DynamicResource AccentTintBrush}" />
+  </Style>
+
+  <Style Selector="RadioButton.appearance-option:checked:pointerover /template/ Border#RootBorder">
+    <Setter Property="Background" Value="{DynamicResource AccentTintBrush}" />
   </Style>
 
   <Style Selector="RadioButton.appearance-option:focus-visible">
@@ -297,6 +306,36 @@
 
   <Style Selector="ListBox.workspace-list > ListBoxItem:selected">
     <Setter Property="Background" Value="Transparent" />
+  </Style>
+
+  <Style Selector="ListBox.workspace-list > ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+  </Style>
+
+  <Style Selector="ListBox.workspace-list > ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+  </Style>
+
+  <Style Selector="ListBox.workspace-list > ListBoxItem:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+  </Style>
+
+  <Style Selector="ListBox.workspace-list > ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+  </Style>
+
+  <Style Selector="ListBox.workspace-list > ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+  </Style>
+
+  <Style Selector="ListBox.workspace-list > ListBoxItem:selected:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
   </Style>
 
   <Style Selector="ProgressBar.plan-progress">
