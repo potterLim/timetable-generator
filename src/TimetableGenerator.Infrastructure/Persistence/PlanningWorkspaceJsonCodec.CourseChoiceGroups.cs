@@ -131,26 +131,28 @@ public sealed partial class PlanningWorkspaceJsonCodec
         return offeringCandidates.AsReadOnly();
     }
 
-    private static IReadOnlyList<CourseChoiceGroup> migrateScheduledChoices(
-        PlanId planId,
-        IReadOnlyList<ScheduledCourseChoice> scheduledChoices)
+    private static IReadOnlyList<CourseChoiceGroup>
+        migrateLegacyScheduledChoiceDocuments(
+            PlanId planId,
+            IReadOnlyList<LegacyScheduledCourseChoiceDocument> legacyChoiceDocuments)
     {
         List<CourseChoiceGroup> courseChoiceGroups =
-            new List<CourseChoiceGroup>(scheduledChoices.Count);
+            new List<CourseChoiceGroup>(legacyChoiceDocuments.Count);
         for (int choiceIndex = 0;
-            choiceIndex < scheduledChoices.Count;
+            choiceIndex < legacyChoiceDocuments.Count;
             ++choiceIndex)
         {
-            ScheduledCourseChoice scheduledChoice = scheduledChoices[choiceIndex];
+            LegacyScheduledCourseChoiceDocument legacyChoiceDocument =
+                legacyChoiceDocuments[choiceIndex];
             CourseChoiceGroupId groupId = createLegacyCourseChoiceGroupId(
                 planId,
-                scheduledChoice.CourseId,
+                legacyChoiceDocument.CourseId,
                 choiceIndex);
             courseChoiceGroups.Add(
                 CourseChoiceGroup.CreateWithAcceptableOfferings(
                     groupId,
-                    scheduledChoice.CourseId,
-                    scheduledChoice.OfferingIds));
+                    legacyChoiceDocument.CourseId,
+                    legacyChoiceDocument.OfferingIds));
         }
 
         return courseChoiceGroups.AsReadOnly();

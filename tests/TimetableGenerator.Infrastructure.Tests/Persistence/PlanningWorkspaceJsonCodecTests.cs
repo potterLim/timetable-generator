@@ -344,9 +344,11 @@ public sealed class PlanningWorkspaceJsonCodecTests
             new PlanName(firstPlanName),
             catalogBinding,
             new PlanningPlanContent(
-                new ScheduledCourseChoice[]
+                new CourseChoiceGroup[]
                 {
-                    new ScheduledCourseChoice(
+                    CourseChoiceGroup.CreateWithAcceptableOfferings(
+                        new CourseChoiceGroupId(Guid.Parse(
+                            "33333333-3333-3333-3333-333333333333")),
                         new CourseId("handong-global-university:CSE30001"),
                         new OfferingId[]
                         {
@@ -369,7 +371,7 @@ public sealed class PlanningWorkspaceJsonCodecTests
             new PlanName("대안 시간표"),
             catalogBinding,
             new PlanningPlanContent(
-                Array.Empty<ScheduledCourseChoice>(),
+                Array.Empty<CourseChoiceGroup>(),
                 Array.Empty<UnscheduledOfferingSelection>(),
                 Array.Empty<PersonalSchedule>()));
         return new PlanningWorkspace(

@@ -15,7 +15,8 @@ public sealed class PlannerWorkspaceSmokeTests
     public void SearchAndCourseCommandsUpdateTheActivePlan()
     {
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
-        int originalCourseCount = workspace.ActivePlan.UnconfirmedCourses.Count;
+        int originalCourseCount =
+            workspace.ActivePlan.TimeNotProvidedCourses.Count;
 
         workspace.SearchText = "세미나";
 
@@ -25,14 +26,19 @@ public sealed class PlannerWorkspaceSmokeTests
         workspace.AddCourseCommand.Execute(visibleCourse);
 
         Assert.True(visibleCourse.IsAdded);
-        Assert.Equal(originalCourseCount + 1, workspace.ActivePlan.UnconfirmedCourses.Count);
+        Assert.Equal(
+            originalCourseCount + 1,
+            workspace.ActivePlan.TimeNotProvidedCourses.Count);
 
-        PlanCourseItem addedCourse = workspace.ActivePlan.UnconfirmedCourses[
-            workspace.ActivePlan.UnconfirmedCourses.Count - 1];
-        workspace.RemoveCourseCommand.Execute(addedCourse);
+        TimeNotProvidedCourseItem addedCourse =
+            workspace.ActivePlan.TimeNotProvidedCourses[
+                workspace.ActivePlan.TimeNotProvidedCourses.Count - 1];
+        workspace.RemoveTimeNotProvidedCourseCommand.Execute(addedCourse);
 
         Assert.False(visibleCourse.IsAdded);
-        Assert.Equal(originalCourseCount, workspace.ActivePlan.UnconfirmedCourses.Count);
+        Assert.Equal(
+            originalCourseCount,
+            workspace.ActivePlan.TimeNotProvidedCourses.Count);
     }
 
     [AvaloniaFact]
@@ -128,8 +134,8 @@ public sealed class PlannerWorkspaceSmokeTests
         seminar.SelectedSelectionOption = secondOffering;
         workspace.AddCourseCommand.Execute(seminar);
 
-        PlanCourseItem selectedCourse = Assert.Single(
-            workspace.ActivePlan.UnconfirmedCourses);
+        TimeNotProvidedCourseItem selectedCourse = Assert.Single(
+            workspace.ActivePlan.TimeNotProvidedCourses);
         Assert.Contains("02분반", selectedCourse.MeetingDisplayText);
         Assert.Contains("충돌 자동 검증 제외", selectedCourse.MeetingDisplayText);
         Assert.False(seminar.IsSelectionEnabled);

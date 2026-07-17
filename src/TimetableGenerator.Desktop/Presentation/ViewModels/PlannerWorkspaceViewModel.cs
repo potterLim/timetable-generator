@@ -132,7 +132,9 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         mAlternativeCourseSearchText = string.Empty;
 
         AddCourseCommand = new ParameterizedCommand<CourseSearchItem>(addCourse);
-        RemoveCourseCommand = new ParameterizedCommand<PlanCourseItem>(removeCourse);
+        RemoveTimeNotProvidedCourseCommand =
+            new ParameterizedCommand<TimeNotProvidedCourseItem>(
+                removeTimeNotProvidedCourse);
         BeginEditCourseChoiceGroupCommand =
             new ParameterizedCommand<PlanCourseChoiceGroupItem>(
                 beginEditCourseChoiceGroup);

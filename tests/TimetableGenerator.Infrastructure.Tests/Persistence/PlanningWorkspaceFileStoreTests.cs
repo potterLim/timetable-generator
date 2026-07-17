@@ -491,7 +491,7 @@ public sealed class PlanningWorkspaceFileStoreTests
             new PlanName(name),
             binding,
             new PlanningPlanContent(
-                Array.Empty<ScheduledCourseChoice>(),
+                Array.Empty<CourseChoiceGroup>(),
                 Array.Empty<UnscheduledOfferingSelection>(),
                 Array.Empty<PersonalSchedule>()));
         return new PlanningWorkspace(planId, new PlanningPlan[] { plan });

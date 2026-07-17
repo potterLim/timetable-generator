@@ -56,25 +56,27 @@ internal static class ProductWorkspaceLoaderTestData
     {
         return createWorkspace(
             revision,
-            Array.Empty<ScheduledCourseChoice>());
+            Array.Empty<CourseChoiceGroup>());
     }
 
     public static PlanningWorkspace CreateWorkspaceWithValidSelection(
         CatalogRevision revision)
     {
-        ScheduledCourseChoice choice = new ScheduledCourseChoice(
-            new CourseId(COURSE_ID),
-            new OfferingId[] { new OfferingId(OFFERING_ID) });
-        return createWorkspace(revision, new ScheduledCourseChoice[] { choice });
+        CourseChoiceGroup choiceGroup = createCourseChoiceGroup(
+            new OfferingId(OFFERING_ID));
+        return createWorkspace(
+            revision,
+            new CourseChoiceGroup[] { choiceGroup });
     }
 
     public static PlanningWorkspace CreateWorkspaceWithMissingOffering(
         CatalogRevision revision)
     {
-        ScheduledCourseChoice choice = new ScheduledCourseChoice(
-            new CourseId(COURSE_ID),
-            new OfferingId[] { new OfferingId("missing-offering") });
-        return createWorkspace(revision, new ScheduledCourseChoice[] { choice });
+        CourseChoiceGroup choiceGroup = createCourseChoiceGroup(
+            new OfferingId("missing-offering"));
+        return createWorkspace(
+            revision,
+            new CourseChoiceGroup[] { choiceGroup });
     }
 
     public static PlanningWorkspace CreateMixedBindingWorkspace()
@@ -319,7 +321,7 @@ internal static class ProductWorkspaceLoaderTestData
 
     private static PlanningWorkspace createWorkspace(
         CatalogRevision revision,
-        ScheduledCourseChoice[] choices)
+        CourseChoiceGroup[] courseChoiceGroups)
     {
         PlanId planId = PlanId.CreateNew();
         PlanningPlan plan = new PlanningPlan(
@@ -327,7 +329,7 @@ internal static class ProductWorkspaceLoaderTestData
             new PlanName("저장된 시간표"),
             createCatalogBinding(revision),
             new PlanningPlanContent(
-                choices,
+                courseChoiceGroups,
                 Array.Empty<UnscheduledOfferingSelection>(),
                 Array.Empty<PersonalSchedule>()));
         return new PlanningWorkspace(planId, new PlanningPlan[] { plan });
@@ -343,9 +345,18 @@ internal static class ProductWorkspaceLoaderTestData
             planName,
             createCatalogBinding(revision),
             new PlanningPlanContent(
-                Array.Empty<ScheduledCourseChoice>(),
+                Array.Empty<CourseChoiceGroup>(),
                 Array.Empty<UnscheduledOfferingSelection>(),
                 Array.Empty<PersonalSchedule>()));
+    }
+
+    private static CourseChoiceGroup createCourseChoiceGroup(
+        OfferingId offeringId)
+    {
+        return CourseChoiceGroup.CreateWithAcceptableOfferings(
+            CourseChoiceGroupId.CreateNew(),
+            new CourseId(COURSE_ID),
+            new OfferingId[] { offeringId });
     }
 
     private static PlanCatalogBinding createCatalogBinding(CatalogRevision revision)

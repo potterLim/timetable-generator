@@ -23,9 +23,11 @@ public sealed class ScheduleRecommendationValidationTests
             new CatalogArtifactSha256(new string('a', 64)));
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlanWithBinding(
             mismatchedBinding,
-            new ScheduledCourseChoice[]
+            new CourseChoiceGroup[]
             {
-                ScheduleRecommendationTestData.CreateChoice("AAA10001", "01"),
+                ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                    "AAA10001",
+                    "01"),
             },
             Array.Empty<UnscheduledOfferingSelection>());
 
@@ -39,15 +41,22 @@ public sealed class ScheduleRecommendationValidationTests
     public void GenerateRecommendationsRejectsMissingCourseReference()
     {
         CourseCatalog catalog = createCatalogWithScheduledOfferings();
-        ScheduledCourseChoice missingCourseChoice = new ScheduledCourseChoice(
+        CourseCandidate missingCourseCandidate = new CourseCandidate(
             ScheduleRecommendationTestData.CreateCourseId("CCC10001"),
-            new OfferingId[]
+            new OfferingCandidate[]
             {
-                ScheduleRecommendationTestData.CreateOfferingId("AAA10001", "01"),
+                new OfferingCandidate(
+                    ScheduleRecommendationTestData.CreateOfferingId(
+                        "AAA10001",
+                        "01"),
+                    EOfferingPreference.Acceptable),
             });
+        CourseChoiceGroup missingCourseGroup =
+            ScheduleRecommendationTestData.CreateCourseChoiceGroupFromCandidates(
+                missingCourseCandidate);
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
             catalog,
-            new ScheduledCourseChoice[] { missingCourseChoice },
+            new CourseChoiceGroup[] { missingCourseGroup },
             Array.Empty<UnscheduledOfferingSelection>());
 
         assertValidationError(
@@ -62,9 +71,11 @@ public sealed class ScheduleRecommendationValidationTests
         CourseCatalog catalog = createCatalogWithScheduledOfferings();
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
             catalog,
-            new ScheduledCourseChoice[]
+            new CourseChoiceGroup[]
             {
-                ScheduleRecommendationTestData.CreateChoice("AAA10001", "09"),
+                ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                    "AAA10001",
+                    "09"),
             },
             Array.Empty<UnscheduledOfferingSelection>());
 
@@ -93,10 +104,9 @@ public sealed class ScheduleRecommendationValidationTests
                         "09"),
                     EOfferingPreference.Excluded),
             });
-        CourseChoiceGroup group = new CourseChoiceGroup(
-            CourseChoiceGroupId.CreateNew(),
-            ECourseChoiceCardinality.ExactlyOne,
-            new CourseCandidate[] { courseCandidate });
+        CourseChoiceGroup group =
+            ScheduleRecommendationTestData.CreateCourseChoiceGroupFromCandidates(
+                courseCandidate);
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
             catalog,
             new CourseChoiceGroup[] { group },
@@ -112,15 +122,22 @@ public sealed class ScheduleRecommendationValidationTests
     public void GenerateRecommendationsRejectsOfferingCourseMismatch()
     {
         CourseCatalog catalog = createCatalogWithScheduledOfferings();
-        ScheduledCourseChoice mismatchedChoice = new ScheduledCourseChoice(
+        CourseCandidate mismatchedCourseCandidate = new CourseCandidate(
             ScheduleRecommendationTestData.CreateCourseId("AAA10001"),
-            new OfferingId[]
+            new OfferingCandidate[]
             {
-                ScheduleRecommendationTestData.CreateOfferingId("BBB10001", "01"),
+                new OfferingCandidate(
+                    ScheduleRecommendationTestData.CreateOfferingId(
+                        "BBB10001",
+                        "01"),
+                    EOfferingPreference.Acceptable),
             });
+        CourseChoiceGroup mismatchedCourseGroup =
+            ScheduleRecommendationTestData.CreateCourseChoiceGroupFromCandidates(
+                mismatchedCourseCandidate);
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
             catalog,
-            new ScheduledCourseChoice[] { mismatchedChoice },
+            new CourseChoiceGroup[] { mismatchedCourseGroup },
             Array.Empty<UnscheduledOfferingSelection>());
 
         assertValidationError(
@@ -141,9 +158,11 @@ public sealed class ScheduleRecommendationValidationTests
             new CatalogOffering[] { offering });
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
             catalog,
-            new ScheduledCourseChoice[]
+            new CourseChoiceGroup[]
             {
-                ScheduleRecommendationTestData.CreateChoice("AAA10001", "01"),
+                ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                    "AAA10001",
+                    "01"),
             },
             Array.Empty<UnscheduledOfferingSelection>());
 
@@ -169,7 +188,7 @@ public sealed class ScheduleRecommendationValidationTests
             new CatalogOffering[] { offering });
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
             catalog,
-            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<CourseChoiceGroup>(),
             new UnscheduledOfferingSelection[]
             {
                 ScheduleRecommendationTestData.CreateUnscheduledSelection("AAA10001", "01"),
@@ -187,7 +206,7 @@ public sealed class ScheduleRecommendationValidationTests
         CourseCatalog catalog = createCatalogWithScheduledOfferings();
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
             catalog,
-            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<CourseChoiceGroup>(),
             Array.Empty<UnscheduledOfferingSelection>());
 
         Assert.ThrowsExactly<ArgumentException>(

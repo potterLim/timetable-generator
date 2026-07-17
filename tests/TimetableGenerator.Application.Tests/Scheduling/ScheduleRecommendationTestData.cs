@@ -57,40 +57,6 @@ internal static class ScheduleRecommendationTestData
 
     public static PlanningPlan CreatePlan(
         CourseCatalog catalog,
-        IEnumerable<ScheduledCourseChoice> scheduledChoices,
-        IEnumerable<UnscheduledOfferingSelection> unscheduledSelections)
-    {
-        return CreatePlan(
-            catalog,
-            scheduledChoices,
-            unscheduledSelections,
-            Array.Empty<PersonalSchedule>());
-    }
-
-    public static PlanningPlan CreatePlan(
-        CourseCatalog catalog,
-        IEnumerable<ScheduledCourseChoice> scheduledChoices,
-        IEnumerable<UnscheduledOfferingSelection> unscheduledSelections,
-        IEnumerable<PersonalSchedule> personalSchedules)
-    {
-        PlanCatalogBinding catalogBinding = new PlanCatalogBinding(
-            catalog.Id,
-            catalog.InstitutionId,
-            catalog.Term,
-            catalog.Revision,
-            new CatalogArtifactSha256(new string('a', 64)));
-        return new PlanningPlan(
-            PlanId.CreateNew(),
-            new PlanName("기본 시간표"),
-            catalogBinding,
-            new PlanningPlanContent(
-                scheduledChoices,
-                unscheduledSelections,
-                personalSchedules));
-    }
-
-    public static PlanningPlan CreatePlan(
-        CourseCatalog catalog,
         IEnumerable<CourseChoiceGroup> courseChoiceGroups,
         IEnumerable<UnscheduledOfferingSelection> unscheduledSelections)
     {
@@ -125,7 +91,7 @@ internal static class ScheduleRecommendationTestData
 
     public static PlanningPlan CreatePlanWithBinding(
         PlanCatalogBinding catalogBinding,
-        IEnumerable<ScheduledCourseChoice> scheduledChoices,
+        IEnumerable<CourseChoiceGroup> courseChoiceGroups,
         IEnumerable<UnscheduledOfferingSelection> unscheduledSelections)
     {
         return new PlanningPlan(
@@ -133,24 +99,9 @@ internal static class ScheduleRecommendationTestData
             new PlanName("기본 시간표"),
             catalogBinding,
             new PlanningPlanContent(
-                scheduledChoices,
+                courseChoiceGroups,
                 unscheduledSelections,
                 Array.Empty<PersonalSchedule>()));
-    }
-
-    public static ScheduledCourseChoice CreateChoice(
-        string courseCodeValue,
-        params string[] sectionCodeValues)
-    {
-        List<OfferingId> offeringIds = new List<OfferingId>();
-        foreach (string sectionCodeValue in sectionCodeValues)
-        {
-            offeringIds.Add(CreateOfferingId(courseCodeValue, sectionCodeValue));
-        }
-
-        return new ScheduledCourseChoice(
-            CreateCourseId(courseCodeValue),
-            offeringIds);
     }
 
     public static CourseCandidate CreateCourseCandidate(
@@ -188,6 +139,15 @@ internal static class ScheduleRecommendationTestData
             CourseChoiceGroupId.CreateNew(),
             CreateCourseId(courseCodeValue),
             offeringIds);
+    }
+
+    public static CourseChoiceGroup CreateCourseChoiceGroupFromCandidates(
+        params CourseCandidate[] courseCandidates)
+    {
+        return new CourseChoiceGroup(
+            CourseChoiceGroupId.CreateNew(),
+            ECourseChoiceCardinality.ExactlyOne,
+            courseCandidates);
     }
 
     public static UnscheduledOfferingSelection CreateUnscheduledSelection(

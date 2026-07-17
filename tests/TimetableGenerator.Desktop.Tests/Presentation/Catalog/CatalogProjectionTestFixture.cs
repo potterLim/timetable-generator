@@ -74,9 +74,11 @@ internal static class CatalogProjectionTestFixture
         CourseId seminarCourseId = new CourseId("course-seminar");
         OfferingId seminarOfferingId = new OfferingId("offering-seminar-unscheduled");
 
-        ScheduledCourseChoice scheduledChoice = new ScheduledCourseChoice(
-            programmingCourseId,
-            new OfferingId[] { primaryOfferingId });
+        CourseChoiceGroup courseChoiceGroup =
+            CourseChoiceGroup.CreateWithAcceptableOfferings(
+                CourseChoiceGroupId.CreateNew(),
+                programmingCourseId,
+                new OfferingId[] { primaryOfferingId });
         UnscheduledOfferingSelection unscheduledSelection =
             new UnscheduledOfferingSelection(seminarCourseId, seminarOfferingId);
         PlanCatalogBinding catalogBinding = new PlanCatalogBinding(
@@ -90,7 +92,7 @@ internal static class CatalogProjectionTestFixture
             new PlanName("프로젝션 테스트"),
             catalogBinding,
             new PlanningPlanContent(
-                new ScheduledCourseChoice[] { scheduledChoice },
+                new CourseChoiceGroup[] { courseChoiceGroup },
                 new UnscheduledOfferingSelection[] { unscheduledSelection },
                 Array.Empty<PersonalSchedule>()));
         ScheduleRecommendationRequest request = new ScheduleRecommendationRequest(

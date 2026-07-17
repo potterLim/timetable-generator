@@ -39,17 +39,6 @@ public sealed class PlanningPlanContent
     }
 
     public PlanningPlanContent(
-        IEnumerable<ScheduledCourseChoice> scheduledCourseChoices,
-        IEnumerable<UnscheduledOfferingSelection> unscheduledOfferingSelections,
-        IEnumerable<PersonalSchedule> personalSchedules)
-        : this(
-            createCourseChoiceGroups(scheduledCourseChoices),
-            unscheduledOfferingSelections,
-            personalSchedules)
-    {
-    }
-
-    public PlanningPlanContent(
         IEnumerable<CourseChoiceGroup> courseChoiceGroups,
         IEnumerable<UnscheduledOfferingSelection> unscheduledOfferingSelections,
         IEnumerable<PersonalSchedule> personalSchedules)
@@ -80,35 +69,6 @@ public sealed class PlanningPlanContent
             selectedCourseIds,
             selectedOfferingIds);
         mPersonalSchedules = copyAndValidatePersonalSchedules(personalSchedules);
-    }
-
-    private static IReadOnlyList<CourseChoiceGroup> createCourseChoiceGroups(
-        IEnumerable<ScheduledCourseChoice> scheduledCourseChoices)
-    {
-        if (scheduledCourseChoices == null)
-        {
-            throw new ArgumentNullException(nameof(scheduledCourseChoices));
-        }
-
-        List<CourseChoiceGroup> courseChoiceGroups = new List<CourseChoiceGroup>();
-        foreach (ScheduledCourseChoice scheduledCourseChoice
-            in scheduledCourseChoices)
-        {
-            if (scheduledCourseChoice == null)
-            {
-                throw new ArgumentException(
-                    "Planning plans cannot contain null scheduled course choices.",
-                    nameof(scheduledCourseChoices));
-            }
-
-            courseChoiceGroups.Add(
-                CourseChoiceGroup.CreateWithAcceptableOfferings(
-                    CourseChoiceGroupId.CreateNew(),
-                    scheduledCourseChoice.CourseId,
-                    scheduledCourseChoice.OfferingIds));
-        }
-
-        return courseChoiceGroups.AsReadOnly();
     }
 
     private static IReadOnlyList<CourseChoiceGroup> copyAndValidateCourseChoiceGroups(

@@ -106,7 +106,7 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     public ICommand AddCourseCommand { get; }
 
-    public ICommand RemoveCourseCommand { get; }
+    public ICommand RemoveTimeNotProvidedCourseCommand { get; }
 
     private static IReadOnlyList<CourseSearchItem> createCourseItems(
         CourseCatalogProjection catalogProjection)
@@ -174,7 +174,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         addScheduledCourse(course);
     }
 
-    private void removeCourse(PlanCourseItem course)
+    private void removeTimeNotProvidedCourse(TimeNotProvidedCourseItem course)
     {
         throwIfDisposed();
         mSession.RemoveCourse(course.CourseId);

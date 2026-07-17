@@ -284,11 +284,13 @@ public sealed partial class PlanningWorkspaceJsonCodec
         }
         else
         {
-            IReadOnlyList<ScheduledCourseChoice> scheduledChoices =
-                readScheduledChoices(properties["scheduledChoices"]);
-            courseChoiceGroups = migrateScheduledChoices(
+            IReadOnlyList<LegacyScheduledCourseChoiceDocument>
+                legacyChoiceDocuments =
+                    readLegacyScheduledChoiceDocuments(
+                        properties["scheduledChoices"]);
+            courseChoiceGroups = migrateLegacyScheduledChoiceDocuments(
                 planId,
-                scheduledChoices);
+                legacyChoiceDocuments);
         }
         IReadOnlyList<UnscheduledOfferingSelection> unscheduledSelections =
             readUnscheduledSelections(properties["unscheduledSelections"]);
@@ -417,11 +419,13 @@ public sealed partial class PlanningWorkspaceJsonCodec
             artifactSha256);
     }
 
-    private static IReadOnlyList<ScheduledCourseChoice> readScheduledChoices(
+    private static IReadOnlyList<LegacyScheduledCourseChoiceDocument>
+        readLegacyScheduledChoiceDocuments(
         JsonElement element)
     {
         requireValueKind(element, JsonValueKind.Array, "plan.scheduledChoices");
-        List<ScheduledCourseChoice> choices = new List<ScheduledCourseChoice>();
+        List<LegacyScheduledCourseChoiceDocument> choices =
+            new List<LegacyScheduledCourseChoiceDocument>();
         foreach (JsonElement choiceElement in element.EnumerateArray())
         {
             Dictionary<string, JsonElement> properties = readExactObject(
@@ -445,7 +449,9 @@ public sealed partial class PlanningWorkspaceJsonCodec
                             "scheduledChoice.offeringIds[]")));
             }
 
-            choices.Add(new ScheduledCourseChoice(courseId, offeringIds));
+            choices.Add(new LegacyScheduledCourseChoiceDocument(
+                courseId,
+                offeringIds));
         }
 
         return choices.AsReadOnly();

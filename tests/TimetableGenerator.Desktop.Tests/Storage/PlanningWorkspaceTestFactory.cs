@@ -25,7 +25,7 @@ internal static class PlanningWorkspaceTestFactory
             planName,
             catalogBinding,
             new PlanningPlanContent(
-                Array.Empty<ScheduledCourseChoice>(),
+                Array.Empty<CourseChoiceGroup>(),
                 Array.Empty<UnscheduledOfferingSelection>(),
                 Array.Empty<PersonalSchedule>()));
         return new PlanningWorkspace(planId, new PlanningPlan[] { plan });

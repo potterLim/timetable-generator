@@ -71,7 +71,8 @@ internal sealed class PlanTabItem
 
     public ObservableCollection<PlanCourseChoiceGroupItem> CourseChoiceGroups { get; }
 
-    public ObservableCollection<PlanCourseItem> UnconfirmedCourses { get; }
+    public ObservableCollection<TimeNotProvidedCourseItem>
+        TimeNotProvidedCourses { get; }
 
     public ObservableCollection<PersonalScheduleItem> PersonalSchedules { get; }
 
@@ -79,7 +80,7 @@ internal sealed class PlanTabItem
     {
         get
         {
-            return CourseChoiceGroups.Count + UnconfirmedCourses.Count;
+            return CourseChoiceGroups.Count + TimeNotProvidedCourses.Count;
         }
     }
 
@@ -155,19 +156,19 @@ internal sealed class PlanTabItem
         }
     }
 
-    public string UnconfirmedHeading
+    public string TimeNotProvidedHeading
     {
         get
         {
-            return "시간 미정 " + UnconfirmedCourses.Count;
+            return "시간 미정 " + TimeNotProvidedCourses.Count;
         }
     }
 
-    public bool HasUnconfirmedCourses
+    public bool HasTimeNotProvidedCourses
     {
         get
         {
-            return UnconfirmedCourses.Count > 0;
+            return TimeNotProvidedCourses.Count > 0;
         }
     }
 
@@ -206,7 +207,8 @@ internal sealed class PlanTabItem
             },
             canClose);
         CourseChoiceGroups = new ObservableCollection<PlanCourseChoiceGroupItem>();
-        UnconfirmedCourses = new ObservableCollection<PlanCourseItem>();
+        TimeNotProvidedCourses =
+            new ObservableCollection<TimeNotProvidedCourseItem>();
         PersonalSchedules = new ObservableCollection<PersonalScheduleItem>();
         foreach (CourseChoiceGroup group in plan.CourseChoiceGroups)
         {
@@ -220,8 +222,8 @@ internal sealed class PlanTabItem
         {
             CatalogCourseProjection course = catalogProjection.FindCourseById(
                 selection.CourseId);
-            UnconfirmedCourses.Add(
-                PlanCourseItem.CreateTimeNotProvided(course, selection));
+            TimeNotProvidedCourses.Add(
+                new TimeNotProvidedCourseItem(course, selection));
         }
 
         foreach (PersonalSchedule personalSchedule in plan.PersonalSchedules)
@@ -273,7 +275,7 @@ internal sealed class PlanTabItem
             totalCreditValue += group.MinimumCredits.Value;
         }
 
-        foreach (PlanCourseItem course in UnconfirmedCourses)
+        foreach (TimeNotProvidedCourseItem course in TimeNotProvidedCourses)
         {
             totalCreditValue += course.Credits.Value;
         }
@@ -289,7 +291,7 @@ internal sealed class PlanTabItem
             totalCreditValue += group.MaximumCredits.Value;
         }
 
-        foreach (PlanCourseItem course in UnconfirmedCourses)
+        foreach (TimeNotProvidedCourseItem course in TimeNotProvidedCourses)
         {
             totalCreditValue += course.Credits.Value;
         }

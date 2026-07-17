@@ -170,7 +170,7 @@ public sealed class PlanningWorkspaceSessionTests
             new CatalogArtifactSha256(new string('a', 64)));
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlanWithBinding(
             mismatchedBinding,
-            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<CourseChoiceGroup>(),
             Array.Empty<UnscheduledOfferingSelection>());
         PlanningWorkspace workspace = new PlanningWorkspace(
             plan.Id,
@@ -186,7 +186,7 @@ public sealed class PlanningWorkspaceSessionTests
         CourseCatalog catalog = createCatalog();
         PlanningPlan firstPlan = ScheduleRecommendationTestData.CreatePlan(
             catalog,
-            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<CourseChoiceGroup>(),
             Array.Empty<UnscheduledOfferingSelection>());
         PlanCatalogBinding changedArtifactBinding = new PlanCatalogBinding(
             catalog.Id,
@@ -199,7 +199,7 @@ public sealed class PlanningWorkspaceSessionTests
             new PlanName("둘째 시간표"),
             changedArtifactBinding,
             new PlanningPlanContent(
-                Array.Empty<ScheduledCourseChoice>(),
+                Array.Empty<CourseChoiceGroup>(),
                 Array.Empty<UnscheduledOfferingSelection>(),
                 Array.Empty<PersonalSchedule>()));
         PlanningWorkspace workspace = new PlanningWorkspace(
@@ -254,7 +254,7 @@ public sealed class PlanningWorkspaceSessionTests
     {
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
             catalog,
-            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<CourseChoiceGroup>(),
             Array.Empty<UnscheduledOfferingSelection>());
         PlanningWorkspace workspace = new PlanningWorkspace(
             plan.Id,

@@ -166,20 +166,22 @@ internal static class PlannerWorkspaceTestFactory
             document.Catalog.Revision,
             new CatalogArtifactSha256(new string('a', 64)));
         CourseId programmingCourseId = new CourseId("course-programming");
-        ScheduledCourseChoice programmingChoice = new ScheduledCourseChoice(
-            programmingCourseId,
-            new OfferingId[]
-            {
-                new OfferingId("offering-programming-primary"),
-                new OfferingId("offering-programming-alternative"),
-            });
+        CourseChoiceGroup programmingChoiceGroup =
+            CourseChoiceGroup.CreateWithAcceptableOfferings(
+                CourseChoiceGroupId.CreateNew(),
+                programmingCourseId,
+                new OfferingId[]
+                {
+                    new OfferingId("offering-programming-primary"),
+                    new OfferingId("offering-programming-alternative"),
+                });
         PlanId primaryPlanId = PlanId.CreateNew();
         PlanningPlan primaryPlan = new PlanningPlan(
             primaryPlanId,
             new PlanName("공강 우선"),
             binding,
             new PlanningPlanContent(
-                new ScheduledCourseChoice[] { programmingChoice },
+                new CourseChoiceGroup[] { programmingChoiceGroup },
                 Array.Empty<UnscheduledOfferingSelection>(),
                 Array.Empty<PersonalSchedule>()));
         PlanningPlan secondaryPlan = new PlanningPlan(
@@ -187,7 +189,7 @@ internal static class PlannerWorkspaceTestFactory
             new PlanName("대안 계획"),
             binding,
             new PlanningPlanContent(
-                Array.Empty<ScheduledCourseChoice>(),
+                Array.Empty<CourseChoiceGroup>(),
                 Array.Empty<UnscheduledOfferingSelection>(),
                 Array.Empty<PersonalSchedule>()));
         return new PlanningWorkspace(

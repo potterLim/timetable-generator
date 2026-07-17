@@ -83,21 +83,18 @@ public sealed class CourseChoiceGroupTests
     }
 
     [TestMethod]
-    public void LegacyScheduledChoiceBecomesAnAcceptableSingletonGroup()
+    public void AcceptableOfferingFactoryCreatesASingletonGroup()
     {
-        ScheduledCourseChoice scheduledChoice = new ScheduledCourseChoice(
-            new CourseId("institution:AAA10001"),
-            new OfferingId[]
-            {
-                new OfferingId("institution:term:AAA10001:01"),
-                new OfferingId("institution:term:AAA10001:02"),
-            });
-        PlanningPlanContent content = new PlanningPlanContent(
-            new ScheduledCourseChoice[] { scheduledChoice },
-            Array.Empty<UnscheduledOfferingSelection>(),
-            Array.Empty<PersonalSchedule>());
-
-        CourseChoiceGroup group = content.CourseChoiceGroups[0];
+        CourseId courseId = new CourseId("institution:AAA10001");
+        CourseChoiceGroup group =
+            CourseChoiceGroup.CreateWithAcceptableOfferings(
+                CourseChoiceGroupId.CreateNew(),
+                courseId,
+                new OfferingId[]
+                {
+                    new OfferingId("institution:term:AAA10001:01"),
+                    new OfferingId("institution:term:AAA10001:02"),
+                });
 
         Assert.HasCount(1, group.CourseCandidates);
         Assert.HasCount(2, group.CourseCandidates[0].OfferingCandidates);
@@ -105,7 +102,7 @@ public sealed class CourseChoiceGroupTests
             EOfferingPreference.Acceptable,
             group.CourseCandidates[0].OfferingCandidates[0].Preference);
         Assert.AreEqual(
-            scheduledChoice.CourseId,
+            courseId,
             group.CourseCandidates[0].CourseId);
     }
 

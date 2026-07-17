@@ -90,7 +90,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
             DEFAULT_PLAN_NAME,
             catalogBinding,
             new PlanningPlanContent(
-                Array.Empty<ScheduledCourseChoice>(),
+                Array.Empty<CourseChoiceGroup>(),
                 Array.Empty<UnscheduledOfferingSelection>(),
                 Array.Empty<PersonalSchedule>()));
         return new PlanningWorkspace(planId, new PlanningPlan[] { plan });

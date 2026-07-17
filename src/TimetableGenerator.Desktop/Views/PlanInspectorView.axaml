@@ -322,7 +322,7 @@
 
           <Expander
               x:Name="TimeNotProvidedCoursesExpander"
-              IsVisible="{Binding ActivePlan.HasUnconfirmedCourses}"
+              IsVisible="{Binding ActivePlan.HasTimeNotProvidedCourses}"
               IsExpanded="True"
               AutomationProperties.Name="시간 미정 과목">
             <Expander.Header>
@@ -333,12 +333,12 @@
                     Icon="Warning"
                     IconVariant="Filled"
                     Foreground="{DynamicResource WarningBrush}" />
-                <TextBlock FontWeight="SemiBold" Text="{Binding ActivePlan.UnconfirmedHeading}" />
+                <TextBlock FontWeight="SemiBold" Text="{Binding ActivePlan.TimeNotProvidedHeading}" />
               </StackPanel>
             </Expander.Header>
-            <ItemsControl ItemsSource="{Binding ActivePlan.UnconfirmedCourses}">
+            <ItemsControl ItemsSource="{Binding ActivePlan.TimeNotProvidedCourses}">
               <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="models:PlanCourseItem">
+                <DataTemplate x:DataType="models:TimeNotProvidedCourseItem">
                   <Border
                       Margin="0,7,0,0"
                       Padding="12,9,6,9"
@@ -360,7 +360,7 @@
                           Height="32"
                           MinWidth="32"
                           MinHeight="32"
-                          Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).RemoveCourseCommand}"
+                          Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).RemoveTimeNotProvidedCourseCommand}"
                           CommandParameter="{Binding}"
                           AutomationProperties.Name="{Binding RemoveButtonAccessibleName}"
                           ToolTip.Tip="계획에서 제거">

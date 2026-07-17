@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using TimetableGenerator.Domain.Catalogs;
 
-namespace TimetableGenerator.Domain.Planning;
+namespace TimetableGenerator.Infrastructure.Persistence;
 
-public sealed class ScheduledCourseChoice
+internal sealed class LegacyScheduledCourseChoiceDocument
 {
     private readonly IReadOnlyList<OfferingId> mOfferingIds;
 
@@ -18,7 +18,7 @@ public sealed class ScheduledCourseChoice
         }
     }
 
-    public ScheduledCourseChoice(
+    public LegacyScheduledCourseChoiceDocument(
         CourseId courseId,
         IEnumerable<OfferingId> offeringIds)
     {
@@ -39,14 +39,14 @@ public sealed class ScheduledCourseChoice
             if (offeringId == null)
             {
                 throw new ArgumentException(
-                    "Scheduled course choices cannot contain null offering IDs.",
+                    "Legacy scheduled choices cannot contain null offering IDs.",
                     nameof(offeringIds));
             }
 
             if (uniqueOfferingIds.Add(offeringId) == false)
             {
                 throw new ArgumentException(
-                    "Scheduled course choices cannot contain duplicate offering IDs.",
+                    "Legacy scheduled choices cannot contain duplicate offering IDs.",
                     nameof(offeringIds));
             }
 
@@ -56,7 +56,7 @@ public sealed class ScheduledCourseChoice
         if (copiedOfferingIds.Count == 0)
         {
             throw new ArgumentException(
-                "Scheduled course choices require at least one offering ID.",
+                "Legacy scheduled choices require at least one offering ID.",
                 nameof(offeringIds));
         }
 

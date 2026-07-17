@@ -16,8 +16,10 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
     public void TryRebindPreservesWorkspaceIdentityAndChoices()
     {
         CourseCatalog originalCatalog = createOriginalCatalog();
-        ScheduledCourseChoice scheduledChoice =
-            ScheduleRecommendationTestData.CreateChoice("AAA10001", "01");
+        CourseChoiceGroup courseChoiceGroup =
+            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                "AAA10001",
+                "01");
         UnscheduledOfferingSelection unscheduledSelection =
             ScheduleRecommendationTestData.CreateUnscheduledSelection(
                 "BBB10001",
@@ -25,13 +27,12 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
         PlanningPlan firstPlan = createPlan(
             originalCatalog,
             "첫 계획",
-            new ScheduledCourseChoice[] { scheduledChoice },
+            new CourseChoiceGroup[] { courseChoiceGroup },
             Array.Empty<UnscheduledOfferingSelection>());
-        CourseChoiceGroup scheduledChoiceGroup = firstPlan.CourseChoiceGroups[0];
         PlanningPlan secondPlan = createPlan(
             originalCatalog,
             "둘째 계획",
-            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<CourseChoiceGroup>(),
             new UnscheduledOfferingSelection[] { unscheduledSelection });
         PlanningWorkspace workspace = new PlanningWorkspace(
             secondPlan.Id,
@@ -57,7 +58,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             reboundWorkspaceOrNull.Plans[1],
             newCatalog);
         Assert.AreSame(
-            scheduledChoiceGroup,
+            courseChoiceGroup,
             reboundWorkspaceOrNull.Plans[0].CourseChoiceGroups[0]);
         Assert.AreSame(
             unscheduledSelection,
@@ -171,7 +172,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
         PlanningPlan plan = createPlan(
             originalCatalog,
             "빈 계획",
-            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<CourseChoiceGroup>(),
             Array.Empty<UnscheduledOfferingSelection>());
         PlanningWorkspace workspace = new PlanningWorkspace(
             plan.Id,
@@ -210,7 +211,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
         PlanningPlan plan = createPlan(
             originalCatalog,
             "빈 계획",
-            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<CourseChoiceGroup>(),
             Array.Empty<UnscheduledOfferingSelection>());
         PlanningWorkspace workspace = new PlanningWorkspace(
             plan.Id,
@@ -246,12 +247,12 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
         PlanningPlan firstPlan = createPlan(
             originalCatalog,
             "첫 계획",
-            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<CourseChoiceGroup>(),
             Array.Empty<UnscheduledOfferingSelection>());
         PlanningPlan secondPlan = createPlan(
             otherCatalog,
             "둘째 계획",
-            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<CourseChoiceGroup>(),
             Array.Empty<UnscheduledOfferingSelection>());
         PlanningWorkspace workspace = new PlanningWorkspace(
             firstPlan.Id,
@@ -276,7 +277,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
         PlanningPlan plan = createPlan(
             catalog,
             "기본 계획",
-            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<CourseChoiceGroup>(),
             Array.Empty<UnscheduledOfferingSelection>());
         PlanningWorkspace workspace = new PlanningWorkspace(
             plan.Id,
@@ -303,9 +304,12 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
     [TestMethod]
     public void TryRebindRejectsMissingCourse()
     {
-        ScheduledCourseChoice choice =
-            ScheduleRecommendationTestData.CreateChoice("AAA10001", "01");
-        PlanningWorkspace workspace = createWorkspaceWithScheduledChoice(choice);
+        CourseChoiceGroup choiceGroup =
+            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                "AAA10001",
+                "01");
+        PlanningWorkspace workspace = createWorkspaceWithCourseChoiceGroup(
+            choiceGroup);
         CatalogCourse otherCourse =
             ScheduleRecommendationTestData.CreateCourse("CCC10001");
         CatalogOffering otherOffering =
@@ -331,14 +335,21 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
     [TestMethod]
     public void TryRebindRejectsMissingOffering()
     {
-        ScheduledCourseChoice choice =
-            ScheduleRecommendationTestData.CreateChoice("AAA10001", "01");
-        PlanningWorkspace workspace = createWorkspaceWithScheduledChoice(choice);
+        CourseChoiceGroup choiceGroup =
+            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                "AAA10001",
+                "01");
+        PlanningWorkspace workspace = createWorkspaceWithCourseChoiceGroup(
+            choiceGroup);
+        OfferingId selectedOfferingId = choiceGroup
+            .CourseCandidates[0]
+            .OfferingCandidates[0]
+            .OfferingId;
         CourseCatalog compatibleCatalog = createCompatibleCatalog();
         List<CatalogOffering> offerings = new List<CatalogOffering>();
         foreach (CatalogOffering offering in compatibleCatalog.Offerings)
         {
-            if (offering.Id != choice.OfferingIds[0])
+            if (offering.Id != selectedOfferingId)
             {
                 offerings.Add(offering);
             }
@@ -362,15 +373,22 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
     [TestMethod]
     public void TryRebindRejectsOfferingOwnedByAnotherCourse()
     {
-        ScheduledCourseChoice choice =
-            ScheduleRecommendationTestData.CreateChoice("AAA10001", "01");
-        PlanningWorkspace workspace = createWorkspaceWithScheduledChoice(choice);
+        CourseChoiceGroup choiceGroup =
+            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                "AAA10001",
+                "01");
+        PlanningWorkspace workspace = createWorkspaceWithCourseChoiceGroup(
+            choiceGroup);
+        OfferingId selectedOfferingId = choiceGroup
+            .CourseCandidates[0]
+            .OfferingCandidates[0]
+            .OfferingId;
         CatalogCourse expectedCourse =
             ScheduleRecommendationTestData.CreateCourse("AAA10001");
         CatalogCourse actualCourse =
             ScheduleRecommendationTestData.CreateCourse("BBB10001");
         CatalogOffering mismatchedOffering = new CatalogOffering(
-            choice.OfferingIds[0],
+            selectedOfferingId,
             actualCourse.Id,
             new CourseSectionCode("01"),
             MeetingSchedule.CreateScheduled(createMondaySlot()));
@@ -394,9 +412,12 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
     [TestMethod]
     public void TryRebindRejectsScheduledChoiceWhoseTimeBecameNotProvided()
     {
-        ScheduledCourseChoice choice =
-            ScheduleRecommendationTestData.CreateChoice("AAA10001", "01");
-        PlanningWorkspace workspace = createWorkspaceWithScheduledChoice(choice);
+        CourseChoiceGroup choiceGroup =
+            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                "AAA10001",
+                "01");
+        PlanningWorkspace workspace = createWorkspaceWithCourseChoiceGroup(
+            choiceGroup);
         CatalogCourse course = ScheduleRecommendationTestData.CreateCourse("AAA10001");
         CatalogOffering unscheduledOffering =
             ScheduleRecommendationTestData.CreateUnscheduledOffering(
@@ -430,7 +451,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
         PlanningPlan plan = createPlan(
             originalCatalog,
             "기본 계획",
-            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<CourseChoiceGroup>(),
             new UnscheduledOfferingSelection[] { selection });
         PlanningWorkspace workspace = new PlanningWorkspace(
             plan.Id,
@@ -465,15 +486,17 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
         PlanningPlan firstPlan = createPlan(
             originalCatalog,
             "첫 계획",
-            new ScheduledCourseChoice[]
+            new CourseChoiceGroup[]
             {
-                ScheduleRecommendationTestData.CreateChoice("AAA10001", "01"),
+                ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                    "AAA10001",
+                    "01"),
             },
             Array.Empty<UnscheduledOfferingSelection>());
         PlanningPlan secondPlan = createPlan(
             originalCatalog,
             "둘째 계획",
-            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<CourseChoiceGroup>(),
             new UnscheduledOfferingSelection[]
             {
                 ScheduleRecommendationTestData.CreateUnscheduledSelection(
@@ -513,7 +536,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
         PlanningPlan plan = createPlan(
             catalog,
             "기본 계획",
-            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<CourseChoiceGroup>(),
             Array.Empty<UnscheduledOfferingSelection>());
         PlanningWorkspace workspace = new PlanningWorkspace(
             plan.Id,
@@ -604,14 +627,14 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             offerings);
     }
 
-    private static PlanningWorkspace createWorkspaceWithScheduledChoice(
-        ScheduledCourseChoice choice)
+    private static PlanningWorkspace createWorkspaceWithCourseChoiceGroup(
+        CourseChoiceGroup choiceGroup)
     {
         CourseCatalog originalCatalog = createOriginalCatalog();
         PlanningPlan plan = createPlan(
             originalCatalog,
             "기본 계획",
-            new ScheduledCourseChoice[] { choice },
+            new CourseChoiceGroup[] { choiceGroup },
             Array.Empty<UnscheduledOfferingSelection>());
         return new PlanningWorkspace(plan.Id, new PlanningPlan[] { plan });
     }
@@ -619,7 +642,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
     private static PlanningPlan createPlan(
         CourseCatalog catalog,
         string name,
-        IEnumerable<ScheduledCourseChoice> scheduledChoices,
+        IEnumerable<CourseChoiceGroup> courseChoiceGroups,
         IEnumerable<UnscheduledOfferingSelection> unscheduledSelections)
     {
         PlanCatalogBinding binding = new PlanCatalogBinding(
@@ -633,7 +656,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             new PlanName(name),
             binding,
             new PlanningPlanContent(
-                scheduledChoices,
+                courseChoiceGroups,
                 unscheduledSelections,
                 Array.Empty<PersonalSchedule>()));
     }

@@ -128,10 +128,14 @@ public sealed class ScheduleRecommendationGeneratorTests
             new CatalogOffering[] { firstOffering, secondOffering });
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
             catalog,
-            new ScheduledCourseChoice[]
+            new CourseChoiceGroup[]
             {
-                ScheduleRecommendationTestData.CreateChoice("AAA10001", "01"),
-                ScheduleRecommendationTestData.CreateChoice("BBB10001", "01"),
+                ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                    "AAA10001",
+                    "01"),
+                ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                    "BBB10001",
+                    "01"),
             },
             Array.Empty<UnscheduledOfferingSelection>());
 
@@ -204,9 +208,11 @@ public sealed class ScheduleRecommendationGeneratorTests
             new CatalogOffering[] { scheduledOffering, unscheduledOffering });
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
             catalog,
-            new ScheduledCourseChoice[]
+            new CourseChoiceGroup[]
             {
-                ScheduleRecommendationTestData.CreateChoice("AAA10001", "01"),
+                ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                    "AAA10001",
+                    "01"),
             },
             new UnscheduledOfferingSelection[]
             {
@@ -235,7 +241,7 @@ public sealed class ScheduleRecommendationGeneratorTests
             new CatalogOffering[] { offering });
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
             catalog,
-            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<CourseChoiceGroup>(),
             new UnscheduledOfferingSelection[]
             {
                 ScheduleRecommendationTestData.CreateUnscheduledSelection("AAA10001", "01"),
@@ -264,7 +270,7 @@ public sealed class ScheduleRecommendationGeneratorTests
             new CatalogOffering[] { offering });
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
             catalog,
-            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<CourseChoiceGroup>(),
             Array.Empty<UnscheduledOfferingSelection>());
 
         ScheduleRecommendationResult result = generate(catalog, plan, 10);
@@ -306,9 +312,9 @@ public sealed class ScheduleRecommendationGeneratorTests
             new ScheduleTime(10, 15));
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
             catalog,
-            new ScheduledCourseChoice[]
+            new CourseChoiceGroup[]
             {
-                ScheduleRecommendationTestData.CreateChoice(
+                ScheduleRecommendationTestData.CreateCourseChoiceGroup(
                     "AAA10001",
                     "01",
                     "02"),
@@ -345,7 +351,7 @@ public sealed class ScheduleRecommendationGeneratorTests
             new ScheduleTime(13, 20));
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
             catalog,
-            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<CourseChoiceGroup>(),
             Array.Empty<UnscheduledOfferingSelection>(),
             new PersonalSchedule[] { personalSchedule });
 
@@ -422,10 +428,16 @@ public sealed class ScheduleRecommendationGeneratorTests
     {
         return ScheduleRecommendationTestData.CreatePlan(
             catalog,
-            new ScheduledCourseChoice[]
+            new CourseChoiceGroup[]
             {
-                ScheduleRecommendationTestData.CreateChoice("AAA10001", "01", "02"),
-                ScheduleRecommendationTestData.CreateChoice("BBB10001", "01", "02"),
+                ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                    "AAA10001",
+                    "01",
+                    "02"),
+                ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                    "BBB10001",
+                    "01",
+                    "02"),
             },
             Array.Empty<UnscheduledOfferingSelection>());
     }

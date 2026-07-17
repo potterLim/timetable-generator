@@ -153,7 +153,7 @@ public sealed class PersonalScheduleTests
         IEnumerable<PersonalSchedule> personalSchedules)
     {
         return new PlanningPlanContent(
-            Array.Empty<ScheduledCourseChoice>(),
+            Array.Empty<CourseChoiceGroup>(),
             Array.Empty<UnscheduledOfferingSelection>(),
             personalSchedules);
     }
