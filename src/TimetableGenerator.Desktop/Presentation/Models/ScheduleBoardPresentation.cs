@@ -9,6 +9,8 @@ internal sealed class ScheduleBoardPresentation
 {
     public ScheduleRecommendation Schedule { get; }
 
+    public ScheduleBoardLayout Layout { get; }
+
     public PlanName PlanName { get; }
 
     public InstitutionName InstitutionName { get; }
@@ -28,10 +30,30 @@ internal sealed class ScheduleBoardPresentation
         PlanName planName,
         InstitutionName institutionName,
         AcademicTerm academicTerm)
+        : this(
+            schedule,
+            createLayout(schedule),
+            planName,
+            institutionName,
+            academicTerm)
+    {
+    }
+
+    public ScheduleBoardPresentation(
+        ScheduleRecommendation schedule,
+        ScheduleBoardLayout layout,
+        PlanName planName,
+        InstitutionName institutionName,
+        AcademicTerm academicTerm)
     {
         if (schedule == null)
         {
             throw new ArgumentNullException(nameof(schedule));
+        }
+
+        if (layout == null)
+        {
+            throw new ArgumentNullException(nameof(layout));
         }
 
         if (planName == null)
@@ -52,8 +74,20 @@ internal sealed class ScheduleBoardPresentation
         }
 
         Schedule = schedule;
+        Layout = layout;
         PlanName = planName;
         InstitutionName = institutionName;
         AcademicTerm = academicTerm;
+    }
+
+    private static ScheduleBoardLayout createLayout(
+        ScheduleRecommendation schedule)
+    {
+        if (schedule == null)
+        {
+            throw new ArgumentNullException(nameof(schedule));
+        }
+
+        return ScheduleBoardLayout.CreateForEntries(schedule.Entries);
     }
 }

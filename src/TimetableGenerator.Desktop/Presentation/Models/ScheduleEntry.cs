@@ -11,7 +11,7 @@ internal abstract class ScheduleEntry
 
     protected ScheduleEntry(EDay day, DailyTimeRange timeRange)
     {
-        ensureSupportedDay(day);
+        ensureDefinedDay(day);
         if (timeRange.IsValid == false)
         {
             throw new ArgumentException(
@@ -23,7 +23,7 @@ internal abstract class ScheduleEntry
         TimeRange = timeRange;
     }
 
-    private static void ensureSupportedDay(EDay day)
+    private static void ensureDefinedDay(EDay day)
     {
         switch (day)
         {
@@ -32,12 +32,14 @@ internal abstract class ScheduleEntry
             case EDay.Wednesday:
             case EDay.Thursday:
             case EDay.Friday:
+            case EDay.Saturday:
+            case EDay.Sunday:
                 return;
             default:
                 throw new ArgumentOutOfRangeException(
                     nameof(day),
                     day,
-                    "The planning workspace supports weekdays only.");
+                    "Schedule entries require a defined day of the week.");
         }
     }
 }

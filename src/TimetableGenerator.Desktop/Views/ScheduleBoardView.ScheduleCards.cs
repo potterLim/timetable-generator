@@ -6,7 +6,6 @@ using Avalonia.Controls;
 using Avalonia.Media;
 
 using TimetableGenerator.Desktop.Presentation.Models;
-using TimetableGenerator.Domain.Scheduling;
 
 namespace TimetableGenerator.Desktop.Views;
 
@@ -38,13 +37,14 @@ internal sealed partial class ScheduleBoardView
             configurePersonalScheduleCard(scheduleCard, personalEntryOrNull);
         }
 
-        int startRowOffset = getRowOffset(
-            entry.TimeRange.Start.MinutesFromMidnight);
-        int endRowOffset = getRowOffsetCeiling(
-            entry.TimeRange.End.MinutesFromMidnight);
+        int startRowOffset = mRenderedLayout.TimeAxis.FindStartingRowOffset(
+            entry.TimeRange.Start);
+        int endRowOffset = mRenderedLayout.TimeAxis.FindEndingRowOffset(
+            entry.TimeRange.End);
         Grid.SetRow(scheduleCard, 1 + startRowOffset);
         Grid.SetRowSpan(scheduleCard, Math.Max(1, endRowOffset - startRowOffset));
-        Grid.SetColumn(scheduleCard, findDayColumn(entry.Day));
+        ScheduleBoardDay boardDay = mRenderedLayout.DayRange.FindDay(entry.Day);
+        Grid.SetColumn(scheduleCard, boardDay.ColumnIndex);
         mBoardGrid.Children.Add(scheduleCard);
     }
 
@@ -149,50 +149,6 @@ internal sealed partial class ScheduleBoardView
                     nameof(accent),
                     accent,
                     "Unknown course accent.");
-        }
-    }
-
-    private static int findDayColumn(EDay day)
-    {
-        switch (day)
-        {
-            case EDay.Monday:
-                return 1;
-            case EDay.Tuesday:
-                return 2;
-            case EDay.Wednesday:
-                return 3;
-            case EDay.Thursday:
-                return 4;
-            case EDay.Friday:
-                return 5;
-            default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(day),
-                    day,
-                    "Unknown academic day.");
-        }
-    }
-
-    private static string findDayName(EDay day)
-    {
-        switch (day)
-        {
-            case EDay.Monday:
-                return "월";
-            case EDay.Tuesday:
-                return "화";
-            case EDay.Wednesday:
-                return "수";
-            case EDay.Thursday:
-                return "목";
-            case EDay.Friday:
-                return "금";
-            default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(day),
-                    day,
-                    "Unknown academic day.");
         }
     }
 }

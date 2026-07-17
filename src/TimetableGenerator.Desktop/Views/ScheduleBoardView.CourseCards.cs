@@ -21,7 +21,7 @@ internal sealed partial class ScheduleBoardView
         scheduleCard.Flyout = createCourseEntryFlyout(entry);
 
         string accessibleName = entry.Code + ", " + entry.Name + ", "
-            + findDayName(entry.Day) + "요일 " + entry.Period.Value + "교시 "
+            + ScheduleBoardDayRange.FindFullDayDisplayName(entry.Day) + " "
             + entry.TimeRange + ", "
             + entry.InstructorDisplayText + ", "
             + entry.LocationDisplayText;
@@ -98,8 +98,10 @@ internal sealed partial class ScheduleBoardView
         details.Children.Add(identity);
         details.Children.Add(createFlyoutTitle(entry.Name));
         details.Children.Add(createFlyoutSeparator());
-        string scheduleSummary = findDayName(entry.Day) + "요일 "
-            + entry.Period.Value + "교시 · " + entry.TimeRange;
+        string scheduleSummary =
+            ScheduleBoardDayRange.FindFullDayDisplayName(entry.Day)
+            + " · "
+            + entry.TimeRange;
         details.Children.Add(createDetailRow("시간", scheduleSummary));
         details.Children.Add(createDetailRow("담당", entry.InstructorDisplayText));
         details.Children.Add(createDetailRow("장소", entry.LocationDisplayText));

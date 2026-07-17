@@ -57,7 +57,7 @@
         x:Name="ScheduleScrollViewer"
         HorizontalScrollBarVisibility="Disabled"
         VerticalScrollBarVisibility="Auto"
-        AutomationProperties.Name="시간표 교시 스크롤">
+        AutomationProperties.Name="시간표 시간 스크롤">
       <StackPanel
           x:Name="BoardExportSurface"
           Background="{DynamicResource ElevatedSurfaceBrush}">

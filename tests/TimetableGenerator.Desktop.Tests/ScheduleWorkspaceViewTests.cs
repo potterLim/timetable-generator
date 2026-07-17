@@ -41,7 +41,7 @@ public sealed class ScheduleWorkspaceViewTests
         new ColorToken("AccentBrush");
 
     [AvaloniaFact]
-    public void ScheduleBoardRendersEveningPeriodsInsideScrollableViewport()
+    public void ScheduleBoardRendersLateEntriesInsideContinuousTimeAxis()
     {
         List<ScheduleEntry> entries = new List<ScheduleEntry>();
         entries.Add(createScheduleEntry(EDay.Monday, new AcademicPeriod(7)));
@@ -84,7 +84,7 @@ public sealed class ScheduleWorkspaceViewTests
                     int scheduleRow = Grid.GetRow(scheduleCard);
                     scheduleRows.Add(scheduleRow);
                     if (AutomationProperties.GetName(scheduleCard)?.Contains(
-                        "목요일 10교시",
+                        "목요일 22:00–23:15",
                         StringComparison.Ordinal) == true)
                     {
                         latestScheduleAccessibleNameOrNull =
@@ -93,14 +93,127 @@ public sealed class ScheduleWorkspaceViewTests
                 }
             }
 
-            Assert.Equal(10, scheduleBoard.RenderedPeriodCount);
+            Assert.Equal(
+                new ScheduleBoardTimeBoundary(510),
+                scheduleBoard.RenderedLayout.TimeAxis.Start);
+            Assert.Equal(
+                new ScheduleBoardTimeBoundary(1_410),
+                scheduleBoard.RenderedLayout.TimeAxis.End);
             Assert.Equal(181, boardGrid.RowDefinitions.Count);
             Assert.Contains(109, scheduleRows);
             Assert.Contains(127, scheduleRows);
             Assert.Contains(145, scheduleRows);
             Assert.Contains(163, scheduleRows);
-            Assert.Contains("목요일 10교시", latestScheduleAccessibleNameOrNull);
+            Assert.Contains(
+                "목요일 22:00–23:15",
+                latestScheduleAccessibleNameOrNull);
+            Assert.DoesNotContain("교시", latestScheduleAccessibleNameOrNull);
             Assert.True(scrollViewer.Extent.Height > scrollViewer.Viewport.Height);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void ScheduleBoardExtendsThroughSundayWhenSundayIsTheOnlyWeekendDay()
+    {
+        ScheduleEntry sundayEntry = createScheduleEntry(
+            EDay.Sunday,
+            new AcademicPeriod(2));
+        ScheduleBoardPresentation presentation = createScheduleBoardPresentation(
+            new ScheduleRecommendation(new ScheduleEntry[] { sundayEntry }));
+        ScheduleBoardView scheduleBoard = new ScheduleBoardView();
+        scheduleBoard.DataContext = presentation;
+
+        Window window = new Window();
+        window.Width = 900.0;
+        window.Height = 420.0;
+        window.Content = scheduleBoard;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Grid? boardGridOrNull = scheduleBoard.FindControl<Grid>("BoardGrid");
+            Assert.NotNull(boardGridOrNull);
+            if (boardGridOrNull == null)
+            {
+                throw new InvalidOperationException(
+                    "The rendered schedule grid was not found.");
+            }
+
+            List<TextBlock> dayHeaders = boardGridOrNull.Children
+                .OfType<TextBlock>()
+                .Where(textBlock => Grid.GetRow(textBlock) == 0)
+                .ToList();
+            Button scheduleCard = Assert.Single(
+                boardGridOrNull.Children.OfType<Button>());
+
+            Assert.Same(presentation.Layout, scheduleBoard.RenderedLayout);
+            Assert.Equal(8, boardGridOrNull.ColumnDefinitions.Count);
+            Assert.Contains(dayHeaders, textBlock => textBlock.Text == "토");
+            Assert.Contains(dayHeaders, textBlock => textBlock.Text == "일");
+            Assert.Equal(7, Grid.GetColumn(scheduleCard));
+            Assert.Contains(
+                "일요일 10:00–11:15",
+                AutomationProperties.GetName(scheduleCard));
+            Assert.Contains(
+                boardGridOrNull,
+                scheduleBoard.PngExportSurface.GetVisualDescendants());
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void ScheduleBoardLabelsEveryHalfHourWithActualTimes()
+    {
+        ScheduleEntry entry = createScheduleEntry(
+            EDay.Monday,
+            new AcademicPeriod(1));
+        ScheduleBoardView scheduleBoard = new ScheduleBoardView();
+        scheduleBoard.DataContext = createScheduleBoardPresentation(
+            new ScheduleRecommendation(new ScheduleEntry[] { entry }));
+
+        Window window = new Window();
+        window.Width = 800.0;
+        window.Height = 420.0;
+        window.Content = scheduleBoard;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Grid? boardGridOrNull = scheduleBoard.FindControl<Grid>("BoardGrid");
+            Assert.NotNull(boardGridOrNull);
+            if (boardGridOrNull == null)
+            {
+                throw new InvalidOperationException(
+                    "The rendered schedule grid was not found.");
+            }
+
+            List<TextBlock> timeLabels = boardGridOrNull.Children
+                .OfType<TextBlock>()
+                .Where(textBlock => Grid.GetColumn(textBlock) == 0
+                    && Grid.GetRow(textBlock) > 0)
+                .ToList();
+
+            Assert.Equal(21, timeLabels.Count);
+            Assert.Contains(timeLabels, textBlock => textBlock.Text == "08:30");
+            Assert.Contains(timeLabels, textBlock => textBlock.Text == "09:00");
+            Assert.Contains(timeLabels, textBlock => textBlock.Text == "18:30");
+            Assert.DoesNotContain(
+                timeLabels,
+                textBlock => textBlock.Text?.Contains(
+                    "교시",
+                    StringComparison.Ordinal) == true);
+            Assert.Equal(127, boardGridOrNull.RowDefinitions.Count);
         }
         finally
         {
@@ -249,13 +362,13 @@ public sealed class ScheduleWorkspaceViewTests
                 lightBrushes.CellBorder.Color,
                 darkBrushes.CellBorder.Color);
             Assert.NotEqual(
-                lightBrushes.PeriodTime.Color,
-                darkBrushes.PeriodTime.Color);
+                lightBrushes.TimeLabel.Color,
+                darkBrushes.TimeLabel.Color);
             Assert.NotEqual(
                 lightBrushes.DetailAccent.Color,
                 darkBrushes.DetailAccent.Color);
             Assert.Equal(expectedDarkBorder.Color, darkBrushes.CellBorder.Color);
-            Assert.Equal(expectedDarkSecondary.Color, darkBrushes.PeriodTime.Color);
+            Assert.Equal(expectedDarkSecondary.Color, darkBrushes.TimeLabel.Color);
             Assert.Equal(expectedDarkAccent.Color, darkBrushes.DetailAccent.Color);
         }
         finally
@@ -478,7 +591,7 @@ public sealed class ScheduleWorkspaceViewTests
         }
 
         Border? cellOrNull = null;
-        TextBlock? periodTimeOrNull = null;
+        TextBlock? timeLabelOrNull = null;
         Button? scheduleCardOrNull = null;
         foreach (Control child in boardGridOrNull.Children)
         {
@@ -487,11 +600,11 @@ public sealed class ScheduleWorkspaceViewTests
                 cellOrNull = cell;
             }
 
-            if (child is TextBlock periodText
-                && periodText.Text != null
-                && periodText.Text.Contains("08:30", StringComparison.Ordinal))
+            if (child is TextBlock timeText
+                && timeText.Text != null
+                && timeText.Text.Contains("08:30", StringComparison.Ordinal))
             {
-                periodTimeOrNull = periodText;
+                timeLabelOrNull = timeText;
             }
 
             if (child is Button scheduleCard)
@@ -501,10 +614,10 @@ public sealed class ScheduleWorkspaceViewTests
         }
 
         Assert.NotNull(cellOrNull);
-        Assert.NotNull(periodTimeOrNull);
+        Assert.NotNull(timeLabelOrNull);
         Assert.NotNull(scheduleCardOrNull);
         if (cellOrNull == null ||
-            periodTimeOrNull == null ||
+            timeLabelOrNull == null ||
             scheduleCardOrNull == null)
         {
             throw new InvalidOperationException(
@@ -513,8 +626,8 @@ public sealed class ScheduleWorkspaceViewTests
 
         SolidColorBrush cellBorder = Assert.IsType<SolidColorBrush>(
             cellOrNull.BorderBrush);
-        SolidColorBrush periodTime = Assert.IsType<SolidColorBrush>(
-            periodTimeOrNull.Foreground);
+        SolidColorBrush timeLabel = Assert.IsType<SolidColorBrush>(
+            timeLabelOrNull.Foreground);
         Flyout detailsFlyout = Assert.IsType<Flyout>(scheduleCardOrNull.Flyout);
         Border detailsSurface = Assert.IsType<Border>(detailsFlyout.Content);
         StackPanel details = Assert.IsType<StackPanel>(detailsSurface.Child);
@@ -525,7 +638,7 @@ public sealed class ScheduleWorkspaceViewTests
         return new RenderedScheduleBrushes(
             scheduleCardOrNull,
             cellBorder,
-            periodTime,
+            timeLabel,
             detailAccent);
     }
 
@@ -557,6 +670,6 @@ public sealed class ScheduleWorkspaceViewTests
     private readonly record struct RenderedScheduleBrushes(
         Button ScheduleCard,
         SolidColorBrush CellBorder,
-        SolidColorBrush PeriodTime,
+        SolidColorBrush TimeLabel,
         SolidColorBrush DetailAccent);
 }

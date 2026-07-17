@@ -81,6 +81,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             CourseCatalog catalog = mCatalogProjection.Document.Catalog;
             return new ScheduleBoardPresentation(
                 DisplayedSchedule,
+                createScheduleBoardLayout(),
                 ActivePlan.Name,
                 catalog.InstitutionName,
                 catalog.Term);
@@ -501,6 +502,24 @@ internal sealed partial class PlannerWorkspaceViewModel
         mHasUnsatisfiedScheduleConstraints = false;
         notifyRecommendationChanged();
         notifyRecommendationCalculationStateChanged();
+    }
+
+    private ScheduleBoardLayout createScheduleBoardLayout()
+    {
+        if (mRecommendations.Count == 0)
+        {
+            return ScheduleBoardLayout.CreateForEntries(
+                mPersonalSchedulePreview.Entries);
+        }
+
+        List<ScheduleEntry> layoutEntries = new List<ScheduleEntry>();
+        foreach (PresentationScheduleRecommendation recommendation
+            in mRecommendations)
+        {
+            layoutEntries.AddRange(recommendation.Entries);
+        }
+
+        return ScheduleBoardLayout.CreateForEntries(layoutEntries);
     }
 
     private void notifyRecommendationCalculationStateChanged()

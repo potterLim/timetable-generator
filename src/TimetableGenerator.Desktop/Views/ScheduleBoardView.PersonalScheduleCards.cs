@@ -135,7 +135,10 @@ internal sealed partial class ScheduleBoardView
         List<string> details = new List<string>();
         details.Add("개인 일정");
         details.Add(entry.Title);
-        details.Add(findDayName(entry.Day) + "요일 " + entry.TimeRange);
+        details.Add(
+            ScheduleBoardDayRange.FindFullDayDisplayName(entry.Day)
+            + " "
+            + entry.TimeRange);
         if (entry.HasSection)
         {
             details.Add("분반 " + entry.SectionDisplayText);
@@ -164,7 +167,9 @@ internal sealed partial class ScheduleBoardView
         details.Children.Add(createFlyoutSeparator());
         details.Children.Add(createDetailRow(
             "시간",
-            findDayName(entry.Day) + "요일 · " + entry.TimeRange));
+            ScheduleBoardDayRange.FindFullDayDisplayName(entry.Day)
+            + " · "
+            + entry.TimeRange));
         if (entry.HasSection)
         {
             details.Children.Add(createDetailRow("분반", entry.SectionDisplayText));
