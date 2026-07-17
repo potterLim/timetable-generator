@@ -233,6 +233,29 @@ public sealed class PlanningWorkspaceSession
         return mWorkspace;
     }
 
+    public PlanningWorkspace RememberLastViewedRecommendation(
+        ScheduleRecommendationBookmark recommendationBookmark)
+    {
+        if (recommendationBookmark == null)
+        {
+            throw new ArgumentNullException(nameof(recommendationBookmark));
+        }
+
+        mWorkspace = mEditor.RememberLastViewedRecommendation(
+            mWorkspace,
+            mWorkspace.ActivePlanId,
+            recommendationBookmark);
+        return mWorkspace;
+    }
+
+    public PlanningWorkspace ForgetLastViewedRecommendation()
+    {
+        mWorkspace = mEditor.ForgetLastViewedRecommendation(
+            mWorkspace,
+            mWorkspace.ActivePlanId);
+        return mWorkspace;
+    }
+
     public ScheduleRecommendationResult GenerateRecommendations(
         ScheduleRecommendationLimit recommendationLimit,
         CancellationToken cancellationToken)

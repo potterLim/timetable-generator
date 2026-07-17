@@ -59,7 +59,8 @@ public sealed partial class PlanningWorkspaceEditor
             existingPlan.Id,
             name,
             existingPlan.CatalogBinding,
-            existingPlan.Content);
+            existingPlan.Content,
+            existingPlan.LastViewedRecommendationOrNull);
         return replacePlan(workspace, renamedPlan);
     }
 

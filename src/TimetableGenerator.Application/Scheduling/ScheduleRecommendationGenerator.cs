@@ -51,6 +51,10 @@ public sealed class ScheduleRecommendationGenerator
             return ScheduleRecommendationResult.createCanceled(state.Recommendations);
         }
 
+        ScheduleRecommendationBookmarkRestorer.IncludeIfValid(
+            state,
+            request.Plan);
+
         return ScheduleRecommendationResult.createCompleted(
             state.Recommendations,
             state.Completion);
@@ -112,7 +116,7 @@ public sealed class ScheduleRecommendationGenerator
                     return;
                 }
 
-                if (canAddOffering(
+                if (ScheduleRecommendationConflictChecker.CanAddOffering(
                     node,
                     offeringCandidate.Offering,
                     state.PersonalSchedules) == false)
@@ -144,35 +148,4 @@ public sealed class ScheduleRecommendationGenerator
         return false;
     }
 
-    private static bool canAddOffering(
-        ScheduleSearchNode node,
-        ScheduledOffering offering,
-        IReadOnlyList<PersonalSchedule> personalSchedules)
-    {
-        foreach (MeetingSlot slot in offering.MeetingSlots)
-        {
-            if (node.OccupiedSlots.Contains(slot))
-            {
-                return false;
-            }
-
-            WeeklyTimeRange offeringTimeRange =
-                AcademicPeriodTimeTable.GetWeeklyTimeRange(slot);
-            foreach (PersonalSchedule personalSchedule in personalSchedules)
-            {
-                foreach (WeeklyTimeRange personalTimeRange
-                    in personalSchedule.TimeRanges)
-                {
-                    if (ScheduleConflictDetector.HasConflict(
-                        offeringTimeRange,
-                        personalTimeRange))
-                    {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
 }

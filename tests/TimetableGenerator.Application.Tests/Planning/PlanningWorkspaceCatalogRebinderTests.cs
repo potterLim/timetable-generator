@@ -24,11 +24,21 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             ScheduleRecommendationTestData.CreateUnscheduledSelection(
                 "BBB10001",
                 "01");
-        PlanningPlan firstPlan = createPlan(
+        PlanningPlan firstPlanWithoutBookmark = createPlan(
             originalCatalog,
             "첫 계획",
             new CourseChoiceGroup[] { courseChoiceGroup },
             Array.Empty<UnscheduledOfferingSelection>());
+        OfferingId bookmarkedOfferingId = courseChoiceGroup.CourseCandidates[0]
+            .OfferingCandidates[0]
+            .OfferingId;
+        PlanningPlan firstPlan = new PlanningPlan(
+            firstPlanWithoutBookmark.Id,
+            firstPlanWithoutBookmark.Name,
+            firstPlanWithoutBookmark.CatalogBinding,
+            firstPlanWithoutBookmark.Content,
+            new ScheduleRecommendationBookmark(
+                new OfferingId[] { bookmarkedOfferingId }));
         PlanningPlan secondPlan = createPlan(
             originalCatalog,
             "둘째 계획",
@@ -63,6 +73,8 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
         Assert.AreSame(
             unscheduledSelection,
             reboundWorkspaceOrNull.Plans[1].UnscheduledOfferingSelections[0]);
+        Assert.IsNull(
+            reboundWorkspaceOrNull.Plans[0].LastViewedRecommendationOrNull);
     }
 
     [TestMethod]

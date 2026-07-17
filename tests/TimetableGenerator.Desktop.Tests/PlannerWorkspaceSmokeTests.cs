@@ -1,10 +1,13 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Headless.XUnit;
 using TimetableGenerator.Desktop.Presentation.Layout;
 using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Desktop.Tests.Presentation.Recommendations;
+using TimetableGenerator.Domain.Catalogs;
+using TimetableGenerator.Domain.Planning;
 using Xunit;
 
 namespace TimetableGenerator.Desktop.Tests;
@@ -122,6 +125,66 @@ public sealed class PlannerWorkspaceSmokeTests
     }
 
     [AvaloniaFact]
+    public async Task RecommendationNavigationPersistsTheExactCombinationAsync()
+    {
+        ImmediatePlanningWorkspaceStore planningWorkspaceStore =
+            new ImmediatePlanningWorkspaceStore();
+        using (PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace(planningWorkspaceStore))
+        {
+            await workspace.RecommendationRefreshTask;
+            Task completedRefreshTask = workspace.RecommendationRefreshTask;
+
+            workspace.NextRecommendationCommand.Execute(null);
+            await workspace.FlushAutosaveAsync(CancellationToken.None);
+
+            Assert.Equal("2 / 2", workspace.RecommendationSummary);
+            Assert.Same(completedRefreshTask, workspace.RecommendationRefreshTask);
+            Assert.False(workspace.IsRecommendationCalculating);
+            PlanningWorkspace savedWorkspace = Assert.IsType<PlanningWorkspace>(
+                planningWorkspaceStore.LastSavedWorkspaceOrNull);
+            ScheduleRecommendationBookmark savedBookmark =
+                Assert.IsType<ScheduleRecommendationBookmark>(
+                    savedWorkspace.GetActivePlan().LastViewedRecommendationOrNull);
+            Assert.True(savedBookmark.HasSameScheduledOfferingIds(
+                new OfferingId[]
+                {
+                    new OfferingId("offering-programming-alternative"),
+                }));
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task LoadedWorkspaceRestoresEachPlansLastRecommendationAsync()
+    {
+        ScheduleRecommendationBookmark bookmark =
+            new ScheduleRecommendationBookmark(
+                new OfferingId[]
+                {
+                    new OfferingId("offering-programming-alternative"),
+                });
+        ImmediatePlanningWorkspaceStore planningWorkspaceStore =
+            new ImmediatePlanningWorkspaceStore();
+        using (PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace(
+                bookmark,
+                planningWorkspaceStore))
+        {
+            await workspace.RecommendationRefreshTask;
+
+            Assert.Equal("2 / 2", workspace.RecommendationSummary);
+
+            workspace.ActivePlan = workspace.Plans[1];
+            await workspace.RecommendationRefreshTask;
+            Assert.Equal("0 / 0", workspace.RecommendationSummary);
+
+            workspace.ActivePlan = workspace.Plans[0];
+            await workspace.RecommendationRefreshTask;
+            Assert.Equal("2 / 2", workspace.RecommendationSummary);
+        }
+    }
+
+    [AvaloniaFact]
     public void EveryTimeNotProvidedOfferingCanBeSelectedExplicitly()
     {
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
@@ -226,6 +289,26 @@ public sealed class PlannerWorkspaceSmokeTests
             await recommendationProvider.SecondCallStarted.WaitAsync(
                 TimeSpan.FromSeconds(5.0));
             Assert.True(workspace.IsRecommendationCalculating);
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task ShutdownCancelsRecommendationWorkBeforeCompletingAutosaveAsync()
+    {
+        BlockingScheduleRecommendationProvider recommendationProvider =
+            new BlockingScheduleRecommendationProvider();
+        using (PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace(recommendationProvider))
+        using (CancellationTokenSource timeoutSource =
+            new CancellationTokenSource(TimeSpan.FromSeconds(5.0)))
+        {
+            await recommendationProvider.FirstCallStarted.WaitAsync(
+                timeoutSource.Token);
+
+            await workspace.CompleteAutosaveAsync(timeoutSource.Token);
+
+            await recommendationProvider.FirstCallCanceled.WaitAsync(
+                timeoutSource.Token);
         }
     }
 

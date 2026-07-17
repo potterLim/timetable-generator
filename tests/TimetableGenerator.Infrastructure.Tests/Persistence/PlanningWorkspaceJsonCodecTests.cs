@@ -28,8 +28,9 @@ public sealed class PlanningWorkspaceJsonCodecTests
 
         CollectionAssert.AreEqual(firstContent, secondContent);
         StringAssert.Contains(json, "기본 시간표");
-        StringAssert.Contains(json, "\"schemaVersion\": 3");
+        StringAssert.Contains(json, "\"schemaVersion\": 4");
         StringAssert.Contains(json, "\"courseChoiceGroups\"");
+        StringAssert.Contains(json, "\"lastViewedRecommendation\"");
         StringAssert.Contains(json, "\"preference\": \"acceptable\"");
         StringAssert.Contains(json, "랩 미팅");
         StringAssert.Contains(
@@ -44,6 +45,13 @@ public sealed class PlanningWorkspaceJsonCodecTests
         Assert.HasCount(1, restoredWorkspace.Plans[0].CourseChoiceGroups);
         Assert.HasCount(1, restoredWorkspace.Plans[0].UnscheduledOfferingSelections);
         Assert.HasCount(1, restoredWorkspace.Plans[0].PersonalSchedules);
+        ScheduleRecommendationBookmark? restoredBookmarkOrNull =
+            restoredWorkspace.Plans[0].LastViewedRecommendationOrNull;
+        Assert.IsNotNull(restoredBookmarkOrNull);
+        Assert.AreEqual(
+            "handong-global-university:2026-2:CSE30001:02",
+            restoredBookmarkOrNull.ScheduledOfferingIds[0].Value);
+        Assert.IsNull(restoredWorkspace.Plans[1].LastViewedRecommendationOrNull);
         PersonalSchedule restoredPersonalSchedule =
             restoredWorkspace.Plans[0].PersonalSchedules[0];
         Assert.HasCount(4, restoredPersonalSchedule.TimeRanges);
@@ -75,16 +83,16 @@ public sealed class PlanningWorkspaceJsonCodecTests
         string validJson = Encoding.UTF8.GetString(
             createContent(codec, "기본 시간표"));
         string unknownPropertyJson = validJson.Replace(
-            "\"schemaVersion\": 3,",
-            "\"schemaVersion\": 3,\n  \"unexpected\": true,",
+            "\"schemaVersion\": 4,",
+            "\"schemaVersion\": 4,\n  \"unexpected\": true,",
             StringComparison.Ordinal);
         string duplicatePropertyJson = validJson.Replace(
-            "\"schemaVersion\": 3,",
-            "\"schemaVersion\": 3,\n  \"schemaVersion\": 3,",
+            "\"schemaVersion\": 4,",
+            "\"schemaVersion\": 4,\n  \"schemaVersion\": 4,",
             StringComparison.Ordinal);
         string unsupportedSchemaJson = validJson.Replace(
-            "\"schemaVersion\": 3,",
             "\"schemaVersion\": 4,",
+            "\"schemaVersion\": 5,",
             StringComparison.Ordinal);
 
         Assert.ThrowsExactly<WorkspaceDocumentException>(
@@ -188,9 +196,10 @@ public sealed class PlanningWorkspaceJsonCodecTests
 
         Assert.AreEqual(new WorkspaceGeneration(4), restoredDocument.Generation);
         Assert.IsEmpty(restoredDocument.Workspace.Plans[0].PersonalSchedules);
-        StringAssert.Contains(migratedJson, "\"schemaVersion\": 3");
+        StringAssert.Contains(migratedJson, "\"schemaVersion\": 4");
         StringAssert.Contains(migratedJson, "\"courseChoiceGroups\": []");
         StringAssert.Contains(migratedJson, "\"personalSchedules\": []");
+        StringAssert.Contains(migratedJson, "\"lastViewedRecommendation\": null");
     }
 
     [TestMethod]
@@ -246,8 +255,100 @@ public sealed class PlanningWorkspaceJsonCodecTests
         Assert.AreEqual(
             EOfferingPreference.Acceptable,
             firstGroup.CourseCandidates[0].OfferingCandidates[0].Preference);
-        StringAssert.Contains(migratedJson, "\"schemaVersion\": 3");
+        StringAssert.Contains(migratedJson, "\"schemaVersion\": 4");
         StringAssert.Contains(migratedJson, "\"courseChoiceGroups\"");
+    }
+
+    [TestMethod]
+    public void CodecReadsVersionThreePlansWithoutRecommendationBookmarks()
+    {
+        const string VERSION_THREE_JSON = """
+            {
+              "schemaVersion": 3,
+              "generation": 8,
+              "activePlanId": "11111111-1111-1111-1111-111111111111",
+              "plans": [
+                {
+                  "id": "11111111-1111-1111-1111-111111111111",
+                  "name": "기존 계획",
+                  "catalog": {
+                    "catalogId": "handong-global-university:2026-2:r0001",
+                    "institutionId": "handong-global-university",
+                    "term": "2026-2",
+                    "revision": 1,
+                    "artifactSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  },
+                  "courseChoiceGroups": [
+                    {
+                      "id": "33333333-3333-3333-3333-333333333333",
+                      "cardinality": "exactlyOne",
+                      "courseCandidates": [
+                        {
+                          "courseId": "handong-global-university:CSE30001",
+                          "offeringCandidates": [
+                            {
+                              "offeringId": "handong-global-university:2026-2:CSE30001:01",
+                              "preference": "acceptable"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ],
+                  "unscheduledSelections": [],
+                  "personalSchedules": []
+                }
+              ]
+            }
+            """;
+        PlanningWorkspaceJsonCodec codec = new PlanningWorkspaceJsonCodec();
+
+        PlanningWorkspaceDocument restoredDocument = codec.Deserialize(
+            Encoding.UTF8.GetBytes(VERSION_THREE_JSON));
+        string migratedJson = Encoding.UTF8.GetString(
+            codec.Serialize(restoredDocument));
+
+        Assert.IsNull(
+            restoredDocument.Workspace.Plans[0].LastViewedRecommendationOrNull);
+        StringAssert.Contains(migratedJson, "\"schemaVersion\": 4");
+        StringAssert.Contains(migratedJson, "\"lastViewedRecommendation\": null");
+    }
+
+    [TestMethod]
+    public void CodecRejectsMalformedRecommendationBookmarks()
+    {
+        PlanningWorkspaceJsonCodec codec = new PlanningWorkspaceJsonCodec();
+        string validJson = Encoding.UTF8.GetString(
+            createContent(codec, "기본 시간표"));
+        const string BOOKMARK_OFFERING_ID =
+            "handong-global-university:2026-2:CSE30001:02";
+        string bookmarkOfferingIdLiteral = "\"" + BOOKMARK_OFFERING_ID + "\"";
+        int bookmarkOfferingIdIndex = validJson.LastIndexOf(
+            bookmarkOfferingIdLiteral,
+            StringComparison.Ordinal);
+        string duplicateOfferingJson = validJson.Insert(
+            bookmarkOfferingIdIndex + bookmarkOfferingIdLiteral.Length,
+            ",\n        " + bookmarkOfferingIdLiteral);
+        int bookmarkPropertyIndex = validJson.LastIndexOf(
+            "\"scheduledOfferingIds\"",
+            StringComparison.Ordinal);
+        int bookmarkArrayStartIndex = validJson.IndexOf('[', bookmarkPropertyIndex);
+        int bookmarkArrayEndIndex = validJson.IndexOf(']', bookmarkArrayStartIndex);
+        string emptyBookmarkJson = validJson.Remove(
+            bookmarkArrayStartIndex + 1,
+            bookmarkArrayEndIndex - bookmarkArrayStartIndex - 1);
+        int bookmarkObjectEndIndex = validJson.IndexOf('}', bookmarkArrayEndIndex);
+        string unknownBookmarkPropertyJson = validJson.Insert(
+            bookmarkObjectEndIndex,
+            ",\n      \"unexpected\": true\n    ");
+
+        Assert.ThrowsExactly<WorkspaceDocumentException>(
+            () => codec.Deserialize(Encoding.UTF8.GetBytes(duplicateOfferingJson)));
+        Assert.ThrowsExactly<WorkspaceDocumentException>(
+            () => codec.Deserialize(Encoding.UTF8.GetBytes(emptyBookmarkJson)));
+        Assert.ThrowsExactly<WorkspaceDocumentException>(
+            () => codec.Deserialize(
+                Encoding.UTF8.GetBytes(unknownBookmarkPropertyJson)));
     }
 
     [TestMethod]
@@ -339,6 +440,8 @@ public sealed class PlanningWorkspaceJsonCodecTests
             AcademicTerm.Parse("2026-2"),
             new CatalogRevision(1),
             new CatalogArtifactSha256(new string('a', 64)));
+        OfferingId lastViewedOfferingId = new OfferingId(
+            "handong-global-university:2026-2:CSE30001:02");
         PlanningPlan firstPlan = new PlanningPlan(
             new PlanId(Guid.Parse("11111111-1111-1111-1111-111111111111")),
             new PlanName(firstPlanName),
@@ -354,8 +457,7 @@ public sealed class PlanningWorkspaceJsonCodecTests
                         {
                             new OfferingId(
                                 "handong-global-university:2026-2:CSE30001:01"),
-                            new OfferingId(
-                                "handong-global-university:2026-2:CSE30001:02"),
+                            lastViewedOfferingId,
                         }),
                 },
                 new UnscheduledOfferingSelection[]
@@ -365,7 +467,9 @@ public sealed class PlanningWorkspaceJsonCodecTests
                         new OfferingId(
                             "handong-global-university:2026-2:CSE30002:01")),
                 },
-                new PersonalSchedule[] { createPersonalSchedule() }));
+                new PersonalSchedule[] { createPersonalSchedule() }),
+            new ScheduleRecommendationBookmark(
+                new OfferingId[] { lastViewedOfferingId }));
         PlanningPlan secondPlan = new PlanningPlan(
             new PlanId(Guid.Parse("22222222-2222-2222-2222-222222222222")),
             new PlanName("대안 시간표"),

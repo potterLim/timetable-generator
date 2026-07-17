@@ -11,7 +11,8 @@ namespace TimetableGenerator.Infrastructure.Persistence;
 
 public sealed partial class PlanningWorkspaceJsonCodec
 {
-    private const int CURRENT_SCHEMA_VERSION = 3;
+    private const int CURRENT_SCHEMA_VERSION = 4;
+    private const int COURSE_CHOICE_GROUP_SCHEMA_VERSION = 3;
     private const int PERSONAL_SCHEDULE_SCHEMA_VERSION = 2;
     private const int LEGACY_SCHEMA_VERSION = 1;
 
@@ -161,6 +162,9 @@ public sealed partial class PlanningWorkspaceJsonCodec
         }
 
         writer.WriteEndArray();
+        writeLastViewedRecommendation(
+            writer,
+            plan.LastViewedRecommendationOrNull);
         writer.WriteEndObject();
     }
 
@@ -171,6 +175,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         {
             case LEGACY_SCHEMA_VERSION:
             case PERSONAL_SCHEDULE_SCHEMA_VERSION:
+            case COURSE_CHOICE_GROUP_SCHEMA_VERSION:
             case CURRENT_SCHEMA_VERSION:
                 return readWorkspaceVersion(element, schemaVersion);
             default:
@@ -256,7 +261,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
                 "personalSchedules",
             };
         }
-        else
+        else if (schemaVersion == COURSE_CHOICE_GROUP_SCHEMA_VERSION)
         {
             expectedPropertyNames = new string[]
             {
@@ -268,6 +273,19 @@ public sealed partial class PlanningWorkspaceJsonCodec
                 "personalSchedules",
             };
         }
+        else
+        {
+            expectedPropertyNames = new string[]
+            {
+                "id",
+                "name",
+                "catalog",
+                "courseChoiceGroups",
+                "unscheduledSelections",
+                "personalSchedules",
+                "lastViewedRecommendation",
+            };
+        }
 
         Dictionary<string, JsonElement> properties = readExactObject(
             element,
@@ -277,7 +295,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         PlanName planName = new PlanName(readString(properties["name"], "plan.name"));
         PlanCatalogBinding catalogBinding = readCatalogBinding(properties["catalog"]);
         IReadOnlyList<CourseChoiceGroup> courseChoiceGroups;
-        if (schemaVersion == CURRENT_SCHEMA_VERSION)
+        if (schemaVersion >= COURSE_CHOICE_GROUP_SCHEMA_VERSION)
         {
             courseChoiceGroups = readCourseChoiceGroups(
                 properties["courseChoiceGroups"]);
@@ -304,6 +322,13 @@ public sealed partial class PlanningWorkspaceJsonCodec
             personalSchedules = readPersonalSchedules(properties["personalSchedules"]);
         }
 
+        ScheduleRecommendationBookmark? lastViewedRecommendationOrNull = null;
+        if (schemaVersion == CURRENT_SCHEMA_VERSION)
+        {
+            lastViewedRecommendationOrNull = readLastViewedRecommendationOrNull(
+                properties["lastViewedRecommendation"]);
+        }
+
         return new PlanningPlan(
             planId,
             planName,
@@ -311,7 +336,8 @@ public sealed partial class PlanningWorkspaceJsonCodec
             new PlanningPlanContent(
                 courseChoiceGroups,
                 unscheduledSelections,
-                personalSchedules));
+                personalSchedules),
+            lastViewedRecommendationOrNull);
     }
 
     private static IReadOnlyList<PersonalSchedule> readPersonalSchedules(

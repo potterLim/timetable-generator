@@ -163,6 +163,47 @@ public sealed class ScheduleRecommendationGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateRecommendationsRetainsAValidBookmarkBeyondTheResultLimit()
+    {
+        CourseCatalog catalog = createCartesianCatalog();
+        PlanningPlan basePlan = createCartesianPlan(catalog);
+        OfferingId firstBookmarkedOfferingId = basePlan.CourseChoiceGroups[0]
+            .CourseCandidates[0]
+            .OfferingCandidates[1]
+            .OfferingId;
+        OfferingId secondBookmarkedOfferingId = basePlan.CourseChoiceGroups[1]
+            .CourseCandidates[0]
+            .OfferingCandidates[1]
+            .OfferingId;
+        ScheduleRecommendationBookmark bookmark =
+            new ScheduleRecommendationBookmark(
+                new OfferingId[]
+                {
+                    firstBookmarkedOfferingId,
+                    secondBookmarkedOfferingId,
+                });
+        PlanningPlan bookmarkedPlan = new PlanningPlan(
+            basePlan.Id,
+            basePlan.Name,
+            basePlan.CatalogBinding,
+            basePlan.Content,
+            bookmark);
+
+        ScheduleRecommendationResult result = generate(
+            catalog,
+            bookmarkedPlan,
+            2);
+
+        Assert.HasCount(2, result.Recommendations);
+        Assert.AreEqual(
+            EScheduleRecommendationCompletion.MaximumRecommendationCountReached,
+            result.Completion);
+        CollectionAssert.Contains(
+            getRecommendationNames(result),
+            "AAA10001:02,BBB10001:02");
+    }
+
+    [TestMethod]
     public void GenerateRecommendationsReturnsTypedCancellation()
     {
         CourseCatalog catalog = createCartesianCatalog();

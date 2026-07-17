@@ -73,10 +73,26 @@ internal sealed partial class PlannerWorkspaceViewModel
         return mAutosaveQueue.FlushAsync(cancellationToken);
     }
 
-    public Task CompleteAutosaveAsync(CancellationToken cancellationToken)
+    public async Task CompleteAutosaveAsync(CancellationToken cancellationToken)
     {
         throwIfDisposed();
-        return mAutosaveQueue.CompleteAsync(cancellationToken);
+        bool shouldRestartRecommendationOnFailure =
+            mRecommendationRefreshTask.IsCompleted == false;
+        mRecommendationCancellationSource.Cancel();
+        try
+        {
+            await mRecommendationRefreshTask.WaitAsync(cancellationToken);
+            await mAutosaveQueue.CompleteAsync(cancellationToken);
+        }
+        catch
+        {
+            if (shouldRestartRecommendationOnFailure && mIsDisposed == false)
+            {
+                requestRecommendationRefresh();
+            }
+
+            throw;
+        }
     }
 
     private void retryAutosave()

@@ -13,6 +13,8 @@ public sealed class PlanningPlan
 
     public PlanningPlanContent Content { get; }
 
+    public ScheduleRecommendationBookmark? LastViewedRecommendationOrNull { get; }
+
     public IReadOnlyList<CourseChoiceGroup> CourseChoiceGroups
     {
         get
@@ -50,6 +52,16 @@ public sealed class PlanningPlan
         PlanName name,
         PlanCatalogBinding catalogBinding,
         PlanningPlanContent content)
+        : this(id, name, catalogBinding, content, null)
+    {
+    }
+
+    public PlanningPlan(
+        PlanId id,
+        PlanName name,
+        PlanCatalogBinding catalogBinding,
+        PlanningPlanContent content,
+        ScheduleRecommendationBookmark? lastViewedRecommendationOrNull)
     {
         if (id.IsValid == false)
         {
@@ -75,5 +87,58 @@ public sealed class PlanningPlan
         Name = name;
         CatalogBinding = catalogBinding;
         Content = content;
+        validateLastViewedRecommendation(content, lastViewedRecommendationOrNull);
+        LastViewedRecommendationOrNull = lastViewedRecommendationOrNull;
+    }
+
+    private static void validateLastViewedRecommendation(
+        PlanningPlanContent content,
+        ScheduleRecommendationBookmark? lastViewedRecommendationOrNull)
+    {
+        if (lastViewedRecommendationOrNull == null)
+        {
+            return;
+        }
+
+        if (lastViewedRecommendationOrNull.ScheduledOfferingIds.Count
+            != content.CourseChoiceGroups.Count)
+        {
+            throw new ArgumentException(
+                "The last-viewed recommendation must select one offering per course choice group.",
+                nameof(lastViewedRecommendationOrNull));
+        }
+
+        foreach (CourseChoiceGroup courseChoiceGroup in content.CourseChoiceGroups)
+        {
+            if (bookmarkSelectsEligibleOffering(
+                lastViewedRecommendationOrNull,
+                courseChoiceGroup) == false)
+            {
+                throw new ArgumentException(
+                    "The last-viewed recommendation must reference eligible plan offerings.",
+                    nameof(lastViewedRecommendationOrNull));
+            }
+        }
+    }
+
+    private static bool bookmarkSelectsEligibleOffering(
+        ScheduleRecommendationBookmark bookmark,
+        CourseChoiceGroup courseChoiceGroup)
+    {
+        foreach (CourseCandidate courseCandidate in courseChoiceGroup.CourseCandidates)
+        {
+            foreach (OfferingCandidate offeringCandidate
+                in courseCandidate.OfferingCandidates)
+            {
+                if (offeringCandidate.IsEligible
+                    && bookmark.ContainsScheduledOffering(
+                        offeringCandidate.OfferingId))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

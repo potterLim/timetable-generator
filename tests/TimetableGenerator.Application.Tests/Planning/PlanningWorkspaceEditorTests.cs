@@ -257,6 +257,54 @@ public sealed class PlanningWorkspaceEditorTests
     }
 
     [TestMethod]
+    public void RecommendationBookmarkIsPlanScopedAndClearedByContentChanges()
+    {
+        CourseChoiceGroup choiceGroup =
+            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                "AAA10001",
+                "01",
+                "02");
+        PlanningPlan firstPlan = createPlan(
+            "첫 계획",
+            new CourseChoiceGroup[] { choiceGroup },
+            Array.Empty<UnscheduledOfferingSelection>());
+        PlanningPlan secondPlan = createPlan("둘째 계획");
+        PlanningWorkspace workspace = new PlanningWorkspace(
+            secondPlan.Id,
+            new PlanningPlan[] { firstPlan, secondPlan });
+        PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
+        OfferingId selectedOfferingId =
+            choiceGroup.CourseCandidates[0].OfferingCandidates[1].OfferingId;
+        ScheduleRecommendationBookmark bookmark =
+            new ScheduleRecommendationBookmark(
+                new OfferingId[] { selectedOfferingId });
+
+        PlanningWorkspace remembered = editor.RememberLastViewedRecommendation(
+            workspace,
+            firstPlan.Id,
+            bookmark);
+        PlanningWorkspace renamed = editor.RenamePlan(
+            remembered,
+            firstPlan.Id,
+            new PlanName("이름 변경"));
+        PlanningWorkspace withPersonalSchedule = editor.AddPersonalSchedule(
+            renamed,
+            firstPlan.Id,
+            createPersonalSchedule(PersonalScheduleId.CreateNew(), "고정 일정"));
+
+        Assert.AreEqual(secondPlan.Id, remembered.ActivePlanId);
+        Assert.AreSame(
+            bookmark,
+            remembered.Plans[0].LastViewedRecommendationOrNull);
+        Assert.IsNull(remembered.Plans[1].LastViewedRecommendationOrNull);
+        Assert.AreSame(
+            bookmark,
+            renamed.Plans[0].LastViewedRecommendationOrNull);
+        Assert.IsNull(
+            withPersonalSchedule.Plans[0].LastViewedRecommendationOrNull);
+    }
+
+    [TestMethod]
     public void RemoveActivePlanSelectsItsNearestRemainingNeighbor()
     {
         PlanningPlan firstPlan = createPlan("첫 계획");

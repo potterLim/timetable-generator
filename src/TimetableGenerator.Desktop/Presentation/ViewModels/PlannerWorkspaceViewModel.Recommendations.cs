@@ -35,7 +35,7 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private readonly DelegateCommand mRetryRecommendationCommand;
 
-    private IReadOnlyList<PresentationScheduleRecommendation> mRecommendations;
+    private IReadOnlyList<ScheduleRecommendationViewItem> mRecommendations;
 
     private PresentationScheduleRecommendation mPersonalSchedulePreview;
 
@@ -60,7 +60,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                 return EMPTY_RECOMMENDATION;
             }
 
-            return mRecommendations[mRecommendationIndex];
+            return mRecommendations[mRecommendationIndex].Schedule;
         }
     }
 
@@ -348,6 +348,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             mRecommendationIndex = mRecommendations.Count - 1;
         }
 
+        rememberActiveRecommendation();
         notifyRecommendationChanged();
     }
 
@@ -385,6 +386,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             mRecommendationIndex = 0;
         }
 
+        rememberActiveRecommendation();
         notifyRecommendationChanged();
     }
 
@@ -407,7 +409,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         mRecommendationCancellationSource = cancellationSource;
         PlanningPlan planSnapshot = mSession.Workspace.GetActivePlan();
 
-        mRecommendations = Array.Empty<PresentationScheduleRecommendation>();
+        mRecommendations = Array.Empty<ScheduleRecommendationViewItem>();
         mPersonalSchedulePreview = EMPTY_RECOMMENDATION;
         mRecommendationIndex = 0;
         mRecommendationCalculationState = ERecommendationCalculationState.Calculating;
@@ -497,14 +499,20 @@ internal sealed partial class PlannerWorkspaceViewModel
                 "Recommendation calculation ended without an active cancellation request.");
         }
 
-        List<PresentationScheduleRecommendation> recommendations =
-            new List<PresentationScheduleRecommendation>();
+        List<ScheduleRecommendationViewItem> recommendations =
+            new List<ScheduleRecommendationViewItem>();
         foreach (ApplicationScheduleRecommendation recommendation
             in result.Recommendations)
         {
-            recommendations.Add(ScheduleRecommendationProjector.Project(
-                recommendation,
-                mCatalogProjection));
+            PresentationScheduleRecommendation schedule =
+                ScheduleRecommendationProjector.Project(
+                    recommendation,
+                    mCatalogProjection);
+            ScheduleRecommendationBookmark? bookmarkOrNull =
+                createRecommendationBookmarkOrNull(recommendation);
+            recommendations.Add(new ScheduleRecommendationViewItem(
+                schedule,
+                bookmarkOrNull));
         }
 
         bool hasSelectedScheduledCourses =
@@ -524,16 +532,19 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
 
         mRecommendations = recommendations.AsReadOnly();
-        mRecommendationIndex = 0;
+        mRecommendationIndex = findRestoredRecommendationIndex(
+            recommendations,
+            planSnapshot.LastViewedRecommendationOrNull);
         mRecommendationCalculationState = ERecommendationCalculationState.Ready;
         mRecommendationCalculationError = string.Empty;
+        synchronizeLastViewedRecommendation(planSnapshot.Id);
         notifyRecommendationChanged();
         notifyRecommendationCalculationStateChanged();
     }
 
     private void showRecommendationFailure(Exception exception)
     {
-        mRecommendations = Array.Empty<PresentationScheduleRecommendation>();
+        mRecommendations = Array.Empty<ScheduleRecommendationViewItem>();
         mPersonalSchedulePreview = EMPTY_RECOMMENDATION;
         mRecommendationIndex = 0;
         mRecommendationCalculationState = ERecommendationCalculationState.Failed;
@@ -554,13 +565,119 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
 
         List<ScheduleEntry> layoutEntries = new List<ScheduleEntry>();
-        foreach (PresentationScheduleRecommendation recommendation
+        foreach (ScheduleRecommendationViewItem recommendation
             in mRecommendations)
         {
-            layoutEntries.AddRange(recommendation.Entries);
+            layoutEntries.AddRange(recommendation.Schedule.Entries);
         }
 
         return ScheduleBoardLayout.CreateForEntries(layoutEntries);
+    }
+
+    private static ScheduleRecommendationBookmark? createRecommendationBookmarkOrNull(
+        ApplicationScheduleRecommendation recommendation)
+    {
+        if (recommendation.ScheduledOfferings.Count == 0)
+        {
+            return null;
+        }
+
+        List<OfferingId> scheduledOfferingIds = new List<OfferingId>(
+            recommendation.ScheduledOfferings.Count);
+        foreach (ScheduledOffering scheduledOffering
+            in recommendation.ScheduledOfferings)
+        {
+            scheduledOfferingIds.Add(scheduledOffering.OfferingId);
+        }
+
+        return new ScheduleRecommendationBookmark(scheduledOfferingIds);
+    }
+
+    private static int findRestoredRecommendationIndex(
+        IReadOnlyList<ScheduleRecommendationViewItem> recommendations,
+        ScheduleRecommendationBookmark? bookmarkOrNull)
+    {
+        if (bookmarkOrNull == null)
+        {
+            return 0;
+        }
+
+        for (int recommendationIndex = 0;
+            recommendationIndex < recommendations.Count;
+            ++recommendationIndex)
+        {
+            ScheduleRecommendationBookmark? candidateBookmarkOrNull =
+                recommendations[recommendationIndex].BookmarkOrNull;
+            if (candidateBookmarkOrNull != null
+                && bookmarkOrNull.HasSameScheduledOfferingIds(
+                    candidateBookmarkOrNull.ScheduledOfferingIds))
+            {
+                return recommendationIndex;
+            }
+        }
+
+        return 0;
+    }
+
+    private void rememberActiveRecommendation()
+    {
+        ScheduleRecommendationBookmark? bookmarkOrNull =
+            mRecommendations[mRecommendationIndex].BookmarkOrNull;
+        updateLastViewedRecommendation(bookmarkOrNull);
+    }
+
+    private void synchronizeLastViewedRecommendation(PlanId calculatedPlanId)
+    {
+        if (mSession.Workspace.ActivePlanId != calculatedPlanId)
+        {
+            return;
+        }
+
+        ScheduleRecommendationBookmark? bookmarkOrNull = null;
+        if (mRecommendations.Count > 0)
+        {
+            bookmarkOrNull = mRecommendations[mRecommendationIndex].BookmarkOrNull;
+        }
+
+        updateLastViewedRecommendation(bookmarkOrNull);
+    }
+
+    private void updateLastViewedRecommendation(
+        ScheduleRecommendationBookmark? bookmarkOrNull)
+    {
+        PlanningPlan activePlan = mSession.Workspace.GetActivePlan();
+        ScheduleRecommendationBookmark? existingBookmarkOrNull =
+            activePlan.LastViewedRecommendationOrNull;
+        if (haveSameRecommendationBookmarks(
+            existingBookmarkOrNull,
+            bookmarkOrNull))
+        {
+            return;
+        }
+
+        if (bookmarkOrNull == null)
+        {
+            mSession.ForgetLastViewedRecommendation();
+        }
+        else
+        {
+            mSession.RememberLastViewedRecommendation(bookmarkOrNull);
+        }
+
+        mAutosaveQueue.RequestSave(mSession.Workspace);
+    }
+
+    private static bool haveSameRecommendationBookmarks(
+        ScheduleRecommendationBookmark? leftOrNull,
+        ScheduleRecommendationBookmark? rightOrNull)
+    {
+        if (leftOrNull == null || rightOrNull == null)
+        {
+            return leftOrNull == null && rightOrNull == null;
+        }
+
+        return leftOrNull.HasSameScheduledOfferingIds(
+            rightOrNull.ScheduledOfferingIds);
     }
 
     private void notifyRecommendationCalculationStateChanged()

@@ -216,8 +216,8 @@ public sealed class PlanningWorkspaceFileStoreTests
                 latestPath,
                 CancellationToken.None);
             string futureContent = latestContent.Replace(
-                "\"schemaVersion\": 3,",
                 "\"schemaVersion\": 4,",
+                "\"schemaVersion\": 5,",
                 StringComparison.Ordinal);
             await File.WriteAllTextAsync(
                 latestPath,
@@ -239,8 +239,8 @@ public sealed class PlanningWorkspaceFileStoreTests
             byte[][] contentAfterSave = await readGenerationContentsAsync(
                 testDirectoryPath);
 
-            Assert.AreEqual(4, exception.UnsupportedSchemaVersion);
-            Assert.AreEqual(4, saveException.UnsupportedSchemaVersion);
+            Assert.AreEqual(5, exception.UnsupportedSchemaVersion);
+            Assert.AreEqual(5, saveException.UnsupportedSchemaVersion);
             Assert.HasCount(contentBeforeSave.Length, contentAfterSave);
             for (int index = 0; index < contentBeforeSave.Length; index++)
             {
@@ -267,8 +267,8 @@ public sealed class PlanningWorkspaceFileStoreTests
                 futurePath,
                 CancellationToken.None);
             futureContent = futureContent.Replace(
-                "\"schemaVersion\": 3,",
                 "\"schemaVersion\": 4,",
+                "\"schemaVersion\": 5,",
                 StringComparison.Ordinal);
             await File.WriteAllTextAsync(
                 futurePath,
