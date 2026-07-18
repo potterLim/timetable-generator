@@ -547,7 +547,7 @@ public sealed class PersonalScheduleInteractionTests
                 .OfType<Button>()
                 .Single();
 
-            Assert.Equal(47, Grid.GetRow(scheduleCard));
+            Assert.Equal(29, Grid.GetRow(scheduleCard));
             Assert.Equal(12, Grid.GetRowSpan(scheduleCard));
             Assert.Contains("personal", scheduleCard.Classes);
             Assert.Contains(
@@ -651,6 +651,11 @@ public sealed class PersonalScheduleInteractionTests
             string accessibleName = accessibleNameOrNull;
             Assert.Contains("분반 A", accessibleName);
             Assert.Contains("수요일 12:00–13:00", accessibleName);
+            Assert.Equal(
+                "사용자 경험 연구 정기 회의"
+                    + Environment.NewLine
+                    + "선택하여 일정 상세 정보 보기",
+                ToolTip.GetTip(scheduleCard));
             Assert.DoesNotContain(
                 cardTexts,
                 textBlock => getTextOrEmpty(textBlock).Contains(
@@ -724,6 +729,14 @@ public sealed class PersonalScheduleInteractionTests
 
             Assert.True(scheduleCard.Bounds.Height >= 24.0);
             Assert.Contains("07:30", labels);
+            Assert.Equal(
+                new ScheduleBoardTimeBoundary(450),
+                scheduleBoard.RenderedLayout.TimeAxis.Start);
+            Assert.Equal(
+                new ScheduleBoardTimeBoundary(1_140),
+                scheduleBoard.RenderedLayout.TimeAxis.End);
+            Assert.Equal(138, scheduleBoard.RenderedLayout.TimeAxis.IncrementCount);
+            Assert.Equal(23, scheduleBoard.RenderedLayout.TimeAxis.LabelTimes.Count);
         }
         finally
         {
@@ -732,7 +745,7 @@ public sealed class PersonalScheduleInteractionTests
     }
 
     [AvaloniaFact]
-    public void ShortRepeatedScheduleUsesCompactUniqueCardsAndAnExportLegend()
+    public void ShortRepeatedScheduleUsesCompactUniqueCardsWithoutAnExportLegend()
     {
         DailyTimeRange timeRange = new DailyTimeRange(
             new ScheduleTime(12, 20),
@@ -799,14 +812,17 @@ public sealed class PersonalScheduleInteractionTests
                 .OfType<TextBlock>()
                 .Select(getTextOrEmpty)
                 .ToArray();
-            Assert.Contains("개인 일정 세부 정보", exportTexts);
+            Assert.DoesNotContain("개인 일정 세부 정보", exportTexts);
             Assert.Contains("테스트 계획", exportTexts);
             Assert.Contains("한동대학교 · 2026-2", exportTexts);
-            Assert.Contains(
+            Assert.Equal(
+                2,
+                exportTexts.Count(text => text == "짧은 랩 미팅"));
+            Assert.DoesNotContain(
                 exportTexts,
                 text => text.Contains("분반 A", StringComparison.Ordinal)
-                    && text.Contains("김교수", StringComparison.Ordinal)
-                    && text.Contains("느헤미야홀 101호", StringComparison.Ordinal));
+                    || text.Contains("김교수", StringComparison.Ordinal)
+                    || text.Contains("느헤미야홀 101호", StringComparison.Ordinal));
         }
         finally
         {
@@ -841,9 +857,7 @@ public sealed class PersonalScheduleInteractionTests
             Assert.False(workspace.CanExportSchedule);
             Assert.Empty(workspace.ActiveRecommendation.Entries);
             Assert.NotEmpty(workspace.DisplayedSchedule.Entries);
-            Assert.Equal(
-                "겹치는 과목이나 개인 일정을 조정하세요.",
-                workspace.RecommendationInsight);
+            Assert.True(workspace.HasUnsatisfiedPersonalSchedulePreview);
         }
     }
 

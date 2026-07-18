@@ -22,10 +22,6 @@ internal sealed partial class ScheduleBoardView : UserControl
 
     private readonly Border mBoardExportSurface;
 
-    private readonly Border mPersonalScheduleLegendSurface;
-
-    private readonly StackPanel mPersonalScheduleLegendEntries;
-
     private ScheduleBoardLayout mRenderedLayout;
 
     internal ScheduleBoardLayout RenderedLayout
@@ -50,14 +46,8 @@ internal sealed partial class ScheduleBoardView : UserControl
         Border? boardExportSurfaceOrNull = this.FindControl<Border>(
             "BoardExportSurface");
         Grid? boardGridOrNull = this.FindControl<Grid>("BoardGrid");
-        Border? personalScheduleLegendSurfaceOrNull = this.FindControl<Border>(
-            "PersonalScheduleLegendSurface");
-        StackPanel? personalScheduleLegendEntriesOrNull =
-            this.FindControl<StackPanel>("PersonalScheduleLegendEntries");
         if (boardExportSurfaceOrNull == null
-            || boardGridOrNull == null
-            || personalScheduleLegendSurfaceOrNull == null
-            || personalScheduleLegendEntriesOrNull == null)
+            || boardGridOrNull == null)
         {
             throw new InvalidOperationException(
                 "The schedule board export surface was not initialized.");
@@ -65,8 +55,6 @@ internal sealed partial class ScheduleBoardView : UserControl
 
         mBoardExportSurface = boardExportSurfaceOrNull;
         mBoardGrid = boardGridOrNull;
-        mPersonalScheduleLegendSurface = personalScheduleLegendSurfaceOrNull;
-        mPersonalScheduleLegendEntries = personalScheduleLegendEntriesOrNull;
         mRenderedLayout = ScheduleBoardLayout.Default;
         DataContextChanged += onDataContextChanged;
         AttachedToVisualTree += onAttachedToVisualTree;
@@ -146,7 +134,6 @@ internal sealed partial class ScheduleBoardView : UserControl
 
         if (recommendationOrNull == null)
         {
-            rebuildPersonalScheduleLegend(null);
             return;
         }
 
@@ -154,8 +141,6 @@ internal sealed partial class ScheduleBoardView : UserControl
         {
             addScheduleEntry(entry);
         }
-
-        rebuildPersonalScheduleLegend(recommendationOrNull);
     }
 
     private void addGridDefinitions()

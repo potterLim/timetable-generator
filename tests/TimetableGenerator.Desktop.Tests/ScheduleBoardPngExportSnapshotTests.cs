@@ -63,6 +63,28 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     }
 
     [Fact]
+    public void PngExportLayoutStartsAtTenWhenEntriesBeginLater()
+    {
+        ScheduleEntry entry = createScheduleEntry(
+            EDay.Monday,
+            new AcademicPeriod(5));
+
+        ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForPngExport(
+            new ScheduleEntry[] { entry });
+
+        Assert.Equal(
+            new ScheduleBoardTimeBoundary(600),
+            layout.TimeAxis.Start);
+        Assert.Equal(
+            new ScheduleBoardTimeBoundary(960),
+            layout.TimeAxis.End);
+        Assert.Equal(72, layout.TimeAxis.IncrementCount);
+        Assert.Equal(12, layout.TimeAxis.LabelTimes.Count);
+        Assert.Equal("10:00", layout.TimeAxis.LabelTimes[0].ToString());
+        Assert.Equal("15:30", layout.TimeAxis.LabelTimes[^1].ToString());
+    }
+
+    [Fact]
     public void PngExportLayoutExtendsSixthPeriodToNextHalfHourBoundary()
     {
         ScheduleEntry entry = createScheduleEntry(
@@ -97,6 +119,67 @@ public sealed class ScheduleBoardPngExportSnapshotTests
         Assert.Equal(EDay.Sunday, layout.DayRange.Days[6].Day);
         Assert.Equal(6, layout.DayRange.FindDay(EDay.Saturday).ColumnIndex);
         Assert.Equal(7, layout.DayRange.FindDay(EDay.Sunday).ColumnIndex);
+    }
+
+    [AvaloniaFact]
+    public void PngSnapshotUsesTheCurrentScheduleInsteadOfTheSharedScreenAxis()
+    {
+        ScheduleEntry earlierAlternative = createScheduleEntry(
+            EDay.Monday,
+            new AcademicPeriod(1));
+        ScheduleEntry currentEntry = createScheduleEntry(
+            EDay.Tuesday,
+            new AcademicPeriod(3));
+        ScheduleRecommendation currentSchedule = new ScheduleRecommendation(
+            new ScheduleEntry[] { currentEntry });
+        ScheduleBoardLayout sharedScreenLayout = ScheduleBoardLayout.CreateForEntries(
+            new ScheduleEntry[] { earlierAlternative, currentEntry });
+        ScheduleBoardView sourceBoard = new ScheduleBoardView();
+        sourceBoard.DataContext = new ScheduleBoardPresentation(
+            currentSchedule,
+            sharedScreenLayout,
+            new PlanName("PNG 내보내기 테스트"),
+            new InstitutionName("한동대학교"),
+            AcademicTerm.Parse("2026-2"));
+        Canvas exportHost = new Canvas();
+        exportHost.IsHitTestVisible = false;
+        exportHost.Opacity = 0.0;
+        exportHost.ZIndex = -1;
+        Grid root = new Grid();
+        root.Children.Add(exportHost);
+        root.Children.Add(sourceBoard);
+        Window window = createWindow(root, ThemeVariant.Light);
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal(
+                new ScheduleBoardTimeBoundary(510),
+                sourceBoard.RenderedLayout.TimeAxis.Start);
+            using (ScheduleBoardPngExportSnapshot snapshot =
+                ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
+            {
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.Equal(
+                    new ScheduleBoardTimeBoundary(600),
+                    snapshot.Layout.TimeAxis.Start);
+                Assert.Equal(
+                    new ScheduleBoardTimeBoundary(960),
+                    snapshot.Layout.TimeAxis.End);
+                Assert.Equal(72, snapshot.Layout.TimeAxis.IncrementCount);
+                Assert.Equal(12, snapshot.Layout.TimeAxis.LabelTimes.Count);
+                Assert.Single(findBoardGrid(snapshot.Surface).Children.OfType<Button>());
+            }
+
+            Assert.Empty(exportHost.Children);
+        }
+        finally
+        {
+            window.Close();
+        }
     }
 
     [AvaloniaFact]

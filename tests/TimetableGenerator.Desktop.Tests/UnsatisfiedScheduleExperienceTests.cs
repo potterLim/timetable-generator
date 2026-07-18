@@ -191,35 +191,6 @@ public sealed class UnsatisfiedScheduleExperienceTests
         }
     }
 
-    [AvaloniaFact]
-    public async Task WeekendPersonalScheduleDoesNotReduceWeekdayFreeDayCountAsync()
-    {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace())
-        {
-            await workspace.RecommendationRefreshTask;
-            Assert.Equal(
-                "1개 시간표 과목 · 공강 3일",
-                workspace.RecommendationInsight);
-
-            addPersonalSchedule(
-                workspace,
-                "일요일 모임",
-                EDay.Sunday,
-                new ScheduleTime(13, 0),
-                new ScheduleTime(14, 0));
-            await workspace.RecommendationRefreshTask;
-
-            Assert.Equal(
-                "1개 시간표 과목 · 개인 일정 1개 · 공강 3일",
-                workspace.RecommendationInsight);
-            Assert.DoesNotContain(
-                "공강 -",
-                workspace.RecommendationInsight,
-                StringComparison.Ordinal);
-        }
-    }
-
     private static Window createWindow(Control content)
     {
         Window window = new Window();

@@ -408,10 +408,10 @@
               CornerRadius="7">
             <TextBlock
                 Classes="caption"
-                Text="식사·랩 미팅·고정 약속을 시간표에 추가하세요."
+                Text="수업 외 고정 일정을 추가하세요."
                 TextTrimming="CharacterEllipsis"
                 TextWrapping="NoWrap"
-                ToolTip.Tip="식사·랩 미팅·고정 약속을 시간표에 추가하세요." />
+                ToolTip.Tip="수업 외 고정 일정을 추가하세요." />
           </Border>
 
           <ItemsControl

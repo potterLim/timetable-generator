@@ -112,11 +112,21 @@ public sealed class PlannerWorkspaceSmokeTests
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         await workspace.RecommendationRefreshTask;
         ScheduleRecommendation firstRecommendation = workspace.ActiveRecommendation;
+        Assert.Equal(
+            new ScheduleBoardTimeBoundary(510),
+            workspace.DisplayedScheduleBoard.Layout.TimeAxis.Start);
 
         workspace.NextRecommendationCommand.Execute(null);
 
         Assert.Equal("2 / 2", workspace.RecommendationSummary);
         Assert.NotSame(firstRecommendation, workspace.ActiveRecommendation);
+        Assert.All(
+            workspace.ActiveRecommendation.Entries,
+            entry => Assert.True(
+                entry.TimeRange.Start.MinutesFromMidnight >= 600));
+        Assert.Equal(
+            new ScheduleBoardTimeBoundary(510),
+            workspace.DisplayedScheduleBoard.Layout.TimeAxis.Start);
 
         workspace.PreviousRecommendationCommand.Execute(null);
 

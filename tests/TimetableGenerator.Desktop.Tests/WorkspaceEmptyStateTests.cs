@@ -171,11 +171,23 @@ public sealed class WorkspaceEmptyStateTests
         Border recommendationPolicy = findRequiredControl<Border>(
             planInspector,
             "RecommendationPolicyCard");
+        Border personalScheduleEmptyState = findRequiredControl<Border>(
+            planInspector,
+            "PersonalScheduleEmptyState");
 
         Assert.False(emptyPlanState.IsVisible);
         Assert.True(scheduledCourses.IsVisible);
         Assert.False(timeNotProvidedCourses.IsVisible);
         Assert.True(recommendationPolicy.IsVisible);
+        Assert.True(personalScheduleEmptyState.IsVisible);
+        TextBlock emptyStateMessage = Assert.IsType<TextBlock>(
+            personalScheduleEmptyState.Child);
+        Assert.Equal(
+            "수업 외 고정 일정을 추가하세요.",
+            emptyStateMessage.Text);
+        Assert.Equal(
+            "수업 외 고정 일정을 추가하세요.",
+            ToolTip.GetTip(emptyStateMessage));
     }
 
     private static void assertTimeNotProvidedInspectorState(

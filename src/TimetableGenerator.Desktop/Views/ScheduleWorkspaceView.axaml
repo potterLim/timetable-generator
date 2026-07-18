@@ -44,16 +44,6 @@
             <TextBlock VerticalAlignment="Center" Text="과목 찾기" />
           </StackPanel>
         </Button>
-        <TextBlock
-            MaxWidth="420"
-            VerticalAlignment="Center"
-            Foreground="{DynamicResource AccentBrush}"
-            FontWeight="SemiBold"
-            IsVisible="{Binding CanExportSchedule}"
-            Text="{Binding RecommendationInsight}"
-            TextTrimming="CharacterEllipsis"
-            TextWrapping="NoWrap"
-            ToolTip.Tip="{Binding RecommendationInsight}" />
       </StackPanel>
 
       <StackPanel

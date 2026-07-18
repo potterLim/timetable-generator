@@ -7,7 +7,7 @@ namespace TimetableGenerator.Desktop.Presentation.Models;
 
 internal sealed class ScheduleBoardTimeAxis
 {
-    private const int DEFAULT_START_MINUTE = 510;
+    private const int DEFAULT_START_MINUTE = 600;
     private const int DEFAULT_END_MINUTE = 1_140;
     private const int PNG_EXPORT_DEFAULT_END_MINUTE = 960;
     private const int LAYOUT_INCREMENT_MINUTES = 5;

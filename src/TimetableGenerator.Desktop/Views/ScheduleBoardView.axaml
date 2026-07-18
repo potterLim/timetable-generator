@@ -116,23 +116,6 @@
             <Grid
                 x:Name="BoardGrid"
                 Background="{DynamicResource ElevatedSurfaceBrush}" />
-            <Border
-                x:Name="PersonalScheduleLegendSurface"
-                Padding="16,14"
-                IsVisible="False"
-                BorderBrush="{DynamicResource BorderBrush}"
-                BorderThickness="0,1,0,0"
-                Background="{DynamicResource ElevatedSurfaceBrush}">
-              <StackPanel Spacing="10">
-                <TextBlock
-                    FontSize="12"
-                    FontWeight="SemiBold"
-                    Text="개인 일정 세부 정보" />
-                <StackPanel
-                    x:Name="PersonalScheduleLegendEntries"
-                    Spacing="8" />
-              </StackPanel>
-            </Border>
           </StackPanel>
         </Border>
       </Grid>

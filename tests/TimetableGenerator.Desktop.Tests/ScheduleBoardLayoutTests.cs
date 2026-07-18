@@ -11,17 +11,19 @@ namespace TimetableGenerator.Desktop.Tests;
 public sealed class ScheduleBoardLayoutTests
 {
     [Fact]
-    public void DefaultLayoutShowsWeekdaysThroughSevenPeriods()
+    public void DefaultLayoutShowsWeekdaysFromTenAmThroughSevenPeriods()
     {
         ScheduleBoardLayout layout = ScheduleBoardLayout.Default;
 
         Assert.Equal(5, layout.DayRange.DayCount);
         Assert.Equal(EDay.Monday, layout.DayRange.Days[0].Day);
         Assert.Equal(EDay.Friday, layout.DayRange.Days[4].Day);
-        Assert.Equal(new ScheduleBoardTimeBoundary(510), layout.TimeAxis.Start);
+        Assert.Equal(new ScheduleBoardTimeBoundary(600), layout.TimeAxis.Start);
         Assert.Equal(new ScheduleBoardTimeBoundary(1_140), layout.TimeAxis.End);
-        Assert.Equal(126, layout.TimeAxis.IncrementCount);
-        Assert.Equal(21, layout.TimeAxis.LabelTimes.Count);
+        Assert.Equal(108, layout.TimeAxis.IncrementCount);
+        Assert.Equal(18, layout.TimeAxis.LabelTimes.Count);
+        Assert.Equal("10:00", layout.TimeAxis.LabelTimes[0].ToString());
+        Assert.Equal("18:30", layout.TimeAxis.LabelTimes[^1].ToString());
     }
 
     [Fact]

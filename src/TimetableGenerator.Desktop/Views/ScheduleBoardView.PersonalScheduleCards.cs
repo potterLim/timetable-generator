@@ -46,7 +46,9 @@ internal sealed partial class ScheduleBoardView
             "선택하면 개인 일정의 시간과 세부 정보를 엽니다.");
         ToolTip.SetTip(
             scheduleCard,
-            accessibleName + Environment.NewLine + "선택하여 일정 상세 정보 보기");
+            entry.Title
+                + Environment.NewLine
+                + "선택하여 일정 상세 정보 보기");
     }
 
     private static string createPersonalScheduleAccessibleName(

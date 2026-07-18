@@ -195,78 +195,6 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
-    public string RecommendationInsight
-    {
-        get
-        {
-            if (IsRecommendationCalculating)
-            {
-                return "가능한 시간표 계산 중";
-            }
-
-            if (HasRecommendationCalculationError)
-            {
-                return "추천 시간표를 계산하지 못했습니다.";
-            }
-
-            if (HasUnsatisfiedScheduleConstraints)
-            {
-                if (ActivePlan.HasPersonalSchedules)
-                {
-                    return "겹치는 과목이나 개인 일정을 조정하세요.";
-                }
-
-                return "선택한 과목 조합을 함께 배치할 수 없습니다.";
-            }
-
-            if (HasRecommendations == false)
-            {
-                return "과목 선택을 바꾸면 시간표를 다시 계산합니다.";
-            }
-
-            if (HasScheduleEntries == false)
-            {
-                return "시간 미정 과목은 내 계획에 보관됩니다.";
-            }
-
-            HashSet<EDay> scheduledWeekdays = new HashSet<EDay>();
-            HashSet<string> courseCodes = new HashSet<string>(StringComparer.Ordinal);
-            HashSet<PersonalScheduleId> personalScheduleIds =
-                new HashSet<PersonalScheduleId>();
-            foreach (ScheduleEntry entry in DisplayedSchedule.Entries)
-            {
-                if (isWeekday(entry.Day))
-                {
-                    scheduledWeekdays.Add(entry.Day);
-                }
-                CourseScheduleEntry? courseEntryOrNull =
-                    entry as CourseScheduleEntry;
-                if (courseEntryOrNull != null)
-                {
-                    courseCodes.Add(courseEntryOrNull.Code);
-                }
-
-                PersonalScheduleEntry? personalEntryOrNull =
-                    entry as PersonalScheduleEntry;
-                if (personalEntryOrNull != null)
-                {
-                    personalScheduleIds.Add(personalEntryOrNull.ScheduleId);
-                }
-            }
-
-            int freeWeekdayCount = 5 - scheduledWeekdays.Count;
-            string insight = courseCodes.Count + "개 시간표 과목";
-            if (personalScheduleIds.Count > 0)
-            {
-                insight += " · 개인 일정 " + personalScheduleIds.Count + "개";
-            }
-
-            return insight + " · 공강 "
-                + freeWeekdayCount
-                + "일";
-        }
-    }
-
     public string EmptyScheduleTitle
     {
         get
@@ -350,27 +278,6 @@ internal sealed partial class PlannerWorkspaceViewModel
 
         rememberActiveRecommendation();
         notifyRecommendationChanged();
-    }
-
-    private static bool isWeekday(EDay day)
-    {
-        switch (day)
-        {
-            case EDay.Monday:
-            case EDay.Tuesday:
-            case EDay.Wednesday:
-            case EDay.Thursday:
-            case EDay.Friday:
-                return true;
-            case EDay.Saturday:
-            case EDay.Sunday:
-                return false;
-            default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(day),
-                    day,
-                    "Schedule recommendations require a defined weekday.");
-        }
     }
 
     private void selectNextRecommendation()
@@ -706,7 +613,6 @@ internal sealed partial class PlannerWorkspaceViewModel
         raisePropertyChanged(nameof(IsScheduleEmpty));
         raisePropertyChanged(nameof(IsUnsatisfiedScheduleEmpty));
         raisePropertyChanged(nameof(HasUnsatisfiedPersonalSchedulePreview));
-        raisePropertyChanged(nameof(RecommendationInsight));
         raisePropertyChanged(nameof(EmptyScheduleTitle));
         raisePropertyChanged(nameof(EmptyScheduleMessage));
         mPreviousRecommendationCommand.NotifyCanExecuteChanged();
