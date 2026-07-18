@@ -16,7 +16,7 @@ internal sealed partial class ScheduleBoardView
     private const double SCHEDULE_CARD_RESPONSIBLE_PERSON_FONT_SIZE = 10.5;
     private const double SCHEDULE_CARD_RESPONSIBLE_PERSON_LINE_HEIGHT = 12.0;
     private const double SCHEDULE_CARD_PRIMARY_GAP = 7.0;
-    private const double SCHEDULE_CARD_SECONDARY_GAP = 2.0;
+    private const double SCHEDULE_CARD_SECONDARY_GAP = 1.75;
 
     private Grid createScheduleCardContent(ScheduleCardContent cardContent)
     {

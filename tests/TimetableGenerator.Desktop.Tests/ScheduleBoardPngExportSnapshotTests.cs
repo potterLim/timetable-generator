@@ -285,7 +285,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 Assert.Equal(7.0, exportCardTexts[1].Margin.Top);
                 Assert.Equal(14.0, exportCardTexts[1].LineHeight);
                 Assert.Equal(FontWeight.SemiBold, exportCardTexts[1].FontWeight);
-                Assert.Equal(2.0, exportCardTexts[2].Margin.Top);
+                Assert.Equal(1.75, exportCardTexts[2].Margin.Top);
                 Assert.Equal(12.0, exportCardTexts[2].LineHeight);
 
                 AvaloniaControlPngExporter exporter =

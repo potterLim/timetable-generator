@@ -913,7 +913,7 @@ public sealed class PersonalScheduleInteractionTests
             Assert.Equal(10.5, responsiblePerson.FontSize);
             Assert.Equal(12.0, responsiblePerson.LineHeight);
             Assert.Equal(FontWeight.Normal, responsiblePerson.FontWeight);
-            Assert.Equal(2.0, responsiblePerson.Margin.Top);
+            Assert.Equal(1.75, responsiblePerson.Margin.Top);
             Assert.Equal(TextAlignment.Center, responsiblePerson.TextAlignment);
 
             string? accessibleNameOrNull = AutomationProperties.GetName(scheduleCard);
@@ -959,7 +959,7 @@ public sealed class PersonalScheduleInteractionTests
             Assert.Equal(
                 new string[] { "사용자 경험 연구 정기 회의", "느헤미야홀 101호", "김교수" },
                 exportCardTexts.Select(getTextOrEmpty));
-            Assert.Equal(2.0, exportCardTexts[2].Margin.Top);
+            Assert.Equal(1.75, exportCardTexts[2].Margin.Top);
         }
         finally
         {
