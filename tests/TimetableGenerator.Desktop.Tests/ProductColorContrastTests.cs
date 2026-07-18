@@ -286,7 +286,7 @@ public sealed class ProductColorContrastTests
     }
 
     [AvaloniaFact]
-    public void CaptionCloseIconMeetsContrastOnRealHoverAndPressedFills()
+    public void CaptionCloseIconAndFocusMeetContrastOnRealInteractionFills()
     {
         ContrastRequirement[] contrastRequirements =
         {
@@ -305,6 +305,22 @@ public sealed class ProductColorContrastTests
             nonText(
                 ThemeVariant.Dark,
                 CAPTION_FOREGROUND,
+                CAPTION_CLOSE_PRESSED_BACKGROUND),
+            nonText(
+                ThemeVariant.Light,
+                FOCUS_ON_FILL_STROKE,
+                CAPTION_CLOSE_HOVER_BACKGROUND),
+            nonText(
+                ThemeVariant.Light,
+                FOCUS_ON_FILL_STROKE,
+                CAPTION_CLOSE_PRESSED_BACKGROUND),
+            nonText(
+                ThemeVariant.Dark,
+                FOCUS_ON_FILL_STROKE,
+                CAPTION_CLOSE_HOVER_BACKGROUND),
+            nonText(
+                ThemeVariant.Dark,
+                FOCUS_ON_FILL_STROKE,
                 CAPTION_CLOSE_PRESSED_BACKGROUND),
         };
 

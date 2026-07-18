@@ -39,6 +39,12 @@ public sealed class ScheduleBoardPngExportSnapshotTests
 {
     private const double EXPECTED_WEEKEND_EXPORT_SURFACE_MINIMUM_WIDTH = 996.0;
 
+    private enum EScheduleCardKind
+    {
+        Course,
+        Personal,
+    }
+
     [Fact]
     public void PngExportLayoutDefaultsToFourPm()
     {
@@ -391,26 +397,39 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     }
 
     [AvaloniaFact]
-    public void PointerOverCourseCardKeepsItsThemedBackgroundInBothModes()
+    public void ScheduleCardsUseSubtleInteractionFeedbackInBothModes()
     {
-        ScheduleEntry entry = createScheduleEntry(
+        ScheduleEntry courseEntry = createScheduleEntry(
             EDay.Monday,
             new AcademicPeriod(1));
+        ScheduleEntry personalScheduleEntry = createPersonalScheduleEntry();
         ScheduleBoardView scheduleBoard = createSourceBoard(
-            new ScheduleEntry[] { entry });
+            new ScheduleEntry[] { courseEntry, personalScheduleEntry });
         Window window = createWindow(scheduleBoard, ThemeVariant.Light);
 
         try
         {
             window.Show();
-            assertPointerOverCardBackground(
+            assertScheduleCardInteractionFeedback(
                 window,
                 scheduleBoard,
-                ThemeVariant.Light);
-            assertPointerOverCardBackground(
+                ThemeVariant.Light,
+                EScheduleCardKind.Course);
+            assertScheduleCardInteractionFeedback(
                 window,
                 scheduleBoard,
-                ThemeVariant.Dark);
+                ThemeVariant.Light,
+                EScheduleCardKind.Personal);
+            assertScheduleCardInteractionFeedback(
+                window,
+                scheduleBoard,
+                ThemeVariant.Dark,
+                EScheduleCardKind.Course);
+            assertScheduleCardInteractionFeedback(
+                window,
+                scheduleBoard,
+                ThemeVariant.Dark,
+                EScheduleCardKind.Personal);
         }
         finally
         {
@@ -466,6 +485,22 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             ECourseAccent.Blue);
     }
 
+    private static ScheduleEntry createPersonalScheduleEntry()
+    {
+        DailyTimeRange timeRange = new DailyTimeRange(
+            new ScheduleTime(8, 30),
+            new ScheduleTime(9, 45));
+        WeeklyTimeRange weeklyTimeRange = new WeeklyTimeRange(
+            EDay.Tuesday,
+            timeRange);
+        PersonalSchedule personalSchedule = new PersonalSchedule(
+            PersonalScheduleId.CreateNew(),
+            new PersonalScheduleTitle("상호작용 피드백 검증"),
+            new WeeklyTimeRange[] { weeklyTimeRange },
+            PersonalScheduleDetails.CreateEmpty());
+        return new PersonalScheduleEntry(personalSchedule, weeklyTimeRange);
+    }
+
     private static Grid findBoardGrid(Control surface)
     {
         Grid? boardGridOrNull = surface.GetVisualDescendants()
@@ -507,24 +542,65 @@ public sealed class ScheduleBoardPngExportSnapshotTests
         }
     }
 
-    private static void assertPointerOverCardBackground(
+    private static void assertScheduleCardInteractionFeedback(
         Window window,
         ScheduleBoardView scheduleBoard,
-        ThemeVariant themeVariant)
+        ThemeVariant themeVariant,
+        EScheduleCardKind cardKind)
     {
         window.RequestedThemeVariant = themeVariant;
         Dispatcher.UIThread.RunJobs();
         Dispatcher.UIThread.RunJobs();
 
         Grid boardGrid = findBoardGrid(scheduleBoard.PngExportSurface);
-        Button scheduleCard = Assert.Single(
-            boardGrid.Children.OfType<Button>());
+        string cardClass;
+        string backgroundResourceKey;
+        switch (cardKind)
+        {
+            case EScheduleCardKind.Course:
+                cardClass = "blue";
+                backgroundResourceKey = "CourseBlueBackgroundBrush";
+                break;
+            case EScheduleCardKind.Personal:
+                cardClass = "personal";
+                backgroundResourceKey = "PersonalScheduleBackgroundBrush";
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(
+                    nameof(cardKind),
+                    cardKind,
+                    "Unknown schedule card kind.");
+        }
+
+        Button scheduleCard = boardGrid.Children
+            .OfType<Button>()
+            .Single(candidate => candidate.Classes.Contains(cardClass));
+        Border scheduleCardSurface = scheduleCard.GetVisualDescendants()
+            .OfType<Border>()
+            .Single(candidate => candidate.Name == "PART_ScheduleCardSurface");
+        Border interactionOverlay = scheduleCard.GetVisualDescendants()
+            .OfType<Border>()
+            .Single(candidate => candidate.Name == "PART_InteractionOverlay");
         ContentPresenter contentPresenter = scheduleCard.GetVisualDescendants()
             .OfType<ContentPresenter>()
             .Single(candidate => candidate.Name == "PART_ContentPresenter");
         Color expectedBackground = findRequiredThemeColor(
-            "CourseBlueBackgroundBrush",
+            backgroundResourceKey,
             themeVariant);
+        Color expectedOverlayColor = findRequiredThemeColor(
+            "TextPrimaryBrush",
+            themeVariant);
+
+        Assert.Equal(
+            expectedBackground,
+            getRequiredSolidColor(scheduleCard.Background));
+        Assert.Equal(
+            expectedBackground,
+            getRequiredSolidColor(scheduleCardSurface.Background));
+        Assert.Null(contentPresenter.Background);
+        Assert.Equal(expectedOverlayColor, getRequiredSolidColor(
+            interactionOverlay.Background));
+        Assert.Equal(0.0, interactionOverlay.Opacity);
 
         Point? cardOriginOrNull = scheduleCard.TranslatePoint(
             new Point(0.0, 0.0),
@@ -549,7 +625,40 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             getRequiredSolidColor(scheduleCard.Background));
         Assert.Equal(
             expectedBackground,
-            getRequiredSolidColor(contentPresenter.Background));
+            getRequiredSolidColor(scheduleCardSurface.Background));
+        Assert.Equal(0.04, interactionOverlay.Opacity);
+
+        window.MouseDown(
+            cardCenter,
+            MouseButton.Left,
+            RawInputModifiers.None);
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Equal(
+            expectedBackground,
+            getRequiredSolidColor(scheduleCard.Background));
+        Assert.Equal(
+            expectedBackground,
+            getRequiredSolidColor(scheduleCardSurface.Background));
+        Assert.Equal(0.08, interactionOverlay.Opacity);
+        ITransform? pressedTransformOrNull = scheduleCard.RenderTransform;
+        Assert.NotNull(pressedTransformOrNull);
+        if (pressedTransformOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The pressed schedule card transform was not applied.");
+        }
+
+        Assert.Equal(0.99, pressedTransformOrNull.Value.M11, 3);
+        Assert.Equal(0.99, pressedTransformOrNull.Value.M22, 3);
+
+        Point outsideCard = new Point(2.0, 2.0);
+        window.MouseMove(outsideCard, RawInputModifiers.None);
+        window.MouseUp(
+            outsideCard,
+            MouseButton.Left,
+            RawInputModifiers.None);
+        Dispatcher.UIThread.RunJobs();
     }
 
     private static Color findRequiredThemeColor(

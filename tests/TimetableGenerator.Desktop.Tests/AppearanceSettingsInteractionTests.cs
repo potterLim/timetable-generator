@@ -104,6 +104,143 @@ public sealed class AppearanceSettingsInteractionTests
     }
 
     [AvaloniaFact]
+    public void ThemeOptionsUseCompleteVisualStatesAcrossThemes()
+    {
+        ControlledProductAppearanceSettingsStore settingsStore =
+            new ControlledProductAppearanceSettingsStore(
+                ProductAppearanceSettings.CreateDefault());
+        ProductAppearanceViewModel appearance =
+            new ProductAppearanceViewModel(
+                settingsStore,
+                new RecordingProductThemeVariantService());
+        AppearanceSettingsView view = new AppearanceSettingsView();
+        view.DataContext = appearance;
+        Window window = new Window();
+        window.Width = 320.0;
+        window.Height = 280.0;
+        window.Content = view;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            RadioButton systemOption = findRequiredControl<RadioButton>(
+                view,
+                "SystemThemeOption");
+            RadioButton darkOption = findRequiredControl<RadioButton>(
+                view,
+                "DarkThemeOption");
+            Border systemSurface = findAppearanceOptionSurface(systemOption);
+            Border darkSurface = findAppearanceOptionSurface(darkOption);
+            ThemeVariant[] themeVariants =
+            {
+                ThemeVariant.Light,
+                ThemeVariant.Dark,
+            };
+
+            foreach (ThemeVariant themeVariant in themeVariants)
+            {
+                window.RequestedThemeVariant = themeVariant;
+                systemOption.IsEnabled = true;
+                darkOption.IsEnabled = true;
+                systemOption.IsChecked = true;
+                movePointerOutsideAppearanceOptions(window);
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.Equal(true, systemOption.IsChecked);
+                Assert.Equal(false, darkOption.IsChecked);
+                assertSurfaceUsesResource(
+                    systemSurface,
+                    "SelectionSurfaceBrush",
+                    themeVariant);
+                assertTransparentSurface(darkSurface);
+
+                Point darkOptionCenter = findControlCenter(window, darkOption);
+                window.MouseMove(darkOptionCenter, RawInputModifiers.None);
+                Dispatcher.UIThread.RunJobs();
+                assertSurfaceUsesResource(
+                    darkSurface,
+                    "HoverSurfaceBrush",
+                    themeVariant);
+                window.MouseDown(
+                    darkOptionCenter,
+                    MouseButton.Left,
+                    RawInputModifiers.None);
+                Dispatcher.UIThread.RunJobs();
+                assertSurfaceUsesResource(
+                    darkSurface,
+                    "PressedSurfaceBrush",
+                    themeVariant);
+                window.MouseUp(
+                    darkOptionCenter,
+                    MouseButton.Left,
+                    RawInputModifiers.None);
+
+                systemOption.IsChecked = true;
+                movePointerOutsideAppearanceOptions(window);
+                Assert.True(systemOption.Focus(NavigationMethod.Tab));
+                Assert.True(darkOption.Focus(NavigationMethod.Tab));
+                Dispatcher.UIThread.RunJobs();
+                assertTransparentSurface(darkSurface);
+                assertFocusVisuals(darkOption, themeVariant);
+
+                darkOption.IsEnabled = false;
+                window.MouseMove(darkOptionCenter, RawInputModifiers.None);
+                Dispatcher.UIThread.RunJobs();
+                Assert.False(darkOption.IsEffectivelyEnabled);
+                assertTransparentSurface(darkSurface);
+
+                Point systemOptionCenter = findControlCenter(
+                    window,
+                    systemOption);
+                window.MouseMove(systemOptionCenter, RawInputModifiers.None);
+                Dispatcher.UIThread.RunJobs();
+                assertSurfaceUsesResource(
+                    systemSurface,
+                    "SelectionHoverSurfaceBrush",
+                    themeVariant);
+                window.MouseDown(
+                    systemOptionCenter,
+                    MouseButton.Left,
+                    RawInputModifiers.None);
+                Dispatcher.UIThread.RunJobs();
+                assertSurfaceUsesResource(
+                    systemSurface,
+                    "SelectionPressedSurfaceBrush",
+                    themeVariant);
+                window.MouseUp(
+                    systemOptionCenter,
+                    MouseButton.Left,
+                    RawInputModifiers.None);
+
+                movePointerOutsideAppearanceOptions(window);
+                darkOption.IsEnabled = true;
+                Assert.True(darkOption.Focus(NavigationMethod.Tab));
+                Assert.True(systemOption.Focus(NavigationMethod.Tab));
+                Dispatcher.UIThread.RunJobs();
+                assertSurfaceUsesResource(
+                    systemSurface,
+                    "SelectionSurfaceBrush",
+                    themeVariant);
+                assertFocusVisuals(systemOption, themeVariant);
+
+                systemOption.IsEnabled = false;
+                window.MouseMove(systemOptionCenter, RawInputModifiers.None);
+                Dispatcher.UIThread.RunJobs();
+                Assert.False(systemOption.IsEffectivelyEnabled);
+                assertSurfaceUsesResource(
+                    systemSurface,
+                    "SelectionSurfaceBrush",
+                    themeVariant);
+            }
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public async Task PersistenceFailureOffersAWorkingRetryActionAsync()
     {
         ControlledProductAppearanceSettingsStore settingsStore =
@@ -244,6 +381,68 @@ public sealed class AppearanceSettingsInteractionTests
                 "SelectionHoverSurfaceBrush",
                 option.ActualThemeVariant),
             getRequiredSolidColor(rootBorder.Background));
+    }
+
+    private static Border findAppearanceOptionSurface(RadioButton option)
+    {
+        return option.GetVisualDescendants()
+            .OfType<Border>()
+            .Single(candidate => candidate.Name == "RootBorder");
+    }
+
+    private static Point findControlCenter(Window window, Control control)
+    {
+        Point? originOrNull = control.TranslatePoint(
+            new Point(0.0, 0.0),
+            window);
+        Assert.NotNull(originOrNull);
+        if (originOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The appearance option position could not be resolved.");
+        }
+
+        return originOrNull.Value
+            + new Vector(control.Bounds.Width / 2.0, control.Bounds.Height / 2.0);
+    }
+
+    private static void movePointerOutsideAppearanceOptions(Window window)
+    {
+        window.MouseMove(new Point(310.0, 270.0), RawInputModifiers.None);
+        Dispatcher.UIThread.RunJobs();
+    }
+
+    private static void assertFocusVisuals(
+        RadioButton option,
+        ThemeVariant themeVariant)
+    {
+        Assert.Equal(new Thickness(2.0), option.BorderThickness);
+        Assert.Equal(
+            getRequiredApplicationColor(
+                "ProductFocusStrokeBrush",
+                themeVariant),
+            getRequiredSolidColor(option.BorderBrush));
+    }
+
+    private static void assertSurfaceUsesResource(
+        Border surface,
+        string resourceKey,
+        ThemeVariant themeVariant)
+    {
+        Assert.Equal(
+            getRequiredApplicationColor(resourceKey, themeVariant),
+            getRequiredSolidColor(surface.Background));
+    }
+
+    private static void assertTransparentSurface(Border surface)
+    {
+        IBrush? backgroundOrNull = surface.Background;
+        if (backgroundOrNull == null)
+        {
+            return;
+        }
+
+        Assert.Equal(Colors.Transparent, getRequiredSolidColor(backgroundOrNull));
     }
 
     private static Color getRequiredApplicationColor(

@@ -156,10 +156,8 @@
           </Button>
           <Button
               x:Name="WindowCloseButton"
-              Classes="caption-button"
+              Classes="caption-button caption-close-button"
               Theme="{StaticResource ProductCaptionButtonTheme}"
-              Background="{DynamicResource CaptionCloseButtonHoverBackgroundBrush}"
-              BorderBrush="{DynamicResource CaptionCloseButtonPressedBackgroundBrush}"
               Click="onWindowCloseButtonClick"
               AutomationProperties.AutomationId="WindowCloseButton"
               AutomationProperties.Name="닫기"

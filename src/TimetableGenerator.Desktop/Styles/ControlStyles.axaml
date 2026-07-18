@@ -222,6 +222,25 @@
     <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
   </Style>
 
+  <Style Selector="Button.outline:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
+  </Style>
+
+  <Style Selector="Button.outline:pressed">
+    <Setter Property="Background" Value="{DynamicResource PressedSurfaceBrush}" />
+  </Style>
+
+  <Style Selector="Button.outline:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource PressedSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
+  </Style>
+
+  <Style Selector="Button.outline:disabled /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource ControlSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
+  </Style>
+
   <Style Selector="Button.subtle">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderBrush" Value="Transparent" />
@@ -237,6 +256,11 @@
   </Style>
 
   <Style Selector="Button:focus-visible">
+    <Setter Property="BorderBrush" Value="{DynamicResource ProductFocusStrokeBrush}" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
+
+  <Style Selector="Button.outline:focus-visible /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="BorderBrush" Value="{DynamicResource ProductFocusStrokeBrush}" />
     <Setter Property="BorderThickness" Value="2" />
   </Style>
@@ -302,6 +326,18 @@
   <Style Selector="RadioButton.appearance-option:checked">
     <Setter Property="Background" Value="{DynamicResource SelectionSurfaceBrush}" />
     <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
+  <Style Selector="RadioButton.appearance-option:pointerover /template/ Border#RootBorder">
+    <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
+  </Style>
+
+  <Style Selector="RadioButton.appearance-option:pressed">
+    <Setter Property="Background" Value="{DynamicResource PressedSurfaceBrush}" />
+  </Style>
+
+  <Style Selector="RadioButton.appearance-option:pressed /template/ Border#RootBorder">
+    <Setter Property="Background" Value="{DynamicResource PressedSurfaceBrush}" />
   </Style>
 
   <Style Selector="RadioButton.appearance-option:checked /template/ Border#RootBorder">

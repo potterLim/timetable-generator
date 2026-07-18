@@ -43,12 +43,24 @@ public sealed class ProductControlVisualStateTests
         new ColorToken("ControlSurfaceBrush");
     private static readonly ColorToken CONTROL_HOVER_SURFACE =
         new ColorToken("ControlHoverSurfaceBrush");
+    private static readonly ColorToken HOVER_SURFACE =
+        new ColorToken("HoverSurfaceBrush");
+    private static readonly ColorToken PRESSED_SURFACE =
+        new ColorToken("PressedSurfaceBrush");
+    private static readonly ColorToken PRODUCT_FOCUS_STROKE =
+        new ColorToken("ProductFocusStrokeBrush");
     private static readonly ColorToken CAPTION_CLOSE_HOVER_BACKGROUND =
         new ColorToken("CaptionCloseButtonHoverBackgroundBrush");
     private static readonly ColorToken CAPTION_CLOSE_PRESSED_BACKGROUND =
         new ColorToken("CaptionCloseButtonPressedBackgroundBrush");
+    private static readonly ColorToken CAPTION_BACKGROUND =
+        new ColorToken("CaptionButtonBackground");
+    private static readonly ColorToken CAPTION_PRESSED_BACKGROUND =
+        new ColorToken("CaptionButtonBorderBrush");
     private static readonly ColorToken CAPTION_FOREGROUND =
         new ColorToken("CaptionButtonForeground");
+    private static readonly ColorToken FOCUS_ON_FILL_STROKE =
+        new ColorToken("ProductFocusOnFillStrokeBrush");
 
     [AvaloniaFact]
     public void ProductPrimaryActionUsesFilledBrandColorForApplicationDarkTheme()
@@ -169,6 +181,103 @@ public sealed class ProductControlVisualStateTests
                 primaryAction.Background,
                 PRIMARY_ACTION_FILL,
                 ThemeVariant.Dark);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void OutlineActionUsesCompleteVisualStatesAcrossThemes()
+    {
+        Button outlineAction = createButton(OUTLINE_ACTION_STYLE);
+        Button focusAnchor = new Button();
+        focusAnchor.Content = "focus anchor";
+        StackPanel controls = new StackPanel();
+        controls.Spacing = 8.0;
+        controls.Children.Add(outlineAction);
+        controls.Children.Add(focusAnchor);
+        Border layoutSurface = new Border();
+        layoutSurface.Padding = new Thickness(40.0);
+        layoutSurface.Child = controls;
+        Window window = new Window();
+        window.Width = 280.0;
+        window.Height = 140.0;
+        window.Content = layoutSurface;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            ThemeVariant[] themeVariants =
+            {
+                ThemeVariant.Light,
+                ThemeVariant.Dark,
+            };
+            foreach (ThemeVariant themeVariant in themeVariants)
+            {
+                window.RequestedThemeVariant = themeVariant;
+                outlineAction.IsEnabled = true;
+                window.MouseMove(new Point(1.0, 1.0), RawInputModifiers.None);
+                Dispatcher.UIThread.RunJobs();
+
+                assertOutlineActionVisuals(
+                    outlineAction,
+                    themeVariant,
+                    CONTROL_SURFACE,
+                    CONTROL_BORDER,
+                    new Thickness(1.0));
+
+                Point actionCenter = findControlCenter(window, outlineAction);
+                window.MouseMove(actionCenter, RawInputModifiers.None);
+                Dispatcher.UIThread.RunJobs();
+                assertOutlineActionVisuals(
+                    outlineAction,
+                    themeVariant,
+                    HOVER_SURFACE,
+                    CONTROL_BORDER,
+                    new Thickness(1.0));
+
+                window.MouseDown(
+                    actionCenter,
+                    MouseButton.Left,
+                    RawInputModifiers.None);
+                Dispatcher.UIThread.RunJobs();
+                assertOutlineActionVisuals(
+                    outlineAction,
+                    themeVariant,
+                    PRESSED_SURFACE,
+                    CONTROL_BORDER,
+                    new Thickness(1.0));
+                window.MouseUp(
+                    actionCenter,
+                    MouseButton.Left,
+                    RawInputModifiers.None);
+
+                window.MouseMove(new Point(1.0, 1.0), RawInputModifiers.None);
+                Assert.True(focusAnchor.Focus(NavigationMethod.Tab));
+                Assert.True(outlineAction.Focus(NavigationMethod.Tab));
+                Dispatcher.UIThread.RunJobs();
+                assertOutlineActionVisuals(
+                    outlineAction,
+                    themeVariant,
+                    CONTROL_SURFACE,
+                    PRODUCT_FOCUS_STROKE,
+                    new Thickness(2.0));
+
+                outlineAction.IsEnabled = false;
+                window.MouseMove(actionCenter, RawInputModifiers.None);
+                Dispatcher.UIThread.RunJobs();
+                Assert.False(outlineAction.IsEffectivelyEnabled);
+                assertOutlineActionVisuals(
+                    outlineAction,
+                    themeVariant,
+                    CONTROL_SURFACE,
+                    CONTROL_BORDER,
+                    new Thickness(1.0));
+            }
         }
         finally
         {
@@ -302,7 +411,35 @@ public sealed class ProductControlVisualStateTests
     }
 
     [AvaloniaFact]
-    public void ProductCaptionButtonUsesThirtyPixelCenteredGeometry()
+    public void ProductCaptionButtonPreservesCenteredGeometryAcrossVisualStates()
+    {
+        ThemeVariant[] themeVariants =
+        {
+            ThemeVariant.Light,
+            ThemeVariant.Dark,
+        };
+        foreach (ThemeVariant themeVariant in themeVariants)
+        {
+            assertCaptionButtonVisualStates(themeVariant);
+        }
+    }
+
+    [AvaloniaFact]
+    public void CaptionCloseButtonRendersAccessibleStatesAcrossThemes()
+    {
+        ThemeVariant[] themeVariants =
+        {
+            ThemeVariant.Light,
+            ThemeVariant.Dark,
+        };
+        foreach (ThemeVariant themeVariant in themeVariants)
+        {
+            assertCaptionCloseButtonVisualStates(themeVariant);
+        }
+    }
+
+    private static void assertCaptionButtonVisualStates(
+        ThemeVariant themeVariant)
     {
         Border glyph = new Border();
         glyph.Width = 11.0;
@@ -317,12 +454,13 @@ public sealed class ProductControlVisualStateTests
         captionButton.Classes.Add("caption-button");
         captionButton.Theme = findRequiredControlTheme(
             CAPTION_BUTTON_THEME,
-            ThemeVariant.Light);
+            themeVariant);
         captionButton.Content = glyphViewbox;
 
         Window window = new Window();
         window.Width = 120.0;
         window.Height = 80.0;
+        window.RequestedThemeVariant = themeVariant;
         window.Content = captionButton;
 
         try
@@ -345,6 +483,66 @@ public sealed class ProductControlVisualStateTests
                 captionButton,
                 captionButton,
                 glyphViewbox);
+
+            Rect initialButtonBounds = captionButton.Bounds;
+            Point initialGlyphCenter = findControlCenter(window, glyphViewbox);
+            ContentPresenter captionSurface = captionButton
+                .GetVisualDescendants()
+                .OfType<ContentPresenter>()
+                .Single(control => control.Name == "PART_ContentPresenter");
+
+            Assert.True(captionButton.Focus(NavigationMethod.Tab));
+            Dispatcher.UIThread.RunJobs();
+            assertButtonBrush(
+                captionSurface.BorderBrush,
+                PRODUCT_FOCUS_STROKE,
+                themeVariant);
+            Assert.Equal(
+                new Thickness(2.0),
+                captionSurface.BorderThickness);
+            assertCaptionGeometryIsUnchanged(
+                window,
+                captionButton,
+                glyphViewbox,
+                initialButtonBounds,
+                initialGlyphCenter);
+
+            Point captionButtonCenter = findControlCenter(window, captionButton);
+            window.MouseMove(
+                captionButtonCenter,
+                RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
+            assertButtonBrush(
+                captionSurface.Background,
+                CAPTION_BACKGROUND,
+                themeVariant);
+            assertCaptionGeometryIsUnchanged(
+                window,
+                captionButton,
+                glyphViewbox,
+                initialButtonBounds,
+                initialGlyphCenter);
+
+            window.MouseDown(
+                captionButtonCenter,
+                MouseButton.Left,
+                RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
+            assertButtonBrush(
+                captionSurface.Background,
+                CAPTION_PRESSED_BACKGROUND,
+                themeVariant);
+            assertCaptionGeometryIsUnchanged(
+                window,
+                captionButton,
+                glyphViewbox,
+                initialButtonBounds,
+                initialGlyphCenter);
+            window.MouseUp(
+                captionButtonCenter,
+                MouseButton.Left,
+                RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
         }
         finally
         {
@@ -352,19 +550,14 @@ public sealed class ProductControlVisualStateTests
         }
     }
 
-    [AvaloniaFact]
-    public void DarkCaptionCloseButtonRendersTheAccessiblePressedComposite()
+    private static void assertCaptionCloseButtonVisualStates(
+        ThemeVariant themeVariant)
     {
         Button closeButton = new Button();
+        closeButton.Classes.Add("caption-close-button");
         closeButton.Theme = findRequiredControlTheme(
             CAPTION_BUTTON_THEME,
-            ThemeVariant.Dark);
-        closeButton.Background = findRequiredThemeBrush(
-            CAPTION_CLOSE_HOVER_BACKGROUND,
-            ThemeVariant.Dark);
-        closeButton.BorderBrush = findRequiredThemeBrush(
-            CAPTION_CLOSE_PRESSED_BACKGROUND,
-            ThemeVariant.Dark);
+            themeVariant);
         Path closeGlyph = new Path();
         closeGlyph.Width = 11.0;
         closeGlyph.Height = 11.0;
@@ -375,11 +568,11 @@ public sealed class ProductControlVisualStateTests
             "l879 879l145 -145z");
         closeGlyph.Fill = findRequiredThemeBrush(
             CAPTION_FOREGROUND,
-            ThemeVariant.Dark);
+            themeVariant);
         closeButton.Content = closeGlyph;
 
         Window window = new Window();
-        window.RequestedThemeVariant = ThemeVariant.Dark;
+        window.RequestedThemeVariant = themeVariant;
         window.Content = closeButton;
 
         try
@@ -390,6 +583,24 @@ public sealed class ProductControlVisualStateTests
             ContentPresenter closeSurface = closeButton.GetVisualDescendants()
                 .OfType<ContentPresenter>()
                 .Single(control => control.Name == "PART_ContentPresenter");
+            Rect initialButtonBounds = closeButton.Bounds;
+            Point initialGlyphCenter = findControlCenter(window, closeGlyph);
+
+            Assert.True(closeButton.Focus(NavigationMethod.Tab));
+            Dispatcher.UIThread.RunJobs();
+            assertButtonBrush(
+                closeSurface.BorderBrush,
+                PRODUCT_FOCUS_STROKE,
+                themeVariant);
+            Assert.Equal(
+                new Thickness(2.0),
+                closeSurface.BorderThickness);
+            assertCaptionGeometryIsUnchanged(
+                window,
+                closeButton,
+                closeGlyph,
+                initialButtonBounds,
+                initialGlyphCenter);
 
             window.MouseMove(
                 closeButtonCenter,
@@ -398,7 +609,17 @@ public sealed class ProductControlVisualStateTests
             assertButtonBrush(
                 closeSurface.Background,
                 CAPTION_CLOSE_HOVER_BACKGROUND,
-                ThemeVariant.Dark);
+                themeVariant);
+            assertButtonBrush(
+                closeSurface.BorderBrush,
+                FOCUS_ON_FILL_STROKE,
+                themeVariant);
+            assertCaptionGeometryIsUnchanged(
+                window,
+                closeButton,
+                closeGlyph,
+                initialButtonBounds,
+                initialGlyphCenter);
 
             window.MouseDown(
                 closeButtonCenter,
@@ -408,16 +629,50 @@ public sealed class ProductControlVisualStateTests
             assertButtonBrush(
                 closeSurface.Background,
                 CAPTION_CLOSE_PRESSED_BACKGROUND,
-                ThemeVariant.Dark);
+                themeVariant);
+            assertButtonBrush(
+                closeSurface.BorderBrush,
+                FOCUS_ON_FILL_STROKE,
+                themeVariant);
             assertButtonBrush(
                 closeGlyph.Fill,
                 CAPTION_FOREGROUND,
-                ThemeVariant.Dark);
+                themeVariant);
+            assertCaptionGeometryIsUnchanged(
+                window,
+                closeButton,
+                closeGlyph,
+                initialButtonBounds,
+                initialGlyphCenter);
+            window.MouseUp(
+                closeButtonCenter,
+                MouseButton.Left,
+                RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
         }
         finally
         {
             window.Close();
         }
+    }
+
+    private static void assertCaptionGeometryIsUnchanged(
+        Window window,
+        Button captionButton,
+        Control glyph,
+        Rect expectedButtonBounds,
+        Point expectedGlyphCenter)
+    {
+        Assert.Equal(expectedButtonBounds, captionButton.Bounds);
+        Point actualGlyphCenter = findControlCenter(window, glyph);
+        Assert.InRange(
+            Math.Abs(actualGlyphCenter.X - expectedGlyphCenter.X),
+            0.0,
+            0.01);
+        Assert.InRange(
+            Math.Abs(actualGlyphCenter.Y - expectedGlyphCenter.Y),
+            0.0,
+            0.01);
     }
 
     private static Button createButton(ControlStyleClass styleClass)
@@ -509,6 +764,24 @@ public sealed class ProductControlVisualStateTests
             contentPresenter.Background,
             expectedColorToken,
             themeVariant);
+    }
+
+    private static void assertOutlineActionVisuals(
+        Button button,
+        ThemeVariant themeVariant,
+        ColorToken backgroundToken,
+        ColorToken borderToken,
+        Thickness borderThickness)
+    {
+        assertButtonBrush(button.Background, backgroundToken, themeVariant);
+        assertButtonBrush(button.BorderBrush, borderToken, themeVariant);
+        Assert.Equal(borderThickness, button.BorderThickness);
+        ContentPresenter presenter = button.GetVisualDescendants()
+            .OfType<ContentPresenter>()
+            .Single(candidate => candidate.Name == "PART_ContentPresenter");
+        assertButtonBrush(presenter.Background, backgroundToken, themeVariant);
+        assertButtonBrush(presenter.BorderBrush, borderToken, themeVariant);
+        Assert.Equal(borderThickness, presenter.BorderThickness);
     }
 
     private static SolidColorBrush findRequiredThemeBrush(

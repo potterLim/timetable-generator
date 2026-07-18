@@ -24,16 +24,34 @@
         <ContentPresenter
             Name="PART_ContentPresenter"
             Background="Transparent"
+            BorderBrush="{TemplateBinding BorderBrush}"
+            BorderThickness="{TemplateBinding BorderThickness}"
             Content="{TemplateBinding Content}"
             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
       </ControlTemplate>
     </Setter>
     <Style Selector="^:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{TemplateBinding Background}" />
+      <Setter Property="Background" Value="{DynamicResource CaptionButtonBackground}" />
     </Style>
     <Style Selector="^:pressed /template/ ContentPresenter">
-      <Setter Property="Background" Value="{TemplateBinding BorderBrush}" />
+      <Setter Property="Background" Value="{DynamicResource CaptionButtonBorderBrush}" />
+    </Style>
+    <Style Selector="^.caption-close-button:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource CaptionCloseButtonHoverBackgroundBrush}" />
+    </Style>
+    <Style Selector="^.caption-close-button:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource CaptionCloseButtonPressedBackgroundBrush}" />
+    </Style>
+    <Style Selector="^:focus-visible /template/ ContentPresenter">
+      <Setter Property="BorderBrush" Value="{DynamicResource ProductFocusStrokeBrush}" />
+      <Setter Property="BorderThickness" Value="2" />
+    </Style>
+    <Style Selector="^.caption-close-button:focus-visible:pointerover /template/ ContentPresenter">
+      <Setter Property="BorderBrush" Value="{DynamicResource ProductFocusOnFillStrokeBrush}" />
+    </Style>
+    <Style Selector="^.caption-close-button:focus-visible:pressed /template/ ContentPresenter">
+      <Setter Property="BorderBrush" Value="{DynamicResource ProductFocusOnFillStrokeBrush}" />
     </Style>
   </ControlTheme>
 
@@ -115,9 +133,7 @@
                 </Button>
                 <Button
                     x:Name="PART_CloseButton"
-                    Classes="caption-button"
-                    Background="{DynamicResource CaptionCloseButtonHoverBackgroundBrush}"
-                    BorderBrush="{DynamicResource CaptionCloseButtonPressedBackgroundBrush}"
+                    Classes="caption-button caption-close-button"
                     Theme="{StaticResource ProductCaptionButtonTheme}"
                     WindowDecorationProperties.ElementRole="CloseButton">
                   <Viewbox
@@ -166,9 +182,7 @@
                 </Button>
                 <Button
                     x:Name="PART_PopoverCloseButton"
-                    Classes="caption-button"
-                    Background="{DynamicResource CaptionCloseButtonHoverBackgroundBrush}"
-                    BorderBrush="{DynamicResource CaptionCloseButtonPressedBackgroundBrush}"
+                    Classes="caption-button caption-close-button"
                     Theme="{StaticResource ProductCaptionButtonTheme}"
                     WindowDecorationProperties.ElementRole="CloseButton">
                   <Viewbox

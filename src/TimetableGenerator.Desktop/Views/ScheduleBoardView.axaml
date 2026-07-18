@@ -8,23 +8,45 @@
     AutomationProperties.Name="주간 시간표">
   <UserControl.Resources>
     <ControlTheme x:Key="ProductScheduleCardButtonTheme" TargetType="Button">
+      <Setter Property="RenderTransform" Value="none" />
+      <Setter Property="RenderTransformOrigin" Value="50%,50%" />
       <Setter Property="Template">
         <ControlTemplate>
-          <ContentPresenter
-              x:Name="PART_ContentPresenter"
+          <Border
+              x:Name="PART_ScheduleCardSurface"
               Background="{TemplateBinding Background}"
               BorderBrush="{TemplateBinding BorderBrush}"
               BorderThickness="{TemplateBinding BorderThickness}"
-              CornerRadius="{TemplateBinding CornerRadius}"
-              Content="{TemplateBinding Content}"
-              ContentTemplate="{TemplateBinding ContentTemplate}"
-              Foreground="{TemplateBinding Foreground}"
-              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-              Padding="{TemplateBinding Padding}"
-              RecognizesAccessKey="True"
-              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+              ClipToBounds="True"
+              CornerRadius="{TemplateBinding CornerRadius}">
+            <Grid>
+              <Border
+                  x:Name="PART_InteractionOverlay"
+                  Background="{DynamicResource TextPrimaryBrush}"
+                  IsHitTestVisible="False"
+                  Opacity="0" />
+              <ContentPresenter
+                  x:Name="PART_ContentPresenter"
+                  Content="{TemplateBinding Content}"
+                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                  Foreground="{TemplateBinding Foreground}"
+                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                  Padding="{TemplateBinding Padding}"
+                  RecognizesAccessKey="True"
+                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+            </Grid>
+          </Border>
         </ControlTemplate>
       </Setter>
+      <Style Selector="^:pointerover /template/ Border#PART_InteractionOverlay">
+        <Setter Property="Opacity" Value="0.04" />
+      </Style>
+      <Style Selector="^:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.99)" />
+      </Style>
+      <Style Selector="^:pressed /template/ Border#PART_InteractionOverlay">
+        <Setter Property="Opacity" Value="0.08" />
+      </Style>
     </ControlTheme>
   </UserControl.Resources>
   <UserControl.Styles>
