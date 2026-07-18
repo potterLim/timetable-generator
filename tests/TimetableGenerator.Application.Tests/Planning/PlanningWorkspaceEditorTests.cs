@@ -305,6 +305,62 @@ public sealed class PlanningWorkspaceEditorTests
     }
 
     [TestMethod]
+    public void ClearPlanContentPreservesPlanIdentityAndClearsEveryContentKind()
+    {
+        CourseChoiceGroup choiceGroup =
+            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                "AAA10001",
+                "01",
+                "02");
+        UnscheduledOfferingSelection unscheduledSelection =
+            ScheduleRecommendationTestData.CreateUnscheduledSelection(
+                "BBB10001",
+                "01");
+        PersonalSchedule personalSchedule = createPersonalSchedule(
+            PersonalScheduleId.CreateNew(),
+            "고정 일정");
+        PlanningPlan populatedPlan = createPlan(
+            "유지할 계획 이름",
+            new CourseChoiceGroup[] { choiceGroup },
+            new UnscheduledOfferingSelection[] { unscheduledSelection },
+            new PersonalSchedule[] { personalSchedule });
+        OfferingId bookmarkedOfferingId =
+            choiceGroup.CourseCandidates[0].OfferingCandidates[1].OfferingId;
+        PlanningPlan bookmarkedPlan = new PlanningPlan(
+            populatedPlan.Id,
+            populatedPlan.Name,
+            populatedPlan.CatalogBinding,
+            populatedPlan.Content,
+            new ScheduleRecommendationBookmark(
+                new OfferingId[] { bookmarkedOfferingId }));
+        PlanningPlan untouchedPlan = createPlan("다른 계획");
+        PlanningWorkspace workspace = new PlanningWorkspace(
+            bookmarkedPlan.Id,
+            new PlanningPlan[] { bookmarkedPlan, untouchedPlan });
+        PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
+
+        PlanningWorkspace result = editor.ClearPlanContent(
+            workspace,
+            bookmarkedPlan.Id);
+
+        PlanningPlan clearedPlan = result.GetActivePlan();
+        Assert.AreEqual(workspace.ActivePlanId, result.ActivePlanId);
+        Assert.HasCount(2, result.Plans);
+        Assert.AreEqual(bookmarkedPlan.Id, clearedPlan.Id);
+        Assert.AreSame(bookmarkedPlan.Name, clearedPlan.Name);
+        Assert.AreSame(bookmarkedPlan.CatalogBinding, clearedPlan.CatalogBinding);
+        Assert.IsEmpty(clearedPlan.CourseChoiceGroups);
+        Assert.IsEmpty(clearedPlan.UnscheduledOfferingSelections);
+        Assert.IsEmpty(clearedPlan.PersonalSchedules);
+        Assert.IsNull(clearedPlan.LastViewedRecommendationOrNull);
+        Assert.AreSame(untouchedPlan, result.Plans[1]);
+        Assert.HasCount(1, bookmarkedPlan.CourseChoiceGroups);
+        Assert.HasCount(1, bookmarkedPlan.UnscheduledOfferingSelections);
+        Assert.HasCount(1, bookmarkedPlan.PersonalSchedules);
+        Assert.IsNotNull(bookmarkedPlan.LastViewedRecommendationOrNull);
+    }
+
+    [TestMethod]
     public void RemoveActivePlanSelectsItsNearestRemainingNeighbor()
     {
         PlanningPlan firstPlan = createPlan("첫 계획");

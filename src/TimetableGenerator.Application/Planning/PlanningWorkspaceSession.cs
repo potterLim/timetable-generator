@@ -102,6 +102,14 @@ public sealed class PlanningWorkspaceSession
         return mWorkspace;
     }
 
+    public PlanningWorkspace ClearActivePlanContent()
+    {
+        mWorkspace = mEditor.ClearPlanContent(
+            mWorkspace,
+            mWorkspace.ActivePlanId);
+        return mWorkspace;
+    }
+
     public PlanningWorkspace AddCourse(PlanningCourseSelection selection)
     {
         if (selection == null)

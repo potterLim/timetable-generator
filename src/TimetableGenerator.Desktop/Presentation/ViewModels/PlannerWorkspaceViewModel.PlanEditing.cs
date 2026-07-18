@@ -13,11 +13,15 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private readonly DelegateCommand mBeginDeletePlanCommand;
 
+    private readonly DelegateCommand mBeginClearActivePlanCommand;
+
     private PlanTabItem mActivePlan;
 
     private bool mIsRenamingPlan;
 
     private PlanTabItem? mPlanPendingDeletionOrNull;
+
+    private PlanTabItem? mPlanPendingClearOrNull;
 
     private string mPlanNameDraft;
 
@@ -55,11 +59,21 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
+    public bool IsClearActivePlanConfirmationVisible
+    {
+        get
+        {
+            return mPlanPendingClearOrNull != null;
+        }
+    }
+
     public bool IsPlanEditingOverlayVisible
     {
         get
         {
-            return IsRenamingPlan || IsDeletePlanConfirmationVisible;
+            return IsRenamingPlan
+                || IsDeletePlanConfirmationVisible
+                || IsClearActivePlanConfirmationVisible;
         }
     }
 
@@ -97,6 +111,33 @@ internal sealed partial class PlannerWorkspaceViewModel
 
             return "‘" + mPlanPendingDeletionOrNull.DisplayName
                 + "’의 과목, 개인 일정, 추천 결과가 모두 삭제됩니다.";
+        }
+    }
+
+    public string PlanPendingClearName
+    {
+        get
+        {
+            if (mPlanPendingClearOrNull == null)
+            {
+                return string.Empty;
+            }
+
+            return mPlanPendingClearOrNull.DisplayName;
+        }
+    }
+
+    public string PlanClearDescription
+    {
+        get
+        {
+            if (mPlanPendingClearOrNull == null)
+            {
+                return string.Empty;
+            }
+
+            return "‘" + mPlanPendingClearOrNull.DisplayName
+                + "’의 과목과 개인 일정을 모두 지웁니다. 계획 이름은 유지됩니다.";
         }
     }
 
@@ -145,6 +186,14 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
+    public bool CanClearActivePlan
+    {
+        get
+        {
+            return ActivePlan.IsCompletelyEmpty == false;
+        }
+    }
+
     public ICommand AddPlanCommand { get; }
 
     public ICommand BeginRenamePlanCommand { get; }
@@ -171,6 +220,18 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     public ICommand CancelDeletePlanCommand { get; }
 
+    public ICommand BeginClearActivePlanCommand
+    {
+        get
+        {
+            return mBeginClearActivePlanCommand;
+        }
+    }
+
+    public ICommand ConfirmClearActivePlanCommand { get; }
+
+    public ICommand CancelClearActivePlanCommand { get; }
+
     private void activatePlan(PlanTabItem plan)
     {
         throwIfDisposed();
@@ -196,6 +257,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         mSession.ActivatePlan(plan.PlanId);
         mActivePlan = plan;
         raisePropertyChanged(nameof(ActivePlan));
+        notifyClearActivePlanAvailabilityChanged();
         afterWorkspaceMutation();
     }
 
@@ -216,6 +278,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         PlanNameDraft = ActivePlan.DisplayName;
         clearPlanNameValidationMessage();
         clearPlanPendingDeletion();
+        clearPlanPendingClear();
         showRenamePlanEditor();
     }
 
@@ -265,6 +328,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
 
         hideRenamePlanEditor();
+        clearPlanPendingClear();
         mPlanPendingDeletionOrNull = plan;
         raisePlanEditingStateChanged();
     }
@@ -294,10 +358,50 @@ internal sealed partial class PlannerWorkspaceViewModel
         return CanDeleteActivePlan;
     }
 
+    private void beginClearActivePlan()
+    {
+        throwIfDisposed();
+        if (CanClearActivePlan == false)
+        {
+            return;
+        }
+
+        hideRenamePlanEditor();
+        clearPlanPendingDeletion();
+        mPlanPendingClearOrNull = ActivePlan;
+        raisePlanEditingStateChanged();
+    }
+
+    private void confirmClearActivePlan()
+    {
+        throwIfDisposed();
+        PlanTabItem? planPendingClearOrNull = mPlanPendingClearOrNull;
+        if (planPendingClearOrNull == null
+            || planPendingClearOrNull.PlanId != ActivePlan.PlanId)
+        {
+            return;
+        }
+
+        mSession.ClearActivePlanContent();
+        clearPlanPendingClear();
+        afterPlanContentMutation();
+    }
+
+    private void cancelClearActivePlan()
+    {
+        clearPlanPendingClear();
+    }
+
+    private bool canClearActivePlan()
+    {
+        return CanClearActivePlan;
+    }
+
     private void closePlanEditingState()
     {
         hideRenamePlanEditor();
         clearPlanPendingDeletion();
+        clearPlanPendingClear();
         clearPlanNameValidationMessage();
     }
 
@@ -310,6 +414,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         raisePropertyChanged(nameof(PlanNameDraft));
         raisePropertyChanged(nameof(CanDeleteActivePlan));
         mBeginDeletePlanCommand.NotifyCanExecuteChanged();
+        notifyClearActivePlanAvailabilityChanged();
     }
 
     private void rebuildPlanItems()
@@ -396,13 +501,33 @@ internal sealed partial class PlannerWorkspaceViewModel
         raisePlanEditingStateChanged();
     }
 
+    private void clearPlanPendingClear()
+    {
+        if (mPlanPendingClearOrNull == null)
+        {
+            return;
+        }
+
+        mPlanPendingClearOrNull = null;
+        raisePlanEditingStateChanged();
+    }
+
+    private void notifyClearActivePlanAvailabilityChanged()
+    {
+        raisePropertyChanged(nameof(CanClearActivePlan));
+        mBeginClearActivePlanCommand.NotifyCanExecuteChanged();
+    }
+
     private void raisePlanEditingStateChanged()
     {
         raisePropertyChanged(nameof(IsDeletePlanConfirmationVisible));
+        raisePropertyChanged(nameof(IsClearActivePlanConfirmationVisible));
         raisePropertyChanged(nameof(IsPlanEditingOverlayVisible));
         raisePropertyChanged(nameof(IsWorkspaceInteractionEnabled));
         raisePropertyChanged(nameof(PlanPendingDeletionName));
         raisePropertyChanged(nameof(PlanDeletionDescription));
+        raisePropertyChanged(nameof(PlanPendingClearName));
+        raisePropertyChanged(nameof(PlanClearDescription));
     }
 
     private void clearPlanNameValidationMessage()

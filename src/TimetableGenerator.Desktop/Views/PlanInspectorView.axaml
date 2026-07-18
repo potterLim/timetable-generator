@@ -38,9 +38,11 @@
       <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="4">
         <TextBlock
             Classes="title"
+            VerticalAlignment="Center"
             AutomationProperties.HeadingLevel="2"
             Text="내 계획" />
         <Button
+            x:Name="PlanManagementButton"
             Grid.Column="1"
             Classes="icon"
             AutomationProperties.Name="현재 계획 관리"
@@ -54,10 +56,26 @@
                     HorizontalContentAlignment="Left"
                     Background="Transparent"
                     BorderBrush="Transparent"
+                    Click="onPlanManagementActionClick"
                     Command="{Binding BeginRenamePlanCommand}">
-                  <StackPanel Orientation="Horizontal" Spacing="9">
+                  <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="9">
                     <icons:FluentIcon Icon="Edit" IconVariant="Regular" FontSize="17" />
                     <TextBlock Text="이름 바꾸기" />
+                  </StackPanel>
+                </Button>
+                <Button
+                    x:Name="ClearActivePlanButton"
+                    Padding="10,8"
+                    HorizontalContentAlignment="Left"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    Foreground="{DynamicResource ErrorBrush}"
+                    IsEnabled="{Binding CanClearActivePlan}"
+                    Click="onPlanManagementActionClick"
+                    Command="{Binding BeginClearActivePlanCommand}">
+                  <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="9">
+                    <icons:FluentIcon Icon="Delete" IconVariant="Regular" FontSize="17" />
+                    <TextBlock Text="계획 비우기" />
                   </StackPanel>
                 </Button>
                 <Button
@@ -67,8 +85,9 @@
                     BorderBrush="Transparent"
                     Foreground="{DynamicResource ErrorBrush}"
                     IsEnabled="{Binding CanDeleteActivePlan}"
+                    Click="onPlanManagementActionClick"
                     Command="{Binding BeginDeletePlanCommand}">
-                  <StackPanel Orientation="Horizontal" Spacing="9">
+                  <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="9">
                     <icons:FluentIcon Icon="Dismiss" IconVariant="Regular" FontSize="17" />
                     <TextBlock Text="계획 닫기" />
                   </StackPanel>
@@ -81,10 +100,6 @@
             x:Name="CloseInspectorPaneButton"
             Grid.Column="2"
             Classes="icon"
-            Width="32"
-            Height="32"
-            MinWidth="32"
-            MinHeight="32"
             IsVisible="{Binding IsInspectorPaneDismissActionVisible}"
             Command="{Binding ToggleInspectorPaneCommand}"
             AutomationProperties.Name="내 계획 패널 닫기"
@@ -150,7 +165,7 @@
                   Margin="0,4,0,0"
                   HorizontalAlignment="Left"
                   Command="{Binding BeginAddPersonalScheduleCommand}">
-                <StackPanel Orientation="Horizontal" Spacing="7">
+                <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="7">
                   <icons:FluentIcon Icon="Add" IconVariant="Regular" FontSize="17" />
                   <TextBlock Text="개인 일정 추가" />
                 </StackPanel>
@@ -213,11 +228,7 @@
                       <Button
                           x:Name="CourseChoiceGroupEditButton"
                           Grid.Column="1"
-                          Classes="icon"
-                          Width="32"
-                          Height="32"
-                          MinWidth="32"
-                          MinHeight="32"
+                          Classes="icon compact"
                           Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).BeginEditCourseChoiceGroupCommand}"
                           CommandParameter="{Binding}"
                           AutomationProperties.Name="{Binding EditButtonAccessibleName}"
@@ -226,11 +237,7 @@
                       </Button>
                       <Button
                           Grid.Column="2"
-                          Classes="icon"
-                          Width="32"
-                          Height="32"
-                          MinWidth="32"
-                          MinHeight="32"
+                          Classes="icon compact"
                           Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).RemoveCourseChoiceGroupCommand}"
                           CommandParameter="{Binding}"
                           AutomationProperties.Name="{Binding RemoveButtonAccessibleName}"
@@ -261,11 +268,7 @@
                         <Button
                             x:Name="AlternativeCourseChoiceGroupEditButton"
                             Grid.Column="1"
-                            Classes="icon"
-                            Width="32"
-                            Height="32"
-                            MinWidth="32"
-                            MinHeight="32"
+                            Classes="icon compact"
                             Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).BeginEditCourseChoiceGroupCommand}"
                             CommandParameter="{Binding}"
                             AutomationProperties.Name="{Binding EditButtonAccessibleName}"
@@ -274,11 +277,7 @@
                         </Button>
                         <Button
                             Grid.Column="2"
-                            Classes="icon"
-                            Width="32"
-                            Height="32"
-                            MinWidth="32"
-                            MinHeight="32"
+                            Classes="icon compact"
                             Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).RemoveCourseChoiceGroupCommand}"
                             CommandParameter="{Binding}"
                             AutomationProperties.Name="{Binding RemoveButtonAccessibleName}"
@@ -329,14 +328,22 @@
               IsExpanded="True"
               AutomationProperties.Name="시간 미정 과목">
             <Expander.Header>
-              <StackPanel Orientation="Horizontal" Spacing="8">
+              <StackPanel
+                  Classes="button-content"
+                  VerticalAlignment="Center"
+                  Orientation="Horizontal"
+                  Spacing="8">
                 <icons:FluentIcon
                     Width="18"
                     Height="18"
+                    VerticalAlignment="Center"
                     Icon="Warning"
                     IconVariant="Filled"
                     Foreground="{DynamicResource WarningBrush}" />
-                <TextBlock FontWeight="SemiBold" Text="{Binding ActivePlan.TimeNotProvidedHeading}" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontWeight="SemiBold"
+                    Text="{Binding ActivePlan.TimeNotProvidedHeading}" />
               </StackPanel>
             </Expander.Header>
             <ItemsControl ItemsSource="{Binding ActivePlan.TimeNotProvidedCourses}">
@@ -358,11 +365,7 @@
                           Grid.Row="0"
                           Grid.RowSpan="4"
                           Grid.Column="1"
-                          Classes="icon"
-                          Width="32"
-                          Height="32"
-                          MinWidth="32"
-                          MinHeight="32"
+                          Classes="icon compact"
                           Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).RemoveTimeNotProvidedCourseCommand}"
                           CommandParameter="{Binding}"
                           AutomationProperties.Name="{Binding RemoveButtonAccessibleName}"
@@ -393,7 +396,7 @@
                 AutomationProperties.AutomationId="AddPersonalSchedule"
                 AutomationProperties.Name="개인 일정 추가"
                 ToolTip.Tip="개인 일정 추가">
-              <StackPanel Orientation="Horizontal" Spacing="5">
+              <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="5">
                 <icons:FluentIcon Icon="Add" IconVariant="Regular" FontSize="16" />
                 <TextBlock VerticalAlignment="Center" Text="추가" />
               </StackPanel>
@@ -497,6 +500,7 @@
             <Grid ColumnDefinitions="22,*" ColumnSpacing="9">
               <icons:FluentIcon
                   Grid.Column="0"
+                  VerticalAlignment="Center"
                   Icon="CheckmarkCircle"
                   IconVariant="Regular"
                   FontSize="18"

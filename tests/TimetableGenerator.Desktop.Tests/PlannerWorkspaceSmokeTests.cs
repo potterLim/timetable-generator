@@ -404,6 +404,63 @@ public sealed class PlannerWorkspaceSmokeTests
     }
 
     [AvaloniaFact]
+    public async Task ClearingActivePlanRequiresConfirmationAndAutosavesEmptyContentAsync()
+    {
+        ImmediatePlanningWorkspaceStore planningWorkspaceStore =
+            new ImmediatePlanningWorkspaceStore();
+        using (PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace(planningWorkspaceStore))
+        {
+            PlanId originalPlanId = workspace.ActivePlan.PlanId;
+            PlanName originalPlanName = workspace.ActivePlan.Name;
+            PlanCatalogBinding originalBinding =
+                workspace.ActivePlan.Plan.CatalogBinding;
+            int originalPlanCount = workspace.Plans.Count;
+
+            Assert.True(workspace.CanClearActivePlan);
+            Assert.True(workspace.BeginClearActivePlanCommand.CanExecute(null));
+            workspace.BeginClearActivePlanCommand.Execute(null);
+
+            Assert.True(workspace.IsClearActivePlanConfirmationVisible);
+            Assert.True(workspace.IsPlanEditingOverlayVisible);
+            Assert.False(workspace.IsWorkspaceInteractionEnabled);
+            Assert.Equal(originalPlanName.Value, workspace.PlanPendingClearName);
+            Assert.False(workspace.ActivePlan.IsCompletelyEmpty);
+
+            workspace.CancelClearActivePlanCommand.Execute(null);
+
+            Assert.False(workspace.IsClearActivePlanConfirmationVisible);
+            Assert.True(workspace.IsWorkspaceInteractionEnabled);
+            Assert.False(workspace.ActivePlan.IsCompletelyEmpty);
+
+            workspace.BeginClearActivePlanCommand.Execute(null);
+            workspace.ConfirmClearActivePlanCommand.Execute(null);
+            await workspace.RecommendationRefreshTask;
+            await workspace.FlushAutosaveAsync(CancellationToken.None);
+
+            Assert.False(workspace.IsPlanEditingOverlayVisible);
+            Assert.True(workspace.IsWorkspaceInteractionEnabled);
+            Assert.Equal(originalPlanCount, workspace.Plans.Count);
+            Assert.Equal(originalPlanId, workspace.ActivePlan.PlanId);
+            Assert.Same(originalPlanName, workspace.ActivePlan.Name);
+            Assert.Same(originalBinding, workspace.ActivePlan.Plan.CatalogBinding);
+            Assert.True(workspace.ActivePlan.IsCompletelyEmpty);
+            Assert.Empty(workspace.ActivePlan.Plan.CourseChoiceGroups);
+            Assert.Empty(workspace.ActivePlan.Plan.UnscheduledOfferingSelections);
+            Assert.Empty(workspace.ActivePlan.Plan.PersonalSchedules);
+            Assert.Null(
+                workspace.ActivePlan.Plan.LastViewedRecommendationOrNull);
+            Assert.False(workspace.CanClearActivePlan);
+            Assert.False(workspace.BeginClearActivePlanCommand.CanExecute(null));
+            PlanningWorkspace savedWorkspace = Assert.IsType<PlanningWorkspace>(
+                planningWorkspaceStore.LastSavedWorkspaceOrNull);
+            Assert.Empty(savedWorkspace.GetActivePlan().CourseChoiceGroups);
+            Assert.Empty(savedWorkspace.GetActivePlan().UnscheduledOfferingSelections);
+            Assert.Empty(savedWorkspace.GetActivePlan().PersonalSchedules);
+        }
+    }
+
+    [AvaloniaFact]
     public void NamedPlansCanBeCreatedRenamedAndDeleted()
     {
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();

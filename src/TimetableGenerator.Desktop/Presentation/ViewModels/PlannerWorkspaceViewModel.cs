@@ -189,6 +189,13 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
             canDeletePlan);
         ConfirmDeletePlanCommand = new DelegateCommand(confirmDeletePlan);
         CancelDeletePlanCommand = new DelegateCommand(cancelDeletePlan);
+        mBeginClearActivePlanCommand = new DelegateCommand(
+            beginClearActivePlan,
+            canClearActivePlan);
+        ConfirmClearActivePlanCommand = new DelegateCommand(
+            confirmClearActivePlan);
+        CancelClearActivePlanCommand = new DelegateCommand(
+            cancelClearActivePlan);
         mRetryAutosaveCommand = new DelegateCommand(
             retryAutosave,
             canRetryAutosave);

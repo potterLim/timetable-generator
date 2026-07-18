@@ -136,6 +136,39 @@ public sealed class PlanningWorkspaceSessionTests
     }
 
     [TestMethod]
+    public void ClearActivePlanContentKeepsTheActivePlanAndOtherPlans()
+    {
+        CourseCatalog catalog = createCatalog();
+        PlanningWorkspaceSession session = createEmptySession(catalog);
+        PlanId firstPlanId = session.Workspace.ActivePlanId;
+        PlanName firstPlanName = session.Workspace.GetActivePlan().Name;
+        session.AddPersonalSchedule(createPersonalSchedule(
+            PersonalScheduleId.CreateNew(),
+            "첫 계획 일정"));
+        PlanId secondPlanId = PlanId.CreateNew();
+        session.AddPlan(secondPlanId, new PlanName("둘째 계획"));
+        session.AddPersonalSchedule(createPersonalSchedule(
+            PersonalScheduleId.CreateNew(),
+            "둘째 계획 일정"));
+        PlanningPlan untouchedFirstPlan = session.Workspace.Plans[0];
+
+        PlanningWorkspace result = session.ClearActivePlanContent();
+
+        PlanningPlan clearedPlan = result.GetActivePlan();
+        Assert.AreEqual(secondPlanId, result.ActivePlanId);
+        Assert.AreEqual(secondPlanId, clearedPlan.Id);
+        Assert.AreEqual("둘째 계획", clearedPlan.Name.Value);
+        Assert.IsEmpty(clearedPlan.CourseChoiceGroups);
+        Assert.IsEmpty(clearedPlan.UnscheduledOfferingSelections);
+        Assert.IsEmpty(clearedPlan.PersonalSchedules);
+        Assert.IsNull(clearedPlan.LastViewedRecommendationOrNull);
+        Assert.AreSame(untouchedFirstPlan, result.Plans[0]);
+        Assert.AreEqual(firstPlanId, result.Plans[0].Id);
+        Assert.AreSame(firstPlanName, result.Plans[0].Name);
+        Assert.HasCount(1, result.Plans[0].PersonalSchedules);
+    }
+
+    [TestMethod]
     public void RejectedPersonalScheduleDoesNotMutateTheSession()
     {
         CourseCatalog catalog = createCatalog();

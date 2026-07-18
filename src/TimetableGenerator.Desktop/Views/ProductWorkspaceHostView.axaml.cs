@@ -18,6 +18,10 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
 {
     private PlannerWorkspaceViewModel? mWorkspaceOrNull;
 
+    private Control? mPlanEditingFocusReturnTargetOrNull;
+
+    private bool mWasPlanEditingOverlayVisible;
+
     private Control? mPersonalScheduleFocusReturnTargetOrNull;
 
     private bool mWasPersonalScheduleOverlayVisible;
@@ -71,6 +75,8 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         }
 
         mWorkspaceOrNull.PropertyChanged += onWorkspacePropertyChanged;
+        mWasPlanEditingOverlayVisible =
+            mWorkspaceOrNull.IsPlanEditingOverlayVisible;
         mWasPersonalScheduleOverlayVisible =
             mWorkspaceOrNull.IsPersonalScheduleOverlayVisible;
         mWasCourseChoiceEditorVisible =
@@ -93,14 +99,10 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         object? senderOrNull,
         PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName == nameof(PlannerWorkspaceViewModel.IsRenamingPlan))
+        if (eventArgs.PropertyName
+            == nameof(PlannerWorkspaceViewModel.IsPlanEditingOverlayVisible))
         {
-            focusPlanEditingControlWhenRequired();
-        }
-        else if (eventArgs.PropertyName
-            == nameof(PlannerWorkspaceViewModel.IsDeletePlanConfirmationVisible))
-        {
-            focusPlanEditingControlWhenRequired();
+            handlePlanEditingOverlayStateChanged();
         }
         else if (eventArgs.PropertyName
             == nameof(PlannerWorkspaceViewModel.IsPersonalScheduleEditorVisible))
@@ -146,6 +148,35 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         Dispatcher.UIThread.Post(focusPlanEditingControl, DispatcherPriority.Input);
     }
 
+    private void handlePlanEditingOverlayStateChanged()
+    {
+        if (mWorkspaceOrNull == null)
+        {
+            return;
+        }
+
+        bool isOverlayVisible = mWorkspaceOrNull.IsPlanEditingOverlayVisible;
+        if (isOverlayVisible && mWasPlanEditingOverlayVisible == false)
+        {
+            TopLevel? topLevelOrNull = TopLevel.GetTopLevel(this);
+            if (topLevelOrNull != null)
+            {
+                mPlanEditingFocusReturnTargetOrNull =
+                    topLevelOrNull.FocusManager?.GetFocusedElement() as Control;
+            }
+        }
+
+        if (isOverlayVisible == false && mWasPlanEditingOverlayVisible)
+        {
+            Dispatcher.UIThread.Post(
+                restorePlanEditingFocus,
+                DispatcherPriority.Input);
+        }
+
+        mWasPlanEditingOverlayVisible = isOverlayVisible;
+        focusPlanEditingControlWhenRequired();
+    }
+
     private void focusPlanEditingControl()
     {
         if (mWorkspaceOrNull == null)
@@ -173,7 +204,44 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
             {
                 cancelButtonOrNull.Focus();
             }
+
+            return;
         }
+
+        if (mWorkspaceOrNull.IsClearActivePlanConfirmationVisible)
+        {
+            Button? cancelButtonOrNull = this.FindControl<Button>(
+                "CancelClearActivePlanButton");
+            if (cancelButtonOrNull != null)
+            {
+                cancelButtonOrNull.Focus();
+            }
+        }
+    }
+
+    private void restorePlanEditingFocus()
+    {
+        Control? returnTargetOrNull = mPlanEditingFocusReturnTargetOrNull;
+        mPlanEditingFocusReturnTargetOrNull = null;
+        if (returnTargetOrNull != null
+            && returnTargetOrNull.IsVisible
+            && returnTargetOrNull.IsEnabled
+            && returnTargetOrNull.IsAttachedToVisualTree()
+            && returnTargetOrNull.Focus())
+        {
+            return;
+        }
+
+        Button? planManagementButtonOrNull = this.FindControl<Button>(
+            "PlanManagementButton");
+        if (planManagementButtonOrNull != null
+            && planManagementButtonOrNull.IsEffectivelyVisible
+            && planManagementButtonOrNull.Focus())
+        {
+            return;
+        }
+
+        focusButton("AddPlanButton");
     }
 
     private void focusPersonalScheduleControlWhenRequired()
@@ -496,6 +564,8 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
     {
         mIsAttachedToVisualTree = false;
         disconnectWorkspace();
+        mPlanEditingFocusReturnTargetOrNull = null;
+        mWasPlanEditingOverlayVisible = false;
         mPersonalScheduleFocusReturnTargetOrNull = null;
         mWasPersonalScheduleOverlayVisible = false;
         mCourseChoiceFocusReturnTargetOrNull = null;

@@ -98,6 +98,28 @@ public sealed partial class PlanningWorkspaceEditor
         return new PlanningWorkspace(activePlanId, remainingPlans);
     }
 
+    public PlanningWorkspace ClearPlanContent(
+        PlanningWorkspace workspace,
+        PlanId planId)
+    {
+        if (workspace == null)
+        {
+            throw new ArgumentNullException(nameof(workspace));
+        }
+
+        PlanningPlan existingPlan = findPlan(workspace, planId);
+        PlanningPlan clearedPlan = new PlanningPlan(
+            existingPlan.Id,
+            existingPlan.Name,
+            existingPlan.CatalogBinding,
+            new PlanningPlanContent(
+                Array.Empty<CourseChoiceGroup>(),
+                Array.Empty<UnscheduledOfferingSelection>(),
+                Array.Empty<PersonalSchedule>()),
+            null);
+        return replacePlan(workspace, clearedPlan);
+    }
+
     public PlanningWorkspace AddUnscheduledOfferingSelection(
         PlanningWorkspace workspace,
         PlanId planId,

@@ -11,6 +11,8 @@ using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
+using FluentIcons.Avalonia;
+
 using TimetableGenerator.Desktop.Presentation.Layout;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Desktop.Views;
@@ -65,6 +67,54 @@ public sealed class ProductWorkspaceInteractionTests
 
             Assert.False(editingOverlay.IsVisible);
             Assert.True(workspaceSurface.IsEnabled);
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
+    public void PlanClearDialogFitsCompactWidthAndRestoresInvokerFocus()
+    {
+        const double COMPACT_WIDTH = 360.0;
+
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+        workspace.applyWorkspaceWidth(new WorkspaceWidth(COMPACT_WIDTH));
+        ProductWorkspaceHostView host = new ProductWorkspaceHostView();
+        host.DataContext = workspace;
+        Window window = createWindow(host, COMPACT_WIDTH);
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Button invoker = findRequiredControl<Button>(host, "AddPlanButton");
+            Assert.True(invoker.Focus());
+            workspace.BeginClearActivePlanCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            Border dialog = findRequiredControl<Border>(host, "PlanEditingDialog");
+            Button cancelButton = findRequiredControl<Button>(
+                host,
+                "CancelClearActivePlanButton");
+            Point dialogPosition = findRequiredPosition(dialog, host);
+
+            Assert.True(workspace.IsClearActivePlanConfirmationVisible);
+            Assert.True(cancelButton.IsKeyboardFocusWithin);
+            Assert.InRange(dialogPosition.X, 15.0, 17.0);
+            Assert.True(
+                dialogPosition.X + dialog.Bounds.Width
+                <= host.Bounds.Width - 15.0);
+
+            workspace.CancelClearActivePlanCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(workspace.IsPlanEditingOverlayVisible);
+            Assert.True(invoker.IsKeyboardFocusWithin);
         }
         finally
         {
@@ -239,6 +289,12 @@ public sealed class ProductWorkspaceInteractionTests
             StackPanel headerActions = findRequiredControl<StackPanel>(
                 scheduleWorkspace,
                 "WorkspaceHeaderActions");
+            Button scheduleViewMode = findRequiredControl<Button>(
+                scheduleWorkspace,
+                "ScheduleViewModeButton");
+            Button addPersonalSchedule = findRequiredControl<Button>(
+                scheduleWorkspace,
+                "WorkspaceAddPersonalScheduleButton");
             Button openInspector = findRequiredControl<Button>(
                 scheduleWorkspace,
                 "OpenInspectorPaneButton");
@@ -248,6 +304,10 @@ public sealed class ProductWorkspaceInteractionTests
 
             Assert.True(openInspector.IsEffectivelyVisible);
             Assert.True(export.IsEffectivelyVisible);
+            assertCompoundHeaderButtonAlignment(scheduleViewMode);
+            assertCompoundHeaderButtonAlignment(addPersonalSchedule);
+            assertCompoundHeaderButtonAlignment(openInspector);
+            assertCompoundHeaderButtonAlignment(export);
             Assert.Same(
                 workspace.ToggleInspectorPaneCommand,
                 openInspector.Command);
@@ -373,5 +433,18 @@ public sealed class ProductWorkspaceInteractionTests
         double dialogCenterY = dialogPosition.Y + (dialog.Bounds.Height / 2.0);
         Assert.InRange(Math.Abs(dialogCenterX - (host.Bounds.Width / 2.0)), 0.0, 1.0);
         Assert.InRange(Math.Abs(dialogCenterY - (host.Bounds.Height / 2.0)), 0.0, 1.0);
+    }
+
+    private static void assertCompoundHeaderButtonAlignment(Button button)
+    {
+        FluentIcon icon = button.GetVisualDescendants().OfType<FluentIcon>().Single();
+        TextBlock text = button.GetVisualDescendants().OfType<TextBlock>().Single();
+        Point iconPosition = findRequiredPosition(icon, button);
+        Point textPosition = findRequiredPosition(text, button);
+        double iconCenterY = iconPosition.Y + (icon.Bounds.Height / 2.0);
+        double textCenterY = textPosition.Y + (text.Bounds.Height / 2.0);
+
+        Assert.InRange(button.Bounds.Height, 39.99, 40.01);
+        Assert.InRange(Math.Abs(iconCenterY - textCenterY), 0.0, 0.5);
     }
 }
