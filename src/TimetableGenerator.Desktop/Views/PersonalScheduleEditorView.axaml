@@ -17,7 +17,7 @@
       <Setter Property="Padding" Value="8,0" />
       <Setter Property="CornerRadius" Value="5" />
       <Setter Property="HorizontalAlignment" Value="Stretch" />
-      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
       <Setter Property="Background" Value="{DynamicResource ControlSurfaceBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
@@ -119,9 +119,28 @@
                 <ToggleButton
                     Classes="day-option"
                     IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                    Content="{Binding ShortName}"
                     AutomationProperties.AutomationId="{Binding AutomationId}"
-                    AutomationProperties.Name="{Binding AccessibleName}" />
+                    AutomationProperties.Name="{Binding AccessibleName}">
+                  <Grid HorizontalAlignment="Stretch">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Text="{Binding ShortName}" />
+                    <icons:FluentIcon
+                        Classes="day-selection-indicator"
+                        Width="14"
+                        Height="14"
+                        Margin="7,0,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Icon="CheckmarkCircle"
+                        IconVariant="Regular"
+                        FontSize="14"
+                        Foreground="{DynamicResource SelectionIndicatorBrush}"
+                        IsVisible="{Binding IsSelected}"
+                        AutomationProperties.AccessibilityView="Raw" />
+                  </Grid>
+                </ToggleButton>
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>

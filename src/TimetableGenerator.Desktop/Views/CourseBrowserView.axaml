@@ -192,7 +192,7 @@
                       SelectedItem="{Binding SelectedSelectionOption, Mode=TwoWay}"
                       IsEnabled="{Binding IsSelectionEnabled}"
                       IsVisible="{Binding HasMultipleSelectionOptions}"
-                      AutomationProperties.Name="추가할 분반 선택">
+                      AutomationProperties.Name="{Binding SelectionAccessibleName}">
                     <ComboBox.ItemTemplate>
                       <DataTemplate x:DataType="models:CourseSelectionOption">
                         <TextBlock

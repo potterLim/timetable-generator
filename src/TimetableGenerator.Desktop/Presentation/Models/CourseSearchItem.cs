@@ -141,6 +141,14 @@ internal sealed class CourseSearchItem : ObservableObject
         }
     }
 
+    public string SelectionAccessibleName
+    {
+        get
+        {
+            return Name + ", 추가할 분반 선택";
+        }
+    }
+
     public bool IsSelectedOptionTimeNotProvided
     {
         get

@@ -166,7 +166,10 @@ internal sealed class CourseChoiceDraftCourseItem : ObservableObject
                 preference = savedPreference;
             }
 
-            offerings.Add(new CourseOfferingPreferenceItem(offering, preference));
+            offerings.Add(new CourseOfferingPreferenceItem(
+                projection,
+                offering,
+                preference));
         }
 
         return offerings;

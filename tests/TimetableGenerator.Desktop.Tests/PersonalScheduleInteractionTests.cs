@@ -242,6 +242,43 @@ public sealed class PersonalScheduleInteractionTests
                 candidate => Assert.Equal(
                     VerticalAlignment.Center,
                     candidate.VerticalContentAlignment));
+            FluentIcon[] selectionIndicators = dayInputs
+                .SelectMany(
+                    candidate => candidate.GetVisualDescendants()
+                        .OfType<FluentIcon>())
+                .Where(
+                    candidate => candidate.Classes.Contains(
+                        "day-selection-indicator"))
+                .ToArray();
+            Assert.Equal(7, selectionIndicators.Length);
+            Assert.All(
+                selectionIndicators,
+                candidate => Assert.False(candidate.IsVisible));
+            PersonalScheduleDayOption mondayOption = workspace
+                .PersonalScheduleDayOptions
+                .Single(candidate => candidate.Day == EDay.Monday);
+            mondayOption.IsSelected = true;
+            Dispatcher.UIThread.RunJobs();
+            ToggleButton mondayInput = dayInputs.Single(
+                candidate => ReferenceEquals(candidate.DataContext, mondayOption));
+            FluentIcon mondaySelectionIndicator = mondayInput
+                .GetVisualDescendants()
+                .OfType<FluentIcon>()
+                .Single(
+                    candidate => candidate.Classes.Contains(
+                        "day-selection-indicator"));
+            Assert.Equal(true, mondayInput.IsChecked);
+            Assert.True(mondaySelectionIndicator.IsVisible);
+            Assert.All(
+                selectionIndicators.Where(
+                    candidate => ReferenceEquals(
+                        candidate,
+                        mondaySelectionIndicator) == false),
+                candidate => Assert.False(candidate.IsVisible));
+            mondayOption.IsSelected = false;
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal(false, mondayInput.IsChecked);
+            Assert.False(mondaySelectionIndicator.IsVisible);
             (double Left, double Width)[] dayInputGeometry = dayInputs
                 .Select(
                     candidate =>

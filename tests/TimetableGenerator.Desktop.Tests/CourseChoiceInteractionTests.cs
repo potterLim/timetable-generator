@@ -135,6 +135,17 @@ public sealed class CourseChoiceInteractionTests
             CourseChoiceDraftCourseItem seminarDraft = workspace
                 .CourseChoiceDraftCourses
                 .Single(candidate => candidate.Name == "세미나 3");
+            Assert.Contains(
+                "프로그래밍 I",
+                programmingDraft.Offerings[0].PreferredButtonAccessibleName,
+                StringComparison.Ordinal);
+            Assert.Contains(
+                "세미나 3",
+                seminarDraft.Offerings[0].PreferredButtonAccessibleName,
+                StringComparison.Ordinal);
+            Assert.NotEqual(
+                programmingDraft.Offerings[0].PreferredButtonAccessibleName,
+                seminarDraft.Offerings[0].PreferredButtonAccessibleName);
             Assert.All(
                 seminarDraft.Offerings,
                 offering => Assert.True(offering.IsExcluded));
@@ -202,6 +213,9 @@ public sealed class CourseChoiceInteractionTests
         {
             CourseSearchItem seminar = findCourse(workspace, "세미나");
             Assert.Equal(2, seminar.SelectionOptions.Count);
+            Assert.Equal(
+                "세미나 3, 추가할 분반 선택",
+                seminar.SelectionAccessibleName);
             CourseSelectionOption firstOffering = seminar.SelectionOptions[0];
             CourseSelectionOption secondOffering = seminar.SelectionOptions[1];
 
@@ -289,7 +303,7 @@ public sealed class CourseChoiceInteractionTests
             Assert.Equal("제외", preferenceButtons[2].Content);
             Assert.Equal(true, preferenceButtons[2].IsChecked);
             Assert.Equal(
-                "01분반 선호",
+                "프로그래밍 I, 01분반, 선호",
                 AutomationProperties.GetName(preferenceButtons[0]));
             Assert.Equal(
                 "추천에서 가장 먼저 사용합니다.",

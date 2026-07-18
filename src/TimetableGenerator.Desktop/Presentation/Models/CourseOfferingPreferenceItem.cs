@@ -13,7 +13,17 @@ internal sealed class CourseOfferingPreferenceItem : ObservableObject
 
     public event EventHandler? PreferenceChanged;
 
+    public CatalogCourseProjection CourseProjection { get; }
+
     public CatalogOfferingProjection Projection { get; }
+
+    public string CourseName
+    {
+        get
+        {
+            return CourseProjection.Course.KoreanName.Value;
+        }
+    }
 
     public OfferingId OfferingId
     {
@@ -114,7 +124,8 @@ internal sealed class CourseOfferingPreferenceItem : ObservableObject
     {
         get
         {
-            return SectionDisplayText + " 선택 상태: " + getPreferenceDisplayName(Preference);
+            return CourseName + ", " + SectionDisplayText + ", 선택 상태 "
+                + getPreferenceDisplayName(Preference);
         }
     }
 
@@ -122,7 +133,7 @@ internal sealed class CourseOfferingPreferenceItem : ObservableObject
     {
         get
         {
-            return SectionDisplayText + " 선호";
+            return CourseName + ", " + SectionDisplayText + ", 선호";
         }
     }
 
@@ -130,7 +141,7 @@ internal sealed class CourseOfferingPreferenceItem : ObservableObject
     {
         get
         {
-            return SectionDisplayText + " 가능";
+            return CourseName + ", " + SectionDisplayText + ", 가능";
         }
     }
 
@@ -138,7 +149,7 @@ internal sealed class CourseOfferingPreferenceItem : ObservableObject
     {
         get
         {
-            return SectionDisplayText + " 제외";
+            return CourseName + ", " + SectionDisplayText + ", 제외";
         }
     }
 
@@ -149,12 +160,25 @@ internal sealed class CourseOfferingPreferenceItem : ObservableObject
     public ICommand SelectExcludedCommand { get; }
 
     public CourseOfferingPreferenceItem(
+        CatalogCourseProjection courseProjection,
         CatalogOfferingProjection projection,
         EOfferingPreference preference)
     {
+        if (courseProjection == null)
+        {
+            throw new ArgumentNullException(nameof(courseProjection));
+        }
+
         if (projection == null)
         {
             throw new ArgumentNullException(nameof(projection));
+        }
+
+        if (projection.Offering.CourseId != courseProjection.Course.Id)
+        {
+            throw new ArgumentException(
+                "Course offering preferences must belong to the projected course.",
+                nameof(projection));
         }
 
         if (projection.Offering.MeetingSchedule.IsScheduled == false)
@@ -169,6 +193,7 @@ internal sealed class CourseOfferingPreferenceItem : ObservableObject
             throw new ArgumentOutOfRangeException(nameof(preference));
         }
 
+        CourseProjection = courseProjection;
         Projection = projection;
         mPreference = preference;
         SelectPreferredCommand = new DelegateCommand(selectPreferred);
