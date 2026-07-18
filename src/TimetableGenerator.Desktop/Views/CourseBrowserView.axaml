@@ -53,7 +53,7 @@
             Height="32"
             MinWidth="32"
             MinHeight="32"
-            IsVisible="{Binding IsCoursePaneToggleVisible}"
+            IsVisible="{Binding IsCoursePaneDismissActionVisible}"
             Command="{Binding ToggleCoursePaneCommand}"
             AutomationProperties.Name="과목 찾기 패널 닫기"
             ToolTip.Tip="과목 찾기 닫기">
@@ -129,118 +129,168 @@
           FontSize="13"
           Text="{Binding VisibleCourseHeading}" />
 
-      <ListBox
-          x:Name="CourseResultsList"
-          Grid.Row="10"
-          Classes="workspace-list"
-          ItemsSource="{Binding VisibleCourses}"
-          AutomationProperties.AutomationId="CourseResults"
-          AutomationProperties.Name="과목 검색 결과">
-        <ListBox.ItemsPanel>
-          <ItemsPanelTemplate>
-            <VirtualizingStackPanel />
-          </ItemsPanelTemplate>
-        </ListBox.ItemsPanel>
-        <ListBox.ItemTemplate>
-          <DataTemplate x:DataType="models:CourseSearchItem">
-            <Border
-                Classes="course-item"
-                Classes.added="{Binding IsAdded}"
-                MinHeight="80"
-                Margin="0,0,2,4">
-              <Grid Margin="13,10,10,9" ColumnDefinitions="*,38" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
-                <TextBlock
-                    Grid.Row="0"
-                    Grid.Column="0"
-                    Classes="caption"
-                    Text="{Binding Code}" />
-                <TextBlock
-                    Grid.Row="1"
-                    Grid.Column="0"
-                    Margin="0,2,0,0"
-                    FontSize="15"
-                    FontWeight="SemiBold"
-                    Text="{Binding Name}"
-                    TextTrimming="CharacterEllipsis"
-                    ToolTip.Tip="{Binding Name}" />
-                <TextBlock
-                    Grid.Row="2"
-                    Grid.Column="0"
-                    Margin="0,5,0,0"
-                    Classes="caption"
-                    Text="{Binding InstructorCreditDisplayText}"
-                    TextWrapping="Wrap" />
-                <TextBlock
-                    Grid.Row="3"
-                    Grid.Column="0"
-                    Margin="0,3,0,0"
-                    Classes="caption"
-                    IsVisible="{Binding HasSingleOfferingDetails}"
-                    Text="{Binding SingleOfferingDetailsDisplayText}"
-                    TextTrimming="CharacterEllipsis"
-                    ToolTip.Tip="{Binding SingleOfferingDetailsDisplayText}" />
+      <Grid Grid.Row="10">
+        <ListBox
+            x:Name="CourseResultsList"
+            Classes="workspace-list"
+            ItemsSource="{Binding VisibleCourses}"
+            IsVisible="{Binding HasVisibleCourses}"
+            AutomationProperties.AutomationId="CourseResults"
+            AutomationProperties.Name="과목 검색 결과">
+          <ListBox.ItemsPanel>
+            <ItemsPanelTemplate>
+              <VirtualizingStackPanel />
+            </ItemsPanelTemplate>
+          </ListBox.ItemsPanel>
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="models:CourseSearchItem">
+              <Border
+                  Classes="course-item"
+                  Classes.added="{Binding IsAdded}"
+                  MinHeight="80"
+                  Margin="0,0,2,4">
+                <Grid Margin="13,10,10,9" ColumnDefinitions="*,38" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                  <TextBlock
+                      Grid.Row="0"
+                      Grid.Column="0"
+                      Classes="caption"
+                      Text="{Binding Code}" />
+                  <TextBlock
+                      Grid.Row="1"
+                      Grid.Column="0"
+                      Margin="0,2,0,0"
+                      FontSize="15"
+                      FontWeight="SemiBold"
+                      Text="{Binding Name}"
+                      TextTrimming="CharacterEllipsis"
+                      ToolTip.Tip="{Binding Name}" />
+                  <TextBlock
+                      Grid.Row="2"
+                      Grid.Column="0"
+                      Margin="0,5,0,0"
+                      Classes="caption"
+                      Text="{Binding InstructorCreditDisplayText}"
+                      TextWrapping="Wrap" />
+                  <TextBlock
+                      Grid.Row="3"
+                      Grid.Column="0"
+                      Margin="0,3,0,0"
+                      Classes="caption"
+                      IsVisible="{Binding HasSingleOfferingDetails}"
+                      Text="{Binding SingleOfferingDetailsDisplayText}"
+                      TextTrimming="CharacterEllipsis"
+                      ToolTip.Tip="{Binding SingleOfferingDetailsDisplayText}" />
 
-                <ComboBox
-                    Grid.Row="4"
-                    Grid.Column="0"
-                    Grid.ColumnSpan="2"
-                    Margin="0,8,0,2"
-                    ItemsSource="{Binding SelectionOptions}"
-                    SelectedItem="{Binding SelectedSelectionOption, Mode=TwoWay}"
-                    IsEnabled="{Binding IsSelectionEnabled}"
-                    IsVisible="{Binding HasMultipleSelectionOptions}"
-                    AutomationProperties.Name="추가할 분반 선택">
-                  <ComboBox.ItemTemplate>
-                    <DataTemplate x:DataType="models:CourseSelectionOption">
-                      <TextBlock
-                          VerticalAlignment="Center"
-                          Text="{Binding DisplayName}"
-                          TextTrimming="CharacterEllipsis"
-                          ToolTip.Tip="{Binding DisplayName}" />
-                    </DataTemplate>
-                  </ComboBox.ItemTemplate>
-                </ComboBox>
+                  <ComboBox
+                      Grid.Row="4"
+                      Grid.Column="0"
+                      Grid.ColumnSpan="2"
+                      Margin="0,8,0,2"
+                      ItemsSource="{Binding SelectionOptions}"
+                      SelectedItem="{Binding SelectedSelectionOption, Mode=TwoWay}"
+                      IsEnabled="{Binding IsSelectionEnabled}"
+                      IsVisible="{Binding HasMultipleSelectionOptions}"
+                      AutomationProperties.Name="추가할 분반 선택">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate x:DataType="models:CourseSelectionOption">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Text="{Binding DisplayName}"
+                            TextTrimming="CharacterEllipsis"
+                            ToolTip.Tip="{Binding DisplayName}" />
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
 
-                <Button
-                    Grid.Row="0"
-                    Grid.RowSpan="4"
-                    Grid.Column="1"
-                    Classes="icon course-add"
-                    VerticalAlignment="Center"
-                    IsVisible="{Binding !IsAdded}"
-                    Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).AddCourseCommand}"
-                    CommandParameter="{Binding}"
-                    AutomationProperties.Name="{Binding AddButtonAccessibleName}"
-                    ToolTip.Tip="{Binding AddButtonToolTipText}">
-                  <icons:FluentIcon
-                      Icon="AddCircle"
-                      IconVariant="Regular"
-                      FontSize="22"
-                      Foreground="{DynamicResource AccentBrush}" />
-                </Button>
-
-                <Border
-                    Grid.Row="0"
-                    Grid.RowSpan="4"
-                    Grid.Column="1"
-                    Width="36"
-                    Height="36"
-                    VerticalAlignment="Center"
-                    IsVisible="{Binding IsAdded}"
-                    AutomationProperties.Name="{Binding AddButtonAccessibleName}">
-                  <icons:FluentIcon
-                      HorizontalAlignment="Center"
+                  <Button
+                      Grid.Row="0"
+                      Grid.RowSpan="4"
+                      Grid.Column="1"
+                      Classes="icon course-add"
                       VerticalAlignment="Center"
-                      Icon="CheckmarkCircle"
-                      IconVariant="Filled"
-                      FontSize="22"
-                      Foreground="{DynamicResource SuccessBrush}" />
-                </Border>
-              </Grid>
-            </Border>
-          </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
+                      IsVisible="{Binding !IsAdded}"
+                      Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).AddCourseCommand}"
+                      CommandParameter="{Binding}"
+                      AutomationProperties.Name="{Binding AddButtonAccessibleName}"
+                      ToolTip.Tip="{Binding AddButtonToolTipText}">
+                    <icons:FluentIcon
+                        Icon="AddCircle"
+                        IconVariant="Regular"
+                        FontSize="22"
+                        Foreground="{DynamicResource AccentBrush}" />
+                  </Button>
+
+                  <Button
+                      Grid.Row="0"
+                      Grid.RowSpan="4"
+                      Grid.Column="1"
+                      Classes="icon"
+                      VerticalAlignment="Center"
+                      IsVisible="{Binding IsAdded}"
+                      Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).EditOrRemoveSelectedCourseCommand}"
+                      CommandParameter="{Binding}"
+                      AutomationProperties.Name="{Binding SelectedCourseActionAccessibleName}"
+                      ToolTip.Tip="{Binding SelectedCourseActionToolTipText}">
+                    <icons:FluentIcon
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Icon="CheckmarkCircle"
+                        IconVariant="Filled"
+                        FontSize="22"
+                        Foreground="{DynamicResource SuccessBrush}" />
+                  </Button>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+
+        <StackPanel
+            x:Name="NoCourseResultsState"
+            Width="230"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Spacing="8"
+            IsVisible="{Binding HasNoVisibleCourses}"
+            AutomationProperties.Name="검색 결과 없음">
+          <Border
+              Width="42"
+              Height="42"
+              Margin="0,0,0,4"
+              HorizontalAlignment="Center"
+              Background="{DynamicResource SubtleSurfaceBrush}"
+              CornerRadius="21">
+            <icons:FluentIcon
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Icon="Search"
+                IconVariant="Regular"
+                FontSize="20"
+                Foreground="{DynamicResource AccentBrush}" />
+          </Border>
+          <TextBlock
+              HorizontalAlignment="Center"
+              FontSize="15"
+              FontWeight="SemiBold"
+              Text="일치하는 과목이 없습니다" />
+          <TextBlock
+              HorizontalAlignment="Center"
+              Classes="secondary"
+              Text="검색어 또는 필터를 바꿔 다시 찾아보세요."
+              TextAlignment="Center"
+              TextWrapping="Wrap" />
+          <Button
+              x:Name="ResetCourseSearchButton"
+              Classes="outline"
+              MinHeight="40"
+              Margin="0,6,0,0"
+              HorizontalAlignment="Center"
+              VerticalContentAlignment="Center"
+              Command="{Binding ResetCourseSearchCommand}"
+              Content="검색 및 필터 초기화"
+              AutomationProperties.Name="검색 및 필터 초기화" />
+        </StackPanel>
+      </Grid>
     </Grid>
   </Border>
 </UserControl>

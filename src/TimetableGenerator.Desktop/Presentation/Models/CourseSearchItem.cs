@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Text;
 
 using TimetableGenerator.Application.Planning;
 using TimetableGenerator.Desktop.Presentation.Catalog;
@@ -14,11 +13,11 @@ internal sealed class CourseSearchItem : ObservableObject
 {
     private readonly ObservableCollection<CourseSelectionOption> mSelectionOptions;
 
-    private readonly string mSearchIndex;
-
     private CourseSelectionOption mSelectedSelectionOption;
 
     private bool mIsAdded;
+
+    private ECourseSelectionAction mCourseSelectionAction;
 
     public CatalogCourseProjection Projection { get; }
 
@@ -239,6 +238,32 @@ internal sealed class CourseSearchItem : ObservableObject
         }
     }
 
+    public string SelectedCourseActionAccessibleName
+    {
+        get
+        {
+            return mCourseSelectionAction switch
+            {
+                ECourseSelectionAction.Remove => Name + "을 계획에서 제거",
+                ECourseSelectionAction.Edit => Name + " 수강 선택 수정",
+                _ => Name + "은 현재 계획에 추가되어 있지 않습니다.",
+            };
+        }
+    }
+
+    public string SelectedCourseActionToolTipText
+    {
+        get
+        {
+            return mCourseSelectionAction switch
+            {
+                ECourseSelectionAction.Remove => "계획에서 제거",
+                ECourseSelectionAction.Edit => "수강 선택 수정",
+                _ => string.Empty,
+            };
+        }
+    }
+
     public CourseSearchItem(CatalogCourseProjection projection)
     {
         if (projection == null)
@@ -258,9 +283,9 @@ internal sealed class CourseSearchItem : ObservableObject
         mSelectionOptions = new ObservableCollection<CourseSelectionOption>(
             selectionOptions);
         mSelectedSelectionOption = mSelectionOptions[0];
+        mCourseSelectionAction = ECourseSelectionAction.None;
         InstructorDisplayText = createInstructorSummary(projection);
         SingleOfferingDetailsDisplayText = createSingleOfferingDetails(projection);
-        mSearchIndex = createSearchIndex(projection);
     }
 
     public bool MatchesSearchText(string searchText)
@@ -270,14 +295,77 @@ internal sealed class CourseSearchItem : ObservableObject
             throw new ArgumentNullException(nameof(searchText));
         }
 
-        if (string.IsNullOrWhiteSpace(searchText))
+        CourseSearchQuery query = CourseSearchQuery.Create(searchText);
+        if (query.IsEmpty)
         {
             return true;
         }
 
-        return mSearchIndex.Contains(
-            searchText.Trim(),
-            StringComparison.CurrentCultureIgnoreCase);
+        return FindSearchMatchOrNull(query) != null;
+    }
+
+    public CourseSearchMatch? FindSearchMatchOrNull(CourseSearchQuery query)
+    {
+        if (query == null)
+        {
+            throw new ArgumentNullException(nameof(query));
+        }
+
+        if (query.IsEmpty)
+        {
+            return null;
+        }
+
+        StringComparison comparison = StringComparison.OrdinalIgnoreCase;
+        if (Code.Equals(query.Value, comparison))
+        {
+            return new CourseSearchMatch(
+                this,
+                ECourseSearchMatchKind.ExactCourseCode);
+        }
+
+        if (Code.StartsWith(query.Value, comparison))
+        {
+            return new CourseSearchMatch(
+                this,
+                ECourseSearchMatchKind.CourseCodePrefix);
+        }
+
+        if (Name.Equals(query.Value, comparison)
+            || EnglishName.Equals(query.Value, comparison))
+        {
+            return new CourseSearchMatch(
+                this,
+                ECourseSearchMatchKind.ExactCourseTitle);
+        }
+
+        if (Name.StartsWith(query.Value, comparison)
+            || EnglishName.StartsWith(query.Value, comparison))
+        {
+            return new CourseSearchMatch(
+                this,
+                ECourseSearchMatchKind.CourseTitlePrefix);
+        }
+
+        if (Name.Contains(query.Value, comparison)
+            || EnglishName.Contains(query.Value, comparison))
+        {
+            return new CourseSearchMatch(
+                this,
+                ECourseSearchMatchKind.CourseTitleContains);
+        }
+
+        foreach (CatalogOfferingProjection offering in Projection.Offerings)
+        {
+            if (offering.InstructorSummary.Contains(query.Value, comparison))
+            {
+                return new CourseSearchMatch(
+                    this,
+                    ECourseSearchMatchKind.InstructorContains);
+            }
+        }
+
+        return null;
     }
 
     public PlanningCourseSelection CreateSelection()
@@ -310,6 +398,30 @@ internal sealed class CourseSearchItem : ObservableObject
 
         SelectedSelectionOption = matchingOptionOrNull;
         markAdded();
+    }
+
+    public void SynchronizeSelectedAction(ECourseSelectionAction selectionAction)
+    {
+        if (Enum.IsDefined(typeof(ECourseSelectionAction), selectionAction) == false)
+        {
+            throw new ArgumentOutOfRangeException(nameof(selectionAction));
+        }
+
+        bool isActionExpected = IsAdded;
+        bool hasAction = selectionAction != ECourseSelectionAction.None;
+        if (isActionExpected != hasAction)
+        {
+            throw new ArgumentException(
+                "Selected courses require an available selected-course action.",
+                nameof(selectionAction));
+        }
+
+        if (mCourseSelectionAction != selectionAction)
+        {
+            mCourseSelectionAction = selectionAction;
+            raisePropertyChanged(nameof(SelectedCourseActionAccessibleName));
+            raisePropertyChanged(nameof(SelectedCourseActionToolTipText));
+        }
     }
 
     private static List<CourseSelectionOption> createSelectionOptions(
@@ -386,27 +498,6 @@ internal sealed class CourseSearchItem : ObservableObject
 
         CatalogOfferingProjection offering = projection.Offerings[0];
         return offering.ScheduleSummary + " · " + offering.LocationSummary;
-    }
-
-    private static string createSearchIndex(CatalogCourseProjection projection)
-    {
-        StringBuilder searchIndex = new StringBuilder();
-        searchIndex.Append(projection.Course.Code.Value);
-        searchIndex.Append(' ');
-        searchIndex.Append(projection.Course.KoreanName.Value);
-        searchIndex.Append(' ');
-        searchIndex.Append(projection.Course.EnglishName.Value);
-        foreach (CatalogOfferingProjection offering in projection.Offerings)
-        {
-            searchIndex.Append(' ');
-            searchIndex.Append(offering.InstructorSummary);
-            searchIndex.Append(' ');
-            searchIndex.Append(offering.Metadata.Classification.OfferingUnitName.Value);
-            searchIndex.Append(' ');
-            searchIndex.Append(offering.Offering.SectionCode.Value);
-        }
-
-        return searchIndex.ToString();
     }
 
     private bool containsSelectionOption(CourseSelectionOption option)

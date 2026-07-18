@@ -16,6 +16,11 @@ internal sealed partial class PlannerWorkspaceViewModel
 {
     private readonly IReadOnlyList<CourseSearchItem> mAllCourses;
 
+    private DelegateCommand? mResetCourseSearchCommandOrNull;
+
+    private ParameterizedCommand<CourseSearchItem>?
+        mEditOrRemoveSelectedCourseCommandOrNull;
+
     private string mSearchText;
 
     private CourseUnitFilterOption mSelectedUnitFilter;
@@ -104,9 +109,56 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
+    public ECourseSearchResultState CourseSearchResultState
+    {
+        get
+        {
+            return VisibleCourses.Count == 0
+                ? ECourseSearchResultState.Empty
+                : ECourseSearchResultState.Populated;
+        }
+    }
+
+    public bool HasVisibleCourses
+    {
+        get
+        {
+            return CourseSearchResultState == ECourseSearchResultState.Populated;
+        }
+    }
+
+    public bool HasNoVisibleCourses
+    {
+        get
+        {
+            return CourseSearchResultState == ECourseSearchResultState.Empty;
+        }
+    }
+
     public ICommand AddCourseCommand { get; }
 
     public ICommand RemoveTimeNotProvidedCourseCommand { get; }
+
+    public ICommand ResetCourseSearchCommand
+    {
+        get
+        {
+            mResetCourseSearchCommandOrNull ??=
+                new DelegateCommand(resetCourseSearch);
+            return mResetCourseSearchCommandOrNull;
+        }
+    }
+
+    public ICommand EditOrRemoveSelectedCourseCommand
+    {
+        get
+        {
+            mEditOrRemoveSelectedCourseCommandOrNull ??=
+                new ParameterizedCommand<CourseSearchItem>(
+                    editOrRemoveSelectedCourse);
+            return mEditOrRemoveSelectedCourseCommandOrNull;
+        }
+    }
 
     private static IReadOnlyList<CourseSearchItem> createCourseItems(
         CourseCatalogProjection catalogProjection)
@@ -123,7 +175,41 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private static int compareCourseItems(CourseSearchItem left, CourseSearchItem right)
     {
-        return string.Compare(left.Code, right.Code, StringComparison.Ordinal);
+        int codeComparison = string.Compare(
+            left.Code,
+            right.Code,
+            StringComparison.OrdinalIgnoreCase);
+        if (codeComparison != 0)
+        {
+            return codeComparison;
+        }
+
+        int titleComparison = string.Compare(
+            left.Name,
+            right.Name,
+            StringComparison.OrdinalIgnoreCase);
+        if (titleComparison != 0)
+        {
+            return titleComparison;
+        }
+
+        return string.Compare(
+            left.CourseId.Value,
+            right.CourseId.Value,
+            StringComparison.Ordinal);
+    }
+
+    private static int compareCourseSearchMatches(
+        CourseSearchMatch left,
+        CourseSearchMatch right)
+    {
+        int kindComparison = left.Kind.CompareTo(right.Kind);
+        if (kindComparison != 0)
+        {
+            return kindComparison;
+        }
+
+        return compareCourseItems(left.Course, right.Course);
     }
 
     private static ObservableCollection<CourseUnitFilterOption> createUnitFilters(
@@ -181,25 +267,165 @@ internal sealed partial class PlannerWorkspaceViewModel
         afterPlanContentMutation();
     }
 
-    private void refreshVisibleCourses()
+    private void editOrRemoveSelectedCourse(CourseSearchItem course)
     {
-        VisibleCourses.Clear();
-        foreach (CourseSearchItem course in mAllCourses)
+        throwIfDisposed();
+        if (course == null)
         {
-            if (matchesCurrentFilters(course))
+            throw new ArgumentNullException(nameof(course));
+        }
+
+        foreach (UnscheduledOfferingSelection selection
+            in ActivePlan.Plan.UnscheduledOfferingSelections)
+        {
+            if (selection.CourseId == course.CourseId)
             {
-                VisibleCourses.Add(course);
+                mSession.RemoveCourse(course.CourseId);
+                afterPlanContentMutation();
+                return;
             }
         }
 
+        foreach (CourseChoiceGroup group in ActivePlan.Plan.CourseChoiceGroups)
+        {
+            if (groupContainsCourse(group, course.CourseId) == false)
+            {
+                continue;
+            }
+
+            if (group.CourseCandidates.Count == 1)
+            {
+                mSession.RemoveCourseChoiceGroup(group.Id);
+                afterPlanContentMutation();
+                return;
+            }
+
+            PlanCourseChoiceGroupItem groupItem =
+                findActivePlanCourseChoiceGroupItem(group.Id);
+            beginEditCourseChoiceGroup(groupItem);
+            return;
+        }
+    }
+
+    private static bool groupContainsCourse(
+        CourseChoiceGroup group,
+        CourseId courseId)
+    {
+        foreach (CourseCandidate candidate in group.CourseCandidates)
+        {
+            if (candidate.CourseId == courseId)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private PlanCourseChoiceGroupItem findActivePlanCourseChoiceGroupItem(
+        CourseChoiceGroupId groupId)
+    {
+        foreach (PlanCourseChoiceGroupItem groupItem
+            in ActivePlan.CourseChoiceGroups)
+        {
+            if (groupItem.GroupId == groupId)
+            {
+                return groupItem;
+            }
+        }
+
+        throw new InvalidOperationException(
+            "The active plan did not contain its projected course choice group.");
+    }
+
+    private void resetCourseSearch()
+    {
+        throwIfDisposed();
+        bool hasChanged = false;
+        if (mSearchText.Length > 0)
+        {
+            mSearchText = string.Empty;
+            raisePropertyChanged(nameof(SearchText));
+            hasChanged = true;
+        }
+
+        CourseUnitFilterOption defaultUnitFilter = UnitFilters[0];
+        if (ReferenceEquals(mSelectedUnitFilter, defaultUnitFilter) == false)
+        {
+            mSelectedUnitFilter = defaultUnitFilter;
+            raisePropertyChanged(nameof(SelectedUnitFilter));
+            hasChanged = true;
+        }
+
+        RequirementFilterOption defaultRequirementFilter = RequirementFilters[0];
+        if (ReferenceEquals(
+            mSelectedRequirementFilter,
+            defaultRequirementFilter) == false)
+        {
+            mSelectedRequirementFilter = defaultRequirementFilter;
+            raisePropertyChanged(nameof(SelectedRequirementFilter));
+            hasChanged = true;
+        }
+
+        if (hasChanged)
+        {
+            refreshVisibleCourses();
+        }
+    }
+
+    private void refreshVisibleCourses()
+    {
+        VisibleCourses.Clear();
+        CourseSearchQuery query = CourseSearchQuery.Create(SearchText);
+        if (query.IsEmpty)
+        {
+            foreach (CourseSearchItem course in mAllCourses)
+            {
+                if (matchesCurrentFilters(course))
+                {
+                    VisibleCourses.Add(course);
+                }
+            }
+        }
+        else
+        {
+            addRankedVisibleCourses(query);
+        }
+
         raisePropertyChanged(nameof(VisibleCourseHeading));
+        raisePropertyChanged(nameof(CourseSearchResultState));
+        raisePropertyChanged(nameof(HasVisibleCourses));
+        raisePropertyChanged(nameof(HasNoVisibleCourses));
     }
 
     private bool matchesCurrentFilters(CourseSearchItem course)
     {
         return SelectedUnitFilter.Matches(course.Projection)
-            && SelectedRequirementFilter.Matches(course.Projection)
-            && course.MatchesSearchText(SearchText);
+            && SelectedRequirementFilter.Matches(course.Projection);
+    }
+
+    private void addRankedVisibleCourses(CourseSearchQuery query)
+    {
+        List<CourseSearchMatch> matches = new List<CourseSearchMatch>();
+        foreach (CourseSearchItem course in mAllCourses)
+        {
+            if (matchesCurrentFilters(course) == false)
+            {
+                continue;
+            }
+
+            CourseSearchMatch? matchOrNull = course.FindSearchMatchOrNull(query);
+            if (matchOrNull != null)
+            {
+                matches.Add(matchOrNull);
+            }
+        }
+
+        matches.Sort(compareCourseSearchMatches);
+        foreach (CourseSearchMatch match in matches)
+        {
+            VisibleCourses.Add(match.Course);
+        }
     }
 
     private void synchronizeCourseSelectionState()
@@ -208,7 +434,34 @@ internal sealed partial class PlannerWorkspaceViewModel
         {
             course.SynchronizeSelection(
                 findActiveCourseSelectionOrNull(course));
+            course.SynchronizeSelectedAction(
+                findActiveCourseSelectionAction(course.CourseId));
         }
+    }
+
+    private ECourseSelectionAction findActiveCourseSelectionAction(
+        CourseId courseId)
+    {
+        foreach (UnscheduledOfferingSelection selection
+            in ActivePlan.Plan.UnscheduledOfferingSelections)
+        {
+            if (selection.CourseId == courseId)
+            {
+                return ECourseSelectionAction.Remove;
+            }
+        }
+
+        foreach (CourseChoiceGroup group in ActivePlan.Plan.CourseChoiceGroups)
+        {
+            if (groupContainsCourse(group, courseId))
+            {
+                return group.CourseCandidates.Count == 1
+                    ? ECourseSelectionAction.Remove
+                    : ECourseSelectionAction.Edit;
+            }
+        }
+
+        return ECourseSelectionAction.None;
     }
 
     private PlanningCourseSelection? findActiveCourseSelectionOrNull(
