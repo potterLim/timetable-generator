@@ -33,6 +33,8 @@ internal sealed partial class ScheduleBoardView : UserControl
 
     private readonly Border mBoardExportSurface;
 
+    private readonly Border mBoardContextHeader;
+
     private ScheduleBoardLayout mRenderedLayout;
 
     internal ScheduleBoardLayout RenderedLayout
@@ -68,20 +70,32 @@ internal sealed partial class ScheduleBoardView : UserControl
         AvaloniaXamlLoader.Load(this);
         Border? boardExportSurfaceOrNull = this.FindControl<Border>(
             "BoardExportSurface");
+        Border? boardContextHeaderOrNull = this.FindControl<Border>(
+            "BoardContextHeader");
         Grid? boardGridOrNull = this.FindControl<Grid>("BoardGrid");
         if (boardExportSurfaceOrNull == null
+            || boardContextHeaderOrNull == null
             || boardGridOrNull == null)
         {
             throw new InvalidOperationException(
-                "The schedule board export surface was not initialized.");
+                "The schedule board surfaces were not initialized.");
         }
 
         mBoardExportSurface = boardExportSurfaceOrNull;
+        mBoardContextHeader = boardContextHeaderOrNull;
+        mBoardContextHeader.IsVisible = false;
         mBoardGrid = boardGridOrNull;
         mRenderedLayout = ScheduleBoardLayout.Default;
         DataContextChanged += onDataContextChanged;
         AttachedToVisualTree += onAttachedToVisualTree;
         ActualThemeVariantChanged += onActualThemeVariantChanged;
+    }
+
+    internal static ScheduleBoardView createForPngExport()
+    {
+        ScheduleBoardView scheduleBoard = new ScheduleBoardView();
+        scheduleBoard.mBoardContextHeader.IsVisible = true;
+        return scheduleBoard;
     }
 
     private void onDataContextChanged(object? senderOrNull, EventArgs eventArgs)

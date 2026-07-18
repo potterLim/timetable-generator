@@ -63,7 +63,21 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     }
 
     [Fact]
-    public void PngExportLayoutStartsAtTenWhenEntriesBeginLater()
+    public void EmptyPngExportLayoutRunsFromTenAmThroughFourPm()
+    {
+        ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForPngExport(
+            Array.Empty<ScheduleEntry>());
+
+        Assert.Equal(
+            new ScheduleBoardTimeBoundary(600),
+            layout.TimeAxis.Start);
+        Assert.Equal(
+            new ScheduleBoardTimeBoundary(960),
+            layout.TimeAxis.End);
+    }
+
+    [Fact]
+    public void PngExportLayoutStartsAtContextHourWhenEntriesBeginLater()
     {
         ScheduleEntry entry = createScheduleEntry(
             EDay.Monday,
@@ -73,14 +87,14 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             new ScheduleEntry[] { entry });
 
         Assert.Equal(
-            new ScheduleBoardTimeBoundary(600),
+            new ScheduleBoardTimeBoundary(840),
             layout.TimeAxis.Start);
         Assert.Equal(
             new ScheduleBoardTimeBoundary(960),
             layout.TimeAxis.End);
-        Assert.Equal(72, layout.TimeAxis.IncrementCount);
-        Assert.Equal(12, layout.TimeAxis.LabelTimes.Count);
-        Assert.Equal("10:00", layout.TimeAxis.LabelTimes[0].ToString());
+        Assert.Equal(24, layout.TimeAxis.IncrementCount);
+        Assert.Equal(4, layout.TimeAxis.LabelTimes.Count);
+        Assert.Equal("14:00", layout.TimeAxis.LabelTimes[0].ToString());
         Assert.Equal("15:30", layout.TimeAxis.LabelTimes[^1].ToString());
     }
 
@@ -164,14 +178,27 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 Dispatcher.UIThread.RunJobs();
 
                 Assert.Equal(
-                    new ScheduleBoardTimeBoundary(600),
+                    new ScheduleBoardTimeBoundary(660),
                     snapshot.Layout.TimeAxis.Start);
                 Assert.Equal(
                     new ScheduleBoardTimeBoundary(960),
                     snapshot.Layout.TimeAxis.End);
-                Assert.Equal(72, snapshot.Layout.TimeAxis.IncrementCount);
-                Assert.Equal(12, snapshot.Layout.TimeAxis.LabelTimes.Count);
+                Assert.Equal(60, snapshot.Layout.TimeAxis.IncrementCount);
+                Assert.Equal(10, snapshot.Layout.TimeAxis.LabelTimes.Count);
                 Assert.Single(findBoardGrid(snapshot.Surface).Children.OfType<Button>());
+
+                Border exportHeader = snapshot.Surface.GetVisualDescendants()
+                    .OfType<Border>()
+                    .Single(border => border.Name == "BoardContextHeader");
+                Assert.True(exportHeader.IsVisible);
+                Assert.Collection(
+                    exportHeader.GetVisualDescendants().OfType<TextBlock>(),
+                    textBlock => Assert.Equal(
+                        "PNG 내보내기 테스트",
+                        textBlock.Text),
+                    textBlock => Assert.Equal(
+                        "한동대학교 · 2026-2",
+                        textBlock.Text));
             }
 
             Assert.Empty(exportHost.Children);

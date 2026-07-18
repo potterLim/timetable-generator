@@ -12,6 +12,8 @@ internal sealed class ScheduleBoardTimeAxis
     private const int PNG_EXPORT_DEFAULT_END_MINUTE = 960;
     private const int LAYOUT_INCREMENT_MINUTES = 5;
     private const int GUIDE_INCREMENT_MINUTES = 30;
+    private const int LATE_START_CONTEXT_MINUTES = 30;
+    private const int MINUTES_PER_HOUR = 60;
     private const int MINUTES_PER_DAY = 1_440;
 
     private readonly IReadOnlyList<ScheduleBoardTimeBoundary> mLabelTimes;
@@ -79,27 +81,49 @@ internal sealed class ScheduleBoardTimeAxis
     {
         ArgumentNullException.ThrowIfNull(entries);
 
-        int earliestMinute = DEFAULT_START_MINUTE;
+        int startMinute = findStartMinute(entries);
         int latestMinute = defaultEndMinute;
         foreach (ScheduleEntry entry in entries)
         {
-            earliestMinute = Math.Min(
-                earliestMinute,
-                entry.TimeRange.Start.MinutesFromMidnight);
             latestMinute = Math.Max(
                 latestMinute,
                 entry.TimeRange.End.MinutesFromMidnight);
         }
 
-        int startMinute = Math.Max(
-            0,
-            roundDown(earliestMinute, GUIDE_INCREMENT_MINUTES));
         int endMinute = Math.Min(
             MINUTES_PER_DAY,
             roundUp(latestMinute, GUIDE_INCREMENT_MINUTES));
         return new ScheduleBoardTimeAxis(
             new ScheduleBoardTimeBoundary(startMinute),
             new ScheduleBoardTimeBoundary(endMinute));
+    }
+
+    private static int findStartMinute(IReadOnlyList<ScheduleEntry> entries)
+    {
+        if (entries.Count == 0)
+        {
+            return DEFAULT_START_MINUTE;
+        }
+
+        int earliestMinute = entries[0].TimeRange.Start.MinutesFromMidnight;
+        foreach (ScheduleEntry entry in entries)
+        {
+            earliestMinute = Math.Min(
+                earliestMinute,
+                entry.TimeRange.Start.MinutesFromMidnight);
+        }
+
+        if (earliestMinute <= DEFAULT_START_MINUTE)
+        {
+            return Math.Max(
+                0,
+                roundDown(earliestMinute, GUIDE_INCREMENT_MINUTES));
+        }
+
+        int contextualMinute = earliestMinute - LATE_START_CONTEXT_MINUTES;
+        return Math.Max(
+            DEFAULT_START_MINUTE,
+            roundDown(contextualMinute, MINUTES_PER_HOUR));
     }
 
     public int FindStartingRowOffset(ScheduleTime time)

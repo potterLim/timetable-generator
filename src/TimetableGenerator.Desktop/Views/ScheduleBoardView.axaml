@@ -91,27 +91,21 @@
             Background="{DynamicResource ElevatedSurfaceBrush}">
           <StackPanel Background="{DynamicResource ElevatedSurfaceBrush}">
             <Border
+                x:Name="BoardContextHeader"
                 Padding="18,15"
                 BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,0,0,1"
                 Background="{DynamicResource ElevatedSurfaceBrush}">
-              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
-                <StackPanel Spacing="3">
-                  <TextBlock
-                      FontSize="17"
-                      FontWeight="SemiBold"
-                      Text="{Binding PlanName.Value}"
-                      TextTrimming="CharacterEllipsis" />
-                  <TextBlock
-                      Classes="caption"
-                      Text="{Binding InstitutionTermDisplayText}" />
-                </StackPanel>
+              <StackPanel Spacing="3">
                 <TextBlock
-                    Grid.Column="1"
-                    VerticalAlignment="Center"
+                    FontSize="17"
+                    FontWeight="SemiBold"
+                    Text="{Binding PlanName.Value}"
+                    TextTrimming="CharacterEllipsis" />
+                <TextBlock
                     Classes="caption"
-                    Text="주간 시간표" />
-              </Grid>
+                    Text="{Binding InstitutionTermDisplayText}" />
+              </StackPanel>
             </Border>
             <Grid
                 x:Name="BoardGrid"

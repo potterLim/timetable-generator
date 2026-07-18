@@ -11,7 +11,7 @@ namespace TimetableGenerator.Desktop.Tests;
 public sealed class ScheduleBoardLayoutTests
 {
     [Fact]
-    public void DefaultLayoutShowsWeekdaysFromTenAmThroughSevenPeriods()
+    public void DefaultLayoutShowsWeekdaysFromTenAmThroughSevenPm()
     {
         ScheduleBoardLayout layout = ScheduleBoardLayout.Default;
 
@@ -101,6 +101,34 @@ public sealed class ScheduleBoardLayoutTests
         Assert.Equal(new ScheduleBoardTimeBoundary(1_440), layout.TimeAxis.End);
         Assert.Equal("23:30", layout.TimeAxis.LabelTimes[
             layout.TimeAxis.LabelTimes.Count - 1].ToString());
+    }
+
+    [Theory]
+    [InlineData(10, 5, 10, 35, 600)]
+    [InlineData(11, 0, 11, 30, 600)]
+    [InlineData(11, 30, 12, 0, 660)]
+    [InlineData(14, 0, 14, 30, 780)]
+    [InlineData(14, 30, 15, 0, 840)]
+    [InlineData(20, 0, 20, 30, 1_140)]
+    public void LateTimeAxisStartsAtAContextualWholeHour(
+        int startHour,
+        int startMinute,
+        int endHour,
+        int endMinute,
+        int expectedStartMinute)
+    {
+        ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForEntries(
+            new ScheduleEntry[]
+            {
+                createEntry(
+                    EDay.Monday,
+                    new ScheduleTime(startHour, startMinute),
+                    new ScheduleTime(endHour, endMinute)),
+            });
+
+        Assert.Equal(
+            new ScheduleBoardTimeBoundary(expectedStartMinute),
+            layout.TimeAxis.Start);
     }
 
     [Fact]

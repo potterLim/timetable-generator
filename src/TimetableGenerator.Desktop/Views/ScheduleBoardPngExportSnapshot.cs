@@ -77,7 +77,7 @@ internal sealed class ScheduleBoardPngExportSnapshot : IDisposable
                 "PNG export requires a positive schedule board width.");
         }
 
-        ScheduleBoardView exportBoard = new ScheduleBoardView();
+        ScheduleBoardView exportBoard = ScheduleBoardView.createForPngExport();
         exportBoard.Width = exportWidth;
         host.Children.Add(exportBoard);
         exportBoard.DataContext = exportPresentation;

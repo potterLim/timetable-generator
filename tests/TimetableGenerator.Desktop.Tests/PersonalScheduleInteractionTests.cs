@@ -553,7 +553,7 @@ public sealed class PersonalScheduleInteractionTests
                 .OfType<Button>()
                 .Single();
 
-            Assert.Equal(29, Grid.GetRow(scheduleCard));
+            Assert.Equal(17, Grid.GetRow(scheduleCard));
             Assert.Equal(12, Grid.GetRowSpan(scheduleCard));
             Assert.Contains("personal", scheduleCard.Classes);
             Assert.Contains(

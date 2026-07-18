@@ -102,16 +102,16 @@ public sealed class ScheduleWorkspaceViewTests
             }
 
             Assert.Equal(
-                new ScheduleBoardTimeBoundary(600),
+                new ScheduleBoardTimeBoundary(1_020),
                 scheduleBoard.RenderedLayout.TimeAxis.Start);
             Assert.Equal(
                 new ScheduleBoardTimeBoundary(1_410),
                 scheduleBoard.RenderedLayout.TimeAxis.End);
-            Assert.Equal(163, boardGrid.RowDefinitions.Count);
-            Assert.Contains(91, scheduleRows);
-            Assert.Contains(109, scheduleRows);
-            Assert.Contains(127, scheduleRows);
-            Assert.Contains(145, scheduleRows);
+            Assert.Equal(79, boardGrid.RowDefinitions.Count);
+            Assert.Contains(7, scheduleRows);
+            Assert.Contains(25, scheduleRows);
+            Assert.Contains(43, scheduleRows);
+            Assert.Contains(61, scheduleRows);
             Assert.Contains(
                 "목요일 22:00–23:15",
                 latestScheduleAccessibleNameOrNull);
@@ -164,8 +164,15 @@ public sealed class ScheduleWorkspaceViewTests
                 .ToList();
             Button scheduleCard = Assert.Single(
                 boardGridOrNull.Children.OfType<Button>());
+            Border? contextHeaderOrNull = scheduleBoard.FindControl<Border>(
+                "BoardContextHeader");
 
             Assert.Same(presentation.Layout, scheduleBoard.RenderedLayout);
+            Assert.NotNull(contextHeaderOrNull);
+            Assert.False(contextHeaderOrNull.IsVisible);
+            Assert.Equal(
+                "주간 시간표",
+                AutomationProperties.GetName(scheduleBoard));
             Assert.Equal(8, boardGridOrNull.ColumnDefinitions.Count);
             assertDayColumnsAreEqual(boardGridOrNull);
             Assert.Contains(dayHeaders, textBlock => textBlock.Text == "토");
@@ -600,6 +607,7 @@ public sealed class ScheduleWorkspaceViewTests
     public async Task PngExportSurfaceIncludesEveryPeriodAndExpandedCardContentAsync()
     {
         List<ScheduleEntry> entries = new List<ScheduleEntry>();
+        entries.Add(createScheduleEntry(EDay.Monday, new AcademicPeriod(1)));
         entries.Add(createLongScheduleEntry(EDay.Thursday, new AcademicPeriod(10)));
         ScheduleBoardView scheduleBoard = new ScheduleBoardView();
         scheduleBoard.DataContext = createScheduleBoardPresentation(
