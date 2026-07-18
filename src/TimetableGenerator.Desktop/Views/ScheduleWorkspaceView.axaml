@@ -238,7 +238,8 @@
               <ItemsControl
                   x:Name="ScheduleListItems"
                   Margin="12,0,5,5"
-                  ItemsSource="{Binding DisplayedScheduleBoard.ListEntries}">
+                  ItemsSource="{Binding DisplayedScheduleBoard.ListEntries}"
+                  AutomationProperties.ControlTypeOverride="List">
                 <ItemsControl.ItemsPanel>
                   <ItemsPanelTemplate>
                     <StackPanel Spacing="8" />
@@ -252,6 +253,7 @@
                         BorderBrush="{DynamicResource BorderBrush}"
                         BorderThickness="1"
                         CornerRadius="7"
+                        AutomationProperties.ControlTypeOverride="ListItem"
                         AutomationProperties.Name="{Binding AccessibleName}">
                       <Grid ColumnDefinitions="130,18,*">
                         <StackPanel

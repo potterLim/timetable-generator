@@ -10,6 +10,11 @@
     <Setter Property="Foreground" Value="{DynamicResource CaptionButtonForeground}" />
     <Setter Property="Width" Value="{DynamicResource ProductCaptionButtonWidth}" />
     <Setter Property="Height" Value="{DynamicResource ProductCaptionButtonHeight}" />
+    <Setter Property="MinWidth" Value="0" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="VerticalAlignment" Value="Stretch" />
     <Setter
         Property="WindowDecorationProperties.ElementRole"
@@ -19,7 +24,9 @@
         <ContentPresenter
             Name="PART_ContentPresenter"
             Background="Transparent"
-            Content="{TemplateBinding Content}" />
+            Content="{TemplateBinding Content}"
+            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
       </ControlTemplate>
     </Setter>
     <Style Selector="^:pointerover /template/ ContentPresenter">
@@ -70,9 +77,15 @@
                   TextElement.FontSize="10">
                 <Button
                     x:Name="PART_MinimizeButton"
+                    Classes="caption-button"
                     Theme="{StaticResource ProductCaptionButtonTheme}"
                     WindowDecorationProperties.ElementRole="MinimizeButton">
-                  <Viewbox Width="11" Margin="2">
+                  <Viewbox
+                      Width="11"
+                      Height="11"
+                      Margin="2"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center">
                     <Path
                         Data="M2048 1229v-205h-2048v205h2048z"
                         Fill="{DynamicResource CaptionButtonForeground}"
@@ -81,9 +94,15 @@
                 </Button>
                 <Button
                     x:Name="PART_MaximizeButton"
+                    Classes="caption-button"
                     Theme="{StaticResource ProductCaptionButtonTheme}"
                     WindowDecorationProperties.ElementRole="MaximizeButton">
-                  <Viewbox Width="11" Margin="2">
+                  <Viewbox
+                      Width="11"
+                      Height="11"
+                      Margin="2"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center">
                     <Viewbox.RenderTransform>
                       <RotateTransform Angle="-90" />
                     </Viewbox.RenderTransform>
@@ -96,11 +115,17 @@
                 </Button>
                 <Button
                     x:Name="PART_CloseButton"
+                    Classes="caption-button"
                     Background="{DynamicResource CaptionCloseButtonHoverBackgroundBrush}"
                     BorderBrush="{DynamicResource CaptionCloseButtonPressedBackgroundBrush}"
                     Theme="{StaticResource ProductCaptionButtonTheme}"
                     WindowDecorationProperties.ElementRole="CloseButton">
-                  <Viewbox Width="11" Margin="2">
+                  <Viewbox
+                      Width="11"
+                      Height="11"
+                      Margin="2"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center">
                     <Path
                         Data="M1169 1024l879 -879l-145 -145l-879 879l-879 -879l-145 145l879 879l-879 879l145 145l879 -879l879 879l145 -145z"
                         Fill="{DynamicResource CaptionButtonForeground}"
@@ -124,9 +149,15 @@
                   TextElement.FontSize="10">
                 <Button
                     x:Name="PART_PopoverFullScreenButton"
+                    Classes="caption-button"
                     Theme="{StaticResource ProductCaptionButtonTheme}"
                     WindowDecorationProperties.ElementRole="FullScreenButton">
-                  <Viewbox Width="11" Margin="2">
+                  <Viewbox
+                      Width="11"
+                      Height="11"
+                      Margin="2"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center">
                     <Path
                         Data="M205 1024h819v-819h-205v469l-674 -674l-145 145l674 674h-469v205zM1374 1229h469v-205h-819v819h205v-469l674 674l145 -145z"
                         Fill="{DynamicResource CaptionButtonForeground}"
@@ -135,11 +166,17 @@
                 </Button>
                 <Button
                     x:Name="PART_PopoverCloseButton"
+                    Classes="caption-button"
                     Background="{DynamicResource CaptionCloseButtonHoverBackgroundBrush}"
                     BorderBrush="{DynamicResource CaptionCloseButtonPressedBackgroundBrush}"
                     Theme="{StaticResource ProductCaptionButtonTheme}"
                     WindowDecorationProperties.ElementRole="CloseButton">
-                  <Viewbox Width="11" Margin="2">
+                  <Viewbox
+                      Width="11"
+                      Height="11"
+                      Margin="2"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center">
                     <Path
                         Data="M1169 1024l879 -879l-145 -145l-879 879l-879 -879l-145 145l879 879l-879 879l145 145l879 -879l879 879l145 -145z"
                         Fill="{DynamicResource CaptionButtonForeground}"

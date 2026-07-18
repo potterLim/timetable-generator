@@ -820,6 +820,16 @@ public sealed class ScheduleWorkspaceViewTests
             Assert.Equal(
                 workspace.DisplayedScheduleBoard.ListEntries.Count,
                 listItemsOrNull.ItemCount);
+            Assert.Equal(
+                Avalonia.Automation.Peers.AutomationControlType.List,
+                AutomationProperties.GetControlTypeOverride(listItemsOrNull));
+            Border semanticListEntry = listItemsOrNull.GetVisualDescendants()
+                .OfType<Border>()
+                .First(candidate => AutomationProperties.GetControlTypeOverride(
+                    candidate)
+                    == Avalonia.Automation.Peers.AutomationControlType.ListItem);
+            Assert.False(string.IsNullOrWhiteSpace(
+                AutomationProperties.GetName(semanticListEntry)));
 
             workspaceView.ToggleSchedulePresentationCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();

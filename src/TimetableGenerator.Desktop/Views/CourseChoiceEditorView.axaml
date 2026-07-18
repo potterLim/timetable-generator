@@ -81,8 +81,7 @@
             MaxWidth="680"
             Classes="secondary"
             Text="{Binding CourseChoiceEditorDescription}"
-            TextTrimming="CharacterEllipsis"
-            TextWrapping="NoWrap"
+            TextWrapping="Wrap"
             ToolTip.Tip="{Binding CourseChoiceEditorDescription}" />
       </StackPanel>
       <Button
@@ -93,6 +92,7 @@
           Height="36"
           MinWidth="36"
           MinHeight="36"
+          VerticalAlignment="Top"
           Command="{Binding CancelCourseChoiceEditCommand}"
           AutomationProperties.Name="수강 선택 편집기 닫기"
           ToolTip.Tip="닫기">
@@ -226,8 +226,7 @@
               <TextBlock
                   Classes="caption"
                   Text="여러 과목 중 하나만 들으면 될 때 같은 선택으로 묶으세요."
-                  TextTrimming="CharacterEllipsis"
-                  TextWrapping="NoWrap"
+                  TextWrapping="Wrap"
                   ToolTip.Tip="여러 과목 중 하나만 들으면 될 때 같은 선택으로 묶으세요." />
             </StackPanel>
             <Grid>
@@ -283,7 +282,7 @@
                             Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).AddAlternativeCourseCommand}"
                             CommandParameter="{Binding}"
                             AutomationProperties.Name="{Binding AddButtonAccessibleName}">
-                          <StackPanel Orientation="Horizontal" Spacing="5">
+                          <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="5">
                             <icons:FluentIcon Icon="Add" IconVariant="Regular" FontSize="15" />
                             <TextBlock Text="추가" />
                           </StackPanel>
@@ -298,7 +297,7 @@
                 Classes="caption"
                 IsVisible="{Binding HasNoAlternativeCourseSearchResults}"
                 Text="추가할 수 있는 과목이 없습니다."
-                TextWrapping="NoWrap" />
+                TextWrapping="Wrap" />
           </StackPanel>
         </Border>
       </StackPanel>
@@ -310,10 +309,12 @@
           Orientation="Horizontal"
           Spacing="8"
           VerticalAlignment="Center"
-          IsVisible="{Binding HasIncompleteCourseChoice}">
+          IsVisible="{Binding HasIncompleteCourseChoice}"
+          AutomationProperties.LiveSetting="Polite">
         <icons:FluentIcon
             Width="17"
             Height="17"
+            VerticalAlignment="Center"
             Icon="Info"
             IconVariant="Regular"
             Foreground="{DynamicResource AccentBrush}" />
@@ -321,8 +322,7 @@
             Classes="caption"
             VerticalAlignment="Center"
             Text="{Binding CourseChoiceValidationMessage}"
-            TextTrimming="CharacterEllipsis"
-            TextWrapping="NoWrap"
+            TextWrapping="Wrap"
             ToolTip.Tip="{Binding CourseChoiceValidationMessage}" />
       </StackPanel>
       <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">

@@ -85,9 +85,6 @@ public sealed class WorkspaceEmptyStateTests
         Border scheduleEmptyState = findRequiredControl<Border>(
             scheduleWorkspace,
             "ScheduleEmptyState");
-        StackPanel recommendationFooter = findRequiredControl<StackPanel>(
-            scheduleWorkspace,
-            "RecommendationFooter");
         Button exportButton = findRequiredControl<Button>(
             scheduleWorkspace,
             "ExportScheduleButton");
@@ -98,7 +95,6 @@ public sealed class WorkspaceEmptyStateTests
         Assert.False(recommendationActions.IsVisible);
         Assert.False(scheduleBoardContainer.IsVisible);
         Assert.True(scheduleEmptyState.IsVisible);
-        Assert.False(recommendationFooter.IsVisible);
         Assert.False(exportButton.IsEffectivelyVisible);
         Assert.False(exportButton.IsEnabled);
         Assert.True(openInspectorPane.IsEffectivelyVisible);
@@ -116,9 +112,6 @@ public sealed class WorkspaceEmptyStateTests
         Border scheduleEmptyState = findRequiredControl<Border>(
             scheduleWorkspace,
             "ScheduleEmptyState");
-        StackPanel recommendationFooter = findRequiredControl<StackPanel>(
-            scheduleWorkspace,
-            "RecommendationFooter");
         Button exportButton = findRequiredControl<Button>(
             scheduleWorkspace,
             "ExportScheduleButton");
@@ -129,7 +122,6 @@ public sealed class WorkspaceEmptyStateTests
         Assert.True(recommendationActions.IsVisible);
         Assert.True(scheduleBoardContainer.IsVisible);
         Assert.False(scheduleEmptyState.IsVisible);
-        Assert.True(recommendationFooter.IsVisible);
         Assert.True(exportButton.IsEffectivelyVisible);
         Assert.True(exportButton.IsEnabled);
         Assert.True(openInspectorPane.IsEffectivelyVisible);

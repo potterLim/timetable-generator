@@ -151,6 +151,22 @@
     <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
   </Style>
 
+  <Style Selector="Button.icon.compact">
+    <Setter Property="Width" Value="32" />
+    <Setter Property="Height" Value="32" />
+    <Setter Property="MinWidth" Value="32" />
+    <Setter Property="MinHeight" Value="32" />
+    <Setter Property="Padding" Value="6" />
+  </Style>
+
+  <Style Selector="Button.caption-button">
+    <Setter Property="MinWidth" Value="0" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+
   <Style Selector="Button.icon:pointerover">
     <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
   </Style>
@@ -178,6 +194,7 @@
   </Style>
 
   <Style Selector="Button.danger">
+    <Setter Property="MinHeight" Value="40" />
     <Setter Property="Theme" Value="{StaticResource ProductFilledActionButtonTheme}" />
     <Setter Property="Background" Value="{DynamicResource ProductDangerActionFillBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ProductDangerActionFillBrush}" />
@@ -195,6 +212,7 @@
   </Style>
 
   <Style Selector="Button.outline">
+    <Setter Property="MinHeight" Value="40" />
     <Setter Property="Background" Value="{DynamicResource ControlSurfaceBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />

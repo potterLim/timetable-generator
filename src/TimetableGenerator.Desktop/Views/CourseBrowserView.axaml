@@ -43,16 +43,17 @@
       <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
         <TextBlock
             Classes="title"
+            VerticalAlignment="Center"
             AutomationProperties.HeadingLevel="2"
             Text="과목 찾기" />
         <Button
             x:Name="CloseCoursePaneButton"
             Grid.Column="1"
             Classes="icon"
-            Width="32"
-            Height="32"
-            MinWidth="32"
-            MinHeight="32"
+            Width="36"
+            Height="36"
+            MinWidth="36"
+            MinHeight="36"
             IsVisible="{Binding IsCoursePaneDismissActionVisible}"
             Command="{Binding ToggleCoursePaneCommand}"
             AutomationProperties.Name="과목 찾기 패널 닫기"
@@ -127,6 +128,7 @@
           Grid.Row="8"
           Classes="secondary"
           FontSize="13"
+          AutomationProperties.LiveSetting="Polite"
           Text="{Binding VisibleCourseHeading}" />
 
       <Grid Grid.Row="10">
@@ -214,6 +216,8 @@
                       AutomationProperties.Name="{Binding AddButtonAccessibleName}"
                       ToolTip.Tip="{Binding AddButtonToolTipText}">
                     <icons:FluentIcon
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
                         Icon="AddCircle"
                         IconVariant="Regular"
                         FontSize="22"

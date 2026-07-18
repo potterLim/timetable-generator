@@ -261,6 +261,98 @@ public sealed class ProductControlVisualStateTests
     }
 
     [AvaloniaFact]
+    public void ProductActionVariantsShareTheSameRenderedHeight()
+    {
+        Button primaryButton = createButton(PRIMARY_ACTION_STYLE);
+        Button outlineButton = createButton(OUTLINE_ACTION_STYLE);
+        Button dangerButton = createButton(DANGER_ACTION_STYLE);
+        StackPanel actions = new StackPanel();
+        actions.Orientation = Orientation.Horizontal;
+        actions.Spacing = 8.0;
+        actions.VerticalAlignment = VerticalAlignment.Center;
+        actions.Children.Add(outlineButton);
+        actions.Children.Add(dangerButton);
+        actions.Children.Add(primaryButton);
+
+        Window window = new Window();
+        window.Content = actions;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal(40.0, primaryButton.Bounds.Height);
+            Assert.Equal(primaryButton.Bounds.Height, outlineButton.Bounds.Height);
+            Assert.Equal(primaryButton.Bounds.Height, dangerButton.Bounds.Height);
+            Assert.Equal(
+                VerticalAlignment.Center,
+                primaryButton.VerticalContentAlignment);
+            Assert.Equal(
+                VerticalAlignment.Center,
+                outlineButton.VerticalContentAlignment);
+            Assert.Equal(
+                VerticalAlignment.Center,
+                dangerButton.VerticalContentAlignment);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void ProductCaptionButtonUsesThirtyPixelCenteredGeometry()
+    {
+        Border glyph = new Border();
+        glyph.Width = 11.0;
+        glyph.Height = 1.0;
+        Viewbox glyphViewbox = new Viewbox();
+        glyphViewbox.Width = 11.0;
+        glyphViewbox.Height = 11.0;
+        glyphViewbox.HorizontalAlignment = HorizontalAlignment.Center;
+        glyphViewbox.VerticalAlignment = VerticalAlignment.Center;
+        glyphViewbox.Child = glyph;
+        Button captionButton = new Button();
+        captionButton.Classes.Add("caption-button");
+        captionButton.Theme = findRequiredControlTheme(
+            CAPTION_BUTTON_THEME,
+            ThemeVariant.Light);
+        captionButton.Content = glyphViewbox;
+
+        Window window = new Window();
+        window.Width = 120.0;
+        window.Height = 80.0;
+        window.Content = captionButton;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal(45.0, captionButton.Bounds.Width);
+            Assert.Equal(30.0, captionButton.Bounds.Height);
+            Assert.Equal(0.0, captionButton.MinWidth);
+            Assert.Equal(0.0, captionButton.MinHeight);
+            Assert.Equal(new Thickness(0.0), captionButton.Padding);
+            Assert.Equal(
+                HorizontalAlignment.Center,
+                captionButton.HorizontalContentAlignment);
+            Assert.Equal(
+                VerticalAlignment.Center,
+                captionButton.VerticalContentAlignment);
+            assertControlsShareVerticalCenter(
+                captionButton,
+                captionButton,
+                glyphViewbox);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void DarkCaptionCloseButtonRendersTheAccessiblePressedComposite()
     {
         Button closeButton = new Button();

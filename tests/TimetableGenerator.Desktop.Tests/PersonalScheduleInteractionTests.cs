@@ -140,7 +140,7 @@ public sealed class PersonalScheduleInteractionTests
                 "PersonalScheduleNameInput",
                 AutomationProperties.GetAutomationId(nameInput));
             Assert.Equal(
-                "개인 일정 교수 또는 담당자",
+                "개인 일정 담당자",
                 AutomationProperties.GetName(instructorInput));
             Assert.Equal(
                 VerticalAlignment.Center,

@@ -57,12 +57,12 @@
         <TextBlock
             FontSize="22"
             FontWeight="SemiBold"
-            Text="{Binding PersonalScheduleEditorHeading}" />
+            Text="{Binding PersonalScheduleEditorHeading}"
+            AutomationProperties.HeadingLevel="1" />
         <TextBlock
             Classes="secondary"
             Text="{Binding PersonalScheduleEditorDescription}"
-            TextTrimming="CharacterEllipsis"
-            TextWrapping="NoWrap"
+            TextWrapping="Wrap"
             ToolTip.Tip="{Binding PersonalScheduleEditorDescription}" />
       </StackPanel>
       <Button
@@ -73,6 +73,7 @@
           Height="36"
           MinWidth="36"
           MinHeight="36"
+          VerticalAlignment="Top"
           Command="{Binding CancelPersonalScheduleEditCommand}"
           AutomationProperties.Name="개인 일정 편집기 닫기"
           ToolTip.Tip="닫기">
@@ -163,14 +164,14 @@
                 AutomationProperties.Name="개인 일정 분반" />
           </StackPanel>
           <StackPanel Grid.Column="2" Spacing="7">
-            <TextBlock Text="교수·담당자 (선택)" />
+            <TextBlock Text="담당자 (선택)" />
             <TextBox
                 x:Name="PersonalScheduleInstructorInput"
                 MaxLength="80"
                 PlaceholderText="예: 김민수"
                 Text="{Binding PersonalScheduleInstructorDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                 AutomationProperties.AutomationId="PersonalScheduleInstructorInput"
-                AutomationProperties.Name="개인 일정 교수 또는 담당자" />
+                AutomationProperties.Name="개인 일정 담당자" />
           </StackPanel>
         </Grid>
 
@@ -198,12 +199,14 @@
         AutomationProperties.LiveSetting="Assertive">
       <Grid ColumnDefinitions="20,*" ColumnSpacing="8">
         <icons:FluentIcon
+            VerticalAlignment="Center"
             Icon="ErrorCircle"
             IconVariant="Regular"
             FontSize="17"
             Foreground="{DynamicResource ErrorBrush}" />
         <TextBlock
             Grid.Column="1"
+            VerticalAlignment="Center"
             Foreground="{DynamicResource ErrorBrush}"
             Text="{Binding PersonalScheduleValidationMessage}"
             TextWrapping="Wrap" />

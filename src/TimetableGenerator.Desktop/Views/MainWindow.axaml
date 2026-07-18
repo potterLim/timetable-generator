@@ -90,16 +90,22 @@
           </Button.Flyout>
           <Grid>
             <icons:FluentIcon
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
                 Icon="Desktop"
                 IconVariant="Regular"
                 FontSize="20"
                 IsVisible="{Binding #ProductWindow.Appearance.IsSystemThemeSelected}" />
             <icons:FluentIcon
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
                 Icon="WeatherSunny"
                 IconVariant="Regular"
                 FontSize="20"
                 IsVisible="{Binding #ProductWindow.Appearance.IsLightThemeSelected}" />
             <icons:FluentIcon
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
                 Icon="WeatherMoon"
                 IconVariant="Regular"
                 FontSize="20"
@@ -197,7 +203,7 @@
                     HorizontalAlignment="Center"
                     Command="{Binding RetryCommand}"
                     AutomationProperties.Name="과목 데이터 다시 불러오기">
-                  <StackPanel Orientation="Horizontal" Spacing="8">
+                  <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="8">
                     <icons:FluentIcon Icon="ArrowClockwise" IconVariant="Regular" FontSize="18" />
                     <TextBlock VerticalAlignment="Center" Text="다시 시도" />
                   </StackPanel>
