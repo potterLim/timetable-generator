@@ -339,28 +339,111 @@ public sealed class CourseChoiceInteractionTests
                 window.ActualThemeVariant);
             Assert.Equal(new Thickness(2.0), preferenceButtons[2].BorderThickness);
 
-            preferenceButtons[0].Command?.Execute(null);
-            Dispatcher.UIThread.RunJobs();
+            ThemeVariant[] themeVariants =
+            {
+                ThemeVariant.Light,
+                ThemeVariant.Dark,
+            };
+            RadioButton[] firstOfferingPreferenceButtons = preferenceButtons
+                .Take(3)
+                .ToArray();
+            Button closeEditorButton = host.GetVisualDescendants()
+                .OfType<Button>()
+                .Single(
+                    candidate => candidate.Name
+                        == "CloseCourseChoiceEditorButton");
+            foreach (ThemeVariant themeVariant in themeVariants)
+            {
+                window.RequestedThemeVariant = themeVariant;
+                Dispatcher.UIThread.RunJobs();
 
-            Assert.Equal(true, preferenceButtons[0].IsChecked);
-            Assert.Equal(false, preferenceButtons[2].IsChecked);
-            assertBrushUsesResource(
-                preferenceButtons[0].Background,
-                "PreferencePreferredFillBrush",
-                window.ActualThemeVariant);
-            assertBrushUsesResource(
-                preferenceButtons[0].Foreground,
-                "PreferencePreferredForegroundBrush",
-                window.ActualThemeVariant);
-            assertBrushUsesResource(
-                preferenceButtons[0].BorderBrush,
-                "PreferencePreferredBorderBrush",
-                window.ActualThemeVariant);
+                foreach (RadioButton preferenceButton in firstOfferingPreferenceButtons)
+                {
+                    Assert.True(closeEditorButton.Focus(NavigationMethod.Tab));
+                    preferenceButton.Command?.Execute(null);
+                    movePointerOutsidePreferenceButtons(window);
+
+                    Assert.Equal(true, preferenceButton.IsChecked);
+                    Assert.Single(
+                        firstOfferingPreferenceButtons,
+                        candidate => candidate.IsChecked == true);
+                    assertSelectedPreferenceVisuals(
+                        preferenceButton,
+                        themeVariant,
+                        "SelectionSurfaceBrush");
+                    Assert.True(preferenceButton.Focus(NavigationMethod.Tab));
+                    Dispatcher.UIThread.RunJobs();
+                    assertSelectedPreferenceFocusVisuals(
+                        preferenceButton,
+                        themeVariant);
+                }
+
+                Assert.True(closeEditorButton.Focus(NavigationMethod.Tab));
+                RadioButton selectedPreferenceButton =
+                    firstOfferingPreferenceButtons[2];
+                Point selectedPreferenceCenter = findControlCenter(
+                    window,
+                    selectedPreferenceButton);
+                window.MouseMove(
+                    selectedPreferenceCenter,
+                    RawInputModifiers.None);
+                Dispatcher.UIThread.RunJobs();
+                assertSelectedPreferenceVisuals(
+                    selectedPreferenceButton,
+                    themeVariant,
+                    "SelectionHoverSurfaceBrush");
+
+                window.MouseDown(
+                    selectedPreferenceCenter,
+                    MouseButton.Left,
+                    RawInputModifiers.None);
+                Dispatcher.UIThread.RunJobs();
+                assertSelectedPreferenceVisuals(
+                    selectedPreferenceButton,
+                    themeVariant,
+                    "SelectionPressedSurfaceBrush");
+                window.MouseUp(
+                    selectedPreferenceCenter,
+                    MouseButton.Left,
+                    RawInputModifiers.None);
+                Dispatcher.UIThread.RunJobs();
+
+                RadioButton unselectedPreferenceButton =
+                    firstOfferingPreferenceButtons[0];
+                Point unselectedPreferenceCenter = findControlCenter(
+                    window,
+                    unselectedPreferenceButton);
+                window.MouseMove(
+                    unselectedPreferenceCenter,
+                    RawInputModifiers.None);
+                Dispatcher.UIThread.RunJobs();
+                assertUnselectedPreferenceVisuals(
+                    unselectedPreferenceButton,
+                    themeVariant,
+                    "HoverSurfaceBrush");
+                window.MouseDown(
+                    unselectedPreferenceCenter,
+                    MouseButton.Left,
+                    RawInputModifiers.None);
+                Dispatcher.UIThread.RunJobs();
+                assertUnselectedPreferenceVisuals(
+                    unselectedPreferenceButton,
+                    themeVariant,
+                    "PressedSurfaceBrush");
+                window.MouseUp(
+                    unselectedPreferenceCenter,
+                    MouseButton.Left,
+                    RawInputModifiers.None);
+                Dispatcher.UIThread.RunJobs();
+            }
+
+            preferenceButtons[0].Command?.Execute(null);
+            movePointerOutsidePreferenceButtons(window);
+            Assert.True(closeEditorButton.Focus(NavigationMethod.Tab));
             Assert.True(preferenceButtons[0].Focus(NavigationMethod.Tab));
             Dispatcher.UIThread.RunJobs();
-            assertBrushUsesResource(
-                preferenceButtons[0].BorderBrush,
-                "ProductFocusOnFillStrokeBrush",
+            assertSelectedPreferenceFocusVisuals(
+                preferenceButtons[0],
                 window.ActualThemeVariant);
 
             window.KeyPress(
@@ -423,6 +506,91 @@ public sealed class CourseChoiceInteractionTests
         SolidColorBrush expectedBrush = Assert.IsType<SolidColorBrush>(
             resourceOrNull);
         Assert.Equal(expectedBrush.Color, actualBrush.Color);
+    }
+
+    private static void assertSelectedPreferenceVisuals(
+        RadioButton preferenceButton,
+        ThemeVariant themeVariant,
+        string backgroundResourceKey)
+    {
+        assertBrushUsesResource(
+            preferenceButton.Background,
+            backgroundResourceKey,
+            themeVariant);
+        assertBrushUsesResource(
+            preferenceButton.BorderBrush,
+            "SelectionIndicatorBrush",
+            themeVariant);
+        assertBrushUsesResource(
+            preferenceButton.Foreground,
+            "TextPrimaryBrush",
+            themeVariant);
+        Assert.Equal(FontWeight.SemiBold, preferenceButton.FontWeight);
+    }
+
+    private static void assertSelectedPreferenceFocusVisuals(
+        RadioButton preferenceButton,
+        ThemeVariant themeVariant)
+    {
+        assertBrushUsesResource(
+            preferenceButton.Background,
+            "SelectionSurfaceBrush",
+            themeVariant);
+        assertBrushUsesResource(
+            preferenceButton.BorderBrush,
+            "ProductFocusStrokeBrush",
+            themeVariant);
+        assertBrushUsesResource(
+            preferenceButton.Foreground,
+            "TextPrimaryBrush",
+            themeVariant);
+        Assert.Equal(new Thickness(2.0), preferenceButton.BorderThickness);
+        Assert.Equal(FontWeight.SemiBold, preferenceButton.FontWeight);
+    }
+
+    private static void assertUnselectedPreferenceVisuals(
+        RadioButton preferenceButton,
+        ThemeVariant themeVariant,
+        string backgroundResourceKey)
+    {
+        Assert.Equal(false, preferenceButton.IsChecked);
+        assertBrushUsesResource(
+            preferenceButton.Background,
+            backgroundResourceKey,
+            themeVariant);
+        assertBrushUsesResource(
+            preferenceButton.BorderBrush,
+            "ControlBorderBrush",
+            themeVariant);
+        assertBrushUsesResource(
+            preferenceButton.Foreground,
+            "TextPrimaryBrush",
+            themeVariant);
+        Assert.Equal(FontWeight.Normal, preferenceButton.FontWeight);
+    }
+
+    private static void movePointerOutsidePreferenceButtons(Window window)
+    {
+        window.MouseMove(new Point(1.0, 1.0), RawInputModifiers.None);
+        Dispatcher.UIThread.RunJobs();
+    }
+
+    private static Point findControlCenter(
+        Window window,
+        Control control)
+    {
+        Point? controlOriginOrNull = control.TranslatePoint(
+            new Point(0.0, 0.0),
+            window);
+        Assert.NotNull(controlOriginOrNull);
+        if (controlOriginOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The preference control position could not be resolved.");
+        }
+
+        return controlOriginOrNull.Value
+            + new Vector(control.Bounds.Width / 2.0, control.Bounds.Height / 2.0);
     }
 
     private static TControl findRequiredControl<TControl>(

@@ -26,46 +26,34 @@
     </Style>
     <Style Selector="RadioButton.preference-choice:pointerover">
       <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+    <Style Selector="RadioButton.preference-choice:pressed">
+      <Setter Property="Background" Value="{DynamicResource PressedSurfaceBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
     </Style>
     <Style Selector="RadioButton.preference-choice:checked">
+      <Setter Property="Background" Value="{DynamicResource SelectionSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SelectionIndicatorBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
       <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
-    <Style Selector="RadioButton.preference-choice.preferred:checked">
-      <Setter Property="Background" Value="{DynamicResource PreferencePreferredFillBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource PreferencePreferredBorderBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource PreferencePreferredForegroundBrush}" />
+    <Style Selector="RadioButton.preference-choice:checked:pointerover">
+      <Setter Property="Background" Value="{DynamicResource SelectionHoverSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SelectionIndicatorBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
     </Style>
-    <Style Selector="RadioButton.preference-choice.preferred:checked:pointerover, RadioButton.preference-choice.preferred:checked:pressed">
-      <Setter Property="Background" Value="{DynamicResource PreferencePreferredFillBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource PreferencePreferredBorderBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource PreferencePreferredForegroundBrush}" />
-    </Style>
-    <Style Selector="RadioButton.preference-choice.acceptable:checked">
-      <Setter Property="Background" Value="{DynamicResource PreferenceAcceptableFillBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource PreferenceAcceptableBorderBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource PreferenceAcceptableForegroundBrush}" />
-    </Style>
-    <Style Selector="RadioButton.preference-choice.acceptable:checked:pointerover, RadioButton.preference-choice.acceptable:checked:pressed">
-      <Setter Property="Background" Value="{DynamicResource PreferenceAcceptableFillBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource PreferenceAcceptableBorderBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource PreferenceAcceptableForegroundBrush}" />
-    </Style>
-    <Style Selector="RadioButton.preference-choice.excluded:checked">
-      <Setter Property="Background" Value="{DynamicResource PreferenceExcludedFillBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource PreferenceExcludedBorderBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource PreferenceExcludedForegroundBrush}" />
-    </Style>
-    <Style Selector="RadioButton.preference-choice.excluded:checked:pointerover, RadioButton.preference-choice.excluded:checked:pressed">
-      <Setter Property="Background" Value="{DynamicResource PreferenceExcludedFillBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource PreferenceExcludedBorderBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource PreferenceExcludedForegroundBrush}" />
+    <Style Selector="RadioButton.preference-choice:checked:pressed">
+      <Setter Property="Background" Value="{DynamicResource SelectionPressedSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SelectionIndicatorBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
     </Style>
     <Style Selector="RadioButton.preference-choice:focus-visible">
       <Setter Property="BorderBrush" Value="{DynamicResource ProductFocusStrokeBrush}" />
       <Setter Property="BorderThickness" Value="2" />
     </Style>
-    <Style Selector="RadioButton.preference-choice.preferred:checked:focus-visible">
-      <Setter Property="BorderBrush" Value="{DynamicResource ProductFocusOnFillStrokeBrush}" />
+    <Style Selector="RadioButton.preference-choice:checked:focus-visible">
+      <Setter Property="BorderBrush" Value="{DynamicResource ProductFocusStrokeBrush}" />
     </Style>
   </UserControl.Styles>
 
@@ -198,21 +186,21 @@
                                 Spacing="6"
                                 VerticalAlignment="Center">
                               <RadioButton
-                                  Classes="preference-choice preferred"
+                                  Classes="preference-choice"
                                   IsChecked="{Binding IsPreferred, Mode=OneWay}"
                                   Command="{Binding SelectPreferredCommand}"
                                   Content="선호"
                                   AutomationProperties.Name="{Binding PreferredButtonAccessibleName}"
                                   AutomationProperties.HelpText="추천에서 가장 먼저 사용합니다." />
                               <RadioButton
-                                  Classes="preference-choice acceptable"
+                                  Classes="preference-choice"
                                   IsChecked="{Binding IsAcceptable, Mode=OneWay}"
                                   Command="{Binding SelectAcceptableCommand}"
                                   Content="가능"
                                   AutomationProperties.Name="{Binding AcceptableButtonAccessibleName}"
                                   AutomationProperties.HelpText="선호 분반과 충돌할 때 사용합니다." />
                               <RadioButton
-                                  Classes="preference-choice excluded"
+                                  Classes="preference-choice"
                                   IsChecked="{Binding IsExcluded, Mode=OneWay}"
                                   Command="{Binding SelectExcludedCommand}"
                                   Content="제외"

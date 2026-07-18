@@ -100,24 +100,6 @@ public sealed class ProductColorContrastTests
         new ColorToken("PersonalScheduleBorderBrush");
     private static readonly ColorToken PRESSED_SURFACE =
         new ColorToken("PressedSurfaceBrush");
-    private static readonly ColorToken PREFERENCE_ACCEPTABLE_BORDER =
-        new ColorToken("PreferenceAcceptableBorderBrush");
-    private static readonly ColorToken PREFERENCE_ACCEPTABLE_FILL =
-        new ColorToken("PreferenceAcceptableFillBrush");
-    private static readonly ColorToken PREFERENCE_ACCEPTABLE_FOREGROUND =
-        new ColorToken("PreferenceAcceptableForegroundBrush");
-    private static readonly ColorToken PREFERENCE_EXCLUDED_BORDER =
-        new ColorToken("PreferenceExcludedBorderBrush");
-    private static readonly ColorToken PREFERENCE_EXCLUDED_FILL =
-        new ColorToken("PreferenceExcludedFillBrush");
-    private static readonly ColorToken PREFERENCE_EXCLUDED_FOREGROUND =
-        new ColorToken("PreferenceExcludedForegroundBrush");
-    private static readonly ColorToken PREFERENCE_PREFERRED_BORDER =
-        new ColorToken("PreferencePreferredBorderBrush");
-    private static readonly ColorToken PREFERENCE_PREFERRED_FILL =
-        new ColorToken("PreferencePreferredFillBrush");
-    private static readonly ColorToken PREFERENCE_PREFERRED_FOREGROUND =
-        new ColorToken("PreferencePreferredForegroundBrush");
     private static readonly ColorToken SUBTLE_SURFACE =
         new ColorToken("SubtleSurfaceBrush");
     private static readonly ColorToken SUCCESS =
@@ -195,15 +177,6 @@ public sealed class ProductColorContrastTests
         new ColorToken("ProductDangerActionHoverFillBrush"),
         new ColorToken("ProductDangerActionPressedFillBrush"),
         new ColorToken("ProductOnDangerActionFillBrush"),
-        new ColorToken("PreferencePreferredFillBrush"),
-        new ColorToken("PreferencePreferredBorderBrush"),
-        new ColorToken("PreferencePreferredForegroundBrush"),
-        new ColorToken("PreferenceAcceptableFillBrush"),
-        new ColorToken("PreferenceAcceptableBorderBrush"),
-        new ColorToken("PreferenceAcceptableForegroundBrush"),
-        new ColorToken("PreferenceExcludedFillBrush"),
-        new ColorToken("PreferenceExcludedBorderBrush"),
-        new ColorToken("PreferenceExcludedForegroundBrush"),
         new ColorToken("CourseBlueBackgroundBrush"),
         new ColorToken("CourseBlueBorderBrush"),
         new ColorToken("CoursePurpleBackgroundBrush"),
@@ -469,30 +442,6 @@ public sealed class ProductColorContrastTests
                 ThemeVariant.Dark,
                 TEXT_PRIMARY,
                 PERSONAL_SCHEDULE_BACKGROUND),
-            bodyText(
-                ThemeVariant.Light,
-                PREFERENCE_PREFERRED_FOREGROUND,
-                PREFERENCE_PREFERRED_FILL),
-            bodyText(
-                ThemeVariant.Light,
-                PREFERENCE_ACCEPTABLE_FOREGROUND,
-                PREFERENCE_ACCEPTABLE_FILL),
-            bodyText(
-                ThemeVariant.Light,
-                PREFERENCE_EXCLUDED_FOREGROUND,
-                PREFERENCE_EXCLUDED_FILL),
-            bodyText(
-                ThemeVariant.Dark,
-                PREFERENCE_PREFERRED_FOREGROUND,
-                PREFERENCE_PREFERRED_FILL),
-            bodyText(
-                ThemeVariant.Dark,
-                PREFERENCE_ACCEPTABLE_FOREGROUND,
-                PREFERENCE_ACCEPTABLE_FILL),
-            bodyText(
-                ThemeVariant.Dark,
-                PREFERENCE_EXCLUDED_FOREGROUND,
-                PREFERENCE_EXCLUDED_FILL),
         };
 
         assertContrastRequirements(contrastRequirements);
@@ -539,6 +488,30 @@ public sealed class ProductColorContrastTests
                 ThemeVariant.Dark,
                 SELECTION_INDICATOR,
                 SELECTION_PRESSED_SURFACE),
+            nonText(
+                ThemeVariant.Light,
+                FOCUS_STROKE,
+                SELECTION_SURFACE),
+            nonText(
+                ThemeVariant.Light,
+                FOCUS_STROKE,
+                SELECTION_HOVER_SURFACE),
+            nonText(
+                ThemeVariant.Light,
+                FOCUS_STROKE,
+                SELECTION_PRESSED_SURFACE),
+            nonText(
+                ThemeVariant.Dark,
+                FOCUS_STROKE,
+                SELECTION_SURFACE),
+            nonText(
+                ThemeVariant.Dark,
+                FOCUS_STROKE,
+                SELECTION_HOVER_SURFACE),
+            nonText(
+                ThemeVariant.Dark,
+                FOCUS_STROKE,
+                SELECTION_PRESSED_SURFACE),
             nonText(ThemeVariant.Light, FOCUS_ON_FILL_STROKE, ACCENT_FILL),
             nonText(ThemeVariant.Light, FOCUS_ON_FILL_STROKE, ACCENT_FILL_HOVER),
             nonText(ThemeVariant.Light, FOCUS_ON_FILL_STROKE, ACCENT_FILL_PRESSED),
@@ -547,30 +520,6 @@ public sealed class ProductColorContrastTests
             nonText(ThemeVariant.Dark, FOCUS_ON_FILL_STROKE, ACCENT_FILL_HOVER),
             nonText(ThemeVariant.Dark, FOCUS_ON_FILL_STROKE, ACCENT_FILL_PRESSED),
             nonText(ThemeVariant.Dark, FOCUS_ON_FILL_STROKE, ERROR_FILL),
-            nonText(
-                ThemeVariant.Light,
-                PREFERENCE_PREFERRED_BORDER,
-                SURFACE),
-            nonText(
-                ThemeVariant.Light,
-                PREFERENCE_ACCEPTABLE_BORDER,
-                PREFERENCE_ACCEPTABLE_FILL),
-            nonText(
-                ThemeVariant.Light,
-                PREFERENCE_EXCLUDED_BORDER,
-                PREFERENCE_EXCLUDED_FILL),
-            nonText(
-                ThemeVariant.Dark,
-                PREFERENCE_PREFERRED_BORDER,
-                SURFACE),
-            nonText(
-                ThemeVariant.Dark,
-                PREFERENCE_ACCEPTABLE_BORDER,
-                PREFERENCE_ACCEPTABLE_FILL),
-            nonText(
-                ThemeVariant.Dark,
-                PREFERENCE_EXCLUDED_BORDER,
-                PREFERENCE_EXCLUDED_FILL),
             nonText(
                 ThemeVariant.Light,
                 COURSE_BLUE_BORDER,

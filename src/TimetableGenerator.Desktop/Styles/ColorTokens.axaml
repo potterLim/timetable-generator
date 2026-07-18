@@ -57,15 +57,6 @@
       <SolidColorBrush x:Key="ProductDangerActionHoverFillBrush" Color="#9D1F35" />
       <SolidColorBrush x:Key="ProductDangerActionPressedFillBrush" Color="#7D1829" />
       <SolidColorBrush x:Key="ProductOnDangerActionFillBrush" Color="#FFFFFF" />
-      <SolidColorBrush x:Key="PreferencePreferredFillBrush" Color="#0A60C8" />
-      <SolidColorBrush x:Key="PreferencePreferredBorderBrush" Color="#0A60C8" />
-      <SolidColorBrush x:Key="PreferencePreferredForegroundBrush" Color="#FFFFFF" />
-      <SolidColorBrush x:Key="PreferenceAcceptableFillBrush" Color="#E6F0FF" />
-      <SolidColorBrush x:Key="PreferenceAcceptableBorderBrush" Color="#4779B8" />
-      <SolidColorBrush x:Key="PreferenceAcceptableForegroundBrush" Color="#084F9F" />
-      <SolidColorBrush x:Key="PreferenceExcludedFillBrush" Color="#ECEFF3" />
-      <SolidColorBrush x:Key="PreferenceExcludedBorderBrush" Color="#7D8795" />
-      <SolidColorBrush x:Key="PreferenceExcludedForegroundBrush" Color="#4E5968" />
       <SolidColorBrush x:Key="CourseBlueBackgroundBrush" Color="#E8F2FF" />
       <SolidColorBrush x:Key="CourseBlueBorderBrush" Color="#4779B8" />
       <SolidColorBrush x:Key="CoursePurpleBackgroundBrush" Color="#F3EEFF" />
@@ -137,15 +128,6 @@
       <SolidColorBrush x:Key="ProductDangerActionHoverFillBrush" Color="#CA4055" />
       <SolidColorBrush x:Key="ProductDangerActionPressedFillBrush" Color="#92283A" />
       <SolidColorBrush x:Key="ProductOnDangerActionFillBrush" Color="#FFFFFF" />
-      <SolidColorBrush x:Key="PreferencePreferredFillBrush" Color="#1B63C9" />
-      <SolidColorBrush x:Key="PreferencePreferredBorderBrush" Color="#69A9FF" />
-      <SolidColorBrush x:Key="PreferencePreferredForegroundBrush" Color="#FFFFFF" />
-      <SolidColorBrush x:Key="PreferenceAcceptableFillBrush" Color="#182C49" />
-      <SolidColorBrush x:Key="PreferenceAcceptableBorderBrush" Color="#5795E6" />
-      <SolidColorBrush x:Key="PreferenceAcceptableForegroundBrush" Color="#B9D8FF" />
-      <SolidColorBrush x:Key="PreferenceExcludedFillBrush" Color="#222A35" />
-      <SolidColorBrush x:Key="PreferenceExcludedBorderBrush" Color="#728096" />
-      <SolidColorBrush x:Key="PreferenceExcludedForegroundBrush" Color="#B8C2CF" />
       <SolidColorBrush x:Key="CourseBlueBackgroundBrush" Color="#182C48" />
       <SolidColorBrush x:Key="CourseBlueBorderBrush" Color="#5795E6" />
       <SolidColorBrush x:Key="CoursePurpleBackgroundBrush" Color="#2B243C" />
