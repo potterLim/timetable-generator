@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Input;
 
+using TimetableGenerator.CatalogJson;
 using TimetableGenerator.Desktop.Presentation.Catalog;
 using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Planning;
@@ -46,6 +47,34 @@ internal sealed class CourseOfferingPreferenceItem : ObservableObject
         get
         {
             return Projection.ScheduleSummary;
+        }
+    }
+
+    public EnglishInstructionPercentage EnglishInstructionPercentage
+    {
+        get
+        {
+            return Projection.EnglishInstructionPercentage;
+        }
+    }
+
+    public string EnglishInstructionDisplayText
+    {
+        get
+        {
+            return EnglishInstructionPercentageRange
+                .CreateUniform(EnglishInstructionPercentage)
+                .DisplayText;
+        }
+    }
+
+    public string EnglishInstructionAccessibleText
+    {
+        get
+        {
+            return EnglishInstructionPercentageRange
+                .CreateUniform(EnglishInstructionPercentage)
+                .AccessibleText;
         }
     }
 
@@ -124,7 +153,8 @@ internal sealed class CourseOfferingPreferenceItem : ObservableObject
     {
         get
         {
-            return CourseName + ", " + SectionDisplayText + ", 선택 상태 "
+            return CourseName + ", " + SectionDisplayText + ", "
+                + EnglishInstructionAccessibleText + ", 선택 상태 "
                 + getPreferenceDisplayName(Preference);
         }
     }

@@ -24,6 +24,11 @@ internal sealed class CatalogCourseProjection
 
     public ECourseAccent Accent { get; }
 
+    public EnglishInstructionPercentageRange EnglishInstructionRange
+    {
+        get;
+    }
+
     public IReadOnlyList<CatalogOfferingProjection> Offerings
     {
         get
@@ -88,6 +93,8 @@ internal sealed class CatalogCourseProjection
             new List<CatalogOfferingProjection>();
         List<OfferingId> scheduledOfferingIds = new List<OfferingId>();
         List<OfferingId> timeNotProvidedOfferingIds = new List<OfferingId>();
+        List<EnglishInstructionPercentage> englishInstructionPercentages =
+            new List<EnglishInstructionPercentage>();
         HashSet<OfferingId> uniqueOfferingIds = new HashSet<OfferingId>();
         SortedDictionary<string, OfferingUnitName> offeringUnitNamesByValue =
             new SortedDictionary<string, OfferingUnitName>(StringComparer.Ordinal);
@@ -97,6 +104,8 @@ internal sealed class CatalogCourseProjection
         {
             validateOffering(course, offering, uniqueOfferingIds);
             copiedOfferings.Add(offering);
+            englishInstructionPercentages.Add(
+                offering.EnglishInstructionPercentage);
 
             if (offering.Offering.MeetingSchedule.Status
                 == EMeetingScheduleStatus.Scheduled)
@@ -125,6 +134,9 @@ internal sealed class CatalogCourseProjection
 
         Course = course;
         Accent = accent;
+        EnglishInstructionRange =
+            EnglishInstructionPercentageRange.Create(
+                englishInstructionPercentages);
         mOfferings = copiedOfferings.AsReadOnly();
         mScheduledOfferingIds = scheduledOfferingIds.AsReadOnly();
         mTimeNotProvidedOfferingIds = timeNotProvidedOfferingIds.AsReadOnly();

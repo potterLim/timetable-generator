@@ -11,6 +11,8 @@ internal sealed class CatalogOfferingProjection
 
     public CatalogOfferingMetadata Metadata { get; }
 
+    public EnglishInstructionPercentage EnglishInstructionPercentage { get; }
+
     public string InstructorSummary { get; }
 
     public string LocationSummary { get; }
@@ -48,6 +50,8 @@ internal sealed class CatalogOfferingProjection
 
         Offering = offering;
         Metadata = metadata;
+        EnglishInstructionPercentage =
+            metadata.Instruction.EnglishInstructionPercentage;
         InstructorSummary = CatalogSummaryFormatter.FormatInstructorSummary(
             metadata.Instruction.InstructorAssignment);
         LocationSummary = CatalogSummaryFormatter.FormatLocationSummary(

@@ -679,14 +679,16 @@ public sealed class PersonalScheduleInteractionTests
 
             TextBlock location = cardTexts[1];
             Assert.Equal(11.5, location.FontSize);
-            Assert.Equal(FontWeight.Medium, location.FontWeight);
-            Assert.Equal(6.0, location.Margin.Top);
+            Assert.Equal(14.0, location.LineHeight);
+            Assert.Equal(FontWeight.SemiBold, location.FontWeight);
+            Assert.Equal(7.0, location.Margin.Top);
             Assert.Equal(TextAlignment.Center, location.TextAlignment);
 
             TextBlock responsiblePerson = cardTexts[2];
             Assert.Equal(10.5, responsiblePerson.FontSize);
+            Assert.Equal(12.0, responsiblePerson.LineHeight);
             Assert.Equal(FontWeight.Normal, responsiblePerson.FontWeight);
-            Assert.Equal(2.0, responsiblePerson.Margin.Top);
+            Assert.Equal(3.0, responsiblePerson.Margin.Top);
             Assert.Equal(TextAlignment.Center, responsiblePerson.TextAlignment);
 
             string? accessibleNameOrNull = AutomationProperties.GetName(scheduleCard);

@@ -66,6 +66,8 @@ public sealed class CourseChoiceInteractionTests
             workspace.AddCourseCommand.Execute(programming);
 
             Assert.True(workspace.IsCourseChoiceEditorVisible);
+            Assert.False(workspace.HasAlternativeCourseChoices);
+            Assert.Equal(string.Empty, workspace.CourseChoiceEditorDescription);
             CourseChoiceDraftCourseItem draft = Assert.Single(
                 workspace.CourseChoiceDraftCourses);
             Assert.Equal(2, draft.Offerings.Count);
@@ -130,6 +132,10 @@ public sealed class CourseChoiceInteractionTests
             workspace.AddAlternativeCourseCommand.Execute(seminarSearchResult);
 
             Assert.Equal(2, workspace.CourseChoiceDraftCourses.Count);
+            Assert.True(workspace.HasAlternativeCourseChoices);
+            Assert.Equal(
+                "과목별 분반을 정하면 이 중 한 과목만 추천합니다.",
+                workspace.CourseChoiceEditorDescription);
             Assert.Empty(workspace.AlternativeCourseSearchResults);
             CourseChoiceDraftCourseItem seminarDraft = workspace
                 .CourseChoiceDraftCourses
@@ -316,12 +322,14 @@ public sealed class CourseChoiceInteractionTests
                 "ProductFocusStrokeBrush",
                 window.ActualThemeVariant);
             Assert.Equal(new Thickness(2.0), preferenceButtons[0].BorderThickness);
-            Assert.Contains(
-                host.GetVisualDescendants().OfType<TextBlock>(),
-                candidate => candidate.Text != null
-                    && candidate.Text.StartsWith(
-                        "선호 분반을 우선하고",
-                        StringComparison.Ordinal));
+            TextBlock preferenceGuidance = Assert.Single(
+                host.GetVisualDescendants()
+                    .OfType<TextBlock>(),
+                candidate => candidate.Text
+                    == "선호는 먼저 추천하고, 가능은 충돌할 때 사용합니다.");
+            Assert.True(preferenceGuidance.IsVisible);
+            Assert.Equal(new Thickness(0.0, 6.0, 0.0, 8.0), preferenceGuidance.Margin);
+            Assert.Equal(17.0, preferenceGuidance.LineHeight);
 
             Assert.True(preferenceButtons[2].Focus(NavigationMethod.Tab));
             Dispatcher.UIThread.RunJobs();

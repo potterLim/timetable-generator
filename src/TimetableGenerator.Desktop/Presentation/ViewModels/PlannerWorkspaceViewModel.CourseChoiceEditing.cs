@@ -55,12 +55,20 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            if (CourseChoiceDraftCourses.Count > 1)
+            if (HasAlternativeCourseChoices)
             {
                 return "과목별 분반을 정하면 이 중 한 과목만 추천합니다.";
             }
 
-            return "선호 분반을 우선하고, 가능 분반은 대안으로 사용합니다.";
+            return string.Empty;
+        }
+    }
+
+    public bool HasAlternativeCourseChoices
+    {
+        get
+        {
+            return CourseChoiceDraftCourses.Count > 1;
         }
     }
 
@@ -374,6 +382,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
 
         raisePropertyChanged(nameof(CourseChoiceEditorDescription));
+        raisePropertyChanged(nameof(HasAlternativeCourseChoices));
         raisePropertyChanged(nameof(CanSaveCourseChoice));
         raisePropertyChanged(nameof(HasIncompleteCourseChoice));
         mSaveCourseChoiceCommand.NotifyCanExecuteChanged();

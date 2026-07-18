@@ -80,6 +80,7 @@
         <TextBlock
             MaxWidth="680"
             Classes="secondary"
+            IsVisible="{Binding HasAlternativeCourseChoices}"
             Text="{Binding CourseChoiceEditorDescription}"
             TextWrapping="Wrap"
             ToolTip.Tip="{Binding CourseChoiceEditorDescription}" />
@@ -115,7 +116,7 @@
                   BorderBrush="{DynamicResource BorderBrush}"
                   BorderThickness="1"
                   CornerRadius="10">
-                <StackPanel Spacing="12">
+                <StackPanel>
                   <Grid ColumnDefinitions="*,Auto">
                     <StackPanel>
                       <StackPanel Orientation="Horizontal" Spacing="8">
@@ -147,6 +148,17 @@
                     </Button>
                   </Grid>
 
+                  <TextBlock
+                      Margin="0,6,0,8"
+                      Classes="caption"
+                      IsVisible="{Binding !CanRemove}"
+                      LineHeight="17"
+                      Text="선호는 먼저 추천하고, 가능은 충돌할 때 사용합니다."
+                      TextWrapping="Wrap" />
+                  <Border
+                      Height="12"
+                      IsVisible="{Binding CanRemove}" />
+
                   <ItemsControl ItemsSource="{Binding Offerings}">
                     <ItemsControl.ItemTemplate>
                       <DataTemplate x:DataType="models:CourseOfferingPreferenceItem">
@@ -157,13 +169,17 @@
                             AutomationProperties.Name="{Binding PreferenceAccessibleName}">
                           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
                             <StackPanel Grid.Column="0" Spacing="3">
-                              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                              <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
                                 <TextBlock
                                     Grid.Column="0"
                                     FontWeight="SemiBold"
                                     Text="{Binding SectionDisplayText}" />
                                 <TextBlock
                                     Grid.Column="1"
+                                    Classes="caption"
+                                    Text="{Binding EnglishInstructionDisplayText}" />
+                                <TextBlock
+                                    Grid.Column="2"
                                     Classes="caption"
                                     Text="{Binding ScheduleDisplayText}"
                                     TextTrimming="CharacterEllipsis"

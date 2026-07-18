@@ -278,6 +278,7 @@
                             Background="{DynamicResource BorderBrush}" />
                         <ItemsControl
                             Grid.Column="2"
+                            VerticalAlignment="Center"
                             ItemsSource="{Binding Occurrences}">
                           <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -296,6 +297,7 @@
                                     FontSize="14"
                                     FontWeight="SemiBold"
                                     Foreground="{DynamicResource AccentBrush}"
+                                    LineHeight="20"
                                     Text="{Binding ScheduleDisplayText}" />
                                 <TextBlock
                                     Grid.Column="1"
@@ -303,6 +305,7 @@
                                     VerticalAlignment="Center"
                                     Classes="caption"
                                     IsVisible="{Binding HasMetadata}"
+                                    LineHeight="20"
                                     Text="{Binding MetadataDisplayText}"
                                     TextTrimming="CharacterEllipsis" />
                               </Grid>

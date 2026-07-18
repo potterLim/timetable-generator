@@ -79,6 +79,32 @@ internal sealed class CourseSearchItem : ObservableObject
         }
     }
 
+    public string CourseBrowserMetadataDisplayText
+    {
+        get
+        {
+            return InstructorCreditDisplayText + " · "
+                + Projection.EnglishInstructionRange.DisplayText;
+        }
+    }
+
+    public string EnglishInstructionAccessibleText
+    {
+        get
+        {
+            return Projection.EnglishInstructionRange.AccessibleText;
+        }
+    }
+
+    public string CourseBrowserAccessibleName
+    {
+        get
+        {
+            return Code + ", " + Name + ", " + InstructorDisplayText + ", "
+                + CreditDisplayText + ", " + EnglishInstructionAccessibleText;
+        }
+    }
+
     public string SingleOfferingDetailsDisplayText { get; }
 
     public bool HasSingleOfferingDetails

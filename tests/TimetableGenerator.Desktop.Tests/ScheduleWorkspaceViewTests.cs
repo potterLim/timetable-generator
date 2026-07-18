@@ -360,14 +360,16 @@ public sealed class ScheduleWorkspaceViewTests
                 textBlock => textBlock.Text == LONG_LOCATION);
             Assert.Equal(1, Grid.GetRow(location));
             Assert.Equal(2, Grid.GetRow(instructor));
-            Assert.Equal(6.0, location.Margin.Top);
-            Assert.Equal(2.0, instructor.Margin.Top);
+            Assert.Equal(7.0, location.Margin.Top);
+            Assert.Equal(3.0, instructor.Margin.Top);
             Assert.Equal(TextAlignment.Center, location.TextAlignment);
             Assert.Equal(TextAlignment.Center, instructor.TextAlignment);
+            Assert.Equal(14.0, location.LineHeight);
+            Assert.Equal(12.0, instructor.LineHeight);
             Assert.True(courseName.FontSize > location.FontSize);
             Assert.True(location.FontSize > instructor.FontSize);
             Assert.Equal(FontWeight.Bold, courseName.FontWeight);
-            Assert.Equal(FontWeight.Medium, location.FontWeight);
+            Assert.Equal(FontWeight.SemiBold, location.FontWeight);
             Assert.Equal(FontWeight.Normal, instructor.FontWeight);
             Assert.NotSame(location.Foreground, instructor.Foreground);
             Assert.Equal(TextTrimming.CharacterEllipsis, instructor.TextTrimming);
@@ -473,7 +475,8 @@ public sealed class ScheduleWorkspaceViewTests
                 locationOnlyCard.Content);
             TextBlock locationOnlyLocation = Assert.IsType<TextBlock>(
                 locationOnlyContent.Children[1]);
-            Assert.Equal(6.0, locationOnlyLocation.Margin.Top);
+            Assert.Equal(7.0, locationOnlyLocation.Margin.Top);
+            Assert.Equal(14.0, locationOnlyLocation.LineHeight);
 
             Button instructorOnlyCard = findCourseCardByName(
                 scheduleBoard,
@@ -485,7 +488,8 @@ public sealed class ScheduleWorkspaceViewTests
                 instructorOnlyCard.Content);
             TextBlock instructorOnlyInstructor = Assert.IsType<TextBlock>(
                 instructorOnlyContent.Children[1]);
-            Assert.Equal(6.0, instructorOnlyInstructor.Margin.Top);
+            Assert.Equal(7.0, instructorOnlyInstructor.Margin.Top);
+            Assert.Equal(12.0, instructorOnlyInstructor.LineHeight);
 
             Button titleOnlyCard = findCourseCardByName(
                 scheduleBoard,
@@ -834,6 +838,31 @@ public sealed class ScheduleWorkspaceViewTests
             Assert.DoesNotContain("과목", visibleListText);
             Assert.DoesNotContain("장소", visibleListText);
             Assert.DoesNotContain("담당", visibleListText);
+
+            ScheduleListOccurrence occurrenceWithMetadata = workspace
+                .DisplayedScheduleBoard
+                .ListGroups
+                .SelectMany(group => group.Occurrences)
+                .First(occurrence => occurrence.HasMetadata);
+            TextBlock occurrenceSchedule = listOrNull
+                .GetVisualDescendants()
+                .OfType<TextBlock>()
+                .First(
+                    candidate => candidate.Text
+                        == occurrenceWithMetadata.ScheduleDisplayText);
+            TextBlock occurrenceMetadata = listOrNull
+                .GetVisualDescendants()
+                .OfType<TextBlock>()
+                .First(
+                    candidate => candidate.Text
+                        == occurrenceWithMetadata.MetadataDisplayText);
+            ItemsControl occurrenceList = occurrenceSchedule
+                .GetVisualAncestors()
+                .OfType<ItemsControl>()
+                .First();
+            Assert.Equal(VerticalAlignment.Center, occurrenceList.VerticalAlignment);
+            Assert.Equal(20.0, occurrenceSchedule.LineHeight);
+            Assert.Equal(20.0, occurrenceMetadata.LineHeight);
 
             workspaceView.ToggleSchedulePresentationCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();

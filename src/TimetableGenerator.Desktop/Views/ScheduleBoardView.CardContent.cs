@@ -12,9 +12,11 @@ internal sealed partial class ScheduleBoardView
     private const double SCHEDULE_CARD_TITLE_FONT_SIZE = 14.0;
     private const double SCHEDULE_CARD_TITLE_LINE_HEIGHT = 18.0;
     private const double SCHEDULE_CARD_LOCATION_FONT_SIZE = 11.5;
+    private const double SCHEDULE_CARD_LOCATION_LINE_HEIGHT = 14.0;
     private const double SCHEDULE_CARD_RESPONSIBLE_PERSON_FONT_SIZE = 10.5;
-    private const double SCHEDULE_CARD_PRIMARY_GAP = 6.0;
-    private const double SCHEDULE_CARD_SECONDARY_GAP = 2.0;
+    private const double SCHEDULE_CARD_RESPONSIBLE_PERSON_LINE_HEIGHT = 12.0;
+    private const double SCHEDULE_CARD_PRIMARY_GAP = 7.0;
+    private const double SCHEDULE_CARD_SECONDARY_GAP = 3.0;
 
     private Grid createScheduleCardContent(ScheduleCardContent cardContent)
     {
@@ -43,7 +45,7 @@ internal sealed partial class ScheduleBoardView
             TextBlock location = createCardText(
                 locationOrNull,
                 SCHEDULE_CARD_LOCATION_FONT_SIZE,
-                FontWeight.Medium);
+                FontWeight.SemiBold);
             location.Margin = new Thickness(
                 0.0,
                 SCHEDULE_CARD_PRIMARY_GAP,
@@ -51,6 +53,7 @@ internal sealed partial class ScheduleBoardView
                 0.0);
             location.HorizontalAlignment = HorizontalAlignment.Stretch;
             location.Foreground = findBrush("TextPrimaryBrush");
+            location.LineHeight = SCHEDULE_CARD_LOCATION_LINE_HEIGHT;
             location.TextAlignment = TextAlignment.Center;
             location.TextWrapping = TextWrapping.NoWrap;
             location.TextTrimming = TextTrimming.CharacterEllipsis;
@@ -77,6 +80,7 @@ internal sealed partial class ScheduleBoardView
                 0.0);
             responsiblePerson.HorizontalAlignment = HorizontalAlignment.Stretch;
             responsiblePerson.Foreground = findBrush("TextSecondaryBrush");
+            responsiblePerson.LineHeight = SCHEDULE_CARD_RESPONSIBLE_PERSON_LINE_HEIGHT;
             responsiblePerson.TextAlignment = TextAlignment.Center;
             responsiblePerson.TextWrapping = TextWrapping.NoWrap;
             responsiblePerson.TextTrimming = TextTrimming.CharacterEllipsis;
