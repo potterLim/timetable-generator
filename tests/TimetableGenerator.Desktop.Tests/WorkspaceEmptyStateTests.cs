@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
@@ -138,14 +139,13 @@ public sealed class WorkspaceEmptyStateTests
         Expander timeNotProvidedCourses = findRequiredControl<Expander>(
             planInspector,
             "TimeNotProvidedCoursesExpander");
-        Border recommendationPolicy = findRequiredControl<Border>(
-            planInspector,
-            "RecommendationPolicyCard");
 
         Assert.True(emptyPlanState.IsVisible);
         Assert.False(scheduledCourses.IsVisible);
         Assert.False(timeNotProvidedCourses.IsVisible);
-        Assert.False(recommendationPolicy.IsVisible);
+        assertExpectedCreditsSummary(planInspector, "0학점");
+        assertSectionCounts(planInspector, "수강 선택 (0)", "개인 일정 (0)");
+        Assert.Null(planInspector.FindControl<Border>("RecommendationPolicyCard"));
     }
 
     private static void assertPopulatedInspectorState(
@@ -160,9 +160,6 @@ public sealed class WorkspaceEmptyStateTests
         Expander timeNotProvidedCourses = findRequiredControl<Expander>(
             planInspector,
             "TimeNotProvidedCoursesExpander");
-        Border recommendationPolicy = findRequiredControl<Border>(
-            planInspector,
-            "RecommendationPolicyCard");
         Border personalScheduleEmptyState = findRequiredControl<Border>(
             planInspector,
             "PersonalScheduleEmptyState");
@@ -170,8 +167,9 @@ public sealed class WorkspaceEmptyStateTests
         Assert.False(emptyPlanState.IsVisible);
         Assert.True(scheduledCourses.IsVisible);
         Assert.False(timeNotProvidedCourses.IsVisible);
-        Assert.True(recommendationPolicy.IsVisible);
         Assert.True(personalScheduleEmptyState.IsVisible);
+        assertExpectedCreditsSummary(planInspector, "3학점");
+        assertSectionCounts(planInspector, "수강 선택 (1)", "개인 일정 (0)");
         TextBlock emptyStateMessage = Assert.IsType<TextBlock>(
             personalScheduleEmptyState.Child);
         Assert.Equal(
@@ -194,14 +192,50 @@ public sealed class WorkspaceEmptyStateTests
         Expander timeNotProvidedCourses = findRequiredControl<Expander>(
             planInspector,
             "TimeNotProvidedCoursesExpander");
-        Border recommendationPolicy = findRequiredControl<Border>(
-            planInspector,
-            "RecommendationPolicyCard");
 
         Assert.False(emptyPlanState.IsVisible);
         Assert.False(scheduledCourses.IsVisible);
         Assert.True(timeNotProvidedCourses.IsVisible);
-        Assert.True(recommendationPolicy.IsVisible);
+        assertExpectedCreditsSummary(planInspector, "1학점");
+        assertSectionCounts(planInspector, "수강 선택 (0)", "개인 일정 (0)");
+    }
+
+    private static void assertExpectedCreditsSummary(
+        PlanInspectorView planInspector,
+        string expectedCreditsDisplayText)
+    {
+        TextBlock label = findRequiredControl<TextBlock>(
+            planInspector,
+            "ExpectedCreditsLabel");
+        TextBlock value = findRequiredControl<TextBlock>(
+            planInspector,
+            "ExpectedCreditsValue");
+
+        Assert.Equal("예상 학점", label.Text);
+        Assert.Equal(expectedCreditsDisplayText, value.Text);
+        Assert.Equal(
+            "예상 학점 " + expectedCreditsDisplayText,
+            AutomationProperties.GetName(value));
+    }
+
+    private static void assertSectionCounts(
+        PlanInspectorView planInspector,
+        string expectedScheduledCourseHeading,
+        string expectedPersonalScheduleHeading)
+    {
+        TextBlock scheduledCoursesHeading = findRequiredControl<TextBlock>(
+            planInspector,
+            "ScheduledCoursesHeading");
+        TextBlock personalSchedulesHeading = findRequiredControl<TextBlock>(
+            planInspector,
+            "PersonalSchedulesHeading");
+
+        Assert.Equal(
+            expectedScheduledCourseHeading,
+            scheduledCoursesHeading.Text);
+        Assert.Equal(
+            expectedPersonalScheduleHeading,
+            personalSchedulesHeading.Text);
     }
 
     private static TControl findRequiredDescendant<TControl>(Control root)

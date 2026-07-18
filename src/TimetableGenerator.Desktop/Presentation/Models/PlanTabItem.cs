@@ -142,7 +142,7 @@ internal sealed class PlanTabItem
         }
     }
 
-    public string CreditSummary
+    public string ExpectedCreditsDisplayText
     {
         get
         {
@@ -154,7 +154,15 @@ internal sealed class PlanTabItem
                 creditText += "–" + maximumCredits;
             }
 
-            return creditText + "학점 · " + SelectedCourseCount + "과목";
+            return creditText + "학점";
+        }
+    }
+
+    public string ExpectedCreditsAccessibleName
+    {
+        get
+        {
+            return "예상 학점 " + ExpectedCreditsDisplayText;
         }
     }
 

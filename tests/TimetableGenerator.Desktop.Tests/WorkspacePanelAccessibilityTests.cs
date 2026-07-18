@@ -53,30 +53,30 @@ public sealed class WorkspacePanelAccessibilityTests
             ScrollViewer scrollViewer = findRequiredControl<ScrollViewer>(
                 inspector,
                 "PlanInspectorScrollViewer");
-            Border recommendationPolicyCard = findRequiredControl<Border>(
+            Border personalScheduleEmptyState = findRequiredControl<Border>(
                 inspector,
-                "RecommendationPolicyCard");
+                "PersonalScheduleEmptyState");
 
             Assert.True(scrollViewer.Extent.Height > scrollViewer.Viewport.Height);
 
             scrollViewer.ScrollToEnd();
             Dispatcher.UIThread.RunJobs();
 
-            Point? policyCardTopLeftOrNull = recommendationPolicyCard.TranslatePoint(
+            Point? emptyStateTopLeftOrNull = personalScheduleEmptyState.TranslatePoint(
                 new Point(0.0, 0.0),
                 scrollViewer);
-            Assert.NotNull(policyCardTopLeftOrNull);
-            if (policyCardTopLeftOrNull == null)
+            Assert.NotNull(emptyStateTopLeftOrNull);
+            if (emptyStateTopLeftOrNull == null)
             {
                 throw new InvalidOperationException(
-                    "The recommendation policy card was not attached to the inspector viewport.");
+                    "The personal schedule state was not attached to the inspector viewport.");
             }
 
-            Point policyCardTopLeft = policyCardTopLeftOrNull.Value;
-            double policyCardBottom =
-                policyCardTopLeft.Y + recommendationPolicyCard.Bounds.Height;
-            Assert.True(policyCardTopLeft.Y >= 0.0);
-            Assert.True(policyCardBottom <= scrollViewer.Viewport.Height + 1.0);
+            Point emptyStateTopLeft = emptyStateTopLeftOrNull.Value;
+            double emptyStateBottom =
+                emptyStateTopLeft.Y + personalScheduleEmptyState.Bounds.Height;
+            Assert.True(emptyStateTopLeft.Y >= 0.0);
+            Assert.True(emptyStateBottom <= scrollViewer.Viewport.Height + 1.0);
         }
         finally
         {

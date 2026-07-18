@@ -116,15 +116,17 @@
         <StackPanel Spacing="14">
           <Grid ColumnDefinitions="*,Auto">
             <TextBlock
+                x:Name="ExpectedCreditsLabel"
                 VerticalAlignment="Center"
                 Classes="secondary"
-                Text="선택한 과목" />
+                Text="예상 학점" />
             <TextBlock
+                x:Name="ExpectedCreditsValue"
                 Grid.Column="1"
                 VerticalAlignment="Center"
                 FontWeight="SemiBold"
-                Text="{Binding ActivePlan.CreditSummary}"
-                AutomationProperties.Name="선택한 과목과 학점" />
+                Text="{Binding ActivePlan.ExpectedCreditsDisplayText}"
+                AutomationProperties.Name="{Binding ActivePlan.ExpectedCreditsAccessibleName}" />
           </Grid>
 
           <Border Height="1" Background="{DynamicResource BorderBrush}" />
@@ -185,6 +187,7 @@
           </Border>
 
           <TextBlock
+              x:Name="ScheduledCoursesHeading"
               FontWeight="SemiBold"
               IsVisible="{Binding ActivePlan.HasScheduledCourses}"
               Text="{Binding ActivePlan.ScheduledCourseHeading}" />
@@ -383,6 +386,7 @@
 
           <Grid x:Name="PersonalSchedulesSection" ColumnDefinitions="*,Auto">
             <TextBlock
+                x:Name="PersonalSchedulesHeading"
                 VerticalAlignment="Center"
                 FontWeight="SemiBold"
                 Text="{Binding ActivePlan.PersonalScheduleHeading}" />
@@ -491,29 +495,6 @@
             </ItemsControl.ItemTemplate>
           </ItemsControl>
 
-          <Border
-              x:Name="RecommendationPolicyCard"
-              Padding="12"
-              IsVisible="{Binding !ActivePlan.IsCompletelyEmpty}"
-              Background="{DynamicResource SubtleSurfaceBrush}"
-              CornerRadius="7">
-            <Grid ColumnDefinitions="22,*" ColumnSpacing="9">
-              <icons:FluentIcon
-                  Grid.Column="0"
-                  VerticalAlignment="Center"
-                  Icon="CheckmarkCircle"
-                  IconVariant="Regular"
-                  FontSize="18"
-                  Foreground="{DynamicResource AccentBrush}" />
-              <StackPanel Grid.Column="1" Spacing="4">
-                <TextBlock FontWeight="SemiBold" Text="추천 기준" />
-                <TextBlock
-                    Classes="caption"
-                    Text="겹치지 않는 분반만 추천합니다."
-                    TextWrapping="NoWrap" />
-              </StackPanel>
-            </Grid>
-          </Border>
         </StackPanel>
       </ScrollViewer>
     </Grid>
