@@ -7,6 +7,7 @@ using Avalonia.Controls.Chrome;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 
 using FluentIcons.Avalonia;
 using FluentIcons.Common;
@@ -23,6 +24,45 @@ namespace TimetableGenerator.Desktop.Tests;
 
 public sealed class WindowChromeInteractionTests
 {
+    [AvaloniaFact]
+    public void AppearanceSettingsStayUnavailableWhileWorkspaceModalIsVisible()
+    {
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+        ProductShellViewModel shell =
+            PlannerWorkspaceTestFactory.CreateShell(workspace);
+        MainWindow hostWindow = new MainWindow(
+            shell,
+            ProductAppearanceTestFactory.CreateViewModel());
+
+        try
+        {
+            hostWindow.Show();
+            Dispatcher.UIThread.RunJobs();
+            Button appearanceButton = findRequiredControl<Button>(
+                hostWindow,
+                "AppearanceButton");
+
+            Assert.True(appearanceButton.IsEnabled);
+
+            workspace.BeginAddPersonalScheduleCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(workspace.IsPersonalScheduleEditorVisible);
+            Assert.False(appearanceButton.IsEnabled);
+
+            workspace.CancelPersonalScheduleEditCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(workspace.IsPersonalScheduleEditorVisible);
+            Assert.True(appearanceButton.IsEnabled);
+        }
+        finally
+        {
+            hostWindow.Close();
+        }
+    }
+
     [AvaloniaFact]
     public void ProductTitleBarUsesOneAccessibleCaptionControlSystem()
     {

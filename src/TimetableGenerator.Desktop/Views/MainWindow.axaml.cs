@@ -53,6 +53,7 @@ internal sealed partial class MainWindow : Window
         AvaloniaXamlLoader.Load(this);
         DataContext = mProductShellViewModel;
         initializeProductCaptionControls();
+        initializeWorkspaceInteraction();
         applyInitialWindowPlacement();
 
         SizeChanged += onSizeChanged;
@@ -94,6 +95,7 @@ internal sealed partial class MainWindow : Window
         Closing -= onClosing;
         Closed -= onClosed;
         mProductShellViewModel.PropertyChanged -= onProductShellPropertyChanged;
+        disposeWorkspaceInteraction();
         disposeProductCaptionControls();
         mProductShellViewModel.Dispose();
         GC.KeepAlive(mStartupTask);
@@ -150,7 +152,13 @@ internal sealed partial class MainWindow : Window
     {
         if (eventArgs.PropertyName == nameof(ProductShellViewModel.WorkspaceOrNull))
         {
+            connectWorkspaceInteraction();
             applyWorkspaceWidth(Bounds.Width);
+        }
+        else if (eventArgs.PropertyName
+            == nameof(ProductShellViewModel.IsProductInteractionEnabled))
+        {
+            updateAppearanceInteraction();
         }
         else if (eventArgs.PropertyName
             == nameof(ProductShellViewModel.HasShutdownError)

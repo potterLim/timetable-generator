@@ -78,7 +78,6 @@
             Grid.Column="2"
             Classes="icon"
             Margin="0,0,8,0"
-            IsEnabled="{Binding IsProductInteractionEnabled}"
             AutomationProperties.Name="화면 모드 설정"
             ToolTip.Tip="화면 모드"
             WindowDecorationProperties.ElementRole="User">
