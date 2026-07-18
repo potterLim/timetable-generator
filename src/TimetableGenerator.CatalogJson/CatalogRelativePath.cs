@@ -32,8 +32,7 @@ public sealed record CatalogRelativePath
             throw new ArgumentException("Catalog relative paths cannot be empty.", nameof(value));
         }
 
-        Uri? absoluteUriOrNull;
-        bool isAbsoluteUri = Uri.TryCreate(value, UriKind.Absolute, out absoluteUriOrNull);
+        bool isAbsoluteUri = Uri.TryCreate(value, UriKind.Absolute, out _);
         if (Path.IsPathRooted(value)
             || value.StartsWith(PATH_SEPARATOR)
             || value.StartsWith("//", StringComparison.Ordinal)

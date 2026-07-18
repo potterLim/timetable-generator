@@ -20,7 +20,6 @@ using TimetableGenerator.Desktop.Product;
 using TimetableGenerator.Desktop.Tests.Presentation.Appearance;
 using TimetableGenerator.Desktop.Tests.Presentation.Catalog;
 using TimetableGenerator.Desktop.Views;
-using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Scheduling;
 
 using Xunit;

@@ -8,7 +8,6 @@ using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 
 using TimetableGenerator.Desktop.Presentation.Models;
 

@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using TimetableGenerator.Application.Planning;
 using TimetableGenerator.Domain.Planning;
 using TimetableGenerator.Infrastructure.Catalogs;
-using TimetableGenerator.Infrastructure.Persistence;
 
 namespace TimetableGenerator.Desktop.Product.Loading;
 

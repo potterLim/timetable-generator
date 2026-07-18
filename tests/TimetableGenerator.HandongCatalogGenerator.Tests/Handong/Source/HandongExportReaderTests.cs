@@ -4,7 +4,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using TimetableGenerator.HandongCatalogGenerator.Domain;
 using TimetableGenerator.HandongCatalogGenerator.Handong.Source;
 
 namespace TimetableGenerator.HandongCatalogGenerator.Tests.Handong.Source;

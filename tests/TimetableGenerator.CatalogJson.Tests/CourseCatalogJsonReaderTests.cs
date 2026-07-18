@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using TimetableGenerator.Domain.Catalogs;
 
 namespace TimetableGenerator.CatalogJson.Tests;
 

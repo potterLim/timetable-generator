@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 
 using TimetableGenerator.Application.Planning;
 using TimetableGenerator.Desktop.Product.CatalogUpdates;
-using TimetableGenerator.Desktop.Product.Loading;
 using TimetableGenerator.Desktop.Tests.Product.Loading;
 using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Planning;

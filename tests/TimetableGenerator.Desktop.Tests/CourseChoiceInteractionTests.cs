@@ -17,7 +17,6 @@ using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Desktop.Tests.Presentation.Catalog;
 using TimetableGenerator.Desktop.Views;
-using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Planning;
 
 using Xunit;

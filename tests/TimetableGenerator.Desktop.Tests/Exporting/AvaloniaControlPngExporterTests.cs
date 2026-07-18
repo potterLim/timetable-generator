@@ -31,7 +31,7 @@ public sealed class AvaloniaControlPngExporterTests
     };
 
     [AvaloniaFact]
-    public async Task ExportControlAsyncRendersArrangedControlAsHighDensityPng()
+    public async Task ExportControlRendersArrangedControlAsHighDensityPngAsync()
     {
         Border sourceControl = createArrangedControl();
         AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(
@@ -61,7 +61,7 @@ public sealed class AvaloniaControlPngExporterTests
     }
 
     [AvaloniaFact]
-    public async Task ExportControlAsyncRejectsControlWithoutArrangedSize()
+    public async Task ExportControlRejectsControlWithoutArrangedSizeAsync()
     {
         Border sourceControl = new Border();
         AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(
@@ -84,7 +84,7 @@ public sealed class AvaloniaControlPngExporterTests
     }
 
     [AvaloniaFact]
-    public async Task ExportControlAsyncRejectsNullDestinationStream()
+    public async Task ExportControlRejectsNullDestinationStreamAsync()
     {
         Border sourceControl = createArrangedControl();
         AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(
@@ -103,7 +103,7 @@ public sealed class AvaloniaControlPngExporterTests
     }
 
     [AvaloniaFact]
-    public async Task ExportControlAsyncRejectsReadOnlyDestinationStream()
+    public async Task ExportControlRejectsReadOnlyDestinationStreamAsync()
     {
         Border sourceControl = createArrangedControl();
         AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(
@@ -127,7 +127,7 @@ public sealed class AvaloniaControlPngExporterTests
     }
 
     [AvaloniaFact]
-    public async Task ExportControlAsyncHonorsCancellationBeforeRendering()
+    public async Task ExportControlHonorsCancellationBeforeRenderingAsync()
     {
         Border sourceControl = createArrangedControl();
         AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(

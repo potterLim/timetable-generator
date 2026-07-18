@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using TimetableGenerator.HandongCatalogGenerator.Domain;
 
 namespace TimetableGenerator.HandongCatalogGenerator.Publishing;
 

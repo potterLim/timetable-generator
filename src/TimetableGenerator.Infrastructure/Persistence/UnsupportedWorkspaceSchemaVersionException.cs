@@ -1,5 +1,3 @@
-using System;
-
 namespace TimetableGenerator.Infrastructure.Persistence;
 
 public sealed class UnsupportedWorkspaceSchemaVersionException :

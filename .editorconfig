@@ -1,38 +1,156 @@
+# Timetable Generator 개발 규칙
+# IDE, dotnet format, 빌드 분석기가 동일한 포맷과 네이밍 규칙을 사용한다.
+
 root = true
 
-[*.{cs,csproj,sln,md,csv,json,xml}]
+[*]
 charset = utf-8
 end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
-
-[*.cs]
 indent_style = space
 indent_size = 4
-tab_width = 4
 
+[*.sln]
+indent_style = tab
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.{axaml,config,csproj,json,props,targets,xaml,xml,yml,yaml}]
+indent_size = 2
+
+[*.cs]
+# 진단 규칙
+dotnet_diagnostic.IDE0005.severity = error
+dotnet_diagnostic.IDE0055.severity = error
+dotnet_diagnostic.IDE0059.severity = error
+
+dotnet_diagnostic.CA1050.severity = error
+dotnet_diagnostic.CA1051.severity = error
+dotnet_code_quality.CA1051.api_surface = public
+dotnet_diagnostic.CA2211.severity = error
+
+# using 지시문과 네임스페이스
 dotnet_sort_system_directives_first = true
-csharp_using_directive_placement = outside_namespace:warning
-csharp_style_namespace_declarations = file_scoped:warning
+dotnet_separate_import_directive_groups = false
 
-csharp_style_var_for_built_in_types = false:warning
-csharp_style_var_when_type_is_apparent = false:warning
-csharp_style_var_elsewhere = false:warning
-csharp_style_implicit_object_creation_when_type_is_apparent = false:warning
-csharp_prefer_simple_using_statement = false:warning
-csharp_prefer_braces = true:warning
+csharp_using_directive_placement = outside_namespace:error
+csharp_style_namespace_declarations = file_scoped:error
+csharp_style_prefer_top_level_statements = false:error
 
+# 포맷
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
 csharp_new_line_before_open_brace = all
 csharp_new_line_before_else = true
 csharp_new_line_before_catch = true
 csharp_new_line_before_finally = true
-csharp_indent_case_contents = true
-csharp_indent_switch_labels = true
+csharp_prefer_braces = true:error
 
-csharp_style_expression_bodied_constructors = false:silent
-csharp_style_expression_bodied_methods = false:silent
-csharp_style_expression_bodied_operators = false:silent
-csharp_style_expression_bodied_local_functions = false:silent
+# 언어 스타일
+csharp_prefer_simple_using_statement = false:error
+csharp_style_implicit_object_creation_when_type_is_apparent = false:error
+csharp_style_inlined_variable_declaration = false:error
+
+csharp_style_var_for_built_in_types = false:error
+csharp_style_var_elsewhere = false:suggestion
+csharp_style_var_when_type_is_apparent = false:suggestion
+
+dotnet_style_coalesce_expression = false:error
+dotnet_style_object_initializer = false:suggestion
+dotnet_style_readonly_field = true:error
+
+# 네이밍 규칙
+dotnet_naming_rule.types_should_be_pascal_case.severity = error
+dotnet_naming_rule.types_should_be_pascal_case.symbols = types
+dotnet_naming_rule.types_should_be_pascal_case.style = pascal_case_style
+
+dotnet_naming_rule.namespaces_should_be_pascal_case.severity = error
+dotnet_naming_rule.namespaces_should_be_pascal_case.symbols = namespaces
+dotnet_naming_rule.namespaces_should_be_pascal_case.style = pascal_case_style
+
+dotnet_naming_rule.interfaces_should_start_with_i.severity = error
+dotnet_naming_rule.interfaces_should_start_with_i.symbols = interfaces
+dotnet_naming_rule.interfaces_should_start_with_i.style = interface_style
+
+dotnet_naming_rule.enums_should_start_with_e.severity = error
+dotnet_naming_rule.enums_should_start_with_e.symbols = enums
+dotnet_naming_rule.enums_should_start_with_e.style = enum_style
+
+# readonly struct를 제외한 S 접두어 규칙은 EditorConfig로 정확하게 표현할 수 없어 코드 리뷰에서 확인한다.
+dotnet_naming_rule.struct_types_should_be_pascal_case.severity = error
+dotnet_naming_rule.struct_types_should_be_pascal_case.symbols = struct_types
+dotnet_naming_rule.struct_types_should_be_pascal_case.style = pascal_case_style
+
+dotnet_naming_rule.public_methods_should_be_pascal_case.severity = error
+dotnet_naming_rule.public_methods_should_be_pascal_case.symbols = public_methods
+dotnet_naming_rule.public_methods_should_be_pascal_case.style = pascal_case_style
+
+dotnet_naming_rule.override_methods_should_be_pascal_case.severity = error
+dotnet_naming_rule.override_methods_should_be_pascal_case.symbols = override_methods
+dotnet_naming_rule.override_methods_should_be_pascal_case.style = pascal_case_style
+
+dotnet_naming_rule.non_public_methods_should_be_camel_case.severity = error
+dotnet_naming_rule.non_public_methods_should_be_camel_case.symbols = non_public_methods
+dotnet_naming_rule.non_public_methods_should_be_camel_case.style = camel_case_style
+
+# async 한정자가 있는 메서드는 접근 수준에 맞는 표기와 Async 접미어를 함께 검사한다.
+dotnet_naming_rule.public_async_methods_should_end_with_async.severity = error
+dotnet_naming_rule.public_async_methods_should_end_with_async.symbols = public_async_methods
+dotnet_naming_rule.public_async_methods_should_end_with_async.style = public_async_method_style
+
+dotnet_naming_rule.non_public_async_methods_should_end_with_async.severity = error
+dotnet_naming_rule.non_public_async_methods_should_end_with_async.symbols = non_public_async_methods
+dotnet_naming_rule.non_public_async_methods_should_end_with_async.style = non_public_async_method_style
+
+dotnet_naming_rule.properties_and_events_should_be_pascal_case.severity = error
+dotnet_naming_rule.properties_and_events_should_be_pascal_case.symbols = properties_and_events
+dotnet_naming_rule.properties_and_events_should_be_pascal_case.style = pascal_case_style
+
+dotnet_naming_rule.locals_should_be_camel_case.severity = error
+dotnet_naming_rule.locals_should_be_camel_case.symbols = locals
+dotnet_naming_rule.locals_should_be_camel_case.style = camel_case_style
+
+dotnet_naming_rule.parameters_should_be_camel_case.severity = error
+dotnet_naming_rule.parameters_should_be_camel_case.symbols = parameters
+dotnet_naming_rule.parameters_should_be_camel_case.style = camel_case_style
+
+dotnet_naming_rule.local_constants_should_be_uppercase.severity = error
+dotnet_naming_rule.local_constants_should_be_uppercase.symbols = local_constants
+dotnet_naming_rule.local_constants_should_be_uppercase.style = uppercase_style
+
+dotnet_naming_rule.private_fields_should_start_with_m.severity = error
+dotnet_naming_rule.private_fields_should_start_with_m.symbols = private_instance_fields
+dotnet_naming_rule.private_fields_should_start_with_m.style = private_field_style
+
+dotnet_naming_rule.private_static_fields_should_start_with_s.severity = error
+dotnet_naming_rule.private_static_fields_should_start_with_s.symbols = private_static_fields
+dotnet_naming_rule.private_static_fields_should_start_with_s.style = static_field_style
+
+dotnet_naming_rule.static_fields_should_start_with_s.severity = error
+dotnet_naming_rule.static_fields_should_start_with_s.symbols = static_fields
+dotnet_naming_rule.static_fields_should_start_with_s.style = static_field_style
+
+dotnet_naming_rule.private_constants_should_be_uppercase.severity = error
+dotnet_naming_rule.private_constants_should_be_uppercase.symbols = private_constants
+dotnet_naming_rule.private_constants_should_be_uppercase.style = uppercase_style
+
+dotnet_naming_rule.constants_should_be_uppercase.severity = error
+dotnet_naming_rule.constants_should_be_uppercase.symbols = constants
+dotnet_naming_rule.constants_should_be_uppercase.style = uppercase_style
+
+# static readonly는 상태 또는 상수 역할에 따라 표기가 달라지므로 코드 리뷰에서 역할을 확인한다.
+dotnet_naming_rule.static_readonly_fields_should_be_uppercase.severity = silent
+dotnet_naming_rule.static_readonly_fields_should_be_uppercase.symbols = static_readonly_fields
+dotnet_naming_rule.static_readonly_fields_should_be_uppercase.style = uppercase_style
+
+# 네이밍 대상
+dotnet_naming_symbols.types.applicable_kinds = class, delegate
+dotnet_naming_symbols.types.applicable_accessibilities = *
+
+dotnet_naming_symbols.namespaces.applicable_kinds = namespace
+dotnet_naming_symbols.namespaces.applicable_accessibilities = *
 
 dotnet_naming_symbols.interfaces.applicable_kinds = interface
 dotnet_naming_symbols.interfaces.applicable_accessibilities = *
@@ -40,96 +158,84 @@ dotnet_naming_symbols.interfaces.applicable_accessibilities = *
 dotnet_naming_symbols.enums.applicable_kinds = enum
 dotnet_naming_symbols.enums.applicable_accessibilities = *
 
-dotnet_naming_symbols.types.applicable_kinds = class, struct, delegate
-dotnet_naming_symbols.types.applicable_accessibilities = *
+dotnet_naming_symbols.struct_types.applicable_kinds = struct
+dotnet_naming_symbols.struct_types.applicable_accessibilities = *
 
 dotnet_naming_symbols.public_methods.applicable_kinds = method
 dotnet_naming_symbols.public_methods.applicable_accessibilities = public
 
 dotnet_naming_symbols.override_methods.applicable_kinds = method
-dotnet_naming_symbols.override_methods.applicable_accessibilities = *
 dotnet_naming_symbols.override_methods.required_modifiers = override
 
 dotnet_naming_symbols.non_public_methods.applicable_kinds = method
-dotnet_naming_symbols.non_public_methods.applicable_accessibilities = internal, private, protected, protected_internal
+dotnet_naming_symbols.non_public_methods.applicable_accessibilities = private, internal, protected, protected_internal, private_protected
+
+dotnet_naming_symbols.public_async_methods.applicable_kinds = method
+dotnet_naming_symbols.public_async_methods.applicable_accessibilities = public
+dotnet_naming_symbols.public_async_methods.required_modifiers = async
+
+dotnet_naming_symbols.non_public_async_methods.applicable_kinds = method
+dotnet_naming_symbols.non_public_async_methods.applicable_accessibilities = private, internal, protected, protected_internal, private_protected
+dotnet_naming_symbols.non_public_async_methods.required_modifiers = async
 
 dotnet_naming_symbols.properties_and_events.applicable_kinds = property, event
 dotnet_naming_symbols.properties_and_events.applicable_accessibilities = *
 
-dotnet_naming_symbols.private_fields.applicable_kinds = field
-dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_symbols.locals.applicable_kinds = local
+dotnet_naming_symbols.locals.applicable_accessibilities = *
+
+dotnet_naming_symbols.parameters.applicable_kinds = parameter
+dotnet_naming_symbols.parameters.applicable_accessibilities = *
+
+dotnet_naming_symbols.local_constants.applicable_kinds = local
+dotnet_naming_symbols.local_constants.applicable_accessibilities = *
+dotnet_naming_symbols.local_constants.required_modifiers = const
+
+dotnet_naming_symbols.private_instance_fields.applicable_kinds = field
+dotnet_naming_symbols.private_instance_fields.applicable_accessibilities = private
+
+dotnet_naming_symbols.private_static_fields.applicable_kinds = field
+dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private
+dotnet_naming_symbols.private_static_fields.required_modifiers = static
 
 dotnet_naming_symbols.static_fields.applicable_kinds = field
 dotnet_naming_symbols.static_fields.applicable_accessibilities = *
 dotnet_naming_symbols.static_fields.required_modifiers = static
 
-dotnet_naming_symbols.constant_fields.applicable_kinds = field
-dotnet_naming_symbols.constant_fields.applicable_accessibilities = *
-dotnet_naming_symbols.constant_fields.required_modifiers = const
+dotnet_naming_symbols.private_constants.applicable_kinds = field
+dotnet_naming_symbols.private_constants.applicable_accessibilities = private
+dotnet_naming_symbols.private_constants.required_modifiers = const
+
+dotnet_naming_symbols.constants.applicable_kinds = field
+dotnet_naming_symbols.constants.applicable_accessibilities = *
+dotnet_naming_symbols.constants.required_modifiers = const
 
 dotnet_naming_symbols.static_readonly_fields.applicable_kinds = field
 dotnet_naming_symbols.static_readonly_fields.applicable_accessibilities = *
 dotnet_naming_symbols.static_readonly_fields.required_modifiers = static, readonly
 
-dotnet_naming_style.pascal_case.capitalization = pascal_case
+# 네이밍 스타일
+dotnet_naming_style.pascal_case_style.capitalization = pascal_case
 
-dotnet_naming_style.camel_case.capitalization = camel_case
+dotnet_naming_style.camel_case_style.capitalization = camel_case
 
-dotnet_naming_style.interface_name.capitalization = pascal_case
-dotnet_naming_style.interface_name.required_prefix = I
+dotnet_naming_style.interface_style.required_prefix = I
+dotnet_naming_style.interface_style.capitalization = pascal_case
 
-dotnet_naming_style.enum_name.capitalization = pascal_case
-dotnet_naming_style.enum_name.required_prefix = E
+dotnet_naming_style.enum_style.required_prefix = E
+dotnet_naming_style.enum_style.capitalization = pascal_case
 
-dotnet_naming_style.private_field_name.capitalization = pascal_case
-dotnet_naming_style.private_field_name.required_prefix = m
+dotnet_naming_style.private_field_style.required_prefix = m
+dotnet_naming_style.private_field_style.capitalization = pascal_case
 
-dotnet_naming_style.static_field_name.capitalization = pascal_case
-dotnet_naming_style.static_field_name.required_prefix = s
+dotnet_naming_style.static_field_style.required_prefix = s
+dotnet_naming_style.static_field_style.capitalization = pascal_case
 
-dotnet_naming_style.upper_case.capitalization = all_upper
-dotnet_naming_style.upper_case.word_separator = _
+dotnet_naming_style.uppercase_style.capitalization = all_upper
+dotnet_naming_style.uppercase_style.word_separator = _
 
-dotnet_naming_rule.interfaces_should_begin_with_i.symbols = interfaces
-dotnet_naming_rule.interfaces_should_begin_with_i.style = interface_name
-dotnet_naming_rule.interfaces_should_begin_with_i.severity = warning
+dotnet_naming_style.public_async_method_style.required_suffix = Async
+dotnet_naming_style.public_async_method_style.capitalization = pascal_case
 
-dotnet_naming_rule.enums_should_begin_with_e.symbols = enums
-dotnet_naming_rule.enums_should_begin_with_e.style = enum_name
-dotnet_naming_rule.enums_should_begin_with_e.severity = warning
-
-dotnet_naming_rule.types_should_use_pascal_case.symbols = types
-dotnet_naming_rule.types_should_use_pascal_case.style = pascal_case
-dotnet_naming_rule.types_should_use_pascal_case.severity = warning
-
-dotnet_naming_rule.public_methods_should_use_pascal_case.symbols = public_methods
-dotnet_naming_rule.public_methods_should_use_pascal_case.style = pascal_case
-dotnet_naming_rule.public_methods_should_use_pascal_case.severity = warning
-
-dotnet_naming_rule.override_methods_should_use_pascal_case.symbols = override_methods
-dotnet_naming_rule.override_methods_should_use_pascal_case.style = pascal_case
-dotnet_naming_rule.override_methods_should_use_pascal_case.severity = warning
-
-dotnet_naming_rule.non_public_methods_should_use_camel_case.symbols = non_public_methods
-dotnet_naming_rule.non_public_methods_should_use_camel_case.style = camel_case
-dotnet_naming_rule.non_public_methods_should_use_camel_case.severity = warning
-
-dotnet_naming_rule.properties_and_events_should_use_pascal_case.symbols = properties_and_events
-dotnet_naming_rule.properties_and_events_should_use_pascal_case.style = pascal_case
-dotnet_naming_rule.properties_and_events_should_use_pascal_case.severity = warning
-
-dotnet_naming_rule.constant_fields_should_use_upper_case.symbols = constant_fields
-dotnet_naming_rule.constant_fields_should_use_upper_case.style = upper_case
-dotnet_naming_rule.constant_fields_should_use_upper_case.severity = warning
-
-dotnet_naming_rule.static_readonly_fields_should_use_upper_case.symbols = static_readonly_fields
-dotnet_naming_rule.static_readonly_fields_should_use_upper_case.style = upper_case
-dotnet_naming_rule.static_readonly_fields_should_use_upper_case.severity = warning
-
-dotnet_naming_rule.static_fields_should_use_s_prefix.symbols = static_fields
-dotnet_naming_rule.static_fields_should_use_s_prefix.style = static_field_name
-dotnet_naming_rule.static_fields_should_use_s_prefix.severity = warning
-
-dotnet_naming_rule.private_fields_should_use_m_prefix.symbols = private_fields
-dotnet_naming_rule.private_fields_should_use_m_prefix.style = private_field_name
-dotnet_naming_rule.private_fields_should_use_m_prefix.severity = warning
+dotnet_naming_style.non_public_async_method_style.required_suffix = Async
+dotnet_naming_style.non_public_async_method_style.capitalization = camel_case

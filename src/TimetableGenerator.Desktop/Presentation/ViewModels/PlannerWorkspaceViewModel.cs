@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 
 using TimetableGenerator.Application.Planning;
-using TimetableGenerator.Application.Scheduling;
 using TimetableGenerator.Desktop.Presentation.Catalog;
 using TimetableGenerator.Desktop.Presentation.Layout;
 using TimetableGenerator.Desktop.Presentation.Models;
@@ -14,8 +13,6 @@ using TimetableGenerator.Desktop.Presentation.Recommendations;
 using TimetableGenerator.Desktop.Storage;
 using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Planning;
-using PresentationScheduleRecommendation =
-    TimetableGenerator.Desktop.Presentation.Models.ScheduleRecommendation;
 
 namespace TimetableGenerator.Desktop.Presentation.ViewModels;
 

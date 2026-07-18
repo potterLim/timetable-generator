@@ -1,5 +1,3 @@
-using System;
-
 namespace TimetableGenerator.Domain.Planning;
 
 public sealed record PersonalScheduleSection
