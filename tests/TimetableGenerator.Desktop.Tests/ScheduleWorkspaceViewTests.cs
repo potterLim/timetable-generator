@@ -361,7 +361,7 @@ public sealed class ScheduleWorkspaceViewTests
             Assert.Equal(1, Grid.GetRow(location));
             Assert.Equal(2, Grid.GetRow(instructor));
             Assert.Equal(7.0, location.Margin.Top);
-            Assert.Equal(1.75, instructor.Margin.Top);
+            Assert.Equal(1.5, instructor.Margin.Top);
             Assert.Equal(TextAlignment.Center, location.TextAlignment);
             Assert.Equal(TextAlignment.Center, instructor.TextAlignment);
             Assert.Equal(14.0, location.LineHeight);
