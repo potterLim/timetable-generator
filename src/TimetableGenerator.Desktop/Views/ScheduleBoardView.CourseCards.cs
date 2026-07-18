@@ -1,10 +1,7 @@
 using System;
 
-using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
-using Avalonia.Layout;
-using Avalonia.Media;
 
 using TimetableGenerator.Desktop.Presentation.Models;
 
@@ -12,19 +9,13 @@ namespace TimetableGenerator.Desktop.Views;
 
 internal sealed partial class ScheduleBoardView
 {
-    private const double COURSE_CARD_TITLE_FONT_SIZE = 14.0;
-    private const double COURSE_CARD_TITLE_LINE_HEIGHT = 18.0;
-    private const double COURSE_CARD_LOCATION_FONT_SIZE = 11.5;
-    private const double COURSE_CARD_INSTRUCTOR_FONT_SIZE = 10.5;
-    private const double COURSE_CARD_PRIMARY_GAP = 6.0;
-    private const double COURSE_CARD_SECONDARY_GAP = 2.0;
-
     private void configureCourseCard(
         Button scheduleCard,
         CourseScheduleEntry entry)
     {
         scheduleCard.Classes.Add(findAccentClass(entry.Accent));
-        scheduleCard.Content = createCourseEntryContent(entry);
+        scheduleCard.Content = createScheduleCardContent(
+            new ScheduleCardContent(entry));
         scheduleCard.Flyout = createCourseEntryFlyout(entry);
 
         string accessibleName = entry.Code + ", "
@@ -41,74 +32,11 @@ internal sealed partial class ScheduleBoardView
             "선택하면 과목의 전체 시간, 교수, 강의실 정보를 엽니다.");
         ToolTip.SetTip(
             scheduleCard,
-            entry.TitleDisplayText
+            entry.Name
+                + " · "
+                + entry.SectionDisplayText
                 + Environment.NewLine
                 + "선택하여 과목 상세 정보 보기");
-    }
-
-    private Grid createCourseEntryContent(CourseScheduleEntry entry)
-    {
-        Grid content = new Grid();
-        content.HorizontalAlignment = HorizontalAlignment.Stretch;
-        content.VerticalAlignment = VerticalAlignment.Center;
-        content.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-
-        TextBlock name = createCardText(
-            entry.TitleDisplayText,
-            COURSE_CARD_TITLE_FONT_SIZE,
-            FontWeight.Bold);
-        name.HorizontalAlignment = HorizontalAlignment.Stretch;
-        name.LineHeight = COURSE_CARD_TITLE_LINE_HEIGHT;
-        name.MaxLines = 2;
-        name.TextAlignment = TextAlignment.Center;
-        name.TextWrapping = TextWrapping.Wrap;
-        name.TextTrimming = TextTrimming.CharacterEllipsis;
-        content.Children.Add(name);
-
-        int nextRowIndex = 1;
-        if (entry.HasAssignedLocation)
-        {
-            content.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-            TextBlock location = createCardText(
-                entry.LocationDisplayText,
-                COURSE_CARD_LOCATION_FONT_SIZE,
-                FontWeight.Medium);
-            location.Margin = new Thickness(
-                0.0,
-                COURSE_CARD_PRIMARY_GAP,
-                0.0,
-                0.0);
-            location.HorizontalAlignment = HorizontalAlignment.Stretch;
-            location.Foreground = findBrush("TextPrimaryBrush");
-            location.TextAlignment = TextAlignment.Center;
-            location.TextWrapping = TextWrapping.NoWrap;
-            location.TextTrimming = TextTrimming.CharacterEllipsis;
-            Grid.SetRow(location, nextRowIndex);
-            content.Children.Add(location);
-            ++nextRowIndex;
-        }
-
-        if (entry.HasConfirmedInstructor)
-        {
-            content.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-            TextBlock instructor = createCardText(
-                entry.InstructorDisplayText,
-                COURSE_CARD_INSTRUCTOR_FONT_SIZE,
-                FontWeight.Normal);
-            double instructorTopMargin = entry.HasAssignedLocation
-                ? COURSE_CARD_SECONDARY_GAP
-                : COURSE_CARD_PRIMARY_GAP;
-            instructor.Margin = new Thickness(0.0, instructorTopMargin, 0.0, 0.0);
-            instructor.HorizontalAlignment = HorizontalAlignment.Stretch;
-            instructor.Foreground = findBrush("TextSecondaryBrush");
-            instructor.TextAlignment = TextAlignment.Center;
-            instructor.TextWrapping = TextWrapping.NoWrap;
-            instructor.TextTrimming = TextTrimming.CharacterEllipsis;
-            Grid.SetRow(instructor, nextRowIndex);
-            content.Children.Add(instructor);
-        }
-
-        return content;
     }
 
     private Flyout createCourseEntryFlyout(CourseScheduleEntry entry)

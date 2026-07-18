@@ -9,6 +9,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -560,6 +561,130 @@ public sealed class PersonalScheduleInteractionTests
     }
 
     [AvaloniaFact]
+    public void PersonalScheduleBoardCardMatchesCourseCardHierarchy()
+    {
+        DailyTimeRange timeRange = new DailyTimeRange(
+            new ScheduleTime(12, 0),
+            new ScheduleTime(13, 0));
+        PersonalScheduleDetails details = new PersonalScheduleDetails(
+            new PersonalScheduleSection("A"),
+            new PersonalScheduleInstructor("김교수"),
+            new PersonalScheduleLocation("느헤미야홀 101호"));
+        PersonalSchedule schedule = new PersonalSchedule(
+            PersonalScheduleId.CreateNew(),
+            new PersonalScheduleTitle("사용자 경험 연구 정기 회의"),
+            new WeeklyTimeRange[]
+            {
+                new WeeklyTimeRange(EDay.Wednesday, timeRange),
+            },
+            details);
+        ScheduleBoardView scheduleBoard = new ScheduleBoardView();
+        scheduleBoard.DataContext = createScheduleBoardPresentation(
+            new ScheduleRecommendation(
+                new ScheduleEntry[]
+                {
+                    new PersonalScheduleEntry(schedule, schedule.TimeRanges[0]),
+                }));
+        Window window = new Window();
+        window.Width = 800.0;
+        window.Height = 520.0;
+        window.Content = scheduleBoard;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Button scheduleCard = findRequiredControl<Grid>(
+                scheduleBoard,
+                "BoardGrid")
+                .Children
+                .OfType<Button>()
+                .Single();
+            Grid cardContent = Assert.IsType<Grid>(scheduleCard.Content);
+            TextBlock[] cardTexts = cardContent.Children
+                .OfType<TextBlock>()
+                .ToArray();
+            Assert.Equal(
+                new string[] { "사용자 경험 연구 정기 회의", "느헤미야홀 101호", "김교수" },
+                cardTexts.Select(getTextOrEmpty));
+            Assert.Equal(new Thickness(8.0, 4.0), scheduleCard.Padding);
+            Assert.Equal(VerticalAlignment.Center, cardContent.VerticalAlignment);
+            Assert.Equal(3, cardContent.RowDefinitions.Count);
+
+            TextBlock title = cardTexts[0];
+            Assert.Equal(14.0, title.FontSize);
+            Assert.Equal(18.0, title.LineHeight);
+            Assert.Equal(FontWeight.Bold, title.FontWeight);
+            Assert.Equal(2, title.MaxLines);
+            Assert.Equal(TextAlignment.Center, title.TextAlignment);
+            Assert.Equal(TextWrapping.Wrap, title.TextWrapping);
+            Assert.True(title.Bounds.Height > title.LineHeight);
+
+            double availableContentHeight = scheduleCard.Bounds.Height
+                - scheduleCard.Padding.Top
+                - scheduleCard.Padding.Bottom
+                - scheduleCard.BorderThickness.Top
+                - scheduleCard.BorderThickness.Bottom;
+            Assert.True(cardContent.DesiredSize.Height <= availableContentHeight);
+
+            TextBlock location = cardTexts[1];
+            Assert.Equal(11.5, location.FontSize);
+            Assert.Equal(FontWeight.Medium, location.FontWeight);
+            Assert.Equal(6.0, location.Margin.Top);
+            Assert.Equal(TextAlignment.Center, location.TextAlignment);
+
+            TextBlock responsiblePerson = cardTexts[2];
+            Assert.Equal(10.5, responsiblePerson.FontSize);
+            Assert.Equal(FontWeight.Normal, responsiblePerson.FontWeight);
+            Assert.Equal(2.0, responsiblePerson.Margin.Top);
+            Assert.Equal(TextAlignment.Center, responsiblePerson.TextAlignment);
+
+            string? accessibleNameOrNull = AutomationProperties.GetName(scheduleCard);
+            Assert.NotNull(accessibleNameOrNull);
+            if (accessibleNameOrNull == null)
+            {
+                throw new InvalidOperationException(
+                    "The personal schedule card accessible name was missing.");
+            }
+
+            string accessibleName = accessibleNameOrNull;
+            Assert.Contains("분반 A", accessibleName);
+            Assert.Contains("수요일 12:00–13:00", accessibleName);
+            Assert.DoesNotContain(
+                cardTexts,
+                textBlock => getTextOrEmpty(textBlock).Contains(
+                    "개인 일정",
+                    StringComparison.Ordinal));
+            Assert.DoesNotContain(
+                cardTexts,
+                textBlock => getTextOrEmpty(textBlock).Contains(
+                    "12:00",
+                    StringComparison.Ordinal));
+            Assert.DoesNotContain(
+                cardTexts,
+                textBlock => getTextOrEmpty(textBlock).Contains(
+                    "분반",
+                    StringComparison.Ordinal));
+
+            Button exportCard = scheduleBoard.PngExportSurface
+                .GetVisualDescendants()
+                .OfType<Button>()
+                .Single();
+            Grid exportContent = Assert.IsType<Grid>(exportCard.Content);
+            Assert.Equal(
+                new string[] { "사용자 경험 연구 정기 회의", "느헤미야홀 101호", "김교수" },
+                exportContent.Children
+                    .OfType<TextBlock>()
+                    .Select(getTextOrEmpty));
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void EarlyShortScheduleShowsAClockLabelAndUsableTarget()
     {
         DailyTimeRange timeRange = new DailyTimeRange(
@@ -648,6 +773,18 @@ public sealed class PersonalScheduleInteractionTests
             Assert.Equal(2, cards.Length);
             Assert.All(cards, card => Assert.Contains("compact", card.Classes));
             Assert.All(cards, card => Assert.True(card.Bounds.Height >= 24.0));
+            Assert.All(
+                cards,
+                card =>
+                {
+                    TextBlock title = Assert.IsType<TextBlock>(card.Content);
+                    Assert.Equal("짧은 랩 미팅", title.Text);
+                    Assert.Equal(14.0, title.FontSize);
+                    Assert.Equal(18.0, title.LineHeight);
+                    Assert.Equal(FontWeight.Bold, title.FontWeight);
+                    Assert.Equal(1, title.MaxLines);
+                    Assert.Equal(TextAlignment.Center, title.TextAlignment);
+                });
             Assert.Equal(
                 2,
                 cards.Select(AutomationProperties.GetAutomationId).Distinct().Count());

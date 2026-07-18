@@ -58,10 +58,10 @@
       <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
     </Style>
     <Style Selector="Button.schedule-card.personal">
-      <Setter Property="Padding" Value="7,4" />
       <Setter Property="Background" Value="{DynamicResource PersonalScheduleBackgroundBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource PersonalScheduleBorderBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+      <Setter Property="Padding" Value="8,4" />
     </Style>
     <Style Selector="Button.schedule-card.personal.compact">
       <Setter Property="Margin" Value="3,0" />
