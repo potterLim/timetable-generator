@@ -32,7 +32,7 @@
       <SolidColorBrush x:Key="BrandMarkBorderBrush" Color="#C7D0DC" />
       <SolidColorBrush x:Key="TextPrimaryBrush" Color="#172033" />
       <SolidColorBrush x:Key="TextSecondaryBrush" Color="#526176" />
-      <SolidColorBrush x:Key="TextTertiaryBrush" Color="#66758B" />
+      <SolidColorBrush x:Key="TextTertiaryBrush" Color="#627188" />
       <SolidColorBrush x:Key="AccentBrush" Color="#0A60C8" />
       <SolidColorBrush x:Key="AccentHoverBrush" Color="#0857B6" />
       <SolidColorBrush x:Key="AccentPressedBrush" Color="#064A9B" />
@@ -69,8 +69,11 @@
       <SolidColorBrush x:Key="CaptionButtonBackground" Color="#EFF2F6" />
       <SolidColorBrush x:Key="CaptionButtonBorderBrush" Color="#DCE1E8" />
       <SolidColorBrush x:Key="CaptionButtonForeground" Color="#172033" />
+      <SolidColorBrush x:Key="CaptionCloseButtonForegroundBrush" Color="#FFFFFF" />
       <SolidColorBrush x:Key="CaptionCloseButtonHoverBackgroundBrush" Color="#C83B32" />
-      <SolidColorBrush x:Key="CaptionCloseButtonPressedBackgroundBrush" Color="#C23B32" />
+      <SolidColorBrush x:Key="CaptionCloseButtonPressedBackgroundBrush" Color="#A82D27" />
+      <BoxShadows x:Key="DialogBoxShadow">0 18 48 0 #33000000</BoxShadows>
+      <BoxShadows x:Key="ToastBoxShadow">0 8 24 0 #24000000</BoxShadows>
     </ResourceDictionary>
 
     <ResourceDictionary x:Key="Dark">
@@ -140,8 +143,11 @@
       <SolidColorBrush x:Key="CaptionButtonBackground" Color="#222A35" />
       <SolidColorBrush x:Key="CaptionButtonBorderBrush" Color="#303844" />
       <SolidColorBrush x:Key="CaptionButtonForeground" Color="#F4F7FB" />
+      <SolidColorBrush x:Key="CaptionCloseButtonForegroundBrush" Color="#FFFFFF" />
       <SolidColorBrush x:Key="CaptionCloseButtonHoverBackgroundBrush" Color="#C83B32" />
-      <SolidColorBrush x:Key="CaptionCloseButtonPressedBackgroundBrush" Color="#C23B32" />
+      <SolidColorBrush x:Key="CaptionCloseButtonPressedBackgroundBrush" Color="#A82D27" />
+      <BoxShadows x:Key="DialogBoxShadow">0 18 48 0 #80000000</BoxShadows>
+      <BoxShadows x:Key="ToastBoxShadow">0 8 24 0 #5C000000</BoxShadows>
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

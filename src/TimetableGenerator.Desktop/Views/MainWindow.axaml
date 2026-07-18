@@ -286,7 +286,7 @@
           Background="{DynamicResource ElevatedSurfaceBrush}"
           BorderBrush="{DynamicResource BorderBrush}"
           BorderThickness="1"
-          BoxShadow="0 8 24 0 #24000000"
+          BoxShadow="{DynamicResource ToastBoxShadow}"
           CornerRadius="8"
           AutomationProperties.LiveSetting="Polite">
         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
@@ -343,6 +343,7 @@
             Background="{DynamicResource ElevatedSurfaceBrush}"
             BorderBrush="{DynamicResource BorderBrush}"
             BorderThickness="1"
+            BoxShadow="{DynamicResource DialogBoxShadow}"
             CornerRadius="12"
             KeyboardNavigation.TabNavigation="Cycle">
           <StackPanel Spacing="14">

@@ -40,8 +40,14 @@
     <Style Selector="^.caption-close-button:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource CaptionCloseButtonHoverBackgroundBrush}" />
     </Style>
+    <Style Selector="^.caption-close-button:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource CaptionCloseButtonForegroundBrush}" />
+    </Style>
     <Style Selector="^.caption-close-button:pressed /template/ ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource CaptionCloseButtonPressedBackgroundBrush}" />
+    </Style>
+    <Style Selector="^.caption-close-button:pressed">
+      <Setter Property="Foreground" Value="{DynamicResource CaptionCloseButtonForegroundBrush}" />
     </Style>
     <Style Selector="^:focus-visible /template/ ContentPresenter">
       <Setter Property="BorderBrush" Value="{DynamicResource ProductFocusStrokeBrush}" />
@@ -144,7 +150,7 @@
                       VerticalAlignment="Center">
                     <Path
                         Data="M1169 1024l879 -879l-145 -145l-879 879l-879 -879l-145 145l879 879l-879 879l145 145l879 -879l879 879l145 -145z"
-                        Fill="{DynamicResource CaptionButtonForeground}"
+                        Fill="{Binding Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType=Button}}"
                         Stretch="UniformToFill" />
                   </Viewbox>
                 </Button>
@@ -193,7 +199,7 @@
                       VerticalAlignment="Center">
                     <Path
                         Data="M1169 1024l879 -879l-145 -145l-879 879l-879 -879l-145 145l879 879l-879 879l145 145l879 -879l879 879l145 -145z"
-                        Fill="{DynamicResource CaptionButtonForeground}"
+                        Fill="{Binding Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType=Button}}"
                         Stretch="UniformToFill" />
                   </Viewbox>
                 </Button>

@@ -54,8 +54,8 @@ public sealed class ProductColorContrastTests
         new ColorToken("CaptionCloseButtonHoverBackgroundBrush");
     private static readonly ColorToken CAPTION_CLOSE_PRESSED_BACKGROUND =
         new ColorToken("CaptionCloseButtonPressedBackgroundBrush");
-    private static readonly ColorToken CAPTION_FOREGROUND =
-        new ColorToken("CaptionButtonForeground");
+    private static readonly ColorToken CAPTION_CLOSE_FOREGROUND =
+        new ColorToken("CaptionCloseButtonForegroundBrush");
     private static readonly ColorToken COURSE_BLUE_BACKGROUND =
         new ColorToken("CourseBlueBackgroundBrush");
     private static readonly ColorToken COURSE_BLUE_BORDER =
@@ -129,6 +129,8 @@ public sealed class ProductColorContrastTests
         new ContrastRatio(4.5);
     private static readonly ContrastRatio MINIMUM_NON_TEXT_CONTRAST =
         new ContrastRatio(3.0);
+    private static readonly ContrastRatio MINIMUM_INTERACTION_STATE_CONTRAST =
+        new ContrastRatio(1.2);
 
     private static readonly ColorToken[] REQUIRED_SOLID_COLOR_TOKENS =
     {
@@ -189,8 +191,15 @@ public sealed class ProductColorContrastTests
         new ColorToken("CaptionButtonBackground"),
         new ColorToken("CaptionButtonBorderBrush"),
         new ColorToken("CaptionButtonForeground"),
+        new ColorToken("CaptionCloseButtonForegroundBrush"),
         new ColorToken("CaptionCloseButtonHoverBackgroundBrush"),
         new ColorToken("CaptionCloseButtonPressedBackgroundBrush"),
+    };
+
+    private static readonly ShadowToken[] REQUIRED_BOX_SHADOW_TOKENS =
+    {
+        new ShadowToken("DialogBoxShadow"),
+        new ShadowToken("ToastBoxShadow"),
     };
 
     [AvaloniaFact]
@@ -208,6 +217,34 @@ public sealed class ProductColorContrastTests
             {
                 findRequiredBrush(colorToken, themeVariant);
             }
+        }
+    }
+
+    [AvaloniaFact]
+    public void ProductBoxShadowTokenContractExistsInLightAndDarkThemes()
+    {
+        ThemeVariant[] themeVariants =
+        {
+            ThemeVariant.Light,
+            ThemeVariant.Dark,
+        };
+
+        foreach (ThemeVariant themeVariant in themeVariants)
+        {
+            foreach (ShadowToken shadowToken in REQUIRED_BOX_SHADOW_TOKENS)
+            {
+                BoxShadows boxShadows = findRequiredBoxShadows(
+                    shadowToken,
+                    themeVariant);
+                Assert.True(boxShadows.Count > 0);
+            }
+        }
+
+        foreach (ShadowToken shadowToken in REQUIRED_BOX_SHADOW_TOKENS)
+        {
+            Assert.NotEqual(
+                findRequiredBoxShadows(shadowToken, ThemeVariant.Light),
+                findRequiredBoxShadows(shadowToken, ThemeVariant.Dark));
         }
     }
 
@@ -236,6 +273,8 @@ public sealed class ProductColorContrastTests
                 TEXT_SECONDARY,
                 SELECTION_PRESSED_SURFACE),
             bodyText(ThemeVariant.Light, TEXT_TERTIARY, CONTROL_SURFACE),
+            bodyText(ThemeVariant.Light, TEXT_TERTIARY, WINDOW_BACKGROUND),
+            bodyText(ThemeVariant.Light, TEXT_TERTIARY, PANE_SURFACE),
             bodyText(ThemeVariant.Light, TEXT_PRIMARY, CONTROL_HOVER_SURFACE),
             bodyText(ThemeVariant.Dark, TEXT_PRIMARY, WINDOW_BACKGROUND),
             bodyText(ThemeVariant.Dark, TEXT_PRIMARY, PANE_SURFACE),
@@ -257,6 +296,8 @@ public sealed class ProductColorContrastTests
                 TEXT_SECONDARY,
                 SELECTION_PRESSED_SURFACE),
             bodyText(ThemeVariant.Dark, TEXT_TERTIARY, CONTROL_SURFACE),
+            bodyText(ThemeVariant.Dark, TEXT_TERTIARY, WINDOW_BACKGROUND),
+            bodyText(ThemeVariant.Dark, TEXT_TERTIARY, PANE_SURFACE),
             bodyText(ThemeVariant.Dark, TEXT_PRIMARY, CONTROL_HOVER_SURFACE),
         };
 
@@ -292,19 +333,19 @@ public sealed class ProductColorContrastTests
         {
             nonText(
                 ThemeVariant.Light,
-                CAPTION_FOREGROUND,
+                CAPTION_CLOSE_FOREGROUND,
                 CAPTION_CLOSE_HOVER_BACKGROUND),
             nonText(
                 ThemeVariant.Light,
-                CAPTION_FOREGROUND,
+                CAPTION_CLOSE_FOREGROUND,
                 CAPTION_CLOSE_PRESSED_BACKGROUND),
             nonText(
                 ThemeVariant.Dark,
-                CAPTION_FOREGROUND,
+                CAPTION_CLOSE_FOREGROUND,
                 CAPTION_CLOSE_HOVER_BACKGROUND),
             nonText(
                 ThemeVariant.Dark,
-                CAPTION_FOREGROUND,
+                CAPTION_CLOSE_FOREGROUND,
                 CAPTION_CLOSE_PRESSED_BACKGROUND),
             nonText(
                 ThemeVariant.Light,
@@ -325,6 +366,37 @@ public sealed class ProductColorContrastTests
         };
 
         assertContrastRequirements(contrastRequirements);
+    }
+
+    [AvaloniaFact]
+    public void CaptionClosePressedFillIsDistinctFromHoverFill()
+    {
+        ThemeVariant[] themeVariants =
+        {
+            ThemeVariant.Light,
+            ThemeVariant.Dark,
+        };
+
+        foreach (ThemeVariant themeVariant in themeVariants)
+        {
+            Color hoverColor = findRequiredBrush(
+                CAPTION_CLOSE_HOVER_BACKGROUND,
+                themeVariant).Color;
+            Color pressedColor = findRequiredBrush(
+                CAPTION_CLOSE_PRESSED_BACKGROUND,
+                themeVariant).Color;
+            ContrastRatio actualContrast = calculateContrastRatio(
+                hoverColor,
+                pressedColor);
+
+            Assert.True(
+                actualContrast.IsAtLeast(MINIMUM_INTERACTION_STATE_CONTRAST),
+                themeVariant + " caption close pressed fill has contrast " +
+                actualContrast.Value.ToString("F2") +
+                ":1 against its hover fill; required " +
+                MINIMUM_INTERACTION_STATE_CONTRAST.Value.ToString("F2") +
+                ":1 or greater.");
+        }
     }
 
     [AvaloniaFact]
@@ -714,6 +786,31 @@ public sealed class ProductColorContrastTests
         return brushOrNull;
     }
 
+    private static BoxShadows findRequiredBoxShadows(
+        ShadowToken shadowToken,
+        ThemeVariant themeVariant)
+    {
+        Avalonia.Application? applicationOrNull = Avalonia.Application.Current;
+        Assert.NotNull(applicationOrNull);
+        if (applicationOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The Avalonia test application is not initialized.");
+        }
+
+        object? resourceOrNull;
+        bool hasResource = applicationOrNull.TryGetResource(
+            shadowToken.Value,
+            themeVariant,
+            out resourceOrNull);
+        Assert.True(
+            hasResource,
+            "The product box shadow token could not be resolved: " +
+            shadowToken.Value);
+
+        return Assert.IsType<BoxShadows>(resourceOrNull);
+    }
+
     private static ContrastRatio calculateContrastRatio(
         Color foregroundColor,
         Color backgroundColor)
@@ -759,6 +856,8 @@ public sealed class ProductColorContrastTests
     }
 
     private readonly record struct ColorToken(string Value);
+
+    private readonly record struct ShadowToken(string Value);
 
     private readonly record struct ContrastRatio(double Value)
     {

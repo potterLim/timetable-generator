@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Shapes;
+using Avalonia.Data;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
@@ -53,12 +54,12 @@ public sealed class ProductControlVisualStateTests
         new ColorToken("CaptionCloseButtonHoverBackgroundBrush");
     private static readonly ColorToken CAPTION_CLOSE_PRESSED_BACKGROUND =
         new ColorToken("CaptionCloseButtonPressedBackgroundBrush");
+    private static readonly ColorToken CAPTION_CLOSE_FOREGROUND =
+        new ColorToken("CaptionCloseButtonForegroundBrush");
     private static readonly ColorToken CAPTION_BACKGROUND =
         new ColorToken("CaptionButtonBackground");
     private static readonly ColorToken CAPTION_PRESSED_BACKGROUND =
         new ColorToken("CaptionButtonBorderBrush");
-    private static readonly ColorToken CAPTION_FOREGROUND =
-        new ColorToken("CaptionButtonForeground");
     private static readonly ColorToken FOCUS_ON_FILL_STROKE =
         new ColorToken("ProductFocusOnFillStrokeBrush");
 
@@ -566,9 +567,13 @@ public sealed class ProductControlVisualStateTests
             "M1169 1024l879 -879l-145 -145l-879 879l-879 -879" +
             "l-145 145l879 879l-879 879l145 145l879 -879" +
             "l879 879l145 -145z");
-        closeGlyph.Fill = findRequiredThemeBrush(
-            CAPTION_FOREGROUND,
-            themeVariant);
+        closeGlyph.Bind(
+            Shape.FillProperty,
+            new Binding
+            {
+                Path = nameof(Button.Foreground),
+                Source = closeButton,
+            });
         closeButton.Content = closeGlyph;
 
         Window window = new Window();
@@ -614,6 +619,14 @@ public sealed class ProductControlVisualStateTests
                 closeSurface.BorderBrush,
                 FOCUS_ON_FILL_STROKE,
                 themeVariant);
+            assertButtonBrush(
+                closeButton.Foreground,
+                CAPTION_CLOSE_FOREGROUND,
+                themeVariant);
+            assertButtonBrush(
+                closeGlyph.Fill,
+                CAPTION_CLOSE_FOREGROUND,
+                themeVariant);
             assertCaptionGeometryIsUnchanged(
                 window,
                 closeButton,
@@ -636,7 +649,7 @@ public sealed class ProductControlVisualStateTests
                 themeVariant);
             assertButtonBrush(
                 closeGlyph.Fill,
-                CAPTION_FOREGROUND,
+                CAPTION_CLOSE_FOREGROUND,
                 themeVariant);
             assertCaptionGeometryIsUnchanged(
                 window,
