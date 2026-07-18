@@ -29,18 +29,16 @@ internal sealed class PersonalScheduleItem
     {
         get
         {
-            List<string> dayNames = new List<string>();
+            List<EDay> days = new List<EDay>();
             foreach (WeeklyTimeRange timeRange in Schedule.TimeRanges)
             {
-                dayNames.Add(getDayName(timeRange.Day));
+                days.Add(timeRange.Day);
             }
 
             DailyTimeRange firstTimeRange = Schedule.TimeRanges[0].TimeRange;
-            return string.Join("·", dayNames)
-                + " · "
-                + firstTimeRange.Start
-                + "–"
-                + firstTimeRange.End;
+            return ScheduleBoardDayRange.CreateShortDayTimeDisplayText(
+                days,
+                firstTimeRange);
         }
     }
 
@@ -51,17 +49,17 @@ internal sealed class PersonalScheduleItem
             List<string> details = new List<string>();
             if (Schedule.Details.SectionOrNull != null)
             {
-                details.Add("분반 " + Schedule.Details.SectionOrNull.Value);
+                details.Add("분반: " + Schedule.Details.SectionOrNull.Value);
             }
 
             if (Schedule.Details.InstructorOrNull != null)
             {
-                details.Add("담당 " + Schedule.Details.InstructorOrNull.Value);
+                details.Add("담당: " + Schedule.Details.InstructorOrNull.Value);
             }
 
             if (Schedule.Details.LocationOrNull != null)
             {
-                details.Add("장소 " + Schedule.Details.LocationOrNull.Value);
+                details.Add("장소: " + Schedule.Details.LocationOrNull.Value);
             }
 
             return string.Join(" · ", details);
@@ -100,31 +98,5 @@ internal sealed class PersonalScheduleItem
         }
 
         Schedule = schedule;
-    }
-
-    private static string getDayName(EDay day)
-    {
-        switch (day)
-        {
-            case EDay.Monday:
-                return "월";
-            case EDay.Tuesday:
-                return "화";
-            case EDay.Wednesday:
-                return "수";
-            case EDay.Thursday:
-                return "목";
-            case EDay.Friday:
-                return "금";
-            case EDay.Saturday:
-                return "토";
-            case EDay.Sunday:
-                return "일";
-            default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(day),
-                    day,
-                    "Unknown personal schedule day.");
-        }
     }
 }

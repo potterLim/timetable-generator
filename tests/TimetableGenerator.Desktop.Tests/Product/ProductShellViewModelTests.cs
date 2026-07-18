@@ -78,8 +78,9 @@ public sealed class ProductShellViewModelTests
             Assert.Equal(1, catalogUpdateService.CheckCount);
             Assert.True(shell.HasCatalogUpdateNotice);
             Assert.True(shell.HasProductNotice);
-            Assert.Contains("r0002", shell.CatalogUpdateNotice);
-            Assert.Contains("다음 실행", shell.CatalogUpdateNotice);
+            Assert.Equal(
+                "과목 데이터 r0002 준비됨: 다음 실행에서 확인 후 적용",
+                shell.CatalogUpdateNotice);
 
             shell.DismissProductNoticeCommand.Execute(null);
 

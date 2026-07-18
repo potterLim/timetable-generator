@@ -116,6 +116,36 @@ internal sealed class ScheduleBoardDayRange
         }
     }
 
+    public static string CreateFullDayTimeDisplayText(
+        EDay day,
+        DailyTimeRange timeRange)
+    {
+        ensureValidTimeRange(timeRange);
+        return FindFullDayDisplayName(day) + ": " + timeRange;
+    }
+
+    public static string CreateShortDayTimeDisplayText(
+        IReadOnlyList<EDay> days,
+        DailyTimeRange timeRange)
+    {
+        ArgumentNullException.ThrowIfNull(days);
+        if (days.Count == 0)
+        {
+            throw new ArgumentException(
+                "Schedule displays require at least one day.",
+                nameof(days));
+        }
+
+        ensureValidTimeRange(timeRange);
+        List<string> dayNames = new List<string>(days.Count);
+        foreach (EDay day in days)
+        {
+            dayNames.Add(findShortDisplayName(day));
+        }
+
+        return string.Join("·", dayNames) + ": " + timeRange;
+    }
+
     private static int findVisibleDayCount(IReadOnlyList<ScheduleEntry> entries)
     {
         bool hasSaturday = false;
@@ -160,6 +190,16 @@ internal sealed class ScheduleBoardDayRange
                     nameof(day),
                     day,
                     "Schedule boards require a defined day of the week.");
+        }
+    }
+
+    private static void ensureValidTimeRange(DailyTimeRange timeRange)
+    {
+        if (timeRange.IsValid == false)
+        {
+            throw new ArgumentException(
+                "Schedule displays require a valid time range.",
+                nameof(timeRange));
         }
     }
 }

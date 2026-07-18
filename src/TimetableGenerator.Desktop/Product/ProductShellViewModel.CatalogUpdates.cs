@@ -200,7 +200,7 @@ internal sealed partial class ProductShellViewModel
                     + result.CandidateRevision.Value.ToString(
                         "D4",
                         CultureInfo.InvariantCulture)
-                    + " 준비됨 · 다음 실행에서 확인 후 적용";
+                    + " 준비됨: 다음 실행에서 확인 후 적용";
                 break;
             case EProductCatalogUpdateStatus.WorkspaceIncompatible:
                 mCatalogUpdateNotice =

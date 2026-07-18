@@ -55,10 +55,10 @@ public sealed class PersonalScheduleInteractionTests
                 workspace.ActivePlan.PersonalSchedules);
             PersonalScheduleId addedScheduleId = addedItem.Id;
             Assert.Equal("랩 미팅", addedItem.Title);
-            Assert.Equal("화·목 · 18:00–19:30", addedItem.TimeSummary);
-            Assert.Contains("분반 A", addedItem.DetailsSummary);
-            Assert.Contains("김교수", addedItem.DetailsSummary);
-            Assert.Contains("느헤미야홀", addedItem.DetailsSummary);
+            Assert.Equal("화·목: 18:00–19:30", addedItem.TimeSummary);
+            Assert.Equal(
+                "분반: A · 담당: 김교수 · 장소: 느헤미야홀",
+                addedItem.DetailsSummary);
 
             workspace.ActivePlan = workspace.Plans[1];
             Assert.Empty(workspace.ActivePlan.PersonalSchedules);

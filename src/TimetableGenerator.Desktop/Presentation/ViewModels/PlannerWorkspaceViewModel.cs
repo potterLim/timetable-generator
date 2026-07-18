@@ -29,7 +29,7 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         get
         {
             CourseCatalog catalog = mCatalogProjection.Document.Catalog;
-            return catalog.InstitutionName.Value + "  ·  " + catalog.Term.Id;
+            return catalog.InstitutionName.Value + " · " + catalog.Term.Id;
         }
     }
 

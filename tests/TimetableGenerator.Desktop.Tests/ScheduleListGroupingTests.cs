@@ -64,7 +64,7 @@ public sealed class ScheduleListGroupingTests
         Assert.Equal("전자기학", group.Title);
         Assert.Equal("전자기학(01)", group.TitleDisplayText);
         Assert.Equal(new EDay[] { EDay.Monday, EDay.Friday }, occurrence.Days);
-        Assert.Equal("월·금 · 10:00–11:15", occurrence.ScheduleDisplayText);
+        Assert.Equal("월·금: 10:00–11:15", occurrence.ScheduleDisplayText);
         Assert.Equal("NTH 311 · 김교수", occurrence.MetadataDisplayText);
         Assert.DoesNotContain("(01)", occurrence.MetadataDisplayText);
         Assert.Equal(courseId, source.CourseId);
@@ -153,11 +153,11 @@ public sealed class ScheduleListGroupingTests
 
         Assert.Equal("제품 디자인", group.TitleDisplayText);
         Assert.Equal(2, group.Occurrences.Count);
-        Assert.Equal("화 · 10:00–11:15", group.Occurrences[0].ScheduleDisplayText);
+        Assert.Equal("화: 10:00–11:15", group.Occurrences[0].ScheduleDisplayText);
         Assert.Equal(
             "(01) · NTH 311 · 김교수",
             group.Occurrences[0].MetadataDisplayText);
-        Assert.Equal("목 · 11:30–12:45", group.Occurrences[1].ScheduleDisplayText);
+        Assert.Equal("목: 11:30–12:45", group.Occurrences[1].ScheduleDisplayText);
         Assert.Equal(
             "(02) · OH 401 · 김교수",
             group.Occurrences[1].MetadataDisplayText);
@@ -196,7 +196,7 @@ public sealed class ScheduleListGroupingTests
             .ToList();
 
         Assert.Equal("랩 미팅", group.TitleDisplayText);
-        Assert.Equal("월·목 · 12:00–13:00", occurrence.ScheduleDisplayText);
+        Assert.Equal("월·목: 12:00–13:00", occurrence.ScheduleDisplayText);
         Assert.False(occurrence.HasMetadata);
         Assert.Equal(2, retainedScheduleIds.Count);
         Assert.Contains(mondayScheduleId, retainedScheduleIds);

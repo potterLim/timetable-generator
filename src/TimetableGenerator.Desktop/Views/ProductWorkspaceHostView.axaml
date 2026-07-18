@@ -137,7 +137,7 @@
               ToolTip.Tip="다시 저장">
             <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="8">
               <icons:FluentIcon Icon="ErrorCircle" IconVariant="Regular" FontSize="18" />
-              <TextBlock VerticalAlignment="Center" Text="저장 실패 · 다시 시도" />
+              <TextBlock VerticalAlignment="Center" Text="저장 실패: 다시 시도" />
             </StackPanel>
           </Button>
         </Grid>

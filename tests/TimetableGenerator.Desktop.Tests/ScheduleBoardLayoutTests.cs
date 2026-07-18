@@ -62,6 +62,25 @@ public sealed class ScheduleBoardLayoutTests
     }
 
     [Fact]
+    public void DayAndTimeDisplaysUseAColonBetweenTheLabelAndValue()
+    {
+        DailyTimeRange timeRange = new DailyTimeRange(
+            new ScheduleTime(11, 30),
+            new ScheduleTime(12, 15));
+
+        Assert.Equal(
+            "월요일: 11:30–12:15",
+            ScheduleBoardDayRange.CreateFullDayTimeDisplayText(
+                EDay.Monday,
+                timeRange));
+        Assert.Equal(
+            "월·수: 11:30–12:15",
+            ScheduleBoardDayRange.CreateShortDayTimeDisplayText(
+                new[] { EDay.Monday, EDay.Wednesday },
+                timeRange));
+    }
+
+    [Fact]
     public void TimeAxisExpandsContinuouslyToHalfHourBoundaries()
     {
         List<ScheduleEntry> entries = new List<ScheduleEntry>();

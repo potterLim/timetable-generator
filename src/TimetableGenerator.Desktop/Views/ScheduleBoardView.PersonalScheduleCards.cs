@@ -102,9 +102,9 @@ internal sealed partial class ScheduleBoardView
         details.Children.Add(createFlyoutSeparator());
         details.Children.Add(createDetailRow(
             "시간",
-            ScheduleBoardDayRange.FindFullDayDisplayName(entry.Day)
-            + " · "
-            + entry.TimeRange));
+            ScheduleBoardDayRange.CreateFullDayTimeDisplayText(
+                entry.Day,
+                entry.TimeRange)));
         if (entry.HasSection)
         {
             details.Children.Add(createDetailRow("분반", entry.SectionDisplayText));

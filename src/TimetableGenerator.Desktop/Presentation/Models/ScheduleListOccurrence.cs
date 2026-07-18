@@ -194,13 +194,9 @@ internal sealed class ScheduleListOccurrence
         IReadOnlyList<EDay> days,
         DailyTimeRange timeRange)
     {
-        List<string> dayNames = new List<string>(days.Count);
-        foreach (EDay day in days)
-        {
-            dayNames.Add(findShortDayDisplayName(day));
-        }
-
-        return string.Join("·", dayNames) + " · " + timeRange;
+        return ScheduleBoardDayRange.CreateShortDayTimeDisplayText(
+            days,
+            timeRange);
     }
 
     private static string createAccessibleScheduleText(
@@ -241,34 +237,8 @@ internal sealed class ScheduleListOccurrence
         return string.Join(" · ", metadata);
     }
 
-    private static string findShortDayDisplayName(EDay day)
-    {
-        switch (day)
-        {
-            case EDay.Monday:
-                return "월";
-            case EDay.Tuesday:
-                return "화";
-            case EDay.Wednesday:
-                return "수";
-            case EDay.Thursday:
-                return "목";
-            case EDay.Friday:
-                return "금";
-            case EDay.Saturday:
-                return "토";
-            case EDay.Sunday:
-                return "일";
-            default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(day),
-                    day,
-                    "Schedule list occurrences require a defined day.");
-        }
-    }
-
     private static void ensureDefinedDay(EDay day)
     {
-        findShortDayDisplayName(day);
+        ScheduleBoardDayRange.FindFullDayDisplayName(day);
     }
 }

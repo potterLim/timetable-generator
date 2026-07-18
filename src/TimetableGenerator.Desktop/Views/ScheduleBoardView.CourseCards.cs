@@ -54,9 +54,9 @@ internal sealed partial class ScheduleBoardView
         details.Children.Add(createFlyoutTitle(entry.Name));
         details.Children.Add(createFlyoutSeparator());
         string scheduleSummary =
-            ScheduleBoardDayRange.FindFullDayDisplayName(entry.Day)
-            + " · "
-            + entry.TimeRange;
+            ScheduleBoardDayRange.CreateFullDayTimeDisplayText(
+                entry.Day,
+                entry.TimeRange);
         details.Children.Add(createDetailRow("시간", scheduleSummary));
         details.Children.Add(createDetailRow("장소", entry.LocationDisplayText));
         details.Children.Add(createDetailRow("교수", entry.InstructorDisplayText));
