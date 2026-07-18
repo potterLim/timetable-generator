@@ -7,6 +7,10 @@ namespace TimetableGenerator.Desktop.Presentation.Models;
 
 internal sealed class CourseScheduleEntry : ScheduleEntry
 {
+    public CourseId CourseId { get; }
+
+    public OfferingId OfferingId { get; }
+
     public ScheduleCourseDetails CourseDetails { get; }
 
     public CourseSectionCode SectionCode { get; }
@@ -72,6 +76,8 @@ internal sealed class CourseScheduleEntry : ScheduleEntry
     public ECourseAccent Accent { get; }
 
     public CourseScheduleEntry(
+        CourseId courseId,
+        OfferingId offeringId,
         ScheduleCourseDetails courseDetails,
         CourseSectionCode sectionCode,
         EDay day,
@@ -79,6 +85,16 @@ internal sealed class CourseScheduleEntry : ScheduleEntry
         ECourseAccent accent)
         : base(day, AcademicPeriodTimeTable.GetTimeRange(period))
     {
+        if (courseId == null)
+        {
+            throw new ArgumentNullException(nameof(courseId));
+        }
+
+        if (offeringId == null)
+        {
+            throw new ArgumentNullException(nameof(offeringId));
+        }
+
         if (courseDetails == null)
         {
             throw new ArgumentNullException(nameof(courseDetails));
@@ -94,6 +110,8 @@ internal sealed class CourseScheduleEntry : ScheduleEntry
             throw new ArgumentException("Academic periods must be valid.", nameof(period));
         }
 
+        CourseId = courseId;
+        OfferingId = offeringId;
         CourseDetails = courseDetails;
         SectionCode = sectionCode;
         Period = period;

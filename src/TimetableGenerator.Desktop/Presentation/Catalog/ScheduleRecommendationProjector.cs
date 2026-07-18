@@ -191,6 +191,8 @@ internal static class ScheduleRecommendationProjector
         foreach (MeetingSlot slot in scheduledOffering.MeetingSlots)
         {
             entries.Add(new CourseScheduleEntry(
+                scheduledOffering.CourseId,
+                scheduledOffering.OfferingId,
                 courseDetails,
                 scheduledOffering.SectionCode,
                 slot.Day,

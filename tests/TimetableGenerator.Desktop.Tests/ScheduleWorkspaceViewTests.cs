@@ -788,8 +788,8 @@ public sealed class ScheduleWorkspaceViewTests
                 workspaceView.FindControl<Button>("ScheduleViewModeButton");
             TextBlock? modeTextOrNull =
                 workspaceView.FindControl<TextBlock>("ScheduleViewModeText");
-            ItemsControl? listItemsOrNull =
-                workspaceView.FindControl<ItemsControl>("ScheduleListItems");
+            ListBox? listItemsOrNull =
+                workspaceView.FindControl<ListBox>("ScheduleListItems");
             Assert.NotNull(boardOrNull);
             Assert.NotNull(listOrNull);
             Assert.NotNull(modeButtonOrNull);
@@ -818,18 +818,22 @@ public sealed class ScheduleWorkspaceViewTests
                 "시간표를 주간 표로 보기",
                 AutomationProperties.GetName(modeButtonOrNull));
             Assert.Equal(
-                workspace.DisplayedScheduleBoard.ListEntries.Count,
+                workspace.DisplayedScheduleBoard.ListGroups.Count,
                 listItemsOrNull.ItemCount);
-            Assert.Equal(
-                Avalonia.Automation.Peers.AutomationControlType.List,
-                AutomationProperties.GetControlTypeOverride(listItemsOrNull));
-            Border semanticListEntry = listItemsOrNull.GetVisualDescendants()
-                .OfType<Border>()
-                .First(candidate => AutomationProperties.GetControlTypeOverride(
-                    candidate)
-                    == Avalonia.Automation.Peers.AutomationControlType.ListItem);
+            ListBoxItem semanticListEntry = listItemsOrNull
+                .GetVisualDescendants()
+                .OfType<ListBoxItem>()
+                .First();
             Assert.False(string.IsNullOrWhiteSpace(
                 AutomationProperties.GetName(semanticListEntry)));
+            IReadOnlyList<string> visibleListText = listOrNull
+                .GetVisualDescendants()
+                .OfType<TextBlock>()
+                .Select(candidate => candidate.Text ?? string.Empty)
+                .ToList();
+            Assert.DoesNotContain("과목", visibleListText);
+            Assert.DoesNotContain("장소", visibleListText);
+            Assert.DoesNotContain("담당", visibleListText);
 
             workspaceView.ToggleSchedulePresentationCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
@@ -845,7 +849,7 @@ public sealed class ScheduleWorkspaceViewTests
     }
 
     [Fact]
-    public void ScheduleListEntriesAreSortedAndOmitUnavailableMetadata()
+    public void ScheduleListGroupsAreSortedAndOmitUnavailableMetadata()
     {
         ScheduleEntry fridayEntry = createScheduleEntry(
             EDay.Friday,
@@ -862,15 +866,17 @@ public sealed class ScheduleWorkspaceViewTests
             new ScheduleRecommendation(
                 new ScheduleEntry[] { fridayEntry, mondayEntry }));
 
-        Assert.Equal(2, presentation.ListEntries.Count);
-        ScheduleListEntry firstEntry = presentation.ListEntries[0];
-        Assert.Equal(EDay.Monday, firstEntry.Day);
-        Assert.Equal("정보 없는 수업(01)", firstEntry.Title);
-        Assert.False(firstEntry.HasLocation);
-        Assert.False(firstEntry.HasResponsiblePerson);
-        Assert.DoesNotContain("장소", firstEntry.AccessibleName);
-        Assert.DoesNotContain("담당", firstEntry.AccessibleName);
-        Assert.Equal(EDay.Friday, presentation.ListEntries[1].Day);
+        Assert.Equal(2, presentation.ListGroups.Count);
+        ScheduleListGroup firstGroup = presentation.ListGroups[0];
+        ScheduleListOccurrence firstOccurrence = Assert.Single(
+            firstGroup.Occurrences);
+        Assert.Equal(EDay.Monday, firstGroup.EarliestDay);
+        Assert.Equal("정보 없는 수업(01)", firstGroup.TitleDisplayText);
+        Assert.False(firstOccurrence.HasLocation);
+        Assert.False(firstOccurrence.HasResponsiblePerson);
+        Assert.DoesNotContain("장소", firstGroup.AccessibleName);
+        Assert.DoesNotContain("담당", firstGroup.AccessibleName);
+        Assert.Equal(EDay.Friday, presentation.ListGroups[1].EarliestDay);
     }
 
     [AvaloniaFact]
@@ -903,6 +909,8 @@ public sealed class ScheduleWorkspaceViewTests
         AcademicPeriod period)
     {
         return new CourseScheduleEntry(
+            new CourseId("course-tst00100"),
+            new OfferingId("offering-tst00100-01"),
             new ScheduleCourseDetails(
                 new CourseCode("TST00100"),
                 new KoreanCourseName("저녁 수업"),
@@ -925,6 +933,8 @@ public sealed class ScheduleWorkspaceViewTests
         AcademicPeriod period)
     {
         return new CourseScheduleEntry(
+            new CourseId("course-uxd00100"),
+            new OfferingId("offering-uxd00100-01"),
             new ScheduleCourseDetails(
                 new CourseCode("UXD00100"),
                 new KoreanCourseName(
@@ -952,6 +962,8 @@ public sealed class ScheduleWorkspaceViewTests
         ScheduleLocationSummary locationSummary)
     {
         return new CourseScheduleEntry(
+            new CourseId("course-" + code.Value),
+            new OfferingId("offering-" + code.Value + "-01"),
             new ScheduleCourseDetails(
                 code,
                 name,

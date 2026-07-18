@@ -444,6 +444,8 @@ public sealed class ScheduleBoardPngExportSnapshotTests
         AcademicPeriod period)
     {
         return new CourseScheduleEntry(
+            new CourseId("course-tst00100"),
+            new OfferingId("offering-tst00100-01"),
             new ScheduleCourseDetails(
                 new CourseCode("TST00100"),
                 new KoreanCourseName("시간표 내보내기 검증"),
