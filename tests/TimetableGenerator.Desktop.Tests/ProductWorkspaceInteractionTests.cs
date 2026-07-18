@@ -124,6 +124,89 @@ public sealed class ProductWorkspaceInteractionTests
     }
 
     [AvaloniaFact]
+    public void PlanManagementClearActionOpensConfirmationBeforeFlyoutCloses()
+    {
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+        ProductWorkspaceHostView host = new ProductWorkspaceHostView();
+        host.DataContext = workspace;
+        Window window = createWindow(host, 1200.0);
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            workspace.ToggleInspectorPaneCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            Button managementButton = host.GetVisualDescendants()
+                .OfType<Button>()
+                .Single(candidate => candidate.Name == "PlanManagementButton");
+            Flyout? managementFlyoutOrNull = managementButton.Flyout as Flyout;
+            if (managementFlyoutOrNull == null)
+            {
+                throw new InvalidOperationException(
+                    "The plan-management action did not have a flyout.");
+            }
+
+            managementFlyoutOrNull.ShowAt(managementButton);
+            Dispatcher.UIThread.RunJobs();
+
+            Control? flyoutContentOrNull = managementFlyoutOrNull.Content as Control;
+            if (flyoutContentOrNull == null)
+            {
+                throw new InvalidOperationException(
+                    "The plan-management flyout did not have control content.");
+            }
+
+            Button clearButton = flyoutContentOrNull.GetVisualDescendants()
+                .OfType<Button>()
+                .Single(candidate => candidate.Name == "ClearActivePlanButton");
+            TopLevel? popupTopLevelOrNull = TopLevel.GetTopLevel(clearButton);
+            if (popupTopLevelOrNull == null)
+            {
+                throw new InvalidOperationException(
+                    "The plan-management flyout was not attached to a top level.");
+            }
+
+            Point clearButtonPosition = findRequiredPosition(
+                clearButton,
+                popupTopLevelOrNull);
+            Point clickPosition = new Point(
+                clearButtonPosition.X + (clearButton.Bounds.Width / 2.0),
+                clearButtonPosition.Y + (clearButton.Bounds.Height / 2.0));
+
+            popupTopLevelOrNull.MouseMove(
+                clickPosition,
+                RawInputModifiers.None);
+            popupTopLevelOrNull.MouseDown(
+                clickPosition,
+                MouseButton.Left,
+                RawInputModifiers.None);
+            popupTopLevelOrNull.MouseUp(
+                clickPosition,
+                MouseButton.Left,
+                RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
+
+            Button cancelButton = findRequiredControl<Button>(
+                host,
+                "CancelClearActivePlanButton");
+            Assert.True(workspace.IsClearActivePlanConfirmationVisible);
+            Assert.True(cancelButton.IsKeyboardFocusWithin);
+
+            workspace.CancelClearActivePlanCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
     public void PlanTabsScrollWithoutMovingTheNewPlanActionOffScreen()
     {
         PlannerWorkspaceViewModel workspace =
