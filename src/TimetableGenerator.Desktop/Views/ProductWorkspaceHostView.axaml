@@ -31,6 +31,13 @@
               ItemsSource="{Binding Plans}"
               SelectedItem="{Binding ActivePlan, Mode=TwoWay}"
               AutomationProperties.Name="계획 목록">
+            <TabStrip.Styles>
+              <Style Selector="TabStripItem">
+                <Setter
+                    Property="AutomationProperties.Name"
+                    Value="{ReflectionBinding DisplayName}" />
+              </Style>
+            </TabStrip.Styles>
             <TabStrip.ItemTemplate>
               <DataTemplate x:DataType="models:PlanTabItem">
                 <StackPanel Orientation="Horizontal" Spacing="8">
@@ -39,6 +46,7 @@
                       VerticalAlignment="Center"
                       Text="{Binding DisplayName}"
                       TextTrimming="CharacterEllipsis"
+                      AutomationProperties.AccessibilityView="Raw"
                       ToolTip.Tip="{Binding DisplayName}" />
                   <Button
                       Classes="subtle icon"

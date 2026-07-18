@@ -4,7 +4,10 @@ using System.Threading.Tasks;
 
 using Avalonia;
 using Avalonia.Automation;
+using Avalonia.Automation.Peers;
+using Avalonia.Automation.Provider;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
@@ -14,6 +17,7 @@ using Avalonia.VisualTree;
 using FluentIcons.Avalonia;
 
 using TimetableGenerator.Desktop.Presentation.Layout;
+using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Desktop.Views;
 
@@ -252,6 +256,74 @@ public sealed class ProductWorkspaceInteractionTests
             Assert.Equal(
                 "새 계획 추가",
                 AutomationProperties.GetName(addPlanButton));
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
+    public void PlanTabsExposeTheirNamesAndSelectionWithoutDuplicateText()
+    {
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+        ProductWorkspaceHostView host = new ProductWorkspaceHostView();
+        host.DataContext = workspace;
+        Window window = createWindow(host, 900.0);
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            TabStrip planTabs = host.GetVisualDescendants()
+                .OfType<TabStrip>()
+                .Single(
+                    candidate => AutomationProperties.GetName(candidate)
+                        == "계획 목록");
+            TabStripItem[] planTabItems = planTabs.GetVisualDescendants()
+                .OfType<TabStripItem>()
+                .ToArray();
+
+            Assert.Equal(workspace.Plans.Count, planTabItems.Length);
+            foreach (PlanTabItem plan in workspace.Plans)
+            {
+                TabStripItem planTab = planTabItems.Single(
+                    candidate => ReferenceEquals(candidate.DataContext, plan));
+                TextBlock displayText = planTab.GetVisualDescendants()
+                    .OfType<TextBlock>()
+                    .Single(candidate => candidate.Text == plan.DisplayName);
+                AutomationPeer peer =
+                    ControlAutomationPeer.CreatePeerForElement(planTab);
+                ISelectionItemProvider selectionProvider =
+                    Assert.IsAssignableFrom<ISelectionItemProvider>(peer);
+
+                Assert.Equal(
+                    plan.DisplayName,
+                    AutomationProperties.GetName(planTab));
+                Assert.Equal(plan.DisplayName, peer.GetName());
+                Assert.Equal(
+                    AutomationControlType.ListItem,
+                    peer.GetAutomationControlType());
+                Assert.Equal(
+                    ReferenceEquals(plan, workspace.ActivePlan),
+                    selectionProvider.IsSelected);
+                Assert.Equal(
+                    AccessibilityView.Raw,
+                    AutomationProperties.GetAccessibilityView(displayText));
+
+                Button closeButton = planTab.GetVisualDescendants()
+                    .OfType<Button>()
+                    .Single();
+                Assert.Equal(
+                    plan.CloseButtonAccessibleName,
+                    AutomationProperties.GetName(closeButton));
+                Assert.Equal(
+                    plan.CloseButtonHelpText,
+                    AutomationProperties.GetHelpText(closeButton));
+            }
         }
         finally
         {
