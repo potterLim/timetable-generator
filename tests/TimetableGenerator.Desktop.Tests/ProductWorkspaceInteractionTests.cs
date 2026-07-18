@@ -176,7 +176,8 @@ public sealed class ProductWorkspaceInteractionTests
     {
         PlannerWorkspaceViewModel workspace =
             PlannerWorkspaceTestFactory.CreateWorkspace();
-        workspace.IsCoursePaneOpen = false;
+        workspace.applyWorkspaceWidth(new WorkspaceWidth(900.0));
+        workspace.ToggleInspectorPaneCommand.Execute(null);
         ProductWorkspaceHostView host = new ProductWorkspaceHostView();
         host.DataContext = workspace;
         Window window = createWindow(host, 900.0);
@@ -200,6 +201,7 @@ public sealed class ProductWorkspaceInteractionTests
                 .OfType<TextBox>()
                 .Single(candidate => candidate.Name == "CourseSearchBox");
             Assert.True(workspace.IsCoursePaneOpen);
+            Assert.False(workspace.IsInspectorPaneOpen);
             Assert.True(searchBox.IsKeyboardFocusWithin);
         }
         finally
@@ -294,7 +296,20 @@ public sealed class ProductWorkspaceInteractionTests
                 1.0);
 
             openInspector.Command?.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
             Assert.True(workspace.IsInspectorPaneOpen);
+            Button closeInspector = host.GetVisualDescendants()
+                .OfType<Button>()
+                .Single(candidate => candidate.Name == "CloseInspectorPaneButton");
+            Assert.True(closeInspector.IsEffectivelyVisible);
+            Assert.True(closeInspector.IsKeyboardFocusWithin);
+
+            closeInspector.Command?.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(workspace.IsInspectorPaneOpen);
+            Assert.True(openInspector.IsKeyboardFocusWithin);
         }
         finally
         {

@@ -302,58 +302,92 @@ public sealed class WorkspacePanelAccessibilityTests
         PlannerWorkspaceViewModel workspace =
             PlannerWorkspaceTestFactory.CreateWorkspace();
         workspace.applyWorkspaceWidth(new WorkspaceWidth(1_300.0));
-        CourseBrowserView courseBrowser = new CourseBrowserView();
-        courseBrowser.DataContext = workspace;
-        PlanInspectorView inspector = new PlanInspectorView();
-        inspector.DataContext = workspace;
-
-        Grid panels = new Grid();
-        panels.ColumnDefinitions.Add(new ColumnDefinition(
-            new GridLength(1.0, GridUnitType.Star)));
-        panels.ColumnDefinitions.Add(new ColumnDefinition(
-            new GridLength(1.0, GridUnitType.Star)));
-        Grid.SetColumn(inspector, 1);
-        panels.Children.Add(courseBrowser);
-        panels.Children.Add(inspector);
-
-        Window window = createPanelWindow(panels);
-        window.Width = 768.0;
+        ProductWorkspaceHostView host = new ProductWorkspaceHostView();
+        host.DataContext = workspace;
+        Window window = createPanelWindow(host);
+        window.Width = 1_300.0;
 
         try
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            Button closeCoursePane = findRequiredControl<Button>(
-                courseBrowser,
-                "CloseCoursePaneButton");
-            Button closeInspectorPane = findRequiredControl<Button>(
-                inspector,
-                "CloseInspectorPaneButton");
+            Button closeCoursePane = host.GetVisualDescendants()
+                .OfType<Button>()
+                .Single(candidate => candidate.Name == "CloseCoursePaneButton");
+            Button openInspectorPane = host.GetVisualDescendants()
+                .OfType<Button>()
+                .Single(candidate => candidate.Name == "OpenInspectorPaneButton");
 
-            Assert.False(closeCoursePane.IsVisible);
-            Assert.True(closeInspectorPane.IsVisible);
+            Assert.True(closeCoursePane.IsEffectivelyVisible);
+            Assert.True(openInspectorPane.IsEffectivelyVisible);
             Assert.Equal(
                 "과목 찾기 패널 닫기",
                 AutomationProperties.GetName(closeCoursePane));
+
+            openInspectorPane.Command?.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            Button closeInspectorPane = host.GetVisualDescendants()
+                .OfType<Button>()
+                .Single(candidate => candidate.Name == "CloseInspectorPaneButton");
+            Assert.True(workspace.IsInspectorPaneOpen);
+            Assert.True(closeInspectorPane.IsEffectivelyVisible);
+            Assert.True(closeInspectorPane.IsKeyboardFocusWithin);
             Assert.Equal(
                 "내 계획 패널 닫기",
                 AutomationProperties.GetName(closeInspectorPane));
 
-            workspace.ToggleInspectorPaneCommand.Execute(null);
-            Assert.True(workspace.IsInspectorPaneOpen);
             closeInspectorPane.Command?.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
             Assert.False(workspace.IsInspectorPaneOpen);
+            Assert.True(openInspectorPane.IsKeyboardFocusWithin);
+
+            closeCoursePane.Command?.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(workspace.IsCoursePaneOpen);
+            Button openCoursePane = host.GetVisualDescendants()
+                .OfType<Button>()
+                .Single(
+                    candidate => ReferenceEquals(
+                        candidate.Command,
+                        workspace.ToggleCoursePaneCommand)
+                        && candidate.IsEffectivelyVisible
+                        && candidate.Name != "CloseCoursePaneButton");
+            Assert.True(openCoursePane.IsKeyboardFocusWithin);
+
+            openCoursePane.Command?.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(workspace.IsCoursePaneOpen);
+            Assert.True(closeCoursePane.IsEffectivelyVisible);
 
             workspace.applyWorkspaceWidth(new WorkspaceWidth(960.0));
             Dispatcher.UIThread.RunJobs();
 
-            Assert.True(closeCoursePane.IsVisible);
-            Assert.True(closeInspectorPane.IsVisible);
-            workspace.ToggleCoursePaneCommand.Execute(null);
-            Assert.True(workspace.IsCoursePaneOpen);
-            closeCoursePane.Command?.Execute(null);
+            Assert.True(closeCoursePane.IsEffectivelyVisible);
+            Assert.False(closeInspectorPane.IsEffectivelyVisible);
+
+            workspace.ToggleInspectorPaneCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
             Assert.False(workspace.IsCoursePaneOpen);
+            Assert.True(workspace.IsInspectorPaneOpen);
+            Assert.False(closeCoursePane.IsEffectivelyVisible);
+            Assert.True(closeInspectorPane.IsEffectivelyVisible);
+
+            workspace.applyWorkspaceWidth(new WorkspaceWidth(1_600.0));
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(workspace.IsInspectorPaneOpen);
+            Assert.True(closeInspectorPane.IsEffectivelyVisible);
+            workspace.ToggleCoursePaneCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(workspace.IsCoursePaneOpen);
+            Assert.True(closeCoursePane.IsEffectivelyVisible);
         }
         finally
         {

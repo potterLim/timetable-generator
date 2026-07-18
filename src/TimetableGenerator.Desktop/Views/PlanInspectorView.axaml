@@ -85,7 +85,7 @@
             Height="32"
             MinWidth="32"
             MinHeight="32"
-            IsVisible="{Binding IsInspectorPaneToggleVisible}"
+            IsVisible="{Binding IsInspectorPaneDismissActionVisible}"
             Command="{Binding ToggleInspectorPaneCommand}"
             AutomationProperties.Name="내 계획 패널 닫기"
             ToolTip.Tip="내 계획 닫기">

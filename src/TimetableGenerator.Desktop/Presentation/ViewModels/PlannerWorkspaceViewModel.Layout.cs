@@ -24,6 +24,8 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private EWorkspaceLayoutMode mLayoutMode;
 
+    private bool mHasAppliedWorkspaceLayout;
+
     private bool mIsCoursePaneOpen;
 
     private bool mIsInspectorPaneOpen;
@@ -52,7 +54,11 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
         set
         {
-            setProperty(ref mIsCoursePaneOpen, value);
+            if (setProperty(ref mIsCoursePaneOpen, value))
+            {
+                raisePropertyChanged(nameof(IsCoursePaneToggleVisible));
+                raisePropertyChanged(nameof(IsCoursePaneDismissActionVisible));
+            }
         }
     }
 
@@ -64,7 +70,11 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
         set
         {
-            setProperty(ref mIsInspectorPaneOpen, value);
+            if (setProperty(ref mIsInspectorPaneOpen, value))
+            {
+                raisePropertyChanged(nameof(IsInspectorPaneToggleVisible));
+                raisePropertyChanged(nameof(IsInspectorPaneDismissActionVisible));
+            }
         }
     }
 
@@ -104,7 +114,15 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return LayoutMode == EWorkspaceLayoutMode.Compact;
+            return IsCoursePaneOpen == false;
+        }
+    }
+
+    public bool IsCoursePaneDismissActionVisible
+    {
+        get
+        {
+            return IsCoursePaneOpen;
         }
     }
 
@@ -112,9 +130,15 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return LayoutMode == EWorkspaceLayoutMode.Wide
-                || LayoutMode == EWorkspaceLayoutMode.Medium
-                || LayoutMode == EWorkspaceLayoutMode.Compact;
+            return IsInspectorPaneOpen == false;
+        }
+    }
+
+    public bool IsInspectorPaneDismissActionVisible
+    {
+        get
+        {
+            return IsInspectorPaneOpen;
         }
     }
 
@@ -128,16 +152,21 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         EWorkspaceLayoutMode newLayoutMode = WorkspaceLayoutPolicy.FindLayoutMode(
             workspaceWidth);
-        if (newLayoutMode == LayoutMode)
+        bool isInitialLayout = mHasAppliedWorkspaceLayout == false;
+        if (newLayoutMode == LayoutMode && isInitialLayout == false)
         {
             return;
         }
 
         mLayoutMode = newLayoutMode;
-        configurePanesForLayoutMode();
+        configurePanePresentationForLayoutMode();
+        if (isInitialLayout)
+        {
+            initializePaneOpenStates();
+        }
+
+        mHasAppliedWorkspaceLayout = true;
         raisePropertyChanged(nameof(LayoutMode));
-        raisePropertyChanged(nameof(IsCoursePaneToggleVisible));
-        raisePropertyChanged(nameof(IsInspectorPaneToggleVisible));
     }
 
     internal void closeOverlayPanes()
@@ -173,62 +202,67 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private void toggleCoursePane()
     {
-        IsCoursePaneOpen = IsCoursePaneOpen == false;
+        bool isOpeningCoursePane = IsCoursePaneOpen == false;
+        if (isOpeningCoursePane)
+        {
+            closeInspectorPaneBeforeOpeningCourseOverlay();
+        }
+
+        IsCoursePaneOpen = isOpeningCoursePane;
     }
 
     private void toggleInspectorPane()
     {
-        IsInspectorPaneOpen = IsInspectorPaneOpen == false;
+        bool isOpeningInspectorPane = IsInspectorPaneOpen == false;
+        if (isOpeningInspectorPane)
+        {
+            closeCoursePaneBeforeOpeningInspectorOverlay();
+        }
+
+        IsInspectorPaneOpen = isOpeningInspectorPane;
     }
 
     private void openInspectorPane()
     {
+        closeCoursePaneBeforeOpeningInspectorOverlay();
         IsInspectorPaneOpen = true;
     }
 
-    private void configurePanesForLayoutMode()
+    private void configurePanePresentationForLayoutMode()
     {
         switch (LayoutMode)
         {
             case EWorkspaceLayoutMode.ExtraWide:
-                setCoursePaneState(
+                setCoursePanePresentation(
                     SplitViewDisplayMode.Inline,
-                    EXTRA_WIDE_COURSE_PANE_WIDTH,
-                    EPaneOpenState.Open);
-                setInspectorPaneState(
+                    EXTRA_WIDE_COURSE_PANE_WIDTH);
+                setInspectorPanePresentation(
                     SplitViewDisplayMode.Inline,
-                    EXTRA_WIDE_INSPECTOR_PANE_WIDTH,
-                    EPaneOpenState.Open);
+                    EXTRA_WIDE_INSPECTOR_PANE_WIDTH);
                 break;
             case EWorkspaceLayoutMode.Wide:
-                setCoursePaneState(
+                setCoursePanePresentation(
                     SplitViewDisplayMode.Inline,
-                    WIDE_COURSE_PANE_WIDTH,
-                    EPaneOpenState.Open);
-                setInspectorPaneState(
+                    WIDE_COURSE_PANE_WIDTH);
+                setInspectorPanePresentation(
                     SplitViewDisplayMode.Overlay,
-                    WIDE_INSPECTOR_PANE_WIDTH,
-                    EPaneOpenState.Closed);
+                    WIDE_INSPECTOR_PANE_WIDTH);
                 break;
             case EWorkspaceLayoutMode.Medium:
-                setCoursePaneState(
+                setCoursePanePresentation(
                     SplitViewDisplayMode.Inline,
-                    COLLAPSED_COURSE_PANE_WIDTH,
-                    EPaneOpenState.Open);
-                setInspectorPaneState(
+                    COLLAPSED_COURSE_PANE_WIDTH);
+                setInspectorPanePresentation(
                     SplitViewDisplayMode.Overlay,
-                    COLLAPSED_INSPECTOR_PANE_WIDTH,
-                    EPaneOpenState.Closed);
+                    COLLAPSED_INSPECTOR_PANE_WIDTH);
                 break;
             case EWorkspaceLayoutMode.Compact:
-                setCoursePaneState(
+                setCoursePanePresentation(
                     SplitViewDisplayMode.Overlay,
-                    COLLAPSED_COURSE_PANE_WIDTH,
-                    EPaneOpenState.Closed);
-                setInspectorPaneState(
+                    COLLAPSED_COURSE_PANE_WIDTH);
+                setInspectorPanePresentation(
                     SplitViewDisplayMode.Overlay,
-                    COLLAPSED_INSPECTOR_PANE_WIDTH,
-                    EPaneOpenState.Closed);
+                    COLLAPSED_INSPECTOR_PANE_WIDTH);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(
@@ -238,26 +272,48 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
-    private void setCoursePaneState(
+    private void initializePaneOpenStates()
+    {
+        IsCoursePaneOpen = LayoutMode != EWorkspaceLayoutMode.Compact;
+        IsInspectorPaneOpen = false;
+    }
+
+    private void closeInspectorPaneBeforeOpeningCourseOverlay()
+    {
+        bool areBothPanesOverlay = CoursePaneDisplayMode == SplitViewDisplayMode.Overlay
+            && InspectorPaneDisplayMode == SplitViewDisplayMode.Overlay;
+        if (areBothPanesOverlay)
+        {
+            IsInspectorPaneOpen = false;
+        }
+    }
+
+    private void closeCoursePaneBeforeOpeningInspectorOverlay()
+    {
+        bool areBothPanesOverlay = CoursePaneDisplayMode == SplitViewDisplayMode.Overlay
+            && InspectorPaneDisplayMode == SplitViewDisplayMode.Overlay;
+        if (areBothPanesOverlay)
+        {
+            IsCoursePaneOpen = false;
+        }
+    }
+
+    private void setCoursePanePresentation(
         SplitViewDisplayMode displayMode,
-        WorkspacePaneWidth paneWidth,
-        EPaneOpenState paneOpenState)
+        WorkspacePaneWidth paneWidth)
     {
         mCoursePaneDisplayMode = displayMode;
         mCoursePaneWidth = paneWidth;
-        IsCoursePaneOpen = paneOpenState == EPaneOpenState.Open;
         raisePropertyChanged(nameof(CoursePaneDisplayMode));
         raisePropertyChanged(nameof(CoursePaneWidth));
     }
 
-    private void setInspectorPaneState(
+    private void setInspectorPanePresentation(
         SplitViewDisplayMode displayMode,
-        WorkspacePaneWidth paneWidth,
-        EPaneOpenState paneOpenState)
+        WorkspacePaneWidth paneWidth)
     {
         mInspectorPaneDisplayMode = displayMode;
         mInspectorPaneWidth = paneWidth;
-        IsInspectorPaneOpen = paneOpenState == EPaneOpenState.Open;
         raisePropertyChanged(nameof(InspectorPaneDisplayMode));
         raisePropertyChanged(nameof(InspectorPaneWidth));
     }

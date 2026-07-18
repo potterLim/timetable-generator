@@ -123,6 +123,16 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         {
             handleCourseChoiceEditorStateChanged();
         }
+        else if (eventArgs.PropertyName
+            == nameof(PlannerWorkspaceViewModel.IsCoursePaneOpen))
+        {
+            handleCoursePaneOpenStateChanged();
+        }
+        else if (eventArgs.PropertyName
+            == nameof(PlannerWorkspaceViewModel.IsInspectorPaneOpen))
+        {
+            handleInspectorPaneOpenStateChanged();
+        }
     }
 
     private void focusPlanEditingControlWhenRequired()
@@ -365,6 +375,78 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         focusCourseSearchBox();
     }
 
+    private void handleCoursePaneOpenStateChanged()
+    {
+        if (mWorkspaceOrNull == null)
+        {
+            return;
+        }
+
+        if (mWorkspaceOrNull.IsCoursePaneOpen)
+        {
+            Dispatcher.UIThread.Post(focusCourseSearchBox, DispatcherPriority.Input);
+            return;
+        }
+
+        Dispatcher.UIThread.Post(focusCoursePaneOpenAction, DispatcherPriority.Input);
+    }
+
+    private void focusCoursePaneOpenAction()
+    {
+        if (mWorkspaceOrNull == null)
+        {
+            return;
+        }
+
+        Button? openActionOrNull = this.GetVisualDescendants()
+            .OfType<Button>()
+            .FirstOrDefault(
+                candidate => ReferenceEquals(
+                    candidate.Command,
+                    mWorkspaceOrNull.ToggleCoursePaneCommand)
+                    && candidate.IsEffectivelyVisible
+                    && candidate.Name != "CloseCoursePaneButton");
+        openActionOrNull?.Focus();
+    }
+
+    private void handleInspectorPaneOpenStateChanged()
+    {
+        if (mWorkspaceOrNull == null)
+        {
+            return;
+        }
+
+        if (mWorkspaceOrNull.IsInspectorPaneOpen)
+        {
+            Dispatcher.UIThread.Post(
+                focusInspectorPaneDismissAction,
+                DispatcherPriority.Input);
+            return;
+        }
+
+        Dispatcher.UIThread.Post(
+            focusInspectorPaneOpenAction,
+            DispatcherPriority.Input);
+    }
+
+    private void focusInspectorPaneDismissAction()
+    {
+        focusButton("CloseInspectorPaneButton");
+    }
+
+    private void focusInspectorPaneOpenAction()
+    {
+        focusButton("OpenInspectorPaneButton");
+    }
+
+    private void focusButton(string buttonName)
+    {
+        Button? buttonOrNull = this.GetVisualDescendants()
+            .OfType<Button>()
+            .FirstOrDefault(candidate => candidate.Name == buttonName);
+        buttonOrNull?.Focus();
+    }
+
     private void onKeyDown(object? senderOrNull, KeyEventArgs eventArgs)
     {
         if (mWorkspaceOrNull != null
@@ -389,7 +471,10 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
 
         if (mWorkspaceOrNull != null)
         {
-            mWorkspaceOrNull.IsCoursePaneOpen = true;
+            if (mWorkspaceOrNull.IsCoursePaneOpen == false)
+            {
+                mWorkspaceOrNull.ToggleCoursePaneCommand.Execute(null);
+            }
         }
 
         Dispatcher.UIThread.Post(focusCourseSearchBox, DispatcherPriority.Input);

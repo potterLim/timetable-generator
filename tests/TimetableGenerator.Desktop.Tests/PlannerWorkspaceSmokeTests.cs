@@ -1,7 +1,10 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+
 using TimetableGenerator.Desktop.Presentation.Layout;
 using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
@@ -45,45 +48,123 @@ public sealed class PlannerWorkspaceSmokeTests
     }
 
     [AvaloniaFact]
-    public void WorkspaceWidthSelectsResponsivePaneModes()
+    public void WorkspaceWidthChangesPresentationWithoutDiscardingPaneChoices()
     {
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
 
         workspace.applyWorkspaceWidth(new WorkspaceWidth(1_600.0));
 
         Assert.Equal(EWorkspaceLayoutMode.ExtraWide, workspace.LayoutMode);
+        Assert.Equal(SplitViewDisplayMode.Inline, workspace.CoursePaneDisplayMode);
+        Assert.Equal(SplitViewDisplayMode.Inline, workspace.InspectorPaneDisplayMode);
         Assert.Equal(312.0, workspace.CoursePaneWidth);
         Assert.Equal(288.0, workspace.InspectorPaneWidth);
         Assert.True(workspace.IsCoursePaneOpen);
+        Assert.False(workspace.IsCoursePaneToggleVisible);
+        Assert.True(workspace.IsCoursePaneDismissActionVisible);
+        Assert.False(workspace.IsInspectorPaneOpen);
+        Assert.True(workspace.IsInspectorPaneToggleVisible);
+        Assert.False(workspace.IsInspectorPaneDismissActionVisible);
+
+        workspace.ToggleCoursePaneCommand.Execute(null);
+        workspace.ToggleInspectorPaneCommand.Execute(null);
+
+        Assert.False(workspace.IsCoursePaneOpen);
         Assert.True(workspace.IsInspectorPaneOpen);
-        Assert.False(workspace.IsInspectorPaneToggleVisible);
 
         workspace.applyWorkspaceWidth(new WorkspaceWidth(1_300.0));
 
         Assert.Equal(EWorkspaceLayoutMode.Wide, workspace.LayoutMode);
+        Assert.Equal(SplitViewDisplayMode.Inline, workspace.CoursePaneDisplayMode);
+        Assert.Equal(SplitViewDisplayMode.Overlay, workspace.InspectorPaneDisplayMode);
         Assert.Equal(312.0, workspace.CoursePaneWidth);
         Assert.Equal(304.0, workspace.InspectorPaneWidth);
-        Assert.True(workspace.IsCoursePaneOpen);
-        Assert.False(workspace.IsInspectorPaneOpen);
-        Assert.True(workspace.IsInspectorPaneToggleVisible);
+        Assert.False(workspace.IsCoursePaneOpen);
+        Assert.True(workspace.IsInspectorPaneOpen);
 
         workspace.applyWorkspaceWidth(new WorkspaceWidth(1_200.0));
 
         Assert.Equal(EWorkspaceLayoutMode.Medium, workspace.LayoutMode);
+        Assert.Equal(SplitViewDisplayMode.Inline, workspace.CoursePaneDisplayMode);
+        Assert.Equal(SplitViewDisplayMode.Overlay, workspace.InspectorPaneDisplayMode);
         Assert.Equal(320.0, workspace.CoursePaneWidth);
         Assert.Equal(304.0, workspace.InspectorPaneWidth);
-        Assert.True(workspace.IsCoursePaneOpen);
-        Assert.False(workspace.IsInspectorPaneOpen);
-        Assert.True(workspace.IsInspectorPaneToggleVisible);
+        Assert.False(workspace.IsCoursePaneOpen);
+        Assert.True(workspace.IsInspectorPaneOpen);
 
         workspace.applyWorkspaceWidth(new WorkspaceWidth(960.0));
 
         Assert.Equal(EWorkspaceLayoutMode.Compact, workspace.LayoutMode);
+        Assert.Equal(SplitViewDisplayMode.Overlay, workspace.CoursePaneDisplayMode);
+        Assert.Equal(SplitViewDisplayMode.Overlay, workspace.InspectorPaneDisplayMode);
         Assert.Equal(320.0, workspace.CoursePaneWidth);
         Assert.Equal(304.0, workspace.InspectorPaneWidth);
         Assert.False(workspace.IsCoursePaneOpen);
+        Assert.True(workspace.IsInspectorPaneOpen);
+        Assert.True(workspace.IsCoursePaneToggleVisible);
+
+        workspace.applyWorkspaceWidth(new WorkspaceWidth(1_600.0));
+
+        Assert.Equal(EWorkspaceLayoutMode.ExtraWide, workspace.LayoutMode);
+        Assert.False(workspace.IsCoursePaneOpen);
+        Assert.True(workspace.IsInspectorPaneOpen);
+
+        workspace.ToggleCoursePaneCommand.Execute(null);
+        workspace.ToggleInspectorPaneCommand.Execute(null);
+
+        Assert.True(workspace.IsCoursePaneOpen);
+        Assert.False(workspace.IsInspectorPaneOpen);
+    }
+
+    [AvaloniaFact]
+    public void CompactWorkspaceStartsClosedAndShowsOnlyOneOverlayPaneAtATime()
+    {
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+
+        workspace.applyWorkspaceWidth(new WorkspaceWidth(960.0));
+
+        Assert.Equal(EWorkspaceLayoutMode.Compact, workspace.LayoutMode);
+        Assert.False(workspace.IsCoursePaneOpen);
         Assert.False(workspace.IsInspectorPaneOpen);
         Assert.True(workspace.IsCoursePaneToggleVisible);
+        Assert.True(workspace.IsInspectorPaneToggleVisible);
+
+        workspace.ToggleCoursePaneCommand.Execute(null);
+
+        Assert.True(workspace.IsCoursePaneOpen);
+        Assert.False(workspace.IsInspectorPaneOpen);
+
+        workspace.ToggleInspectorPaneCommand.Execute(null);
+
+        Assert.False(workspace.IsCoursePaneOpen);
+        Assert.True(workspace.IsInspectorPaneOpen);
+    }
+
+    [AvaloniaFact]
+    public void EscapeClosesOverlayPanesWithoutDiscardingInlinePaneChoices()
+    {
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+        workspace.applyWorkspaceWidth(new WorkspaceWidth(960.0));
+
+        workspace.ToggleCoursePaneCommand.Execute(null);
+        workspace.closeOverlayPanes();
+
+        Assert.False(workspace.IsCoursePaneOpen);
+        Assert.False(workspace.IsInspectorPaneOpen);
+
+        workspace.ToggleInspectorPaneCommand.Execute(null);
+        workspace.closeOverlayPanes();
+
+        Assert.False(workspace.IsCoursePaneOpen);
+        Assert.False(workspace.IsInspectorPaneOpen);
+
+        workspace.applyWorkspaceWidth(new WorkspaceWidth(1_600.0));
+        workspace.ToggleCoursePaneCommand.Execute(null);
+        workspace.ToggleInspectorPaneCommand.Execute(null);
+        workspace.closeOverlayPanes();
+
+        Assert.True(workspace.IsCoursePaneOpen);
+        Assert.True(workspace.IsInspectorPaneOpen);
     }
 
     [AvaloniaFact]
