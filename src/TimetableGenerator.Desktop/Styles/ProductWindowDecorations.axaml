@@ -96,8 +96,8 @@
                 </Button>
                 <Button
                     x:Name="PART_CloseButton"
-                    Background="#FFE81123"
-                    BorderBrush="#FFF1707A"
+                    Background="{DynamicResource CaptionCloseButtonHoverBackgroundBrush}"
+                    BorderBrush="{DynamicResource CaptionCloseButtonPressedBackgroundBrush}"
                     Theme="{StaticResource ProductCaptionButtonTheme}"
                     WindowDecorationProperties.ElementRole="CloseButton">
                   <Viewbox Width="11" Margin="2">
@@ -135,8 +135,8 @@
                 </Button>
                 <Button
                     x:Name="PART_PopoverCloseButton"
-                    Background="#FFE81123"
-                    BorderBrush="#FFF1707A"
+                    Background="{DynamicResource CaptionCloseButtonHoverBackgroundBrush}"
+                    BorderBrush="{DynamicResource CaptionCloseButtonPressedBackgroundBrush}"
                     Theme="{StaticResource ProductCaptionButtonTheme}"
                     WindowDecorationProperties.ElementRole="CloseButton">
                   <Viewbox Width="11" Margin="2">

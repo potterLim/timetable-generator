@@ -46,8 +46,16 @@ public sealed class ProductColorContrastTests
         new ColorToken("SelectionIndicatorBrush");
     private static readonly ColorToken CONTROL_BORDER =
         new ColorToken("ControlBorderBrush");
+    private static readonly ColorToken CONTROL_HOVER_SURFACE =
+        new ColorToken("ControlHoverSurfaceBrush");
     private static readonly ColorToken CONTROL_SURFACE =
         new ColorToken("ControlSurfaceBrush");
+    private static readonly ColorToken CAPTION_CLOSE_HOVER_BACKGROUND =
+        new ColorToken("CaptionCloseButtonHoverBackgroundBrush");
+    private static readonly ColorToken CAPTION_CLOSE_PRESSED_BACKGROUND =
+        new ColorToken("CaptionCloseButtonPressedBackgroundBrush");
+    private static readonly ColorToken CAPTION_FOREGROUND =
+        new ColorToken("CaptionButtonForeground");
     private static readonly ColorToken COURSE_BLUE_BACKGROUND =
         new ColorToken("CourseBlueBackgroundBrush");
     private static readonly ColorToken COURSE_BLUE_BORDER =
@@ -84,6 +92,8 @@ public sealed class ProductColorContrastTests
         new ColorToken("ProductOnDangerActionFillBrush");
     private static readonly ColorToken PANE_SURFACE =
         new ColorToken("PaneSurfaceBrush");
+    private static readonly ColorToken OVERLAY_SCRIM =
+        new ColorToken("OverlayScrimBrush");
     private static readonly ColorToken PERSONAL_SCHEDULE_BACKGROUND =
         new ColorToken("PersonalScheduleBackgroundBrush");
     private static readonly ColorToken PERSONAL_SCHEDULE_BORDER =
@@ -112,8 +122,14 @@ public sealed class ProductColorContrastTests
         new ColorToken("SubtleSurfaceBrush");
     private static readonly ColorToken SUCCESS =
         new ColorToken("SuccessBrush");
+    private static readonly ColorToken SUCCESS_SUBTLE =
+        new ColorToken("SuccessSubtleBrush");
     private static readonly ColorToken SURFACE =
         new ColorToken("SurfaceBrush");
+    private static readonly ColorToken SCHEDULE_HOUR_GRID_LINE =
+        new ColorToken("ScheduleHourGridLineBrush");
+    private static readonly ColorToken SCHEDULE_HALF_HOUR_GRID_LINE =
+        new ColorToken("ScheduleHalfHourGridLineBrush");
     private static readonly ColorToken TEXT_PRIMARY =
         new ColorToken("TextPrimaryBrush");
     private static readonly ColorToken TEXT_SECONDARY =
@@ -140,6 +156,7 @@ public sealed class ProductColorContrastTests
         new ColorToken("SurfaceBrush"),
         new ColorToken("ElevatedSurfaceBrush"),
         new ColorToken("ControlSurfaceBrush"),
+        new ColorToken("ControlHoverSurfaceBrush"),
         new ColorToken("SubtleSurfaceBrush"),
         new ColorToken("HoverSurfaceBrush"),
         new ColorToken("PressedSurfaceBrush"),
@@ -147,6 +164,8 @@ public sealed class ProductColorContrastTests
         new ColorToken("PaneDividerBrush"),
         new ColorToken("StrongBorderBrush"),
         new ColorToken("ControlBorderBrush"),
+        new ColorToken("ScheduleHourGridLineBrush"),
+        new ColorToken("ScheduleHalfHourGridLineBrush"),
         new ColorToken("BrandMarkBackgroundBrush"),
         new ColorToken("BrandMarkBorderBrush"),
         new ColorToken("TextPrimaryBrush"),
@@ -167,6 +186,7 @@ public sealed class ProductColorContrastTests
         new ColorToken("ProductFocusStrokeBrush"),
         new ColorToken("ProductFocusOnFillStrokeBrush"),
         new ColorToken("SuccessBrush"),
+        new ColorToken("SuccessSubtleBrush"),
         new ColorToken("WarningBrush"),
         new ColorToken("WarningSubtleBrush"),
         new ColorToken("ErrorBrush"),
@@ -196,6 +216,8 @@ public sealed class ProductColorContrastTests
         new ColorToken("CaptionButtonBackground"),
         new ColorToken("CaptionButtonBorderBrush"),
         new ColorToken("CaptionButtonForeground"),
+        new ColorToken("CaptionCloseButtonHoverBackgroundBrush"),
+        new ColorToken("CaptionCloseButtonPressedBackgroundBrush"),
     };
 
     [AvaloniaFact]
@@ -241,6 +263,7 @@ public sealed class ProductColorContrastTests
                 TEXT_SECONDARY,
                 SELECTION_PRESSED_SURFACE),
             bodyText(ThemeVariant.Light, TEXT_TERTIARY, CONTROL_SURFACE),
+            bodyText(ThemeVariant.Light, TEXT_PRIMARY, CONTROL_HOVER_SURFACE),
             bodyText(ThemeVariant.Dark, TEXT_PRIMARY, WINDOW_BACKGROUND),
             bodyText(ThemeVariant.Dark, TEXT_PRIMARY, PANE_SURFACE),
             bodyText(ThemeVariant.Dark, TEXT_PRIMARY, ELEVATED_SURFACE),
@@ -261,6 +284,7 @@ public sealed class ProductColorContrastTests
                 TEXT_SECONDARY,
                 SELECTION_PRESSED_SURFACE),
             bodyText(ThemeVariant.Dark, TEXT_TERTIARY, CONTROL_SURFACE),
+            bodyText(ThemeVariant.Dark, TEXT_PRIMARY, CONTROL_HOVER_SURFACE),
         };
 
         assertContrastRequirements(contrastRequirements);
@@ -286,6 +310,53 @@ public sealed class ProductColorContrastTests
         };
 
         assertContrastRequirements(contrastRequirements);
+    }
+
+    [AvaloniaFact]
+    public void CaptionCloseIconMeetsContrastOnRealHoverAndPressedFills()
+    {
+        ContrastRequirement[] contrastRequirements =
+        {
+            nonText(
+                ThemeVariant.Light,
+                CAPTION_FOREGROUND,
+                CAPTION_CLOSE_HOVER_BACKGROUND),
+            nonText(
+                ThemeVariant.Light,
+                CAPTION_FOREGROUND,
+                CAPTION_CLOSE_PRESSED_BACKGROUND),
+            nonText(
+                ThemeVariant.Dark,
+                CAPTION_FOREGROUND,
+                CAPTION_CLOSE_HOVER_BACKGROUND),
+            nonText(
+                ThemeVariant.Dark,
+                CAPTION_FOREGROUND,
+                CAPTION_CLOSE_PRESSED_BACKGROUND),
+        };
+
+        assertContrastRequirements(contrastRequirements);
+    }
+
+    [AvaloniaFact]
+    public void InputHoverAndScheduleGridTokensKeepARestrainedVisualHierarchy()
+    {
+        assertThemePaletteHierarchy(ThemeVariant.Light);
+        assertThemePaletteHierarchy(ThemeVariant.Dark);
+    }
+
+    [AvaloniaFact]
+    public void OverlayScrimsPreserveModalFocusWithoutObscuringContext()
+    {
+        SolidColorBrush lightScrim = findRequiredBrush(
+            OVERLAY_SCRIM,
+            ThemeVariant.Light);
+        SolidColorBrush darkScrim = findRequiredBrush(
+            OVERLAY_SCRIM,
+            ThemeVariant.Dark);
+
+        Assert.Equal(0x52, lightScrim.Color.A);
+        Assert.Equal(0x80, darkScrim.Color.A);
     }
 
     [AvaloniaFact]
@@ -338,12 +409,14 @@ public sealed class ProductColorContrastTests
             bodyText(ThemeVariant.Light, ERROR, SURFACE),
             bodyText(ThemeVariant.Light, SUCCESS, SURFACE),
             bodyText(ThemeVariant.Light, SUCCESS, ACCENT_TINT),
+            bodyText(ThemeVariant.Light, SUCCESS, SUCCESS_SUBTLE),
             bodyText(ThemeVariant.Dark, WARNING, WARNING_SUBTLE),
             bodyText(ThemeVariant.Dark, WARNING, SURFACE),
             bodyText(ThemeVariant.Dark, ERROR, ERROR_SUBTLE),
             bodyText(ThemeVariant.Dark, ERROR, SURFACE),
             bodyText(ThemeVariant.Dark, SUCCESS, SURFACE),
             bodyText(ThemeVariant.Dark, SUCCESS, ACCENT_TINT),
+            bodyText(ThemeVariant.Dark, SUCCESS, SUCCESS_SUBTLE),
         };
 
         assertContrastRequirements(contrastRequirements);
@@ -587,6 +660,32 @@ public sealed class ProductColorContrastTests
         Assert.Equal(
             expectedIndicator,
             findRequiredBrush(SELECTION_INDICATOR, themeVariant).Color);
+    }
+
+    private static void assertThemePaletteHierarchy(ThemeVariant themeVariant)
+    {
+        Color controlSurface = findRequiredBrush(
+            CONTROL_SURFACE,
+            themeVariant).Color;
+        Color controlHoverSurface = findRequiredBrush(
+            CONTROL_HOVER_SURFACE,
+            themeVariant).Color;
+        Color surface = findRequiredBrush(SURFACE, themeVariant).Color;
+        Color hourGridLine = findRequiredBrush(
+            SCHEDULE_HOUR_GRID_LINE,
+            themeVariant).Color;
+        Color halfHourGridLine = findRequiredBrush(
+            SCHEDULE_HALF_HOUR_GRID_LINE,
+            themeVariant).Color;
+
+        Assert.NotEqual(controlSurface, controlHoverSurface);
+        ContrastRatio hourLineContrast = calculateContrastRatio(
+            hourGridLine,
+            surface);
+        ContrastRatio halfHourLineContrast = calculateContrastRatio(
+            halfHourGridLine,
+            surface);
+        Assert.True(hourLineContrast.Value > halfHourLineContrast.Value);
     }
 
     private static void assertContrastRequirement(

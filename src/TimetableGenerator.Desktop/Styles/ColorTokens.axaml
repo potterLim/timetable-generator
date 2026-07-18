@@ -17,14 +17,17 @@
       <SolidColorBrush x:Key="SurfaceBrush" Color="#F7F8FA" />
       <SolidColorBrush x:Key="ElevatedSurfaceBrush" Color="#FFFFFF" />
       <SolidColorBrush x:Key="ControlSurfaceBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="ControlHoverSurfaceBrush" Color="#F2F6FC" />
       <SolidColorBrush x:Key="SubtleSurfaceBrush" Color="#EFF2F6" />
       <SolidColorBrush x:Key="HoverSurfaceBrush" Color="#E9EDF3" />
       <SolidColorBrush x:Key="PressedSurfaceBrush" Color="#DFE5ED" />
-      <SolidColorBrush x:Key="OverlayScrimBrush" Color="#5C101828" />
+      <SolidColorBrush x:Key="OverlayScrimBrush" Color="#52101828" />
       <SolidColorBrush x:Key="BorderBrush" Color="#DCE1E8" />
       <SolidColorBrush x:Key="PaneDividerBrush" Color="#D2D8E1" />
       <SolidColorBrush x:Key="StrongBorderBrush" Color="#BCC6D3" />
       <SolidColorBrush x:Key="ControlBorderBrush" Color="#7E8CA0" />
+      <SolidColorBrush x:Key="ScheduleHourGridLineBrush" Color="#C8D1DD" />
+      <SolidColorBrush x:Key="ScheduleHalfHourGridLineBrush" Color="#E1E6ED" />
       <SolidColorBrush x:Key="BrandMarkBackgroundBrush" Color="#FFFFFF" />
       <SolidColorBrush x:Key="BrandMarkBorderBrush" Color="#C7D0DC" />
       <SolidColorBrush x:Key="TextPrimaryBrush" Color="#172033" />
@@ -45,6 +48,7 @@
       <SolidColorBrush x:Key="ProductFocusStrokeBrush" Color="#0A60C8" />
       <SolidColorBrush x:Key="ProductFocusOnFillStrokeBrush" Color="#FFFFFF" />
       <SolidColorBrush x:Key="SuccessBrush" Color="#147A55" />
+      <SolidColorBrush x:Key="SuccessSubtleBrush" Color="#E8F5EF" />
       <SolidColorBrush x:Key="WarningBrush" Color="#8A5A00" />
       <SolidColorBrush x:Key="WarningSubtleBrush" Color="#FFF4D6" />
       <SolidColorBrush x:Key="ErrorBrush" Color="#C43246" />
@@ -74,6 +78,8 @@
       <SolidColorBrush x:Key="CaptionButtonBackground" Color="#EFF2F6" />
       <SolidColorBrush x:Key="CaptionButtonBorderBrush" Color="#DCE1E8" />
       <SolidColorBrush x:Key="CaptionButtonForeground" Color="#172033" />
+      <SolidColorBrush x:Key="CaptionCloseButtonHoverBackgroundBrush" Color="#C83B32" />
+      <SolidColorBrush x:Key="CaptionCloseButtonPressedBackgroundBrush" Color="#C23B32" />
     </ResourceDictionary>
 
     <ResourceDictionary x:Key="Dark">
@@ -91,14 +97,17 @@
       <SolidColorBrush x:Key="SurfaceBrush" Color="#181D25" />
       <SolidColorBrush x:Key="ElevatedSurfaceBrush" Color="#202630" />
       <SolidColorBrush x:Key="ControlSurfaceBrush" Color="#181D25" />
+      <SolidColorBrush x:Key="ControlHoverSurfaceBrush" Color="#202630" />
       <SolidColorBrush x:Key="SubtleSurfaceBrush" Color="#222A35" />
       <SolidColorBrush x:Key="HoverSurfaceBrush" Color="#293341" />
       <SolidColorBrush x:Key="PressedSurfaceBrush" Color="#323E4D" />
-      <SolidColorBrush x:Key="OverlayScrimBrush" Color="#A6000000" />
+      <SolidColorBrush x:Key="OverlayScrimBrush" Color="#80000000" />
       <SolidColorBrush x:Key="BorderBrush" Color="#303844" />
       <SolidColorBrush x:Key="PaneDividerBrush" Color="#394451" />
       <SolidColorBrush x:Key="StrongBorderBrush" Color="#465262" />
       <SolidColorBrush x:Key="ControlBorderBrush" Color="#728096" />
+      <SolidColorBrush x:Key="ScheduleHourGridLineBrush" Color="#465361" />
+      <SolidColorBrush x:Key="ScheduleHalfHourGridLineBrush" Color="#2C3540" />
       <SolidColorBrush x:Key="BrandMarkBackgroundBrush" Color="#F4F7FB" />
       <SolidColorBrush x:Key="BrandMarkBorderBrush" Color="#728096" />
       <SolidColorBrush x:Key="TextPrimaryBrush" Color="#F4F7FB" />
@@ -119,6 +128,7 @@
       <SolidColorBrush x:Key="ProductFocusStrokeBrush" Color="#69A9FF" />
       <SolidColorBrush x:Key="ProductFocusOnFillStrokeBrush" Color="#FFFFFF" />
       <SolidColorBrush x:Key="SuccessBrush" Color="#56C596" />
+      <SolidColorBrush x:Key="SuccessSubtleBrush" Color="#173529" />
       <SolidColorBrush x:Key="WarningBrush" Color="#F0B95A" />
       <SolidColorBrush x:Key="WarningSubtleBrush" Color="#3B2D16" />
       <SolidColorBrush x:Key="ErrorBrush" Color="#FF8794" />
@@ -148,6 +158,8 @@
       <SolidColorBrush x:Key="CaptionButtonBackground" Color="#222A35" />
       <SolidColorBrush x:Key="CaptionButtonBorderBrush" Color="#303844" />
       <SolidColorBrush x:Key="CaptionButtonForeground" Color="#F4F7FB" />
+      <SolidColorBrush x:Key="CaptionCloseButtonHoverBackgroundBrush" Color="#C83B32" />
+      <SolidColorBrush x:Key="CaptionCloseButtonPressedBackgroundBrush" Color="#C23B32" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>
