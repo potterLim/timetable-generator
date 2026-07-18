@@ -511,6 +511,12 @@ public sealed class PersonalScheduleInteractionTests
 
             workspace.BeginDeletePersonalScheduleCommand.Execute(itemToDelete);
             Dispatcher.UIThread.RunJobs();
+            TextBlock deleteHeading = findRequiredControl<TextBlock>(
+                host,
+                "DeletePersonalScheduleHeading");
+            Assert.Equal(
+                1,
+                (int)AutomationProperties.GetHeadingLevel(deleteHeading));
             workspace.ConfirmDeletePersonalScheduleCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
 

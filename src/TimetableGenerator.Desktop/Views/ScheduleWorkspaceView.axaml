@@ -10,7 +10,7 @@
     x:DataType="viewModels:PlannerWorkspaceViewModel"
     Background="{DynamicResource WorkspaceBackdropBrush}"
     AutomationProperties.LandmarkType="Main"
-    AutomationProperties.Name="추천 시간표">
+    AutomationProperties.Name="시간표 작업 영역">
   <UserControl.Styles>
     <Style Selector="TextBlock.export-status.success">
       <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
@@ -27,23 +27,20 @@
       <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}" />
     </Style>
   </UserControl.Styles>
-  <Grid Margin="18,20,18,16" RowDefinitions="Auto,14,*">
-    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" RowDefinitions="Auto,10,Auto">
-      <TextBlock
-          x:Name="ScheduleWorkspaceTitle"
-          Grid.Row="0"
-          Grid.Column="0"
-          Classes="title"
-          AutomationProperties.HeadingLevel="1"
-          Text="추천 시간표" />
-
+  <Grid Margin="18,18,18,16" RowDefinitions="40,14,*">
+    <Grid
+        x:Name="WorkspaceCommandBar"
+        Grid.Row="0"
+        Height="40"
+        ColumnDefinitions="Auto,*,Auto">
       <StackPanel
           x:Name="WorkspaceSupportingActions"
-          Grid.Row="2"
           Grid.Column="0"
+          VerticalAlignment="Center"
           Orientation="Horizontal"
           Spacing="8">
         <Button
+            x:Name="OpenCoursePaneButton"
             Classes="outline"
             IsVisible="{Binding IsCoursePaneToggleVisible}"
             Command="{Binding ToggleCoursePaneCommand}"
@@ -53,13 +50,30 @@
             <TextBlock VerticalAlignment="Center" Text="과목 찾기" />
           </StackPanel>
         </Button>
+        <Button
+            x:Name="ScheduleViewModeButton"
+            Classes="outline"
+            IsVisible="{Binding HasScheduleEntries}"
+            Command="{Binding ToggleSchedulePresentationCommand, ElementName=WorkspaceRoot}"
+            AutomationProperties.Name="시간표를 목록으로 보기"
+            ToolTip.Tip="목록으로 보기">
+          <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="7">
+            <icons:FluentIcon
+                x:Name="ScheduleViewModeIcon"
+                Icon="List"
+                IconVariant="Regular"
+                FontSize="17" />
+            <TextBlock
+                x:Name="ScheduleViewModeText"
+                VerticalAlignment="Center"
+                Text="목록 보기" />
+          </StackPanel>
+        </Button>
       </StackPanel>
 
       <StackPanel
           x:Name="WorkspaceHeaderActions"
-          Grid.Row="0"
-          Grid.RowSpan="3"
-          Grid.Column="1"
+          Grid.Column="2"
           HorizontalAlignment="Right"
           Orientation="Horizontal"
           Spacing="10"
@@ -99,25 +113,6 @@
           </Button>
         </StackPanel>
         <Button
-            x:Name="ScheduleViewModeButton"
-            Classes="outline"
-            IsVisible="{Binding HasScheduleEntries}"
-            Command="{Binding ToggleSchedulePresentationCommand, ElementName=WorkspaceRoot}"
-            AutomationProperties.Name="시간표를 목록으로 보기"
-            ToolTip.Tip="목록으로 보기">
-          <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="7">
-            <icons:FluentIcon
-                x:Name="ScheduleViewModeIcon"
-                Icon="List"
-                IconVariant="Regular"
-                FontSize="17" />
-            <TextBlock
-                x:Name="ScheduleViewModeText"
-                VerticalAlignment="Center"
-                Text="목록 보기" />
-          </StackPanel>
-        </Button>
-        <Button
             x:Name="WorkspaceAddPersonalScheduleButton"
             Classes="outline"
             Command="{Binding BeginAddPersonalScheduleCommand}"
@@ -149,7 +144,7 @@
             Command="{Binding ExportCommand, ElementName=WorkspaceRoot}"
             AutomationProperties.AutomationId="ExportSchedule"
             AutomationProperties.Name="현재 시간표를 PNG로 저장"
-            AutomationProperties.HelpText="현재 추천 시간표를 고해상도 PNG 파일로 저장합니다."
+            AutomationProperties.HelpText="현재 시간표를 고해상도 PNG 파일로 저장합니다."
             ToolTip.Tip="PNG로 저장">
           <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="8">
             <icons:FluentIcon Icon="Save" IconVariant="Regular" FontSize="18" />

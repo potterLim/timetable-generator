@@ -370,6 +370,8 @@
                   Foreground="{DynamicResource ErrorBrush}" />
             </Border>
             <TextBlock
+                x:Name="DeletePersonalScheduleHeading"
+                AutomationProperties.HeadingLevel="1"
                 FontSize="21"
                 FontWeight="SemiBold"
                 Text="개인 일정을 삭제할까요?" />

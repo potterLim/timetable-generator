@@ -753,7 +753,7 @@ public sealed class ScheduleWorkspaceViewTests
                 "현재 시간표를 PNG로 저장",
                 AutomationProperties.GetName(exportButton));
             Assert.Equal(
-                "현재 추천 시간표를 고해상도 PNG 파일로 저장합니다.",
+                "현재 시간표를 고해상도 PNG 파일로 저장합니다.",
                 AutomationProperties.GetHelpText(exportButton));
         }
         finally

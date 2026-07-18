@@ -9,6 +9,8 @@
   <StackPanel Margin="4" Spacing="2">
     <StackPanel Margin="12,10,12,6">
       <TextBlock
+          x:Name="AppearanceSettingsHeading"
+          AutomationProperties.HeadingLevel="1"
           FontSize="16"
           FontWeight="SemiBold"
           Text="화면 모드" />

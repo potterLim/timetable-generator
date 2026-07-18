@@ -438,12 +438,18 @@ public sealed class ProductWorkspaceInteractionTests
             ScheduleWorkspaceView scheduleWorkspace = host.GetVisualDescendants()
                 .OfType<ScheduleWorkspaceView>()
                 .Single();
-            TextBlock title = findRequiredControl<TextBlock>(
+            Grid commandBar = findRequiredControl<Grid>(
                 scheduleWorkspace,
-                "ScheduleWorkspaceTitle");
+                "WorkspaceCommandBar");
+            StackPanel supportingActions = findRequiredControl<StackPanel>(
+                scheduleWorkspace,
+                "WorkspaceSupportingActions");
             StackPanel headerActions = findRequiredControl<StackPanel>(
                 scheduleWorkspace,
                 "WorkspaceHeaderActions");
+            Button openCoursePane = findRequiredControl<Button>(
+                scheduleWorkspace,
+                "OpenCoursePaneButton");
             Button scheduleViewMode = findRequiredControl<Button>(
                 scheduleWorkspace,
                 "ScheduleViewModeButton");
@@ -459,6 +465,16 @@ public sealed class ProductWorkspaceInteractionTests
 
             Assert.True(openInspector.IsEffectivelyVisible);
             Assert.True(export.IsEffectivelyVisible);
+            Assert.False(openCoursePane.IsEffectivelyVisible);
+            Assert.Equal(
+                "시간표 작업 영역",
+                AutomationProperties.GetName(scheduleWorkspace));
+            Assert.Null(scheduleWorkspace.FindControl<TextBlock>(
+                "ScheduleWorkspaceTitle"));
+            Assert.Equal(40.0, commandBar.Bounds.Height);
+            Assert.True(
+                supportingActions.Children.IndexOf(openCoursePane)
+                < supportingActions.Children.IndexOf(scheduleViewMode));
             assertCompoundHeaderButtonAlignment(scheduleViewMode);
             assertCompoundHeaderButtonAlignment(addPersonalSchedule);
             assertCompoundHeaderButtonAlignment(openInspector);
@@ -478,13 +494,27 @@ public sealed class ProductWorkspaceInteractionTests
                 candidate => candidate.Text == "내 계획 열기");
             Assert.True(openInspector.Focusable);
             Assert.True(openInspector.IsTabStop);
+            Assert.DoesNotContain(
+                scheduleWorkspace.GetVisualDescendants().OfType<TextBlock>(),
+                candidate => candidate.Text == "추천 시간표");
             Assert.True(
                 headerActions.Children.IndexOf(openInspector)
                 < headerActions.Children.IndexOf(export));
 
-            Point titlePosition = findRequiredPosition(title, scheduleWorkspace);
+            Point commandBarPosition = findRequiredPosition(
+                commandBar,
+                scheduleWorkspace);
+            Point supportingPosition = findRequiredPosition(
+                supportingActions,
+                scheduleWorkspace);
             Point headerPosition = findRequiredPosition(
                 headerActions,
+                scheduleWorkspace);
+            Point scheduleViewModePosition = findRequiredPosition(
+                scheduleViewMode,
+                scheduleWorkspace);
+            Point addPersonalSchedulePosition = findRequiredPosition(
+                addPersonalSchedule,
                 scheduleWorkspace);
             Point openInspectorPosition = findRequiredPosition(
                 openInspector,
@@ -493,8 +523,13 @@ public sealed class ProductWorkspaceInteractionTests
                 export,
                 scheduleWorkspace);
 
-            double titleRight = titlePosition.X + title.Bounds.Width;
+            double supportingRight =
+                supportingPosition.X + supportingActions.Bounds.Width;
             double headerRight = headerPosition.X + headerActions.Bounds.Width;
+            double scheduleViewModeCenterY = scheduleViewModePosition.Y
+                + (scheduleViewMode.Bounds.Height / 2.0);
+            double addPersonalScheduleCenterY = addPersonalSchedulePosition.Y
+                + (addPersonalSchedule.Bounds.Height / 2.0);
             double openInspectorRight =
                 openInspectorPosition.X + openInspector.Bounds.Width;
             double openInspectorCenterY = openInspectorPosition.Y
@@ -502,13 +537,37 @@ public sealed class ProductWorkspaceInteractionTests
             double exportCenterY = exportPosition.Y
                 + (export.Bounds.Height / 2.0);
 
-            Assert.True(titleRight <= headerPosition.X + 1.0);
+            Assert.Equal(18.0, commandBarPosition.Y);
+            Assert.True(supportingRight <= headerPosition.X + 1.0);
             Assert.True(headerRight <= scheduleWorkspace.Bounds.Width + 1.0);
             Assert.True(openInspectorRight <= exportPosition.X + 1.0);
+            Assert.InRange(
+                Math.Abs(scheduleViewModeCenterY - addPersonalScheduleCenterY),
+                0.0,
+                1.0);
             Assert.InRange(
                 Math.Abs(openInspectorCenterY - exportCenterY),
                 0.0,
                 1.0);
+
+            workspace.IsCoursePaneOpen = false;
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(openCoursePane.IsEffectivelyVisible);
+            Point openCoursePanePosition = findRequiredPosition(
+                openCoursePane,
+                scheduleWorkspace);
+            scheduleViewModePosition = findRequiredPosition(
+                scheduleViewMode,
+                scheduleWorkspace);
+            Assert.True(
+                openCoursePanePosition.X + openCoursePane.Bounds.Width
+                <= scheduleViewModePosition.X + 1.0);
+
+            workspace.IsCoursePaneOpen = true;
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(openCoursePane.IsEffectivelyVisible);
 
             openInspector.Command?.Execute(null);
             Dispatcher.UIThread.RunJobs();

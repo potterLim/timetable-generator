@@ -44,6 +44,9 @@ public sealed class AppearanceSettingsInteractionTests
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
+            TextBlock heading = findRequiredControl<TextBlock>(
+                view,
+                "AppearanceSettingsHeading");
             RadioButton systemOption = findRequiredControl<RadioButton>(
                 view,
                 "SystemThemeOption");
@@ -56,6 +59,7 @@ public sealed class AppearanceSettingsInteractionTests
 
             Assert.Equal("ProductThemePreference", systemOption.GroupName);
             Assert.Equal(systemOption.GroupName, darkOption.GroupName);
+            Assert.Equal(1, (int)AutomationProperties.GetHeadingLevel(heading));
             Assert.Equal(
                 "시스템 설정에 맞춰 화면 모드 사용",
                 AutomationProperties.GetName(systemOption));
