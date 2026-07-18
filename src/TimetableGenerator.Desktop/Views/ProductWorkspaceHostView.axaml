@@ -7,6 +7,11 @@
     xmlns:viewModels="using:TimetableGenerator.Desktop.Presentation.ViewModels"
     xmlns:views="using:TimetableGenerator.Desktop.Views"
     x:DataType="viewModels:PlannerWorkspaceViewModel">
+  <UserControl.Styles>
+    <Style Selector="SplitView.persistent-inspector /template/ Rectangle#LightDismissLayer">
+      <Setter Property="IsHitTestVisible" Value="False" />
+    </Style>
+  </UserControl.Styles>
   <Grid>
     <Grid
         x:Name="WorkspaceSurface"
@@ -154,12 +159,14 @@
       <SplitView.Content>
         <SplitView
             x:Name="InspectorSplitView"
+            Classes="persistent-inspector"
             PanePlacement="Right"
             DisplayMode="{Binding InspectorPaneDisplayMode}"
             IsPaneOpen="{Binding IsInspectorPaneOpen, Mode=TwoWay}"
             OpenPaneLength="{Binding InspectorPaneWidth}"
             PaneBackground="{DynamicResource PaneSurfaceBrush}"
-            UseLightDismissOverlayMode="False">
+            UseLightDismissOverlayMode="False"
+            PaneClosing="onInspectorPaneClosing">
           <SplitView.Pane>
             <views:PlanInspectorView />
           </SplitView.Pane>

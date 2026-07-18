@@ -177,6 +177,95 @@ public sealed class ProductWorkspaceInteractionTests
     }
 
     [AvaloniaFact]
+    public void CompactToolbarActionOpensCoursePaneWithoutDismissingInspector()
+    {
+        const double COMPACT_WIDTH = 900.0;
+
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+        workspace.applyWorkspaceWidth(new WorkspaceWidth(COMPACT_WIDTH));
+        ProductWorkspaceHostView host = new ProductWorkspaceHostView();
+        host.DataContext = workspace;
+        Window window = createWindow(host, COMPACT_WIDTH);
+
+        try
+        {
+            window.Show();
+            workspace.OpenInspectorPaneCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            ScheduleWorkspaceView scheduleWorkspace = host.GetVisualDescendants()
+                .OfType<ScheduleWorkspaceView>()
+                .Single();
+            Button openCoursePane = findRequiredControl<Button>(
+                scheduleWorkspace,
+                "OpenCoursePaneButton");
+            SplitView inspectorSplitView = findRequiredControl<SplitView>(
+                host,
+                "InspectorSplitView");
+            Control lightDismissLayer = inspectorSplitView.GetVisualDescendants()
+                .OfType<Control>()
+                .Single(candidate => candidate.Name == "LightDismissLayer");
+
+            Assert.Equal(
+                SplitViewDisplayMode.Overlay,
+                inspectorSplitView.DisplayMode);
+            Assert.False(lightDismissLayer.IsHitTestVisible);
+
+            Point buttonPosition = findRequiredPosition(openCoursePane, window);
+            Point clickPosition = new Point(
+                buttonPosition.X + (openCoursePane.Bounds.Width / 2.0),
+                buttonPosition.Y + (openCoursePane.Bounds.Height / 2.0));
+
+            window.MouseMove(clickPosition, RawInputModifiers.None);
+            window.MouseDown(
+                clickPosition,
+                MouseButton.Left,
+                RawInputModifiers.None);
+            window.MouseUp(
+                clickPosition,
+                MouseButton.Left,
+                RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(workspace.IsCoursePaneOpen);
+            Assert.True(workspace.IsInspectorPaneOpen);
+
+            workspace.ToggleCoursePaneCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(workspace.IsCoursePaneOpen);
+            Assert.True(workspace.IsInspectorPaneOpen);
+
+            Grid scheduleSurface = findRequiredControl<Grid>(
+                scheduleWorkspace,
+                "ScheduleContentSurface");
+            Point surfacePosition = findRequiredPosition(scheduleSurface, window);
+            Point scheduleClickPosition = new Point(
+                surfacePosition.X + 8.0,
+                surfacePosition.Y + scheduleSurface.Bounds.Height - 8.0);
+
+            window.MouseMove(scheduleClickPosition, RawInputModifiers.None);
+            window.MouseDown(
+                scheduleClickPosition,
+                MouseButton.Left,
+                RawInputModifiers.None);
+            window.MouseUp(
+                scheduleClickPosition,
+                MouseButton.Left,
+                RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(workspace.IsInspectorPaneOpen);
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
     public void PlanClearDialogFitsCompactWidthAndRestoresInvokerFocus()
     {
         const double COMPACT_WIDTH = 360.0;
