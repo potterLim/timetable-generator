@@ -13,6 +13,8 @@ namespace TimetableGenerator.Desktop.Views;
 
 internal sealed partial class PersonalScheduleEditorView : UserControl
 {
+    private const int WEEKDAY_COLUMN_COUNT = 7;
+
     private readonly TextBox mNameInput;
 
     private readonly ProductTimePicker mStartTimeInput;
@@ -90,6 +92,22 @@ internal sealed partial class PersonalScheduleEditorView : UserControl
         }
 
         focusControl(target);
+    }
+
+    private void onDayOptionContainerPrepared(
+        object? senderOrNull,
+        ContainerPreparedEventArgs eventArgs)
+    {
+        if (eventArgs.Index < 0
+            || eventArgs.Index >= WEEKDAY_COLUMN_COUNT)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(eventArgs),
+                eventArgs.Index,
+                "The personal schedule day container index is outside the week.");
+        }
+
+        Grid.SetColumn(eventArgs.Container, eventArgs.Index);
     }
 
     private static void focusControl(Control target)

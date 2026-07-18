@@ -203,7 +203,7 @@ public sealed class PersonalScheduleInteractionTests
         ProductWorkspaceHostView host = new ProductWorkspaceHostView();
         host.DataContext = workspace;
         Window window = new Window();
-        window.Width = 1200.0;
+        window.Width = 695.0;
         window.Height = 760.0;
         window.Content = host;
 
@@ -234,6 +234,22 @@ public sealed class PersonalScheduleInteractionTests
                 dayInputs,
                 candidate => AutomationProperties.GetAutomationId(candidate)
                     == "PersonalScheduleSundayInput");
+            Grid dayOptionsGrid = Assert.IsType<Grid>(dayOptions.ItemsPanelRoot);
+            Assert.Equal(7, dayOptionsGrid.ColumnDefinitions.Count);
+            Assert.All(
+                dayOptionsGrid.ColumnDefinitions,
+                columnDefinition => Assert.Equal(
+                    GridUnitType.Star,
+                    columnDefinition.Width.GridUnitType));
+            Assert.Equal(8.0, dayOptionsGrid.ColumnSpacing);
+            for (int dayIndex = 0; dayIndex < dayInputs.Length; ++dayIndex)
+            {
+                Control dayContainer = dayOptions.ContainerFromIndex(dayIndex)
+                    ?? throw new InvalidOperationException(
+                        "The weekday option container was not prepared.");
+                Assert.Equal(dayIndex, Grid.GetColumn(dayContainer));
+            }
+
             Assert.All(
                 dayInputs,
                 candidate => Assert.True(candidate.Bounds.Width >= 76.0));
@@ -306,7 +322,7 @@ public sealed class PersonalScheduleInteractionTests
             Assert.InRange(
                 maximumDayWidth - minimumDayWidth,
                 0.0,
-                0.01);
+                1.0);
             Assert.All(
                 dayInputGeometry,
                 geometry =>

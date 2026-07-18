@@ -1,7 +1,6 @@
 using System.Linq;
 
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
 
@@ -16,18 +15,29 @@ internal sealed partial class CourseChoiceEditorView : UserControl
 
     internal void focusInitialInput()
     {
+        RadioButton? selectedPreferenceButtonOrNull = this.GetVisualDescendants()
+            .OfType<RadioButton>()
+            .FirstOrDefault(
+                static candidate => candidate.Classes.Contains("preference-choice")
+                    && candidate.IsChecked == true);
+        if (selectedPreferenceButtonOrNull != null
+            && selectedPreferenceButtonOrNull.Focus())
+        {
+            return;
+        }
+
         RadioButton? firstPreferenceButtonOrNull = this.GetVisualDescendants()
             .OfType<RadioButton>()
             .FirstOrDefault(
                 static candidate => candidate.Classes.Contains("preference-choice"));
         if (firstPreferenceButtonOrNull != null
-            && firstPreferenceButtonOrNull.Focus(NavigationMethod.Tab))
+            && firstPreferenceButtonOrNull.Focus())
         {
             return;
         }
 
         TextBox? alternativeSearchBoxOrNull = this.FindControl<TextBox>(
             "AlternativeCourseSearchBox");
-        alternativeSearchBoxOrNull?.Focus(NavigationMethod.Tab);
+        alternativeSearchBoxOrNull?.Focus();
     }
 }

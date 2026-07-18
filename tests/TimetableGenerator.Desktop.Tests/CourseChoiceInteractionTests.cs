@@ -290,10 +290,11 @@ public sealed class CourseChoiceInteractionTests
                         "preference-choice"))
                 .ToArray();
             RadioButton firstPreferenceButton = preferenceButtons[0];
+            RadioButton selectedPreferenceButton = preferenceButtons[2];
 
             Assert.True(overlay.IsVisible);
             Assert.False(workspaceSurface.IsEnabled);
-            Assert.True(firstPreferenceButton.IsKeyboardFocusWithin);
+            Assert.True(selectedPreferenceButton.IsKeyboardFocusWithin);
             Assert.Equal(
                 KeyboardNavigationMode.Cycle,
                 KeyboardNavigation.GetTabNavigation(dialog));
@@ -319,9 +320,16 @@ public sealed class CourseChoiceInteractionTests
                 window.ActualThemeVariant);
             assertBrushUsesResource(
                 preferenceButtons[0].BorderBrush,
-                "ProductFocusStrokeBrush",
+                "ControlBorderBrush",
                 window.ActualThemeVariant);
-            Assert.Equal(new Thickness(2.0), preferenceButtons[0].BorderThickness);
+            Assert.Equal(new Thickness(1.0), preferenceButtons[0].BorderThickness);
+            assertBrushUsesResource(
+                selectedPreferenceButton.BorderBrush,
+                "SelectionIndicatorBrush",
+                window.ActualThemeVariant);
+            Assert.Equal(
+                new Thickness(1.0),
+                selectedPreferenceButton.BorderThickness);
             TextBlock preferenceGuidance = Assert.Single(
                 host.GetVisualDescendants()
                     .OfType<TextBlock>(),
@@ -331,13 +339,16 @@ public sealed class CourseChoiceInteractionTests
             Assert.Equal(new Thickness(0.0, 6.0, 0.0, 8.0), preferenceGuidance.Margin);
             Assert.Equal(17.0, preferenceGuidance.LineHeight);
 
-            Assert.True(preferenceButtons[2].Focus(NavigationMethod.Tab));
+            Assert.True(firstPreferenceButton.Focus());
+            Assert.True(selectedPreferenceButton.Focus(NavigationMethod.Tab));
             Dispatcher.UIThread.RunJobs();
             assertBrushUsesResource(
-                preferenceButtons[2].BorderBrush,
+                selectedPreferenceButton.BorderBrush,
                 "ProductFocusStrokeBrush",
                 window.ActualThemeVariant);
-            Assert.Equal(new Thickness(2.0), preferenceButtons[2].BorderThickness);
+            Assert.Equal(
+                new Thickness(2.0),
+                selectedPreferenceButton.BorderThickness);
 
             ThemeVariant[] themeVariants =
             {
@@ -379,17 +390,17 @@ public sealed class CourseChoiceInteractionTests
                 }
 
                 Assert.True(closeEditorButton.Focus(NavigationMethod.Tab));
-                RadioButton selectedPreferenceButton =
+                RadioButton selectedExcludedPreferenceButton =
                     firstOfferingPreferenceButtons[2];
                 Point selectedPreferenceCenter = findControlCenter(
                     window,
-                    selectedPreferenceButton);
+                    selectedExcludedPreferenceButton);
                 window.MouseMove(
                     selectedPreferenceCenter,
                     RawInputModifiers.None);
                 Dispatcher.UIThread.RunJobs();
                 assertSelectedPreferenceVisuals(
-                    selectedPreferenceButton,
+                    selectedExcludedPreferenceButton,
                     themeVariant,
                     "SelectionHoverSurfaceBrush");
 
@@ -399,7 +410,7 @@ public sealed class CourseChoiceInteractionTests
                     RawInputModifiers.None);
                 Dispatcher.UIThread.RunJobs();
                 assertSelectedPreferenceVisuals(
-                    selectedPreferenceButton,
+                    selectedExcludedPreferenceButton,
                     themeVariant,
                     "SelectionPressedSurfaceBrush");
                 window.MouseUp(

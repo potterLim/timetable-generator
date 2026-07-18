@@ -99,11 +99,12 @@
               x:Name="PersonalScheduleDayOptions"
               Classes="day-options"
               ItemsSource="{Binding PersonalScheduleDayOptions}"
+              ContainerPrepared="onDayOptionContainerPrepared"
               AutomationProperties.Name="요일 선택"
               AutomationProperties.HelpText="필수 항목이며 여러 요일을 선택할 수 있습니다.">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
-                <UniformGrid Columns="7" Rows="1" ColumnSpacing="8" />
+                <Grid ColumnDefinitions="*,*,*,*,*,*,*" ColumnSpacing="8" />
               </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
