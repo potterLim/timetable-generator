@@ -69,6 +69,8 @@ internal sealed class PlanTabItem
 
     public ICommand CloseCommand { get; }
 
+    public ICommand RenameCommand { get; }
+
     public ObservableCollection<PlanCourseChoiceGroupItem> CourseChoiceGroups { get; }
 
     public ObservableCollection<TimeNotProvidedCourseItem> TimeNotProvidedCourses
@@ -186,6 +188,7 @@ internal sealed class PlanTabItem
         PlanningPlan plan,
         CourseCatalogProjection catalogProjection,
         EPlanCloseAvailability closeAvailability,
+        Action<PlanTabItem> requestRenamePlan,
         Action<PlanTabItem> requestClosePlan)
     {
         if (plan == null)
@@ -208,8 +211,18 @@ internal sealed class PlanTabItem
             throw new ArgumentNullException(nameof(requestClosePlan));
         }
 
+        if (requestRenamePlan == null)
+        {
+            throw new ArgumentNullException(nameof(requestRenamePlan));
+        }
+
         Plan = plan;
         mCloseAvailability = closeAvailability;
+        RenameCommand = new DelegateCommand(
+            delegate
+            {
+                requestRenamePlan(this);
+            });
         CloseCommand = new DelegateCommand(
             delegate
             {

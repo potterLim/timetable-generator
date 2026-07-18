@@ -7,7 +7,7 @@
     xmlns:viewModels="using:TimetableGenerator.Desktop.Presentation.ViewModels"
     x:DataType="viewModels:PlannerWorkspaceViewModel"
     AutomationProperties.LandmarkType="Complementary"
-    AutomationProperties.Name="내 계획">
+    AutomationProperties.Name="{Binding ActivePlan.DisplayName}">
   <UserControl.Styles>
     <Style Selector="Border.plan-course.blue">
       <Setter Property="BorderBrush" Value="{DynamicResource CourseBlueBorderBrush}" />
@@ -35,15 +35,27 @@
       BorderBrush="{DynamicResource PaneDividerBrush}"
       BorderThickness="1,0,0,0">
     <Grid Margin="22,20,22,18" RowDefinitions="Auto,12,*">
-      <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="4">
+      <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="4">
         <TextBlock
             Classes="title"
+            MaxWidth="184"
             VerticalAlignment="Center"
             AutomationProperties.HeadingLevel="2"
-            Text="내 계획" />
+            Text="{Binding ActivePlan.DisplayName}"
+            TextTrimming="CharacterEllipsis"
+            ToolTip.Tip="{Binding ActivePlan.DisplayName}" />
+        <Button
+            x:Name="RenameActivePlanButton"
+            Grid.Column="1"
+            Classes="icon"
+            Command="{Binding BeginRenamePlanCommand}"
+            AutomationProperties.Name="시간표 이름 변경"
+            ToolTip.Tip="이름 변경">
+          <icons:FluentIcon Icon="Edit" IconVariant="Regular" FontSize="17" />
+        </Button>
         <Button
             x:Name="PlanManagementButton"
-            Grid.Column="1"
+            Grid.Column="2"
             Classes="icon"
             AutomationProperties.Name="현재 계획 관리"
             ToolTip.Tip="계획 관리">
@@ -98,7 +110,7 @@
         </Button>
         <Button
             x:Name="CloseInspectorPaneButton"
-            Grid.Column="2"
+            Grid.Column="3"
             Classes="icon"
             IsVisible="{Binding IsInspectorPaneDismissActionVisible}"
             Command="{Binding ToggleInspectorPaneCommand}"

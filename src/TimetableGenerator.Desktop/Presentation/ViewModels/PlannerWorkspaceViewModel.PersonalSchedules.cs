@@ -25,6 +25,8 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private bool mIsPersonalScheduleEditorVisible;
 
+    private bool mWasInspectorPaneOpenBeforePersonalScheduleEditing;
+
     private string mPersonalScheduleTitleDraft;
 
     private string mPersonalScheduleSectionDraft;
@@ -71,15 +73,6 @@ internal sealed partial class PlannerWorkspaceViewModel
             return mEditingPersonalScheduleIdOrNull.HasValue
                 ? "개인 일정 수정"
                 : "개인 일정 추가";
-        }
-    }
-
-    public string PersonalScheduleEditorDescription
-    {
-        get
-        {
-            return "‘" + ActivePlan.DisplayName
-                + "’ 계획에만 반영됩니다.";
         }
     }
 
@@ -252,6 +245,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     private void beginAddPersonalSchedule()
     {
         throwIfDisposed();
+        rememberInspectorPaneStateBeforePersonalScheduleEditing();
         closeCourseChoiceEditingState();
         closePlanEditingState();
         clearPersonalScheduleDraft();
@@ -264,6 +258,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         throwIfDisposed();
         PersonalSchedule schedule = findPersonalSchedule(scheduleId);
+        rememberInspectorPaneStateBeforePersonalScheduleEditing();
         closeCourseChoiceEditingState();
         closePlanEditingState();
         clearPersonalScheduleDraft();
@@ -382,15 +377,22 @@ internal sealed partial class PlannerWorkspaceViewModel
 
         mIsPersonalScheduleEditorVisible = false;
         clearPersonalScheduleDraft();
+        restoreInspectorPaneStateAfterPersonalScheduleEditing();
         raisePersonalScheduleOverlayStateChanged();
     }
 
     private void closePersonalScheduleEditingState()
     {
         bool hadVisibleState = IsPersonalScheduleOverlayVisible;
+        bool wasEditorVisible = IsPersonalScheduleEditorVisible;
         mIsPersonalScheduleEditorVisible = false;
         mPersonalSchedulePendingDeletionOrNull = null;
         clearPersonalScheduleDraft();
+        if (wasEditorVisible)
+        {
+            restoreInspectorPaneStateAfterPersonalScheduleEditing();
+        }
+
         if (hadVisibleState)
         {
             raisePersonalScheduleOverlayStateChanged();
@@ -404,6 +406,18 @@ internal sealed partial class PlannerWorkspaceViewModel
         raisePropertyChanged(nameof(IsPersonalScheduleOverlayVisible));
         raisePropertyChanged(nameof(IsWorkspaceInteractionEnabled));
         raisePropertyChanged(nameof(PersonalScheduleDeletionDescription));
+    }
+
+    private void rememberInspectorPaneStateBeforePersonalScheduleEditing()
+    {
+        mWasInspectorPaneOpenBeforePersonalScheduleEditing =
+            IsInspectorPaneOpen;
+    }
+
+    private void restoreInspectorPaneStateAfterPersonalScheduleEditing()
+    {
+        IsInspectorPaneOpen =
+            mWasInspectorPaneOpenBeforePersonalScheduleEditing;
     }
 
 }

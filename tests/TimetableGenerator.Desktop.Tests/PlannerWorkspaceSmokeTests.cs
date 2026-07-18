@@ -485,6 +485,72 @@ public sealed class PlannerWorkspaceSmokeTests
     }
 
     [AvaloniaFact]
+    public void PlanTabRenameCommandTargetsTheClickedPlan()
+    {
+        using (PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace())
+        {
+            PlanId activePlanId = workspace.ActivePlan.PlanId;
+            PlanTabItem planToRename = workspace.Plans[1];
+            PlanId renamedPlanId = planToRename.PlanId;
+
+            planToRename.RenameCommand.Execute(null);
+
+            Assert.True(workspace.IsRenamingPlan);
+            Assert.Equal(planToRename.DisplayName, workspace.PlanNameDraft);
+            Assert.Equal(activePlanId, workspace.ActivePlan.PlanId);
+
+            workspace.PlanNameDraft = "오후 수업 시간표";
+            workspace.ConfirmRenamePlanCommand.Execute(null);
+
+            Assert.False(workspace.IsRenamingPlan);
+            Assert.Equal(activePlanId, workspace.ActivePlan.PlanId);
+            Assert.Contains(
+                workspace.Plans,
+                plan => plan.PlanId == renamedPlanId
+                    && plan.DisplayName == "오후 수업 시간표");
+        }
+    }
+
+    [AvaloniaFact]
+    public void DuplicatePlanNameShowsSpecificValidationMessage()
+    {
+        using (PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace())
+        {
+            string existingPlanName = workspace.Plans[0].DisplayName;
+            PlanTabItem planToRename = workspace.Plans[1];
+            planToRename.RenameCommand.Execute(null);
+            workspace.PlanNameDraft = existingPlanName.ToUpperInvariant();
+
+            workspace.ConfirmRenamePlanCommand.Execute(null);
+
+            Assert.True(workspace.IsRenamingPlan);
+            Assert.Equal(
+                "같은 이름의 시간표가 이미 있습니다.",
+                workspace.PlanNameValidationMessage);
+        }
+    }
+
+    [AvaloniaFact]
+    public void NewPlanUsesAnAvailableDefaultName()
+    {
+        using (PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace())
+        {
+            workspace.BeginRenamePlanCommand.Execute(null);
+            workspace.PlanNameDraft = "새 계획 3";
+            workspace.ConfirmRenamePlanCommand.Execute(null);
+
+            workspace.AddPlanCommand.Execute(null);
+
+            Assert.Equal("새 계획 1", workspace.ActivePlan.DisplayName);
+            Assert.Equal(3, workspace.Plans.Count);
+            Assert.True(workspace.IsRenamingPlan);
+        }
+    }
+
+    [AvaloniaFact]
     public void ClosingAPlanTargetsTheVisibleTabAndProtectsTheLastPlan()
     {
         using (PlannerWorkspaceViewModel workspace =

@@ -17,7 +17,7 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private PlanTabItem mActivePlan;
 
-    private bool mIsRenamingPlan;
+    private PlanTabItem? mPlanBeingRenamedOrNull;
 
     private PlanTabItem? mPlanPendingDeletionOrNull;
 
@@ -47,7 +47,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return mIsRenamingPlan;
+            return mPlanBeingRenamedOrNull != null;
         }
     }
 
@@ -264,10 +264,10 @@ internal sealed partial class PlannerWorkspaceViewModel
     private void addPlan()
     {
         throwIfDisposed();
-        int nextPlanNumber = Plans.Count + 1;
+        PlanName availablePlanName = findAvailableNewPlanName();
         mSession.AddPlan(
             PlanId.CreateNew(),
-            new PlanName("새 계획 " + nextPlanNumber));
+            availablePlanName);
         rebuildPlanItemsAndNotify();
         beginRenamePlan();
         afterWorkspaceMutation();
@@ -275,40 +275,66 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private void beginRenamePlan()
     {
-        PlanNameDraft = ActivePlan.DisplayName;
+        beginRenamePlan(ActivePlan);
+    }
+
+    private void beginRenamePlan(PlanTabItem plan)
+    {
+        throwIfDisposed();
+        requirePlanItem(plan);
+        PlanNameDraft = plan.DisplayName;
         clearPlanNameValidationMessage();
         clearPlanPendingDeletion();
         clearPlanPendingClear();
-        showRenamePlanEditor();
+        showRenamePlanEditor(plan);
     }
 
     private void confirmRenamePlan()
     {
         throwIfDisposed();
-        if (IsRenamingPlan == false)
+        PlanTabItem? planBeingRenamedOrNull = mPlanBeingRenamedOrNull;
+        if (planBeingRenamedOrNull == null)
         {
             return;
         }
 
+        PlanName newName;
         try
         {
-            PlanName newName = new PlanName(PlanNameDraft);
-            mSession.RenamePlan(ActivePlan.PlanId, newName);
-            rebuildPlanItemsAndNotify();
-            hideRenamePlanEditor();
-            afterWorkspaceMutation();
+            newName = new PlanName(PlanNameDraft);
         }
         catch (ArgumentException)
         {
-            mPlanNameValidationMessage = "계획 이름은 1~80자로 입력해 주세요.";
-            raisePropertyChanged(nameof(PlanNameValidationMessage));
-            raisePropertyChanged(nameof(HasPlanNameValidationMessage));
+            showInvalidPlanNameValidationMessage();
+            return;
         }
+
+        if (hasOtherPlanWithName(planBeingRenamedOrNull.PlanId, newName))
+        {
+            showDuplicatePlanNameValidationMessage();
+            return;
+        }
+
+        if (planBeingRenamedOrNull.Name == newName)
+        {
+            hideRenamePlanEditor();
+            return;
+        }
+
+        PlanId renamedPlanId = planBeingRenamedOrNull.PlanId;
+        hideRenamePlanEditor();
+        mSession.RenamePlan(renamedPlanId, newName);
+        rebuildPlanItemsAndNotify();
+        afterWorkspaceMetadataMutation();
     }
 
     private void cancelRenamePlan()
     {
-        PlanNameDraft = ActivePlan.DisplayName;
+        if (mPlanBeingRenamedOrNull != null)
+        {
+            PlanNameDraft = mPlanBeingRenamedOrNull.DisplayName;
+        }
+
         clearPlanNameValidationMessage();
         hideRenamePlanEditor();
     }
@@ -436,6 +462,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                     plan,
                     mCatalogProjection,
                     closeAvailability,
+                    beginRenamePlan,
                     requestClosePlan));
             }
         }
@@ -474,20 +501,69 @@ internal sealed partial class PlannerWorkspaceViewModel
             nameof(plan));
     }
 
-    private void showRenamePlanEditor()
+    private PlanName findAvailableNewPlanName()
     {
-        if (setProperty(ref mIsRenamingPlan, true, nameof(IsRenamingPlan)))
+        int planNumber = 1;
+        while (true)
         {
-            raisePlanEditingStateChanged();
+            PlanName candidateName = new PlanName("새 계획 " + planNumber);
+            if (hasPlanWithName(candidateName) == false)
+            {
+                return candidateName;
+            }
+
+            ++planNumber;
         }
+    }
+
+    private bool hasPlanWithName(PlanName name)
+    {
+        foreach (PlanningPlan plan in mSession.Workspace.Plans)
+        {
+            if (StringComparer.OrdinalIgnoreCase.Equals(
+                plan.Name.Value,
+                name.Value))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool hasOtherPlanWithName(PlanId excludedPlanId, PlanName name)
+    {
+        foreach (PlanningPlan plan in mSession.Workspace.Plans)
+        {
+            if (plan.Id != excludedPlanId
+                && StringComparer.OrdinalIgnoreCase.Equals(
+                    plan.Name.Value,
+                    name.Value))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void showRenamePlanEditor(PlanTabItem plan)
+    {
+        mPlanBeingRenamedOrNull = plan;
+        raisePropertyChanged(nameof(IsRenamingPlan));
+        raisePlanEditingStateChanged();
     }
 
     private void hideRenamePlanEditor()
     {
-        if (setProperty(ref mIsRenamingPlan, false, nameof(IsRenamingPlan)))
+        if (mPlanBeingRenamedOrNull == null)
         {
-            raisePlanEditingStateChanged();
+            return;
         }
+
+        mPlanBeingRenamedOrNull = null;
+        raisePropertyChanged(nameof(IsRenamingPlan));
+        raisePlanEditingStateChanged();
     }
 
     private void clearPlanPendingDeletion()
@@ -538,6 +614,20 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
 
         mPlanNameValidationMessage = string.Empty;
+        raisePropertyChanged(nameof(PlanNameValidationMessage));
+        raisePropertyChanged(nameof(HasPlanNameValidationMessage));
+    }
+
+    private void showInvalidPlanNameValidationMessage()
+    {
+        mPlanNameValidationMessage = "시간표 이름은 1~80자로 입력해 주세요.";
+        raisePropertyChanged(nameof(PlanNameValidationMessage));
+        raisePropertyChanged(nameof(HasPlanNameValidationMessage));
+    }
+
+    private void showDuplicatePlanNameValidationMessage()
+    {
+        mPlanNameValidationMessage = "같은 이름의 시간표가 이미 있습니다.";
         raisePropertyChanged(nameof(PlanNameValidationMessage));
         raisePropertyChanged(nameof(HasPlanNameValidationMessage));
     }

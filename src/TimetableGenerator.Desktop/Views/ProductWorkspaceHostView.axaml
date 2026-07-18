@@ -40,7 +40,26 @@
             </TabStrip.Styles>
             <TabStrip.ItemTemplate>
               <DataTemplate x:DataType="models:PlanTabItem">
-                <StackPanel Orientation="Horizontal" Spacing="8">
+                <StackPanel
+                    x:Name="PlanTabContent"
+                    Orientation="Horizontal"
+                    Spacing="8">
+                  <StackPanel.ContextMenu>
+                    <ContextMenu
+                        x:DataType="models:PlanTabItem"
+                        DataContext="{Binding #PlanTabContent.DataContext}">
+                      <MenuItem
+                          Header="이름 변경"
+                          Command="{Binding RenameCommand}">
+                        <MenuItem.Icon>
+                          <icons:FluentIcon
+                              Icon="Edit"
+                              IconVariant="Regular"
+                              FontSize="17" />
+                        </MenuItem.Icon>
+                      </MenuItem>
+                    </ContextMenu>
+                  </StackPanel.ContextMenu>
                   <TextBlock
                       MaxWidth="160"
                       VerticalAlignment="Center"
@@ -127,7 +146,7 @@
         IsPaneOpen="{Binding IsCoursePaneOpen, Mode=TwoWay}"
         OpenPaneLength="{Binding CoursePaneWidth}"
         PaneBackground="{DynamicResource PaneSurfaceBrush}"
-        UseLightDismissOverlayMode="True">
+        UseLightDismissOverlayMode="{Binding IsWorkspaceInteractionEnabled}">
       <SplitView.Pane>
         <views:CourseBrowserView />
       </SplitView.Pane>
@@ -139,7 +158,7 @@
             IsPaneOpen="{Binding IsInspectorPaneOpen, Mode=TwoWay}"
             OpenPaneLength="{Binding InspectorPaneWidth}"
             PaneBackground="{DynamicResource PaneSurfaceBrush}"
-            UseLightDismissOverlayMode="True">
+            UseLightDismissOverlayMode="{Binding IsWorkspaceInteractionEnabled}">
           <SplitView.Pane>
             <views:PlanInspectorView />
           </SplitView.Pane>
@@ -172,22 +191,22 @@
            CornerRadius="12"
            KeyboardNavigation.TabNavigation="Cycle"
            AutomationProperties.ControlTypeOverride="Window"
-           AutomationProperties.Name="계획 편집 대화상자">
+           AutomationProperties.Name="시간표 편집 대화상자">
         <Grid>
           <StackPanel
               IsVisible="{Binding IsRenamingPlan}"
               Spacing="14"
-              AutomationProperties.Name="계획 이름 바꾸기">
+              AutomationProperties.Name="시간표 이름 변경">
             <TextBlock
                 AutomationProperties.HeadingLevel="1"
                 FontSize="21"
                 FontWeight="SemiBold"
-                Text="계획 이름 바꾸기" />
+                Text="시간표 이름 변경" />
             <TextBox
                 x:Name="PlanNameEditor"
                 MaxLength="80"
                 Text="{Binding PlanNameDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                AutomationProperties.Name="계획 이름">
+                AutomationProperties.Name="시간표 이름">
               <TextBox.KeyBindings>
                 <KeyBinding Gesture="Enter" Command="{Binding ConfirmRenamePlanCommand}" />
                 <KeyBinding Gesture="Escape" Command="{Binding CancelRenamePlanCommand}" />

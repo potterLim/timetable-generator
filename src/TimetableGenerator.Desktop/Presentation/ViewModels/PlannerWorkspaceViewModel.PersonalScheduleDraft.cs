@@ -186,7 +186,6 @@ internal sealed partial class PlannerWorkspaceViewModel
         raisePropertyChanged(nameof(PersonalScheduleValidationError));
         raisePropertyChanged(nameof(HasPersonalScheduleValidationMessage));
         raisePropertyChanged(nameof(PersonalScheduleEditorHeading));
-        raisePropertyChanged(nameof(PersonalScheduleEditorDescription));
         raisePropertyChanged(nameof(PersonalScheduleSaveButtonText));
     }
 

@@ -314,6 +314,23 @@ public sealed class ProductWorkspaceInteractionTests
                     AccessibilityView.Raw,
                     AutomationProperties.GetAccessibilityView(displayText));
 
+                StackPanel contextMenuOwner = planTab.GetVisualDescendants()
+                    .OfType<StackPanel>()
+                    .Single(
+                        candidate => candidate.ContextMenu != null);
+                ContextMenu? contextMenuOrNull = contextMenuOwner.ContextMenu;
+                Assert.NotNull(contextMenuOrNull);
+                if (contextMenuOrNull == null)
+                {
+                    throw new InvalidOperationException(
+                        "The plan tab did not expose its context menu.");
+                }
+
+                MenuItem renameMenuItem = Assert.Single(
+                    contextMenuOrNull.Items.OfType<MenuItem>());
+                Assert.Equal("이름 변경", renameMenuItem.Header);
+                Assert.Same(plan.RenameCommand, renameMenuItem.Command);
+
                 Button closeButton = planTab.GetVisualDescendants()
                     .OfType<Button>()
                     .Single();

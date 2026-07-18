@@ -51,20 +51,13 @@
     </Style>
   </UserControl.Styles>
 
-  <Grid RowDefinitions="Auto,18,*,12,Auto,16,Auto">
+  <Grid RowDefinitions="Auto,20,*,12,Auto,16,Auto">
     <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="16">
-      <StackPanel Spacing="7">
-        <TextBlock
-            FontSize="22"
-            FontWeight="SemiBold"
-            Text="{Binding PersonalScheduleEditorHeading}"
-            AutomationProperties.HeadingLevel="1" />
-        <TextBlock
-            Classes="secondary"
-            Text="{Binding PersonalScheduleEditorDescription}"
-            TextWrapping="Wrap"
-            ToolTip.Tip="{Binding PersonalScheduleEditorDescription}" />
-      </StackPanel>
+      <TextBlock
+          FontSize="22"
+          FontWeight="SemiBold"
+          Text="{Binding PersonalScheduleEditorHeading}"
+          AutomationProperties.HeadingLevel="1" />
       <Button
           x:Name="ClosePersonalScheduleEditorButton"
           Grid.Column="1"

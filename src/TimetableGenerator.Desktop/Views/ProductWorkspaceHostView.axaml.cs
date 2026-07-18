@@ -4,6 +4,7 @@ using System.Linq;
 
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
@@ -241,7 +242,28 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
             return;
         }
 
+        if (focusActivePlanTab())
+        {
+            return;
+        }
+
         focusButton("AddPlanButton");
+    }
+
+    private bool focusActivePlanTab()
+    {
+        if (mWorkspaceOrNull == null)
+        {
+            return false;
+        }
+
+        TabStripItem? activePlanTabOrNull = this.GetVisualDescendants()
+            .OfType<TabStripItem>()
+            .FirstOrDefault(
+                candidate => ReferenceEquals(
+                    candidate.DataContext,
+                    mWorkspaceOrNull.ActivePlan));
+        return activePlanTabOrNull != null && activePlanTabOrNull.Focus();
     }
 
     private void focusPersonalScheduleControlWhenRequired()
@@ -356,6 +378,17 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
             && returnTargetOrNull.IsEnabled
             && returnTargetOrNull.IsAttachedToVisualTree()
             && returnTargetOrNull.Focus())
+        {
+            return;
+        }
+
+        Button? inspectorAddButtonOrNull = this.FindControl<Button>(
+            "AddPersonalScheduleButton");
+        if (mWorkspaceOrNull != null
+            && mWorkspaceOrNull.IsInspectorPaneOpen
+            && inspectorAddButtonOrNull != null
+            && inspectorAddButtonOrNull.IsEffectivelyVisible
+            && inspectorAddButtonOrNull.Focus())
         {
             return;
         }

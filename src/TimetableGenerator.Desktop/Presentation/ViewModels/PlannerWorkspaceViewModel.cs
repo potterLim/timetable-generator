@@ -232,6 +232,12 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         mAutosaveQueue.RequestSave(mSession.Workspace);
     }
 
+    private void afterWorkspaceMetadataMutation()
+    {
+        raisePropertyChanged(nameof(DisplayedScheduleBoard));
+        mAutosaveQueue.RequestSave(mSession.Workspace);
+    }
+
     private void throwIfDisposed()
     {
         if (mIsDisposed)
