@@ -17,7 +17,6 @@
     ExtendClientAreaTitleBarHeightHint="56"
     ShowInTaskbar="True"
     WindowDecorationsTheme="{StaticResource ProductWindowDecorationsTheme}"
-    WindowDecorations="Full"
     WindowStartupLocation="CenterScreen"
     AutomationProperties.Name="{Binding AccessibleWindowName}">
   <Grid
@@ -32,7 +31,7 @@
         BorderThickness="0,0,0,1"
         AutomationProperties.LandmarkType="Banner"
         WindowDecorationProperties.ElementRole="TitleBar">
-      <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto" VerticalAlignment="Center">
         <Grid
             Grid.Column="0"
             ColumnDefinitions="28,Auto"
@@ -112,6 +111,67 @@
                 IsVisible="{Binding #ProductWindow.Appearance.IsDarkThemeSelected}" />
           </Grid>
         </Button>
+
+        <StackPanel
+            x:Name="ProductCaptionButtons"
+            Grid.Column="3"
+            Height="30"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center"
+            IsVisible="{Binding #ProductWindow.UsesProductCaptionControls}"
+            Orientation="Horizontal"
+            Spacing="2">
+          <Button
+              x:Name="WindowMinimizeButton"
+              Classes="caption-button"
+              Theme="{StaticResource ProductCaptionButtonTheme}"
+              IsEnabled="{Binding #ProductWindow.CanMinimize}"
+              Click="onWindowMinimizeButtonClick"
+              AutomationProperties.AutomationId="WindowMinimizeButton"
+              AutomationProperties.Name="최소화"
+              ToolTip.Tip="최소화"
+              WindowDecorationProperties.ElementRole="MinimizeButton">
+            <icons:FluentIcon
+                Icon="Subtract"
+                IconVariant="Regular"
+                FontSize="12"
+                AutomationProperties.AccessibilityView="Raw" />
+          </Button>
+          <Button
+              x:Name="WindowMaximizeRestoreButton"
+              Classes="caption-button"
+              Theme="{StaticResource ProductCaptionButtonTheme}"
+              IsEnabled="{Binding #ProductWindow.CanMaximize}"
+              Click="onWindowMaximizeRestoreButtonClick"
+              AutomationProperties.AutomationId="WindowMaximizeRestoreButton"
+              AutomationProperties.Name="최대화"
+              ToolTip.Tip="최대화"
+              WindowDecorationProperties.ElementRole="MaximizeButton">
+            <icons:FluentIcon
+                x:Name="WindowMaximizeRestoreIcon"
+                Icon="Square"
+                IconVariant="Regular"
+                FontSize="11"
+                AutomationProperties.AccessibilityView="Raw" />
+          </Button>
+          <Button
+              x:Name="WindowCloseButton"
+              Classes="caption-button"
+              Theme="{StaticResource ProductCaptionButtonTheme}"
+              Background="{DynamicResource CaptionCloseButtonHoverBackgroundBrush}"
+              BorderBrush="{DynamicResource CaptionCloseButtonPressedBackgroundBrush}"
+              Click="onWindowCloseButtonClick"
+              AutomationProperties.AutomationId="WindowCloseButton"
+              AutomationProperties.Name="닫기"
+              ToolTip.Tip="닫기"
+              WindowDecorationProperties.ElementRole="CloseButton">
+            <icons:FluentIcon
+                Icon="Dismiss"
+                IconVariant="Regular"
+                FontSize="12"
+                AutomationProperties.AccessibilityView="Raw" />
+          </Button>
+        </StackPanel>
       </Grid>
     </Border>
 
@@ -325,5 +385,102 @@
         </Border>
       </Border>
     </Grid>
+
+    <Border
+        x:Name="WindowResizeNorth"
+        Grid.RowSpan="2"
+        ZIndex="1000"
+        Height="6"
+        Margin="10,0"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Top"
+        Background="Transparent"
+        IsVisible="{Binding #ProductWindow.UsesProductCaptionControls}"
+        AutomationProperties.AccessibilityView="Raw"
+        WindowDecorationProperties.ElementRole="ResizeN" />
+    <Border
+        x:Name="WindowResizeSouth"
+        Grid.RowSpan="2"
+        ZIndex="1000"
+        Height="6"
+        Margin="10,0"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Bottom"
+        Background="Transparent"
+        IsVisible="{Binding #ProductWindow.UsesProductCaptionControls}"
+        AutomationProperties.AccessibilityView="Raw"
+        WindowDecorationProperties.ElementRole="ResizeS" />
+    <Border
+        x:Name="WindowResizeEast"
+        Grid.RowSpan="2"
+        ZIndex="1000"
+        Width="6"
+        Margin="0,10"
+        HorizontalAlignment="Right"
+        VerticalAlignment="Stretch"
+        Background="Transparent"
+        IsVisible="{Binding #ProductWindow.UsesProductCaptionControls}"
+        AutomationProperties.AccessibilityView="Raw"
+        WindowDecorationProperties.ElementRole="ResizeE" />
+    <Border
+        x:Name="WindowResizeWest"
+        Grid.RowSpan="2"
+        ZIndex="1000"
+        Width="6"
+        Margin="0,10"
+        HorizontalAlignment="Left"
+        VerticalAlignment="Stretch"
+        Background="Transparent"
+        IsVisible="{Binding #ProductWindow.UsesProductCaptionControls}"
+        AutomationProperties.AccessibilityView="Raw"
+        WindowDecorationProperties.ElementRole="ResizeW" />
+    <Border
+        x:Name="WindowResizeNorthEast"
+        Grid.RowSpan="2"
+        ZIndex="1001"
+        Width="12"
+        Height="12"
+        HorizontalAlignment="Right"
+        VerticalAlignment="Top"
+        Background="Transparent"
+        IsVisible="{Binding #ProductWindow.UsesProductCaptionControls}"
+        AutomationProperties.AccessibilityView="Raw"
+        WindowDecorationProperties.ElementRole="ResizeNE" />
+    <Border
+        x:Name="WindowResizeNorthWest"
+        Grid.RowSpan="2"
+        ZIndex="1001"
+        Width="12"
+        Height="12"
+        HorizontalAlignment="Left"
+        VerticalAlignment="Top"
+        Background="Transparent"
+        IsVisible="{Binding #ProductWindow.UsesProductCaptionControls}"
+        AutomationProperties.AccessibilityView="Raw"
+        WindowDecorationProperties.ElementRole="ResizeNW" />
+    <Border
+        x:Name="WindowResizeSouthEast"
+        Grid.RowSpan="2"
+        ZIndex="1001"
+        Width="12"
+        Height="12"
+        HorizontalAlignment="Right"
+        VerticalAlignment="Bottom"
+        Background="Transparent"
+        IsVisible="{Binding #ProductWindow.UsesProductCaptionControls}"
+        AutomationProperties.AccessibilityView="Raw"
+        WindowDecorationProperties.ElementRole="ResizeSE" />
+    <Border
+        x:Name="WindowResizeSouthWest"
+        Grid.RowSpan="2"
+        ZIndex="1001"
+        Width="12"
+        Height="12"
+        HorizontalAlignment="Left"
+        VerticalAlignment="Bottom"
+        Background="Transparent"
+        IsVisible="{Binding #ProductWindow.UsesProductCaptionControls}"
+        AutomationProperties.AccessibilityView="Raw"
+        WindowDecorationProperties.ElementRole="ResizeSW" />
   </Grid>
 </Window>

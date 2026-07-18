@@ -31,6 +31,8 @@ internal sealed partial class MainWindow : Window
 
     public ProductAppearanceViewModel Appearance { get; }
 
+    public bool UsesProductCaptionControls { get; }
+
     public MainWindow(
         ProductShellViewModel productShellViewModel,
         ProductAppearanceViewModel appearance)
@@ -40,8 +42,16 @@ internal sealed partial class MainWindow : Window
 
         mProductShellViewModel = productShellViewModel;
         Appearance = appearance;
+        EWindowChromePlatform windowChromePlatform =
+            WindowChromeLayoutPolicy.FindCurrentPlatform();
+        WindowDecorations = WindowChromeLayoutPolicy.FindWindowDecorations(
+            windowChromePlatform);
+        UsesProductCaptionControls =
+            WindowDecorations
+                == Avalonia.Controls.WindowDecorations.None;
         AvaloniaXamlLoader.Load(this);
         DataContext = mProductShellViewModel;
+        initializeProductCaptionControls();
         applyInitialWindowPlacement();
 
         SizeChanged += onSizeChanged;
@@ -83,6 +93,7 @@ internal sealed partial class MainWindow : Window
         Closing -= onClosing;
         Closed -= onClosed;
         mProductShellViewModel.PropertyChanged -= onProductShellPropertyChanged;
+        disposeProductCaptionControls();
         mProductShellViewModel.Dispose();
         GC.KeepAlive(mStartupTask);
         GC.KeepAlive(mShutdownTask);

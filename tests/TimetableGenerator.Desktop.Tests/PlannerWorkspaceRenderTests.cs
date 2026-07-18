@@ -15,6 +15,7 @@ using Avalonia.Threading;
 using TimetableGenerator.CatalogJson;
 using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
+using TimetableGenerator.Desktop.Presentation.Windowing;
 using TimetableGenerator.Desktop.Product;
 using TimetableGenerator.Desktop.Tests.Presentation.Appearance;
 using TimetableGenerator.Desktop.Tests.Presentation.Catalog;
@@ -43,7 +44,12 @@ public sealed class PlannerWorkspaceRenderTests
         window.Width = REFERENCE_WIDTH;
         window.Height = REFERENCE_HEIGHT;
         Assert.True(window.CanResize);
-        Assert.Equal(WindowDecorations.Full, window.WindowDecorations);
+        EWindowChromePlatform windowChromePlatform =
+            WindowChromeLayoutPolicy.FindCurrentPlatform();
+        Assert.Equal(
+            WindowChromeLayoutPolicy.FindWindowDecorations(
+                windowChromePlatform),
+            window.WindowDecorations);
         Assert.True(window.ExtendClientAreaToDecorationsHint);
         Assert.Equal(56.0, window.ExtendClientAreaTitleBarHeightHint);
         Assert.True(window.ShowInTaskbar);
