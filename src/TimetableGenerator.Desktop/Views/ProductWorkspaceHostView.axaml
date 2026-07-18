@@ -153,12 +153,13 @@
 
       <SplitView.Content>
         <SplitView
+            x:Name="InspectorSplitView"
             PanePlacement="Right"
             DisplayMode="{Binding InspectorPaneDisplayMode}"
             IsPaneOpen="{Binding IsInspectorPaneOpen, Mode=TwoWay}"
             OpenPaneLength="{Binding InspectorPaneWidth}"
             PaneBackground="{DynamicResource PaneSurfaceBrush}"
-            UseLightDismissOverlayMode="{Binding IsWorkspaceInteractionEnabled}">
+            UseLightDismissOverlayMode="False">
           <SplitView.Pane>
             <views:PlanInspectorView />
           </SplitView.Pane>

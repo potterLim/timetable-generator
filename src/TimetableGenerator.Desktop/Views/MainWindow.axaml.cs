@@ -82,7 +82,7 @@ internal sealed partial class MainWindow : Window
             return;
         }
 
-        workspaceOrNull.closeOverlayPanes();
+        workspaceOrNull.closeTransientWorkspaceOverlays();
         eventArgs.Handled = true;
     }
 

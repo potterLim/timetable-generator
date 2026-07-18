@@ -53,6 +53,9 @@ public sealed class WorkspacePanelAccessibilityTests
             ScrollViewer scrollViewer = findRequiredControl<ScrollViewer>(
                 inspector,
                 "PlanInspectorScrollViewer");
+            StackPanel scrollableContent = findRequiredControl<StackPanel>(
+                inspector,
+                "PlanInspectorScrollableContent");
             Border personalScheduleEmptyState = findRequiredControl<Border>(
                 inspector,
                 "PersonalScheduleEmptyState");
@@ -77,6 +80,23 @@ public sealed class WorkspacePanelAccessibilityTests
                 emptyStateTopLeft.Y + personalScheduleEmptyState.Bounds.Height;
             Assert.True(emptyStateTopLeft.Y >= 0.0);
             Assert.True(emptyStateBottom <= scrollViewer.Viewport.Height + 1.0);
+
+            Point? scrollableContentPositionOrNull =
+                scrollableContent.TranslatePoint(
+                    new Point(0.0, 0.0),
+                    scrollViewer);
+            Assert.NotNull(scrollableContentPositionOrNull);
+            if (scrollableContentPositionOrNull == null)
+            {
+                throw new InvalidOperationException(
+                    "The inspector content was not attached to its viewport.");
+            }
+
+            double contentRight = scrollableContentPositionOrNull.Value.X
+                + scrollableContent.Bounds.Width;
+            double contentGutter = scrollViewer.Bounds.Width - contentRight;
+            Assert.InRange(contentGutter, 15.0, 17.0);
+            Assert.Null(inspector.FindControl<Button>("RenameActivePlanButton"));
         }
         finally
         {
@@ -370,7 +390,7 @@ public sealed class WorkspacePanelAccessibilityTests
             Assert.True(closeCoursePane.IsEffectivelyVisible);
             Assert.False(closeInspectorPane.IsEffectivelyVisible);
 
-            workspace.ToggleInspectorPaneCommand.Execute(null);
+            workspace.OpenInspectorPaneCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
 
             Assert.False(workspace.IsCoursePaneOpen);

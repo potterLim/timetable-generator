@@ -191,7 +191,10 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
             if (editorOrNull != null)
             {
                 editorOrNull.Focus();
-                editorOrNull.SelectAll();
+                int caretIndex = editorOrNull.Text?.Length ?? 0;
+                editorOrNull.CaretIndex = caretIndex;
+                editorOrNull.SelectionStart = caretIndex;
+                editorOrNull.SelectionEnd = caretIndex;
             }
 
             return;
@@ -555,7 +558,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         {
             if (eventArgs.Key == Key.Escape)
             {
-                mWorkspaceOrNull.closeOverlayPanes();
+                mWorkspaceOrNull.closeTransientWorkspaceOverlays();
                 eventArgs.Handled = true;
             }
 

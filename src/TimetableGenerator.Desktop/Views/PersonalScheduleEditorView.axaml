@@ -46,7 +46,6 @@
       <Setter Property="BorderThickness" Value="2" />
     </Style>
     <Style Selector="ItemsControl.day-options > ContentPresenter">
-      <Setter Property="Margin" Value="4,0" />
       <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     </Style>
   </UserControl.Styles>
@@ -104,7 +103,7 @@
               AutomationProperties.HelpText="필수 항목이며 여러 요일을 선택할 수 있습니다.">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
-                <UniformGrid Columns="7" Rows="1" />
+                <UniformGrid Columns="7" Rows="1" ColumnSpacing="8" />
               </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>

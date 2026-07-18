@@ -320,8 +320,8 @@ public sealed class PersonalScheduleInteractionTests
             (double Left, double Width) lastDay = dayInputGeometry[^1];
             double trailingMargin = dayOptions.Bounds.Width
                 - (lastDay.Left + lastDay.Width);
-            Assert.InRange(leadingMargin, 2.5, 4.5);
-            Assert.InRange(trailingMargin, 2.5, 4.5);
+            Assert.InRange(leadingMargin, 0.0, 0.5);
+            Assert.InRange(trailingMargin, 0.0, 0.5);
             Assert.InRange(
                 Math.Abs(leadingMargin - trailingMargin),
                 0.0,
@@ -338,6 +338,42 @@ public sealed class PersonalScheduleInteractionTests
                     - (currentDay.Left + currentDay.Width);
                 Assert.InRange(gap, 7.0, 9.0);
             }
+
+            TextBox scheduleNameInput = host.GetVisualDescendants()
+                .OfType<TextBox>()
+                .Single(
+                    candidate => candidate.Name
+                        == "PersonalScheduleNameInput");
+            Avalonia.Point? dayOptionsPositionOrNull = dayOptions.TranslatePoint(
+                new Avalonia.Point(0.0, 0.0),
+                host);
+            Avalonia.Point? nameInputPositionOrNull =
+                scheduleNameInput.TranslatePoint(
+                    new Avalonia.Point(0.0, 0.0),
+                    host);
+            Assert.NotNull(dayOptionsPositionOrNull);
+            Assert.NotNull(nameInputPositionOrNull);
+            if (dayOptionsPositionOrNull == null
+                || nameInputPositionOrNull == null)
+            {
+                throw new InvalidOperationException(
+                    "The personal schedule fields were not attached to the editor.");
+            }
+
+            double dayOptionsRight = dayOptionsPositionOrNull.Value.X
+                + dayOptions.Bounds.Width;
+            double nameInputRight = nameInputPositionOrNull.Value.X
+                + scheduleNameInput.Bounds.Width;
+            Assert.InRange(
+                Math.Abs(
+                    dayOptionsPositionOrNull.Value.X
+                    - nameInputPositionOrNull.Value.X),
+                0.0,
+                0.5);
+            Assert.InRange(
+                Math.Abs(dayOptionsRight - nameInputRight),
+                0.0,
+                0.5);
 
             ProductTimePicker startTimeInput = host.GetVisualDescendants()
                 .OfType<ProductTimePicker>()

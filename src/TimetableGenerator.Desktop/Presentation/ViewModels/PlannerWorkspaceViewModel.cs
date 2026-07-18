@@ -176,8 +176,8 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
             selectNextRecommendation,
             canNavigateRecommendations);
         ToggleCoursePaneCommand = new DelegateCommand(toggleCoursePane);
-        ToggleInspectorPaneCommand = new DelegateCommand(toggleInspectorPane);
         OpenInspectorPaneCommand = new DelegateCommand(openInspectorPane);
+        CloseInspectorPaneCommand = new DelegateCommand(closeInspectorPane);
         BeginRenamePlanCommand = new DelegateCommand(beginRenamePlan);
         mConfirmRenamePlanCommand = new DelegateCommand(confirmRenamePlan);
         CancelRenamePlanCommand = new DelegateCommand(cancelRenamePlan);

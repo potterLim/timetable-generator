@@ -127,7 +127,7 @@
             x:Name="OpenInspectorPaneButton"
             Classes="outline"
             IsVisible="{Binding IsInspectorPaneToggleVisible}"
-            Command="{Binding ToggleInspectorPaneCommand}"
+            Command="{Binding OpenInspectorPaneCommand}"
             AutomationProperties.AutomationId="OpenInspectorPane"
             AutomationProperties.Name="내 계획 패널 열기"
             ToolTip.Tip="내 계획 열기">
@@ -154,7 +154,11 @@
       </StackPanel>
     </Grid>
 
-    <Grid Grid.Row="2" RowDefinitions="Auto,*">
+    <Grid
+        x:Name="ScheduleContentSurface"
+        Grid.Row="2"
+        RowDefinitions="Auto,*"
+        PointerPressed="onScheduleContentSurfacePointerPressed">
       <Border
           x:Name="UnsatisfiedPersonalScheduleBanner"
           Grid.Row="0"

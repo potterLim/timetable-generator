@@ -144,9 +144,9 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     public ICommand ToggleCoursePaneCommand { get; }
 
-    public ICommand ToggleInspectorPaneCommand { get; }
-
     public ICommand OpenInspectorPaneCommand { get; }
+
+    public ICommand CloseInspectorPaneCommand { get; }
 
     internal void applyWorkspaceWidth(WorkspaceWidth workspaceWidth)
     {
@@ -169,7 +169,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         raisePropertyChanged(nameof(LayoutMode));
     }
 
-    internal void closeOverlayPanes()
+    internal void closeTransientWorkspaceOverlays()
     {
         if (IsCourseChoiceEditorVisible)
         {
@@ -193,39 +193,23 @@ internal sealed partial class PlannerWorkspaceViewModel
         {
             IsCoursePaneOpen = false;
         }
-
-        if (InspectorPaneDisplayMode == SplitViewDisplayMode.Overlay)
-        {
-            IsInspectorPaneOpen = false;
-        }
     }
 
     private void toggleCoursePane()
     {
         bool isOpeningCoursePane = IsCoursePaneOpen == false;
-        if (isOpeningCoursePane)
-        {
-            closeInspectorPaneBeforeOpeningCourseOverlay();
-        }
-
         IsCoursePaneOpen = isOpeningCoursePane;
-    }
-
-    private void toggleInspectorPane()
-    {
-        bool isOpeningInspectorPane = IsInspectorPaneOpen == false;
-        if (isOpeningInspectorPane)
-        {
-            closeCoursePaneBeforeOpeningInspectorOverlay();
-        }
-
-        IsInspectorPaneOpen = isOpeningInspectorPane;
     }
 
     private void openInspectorPane()
     {
         closeCoursePaneBeforeOpeningInspectorOverlay();
         IsInspectorPaneOpen = true;
+    }
+
+    private void closeInspectorPane()
+    {
+        IsInspectorPaneOpen = false;
     }
 
     private void configurePanePresentationForLayoutMode()
@@ -276,16 +260,6 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         IsCoursePaneOpen = LayoutMode != EWorkspaceLayoutMode.Compact;
         IsInspectorPaneOpen = false;
-    }
-
-    private void closeInspectorPaneBeforeOpeningCourseOverlay()
-    {
-        bool areBothPanesOverlay = CoursePaneDisplayMode == SplitViewDisplayMode.Overlay
-            && InspectorPaneDisplayMode == SplitViewDisplayMode.Overlay;
-        if (areBothPanesOverlay)
-        {
-            IsInspectorPaneOpen = false;
-        }
     }
 
     private void closeCoursePaneBeforeOpeningInspectorOverlay()

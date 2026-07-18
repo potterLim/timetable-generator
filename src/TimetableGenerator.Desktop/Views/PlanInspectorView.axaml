@@ -34,8 +34,12 @@
       Background="{DynamicResource PaneSurfaceBrush}"
       BorderBrush="{DynamicResource PaneDividerBrush}"
       BorderThickness="1,0,0,0">
-    <Grid Margin="22,20,22,18" RowDefinitions="Auto,12,*">
-      <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="4">
+    <Grid Margin="22,20,0,18" RowDefinitions="Auto,12,*">
+      <Grid
+          Grid.Row="0"
+          Margin="0,0,22,0"
+          ColumnDefinitions="*,Auto,Auto"
+          ColumnSpacing="4">
         <TextBlock
             Classes="title"
             MaxWidth="184"
@@ -45,17 +49,8 @@
             TextTrimming="CharacterEllipsis"
             ToolTip.Tip="{Binding ActivePlan.DisplayName}" />
         <Button
-            x:Name="RenameActivePlanButton"
-            Grid.Column="1"
-            Classes="icon"
-            Command="{Binding BeginRenamePlanCommand}"
-            AutomationProperties.Name="시간표 이름 변경"
-            ToolTip.Tip="이름 변경">
-          <icons:FluentIcon Icon="Edit" IconVariant="Regular" FontSize="17" />
-        </Button>
-        <Button
             x:Name="PlanManagementButton"
-            Grid.Column="2"
+            Grid.Column="1"
             Classes="icon"
             AutomationProperties.Name="현재 계획 관리"
             ToolTip.Tip="계획 관리">
@@ -110,10 +105,10 @@
         </Button>
         <Button
             x:Name="CloseInspectorPaneButton"
-            Grid.Column="3"
+            Grid.Column="2"
             Classes="icon"
             IsVisible="{Binding IsInspectorPaneDismissActionVisible}"
-            Command="{Binding ToggleInspectorPaneCommand}"
+            Command="{Binding CloseInspectorPaneCommand}"
             AutomationProperties.Name="내 계획 패널 닫기"
             ToolTip.Tip="내 계획 닫기">
           <icons:FluentIcon Icon="Dismiss" IconVariant="Regular" FontSize="17" />
@@ -125,7 +120,10 @@
           Grid.Row="2"
           HorizontalScrollBarVisibility="Disabled"
           VerticalScrollBarVisibility="Auto">
-        <StackPanel Spacing="14">
+        <StackPanel
+            x:Name="PlanInspectorScrollableContent"
+            Margin="0,0,16,0"
+            Spacing="14">
           <Grid ColumnDefinitions="*,Auto">
             <TextBlock
                 x:Name="ExpectedCreditsLabel"
