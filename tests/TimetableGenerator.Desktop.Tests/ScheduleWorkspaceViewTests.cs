@@ -158,9 +158,17 @@ public sealed class ScheduleWorkspaceViewTests
                     "The rendered schedule grid was not found.");
             }
 
-            List<TextBlock> dayHeaders = boardGridOrNull.Children
+            Grid? stickyDayHeaderGridOrNull = scheduleBoard.FindControl<Grid>(
+                "BoardStickyDayHeaderGrid");
+            Assert.NotNull(stickyDayHeaderGridOrNull);
+            if (stickyDayHeaderGridOrNull == null)
+            {
+                throw new InvalidOperationException(
+                    "The sticky schedule day header was not found.");
+            }
+
+            List<TextBlock> dayHeaders = stickyDayHeaderGridOrNull.Children
                 .OfType<TextBlock>()
-                .Where(textBlock => Grid.GetRow(textBlock) == 0)
                 .ToList();
             Button scheduleCard = Assert.Single(
                 boardGridOrNull.Children.OfType<Button>());
@@ -677,16 +685,21 @@ public sealed class ScheduleWorkspaceViewTests
 
             TextBlock? exportStatusOrNull =
                 workspaceView.FindControl<TextBlock>("ExportStatusText");
+            Border? exportStatusToastOrNull =
+                workspaceView.FindControl<Border>("ExportStatusToast");
             Assert.NotNull(exportStatusOrNull);
-            if (exportStatusOrNull == null)
+            Assert.NotNull(exportStatusToastOrNull);
+            if (exportStatusOrNull == null || exportStatusToastOrNull == null)
             {
                 throw new InvalidOperationException("The PNG export status was not found.");
             }
 
             TextBlock exportStatus = exportStatusOrNull;
+            Border exportStatusToast = exportStatusToastOrNull;
             exportStatus.Text = "PNG로 저장했습니다.";
-            exportStatus.IsVisible = true;
             exportStatus.Classes.Set("success", true);
+            exportStatusToast.IsVisible = true;
+            exportStatusToast.Classes.Set("success", true);
 
             AsyncDelegateCommand exportCommand = Assert.IsType<AsyncDelegateCommand>(
                 workspaceView.ExportCommand);
@@ -694,10 +707,12 @@ public sealed class ScheduleWorkspaceViewTests
             await exportCommand.ExecutionTask;
             Dispatcher.UIThread.RunJobs();
 
-            Assert.False(exportStatus.IsVisible);
+            Assert.False(exportStatusToast.IsVisible);
             Assert.Equal(string.Empty, exportStatus.Text);
             Assert.DoesNotContain("success", exportStatus.Classes);
             Assert.DoesNotContain("error", exportStatus.Classes);
+            Assert.DoesNotContain("success", exportStatusToast.Classes);
+            Assert.DoesNotContain("error", exportStatusToast.Classes);
         }
         finally
         {
@@ -745,6 +760,107 @@ public sealed class ScheduleWorkspaceViewTests
         {
             window.Close();
         }
+    }
+
+    [AvaloniaFact]
+    public async Task ScheduleCanBeReadAsAnOrderedAccessibleListAsync()
+    {
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+        await workspace.RecommendationRefreshTask;
+        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView();
+        workspaceView.DataContext = workspace;
+
+        Window window = new Window();
+        window.Width = 1_100.0;
+        window.Height = 720.0;
+        window.Content = workspaceView;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            ScheduleBoardView? boardOrNull =
+                workspaceView.FindControl<ScheduleBoardView>("ScheduleBoard");
+            Border? listOrNull =
+                workspaceView.FindControl<Border>("ScheduleListContainer");
+            Button? modeButtonOrNull =
+                workspaceView.FindControl<Button>("ScheduleViewModeButton");
+            TextBlock? modeTextOrNull =
+                workspaceView.FindControl<TextBlock>("ScheduleViewModeText");
+            ItemsControl? listItemsOrNull =
+                workspaceView.FindControl<ItemsControl>("ScheduleListItems");
+            Assert.NotNull(boardOrNull);
+            Assert.NotNull(listOrNull);
+            Assert.NotNull(modeButtonOrNull);
+            Assert.NotNull(modeTextOrNull);
+            Assert.NotNull(listItemsOrNull);
+            if (boardOrNull == null
+                || listOrNull == null
+                || modeButtonOrNull == null
+                || modeTextOrNull == null
+                || listItemsOrNull == null)
+            {
+                throw new InvalidOperationException(
+                    "The schedule presentation controls were not found.");
+            }
+
+            Assert.True(boardOrNull.IsVisible);
+            Assert.False(listOrNull.IsVisible);
+
+            workspaceView.ToggleSchedulePresentationCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(boardOrNull.IsVisible);
+            Assert.True(listOrNull.IsVisible);
+            Assert.Equal("시간표 보기", modeTextOrNull.Text);
+            Assert.Equal(
+                "시간표를 주간 표로 보기",
+                AutomationProperties.GetName(modeButtonOrNull));
+            Assert.Equal(
+                workspace.DisplayedScheduleBoard.ListEntries.Count,
+                listItemsOrNull.ItemCount);
+
+            workspaceView.ToggleSchedulePresentationCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(boardOrNull.IsVisible);
+            Assert.False(listOrNull.IsVisible);
+            Assert.Equal("목록 보기", modeTextOrNull.Text);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [Fact]
+    public void ScheduleListEntriesAreSortedAndOmitUnavailableMetadata()
+    {
+        ScheduleEntry fridayEntry = createScheduleEntry(
+            EDay.Friday,
+            new AcademicPeriod(3));
+        ScheduleEntry mondayEntry = createMetadataAvailabilityEntry(
+            new CourseCode("TST00101"),
+            new KoreanCourseName("정보 없는 수업"),
+            EDay.Monday,
+            new ScheduleInstructorSummary(
+                InstructorAssignmentMetadata.Unconfirmed),
+            new ScheduleLocationSummary(
+                LocationAssignmentMetadata.NotProvided));
+        ScheduleBoardPresentation presentation = createScheduleBoardPresentation(
+            new ScheduleRecommendation(
+                new ScheduleEntry[] { fridayEntry, mondayEntry }));
+
+        Assert.Equal(2, presentation.ListEntries.Count);
+        ScheduleListEntry firstEntry = presentation.ListEntries[0];
+        Assert.Equal(EDay.Monday, firstEntry.Day);
+        Assert.Equal("정보 없는 수업(01)", firstEntry.Title);
+        Assert.False(firstEntry.HasLocation);
+        Assert.False(firstEntry.HasResponsiblePerson);
+        Assert.DoesNotContain("장소", firstEntry.AccessibleName);
+        Assert.DoesNotContain("담당", firstEntry.AccessibleName);
+        Assert.Equal(EDay.Friday, presentation.ListEntries[1].Day);
     }
 
     [AvaloniaFact]

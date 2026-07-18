@@ -76,43 +76,61 @@
       BorderThickness="1"
       ClipToBounds="True"
       Background="{DynamicResource ElevatedSurfaceBrush}">
-    <ScrollViewer
-        x:Name="ScheduleScrollViewer"
-        HorizontalContentAlignment="Stretch"
-        HorizontalScrollBarVisibility="Disabled"
-        VerticalScrollBarVisibility="Auto"
-        AutomationProperties.Name="시간표 시간 스크롤">
-      <Grid x:Name="BoardViewportLayout" ColumnDefinitions="*,16">
-        <Border
-            x:Name="BoardExportSurface"
-            Grid.Column="0"
-            BorderBrush="{DynamicResource BorderBrush}"
-            BorderThickness="0,0,1,0"
-            Background="{DynamicResource ElevatedSurfaceBrush}">
-          <StackPanel Background="{DynamicResource ElevatedSurfaceBrush}">
-            <Border
-                x:Name="BoardContextHeader"
-                Padding="18,15"
-                BorderBrush="{DynamicResource BorderBrush}"
-                BorderThickness="0,0,0,1"
-                Background="{DynamicResource ElevatedSurfaceBrush}">
-              <StackPanel Spacing="3">
-                <TextBlock
-                    FontSize="17"
-                    FontWeight="SemiBold"
-                    Text="{Binding PlanName.Value}"
-                    TextTrimming="CharacterEllipsis" />
-                <TextBlock
-                    Classes="caption"
-                    Text="{Binding InstitutionTermDisplayText}" />
-              </StackPanel>
-            </Border>
-            <Grid
-                x:Name="BoardGrid"
-                Background="{DynamicResource ElevatedSurfaceBrush}" />
-          </StackPanel>
-        </Border>
-      </Grid>
-    </ScrollViewer>
+    <Grid RowDefinitions="Auto,*">
+      <Border
+          x:Name="BoardStickyHeaderContainer"
+          Grid.Row="0"
+          Height="42"
+          BorderBrush="{DynamicResource BorderBrush}"
+          BorderThickness="0,0,0,1"
+          Background="{DynamicResource ElevatedSurfaceBrush}">
+        <Grid ColumnDefinitions="*,16">
+          <Grid
+              x:Name="BoardStickyDayHeaderGrid"
+              Grid.Column="0"
+              Background="{DynamicResource ElevatedSurfaceBrush}" />
+        </Grid>
+      </Border>
+
+      <ScrollViewer
+          x:Name="ScheduleScrollViewer"
+          Grid.Row="1"
+          HorizontalContentAlignment="Stretch"
+          HorizontalScrollBarVisibility="Disabled"
+          VerticalScrollBarVisibility="Auto"
+          AutomationProperties.Name="시간표 시간 스크롤">
+        <Grid x:Name="BoardViewportLayout" ColumnDefinitions="*,16">
+          <Border
+              x:Name="BoardExportSurface"
+              Grid.Column="0"
+              BorderBrush="{DynamicResource BorderBrush}"
+              BorderThickness="0,0,1,0"
+              Background="{DynamicResource ElevatedSurfaceBrush}">
+            <StackPanel Background="{DynamicResource ElevatedSurfaceBrush}">
+              <Border
+                  x:Name="BoardContextHeader"
+                  Padding="18,15"
+                  BorderBrush="{DynamicResource BorderBrush}"
+                  BorderThickness="0,0,0,1"
+                  Background="{DynamicResource ElevatedSurfaceBrush}">
+                <StackPanel Spacing="3">
+                  <TextBlock
+                      FontSize="17"
+                      FontWeight="SemiBold"
+                      Text="{Binding PlanName.Value}"
+                      TextTrimming="CharacterEllipsis" />
+                  <TextBlock
+                      Classes="caption"
+                      Text="{Binding InstitutionTermDisplayText}" />
+                </StackPanel>
+              </Border>
+              <Grid
+                  x:Name="BoardGrid"
+                  Background="{DynamicResource ElevatedSurfaceBrush}" />
+            </StackPanel>
+          </Border>
+        </Grid>
+      </ScrollViewer>
+    </Grid>
   </Border>
 </UserControl>

@@ -37,6 +37,7 @@ internal sealed partial class ScheduleBoardView
                 + entry.SectionDisplayText
                 + Environment.NewLine
                 + "선택하여 과목 상세 정보 보기");
+        ToolTip.SetShowDelay(scheduleCard, 650);
     }
 
     private Flyout createCourseEntryFlyout(CourseScheduleEntry entry)
@@ -57,8 +58,8 @@ internal sealed partial class ScheduleBoardView
             + " · "
             + entry.TimeRange;
         details.Children.Add(createDetailRow("시간", scheduleSummary));
-        details.Children.Add(createDetailRow("교수", entry.InstructorDisplayText));
         details.Children.Add(createDetailRow("장소", entry.LocationDisplayText));
+        details.Children.Add(createDetailRow("교수", entry.InstructorDisplayText));
         return createDetailsFlyout(details, entry.Name + " 과목 상세 정보");
     }
 }

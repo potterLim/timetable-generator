@@ -60,6 +60,7 @@ internal sealed partial class ScheduleBoardView
             entry.Title
                 + Environment.NewLine
                 + "선택하여 일정 상세 정보 보기");
+        ToolTip.SetShowDelay(scheduleCard, 650);
     }
 
     private static string createPersonalScheduleAccessibleName(
@@ -109,14 +110,14 @@ internal sealed partial class ScheduleBoardView
             details.Children.Add(createDetailRow("분반", entry.SectionDisplayText));
         }
 
-        if (entry.HasInstructor)
-        {
-            details.Children.Add(createDetailRow("담당", entry.InstructorDisplayText));
-        }
-
         if (entry.HasLocation)
         {
             details.Children.Add(createDetailRow("장소", entry.LocationDisplayText));
+        }
+
+        if (entry.HasInstructor)
+        {
+            details.Children.Add(createDetailRow("담당", entry.InstructorDisplayText));
         }
 
         Flyout detailsFlyout = createDetailsFlyout(

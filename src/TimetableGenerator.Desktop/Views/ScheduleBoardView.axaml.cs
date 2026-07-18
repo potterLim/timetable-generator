@@ -35,6 +35,12 @@ internal sealed partial class ScheduleBoardView : UserControl
 
     private readonly Border mBoardContextHeader;
 
+    private readonly Border mBoardStickyHeaderContainer;
+
+    private readonly Grid mBoardStickyDayHeaderGrid;
+
+    private bool mIsPngExport;
+
     private ScheduleBoardLayout mRenderedLayout;
 
     internal ScheduleBoardLayout RenderedLayout
@@ -72,9 +78,15 @@ internal sealed partial class ScheduleBoardView : UserControl
             "BoardExportSurface");
         Border? boardContextHeaderOrNull = this.FindControl<Border>(
             "BoardContextHeader");
+        Border? boardStickyHeaderContainerOrNull = this.FindControl<Border>(
+            "BoardStickyHeaderContainer");
+        Grid? boardStickyDayHeaderGridOrNull = this.FindControl<Grid>(
+            "BoardStickyDayHeaderGrid");
         Grid? boardGridOrNull = this.FindControl<Grid>("BoardGrid");
         if (boardExportSurfaceOrNull == null
             || boardContextHeaderOrNull == null
+            || boardStickyHeaderContainerOrNull == null
+            || boardStickyDayHeaderGridOrNull == null
             || boardGridOrNull == null)
         {
             throw new InvalidOperationException(
@@ -84,6 +96,8 @@ internal sealed partial class ScheduleBoardView : UserControl
         mBoardExportSurface = boardExportSurfaceOrNull;
         mBoardContextHeader = boardContextHeaderOrNull;
         mBoardContextHeader.IsVisible = false;
+        mBoardStickyHeaderContainer = boardStickyHeaderContainerOrNull;
+        mBoardStickyDayHeaderGrid = boardStickyDayHeaderGridOrNull;
         mBoardGrid = boardGridOrNull;
         mRenderedLayout = ScheduleBoardLayout.Default;
         DataContextChanged += onDataContextChanged;
@@ -94,7 +108,9 @@ internal sealed partial class ScheduleBoardView : UserControl
     internal static ScheduleBoardView createForPngExport()
     {
         ScheduleBoardView scheduleBoard = new ScheduleBoardView();
+        scheduleBoard.mIsPngExport = true;
         scheduleBoard.mBoardContextHeader.IsVisible = true;
+        scheduleBoard.mBoardStickyHeaderContainer.IsVisible = false;
         return scheduleBoard;
     }
 
@@ -160,7 +176,9 @@ internal sealed partial class ScheduleBoardView : UserControl
         mBoardGrid.Children.Clear();
         mBoardGrid.ColumnDefinitions.Clear();
         mBoardGrid.RowDefinitions.Clear();
-        mBoardGrid.MinHeight = HEADER_ROW_HEIGHT
+        mBoardStickyDayHeaderGrid.Children.Clear();
+        mBoardStickyDayHeaderGrid.ColumnDefinitions.Clear();
+        mBoardGrid.MinHeight = findBoardGridHeaderRowHeight()
             + (mRenderedLayout.TimeAxis.IncrementCount
                 * TIME_INCREMENT_ROW_HEIGHT);
 
@@ -196,7 +214,9 @@ internal sealed partial class ScheduleBoardView : UserControl
         }
 
         RowDefinition headerRow = new RowDefinition();
-        headerRow.Height = new GridLength(HEADER_ROW_HEIGHT, GridUnitType.Pixel);
+        headerRow.Height = new GridLength(
+            findBoardGridHeaderRowHeight(),
+            GridUnitType.Pixel);
         mBoardGrid.RowDefinitions.Add(headerRow);
 
         for (int incrementIndex = 0;
@@ -246,9 +266,11 @@ internal sealed partial class ScheduleBoardView : UserControl
             int rowIndex = 1
                 + mRenderedLayout.TimeAxis.FindBoundaryRowOffset(labelTime);
             Border timeGuide = new Border();
-            timeGuide.BorderBrush = findBrush("BorderBrush");
+            string gridLineBrushKey = labelTime.IsFullHour
+                ? "ScheduleHourGridLineBrush"
+                : "ScheduleHalfHourGridLineBrush";
+            timeGuide.BorderBrush = findBrush(gridLineBrushKey);
             timeGuide.BorderThickness = new Thickness(0.0, 1.0, 0.0, 0.0);
-            timeGuide.Opacity = labelTime.IsFullHour ? 0.72 : 0.38;
             Grid.SetRow(timeGuide, rowIndex);
             Grid.SetColumnSpan(timeGuide, totalColumnCount);
             mBoardGrid.Children.Add(timeGuide);
@@ -257,6 +279,12 @@ internal sealed partial class ScheduleBoardView : UserControl
 
     private void addDayHeaders()
     {
+        if (mIsPngExport == false)
+        {
+            addStickyDayHeaders();
+            return;
+        }
+
         foreach (ScheduleBoardDay day in mRenderedLayout.DayRange.Days)
         {
             TextBlock dayHeader = new TextBlock();
@@ -268,6 +296,50 @@ internal sealed partial class ScheduleBoardView : UserControl
             Grid.SetRow(dayHeader, 0);
             Grid.SetColumn(dayHeader, day.ColumnIndex);
             mBoardGrid.Children.Add(dayHeader);
+        }
+    }
+
+    private void addStickyDayHeaders()
+    {
+        ColumnDefinition timeColumn = new ColumnDefinition();
+        timeColumn.Width = new GridLength(TIME_COLUMN_WIDTH, GridUnitType.Pixel);
+        mBoardStickyDayHeaderGrid.ColumnDefinitions.Add(timeColumn);
+
+        for (int dayIndex = 0;
+            dayIndex < mRenderedLayout.DayRange.DayCount;
+            ++dayIndex)
+        {
+            ColumnDefinition dayColumn = new ColumnDefinition();
+            dayColumn.Width = new GridLength(1.0, GridUnitType.Star);
+            mBoardStickyDayHeaderGrid.ColumnDefinitions.Add(dayColumn);
+        }
+
+        int totalColumnCount = mRenderedLayout.DayRange.TotalColumnCount;
+        for (int columnIndex = 0;
+            columnIndex < totalColumnCount;
+            ++columnIndex)
+        {
+            Border columnGuide = new Border();
+            columnGuide.BorderBrush = findBrush("BorderBrush");
+            columnGuide.BorderThickness = new Thickness(
+                0.0,
+                0.0,
+                columnIndex < totalColumnCount - 1 ? 1.0 : 0.0,
+                0.0);
+            Grid.SetColumn(columnGuide, columnIndex);
+            mBoardStickyDayHeaderGrid.Children.Add(columnGuide);
+        }
+
+        foreach (ScheduleBoardDay day in mRenderedLayout.DayRange.Days)
+        {
+            TextBlock dayHeader = new TextBlock();
+            dayHeader.Text = day.ShortDisplayName;
+            dayHeader.FontSize = 14.0;
+            dayHeader.FontWeight = FontWeight.SemiBold;
+            dayHeader.HorizontalAlignment = HorizontalAlignment.Center;
+            dayHeader.VerticalAlignment = VerticalAlignment.Center;
+            Grid.SetColumn(dayHeader, day.ColumnIndex);
+            mBoardStickyDayHeaderGrid.Children.Add(dayHeader);
         }
     }
 
@@ -316,5 +388,10 @@ internal sealed partial class ScheduleBoardView : UserControl
         }
 
         return brush;
+    }
+
+    private double findBoardGridHeaderRowHeight()
+    {
+        return mIsPngExport ? HEADER_ROW_HEIGHT : 0.0;
     }
 }
