@@ -64,7 +64,8 @@
                     Background="Transparent"
                     BorderBrush="Transparent"
                     Click="onPlanManagementActionClick"
-                    Command="{Binding BeginRenamePlanCommand}">
+                    Command="{Binding BeginRenamePlanCommand}"
+                    AutomationProperties.Name="현재 계획 이름 바꾸기">
                   <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="9">
                     <icons:FluentIcon Icon="Edit" IconVariant="Regular" FontSize="17" />
                     <TextBlock Text="이름 바꾸기" />
@@ -79,7 +80,8 @@
                     Foreground="{DynamicResource ErrorBrush}"
                     IsEnabled="{Binding CanClearActivePlan}"
                     Click="onPlanManagementActionClick"
-                    Command="{Binding BeginClearActivePlanCommand}">
+                    Command="{Binding BeginClearActivePlanCommand}"
+                    AutomationProperties.Name="현재 계획 비우기">
                   <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="9">
                     <icons:FluentIcon Icon="Delete" IconVariant="Regular" FontSize="17" />
                     <TextBlock Text="계획 비우기" />
@@ -93,7 +95,8 @@
                     Foreground="{DynamicResource ErrorBrush}"
                     IsEnabled="{Binding CanDeleteActivePlan}"
                     Click="onPlanManagementActionClick"
-                    Command="{Binding BeginDeletePlanCommand}">
+                    Command="{Binding BeginDeletePlanCommand}"
+                    AutomationProperties.Name="현재 계획 닫기">
                   <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="9">
                     <icons:FluentIcon Icon="Dismiss" IconVariant="Regular" FontSize="17" />
                     <TextBlock Text="계획 닫기" />
@@ -176,7 +179,8 @@
                   Classes="outline"
                   Margin="0,4,0,0"
                   HorizontalAlignment="Left"
-                  Command="{Binding BeginAddPersonalScheduleCommand}">
+                  Command="{Binding BeginAddPersonalScheduleCommand}"
+                  AutomationProperties.Name="개인 일정 추가">
                 <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="7">
                   <icons:FluentIcon Icon="Add" IconVariant="Regular" FontSize="17" />
                   <TextBlock Text="개인 일정 추가" />

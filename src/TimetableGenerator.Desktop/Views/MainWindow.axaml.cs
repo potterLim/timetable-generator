@@ -8,6 +8,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
+using Avalonia.Threading;
 
 using TimetableGenerator.Desktop.Presentation.Appearance;
 using TimetableGenerator.Desktop.Presentation.Layout;
@@ -151,6 +152,21 @@ internal sealed partial class MainWindow : Window
         {
             applyWorkspaceWidth(Bounds.Width);
         }
+        else if (eventArgs.PropertyName
+            == nameof(ProductShellViewModel.HasShutdownError)
+            && mProductShellViewModel.HasShutdownError)
+        {
+            Dispatcher.UIThread.Post(
+                focusContinueEditingButton,
+                DispatcherPriority.Input);
+        }
+    }
+
+    private void focusContinueEditingButton()
+    {
+        Button? continueEditingButtonOrNull =
+            this.FindControl<Button>("ContinueEditingButton");
+        continueEditingButtonOrNull?.Focus();
     }
 
     private void applyWorkspaceWidth(double width)

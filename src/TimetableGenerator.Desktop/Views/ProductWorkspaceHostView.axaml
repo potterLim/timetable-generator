@@ -134,6 +134,7 @@
               Foreground="{DynamicResource ErrorBrush}"
               IsVisible="{Binding HasAutosaveError}"
               Command="{Binding RetryAutosaveCommand}"
+              AutomationProperties.Name="자동 저장 다시 시도"
               ToolTip.Tip="다시 저장">
             <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="8">
               <icons:FluentIcon Icon="ErrorCircle" IconVariant="Regular" FontSize="18" />
@@ -214,17 +215,20 @@
                 x:Name="PlanNameEditor"
                 MaxLength="80"
                 Text="{Binding PlanNameDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                AutomationProperties.Name="시간표 이름">
+                AutomationProperties.Name="시간표 이름"
+                AutomationProperties.HelpText="{Binding PlanNameValidationMessage}">
               <TextBox.KeyBindings>
                 <KeyBinding Gesture="Enter" Command="{Binding ConfirmRenamePlanCommand}" />
                 <KeyBinding Gesture="Escape" Command="{Binding CancelRenamePlanCommand}" />
               </TextBox.KeyBindings>
             </TextBox>
             <TextBlock
+                x:Name="PlanNameValidationMessage"
                 FontSize="12"
                 Foreground="{DynamicResource ErrorBrush}"
                 IsVisible="{Binding HasPlanNameValidationMessage}"
-                Text="{Binding PlanNameValidationMessage}" />
+                Text="{Binding PlanNameValidationMessage}"
+                AutomationProperties.LiveSetting="Assertive" />
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
               <Button
                   Classes="outline"

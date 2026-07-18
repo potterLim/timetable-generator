@@ -488,12 +488,13 @@ public sealed class ProductShellViewModelTests
                 new InvalidOperationException("Expected save failure."));
 
             Assert.True(shell.HasShutdownError);
-            Assert.True(shell.IsProductInteractionEnabled);
+            Assert.False(shell.IsProductInteractionEnabled);
             Assert.Contains("닫지 않았", shell.ShutdownTitle);
 
             shell.DismissShutdownErrorCommand.Execute(null);
 
             Assert.False(shell.IsShutdownOverlayVisible);
+            Assert.True(shell.IsProductInteractionEnabled);
         }
     }
 

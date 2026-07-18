@@ -47,6 +47,10 @@
       <Style Selector="^:pressed /template/ Border#PART_InteractionOverlay">
         <Setter Property="Opacity" Value="0.08" />
       </Style>
+      <Style Selector="^:focus-visible /template/ Border#PART_ScheduleCardSurface">
+        <Setter Property="BorderBrush" Value="{DynamicResource ProductFocusStrokeBrush}" />
+        <Setter Property="BorderThickness" Value="2" />
+      </Style>
     </ControlTheme>
   </UserControl.Resources>
   <UserControl.Styles>

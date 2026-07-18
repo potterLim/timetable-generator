@@ -119,6 +119,11 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
             handlePlanEditingOverlayStateChanged();
         }
         else if (eventArgs.PropertyName
+            == nameof(PlannerWorkspaceViewModel.PlanNameValidationMessage))
+        {
+            focusPlanNameValidationControlWhenRequired();
+        }
+        else if (eventArgs.PropertyName
             == nameof(PlannerWorkspaceViewModel.IsPersonalScheduleEditorVisible))
         {
             handlePersonalScheduleOverlayStateChanged();
@@ -264,6 +269,31 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         }
 
         focusButton("AddPlanButton");
+    }
+
+    private void focusPlanNameValidationControlWhenRequired()
+    {
+        if (mWorkspaceOrNull == null
+            || mWorkspaceOrNull.IsRenamingPlan == false
+            || mWorkspaceOrNull.HasPlanNameValidationMessage == false)
+        {
+            return;
+        }
+
+        Dispatcher.UIThread.Post(
+            focusPlanNameValidationControl,
+            DispatcherPriority.Input);
+    }
+
+    private void focusPlanNameValidationControl()
+    {
+        TextBox? editorOrNull = this.FindControl<TextBox>("PlanNameEditor");
+        if (editorOrNull == null || editorOrNull.Focus() == false)
+        {
+            return;
+        }
+
+        editorOrNull.SelectAll();
     }
 
     private bool focusActivePlanTab()
@@ -567,7 +597,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
     private void onKeyDown(object? senderOrNull, KeyEventArgs eventArgs)
     {
         if (mWorkspaceOrNull != null
-            && mWorkspaceOrNull.IsCourseChoiceEditorVisible)
+            && mWorkspaceOrNull.IsWorkspaceInteractionEnabled == false)
         {
             if (eventArgs.Key == Key.Escape)
             {

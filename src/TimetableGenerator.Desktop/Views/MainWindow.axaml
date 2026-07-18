@@ -78,6 +78,7 @@
             Grid.Column="2"
             Classes="icon"
             Margin="0,0,8,0"
+            IsEnabled="{Binding IsProductInteractionEnabled}"
             AutomationProperties.Name="화면 모드 설정"
             ToolTip.Tip="화면 모드"
             WindowDecorationProperties.ElementRole="User">
@@ -174,7 +175,9 @@
     </Border>
 
     <Grid Grid.Row="1">
-      <Grid IsEnabled="{Binding IsProductInteractionEnabled}">
+      <Grid
+          x:Name="ProductInteractionSurface"
+          IsEnabled="{Binding IsProductInteractionEnabled}">
         <ContentControl
             Content="{Binding WorkspaceOrNull}"
             IsVisible="{Binding IsReady}">
@@ -326,11 +329,13 @@
       </Border>
 
       <Border
+          x:Name="ShutdownOverlay"
           ZIndex="10"
           IsVisible="{Binding IsShutdownOverlayVisible}"
           Background="{DynamicResource OverlayScrimBrush}"
           AutomationProperties.LiveSetting="Assertive">
         <Border
+            x:Name="ShutdownDialog"
             Width="440"
             Padding="32"
             HorizontalAlignment="Center"
@@ -338,7 +343,8 @@
             Background="{DynamicResource ElevatedSurfaceBrush}"
             BorderBrush="{DynamicResource BorderBrush}"
             BorderThickness="1"
-            CornerRadius="12">
+            CornerRadius="12"
+            KeyboardNavigation.TabNavigation="Cycle">
           <StackPanel Spacing="14">
             <ProgressBar
                 Height="4"
@@ -373,6 +379,7 @@
                 TextAlignment="Center"
                 TextWrapping="Wrap" />
             <Button
+                x:Name="ContinueEditingButton"
                 Classes="accent"
                 Margin="0,6,0,0"
                 HorizontalAlignment="Center"

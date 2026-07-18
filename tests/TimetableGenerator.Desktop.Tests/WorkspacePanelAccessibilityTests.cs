@@ -106,6 +106,65 @@ public sealed class WorkspacePanelAccessibilityTests
     }
 
     [AvaloniaFact]
+    public void InspectorComplexContentActionsExposeExplicitAccessibleNames()
+    {
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlanInspectorView inspector = new PlanInspectorView();
+        inspector.DataContext = workspace;
+        Window window = createPanelWindow(inspector);
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Border emptyPlanState = findRequiredControl<Border>(
+                inspector,
+                "EmptyPlanState");
+            Button addPersonalScheduleButton = emptyPlanState
+                .GetVisualDescendants()
+                .OfType<Button>()
+                .Single(
+                    candidate => ReferenceEquals(
+                        candidate.Command,
+                        workspace.BeginAddPersonalScheduleCommand));
+            Assert.Equal(
+                "개인 일정 추가",
+                AutomationProperties.GetName(addPersonalScheduleButton));
+
+            Button managementButton = findRequiredControl<Button>(
+                inspector,
+                "PlanManagementButton");
+            Flyout managementFlyout = Assert.IsType<Flyout>(
+                managementButton.Flyout);
+            managementFlyout.ShowAt(managementButton);
+            Dispatcher.UIThread.RunJobs();
+
+            Control managementContent = Assert.IsAssignableFrom<Control>(
+                managementFlyout.Content);
+            assertActionAccessibleName(
+                managementContent,
+                workspace.BeginRenamePlanCommand,
+                "현재 계획 이름 바꾸기");
+            assertActionAccessibleName(
+                managementContent,
+                workspace.BeginClearActivePlanCommand,
+                "현재 계획 비우기");
+            assertActionAccessibleName(
+                managementContent,
+                workspace.BeginDeletePlanCommand,
+                "현재 계획 닫기");
+            managementFlyout.Hide();
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
     public void WorkspaceListsSkipDecorativeCardFocusAndRetainActionFocus()
     {
         PlannerWorkspaceViewModel workspace =
@@ -479,6 +538,17 @@ public sealed class WorkspacePanelAccessibilityTests
         Dispatcher.UIThread.RunJobs();
         Assert.True(nestedActionOrNull.IsKeyboardFocusWithin);
         Assert.Equal(new Thickness(2.0), nestedActionOrNull.BorderThickness);
+    }
+
+    private static void assertActionAccessibleName(
+        Control root,
+        ICommand command,
+        string expectedName)
+    {
+        Button action = root.GetVisualDescendants()
+            .OfType<Button>()
+            .Single(candidate => ReferenceEquals(candidate.Command, command));
+        Assert.Equal(expectedName, AutomationProperties.GetName(action));
     }
 
     private static Color getRequiredSolidColor(IBrush? brushOrNull)

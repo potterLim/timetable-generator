@@ -1,6 +1,7 @@
 using System.Linq;
 
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
 
@@ -21,7 +22,7 @@ internal sealed partial class CourseChoiceEditorView : UserControl
                 static candidate => candidate.Classes.Contains("preference-choice")
                     && candidate.IsChecked == true);
         if (selectedPreferenceButtonOrNull != null
-            && selectedPreferenceButtonOrNull.Focus())
+            && selectedPreferenceButtonOrNull.Focus(NavigationMethod.Pointer))
         {
             return;
         }
@@ -31,7 +32,7 @@ internal sealed partial class CourseChoiceEditorView : UserControl
             .FirstOrDefault(
                 static candidate => candidate.Classes.Contains("preference-choice"));
         if (firstPreferenceButtonOrNull != null
-            && firstPreferenceButtonOrNull.Focus())
+            && firstPreferenceButtonOrNull.Focus(NavigationMethod.Pointer))
         {
             return;
         }

@@ -47,6 +47,8 @@ public sealed class ScheduleWorkspaceViewTests
         new ColorToken("TextSecondaryBrush");
     private static readonly ColorToken ACCENT =
         new ColorToken("AccentBrush");
+    private static readonly ColorToken FOCUS =
+        new ColorToken("ProductFocusStrokeBrush");
 
     [AvaloniaFact]
     public void ScheduleBoardRendersLateEntriesInsideContinuousTimeAxis()
@@ -389,8 +391,21 @@ public sealed class ScheduleWorkspaceViewTests
                 throw new InvalidOperationException("The schedule detail flyout was not found.");
             }
 
-            bool hasFocusedCard = scheduleCard.Focus();
+            bool hasFocusedCard = scheduleCard.Focus(NavigationMethod.Tab);
             Assert.True(hasFocusedCard);
+            Dispatcher.UIThread.RunJobs();
+            Border focusedCardSurface = scheduleCard.GetVisualDescendants()
+                .OfType<Border>()
+                .Single(
+                    candidate => candidate.Name
+                        == "PART_ScheduleCardSurface");
+            Assert.Equal(new Thickness(2.0), focusedCardSurface.BorderThickness);
+            SolidColorBrush expectedFocusBrush = findRequiredThemeBrush(
+                FOCUS,
+                scheduleCard.ActualThemeVariant);
+            SolidColorBrush actualFocusBrush = Assert.IsType<SolidColorBrush>(
+                focusedCardSurface.BorderBrush);
+            Assert.Equal(expectedFocusBrush.Color, actualFocusBrush.Color);
             window.KeyPress(
                 Key.Enter,
                 RawInputModifiers.None,

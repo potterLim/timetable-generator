@@ -620,6 +620,93 @@ public sealed class ProductWorkspaceInteractionTests
     }
 
     [AvaloniaFact]
+    public void FindShortcutDoesNotChangeTheWorkspaceBehindAModal()
+    {
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+        workspace.applyWorkspaceWidth(new WorkspaceWidth(900.0));
+        if (workspace.IsCoursePaneOpen)
+        {
+            workspace.ToggleCoursePaneCommand.Execute(null);
+        }
+        ProductWorkspaceHostView host = new ProductWorkspaceHostView();
+        host.DataContext = workspace;
+        Window window = createWindow(host, 900.0);
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            workspace.BeginRenamePlanCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            TextBox editor = findRequiredControl<TextBox>(host, "PlanNameEditor");
+            Assert.True(editor.IsKeyboardFocusWithin);
+            Assert.False(workspace.IsCoursePaneOpen);
+
+            window.KeyPress(
+                Key.F,
+                RawInputModifiers.Control,
+                PhysicalKey.F,
+                "f");
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(workspace.IsCoursePaneOpen);
+            Assert.True(editor.IsKeyboardFocusWithin);
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
+    public void InvalidPlanNameReturnsFocusAndAnnouncesTheValidationMessage()
+    {
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+        ProductWorkspaceHostView host = new ProductWorkspaceHostView();
+        host.DataContext = workspace;
+        Window window = createWindow(host, 1200.0);
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            workspace.BeginRenamePlanCommand.Execute(null);
+            workspace.PlanNameDraft = workspace.Plans
+                .Single(plan => plan.PlanId != workspace.ActivePlan.PlanId)
+                .DisplayName;
+            workspace.ConfirmRenamePlanCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            TextBox editor = findRequiredControl<TextBox>(host, "PlanNameEditor");
+            TextBlock validationMessage = findRequiredControl<TextBlock>(
+                host,
+                "PlanNameValidationMessage");
+
+            Assert.True(workspace.HasPlanNameValidationMessage);
+            Assert.True(editor.IsKeyboardFocusWithin);
+            Assert.Equal(0, editor.SelectionStart);
+            Assert.Equal(editor.Text?.Length ?? 0, editor.SelectionEnd);
+            Assert.Equal(
+                workspace.PlanNameValidationMessage,
+                AutomationProperties.GetHelpText(editor));
+            Assert.Equal(
+                AutomationLiveSetting.Assertive,
+                AutomationProperties.GetLiveSetting(validationMessage));
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
     public async Task HeaderActionsFitAndOpenInspectorAtMediumBreakpointAsync()
     {
         const double MEDIUM_BREAKPOINT_WIDTH = 1_080.0;

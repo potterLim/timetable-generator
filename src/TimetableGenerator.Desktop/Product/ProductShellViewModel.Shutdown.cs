@@ -21,7 +21,7 @@ internal sealed partial class ProductShellViewModel
     {
         get
         {
-            return mShutdownState != EShutdownPresentationState.Saving;
+            return mShutdownState == EShutdownPresentationState.Idle;
         }
     }
 
