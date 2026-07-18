@@ -461,7 +461,7 @@
                         MinHeight="40"
                         VerticalAlignment="Top"
                         Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).BeginEditPersonalScheduleCommand}"
-                        CommandParameter="{Binding}"
+                        CommandParameter="{Binding Id}"
                         AutomationProperties.Name="{Binding EditButtonAccessibleName}"
                         ToolTip.Tip="일정 수정">
                       <icons:FluentIcon Icon="Edit" IconVariant="Regular" FontSize="16" />

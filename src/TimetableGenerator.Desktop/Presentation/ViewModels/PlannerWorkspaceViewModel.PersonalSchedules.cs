@@ -260,15 +260,10 @@ internal sealed partial class PlannerWorkspaceViewModel
         raisePersonalScheduleOverlayStateChanged();
     }
 
-    private void beginEditPersonalSchedule(PersonalScheduleItem scheduleItem)
+    private void beginEditPersonalSchedule(PersonalScheduleId scheduleId)
     {
         throwIfDisposed();
-        if (scheduleItem == null)
-        {
-            throw new ArgumentNullException(nameof(scheduleItem));
-        }
-
-        PersonalSchedule schedule = findPersonalSchedule(scheduleItem.Id);
+        PersonalSchedule schedule = findPersonalSchedule(scheduleId);
         closeCourseChoiceEditingState();
         closePlanEditingState();
         clearPersonalScheduleDraft();

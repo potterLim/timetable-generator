@@ -13,6 +13,7 @@ using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Desktop.Presentation.Recommendations;
 using TimetableGenerator.Desktop.Storage;
 using TimetableGenerator.Domain.Catalogs;
+using TimetableGenerator.Domain.Planning;
 using PresentationScheduleRecommendation =
     TimetableGenerator.Desktop.Presentation.Models.ScheduleRecommendation;
 
@@ -158,7 +159,7 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         BeginAddPersonalScheduleCommand = new DelegateCommand(
             beginAddPersonalSchedule);
         BeginEditPersonalScheduleCommand =
-            new ParameterizedCommand<PersonalScheduleItem>(
+            new ParameterizedCommand<PersonalScheduleId>(
                 beginEditPersonalSchedule);
         SavePersonalScheduleCommand = new DelegateCommand(savePersonalSchedule);
         CancelPersonalScheduleEditCommand = new DelegateCommand(

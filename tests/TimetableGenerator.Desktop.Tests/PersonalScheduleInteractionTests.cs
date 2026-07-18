@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 using Avalonia;
 using Avalonia.Automation;
@@ -12,6 +13,9 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+
+using FluentIcons.Avalonia;
+using FluentIcons.Common;
 
 using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
@@ -49,6 +53,7 @@ public sealed class PersonalScheduleInteractionTests
             Assert.False(workspace.IsPersonalScheduleEditorVisible);
             PersonalScheduleItem addedItem = Assert.Single(
                 workspace.ActivePlan.PersonalSchedules);
+            PersonalScheduleId addedScheduleId = addedItem.Id;
             Assert.Equal("랩 미팅", addedItem.Title);
             Assert.Equal("화·목 · 18:00–19:30", addedItem.TimeSummary);
             Assert.Contains("분반 A", addedItem.DetailsSummary);
@@ -61,13 +66,14 @@ public sealed class PersonalScheduleInteractionTests
             workspace.ActivePlan = workspace.Plans[0];
             PersonalScheduleItem itemToEdit = Assert.Single(
                 workspace.ActivePlan.PersonalSchedules);
-            workspace.BeginEditPersonalScheduleCommand.Execute(itemToEdit);
+            workspace.BeginEditPersonalScheduleCommand.Execute(itemToEdit.Id);
             workspace.PersonalScheduleTitleDraft = "연구실 정기 미팅";
             workspace.PersonalScheduleLocationDraft = string.Empty;
             workspace.SavePersonalScheduleCommand.Execute(null);
 
             PersonalScheduleItem editedItem = Assert.Single(
                 workspace.ActivePlan.PersonalSchedules);
+            Assert.Equal(addedScheduleId, editedItem.Id);
             Assert.Equal("연구실 정기 미팅", editedItem.Title);
             Assert.DoesNotContain("느헤미야홀", editedItem.DetailsSummary);
 
@@ -444,7 +450,7 @@ public sealed class PersonalScheduleInteractionTests
                         == itemToEdit.EditButtonAccessibleName);
             Assert.True(editButton.Focus());
 
-            workspace.BeginEditPersonalScheduleCommand.Execute(itemToEdit);
+            workspace.BeginEditPersonalScheduleCommand.Execute(itemToEdit.Id);
             Dispatcher.UIThread.RunJobs();
             workspace.PersonalScheduleTitleDraft = "연구실 정기 미팅";
             workspace.SavePersonalScheduleCommand.Execute(null);
@@ -690,6 +696,104 @@ public sealed class PersonalScheduleInteractionTests
     }
 
     [AvaloniaFact]
+    public void PersonalScheduleDetailsOfferPrefilledEditing()
+    {
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+        workspace.BeginAddPersonalScheduleCommand.Execute(null);
+        workspace.PersonalScheduleTitleDraft = "채플특강 받고";
+        selectPersonalScheduleDay(workspace, EDay.Thursday);
+        selectPersonalScheduleDay(workspace, EDay.Saturday);
+        workspace.PersonalScheduleStartTimeOrNull = new ScheduleTime(20, 0);
+        workspace.PersonalScheduleEndTimeOrNull = new ScheduleTime(20, 30);
+        workspace.PersonalScheduleSectionDraft = "B";
+        workspace.PersonalScheduleInstructorDraft = "담당자";
+        workspace.PersonalScheduleLocationDraft = "오석관";
+        workspace.SavePersonalScheduleCommand.Execute(null);
+        PersonalScheduleItem personalScheduleItem = Assert.Single(
+            workspace.ActivePlan.PersonalSchedules);
+
+        ProductWorkspaceHostView host = new ProductWorkspaceHostView();
+        host.DataContext = workspace;
+        Window window = new Window();
+        window.Width = 1_440.0;
+        window.Height = 900.0;
+        window.Content = host;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            string scheduleCardAutomationIdPrefix =
+                "PersonalScheduleCard:" + personalScheduleItem.Id;
+            Button scheduleCard = host.GetVisualDescendants()
+                .OfType<Button>()
+                .First(
+                    candidate => hasAutomationIdPrefix(
+                        candidate,
+                        scheduleCardAutomationIdPrefix));
+            Flyout detailsFlyout = Assert.IsType<Flyout>(scheduleCard.Flyout);
+            detailsFlyout.ShowAt(scheduleCard);
+            Dispatcher.UIThread.RunJobs();
+
+            Control detailsContent = Assert.IsAssignableFrom<Control>(
+                detailsFlyout.Content);
+            Button editButton = detailsContent.GetVisualDescendants()
+                .OfType<Button>()
+                .Single();
+            Assert.Contains("icon", editButton.Classes);
+            Assert.Equal(36.0, editButton.Width);
+            Assert.Equal(36.0, editButton.Height);
+            Assert.Equal(
+                "EditPersonalScheduleButton:" + personalScheduleItem.Id,
+                AutomationProperties.GetAutomationId(editButton));
+            Assert.Equal(
+                personalScheduleItem.EditButtonAccessibleName,
+                AutomationProperties.GetName(editButton));
+            Assert.Equal("개인 일정 수정", ToolTip.GetTip(editButton));
+            FluentIcon editIcon = Assert.IsType<FluentIcon>(editButton.Content);
+            Assert.Equal(Icon.Edit, editIcon.Icon);
+            Assert.Equal(IconVariant.Regular, editIcon.IconVariant);
+
+            ICommand? editCommandOrNull = editButton.Command;
+            Assert.NotNull(editCommandOrNull);
+            if (editCommandOrNull == null)
+            {
+                throw new InvalidOperationException(
+                    "The personal schedule edit command was missing.");
+            }
+
+            editCommandOrNull.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(detailsFlyout.IsOpen);
+            Assert.True(workspace.IsPersonalScheduleEditorVisible);
+            Assert.Equal("개인 일정 수정", workspace.PersonalScheduleEditorHeading);
+            Assert.Equal("채플특강 받고", workspace.PersonalScheduleTitleDraft);
+            Assert.Equal("B", workspace.PersonalScheduleSectionDraft);
+            Assert.Equal("담당자", workspace.PersonalScheduleInstructorDraft);
+            Assert.Equal("오석관", workspace.PersonalScheduleLocationDraft);
+            Assert.Equal(
+                new ScheduleTime(20, 0),
+                workspace.PersonalScheduleStartTimeOrNull);
+            Assert.Equal(
+                new ScheduleTime(20, 30),
+                workspace.PersonalScheduleEndTimeOrNull);
+            Assert.Equal(
+                new EDay[] { EDay.Thursday, EDay.Saturday },
+                workspace.PersonalScheduleDayOptions
+                    .Where(option => option.IsSelected)
+                    .Select(option => option.Day));
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
     public void EarlyShortScheduleShowsAClockLabelAndUsableTarget()
     {
         DailyTimeRange timeRange = new DailyTimeRange(
@@ -930,6 +1034,18 @@ public sealed class PersonalScheduleInteractionTests
     private static string getTextOrEmpty(TextBlock textBlock)
     {
         return textBlock.Text == null ? string.Empty : textBlock.Text;
+    }
+
+    private static bool hasAutomationIdPrefix(
+        Control control,
+        string automationIdPrefix)
+    {
+        string? automationIdOrNull = AutomationProperties.GetAutomationId(
+            control);
+        return automationIdOrNull != null
+            && automationIdOrNull.StartsWith(
+                automationIdPrefix,
+                StringComparison.Ordinal);
     }
 
     private static ScheduleBoardPresentation createScheduleBoardPresentation(

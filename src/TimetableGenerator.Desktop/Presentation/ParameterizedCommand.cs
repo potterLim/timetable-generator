@@ -4,7 +4,7 @@ using System.Windows.Input;
 namespace TimetableGenerator.Desktop.Presentation;
 
 internal sealed class ParameterizedCommand<T> : ICommand
-    where T : class
+    where T : notnull
 {
     private readonly Action<T> mExecute;
 
@@ -23,13 +23,14 @@ internal sealed class ParameterizedCommand<T> : ICommand
 
     public void Execute(object? parameterOrNull)
     {
-        T? typedParameterOrNull = parameterOrNull as T;
-        if (typedParameterOrNull == null)
+        if (parameterOrNull is not T typedParameter)
         {
-            throw new ArgumentException("The command requires a strongly typed parameter.", nameof(parameterOrNull));
+            throw new ArgumentException(
+                "The command requires a strongly typed parameter.",
+                nameof(parameterOrNull));
         }
 
-        mExecute(typedParameterOrNull);
+        mExecute(typedParameter);
     }
 
     public void NotifyCanExecuteChanged()

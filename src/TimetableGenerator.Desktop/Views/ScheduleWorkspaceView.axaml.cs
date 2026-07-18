@@ -12,6 +12,7 @@ using Avalonia.Platform.Storage;
 using TimetableGenerator.Desktop.Exporting;
 using TimetableGenerator.Desktop.Presentation;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
+using TimetableGenerator.Domain.Planning;
 
 namespace TimetableGenerator.Desktop.Views;
 
@@ -20,6 +21,9 @@ internal sealed partial class ScheduleWorkspaceView : UserControl
     private readonly IControlPngExporter mPngExporter;
 
     private readonly AsyncDelegateCommand mExportCommand;
+
+    private readonly ParameterizedCommand<PersonalScheduleId>
+        mEditPersonalScheduleCommand;
 
     private readonly CancellationTokenSource mLifetimeCancellationSource;
 
@@ -31,13 +35,37 @@ internal sealed partial class ScheduleWorkspaceView : UserControl
         }
     }
 
+    public ICommand EditPersonalScheduleCommand
+    {
+        get
+        {
+            return mEditPersonalScheduleCommand;
+        }
+    }
+
     public ScheduleWorkspaceView()
     {
         mPngExporter = new AvaloniaControlPngExporter(PngExportScale.PRODUCT_QUALITY);
         mLifetimeCancellationSource = new CancellationTokenSource();
         mExportCommand = new AsyncDelegateCommand(exportScheduleAsync, showExportFailure);
+        mEditPersonalScheduleCommand =
+            new ParameterizedCommand<PersonalScheduleId>(
+                beginEditPersonalSchedule);
         AvaloniaXamlLoader.Load(this);
         DetachedFromVisualTree += onDetachedFromVisualTree;
+    }
+
+    private void beginEditPersonalSchedule(PersonalScheduleId scheduleId)
+    {
+        PlannerWorkspaceViewModel? workspaceOrNull =
+            DataContext as PlannerWorkspaceViewModel;
+        if (workspaceOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "Personal schedule editing requires a planning workspace.");
+        }
+
+        workspaceOrNull.BeginEditPersonalScheduleCommand.Execute(scheduleId);
     }
 
     private async Task exportScheduleAsync()

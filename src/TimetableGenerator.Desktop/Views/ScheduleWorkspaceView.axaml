@@ -176,6 +176,7 @@
           IsVisible="{Binding HasScheduleEntries}">
         <views:ScheduleBoardView
             x:Name="ScheduleBoard"
+            EditPersonalScheduleCommand="{Binding EditPersonalScheduleCommand, ElementName=WorkspaceRoot}"
             DataContext="{Binding DisplayedScheduleBoard}" />
       </Grid>
 

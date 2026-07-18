@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Windows.Input;
 
 using Avalonia;
 using Avalonia.Controls;
@@ -17,6 +19,15 @@ internal sealed partial class ScheduleBoardView : UserControl
     private const double TIME_COLUMN_WIDTH = 72.0;
     private const double HEADER_ROW_HEIGHT = 42.0;
     private const double TIME_INCREMENT_ROW_HEIGHT = 8.0;
+
+    [SuppressMessage(
+        "Style",
+        "IDE1006:Naming Styles",
+        Justification = "Avalonia requires the {PropertyName}Property field convention.")]
+    public static readonly StyledProperty<ICommand?>
+        EditPersonalScheduleCommandProperty =
+            AvaloniaProperty.Register<ScheduleBoardView, ICommand?>(
+                nameof(EditPersonalScheduleCommand));
 
     private readonly Grid mBoardGrid;
 
@@ -37,6 +48,18 @@ internal sealed partial class ScheduleBoardView : UserControl
         get
         {
             return mBoardExportSurface;
+        }
+    }
+
+    public ICommand? EditPersonalScheduleCommand
+    {
+        get
+        {
+            return GetValue(EditPersonalScheduleCommandProperty);
+        }
+        set
+        {
+            SetValue(EditPersonalScheduleCommandProperty, value);
         }
     }
 
