@@ -82,6 +82,17 @@ public sealed class PersonalScheduleInteractionTests
 
             workspace.BeginDeletePersonalScheduleCommand.Execute(editedItem);
             Assert.True(workspace.IsDeletePersonalScheduleConfirmationVisible);
+            Assert.Equal(
+                "‘연구실 정기 미팅’ 일정을 이 계획에서 삭제합니다.",
+                workspace.PersonalScheduleDeletionDescription);
+            Assert.DoesNotContain(
+                "추천 시간표",
+                workspace.PersonalScheduleDeletionDescription,
+                StringComparison.Ordinal);
+            Assert.DoesNotContain(
+                "PNG",
+                workspace.PersonalScheduleDeletionDescription,
+                StringComparison.Ordinal);
             workspace.ConfirmDeletePersonalScheduleCommand.Execute(null);
 
             Assert.Empty(workspace.ActivePlan.PersonalSchedules);
@@ -190,6 +201,86 @@ public sealed class PersonalScheduleInteractionTests
             Assert.False(workspaceSurface.IsVisible);
             Assert.True(rootWorkspaceSurface.IsEnabled);
             Assert.True(addButton.IsKeyboardFocusWithin);
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
+    public void PersonalScheduleDeleteConfirmationUsesACompactCenteredLayout()
+    {
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+        workspace.BeginAddPersonalScheduleCommand.Execute(null);
+        workspace.PersonalScheduleTitleDraft = "연구실 정기 미팅";
+        selectPersonalScheduleDay(workspace, EDay.Tuesday);
+        workspace.SavePersonalScheduleCommand.Execute(null);
+        PersonalScheduleItem schedule = Assert.Single(
+            workspace.ActivePlan.PersonalSchedules);
+        ProductWorkspaceHostView host = new ProductWorkspaceHostView();
+        host.DataContext = workspace;
+        Window window = new Window();
+        window.Width = 1200.0;
+        window.Height = 760.0;
+        window.Content = host;
+
+        try
+        {
+            window.Show();
+            workspace.BeginEditPersonalScheduleCommand.Execute(schedule.Id);
+            Dispatcher.UIThread.RunJobs();
+
+            Border dialog = findRequiredControl<Border>(
+                host,
+                "PersonalScheduleEditorDialog");
+            Assert.Equal(680.0, dialog.Bounds.Width);
+
+            workspace.CancelPersonalScheduleEditCommand.Execute(null);
+            workspace.BeginDeletePersonalScheduleCommand.Execute(schedule);
+            Dispatcher.UIThread.RunJobs();
+
+            Border iconSurface = findRequiredControl<Border>(
+                host,
+                "DeletePersonalScheduleIconSurface");
+            TextBlock heading = findRequiredControl<TextBlock>(
+                host,
+                "DeletePersonalScheduleHeading");
+            TextBlock description = findRequiredControl<TextBlock>(
+                host,
+                "DeletePersonalScheduleDescription");
+            StackPanel actions = findRequiredControl<StackPanel>(
+                host,
+                "DeletePersonalScheduleActions");
+            Button cancelButton = findRequiredControl<Button>(
+                host,
+                "CancelDeletePersonalScheduleButton");
+            Button confirmButton = findRequiredControl<Button>(
+                host,
+                "ConfirmDeletePersonalScheduleButton");
+
+            Assert.Equal(440.0, dialog.Bounds.Width);
+            Assert.Equal(
+                HorizontalAlignment.Center,
+                iconSurface.HorizontalAlignment);
+            Assert.Equal(TextAlignment.Center, heading.TextAlignment);
+            Assert.Equal(TextAlignment.Center, description.TextAlignment);
+            Assert.Equal(
+                HorizontalAlignment.Center,
+                actions.HorizontalAlignment);
+            Assert.All(
+                new[] { cancelButton, confirmButton },
+                button =>
+                {
+                    Assert.Equal(
+                        HorizontalAlignment.Center,
+                        button.HorizontalContentAlignment);
+                    Assert.Equal(
+                        VerticalAlignment.Center,
+                        button.VerticalContentAlignment);
+                });
         }
         finally
         {

@@ -224,7 +224,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             }
 
             return "‘" + mPersonalSchedulePendingDeletionOrNull.Title
-                + "’ 일정을 이 계획에서 삭제합니다. 추천 시간표와 PNG에서도 사라집니다.";
+                + "’ 일정을 이 계획에서 삭제합니다.";
         }
     }
 

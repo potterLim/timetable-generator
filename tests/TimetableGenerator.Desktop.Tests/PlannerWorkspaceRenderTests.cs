@@ -212,6 +212,52 @@ public sealed class PlannerWorkspaceRenderTests
         }
     }
 
+    [AvaloniaFact]
+    public void PersonalScheduleDeleteConfirmationRendersInLightAndDarkThemes()
+    {
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+        workspace.BeginAddPersonalScheduleCommand.Execute(null);
+        workspace.PersonalScheduleTitleDraft = "연구실 정기 미팅";
+        workspace.PersonalScheduleDayOptions
+            .Single(option => option.Day == EDay.Tuesday)
+            .IsSelected = true;
+        workspace.PersonalScheduleStartTimeOrNull = new ScheduleTime(18, 0);
+        workspace.PersonalScheduleEndTimeOrNull = new ScheduleTime(19, 0);
+        workspace.SavePersonalScheduleCommand.Execute(null);
+        PersonalScheduleItem personalSchedule = Assert.Single(
+            workspace.ActivePlan.PersonalSchedules);
+        workspace.BeginDeletePersonalScheduleCommand.Execute(personalSchedule);
+        ProductShellViewModel shell = PlannerWorkspaceTestFactory.CreateShell(
+            workspace);
+        MainWindow window = new MainWindow(
+            shell,
+            ProductAppearanceTestFactory.CreateViewModel());
+        window.Width = REFERENCE_WIDTH;
+        window.Height = REFERENCE_HEIGHT;
+
+        try
+        {
+            window.RequestedThemeVariant = ThemeVariant.Light;
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            saveRenderedFrame(
+                window,
+                "personal-schedule-delete-light-1487x1058.png");
+
+            window.RequestedThemeVariant = ThemeVariant.Dark;
+            Dispatcher.UIThread.RunJobs();
+            saveRenderedFrame(
+                window,
+                "personal-schedule-delete-dark-1487x1058.png");
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
     private static void saveRenderedFrame(MainWindow window, string fileName)
     {
         WriteableBitmap? renderedFrameOrNull = window.CaptureRenderedFrame();
