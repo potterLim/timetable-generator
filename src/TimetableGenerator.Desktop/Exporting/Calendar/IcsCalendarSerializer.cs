@@ -55,7 +55,6 @@ internal static class IcsCalendarSerializer
         StringBuilder calendarBuilder,
         AcademicTermCalendarMetadata academicCalendar)
     {
-        string utcOffset = formatUtcOffset(academicCalendar.UtcOffset);
         appendContentLine(calendarBuilder, "BEGIN:VTIMEZONE");
         appendContentLine(
             calendarBuilder,
@@ -63,13 +62,34 @@ internal static class IcsCalendarSerializer
         appendContentLine(
             calendarBuilder,
             "X-LIC-LOCATION:" + academicCalendar.TimeZoneId.Value);
-        appendContentLine(calendarBuilder, "BEGIN:STANDARD");
-        appendContentLine(calendarBuilder, "DTSTART:19700101T000000");
-        appendContentLine(calendarBuilder, "TZOFFSETFROM:" + utcOffset);
-        appendContentLine(calendarBuilder, "TZOFFSETTO:" + utcOffset);
-        appendContentLine(calendarBuilder, "TZNAME:KST");
-        appendContentLine(calendarBuilder, "END:STANDARD");
+        IReadOnlyList<CalendarTimeZoneObservance> observances =
+            CalendarTimeZoneObservanceResolver.FindForDateRange(
+                academicCalendar.TimeZoneId,
+                academicCalendar.DateRange);
+        foreach (CalendarTimeZoneObservance observance in observances)
+        {
+            appendTimeZoneObservance(calendarBuilder, observance);
+        }
+
         appendContentLine(calendarBuilder, "END:VTIMEZONE");
+    }
+
+    private static void appendTimeZoneObservance(
+        StringBuilder calendarBuilder,
+        CalendarTimeZoneObservance observance)
+    {
+        string componentName = formatObservanceKind(observance.Kind);
+        appendContentLine(calendarBuilder, "BEGIN:" + componentName);
+        appendContentLine(
+            calendarBuilder,
+            "DTSTART:" + formatLocalDateTime(observance.LocalStart));
+        appendContentLine(
+            calendarBuilder,
+            "TZOFFSETFROM:" + formatUtcOffset(observance.OffsetFrom));
+        appendContentLine(
+            calendarBuilder,
+            "TZOFFSETTO:" + formatUtcOffset(observance.OffsetTo));
+        appendContentLine(calendarBuilder, "END:" + componentName);
     }
 
     private static void appendEvent(
@@ -167,6 +187,13 @@ internal static class IcsCalendarSerializer
             + "00";
     }
 
+    private static string formatLocalDateTime(DateTime localDateTime)
+    {
+        return localDateTime.ToString(
+            "yyyyMMdd'T'HHmmss",
+            CultureInfo.InvariantCulture);
+    }
+
     private static string formatUtcDateTime(DateTimeOffset dateTime)
     {
         return dateTime
@@ -183,6 +210,23 @@ internal static class IcsCalendarSerializer
         return sign
             + totalHours.ToString("D2", CultureInfo.InvariantCulture)
             + absoluteValue.Minutes.ToString("D2", CultureInfo.InvariantCulture);
+    }
+
+    private static string formatObservanceKind(
+        ECalendarTimeZoneObservanceKind kind)
+    {
+        switch (kind)
+        {
+            case ECalendarTimeZoneObservanceKind.Standard:
+                return "STANDARD";
+            case ECalendarTimeZoneObservanceKind.Daylight:
+                return "DAYLIGHT";
+            default:
+                throw new ArgumentOutOfRangeException(
+                    nameof(kind),
+                    kind,
+                    "Calendar serialization requires a supported time-zone observance kind.");
+        }
     }
 
     private static string formatWeekdays(IReadOnlyList<EDay> days)

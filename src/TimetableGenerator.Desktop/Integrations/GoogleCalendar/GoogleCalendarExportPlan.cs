@@ -16,8 +16,6 @@ internal sealed class GoogleCalendarExportPlan
 
     public CalendarTimeZoneId TimeZoneId { get; }
 
-    public CalendarUtcOffset UtcOffset { get; }
-
     public IReadOnlyList<GoogleCalendarExportEvent> Events
     {
         get
@@ -30,7 +28,6 @@ internal sealed class GoogleCalendarExportPlan
         PlanId planId,
         PlanName calendarName,
         CalendarTimeZoneId timeZoneId,
-        CalendarUtcOffset utcOffset,
         IReadOnlyList<GoogleCalendarExportEvent> events)
     {
         if (planId.IsValid == false)
@@ -50,13 +47,6 @@ internal sealed class GoogleCalendarExportPlan
             throw new ArgumentException(
                 "Google Calendar exports require a valid time-zone ID.",
                 nameof(timeZoneId));
-        }
-
-        if (utcOffset.IsValid == false)
-        {
-            throw new ArgumentException(
-                "Google Calendar exports require a valid UTC offset.",
-                nameof(utcOffset));
         }
 
         if (events == null)
@@ -88,7 +78,6 @@ internal sealed class GoogleCalendarExportPlan
         PlanId = planId;
         CalendarName = calendarName;
         TimeZoneId = timeZoneId;
-        UtcOffset = utcOffset;
         mEvents = eventSnapshot.AsReadOnly();
     }
 
@@ -121,7 +110,6 @@ internal sealed class GoogleCalendarExportPlan
             document.PlanId,
             document.CalendarName,
             document.AcademicCalendar.TimeZoneId,
-            document.AcademicCalendar.UtcOffset,
             events);
     }
 

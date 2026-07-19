@@ -229,7 +229,6 @@ internal sealed class GoogleCalendarApiClient
             JsonObject resource = GoogleCalendarEventResourceFactory.Create(
                 plan.PlanId,
                 plan.TimeZoneId,
-                plan.UtcOffset,
                 exportEvent);
             if (existingEventIds.Contains(eventId))
             {

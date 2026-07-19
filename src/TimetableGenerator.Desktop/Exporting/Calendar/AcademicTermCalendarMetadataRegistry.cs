@@ -15,8 +15,7 @@ internal static class AcademicTermCalendarMetadataRegistry
             new AcademicTermDateRange(
                 new DateOnly(2026, 8, 31),
                 new DateOnly(2026, 12, 20)),
-            new CalendarTimeZoneId("Asia/Seoul"),
-            new CalendarUtcOffset(TimeSpan.FromHours(9)));
+            new CalendarTimeZoneId("Asia/Seoul"));
 
     public static AcademicTermCalendarMetadata FindByTerm(AcademicTerm term)
     {

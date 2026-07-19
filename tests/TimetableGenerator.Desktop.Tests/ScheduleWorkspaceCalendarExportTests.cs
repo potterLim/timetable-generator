@@ -124,7 +124,11 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.Equal(workspace.ActivePlan.PlanId, planOrNull.PlanId);
             Assert.Equal(workspace.ActivePlan.Name, planOrNull.CalendarName);
             Assert.Equal("Asia/Seoul", planOrNull.TimeZoneId.Value);
-            Assert.Equal(TimeSpan.FromHours(9.0), planOrNull.UtcOffset.Value);
+            Assert.Equal(
+                TimeSpan.FromHours(9.0),
+                planOrNull.TimeZoneId.FindUtcOffset(
+                    planOrNull.Events[0].FirstOccurrenceDate,
+                    planOrNull.Events[0].StartTime).Value);
             Assert.NotEmpty(planOrNull.Events);
             TextBlock status = findRequiredTextBlock(
                 workspaceView,

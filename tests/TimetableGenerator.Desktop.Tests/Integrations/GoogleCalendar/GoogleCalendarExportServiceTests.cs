@@ -269,7 +269,6 @@ public sealed class GoogleCalendarExportServiceTests
             planId,
             new PlanName("2026-2학기 시간표"),
             new CalendarTimeZoneId("Asia/Seoul"),
-            new CalendarUtcOffset(TimeSpan.FromHours(9.0)),
             new GoogleCalendarExportEvent[] { exportEvent });
     }
 

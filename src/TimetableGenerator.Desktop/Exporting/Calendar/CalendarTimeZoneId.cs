@@ -4,13 +4,16 @@ namespace TimetableGenerator.Desktop.Exporting.Calendar;
 
 internal readonly record struct CalendarTimeZoneId
 {
+    private readonly bool mIsInitialized;
+
     public string Value { get; }
 
     public bool IsValid
     {
         get
         {
-            return string.IsNullOrWhiteSpace(Value) == false;
+            return mIsInitialized
+                && string.IsNullOrWhiteSpace(Value) == false;
         }
     }
 
@@ -23,11 +26,105 @@ internal readonly record struct CalendarTimeZoneId
                 nameof(value));
         }
 
-        Value = value.Trim();
+        string normalizedValue = value.Trim();
+        string? windowsTimeZoneIdOrNull;
+        bool hasWindowsTimeZoneEquivalent =
+            TimeZoneInfo.TryConvertIanaIdToWindowsId(
+                normalizedValue,
+                out windowsTimeZoneIdOrNull);
+        if (hasWindowsTimeZoneEquivalent == false
+            || string.IsNullOrWhiteSpace(windowsTimeZoneIdOrNull))
+        {
+            throw new ArgumentException(
+                "Calendar time-zone IDs must be IANA identifiers supported on every target platform.",
+                nameof(value));
+        }
+
+        try
+        {
+            TimeZoneInfo.FindSystemTimeZoneById(normalizedValue);
+        }
+        catch (TimeZoneNotFoundException exception)
+        {
+            throw new ArgumentException(
+                "The calendar time-zone ID is not installed on this system.",
+                nameof(value),
+                exception);
+        }
+        catch (InvalidTimeZoneException exception)
+        {
+            throw new ArgumentException(
+                "The calendar time-zone ID has invalid transition data.",
+                nameof(value),
+                exception);
+        }
+
+        Value = normalizedValue;
+        mIsInitialized = true;
+    }
+
+    public CalendarUtcOffset FindUtcOffset(DateOnly date, TimeOnly time)
+    {
+        DateTime localDateTime = date.ToDateTime(
+            time,
+            DateTimeKind.Unspecified);
+        TimeZoneInfo timeZone = findSystemTimeZone();
+        if (timeZone.IsInvalidTime(localDateTime))
+        {
+            throw new InvalidOperationException(
+                "The calendar local time does not exist in time zone "
+                    + Value
+                    + ".");
+        }
+
+        TimeSpan utcOffset;
+        if (timeZone.IsAmbiguousTime(localDateTime))
+        {
+            utcOffset = findFirstOccurrenceUtcOffset(
+                timeZone,
+                localDateTime);
+        }
+        else
+        {
+            utcOffset = timeZone.GetUtcOffset(localDateTime);
+        }
+
+        return new CalendarUtcOffset(utcOffset);
+    }
+
+    public DateTimeOffset ResolveLocalDateTime(DateOnly date, TimeOnly time)
+    {
+        DateTime localDateTime = date.ToDateTime(
+            time,
+            DateTimeKind.Unspecified);
+        CalendarUtcOffset utcOffset = FindUtcOffset(date, time);
+        return new DateTimeOffset(localDateTime, utcOffset.Value);
     }
 
     public override string ToString()
     {
         return Value;
+    }
+
+    internal TimeZoneInfo findSystemTimeZone()
+    {
+        if (IsValid == false)
+        {
+            throw new InvalidOperationException(
+                "An uninitialized calendar time-zone ID cannot be resolved.");
+        }
+
+        return TimeZoneInfo.FindSystemTimeZoneById(Value);
+    }
+
+    private static TimeSpan findFirstOccurrenceUtcOffset(
+        TimeZoneInfo timeZone,
+        DateTime ambiguousLocalDateTime)
+    {
+        TimeSpan[] possibleOffsets =
+            timeZone.GetAmbiguousTimeOffsets(ambiguousLocalDateTime);
+        return possibleOffsets[0] > possibleOffsets[1]
+            ? possibleOffsets[0]
+            : possibleOffsets[1];
     }
 }

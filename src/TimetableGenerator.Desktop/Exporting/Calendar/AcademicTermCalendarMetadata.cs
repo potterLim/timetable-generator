@@ -13,13 +13,10 @@ internal sealed class AcademicTermCalendarMetadata
 
     public CalendarTimeZoneId TimeZoneId { get; }
 
-    public CalendarUtcOffset UtcOffset { get; }
-
     public AcademicTermCalendarMetadata(
         AcademicTerm term,
         AcademicTermDateRange dateRange,
-        CalendarTimeZoneId timeZoneId,
-        CalendarUtcOffset utcOffset)
+        CalendarTimeZoneId timeZoneId)
     {
         if (term.IsValid == false)
         {
@@ -42,17 +39,9 @@ internal sealed class AcademicTermCalendarMetadata
                 nameof(timeZoneId));
         }
 
-        if (utcOffset.IsValid == false)
-        {
-            throw new ArgumentException(
-                "Academic calendar metadata requires a valid UTC offset.",
-                nameof(utcOffset));
-        }
-
         Term = term;
         DateRange = dateRange;
         TimeZoneId = timeZoneId;
-        UtcOffset = utcOffset;
     }
 
     public DateOnly FindFirstOccurrenceDate(EDay day)
@@ -74,12 +63,8 @@ internal sealed class AcademicTermCalendarMetadata
     public DateTimeOffset GetLastIncludedInstantUtc()
     {
         TimeOnly finalTime = new TimeOnly(23, 59, 59);
-        DateTime finalLocalDateTime = DateRange.EndDate.ToDateTime(
-            finalTime,
-            DateTimeKind.Unspecified);
-        DateTimeOffset finalZonedDateTime = new DateTimeOffset(
-            finalLocalDateTime,
-            UtcOffset.Value);
+        DateTimeOffset finalZonedDateTime =
+            TimeZoneId.ResolveLocalDateTime(DateRange.EndDate, finalTime);
         return finalZonedDateTime.ToUniversalTime();
     }
 

@@ -12,7 +12,7 @@ namespace TimetableGenerator.Desktop.Tests.Integrations.GoogleCalendar;
 public sealed class GoogleCalendarEventResourceTests
 {
     [Fact]
-    public void ResourceUsesExplicitKoreaOffsetAndGroupedWeekdays()
+    public void ResourceDerivesKoreaOffsetAndGroupsWeekdays()
     {
         PlanId planId = new PlanId(
             Guid.Parse("71f3be04-d4c6-41d4-a269-792321e71423"));
@@ -21,7 +21,6 @@ public sealed class GoogleCalendarEventResourceTests
         JsonObject resource = GoogleCalendarEventResourceFactory.Create(
             planId,
             new CalendarTimeZoneId("Asia/Seoul"),
-            new CalendarUtcOffset(TimeSpan.FromHours(9.0)),
             exportEvent);
         JsonObject start = Assert.IsType<JsonObject>(resource["start"]);
         JsonValue startDateTime = Assert.IsAssignableFrom<JsonValue>(start["dateTime"]);
@@ -37,6 +36,33 @@ public sealed class GoogleCalendarEventResourceTests
             startTimeZone.GetValue<string>());
         Assert.Equal(
             "RRULE:FREQ=WEEKLY;BYDAY=MO,TH;UNTIL=20261220T145959Z",
+            recurrenceRule.GetValue<string>());
+    }
+
+    [Fact]
+    public void ResourceUsesDateSpecificOffsetsAcrossDaylightSavingTime()
+    {
+        PlanId planId = new PlanId(
+            Guid.Parse("71f3be04-d4c6-41d4-a269-792321e71423"));
+        GoogleCalendarExportEvent exportEvent = createEvent(
+            "course:ITP30003");
+
+        JsonObject resource = GoogleCalendarEventResourceFactory.Create(
+            planId,
+            new CalendarTimeZoneId("America/New_York"),
+            exportEvent);
+        JsonObject start = Assert.IsType<JsonObject>(resource["start"]);
+        JsonValue startDateTime =
+            Assert.IsAssignableFrom<JsonValue>(start["dateTime"]);
+        JsonArray recurrence = Assert.IsType<JsonArray>(resource["recurrence"]);
+        JsonValue recurrenceRule =
+            Assert.IsAssignableFrom<JsonValue>(recurrence[0]);
+
+        Assert.Equal(
+            "2026-08-31T11:30:00-04:00",
+            startDateTime.GetValue<string>());
+        Assert.Equal(
+            "RRULE:FREQ=WEEKLY;BYDAY=MO,TH;UNTIL=20261221T045959Z",
             recurrenceRule.GetValue<string>());
     }
 
@@ -68,7 +94,6 @@ public sealed class GoogleCalendarEventResourceTests
                     PlanId.CreateNew(),
                     new PlanName("2026-2학기 시간표"),
                     new CalendarTimeZoneId("Asia/Seoul"),
-                    new CalendarUtcOffset(TimeSpan.FromHours(9.0)),
                     new GoogleCalendarExportEvent[] { first, second });
             });
     }
@@ -88,8 +113,7 @@ public sealed class GoogleCalendarEventResourceTests
             new AcademicTermDateRange(
                 new DateOnly(2026, 8, 31),
                 new DateOnly(2026, 12, 20)),
-            new CalendarTimeZoneId("Asia/Seoul"),
-            new CalendarUtcOffset(TimeSpan.FromHours(9.0)));
+            new CalendarTimeZoneId("Asia/Seoul"));
         CalendarExportDocument document = new CalendarExportDocument(
             PlanId.CreateNew(),
             new PlanName("2026-2학기 시간표"),
@@ -99,7 +123,11 @@ public sealed class GoogleCalendarEventResourceTests
         GoogleCalendarExportPlan plan = GoogleCalendarExportPlan.CreateFromDocument(
             document);
 
-        Assert.Equal(TimeSpan.FromHours(9.0), plan.UtcOffset.Value);
+        Assert.Equal(
+            TimeSpan.FromHours(9.0),
+            plan.TimeZoneId.FindUtcOffset(
+                plan.Events[0].FirstOccurrenceDate,
+                plan.Events[0].StartTime).Value);
         Assert.Equal(new EDay[] { EDay.Monday, EDay.Thursday }, plan.Events[0].Days);
         Assert.Equal(new DateOnly(2026, 8, 31), plan.Events[0].FirstOccurrenceDate);
         Assert.Equal(new DateOnly(2026, 12, 20), plan.Events[0].LastOccurrenceDate);

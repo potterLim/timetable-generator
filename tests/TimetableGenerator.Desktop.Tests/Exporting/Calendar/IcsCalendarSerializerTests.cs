@@ -56,6 +56,55 @@ public sealed class IcsCalendarSerializerTests
     }
 
     [Fact]
+    public void TimeZoneObservancesAndTermEndFollowIanaTransitions()
+    {
+        RecurringCalendarEvent calendarEvent = new RecurringCalendarEvent(
+            new CalendarEventUid("course-1@test"),
+            new CalendarEventContent(
+                "시간대 검증",
+                string.Empty,
+                string.Empty),
+            new DailyTimeRange(
+                new ScheduleTime(11, 30),
+                new ScheduleTime(12, 45)),
+            new EDay[] { EDay.Monday });
+        AcademicTermCalendarMetadata metadata =
+            new AcademicTermCalendarMetadata(
+                AcademicTerm.Parse("2026-2"),
+                new AcademicTermDateRange(
+                    new DateOnly(2026, 3, 1),
+                    new DateOnly(2026, 12, 20)),
+                new CalendarTimeZoneId("America/New_York"));
+        CalendarExportDocument document = new CalendarExportDocument(
+            new PlanId(
+                new Guid("11111111-1111-1111-1111-111111111111")),
+            new PlanName("시간대 검증"),
+            metadata,
+            new RecurringCalendarEvent[] { calendarEvent });
+
+        string serializedCalendar = IcsCalendarSerializer.Serialize(
+            document,
+            new CalendarExportTimestamp(DateTimeOffset.UnixEpoch));
+
+        Assert.Contains("TZID:America/New_York\r\n", serializedCalendar);
+        Assert.Contains(
+            "BEGIN:DAYLIGHT\r\n"
+                + "DTSTART:20260308T020000\r\n"
+                + "TZOFFSETFROM:-0500\r\n"
+                + "TZOFFSETTO:-0400\r\n",
+            serializedCalendar);
+        Assert.Contains(
+            "BEGIN:STANDARD\r\n"
+                + "DTSTART:20261101T020000\r\n"
+                + "TZOFFSETFROM:-0400\r\n"
+                + "TZOFFSETTO:-0500\r\n",
+            serializedCalendar);
+        Assert.Contains(
+            "RRULE:FREQ=WEEKLY;BYDAY=MO;UNTIL=20261221T045959Z\r\n",
+            serializedCalendar);
+    }
+
+    [Fact]
     public void FirstOccurrenceUsesTheEarliestSelectedDayAfterTermStart()
     {
         CalendarExportDocument document = createDocument(

@@ -19,7 +19,6 @@ internal static class GoogleCalendarEventResourceFactory
     public static JsonObject Create(
         PlanId planId,
         CalendarTimeZoneId timeZoneId,
-        CalendarUtcOffset utcOffset,
         GoogleCalendarExportEvent exportEvent)
     {
         if (planId.IsValid == false)
@@ -36,32 +35,20 @@ internal static class GoogleCalendarEventResourceFactory
                 nameof(timeZoneId));
         }
 
-        if (utcOffset.IsValid == false)
-        {
-            throw new ArgumentException(
-                "Google Calendar resources require a valid UTC offset.",
-                nameof(utcOffset));
-        }
-
         if (exportEvent == null)
         {
             throw new ArgumentNullException(nameof(exportEvent));
         }
 
-        DateTimeOffset start = resolveLocalDateTime(
+        DateTimeOffset start = timeZoneId.ResolveLocalDateTime(
             exportEvent.FirstOccurrenceDate,
-            exportEvent.StartTime,
-            utcOffset);
-        DateTimeOffset end = resolveLocalDateTime(
+            exportEvent.StartTime);
+        DateTimeOffset end = timeZoneId.ResolveLocalDateTime(
             exportEvent.FirstOccurrenceDate,
-            exportEvent.EndTime,
-            utcOffset);
-        DateTime recurrenceCutoffLocal = exportEvent.LastOccurrenceDate.ToDateTime(
-            new TimeOnly(23, 59, 59),
-            DateTimeKind.Unspecified);
-        DateTimeOffset recurrenceCutoff = new DateTimeOffset(
-            recurrenceCutoffLocal,
-            utcOffset.Value);
+            exportEvent.EndTime);
+        DateTimeOffset recurrenceCutoff = timeZoneId.ResolveLocalDateTime(
+            exportEvent.LastOccurrenceDate,
+            new TimeOnly(23, 59, 59));
         string recurrenceRule = "RRULE:FREQ=WEEKLY;BYDAY="
             + formatWeekdays(exportEvent.Days)
             + ";UNTIL="
@@ -175,15 +162,6 @@ internal static class GoogleCalendarEventResourceFactory
             ["dateTime"] = dateTime.ToString("yyyy-MM-dd'T'HH:mm:sszzz", CultureInfo.InvariantCulture),
             ["timeZone"] = timeZoneId.Value,
         };
-    }
-
-    private static DateTimeOffset resolveLocalDateTime(
-        DateOnly date,
-        TimeOnly time,
-        CalendarUtcOffset utcOffset)
-    {
-        DateTime localDateTime = date.ToDateTime(time, DateTimeKind.Unspecified);
-        return new DateTimeOffset(localDateTime, utcOffset.Value);
     }
 
     private static string formatWeekdays(IReadOnlyList<EDay> days)
