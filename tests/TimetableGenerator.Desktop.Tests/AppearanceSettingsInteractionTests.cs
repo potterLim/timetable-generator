@@ -73,7 +73,7 @@ public sealed class AppearanceSettingsInteractionTests
                 Avalonia.Layout.VerticalAlignment.Center,
                 systemOption.VerticalContentAlignment);
             Assert.Equal(
-                new Thickness(8.0, 0.0, 0.0, 0.0),
+                new Thickness(8.0, 0.0, 0.0, 2.0),
                 systemOption.Padding);
             assertIndicatorAndContentUseProductSpacing(systemOption);
             assertIndicatorAndContentUseProductSpacing(lightOption);
@@ -321,10 +321,8 @@ public sealed class AppearanceSettingsInteractionTests
             - indicatorOriginOrNull.Value.X
             - indicator.Bounds.Width;
         Assert.InRange(horizontalGap, 7.75, 8.25);
-        Assert.InRange(
-            Math.Abs(indicatorCenterY - presenterCenterY),
-            0.0,
-            0.5);
+        double presenterCenterOffset = indicatorCenterY - presenterCenterY;
+        Assert.InRange(presenterCenterOffset, 1.25, 1.75);
     }
 
     private static void assertIndicatorHasSelectedSurfaceInset(
