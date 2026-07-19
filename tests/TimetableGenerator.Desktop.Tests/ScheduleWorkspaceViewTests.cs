@@ -94,7 +94,7 @@ public sealed class ScheduleWorkspaceViewTests
                     int scheduleRow = Grid.GetRow(scheduleCard);
                     scheduleRows.Add(scheduleRow);
                     if (AutomationProperties.GetName(scheduleCard)?.Contains(
-                        "목요일 22:00–23:15",
+                        "목요일 22:30–23:45",
                         StringComparison.Ordinal) == true)
                     {
                         latestScheduleAccessibleNameOrNull =
@@ -107,15 +107,15 @@ public sealed class ScheduleWorkspaceViewTests
                 new ScheduleBoardTimeBoundary(1_020),
                 scheduleBoard.RenderedLayout.TimeAxis.Start);
             Assert.Equal(
-                new ScheduleBoardTimeBoundary(1_410),
+                new ScheduleBoardTimeBoundary(1_440),
                 scheduleBoard.RenderedLayout.TimeAxis.End);
-            Assert.Equal(79, boardGrid.RowDefinitions.Count);
-            Assert.Contains(7, scheduleRows);
-            Assert.Contains(25, scheduleRows);
-            Assert.Contains(43, scheduleRows);
-            Assert.Contains(61, scheduleRows);
+            Assert.Equal(85, boardGrid.RowDefinitions.Count);
+            Assert.Contains(13, scheduleRows);
+            Assert.Contains(31, scheduleRows);
+            Assert.Contains(49, scheduleRows);
+            Assert.Contains(67, scheduleRows);
             Assert.Contains(
-                "목요일 22:00–23:15",
+                "목요일 22:30–23:45",
                 latestScheduleAccessibleNameOrNull);
             Assert.DoesNotContain("교시", latestScheduleAccessibleNameOrNull);
             Assert.True(scrollViewer.Extent.Height > scrollViewer.Viewport.Height);
@@ -189,7 +189,7 @@ public sealed class ScheduleWorkspaceViewTests
             Assert.Contains(dayHeaders, textBlock => textBlock.Text == "일");
             Assert.Equal(7, Grid.GetColumn(scheduleCard));
             Assert.Contains(
-                "일요일 10:00–11:15",
+                "일요일 10:30–11:45",
                 AutomationProperties.GetName(scheduleCard));
             Assert.Contains(
                 boardGridOrNull,
@@ -235,17 +235,16 @@ public sealed class ScheduleWorkspaceViewTests
                     && Grid.GetRow(textBlock) > 0)
                 .ToList();
 
-            Assert.Equal(21, timeLabels.Count);
-            Assert.Contains(timeLabels, textBlock => textBlock.Text == "08:30");
+            Assert.Equal(20, timeLabels.Count);
             Assert.Contains(timeLabels, textBlock => textBlock.Text == "09:00");
             Assert.Contains(timeLabels, textBlock => textBlock.Text == "18:30");
             Assert.Equal(
-                new ScheduleBoardTimeBoundary(510),
+                new ScheduleBoardTimeBoundary(540),
                 scheduleBoard.RenderedLayout.TimeAxis.Start);
             Assert.Equal(
                 new ScheduleBoardTimeBoundary(1_140),
                 scheduleBoard.RenderedLayout.TimeAxis.End);
-            Assert.Equal(126, scheduleBoard.RenderedLayout.TimeAxis.IncrementCount);
+            Assert.Equal(120, scheduleBoard.RenderedLayout.TimeAxis.IncrementCount);
             Assert.DoesNotContain(
                 timeLabels,
                 textBlock => textBlock.Text?.Contains(
@@ -264,7 +263,57 @@ public sealed class ScheduleWorkspaceViewTests
                 timeLabel => assertTimeLabelIsCenteredInItsRows(
                     boardGridOrNull,
                     timeLabel));
-            Assert.Equal(127, boardGridOrNull.RowDefinitions.Count);
+            Assert.Equal(121, boardGridOrNull.RowDefinitions.Count);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void ScheduleBoardPositionsTheSamePeriodAtDaySpecificTimes()
+    {
+        ScheduleEntry mondayEntry = createScheduleEntry(
+            EDay.Monday,
+            new AcademicPeriod(1));
+        ScheduleEntry wednesdayEntry = createScheduleEntry(
+            EDay.Wednesday,
+            new AcademicPeriod(1));
+        ScheduleBoardView scheduleBoard = new ScheduleBoardView();
+        scheduleBoard.DataContext = createScheduleBoardPresentation(
+            new ScheduleRecommendation(
+                new ScheduleEntry[] { mondayEntry, wednesdayEntry }));
+        Window window = new Window();
+        window.Width = 800.0;
+        window.Height = 420.0;
+        window.Content = scheduleBoard;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Grid boardGrid = Assert.IsType<Grid>(
+                scheduleBoard.FindControl<Grid>("BoardGrid"));
+            Button mondayCard = Assert.Single(
+                boardGrid.Children.OfType<Button>(),
+                button => Grid.GetColumn(button) == 1);
+            Button wednesdayCard = Assert.Single(
+                boardGrid.Children.OfType<Button>(),
+                button => Grid.GetColumn(button) == 3);
+
+            Assert.Equal(
+                new ScheduleBoardTimeBoundary(510),
+                scheduleBoard.RenderedLayout.TimeAxis.Start);
+            Assert.Equal(7, Grid.GetRow(mondayCard));
+            Assert.Equal(1, Grid.GetRow(wednesdayCard));
+            Assert.Contains(
+                "월요일 09:00–10:15",
+                AutomationProperties.GetName(mondayCard));
+            Assert.Contains(
+                "수요일 08:30–09:45",
+                AutomationProperties.GetName(wednesdayCard));
         }
         finally
         {
@@ -967,8 +1016,7 @@ public sealed class ScheduleWorkspaceViewTests
                     LocationAssignmentMetadata.CreateAssigned(
                         new ClassroomDisplayText("테스트 강의실")))),
             new CourseSectionCode("01"),
-            day,
-            period,
+            new MeetingSlot(day, period),
             ECourseAccent.Blue);
     }
 
@@ -993,8 +1041,7 @@ public sealed class ScheduleWorkspaceViewTests
                         new ClassroomDisplayText(
                             "느헤미야홀 401호 공동 프로젝트 스튜디오")))),
             new CourseSectionCode("01"),
-            day,
-            period,
+            new MeetingSlot(day, period),
             ECourseAccent.Blue);
     }
 
@@ -1015,8 +1062,7 @@ public sealed class ScheduleWorkspaceViewTests
                 instructorSummary,
                 locationSummary),
             new CourseSectionCode("01"),
-            day,
-            new AcademicPeriod(1),
+            new MeetingSlot(day, new AcademicPeriod(1)),
             ECourseAccent.Blue);
     }
 
@@ -1110,7 +1156,7 @@ public sealed class ScheduleWorkspaceViewTests
 
             if (child is TextBlock timeText
                 && timeText.Text != null
-                && timeText.Text.Contains("08:30", StringComparison.Ordinal))
+                && timeText.Text.Contains("09:00", StringComparison.Ordinal))
             {
                 timeLabelOrNull = timeText;
             }

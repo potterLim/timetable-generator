@@ -52,6 +52,14 @@ public sealed class ScheduleRecommendationProjectorTests
         Assert.Equal(EDay.Monday, mondayEntry.Day);
         Assert.Equal(new AcademicPeriod(1), mondayEntry.Period);
         Assert.Equal(
+            new MeetingSlot(EDay.Monday, new AcademicPeriod(1)),
+            mondayEntry.Slot);
+        Assert.Equal(
+            new DailyTimeRange(
+                new ScheduleTime(9, 0),
+                new ScheduleTime(10, 15)),
+            mondayEntry.TimeRange);
+        Assert.Equal(
             catalogProjection.FindCourseById(new CourseId("course-programming")).Accent,
             mondayEntry.Accent);
 
@@ -61,6 +69,11 @@ public sealed class ScheduleRecommendationProjectorTests
         CourseScheduleEntry wednesdayEntry = wednesdayEntryOrNull;
         Assert.Equal(EDay.Wednesday, wednesdayEntry.Day);
         Assert.Equal(new AcademicPeriod(2), wednesdayEntry.Period);
+        Assert.Equal(
+            new DailyTimeRange(
+                new ScheduleTime(10, 0),
+                new ScheduleTime(11, 15)),
+            wednesdayEntry.TimeRange);
     }
 
     [Fact]

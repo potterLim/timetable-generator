@@ -195,8 +195,7 @@ internal static class ScheduleRecommendationProjector
                 scheduledOffering.OfferingId,
                 courseDetails,
                 scheduledOffering.SectionCode,
-                slot.Day,
-                slot.Period,
+                slot,
                 courseProjection.Accent));
         }
     }

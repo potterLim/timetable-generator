@@ -64,7 +64,7 @@ public sealed class ScheduleListGroupingTests
         Assert.Equal("전자기학", group.Title);
         Assert.Equal("전자기학(01)", group.TitleDisplayText);
         Assert.Equal(new EDay[] { EDay.Monday, EDay.Friday }, occurrence.Days);
-        Assert.Equal("월·금: 10:00–11:15", occurrence.ScheduleDisplayText);
+        Assert.Equal("월·금: 10:30–11:45", occurrence.ScheduleDisplayText);
         Assert.Equal("NTH 311 · 김교수", occurrence.MetadataDisplayText);
         Assert.DoesNotContain("(01)", occurrence.MetadataDisplayText);
         Assert.Equal(courseId, source.CourseId);
@@ -73,6 +73,44 @@ public sealed class ScheduleListGroupingTests
         Assert.Contains("분반 01", group.AccessibleName);
         Assert.Contains("장소 NTH 311", group.AccessibleName);
         Assert.Contains("담당 김교수", group.AccessibleName);
+    }
+
+    [Fact]
+    public void SamePeriodOnWednesdayAndARegularDayKeepsSeparateOccurrences()
+    {
+        CourseId courseId = new CourseId("course-electromagnetics");
+        OfferingId offeringId = new OfferingId("offering-electromagnetics-01");
+        CourseScheduleEntry mondayEntry = createCourseEntry(
+            courseId,
+            offeringId,
+            new KoreanCourseName("전자기학"),
+            new CourseSectionCode("01"),
+            EDay.Monday,
+            new AcademicPeriod(1),
+            CONFIRMED_INSTRUCTOR,
+            ASSIGNED_LOCATION);
+        CourseScheduleEntry wednesdayEntry = createCourseEntry(
+            courseId,
+            offeringId,
+            new KoreanCourseName("전자기학"),
+            new CourseSectionCode("01"),
+            EDay.Wednesday,
+            new AcademicPeriod(1),
+            CONFIRMED_INSTRUCTOR,
+            ASSIGNED_LOCATION);
+
+        ScheduleListGroup group = Assert.Single(ScheduleListProjector.Project(
+            new ScheduleEntry[] { wednesdayEntry, mondayEntry }));
+
+        Assert.True(group.HasMultipleOccurrences);
+        Assert.Collection(
+            group.Occurrences,
+            occurrence => Assert.Equal(
+                "월: 09:00–10:15",
+                occurrence.ScheduleDisplayText),
+            occurrence => Assert.Equal(
+                "수: 08:30–09:45",
+                occurrence.ScheduleDisplayText));
     }
 
     [Fact]
@@ -95,7 +133,7 @@ public sealed class ScheduleListGroupingTests
             scheduleId,
             new PersonalScheduleTitle("project lab"),
             EDay.Wednesday,
-            AcademicPeriodTimeTable.GetTimeRange(new AcademicPeriod(2)),
+            AcademicPeriodTimeTable.GetTimeRange(courseEntry.Slot),
             new PersonalScheduleDetails(
                 new PersonalScheduleSection("01"),
                 new PersonalScheduleInstructor("김교수"),
@@ -153,11 +191,11 @@ public sealed class ScheduleListGroupingTests
 
         Assert.Equal("제품 디자인", group.TitleDisplayText);
         Assert.Equal(2, group.Occurrences.Count);
-        Assert.Equal("화: 10:00–11:15", group.Occurrences[0].ScheduleDisplayText);
+        Assert.Equal("화: 10:30–11:45", group.Occurrences[0].ScheduleDisplayText);
         Assert.Equal(
             "(01) · NTH 311 · 김교수",
             group.Occurrences[0].MetadataDisplayText);
-        Assert.Equal("목: 11:30–12:45", group.Occurrences[1].ScheduleDisplayText);
+        Assert.Equal("목: 12:00–13:15", group.Occurrences[1].ScheduleDisplayText);
         Assert.Equal(
             "(02) · OH 401 · 김교수",
             group.Occurrences[1].MetadataDisplayText);
@@ -278,8 +316,7 @@ public sealed class ScheduleListGroupingTests
                 instructorSummary,
                 locationSummary),
             sectionCode,
-            day,
-            period,
+            new MeetingSlot(day, period),
             ECourseAccent.Blue);
     }
 

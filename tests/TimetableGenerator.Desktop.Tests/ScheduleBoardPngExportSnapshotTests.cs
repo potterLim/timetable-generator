@@ -56,12 +56,12 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             new ScheduleEntry[] { entry });
 
         Assert.Equal(
-            new ScheduleBoardTimeBoundary(510),
+            new ScheduleBoardTimeBoundary(540),
             layout.TimeAxis.Start);
         Assert.Equal(
             new ScheduleBoardTimeBoundary(960),
             layout.TimeAxis.End);
-        Assert.Equal(90, layout.TimeAxis.IncrementCount);
+        Assert.Equal(84, layout.TimeAxis.IncrementCount);
         Assert.Equal("15:30", layout.TimeAxis.LabelTimes[^1].ToString());
         Assert.DoesNotContain(
             layout.TimeAxis.LabelTimes,
@@ -96,12 +96,12 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             new ScheduleBoardTimeBoundary(840),
             layout.TimeAxis.Start);
         Assert.Equal(
-            new ScheduleBoardTimeBoundary(960),
+            new ScheduleBoardTimeBoundary(990),
             layout.TimeAxis.End);
-        Assert.Equal(24, layout.TimeAxis.IncrementCount);
-        Assert.Equal(4, layout.TimeAxis.LabelTimes.Count);
+        Assert.Equal(30, layout.TimeAxis.IncrementCount);
+        Assert.Equal(5, layout.TimeAxis.LabelTimes.Count);
         Assert.Equal("14:00", layout.TimeAxis.LabelTimes[0].ToString());
-        Assert.Equal("15:30", layout.TimeAxis.LabelTimes[^1].ToString());
+        Assert.Equal("16:00", layout.TimeAxis.LabelTimes[^1].ToString());
     }
 
     [Fact]
@@ -115,9 +115,37 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             new ScheduleEntry[] { entry });
 
         Assert.Equal(
-            new ScheduleBoardTimeBoundary(1_050),
+            new ScheduleBoardTimeBoundary(1_080),
             layout.TimeAxis.End);
-        Assert.Equal("17:00", layout.TimeAxis.LabelTimes[^1].ToString());
+        Assert.Equal("17:30", layout.TimeAxis.LabelTimes[^1].ToString());
+        Assert.Equal(
+            3,
+            layout.TimeAxis.IncrementCount
+                - layout.TimeAxis.FindEndingRowOffset(entry.TimeRange.End));
+    }
+
+    [Fact]
+    public void PngExportLayoutExtendsTenthPeriodThroughMidnightBoundary()
+    {
+        ScheduleEntry entry = createScheduleEntry(
+            EDay.Monday,
+            new AcademicPeriod(10));
+
+        ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForPngExport(
+            new ScheduleEntry[] { entry });
+
+        Assert.Equal(
+            new DailyTimeRange(
+                new ScheduleTime(22, 30),
+                new ScheduleTime(23, 45)),
+            entry.TimeRange);
+        Assert.Equal(
+            new ScheduleBoardTimeBoundary(1_320),
+            layout.TimeAxis.Start);
+        Assert.Equal(
+            new ScheduleBoardTimeBoundary(1_440),
+            layout.TimeAxis.End);
+        Assert.Equal("23:30", layout.TimeAxis.LabelTimes[^1].ToString());
         Assert.Equal(
             3,
             layout.TimeAxis.IncrementCount
@@ -176,7 +204,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             Dispatcher.UIThread.RunJobs();
 
             Assert.Equal(
-                new ScheduleBoardTimeBoundary(510),
+                new ScheduleBoardTimeBoundary(540),
                 sourceBoard.RenderedLayout.TimeAxis.Start);
             using (ScheduleBoardPngExportSnapshot snapshot =
                 ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
@@ -480,8 +508,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                     LocationAssignmentMetadata.CreateAssigned(
                         new ClassroomDisplayText("테스트 강의실")))),
             new CourseSectionCode("01"),
-            day,
-            period,
+            new MeetingSlot(day, period),
             ECourseAccent.Blue);
     }
 

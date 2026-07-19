@@ -307,7 +307,7 @@ public sealed class PlanningWorkspaceSessionTests
             EDay.Wednesday,
             4);
         DailyTimeRange blockedTimeRange = AcademicPeriodTimeTable.GetTimeRange(
-            blockedSlot.Period);
+            blockedSlot);
         PersonalSchedule blockingSchedule = new PersonalSchedule(
             PersonalScheduleId.CreateNew(),
             new PersonalScheduleTitle("마지막 후보 차단"),

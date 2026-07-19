@@ -71,7 +71,15 @@ internal sealed class CourseScheduleEntry : ScheduleEntry
         }
     }
 
-    public AcademicPeriod Period { get; }
+    public MeetingSlot Slot { get; }
+
+    public AcademicPeriod Period
+    {
+        get
+        {
+            return Slot.Period;
+        }
+    }
 
     public ECourseAccent Accent { get; }
 
@@ -80,10 +88,9 @@ internal sealed class CourseScheduleEntry : ScheduleEntry
         OfferingId offeringId,
         ScheduleCourseDetails courseDetails,
         CourseSectionCode sectionCode,
-        EDay day,
-        AcademicPeriod period,
+        MeetingSlot slot,
         ECourseAccent accent)
-        : base(day, AcademicPeriodTimeTable.GetTimeRange(period))
+        : base(slot.Day, AcademicPeriodTimeTable.GetTimeRange(slot))
     {
         if (courseId == null)
         {
@@ -105,16 +112,11 @@ internal sealed class CourseScheduleEntry : ScheduleEntry
             throw new ArgumentNullException(nameof(sectionCode));
         }
 
-        if (period.IsValid == false)
-        {
-            throw new ArgumentException("Academic periods must be valid.", nameof(period));
-        }
-
         CourseId = courseId;
         OfferingId = offeringId;
         CourseDetails = courseDetails;
         SectionCode = sectionCode;
-        Period = period;
+        Slot = slot;
         Accent = accent;
     }
 }

@@ -375,6 +375,54 @@ public sealed class ScheduleRecommendationGeneratorTests
     }
 
     [TestMethod]
+    public void PersonalScheduleEndingAtARegularDayPeriodBoundaryDoesNotConflict()
+    {
+        CatalogCourse course = ScheduleRecommendationTestData.CreateCourse("AAA10001");
+        CatalogOffering mondayOffering =
+            ScheduleRecommendationTestData.CreateScheduledOffering(
+                "AAA10001",
+                "01",
+                new MeetingSlot[]
+                {
+                    ScheduleRecommendationTestData.CreateMeetingSlot(
+                        EDay.Monday,
+                        1),
+                });
+        CatalogOffering tuesdayOffering =
+            ScheduleRecommendationTestData.CreateScheduledOffering(
+                "AAA10001",
+                "02",
+                new MeetingSlot[]
+                {
+                    ScheduleRecommendationTestData.CreateMeetingSlot(
+                        EDay.Tuesday,
+                        1),
+                });
+        CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(
+            new CatalogCourse[] { course },
+            new CatalogOffering[] { mondayOffering, tuesdayOffering });
+        PersonalSchedule personalSchedule = createPersonalSchedule(
+            EDay.Monday,
+            new ScheduleTime(8, 45),
+            new ScheduleTime(9, 0));
+        PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
+            catalog,
+            new CourseChoiceGroup[]
+            {
+                ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                    "AAA10001",
+                    "01",
+                    "02"),
+            },
+            Array.Empty<UnscheduledOfferingSelection>(),
+            new PersonalSchedule[] { personalSchedule });
+
+        ScheduleRecommendationResult result = generate(catalog, plan, 10);
+
+        Assert.HasCount(2, result.Recommendations);
+    }
+
+    [TestMethod]
     public void PersonalOnlyPlanProducesAConfirmedRecommendation()
     {
         CatalogCourse catalogCourse =

@@ -70,6 +70,55 @@ public sealed class ScheduleCalendarProjectorTests
     }
 
     [Fact]
+    public void SamePeriodOnWednesdayAndARegularDayCreatesSeparateEvents()
+    {
+        CourseId courseId = new CourseId("course-1");
+        OfferingId offeringId = new OfferingId("offering-1");
+        ScheduleRecommendation displayedSchedule = new ScheduleRecommendation(
+            new ScheduleEntry[]
+            {
+                createCourseEntry(
+                    courseId,
+                    offeringId,
+                    EDay.Monday,
+                    new AcademicPeriod(1)),
+                createCourseEntry(
+                    courseId,
+                    offeringId,
+                    EDay.Wednesday,
+                    new AcademicPeriod(1)),
+            });
+
+        CalendarExportDocument document = ScheduleCalendarProjector.Project(
+            PlanId.CreateNew(),
+            new PlanName("시간표"),
+            displayedSchedule,
+            getAcademicCalendar());
+
+        Assert.Collection(
+            document.Events,
+            calendarEvent =>
+            {
+                Assert.Equal(new EDay[] { EDay.Wednesday }, calendarEvent.Days);
+                Assert.Equal(
+                    new DailyTimeRange(
+                        new ScheduleTime(8, 30),
+                        new ScheduleTime(9, 45)),
+                    calendarEvent.TimeRange);
+            },
+            calendarEvent =>
+            {
+                Assert.Equal(new EDay[] { EDay.Monday }, calendarEvent.Days);
+                Assert.Equal(
+                    new DailyTimeRange(
+                        new ScheduleTime(9, 0),
+                        new ScheduleTime(10, 15)),
+                    calendarEvent.TimeRange);
+            });
+        Assert.NotEqual(document.Events[0].Uid, document.Events[1].Uid);
+    }
+
+    [Fact]
     public void SameOfferingAtDifferentTimesCreatesSeparateEvents()
     {
         CourseId courseId = new CourseId("course-1");
@@ -258,8 +307,7 @@ public sealed class ScheduleCalendarProjectorTests
                 CONFIRMED_INSTRUCTOR,
                 ASSIGNED_LOCATION),
             new CourseSectionCode("01"),
-            day,
-            period,
+            new MeetingSlot(day, period),
             ECourseAccent.Green);
     }
 
