@@ -42,7 +42,7 @@ internal sealed class PlanTabItem
     {
         get
         {
-            return DisplayName + " 계획 닫기";
+            return DisplayName + " 계획 삭제";
         }
     }
 
@@ -52,7 +52,7 @@ internal sealed class PlanTabItem
         {
             if (CanClose)
             {
-                return "계획 닫기";
+                return "계획 삭제";
             }
 
             return "마지막 계획은 닫을 수 없습니다";

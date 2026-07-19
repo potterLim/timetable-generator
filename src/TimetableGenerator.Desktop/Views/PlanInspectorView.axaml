@@ -81,10 +81,10 @@
                     IsEnabled="{Binding CanClearActivePlan}"
                     Click="onPlanManagementActionClick"
                     Command="{Binding BeginClearActivePlanCommand}"
-                    AutomationProperties.Name="현재 계획 비우기">
+                    AutomationProperties.Name="현재 시간표 비우기">
                   <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="9">
                     <icons:FluentIcon Icon="Delete" IconVariant="Regular" FontSize="17" />
-                    <TextBlock Text="계획 비우기" />
+                    <TextBlock Text="시간표 비우기" />
                   </StackPanel>
                 </Button>
                 <Button
@@ -96,10 +96,10 @@
                     IsEnabled="{Binding CanDeleteActivePlan}"
                     Click="onPlanManagementActionClick"
                     Command="{Binding BeginDeletePlanCommand}"
-                    AutomationProperties.Name="현재 계획 닫기">
+                    AutomationProperties.Name="현재 계획 삭제">
                   <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="9">
-                    <icons:FluentIcon Icon="Dismiss" IconVariant="Regular" FontSize="17" />
-                    <TextBlock Text="계획 닫기" />
+                    <icons:FluentIcon Icon="Delete" IconVariant="Regular" FontSize="17" />
+                    <TextBlock Text="계획 삭제" />
                   </StackPanel>
                 </Button>
               </StackPanel>

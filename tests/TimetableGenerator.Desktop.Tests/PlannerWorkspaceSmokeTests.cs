@@ -429,6 +429,9 @@ public sealed class PlannerWorkspaceSmokeTests
             Assert.True(workspace.IsPlanEditingOverlayVisible);
             Assert.False(workspace.IsWorkspaceInteractionEnabled);
             Assert.Equal(originalPlanName.Value, workspace.PlanPendingClearName);
+            Assert.Equal(
+                "‘" + originalPlanName.Value + "’의 모든 내용을 지웁니다.",
+                workspace.PlanClearDescription);
             Assert.False(workspace.ActivePlan.IsCompletelyEmpty);
 
             workspace.CancelClearActivePlanCommand.Execute(null);
@@ -567,7 +570,7 @@ public sealed class PlannerWorkspaceSmokeTests
             Assert.True(planToClose.CanClose);
             Assert.True(planToClose.CloseCommand.CanExecute(null));
             Assert.Contains(planToClose.DisplayName, planToClose.CloseButtonAccessibleName);
-            Assert.Equal("계획 닫기", planToClose.CloseButtonHelpText);
+            Assert.Equal("계획 삭제", planToClose.CloseButtonHelpText);
 
             planToClose.CloseCommand.Execute(null);
 

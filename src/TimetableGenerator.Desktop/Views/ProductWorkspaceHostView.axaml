@@ -198,7 +198,7 @@
           x:Name="PlanEditingDialog"
           MaxWidth="440"
           Margin="16"
-          Padding="24"
+          Padding="32"
           HorizontalAlignment="Stretch"
           VerticalAlignment="Center"
           Background="{DynamicResource ElevatedSurfaceBrush}"
@@ -252,11 +252,12 @@
           <StackPanel
               IsVisible="{Binding IsDeletePlanConfirmationVisible}"
               Spacing="14"
-              AutomationProperties.Name="계획 닫기 확인">
+              AutomationProperties.Name="계획 삭제 확인">
             <Border
+                x:Name="DeletePlanIconSurface"
                 Width="44"
                 Height="44"
-                HorizontalAlignment="Left"
+                HorizontalAlignment="Center"
                 Background="{DynamicResource ErrorSubtleBrush}"
                 CornerRadius="22">
               <icons:FluentIcon
@@ -269,36 +270,46 @@
                   Foreground="{DynamicResource ErrorBrush}" />
             </Border>
             <TextBlock
+                x:Name="DeletePlanHeading"
                 AutomationProperties.HeadingLevel="1"
                 FontSize="21"
                 FontWeight="SemiBold"
-                Text="계획을 닫을까요?" />
+                Text="계획을 삭제할까요?"
+                TextAlignment="Center" />
             <TextBlock
+                x:Name="DeletePlanDescription"
                 Classes="secondary"
                 LineHeight="21"
                 Text="{Binding PlanDeletionDescription}"
+                TextAlignment="Center"
                 TextWrapping="Wrap" />
-            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
+            <StackPanel
+                x:Name="DeletePlanActions"
+                HorizontalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="8">
               <Button
                   x:Name="CancelDeletePlanButton"
                   Classes="outline"
                   Command="{Binding CancelDeletePlanCommand}"
                   Content="취소" />
               <Button
+                  x:Name="ConfirmDeletePlanButton"
                   Classes="danger"
                   Command="{Binding ConfirmDeletePlanCommand}"
-                  Content="계획 닫기" />
+                  Content="계획 삭제" />
             </StackPanel>
           </StackPanel>
 
           <StackPanel
               IsVisible="{Binding IsClearActivePlanConfirmationVisible}"
               Spacing="14"
-              AutomationProperties.Name="계획 비우기 확인">
+              AutomationProperties.Name="시간표 비우기 확인">
             <Border
+                x:Name="ClearActivePlanIconSurface"
                 Width="44"
                 Height="44"
-                HorizontalAlignment="Left"
+                HorizontalAlignment="Center"
                 Background="{DynamicResource ErrorSubtleBrush}"
                 CornerRadius="22">
               <icons:FluentIcon
@@ -311,22 +322,31 @@
                   Foreground="{DynamicResource ErrorBrush}" />
             </Border>
             <TextBlock
+                x:Name="ClearActivePlanHeading"
                 AutomationProperties.HeadingLevel="1"
                 FontSize="21"
                 FontWeight="SemiBold"
-                Text="계획을 비울까요?" />
+                Text="시간표를 비울까요?"
+                TextAlignment="Center" />
             <TextBlock
+                x:Name="ClearActivePlanDescription"
                 Classes="secondary"
                 LineHeight="21"
                 Text="{Binding PlanClearDescription}"
+                TextAlignment="Center"
                 TextWrapping="Wrap" />
-            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
+            <StackPanel
+                x:Name="ClearActivePlanActions"
+                HorizontalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="8">
               <Button
                   x:Name="CancelClearActivePlanButton"
                   Classes="outline"
                   Command="{Binding CancelClearActivePlanCommand}"
                   Content="취소" />
               <Button
+                  x:Name="ConfirmClearActivePlanButton"
                   Classes="danger"
                   Command="{Binding ConfirmClearActivePlanCommand}"
                   Content="모두 지우기" />

@@ -11,6 +11,8 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
+using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -59,11 +61,48 @@ public sealed class ProductWorkspaceInteractionTests
             Button cancelButton = findRequiredControl<Button>(
                 host,
                 "CancelDeletePlanButton");
+            Button confirmButton = findRequiredControl<Button>(
+                host,
+                "ConfirmDeletePlanButton");
+            Border iconSurface = findRequiredControl<Border>(
+                host,
+                "DeletePlanIconSurface");
+            TextBlock heading = findRequiredControl<TextBlock>(
+                host,
+                "DeletePlanHeading");
+            TextBlock description = findRequiredControl<TextBlock>(
+                host,
+                "DeletePlanDescription");
+            StackPanel actions = findRequiredControl<StackPanel>(
+                host,
+                "DeletePlanActions");
 
             Assert.True(editingOverlay.IsVisible);
             Assert.False(workspaceSurface.IsEnabled);
             Assert.Equal(requestedPlanName, workspace.PlanPendingDeletionName);
+            Assert.Equal(
+                "‘" + requestedPlanName + "’ 계획을 삭제합니다.",
+                workspace.PlanDeletionDescription);
             Assert.True(cancelButton.IsKeyboardFocusWithin);
+            Assert.Equal(new Thickness(32.0), editingDialog.Padding);
+            Assert.Equal(HorizontalAlignment.Center, iconSurface.HorizontalAlignment);
+            Assert.Equal("계획을 삭제할까요?", heading.Text);
+            Assert.Equal(TextAlignment.Center, heading.TextAlignment);
+            Assert.Equal(TextAlignment.Center, description.TextAlignment);
+            Assert.Equal(HorizontalAlignment.Center, actions.HorizontalAlignment);
+            Assert.Equal("계획 삭제", confirmButton.Content);
+            Assert.Equal(
+                HorizontalAlignment.Center,
+                cancelButton.HorizontalContentAlignment);
+            Assert.Equal(
+                VerticalAlignment.Center,
+                cancelButton.VerticalContentAlignment);
+            Assert.Equal(
+                HorizontalAlignment.Center,
+                confirmButton.HorizontalContentAlignment);
+            Assert.Equal(
+                VerticalAlignment.Center,
+                confirmButton.VerticalContentAlignment);
             assertCentered(editingDialog, host);
 
             workspace.CancelDeletePlanCommand.Execute(null);
@@ -291,10 +330,44 @@ public sealed class ProductWorkspaceInteractionTests
             Button cancelButton = findRequiredControl<Button>(
                 host,
                 "CancelClearActivePlanButton");
+            Button confirmButton = findRequiredControl<Button>(
+                host,
+                "ConfirmClearActivePlanButton");
+            Border iconSurface = findRequiredControl<Border>(
+                host,
+                "ClearActivePlanIconSurface");
+            TextBlock heading = findRequiredControl<TextBlock>(
+                host,
+                "ClearActivePlanHeading");
+            TextBlock description = findRequiredControl<TextBlock>(
+                host,
+                "ClearActivePlanDescription");
+            StackPanel actions = findRequiredControl<StackPanel>(
+                host,
+                "ClearActivePlanActions");
             Point dialogPosition = findRequiredPosition(dialog, host);
 
             Assert.True(workspace.IsClearActivePlanConfirmationVisible);
             Assert.True(cancelButton.IsKeyboardFocusWithin);
+            Assert.Equal(new Thickness(32.0), dialog.Padding);
+            Assert.Equal(HorizontalAlignment.Center, iconSurface.HorizontalAlignment);
+            Assert.Equal("시간표를 비울까요?", heading.Text);
+            Assert.Equal(TextAlignment.Center, heading.TextAlignment);
+            Assert.Equal(TextAlignment.Center, description.TextAlignment);
+            Assert.Equal(HorizontalAlignment.Center, actions.HorizontalAlignment);
+            Assert.Equal("모두 지우기", confirmButton.Content);
+            Assert.Equal(
+                HorizontalAlignment.Center,
+                cancelButton.HorizontalContentAlignment);
+            Assert.Equal(
+                VerticalAlignment.Center,
+                cancelButton.VerticalContentAlignment);
+            Assert.Equal(
+                HorizontalAlignment.Center,
+                confirmButton.HorizontalContentAlignment);
+            Assert.Equal(
+                VerticalAlignment.Center,
+                confirmButton.VerticalContentAlignment);
             Assert.InRange(dialogPosition.X, 15.0, 17.0);
             Assert.True(
                 dialogPosition.X + dialog.Bounds.Width

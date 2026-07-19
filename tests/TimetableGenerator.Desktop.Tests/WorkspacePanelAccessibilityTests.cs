@@ -150,11 +150,11 @@ public sealed class WorkspacePanelAccessibilityTests
             assertActionAccessibleName(
                 managementContent,
                 workspace.BeginClearActivePlanCommand,
-                "현재 계획 비우기");
+                "현재 시간표 비우기");
             assertActionAccessibleName(
                 managementContent,
                 workspace.BeginDeletePlanCommand,
-                "현재 계획 닫기");
+                "현재 계획 삭제");
             managementFlyout.Hide();
         }
         finally
