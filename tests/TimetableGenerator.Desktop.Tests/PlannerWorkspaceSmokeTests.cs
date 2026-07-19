@@ -545,13 +545,18 @@ public sealed class PlannerWorkspaceSmokeTests
         using (PlannerWorkspaceViewModel workspace =
             PlannerWorkspaceTestFactory.CreateWorkspace())
         {
+            workspace.ActivePlan = workspace.Plans[0];
             workspace.BeginRenamePlanCommand.Execute(null);
-            workspace.PlanNameDraft = "2026-2학기 시간표 2";
+            workspace.PlanNameDraft = "2026-2학기 시간표";
+            workspace.ConfirmRenamePlanCommand.Execute(null);
+            workspace.ActivePlan = workspace.Plans[1];
+            workspace.BeginRenamePlanCommand.Execute(null);
+            workspace.PlanNameDraft = "2026-2학기 시간표(2)";
             workspace.ConfirmRenamePlanCommand.Execute(null);
 
             workspace.AddPlanCommand.Execute(null);
 
-            Assert.Equal("2026-2학기 시간표 3", workspace.ActivePlan.DisplayName);
+            Assert.Equal("2026-2학기 시간표(3)", workspace.ActivePlan.DisplayName);
             Assert.Equal(3, workspace.Plans.Count);
             Assert.True(workspace.IsRenamingPlan);
         }

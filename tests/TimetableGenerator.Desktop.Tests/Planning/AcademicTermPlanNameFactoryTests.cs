@@ -22,22 +22,38 @@ public sealed class AcademicTermPlanNameFactoryTests
     }
 
     [Fact]
-    public void AdditionalPlanNameUsesTheFirstAvailableTermBasedNumber()
+    public void AvailablePlanNameUsesTheFirstAvailableTermBasedNumber()
     {
         AcademicTerm academicTerm = AcademicTerm.Parse("2027-1");
         PlanningPlan[] existingPlans = new PlanningPlan[]
         {
             createPlan(academicTerm, "2027-1학기 시간표"),
-            createPlan(academicTerm, "2027-1학기 시간표 2"),
-            createPlan(academicTerm, "2027-1학기 시간표 3"),
+            createPlan(academicTerm, "2027-1학기 시간표(2)"),
+            createPlan(academicTerm, "2027-1학기 시간표(3)"),
         };
 
         PlanName planName =
-            AcademicTermPlanNameFactory.FindAvailableAdditionalPlanName(
+            AcademicTermPlanNameFactory.FindAvailablePlanName(
                 academicTerm,
                 existingPlans);
 
-        Assert.Equal("2027-1학기 시간표 4", planName.Value);
+        Assert.Equal("2027-1학기 시간표(4)", planName.Value);
+    }
+
+    [Fact]
+    public void AvailablePlanNameUsesTheBaseNameWhenItIsAvailable()
+    {
+        AcademicTerm academicTerm = AcademicTerm.Parse("2027-1");
+        PlanningPlan[] existingPlans = new PlanningPlan[]
+        {
+            createPlan(academicTerm, "2027-1학기 시간표(2)"),
+        };
+
+        PlanName planName = AcademicTermPlanNameFactory.FindAvailablePlanName(
+            academicTerm,
+            existingPlans);
+
+        Assert.Equal("2027-1학기 시간표", planName.Value);
     }
 
     [Fact]
@@ -46,11 +62,11 @@ public sealed class AcademicTermPlanNameFactoryTests
         Assert.Throws<ArgumentException>(
             () => AcademicTermPlanNameFactory.CreateInitialPlanName(default));
         Assert.Throws<ArgumentException>(
-            () => AcademicTermPlanNameFactory.FindAvailableAdditionalPlanName(
+            () => AcademicTermPlanNameFactory.FindAvailablePlanName(
                 default,
                 Array.Empty<PlanningPlan>()));
         Assert.Throws<ArgumentNullException>(
-            () => AcademicTermPlanNameFactory.FindAvailableAdditionalPlanName(
+            () => AcademicTermPlanNameFactory.FindAvailablePlanName(
                 AcademicTerm.Parse("2027-1"),
                 null!));
     }

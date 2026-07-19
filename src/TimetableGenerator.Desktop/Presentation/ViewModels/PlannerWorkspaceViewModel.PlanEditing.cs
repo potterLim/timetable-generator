@@ -266,7 +266,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         throwIfDisposed();
         PlanName availablePlanName =
-            AcademicTermPlanNameFactory.FindAvailableAdditionalPlanName(
+            AcademicTermPlanNameFactory.FindAvailablePlanName(
                 mCatalogProjection.Document.Catalog.Term,
                 mSession.Workspace.Plans);
         mSession.AddPlan(

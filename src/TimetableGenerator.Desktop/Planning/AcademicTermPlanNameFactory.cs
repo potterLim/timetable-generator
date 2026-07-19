@@ -19,7 +19,7 @@ internal static class AcademicTermPlanNameFactory
         return new PlanName(academicTerm.Id + PLAN_NAME_SUFFIX);
     }
 
-    public static PlanName FindAvailableAdditionalPlanName(
+    public static PlanName FindAvailablePlanName(
         AcademicTerm academicTerm,
         IReadOnlyList<PlanningPlan> existingPlans)
     {
@@ -43,14 +43,21 @@ internal static class AcademicTermPlanNameFactory
             existingPlanNames.Add(plan.Name.Value);
         }
 
+        PlanName initialPlanName = CreateInitialPlanName(academicTerm);
+        if (existingPlanNames.Contains(initialPlanName.Value) == false)
+        {
+            return initialPlanName;
+        }
+
         int planNumber = FIRST_ADDITIONAL_PLAN_NUMBER;
         while (true)
         {
             PlanName candidateName = new PlanName(
                 academicTerm.Id
                 + PLAN_NAME_SUFFIX
-                + " "
-                + planNumber.ToString(CultureInfo.InvariantCulture));
+                + "("
+                + planNumber.ToString(CultureInfo.InvariantCulture)
+                + ")");
             if (existingPlanNames.Contains(candidateName.Value) == false)
             {
                 return candidateName;
