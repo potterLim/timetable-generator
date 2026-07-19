@@ -57,9 +57,9 @@ internal static class ScheduleCalendarProjector
                 key,
                 out existingGroupOrNull);
             CalendarEventProjectionGroup group;
-            if (hasExistingGroup)
+            if (hasExistingGroup && existingGroupOrNull != null)
             {
-                group = existingGroupOrNull!;
+                group = existingGroupOrNull;
             }
             else
             {
