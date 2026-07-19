@@ -66,6 +66,14 @@ pwsh ./scripts/publish-desktop.ps1 `
 
 서명과 notarization은 Developer ID Application 인증서와 Xcode Command Line Tools가 설치된 macOS 빌드 기기에서 수행합니다. 일반 .NET self-contained 앱은 JIT 권한이 필요하므로 저장소의 `Platforms/macOS/TimetableGenerator.entitlements`를 사용합니다. 불필요한 디버깅·Apple Events·sandbox 예외는 포함하지 않았습니다.
 
+### Apple Calendar 가져오기 경계
+
+현재 데스크톱 프로젝트는 Apple 플랫폼 바인딩이 없는 일반 `net10.0` Avalonia 앱입니다. 따라서 EventKit을 직접 호출하거나 Apple Events 자동화를 추가하지 않습니다. macOS에서는 생성한 `.ics` 파일을 LaunchServices의 Apple Calendar 번들 식별자(`com.apple.iCal`)로 열고, 최종 가져오기는 사용자가 Calendar에서 확인합니다.
+
+이 방식은 캘린더 데이터 권한이나 Apple Events 권한을 앱이 직접 요청하지 않으므로 `Info.plist` 사용 목적 문구와 추가 entitlement가 필요하지 않습니다. `.ics` 파일은 Calendar가 비동기로 읽을 수 있도록 열기 명령 직후 삭제하지 않습니다. 파일을 만든 계층이 앱 전용 임시 저장소에서 수명을 관리하고, 다음 실행 또는 정해진 보존 기간에 오래된 파일을 정리해야 합니다.
+
+LaunchServices로 여는 동작은 가져오기 화면을 시작할 뿐 완료나 이후 동기화를 보장하지 않습니다. 동일한 `.ics`를 반복해서 가져오면 사용자의 선택에 따라 일정이 중복될 수 있으므로, 직접 업데이트가 필요한 경우에는 별도의 EventKit 지원 타깃과 캘린더 권한·서명 구성을 설계해야 합니다.
+
 다음 순서를 배포 담당자의 실제 identity와 keychain profile로 실행합니다. `codesign --deep`으로 서명하지 말고 내부 Mach-O부터 바깥 bundle 순서로 서명합니다.
 
 ```bash
