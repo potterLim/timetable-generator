@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Headless.XUnit;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
@@ -77,12 +78,28 @@ public sealed class PlanInspectorVisualStateTests
 
         try
         {
-            Control managementContent = Assert.IsAssignableFrom<Control>(
+            StackPanel managementContent = Assert.IsType<StackPanel>(
                 managementFlyout.Content);
-            Button clearButton = managementContent
+            Button[] managementActions = managementContent
                 .GetVisualDescendants()
                 .OfType<Button>()
-                .Single(candidate => candidate.Name == "ClearActivePlanButton");
+                .ToArray();
+            Assert.Equal(3, managementActions.Length);
+            foreach (Button managementAction in managementActions)
+            {
+                Assert.Equal(
+                    HorizontalAlignment.Stretch,
+                    managementAction.HorizontalAlignment);
+                Assert.InRange(
+                    Math.Abs(
+                        managementAction.Bounds.Width
+                        - managementContent.Bounds.Width),
+                    0.0,
+                    0.05);
+            }
+
+            Button clearButton = managementActions.Single(
+                candidate => candidate.Name == "ClearActivePlanButton");
             ContentPresenter presenter = clearButton
                 .GetVisualDescendants()
                 .OfType<ContentPresenter>()

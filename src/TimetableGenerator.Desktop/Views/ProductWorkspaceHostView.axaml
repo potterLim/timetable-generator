@@ -62,15 +62,27 @@
                     Spacing="8">
                   <StackPanel.ContextMenu>
                     <ContextMenu
+                        Classes="plan-tab-menu"
                         x:DataType="models:PlanTabItem"
                         DataContext="{Binding #PlanTabContent.DataContext}">
                       <MenuItem
                           Classes="plan-tab-menu-item"
-                          Header="이름 변경"
+                          Header="이름 바꾸기"
                           Command="{Binding RenameCommand}">
                         <MenuItem.Icon>
                           <icons:FluentIcon
                               Icon="Edit"
+                              IconVariant="Regular"
+                              FontSize="17" />
+                        </MenuItem.Icon>
+                      </MenuItem>
+                      <MenuItem
+                          Classes="plan-tab-menu-item destructive"
+                          Header="계획 삭제"
+                          Command="{Binding CloseCommand}">
+                        <MenuItem.Icon>
+                          <icons:FluentIcon
+                              Icon="Delete"
                               IconVariant="Regular"
                               FontSize="17" />
                         </MenuItem.Icon>

@@ -590,10 +590,21 @@ public sealed class ProductWorkspaceInteractionTests
                         "The plan tab did not expose its context menu.");
                 }
 
-                MenuItem renameMenuItem = Assert.Single(
-                    contextMenuOrNull.Items.OfType<MenuItem>());
-                Assert.Equal("이름 변경", renameMenuItem.Header);
+                MenuItem[] contextMenuItems = contextMenuOrNull.Items
+                    .OfType<MenuItem>()
+                    .ToArray();
+                Assert.Equal(2, contextMenuItems.Length);
+                MenuItem renameMenuItem = contextMenuItems[0];
+                MenuItem deleteMenuItem = contextMenuItems[1];
+                Assert.Equal("이름 바꾸기", renameMenuItem.Header);
                 Assert.Same(plan.RenameCommand, renameMenuItem.Command);
+                Assert.Equal("계획 삭제", deleteMenuItem.Header);
+                Assert.Same(plan.CloseCommand, deleteMenuItem.Command);
+                Assert.Contains("destructive", deleteMenuItem.Classes);
+
+                deleteMenuItem.Command?.Execute(null);
+                Assert.Equal(plan.DisplayName, workspace.PlanPendingDeletionName);
+                workspace.CancelDeletePlanCommand.Execute(null);
 
                 Button closeButton = planTab.GetVisualDescendants()
                     .OfType<Button>()

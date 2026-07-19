@@ -580,8 +580,10 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                 .Single(candidate => candidate.ContextMenu != null);
             ContextMenu contextMenu = Assert.IsType<ContextMenu>(
                 contextMenuOwner.ContextMenu);
-            MenuItem renameMenuItem = Assert.Single(
-                contextMenu.Items.OfType<MenuItem>());
+            MenuItem[] menuItems = contextMenu.Items
+                .OfType<MenuItem>()
+                .ToArray();
+            Assert.Equal(2, menuItems.Length);
             List<VerticalCenterComparison> comparisons =
                 new List<VerticalCenterComparison>();
 
@@ -591,32 +593,43 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                 contextMenu.Open(contextMenuOwner);
                 Dispatcher.UIThread.RunJobs();
 
-                TextBlock header = findRequiredTextBlock(
-                    renameMenuItem,
-                    "이름 변경");
-                ContentControl iconPresenter = renameMenuItem
-                    .GetVisualDescendants()
-                    .OfType<ContentControl>()
-                    .Single(candidate => candidate.Name == "PART_IconPresenter");
-                FluentIcon icon = iconPresenter
-                    .GetVisualDescendants()
-                    .OfType<FluentIcon>()
-                    .Single();
-                string stateName = "Plan tab context menu [theme="
-                    + themeVariant.Key + "]";
+                Assert.InRange(contextMenu.Bounds.Width, 174.0, double.MaxValue);
+                Assert.InRange(
+                    Math.Abs(menuItems[0].Bounds.Width - menuItems[1].Bounds.Width),
+                    0.0,
+                    0.05);
+                foreach (MenuItem menuItem in menuItems)
+                {
+                    string headerText = Assert.IsType<string>(menuItem.Header);
+                    TextBlock header = findRequiredTextBlock(
+                        menuItem,
+                        headerText);
+                    ContentControl iconPresenter = menuItem
+                        .GetVisualDescendants()
+                        .OfType<ContentControl>()
+                        .Single(
+                            candidate => candidate.Name == "PART_IconPresenter");
+                    FluentIcon icon = iconPresenter
+                        .GetVisualDescendants()
+                        .OfType<FluentIcon>()
+                        .Single();
+                    string stateName = "Plan tab context menu '"
+                        + headerText + "' [theme=" + themeVariant.Key + "]";
 
-                comparisons.Add(compareControlAndTextLayoutCenters(
-                    stateName,
-                    renameMenuItem,
-                    measureTextLayout(header, renameMenuItem)));
-                comparisons.Add(compareCenters(
-                    stateName + " item versus icon slot",
-                    measureArrangedBounds(renameMenuItem, renameMenuItem),
-                    measureArrangedBounds(iconPresenter, renameMenuItem)));
-                comparisons.Add(compareCenters(
-                    stateName + " icon slot versus icon",
-                    measureArrangedBounds(iconPresenter, iconPresenter),
-                    measureArrangedBounds(icon, iconPresenter)));
+                    Assert.InRange(menuItem.Bounds.Width, 160.0, double.MaxValue);
+                    comparisons.Add(compareControlAndTextLayoutCenters(
+                        stateName,
+                        menuItem,
+                        measureTextLayout(header, menuItem)));
+                    comparisons.Add(compareCenters(
+                        stateName + " item versus icon slot",
+                        measureArrangedBounds(menuItem, menuItem),
+                        measureArrangedBounds(iconPresenter, menuItem)));
+                    comparisons.Add(compareCenters(
+                        stateName + " icon slot versus icon",
+                        measureArrangedBounds(iconPresenter, iconPresenter),
+                        measureArrangedBounds(icon, iconPresenter)));
+                }
 
                 contextMenu.Close();
                 Dispatcher.UIThread.RunJobs();
