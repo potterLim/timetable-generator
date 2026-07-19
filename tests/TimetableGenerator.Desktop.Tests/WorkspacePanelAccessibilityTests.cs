@@ -140,6 +140,22 @@ public sealed class WorkspacePanelAccessibilityTests
             Button managementButton = findRequiredControl<Button>(
                 inspector,
                 "PlanManagementButton");
+            TextBlock managementTitle = findRequiredControl<TextBlock>(
+                inspector,
+                "PlanManagementTitle");
+            Assert.Equal(
+                workspace.ActivePlan.DisplayName,
+                managementTitle.Text);
+            Assert.Equal(
+                workspace.ActivePlan.DisplayName,
+                AutomationProperties.GetName(managementButton));
+            Assert.Equal(
+                "계획 관리",
+                AutomationProperties.GetHelpText(managementButton));
+            Assert.Equal("계획 관리", ToolTip.GetTip(managementButton));
+            Assert.Equal(
+                2,
+                (int)AutomationProperties.GetHeadingLevel(managementButton));
             Flyout managementFlyout = Assert.IsType<Flyout>(
                 managementButton.Flyout);
             managementFlyout.ShowAt(managementButton);
@@ -420,6 +436,7 @@ public sealed class WorkspacePanelAccessibilityTests
             Assert.Equal(
                 "내 계획 패널 닫기",
                 AutomationProperties.GetName(closeInspectorPane));
+            Assert.Equal("계획 닫기", ToolTip.GetTip(closeInspectorPane));
 
             closeInspectorPane.Command?.Execute(null);
             Dispatcher.UIThread.RunJobs();

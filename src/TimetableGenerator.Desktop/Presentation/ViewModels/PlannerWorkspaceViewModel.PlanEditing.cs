@@ -112,7 +112,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         {
             if (IsRenamingPlan)
             {
-                return "시간표 이름 변경";
+                return "시간표 이름 바꾸기";
             }
 
             if (IsDeletePlanConfirmationVisible)

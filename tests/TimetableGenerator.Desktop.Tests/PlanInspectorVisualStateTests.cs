@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Headless.XUnit;
@@ -10,6 +11,8 @@ using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+
+using FluentIcons.Avalonia;
 
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Desktop.Views;
@@ -22,6 +25,88 @@ public sealed class PlanInspectorVisualStateTests
 {
     private const double INSPECTOR_HEIGHT = 640.0;
     private const double INSPECTOR_WIDTH = 384.0;
+    private const string PRODUCT_FONT_FAMILY_NAME = "Pretendard";
+    private const string TERM_PLAN_NAME = "2026-2학기 시간표(5)";
+
+    [AvaloniaFact]
+    public void PlanTitleRemainsFullyVisibleAsTheManagementActionAtProductWidths()
+    {
+        using (PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace())
+        {
+            workspace.BeginRenamePlanCommand.Execute(null);
+            workspace.PlanNameDraft = TERM_PLAN_NAME;
+            workspace.ConfirmRenamePlanCommand.Execute(null);
+
+            double[] inspectorWidths = new double[]
+            {
+                288.0,
+                304.0,
+            };
+            foreach (double inspectorWidth in inspectorWidths)
+            {
+                PlanInspectorView inspector = new PlanInspectorView();
+                inspector.DataContext = workspace;
+                Window window = new Window();
+                window.Width = inspectorWidth;
+                window.Height = INSPECTOR_HEIGHT;
+                window.Content = inspector;
+
+                try
+                {
+                    window.Show();
+                    Dispatcher.UIThread.RunJobs();
+
+                    Button managementButton = findRequiredControl<Button>(
+                        inspector,
+                        "PlanManagementButton");
+                    TextBlock planTitle = findRequiredControl<TextBlock>(
+                        inspector,
+                        "PlanManagementTitle");
+                    TextBlock naturalTitle = new TextBlock();
+                    naturalTitle.FontFamily = planTitle.FontFamily;
+                    naturalTitle.FontSize = planTitle.FontSize;
+                    naturalTitle.FontWeight = planTitle.FontWeight;
+                    naturalTitle.Text = TERM_PLAN_NAME;
+                    naturalTitle.Measure(Size.Infinity);
+
+                    Assert.Equal(TERM_PLAN_NAME, planTitle.Text);
+                    Assert.Equal(
+                        TextTrimming.CharacterEllipsis,
+                        planTitle.TextTrimming);
+                    Assert.True(
+                        naturalTitle.DesiredSize.Width
+                        <= planTitle.Bounds.Width + 0.05,
+                        "The product term name did not fit at inspector width "
+                            + inspectorWidth + ". Natural text width: "
+                            + naturalTitle.DesiredSize.Width
+                            + ", arranged title width: "
+                            + planTitle.Bounds.Width + ".");
+                    Assert.Equal(
+                        TERM_PLAN_NAME,
+                        AutomationProperties.GetName(managementButton));
+                    Assert.Equal(
+                        "계획 관리",
+                        AutomationProperties.GetHelpText(managementButton));
+                    Assert.Equal(
+                        2,
+                        (int)AutomationProperties.GetHeadingLevel(
+                            managementButton));
+                    Assert.Equal(
+                        "계획 관리",
+                        ToolTip.GetTip(managementButton));
+                    Assert.Empty(
+                        managementButton
+                            .GetVisualDescendants()
+                            .OfType<FluentIcon>());
+                }
+                finally
+                {
+                    window.Close();
+                }
+            }
+        }
+    }
 
     [AvaloniaFact]
     public void EmptyPlanMenuUsesSubduedTextOnlyDisabledTreatmentAcrossThemes()
@@ -80,6 +165,8 @@ public sealed class PlanInspectorVisualStateTests
         {
             StackPanel managementContent = Assert.IsType<StackPanel>(
                 managementFlyout.Content);
+            Assert.Equal(148.0, managementContent.MinWidth);
+            Assert.InRange(managementContent.Bounds.Width, 148.0, 150.0);
             Button[] managementActions = managementContent
                 .GetVisualDescendants()
                 .OfType<Button>()
@@ -87,6 +174,11 @@ public sealed class PlanInspectorVisualStateTests
             Assert.Equal(3, managementActions.Length);
             foreach (Button managementAction in managementActions)
             {
+                Assert.Equal(
+                    PRODUCT_FONT_FAMILY_NAME,
+                    managementAction.FontFamily.Name);
+                Assert.Equal(14.0, managementAction.FontSize);
+                Assert.Equal(FontWeight.SemiBold, managementAction.FontWeight);
                 Assert.Equal(
                     HorizontalAlignment.Stretch,
                     managementAction.HorizontalAlignment);
@@ -106,9 +198,14 @@ public sealed class PlanInspectorVisualStateTests
                 .Single(candidate => candidate.Name == "PART_ContentPresenter");
             StackPanel buttonContent = Assert.IsType<StackPanel>(
                 clearButton.Content);
+            Assert.Equal(8.0, buttonContent.Spacing);
             Control[] contentChildren = buttonContent.Children
                 .OfType<Control>()
                 .ToArray();
+            FluentIcon clearIcon = Assert.IsType<FluentIcon>(
+                contentChildren[0]);
+            TextBlock clearLabel = Assert.IsType<TextBlock>(
+                contentChildren[1]);
 
             Assert.False(clearButton.IsEnabled);
             Assert.Equal(1.0, clearButton.Opacity);
@@ -123,6 +220,10 @@ public sealed class PlanInspectorVisualStateTests
                     themeVariant),
                 getRequiredSolidColor(clearButton.Foreground));
             Assert.Equal(2, contentChildren.Length);
+            Assert.Equal(18.0, clearIcon.Width);
+            Assert.Equal(18.0, clearIcon.Height);
+            Assert.Equal(18.0, clearLabel.Height);
+            Assert.Equal(18.0, clearLabel.LineHeight);
             assertControlsShareVerticalCenter(
                 buttonContent,
                 contentChildren[0],

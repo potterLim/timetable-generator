@@ -9,6 +9,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Headless.XUnit;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Styling;
 using Avalonia.Threading;
@@ -580,7 +581,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                 .Single(candidate => candidate.ContextMenu != null);
             ContextMenu contextMenu = Assert.IsType<ContextMenu>(
                 contextMenuOwner.ContextMenu);
-            Assert.Equal(new Thickness(4.0, 0.0), contextMenu.Padding);
+            Assert.Equal(new Thickness(4.0), contextMenu.Padding);
             MenuItem[] menuItems = contextMenu.Items
                 .OfType<MenuItem>()
                 .ToArray();
@@ -594,13 +595,16 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                 contextMenu.Open(contextMenuOwner);
                 Dispatcher.UIThread.RunJobs();
 
-                Assert.InRange(contextMenu.Bounds.Width, 174.0, double.MaxValue);
+                Assert.InRange(contextMenu.Bounds.Width, 158.0, 170.0);
                 Assert.InRange(
                     Math.Abs(menuItems[0].Bounds.Width - menuItems[1].Bounds.Width),
                     0.0,
                     0.05);
                 foreach (MenuItem menuItem in menuItems)
                 {
+                    Assert.Equal("Pretendard", menuItem.FontFamily.Name);
+                    Assert.Equal(BODY_FONT_SIZE_DIP, menuItem.FontSize);
+                    Assert.Equal(FontWeight.SemiBold, menuItem.FontWeight);
                     string headerText = Assert.IsType<string>(menuItem.Header);
                     TextBlock header = findRequiredTextBlock(
                         menuItem,
@@ -617,7 +621,11 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                     string stateName = "Plan tab context menu '"
                         + headerText + "' [theme=" + themeVariant.Key + "]";
 
-                    Assert.InRange(menuItem.Bounds.Width, 160.0, double.MaxValue);
+                    Assert.InRange(menuItem.Bounds.Width, 148.0, 160.0);
+                    Assert.Equal(18.0, header.Height);
+                    Assert.Equal(18.0, header.LineHeight);
+                    Assert.Equal(18.0, icon.Width);
+                    Assert.Equal(18.0, icon.Height);
                     comparisons.Add(compareControlAndTextLayoutCenters(
                         stateName,
                         menuItem,

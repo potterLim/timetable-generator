@@ -63,7 +63,7 @@
                   <StackPanel.ContextMenu>
                     <ContextMenu
                         Classes="plan-tab-menu"
-                        Padding="4,0"
+                        Padding="4"
                         x:DataType="models:PlanTabItem"
                         DataContext="{Binding #PlanTabContent.DataContext}">
                       <MenuItem
@@ -72,9 +72,9 @@
                           Command="{Binding RenameCommand}">
                         <MenuItem.Icon>
                           <icons:FluentIcon
+                              Classes="plan-action-icon"
                               Icon="Edit"
-                              IconVariant="Regular"
-                              FontSize="17" />
+                              IconVariant="Regular" />
                         </MenuItem.Icon>
                       </MenuItem>
                       <MenuItem
@@ -83,9 +83,9 @@
                           Command="{Binding CloseCommand}">
                         <MenuItem.Icon>
                           <icons:FluentIcon
+                              Classes="plan-action-icon"
                               Icon="Delete"
-                              IconVariant="Regular"
-                              FontSize="17" />
+                              IconVariant="Regular" />
                         </MenuItem.Icon>
                       </MenuItem>
                     </ContextMenu>
@@ -322,12 +322,12 @@
           <StackPanel
               IsVisible="{Binding IsRenamingPlan}"
               Spacing="14"
-              AutomationProperties.Name="시간표 이름 변경">
+              AutomationProperties.Name="시간표 이름 바꾸기">
             <TextBlock
                 AutomationProperties.HeadingLevel="1"
                 FontSize="21"
                 FontWeight="SemiBold"
-                Text="시간표 이름 변경" />
+                Text="시간표 이름 바꾸기" />
             <TextBox
                 x:Name="PlanNameEditor"
                 MaxLength="80"

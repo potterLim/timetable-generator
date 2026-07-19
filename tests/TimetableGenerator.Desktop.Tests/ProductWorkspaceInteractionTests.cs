@@ -418,8 +418,27 @@ public sealed class ProductWorkspaceInteractionTests
                     "The plan-management action did not have a flyout.");
             }
 
-            managementFlyoutOrNull.ShowAt(managementButton);
+            Point managementButtonPosition = findRequiredPosition(
+                managementButton,
+                window);
+            Point managementClickPosition = new Point(
+                managementButtonPosition.X
+                    + (managementButton.Bounds.Width / 2.0),
+                managementButtonPosition.Y
+                    + (managementButton.Bounds.Height / 2.0));
+            window.MouseMove(
+                managementClickPosition,
+                RawInputModifiers.None);
+            window.MouseDown(
+                managementClickPosition,
+                MouseButton.Left,
+                RawInputModifiers.None);
+            window.MouseUp(
+                managementClickPosition,
+                MouseButton.Left,
+                RawInputModifiers.None);
             Dispatcher.UIThread.RunJobs();
+            Assert.True(managementFlyoutOrNull.IsOpen);
 
             Control? flyoutContentOrNull = managementFlyoutOrNull.Content as Control;
             if (flyoutContentOrNull == null)

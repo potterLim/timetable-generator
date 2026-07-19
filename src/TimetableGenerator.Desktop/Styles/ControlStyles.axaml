@@ -153,6 +153,30 @@
     <Setter Property="LineHeight" Value="18" />
   </Style>
 
+  <Style Selector="StackPanel.plan-action-content">
+    <Setter Property="Orientation" Value="Horizontal" />
+    <Setter Property="Spacing" Value="8" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="TextBlock.plan-action-label">
+    <Setter Property="Height" Value="18" />
+    <Setter Property="LineHeight" Value="18" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="FontFamily" Value="{DynamicResource ProductSystemFontFamily}" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
+  <Style Selector="icons|FluentIcon.plan-action-icon">
+    <Setter Property="Width" Value="18" />
+    <Setter Property="Height" Value="18" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="FontSize" Value="17" />
+  </Style>
+
   <Style Selector="Button.icon">
     <Setter Property="Width" Value="36" />
     <Setter Property="Height" Value="36" />
@@ -268,6 +292,25 @@
     <Setter Property="Background" Value="{DynamicResource PressedSurfaceBrush}" />
   </Style>
 
+  <Style Selector="Button.plan-title-action">
+    <Setter Property="MinWidth" Value="0" />
+    <Setter Property="MinHeight" Value="36" />
+    <Setter Property="Padding" Value="0,4" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+  </Style>
+
+  <Style Selector="Button.plan-title-action:pointerover">
+    <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
+  </Style>
+
+  <Style Selector="Button.plan-title-action:pressed">
+    <Setter Property="Background" Value="{DynamicResource PressedSurfaceBrush}" />
+  </Style>
+
   <Style Selector="Button.plan-management-action">
     <Setter Property="MinHeight" Value="40" />
     <Setter Property="Padding" Value="10,8" />
@@ -276,6 +319,9 @@
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderBrush" Value="Transparent" />
     <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    <Setter Property="FontFamily" Value="{DynamicResource ProductSystemFontFamily}" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontWeight" Value="SemiBold" />
   </Style>
 
   <Style Selector="Button.plan-management-action:pointerover">
@@ -367,7 +413,7 @@
   </Style>
 
   <Style Selector="ContextMenu.plan-tab-menu">
-    <Setter Property="MinWidth" Value="174" />
+    <Setter Property="MinWidth" Value="158" />
     <Setter Property="Background" Value="{DynamicResource ElevatedSurfaceBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource StrongBorderBrush}" />
     <Setter Property="BorderThickness" Value="1" />
@@ -424,12 +470,13 @@
 
   <Style Selector="MenuItem.plan-tab-menu-item">
     <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="FontFamily" Value="{DynamicResource ProductSystemFontFamily}" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontWeight" Value="SemiBold" />
     <Setter Property="HeaderTemplate">
       <DataTemplate>
         <TextBlock
-            Height="18"
-            LineHeight="18"
-            VerticalAlignment="Center"
+            Classes="plan-action-label"
             Text="{ReflectionBinding}" />
       </DataTemplate>
     </Setter>

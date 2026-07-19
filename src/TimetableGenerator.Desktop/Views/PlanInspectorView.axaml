@@ -38,34 +38,35 @@
       <Grid
           Grid.Row="0"
           Margin="0,0,22,0"
-          ColumnDefinitions="*,Auto,Auto"
+          ColumnDefinitions="*,Auto"
           ColumnSpacing="4">
-        <TextBlock
-            Classes="title"
-            MaxWidth="184"
-            VerticalAlignment="Center"
-            AutomationProperties.HeadingLevel="2"
-            Text="{Binding ActivePlanOrNull.DisplayName}"
-            TextTrimming="CharacterEllipsis"
-            ToolTip.Tip="{Binding ActivePlanOrNull.DisplayName}" />
         <Button
             x:Name="PlanManagementButton"
-            Grid.Column="1"
-            Classes="icon"
-            AutomationProperties.Name="현재 계획 관리"
+            Grid.Column="0"
+            Classes="plan-title-action"
+            AutomationProperties.Name="{Binding ActivePlanOrNull.DisplayName}"
+            AutomationProperties.HelpText="계획 관리"
+            AutomationProperties.HeadingLevel="2"
             ToolTip.Tip="계획 관리">
-          <icons:FluentIcon Icon="MoreHorizontal" IconVariant="Regular" FontSize="20" />
+          <TextBlock
+              x:Name="PlanManagementTitle"
+              Classes="title"
+              VerticalAlignment="Center"
+              AutomationProperties.AccessibilityView="Raw"
+              Text="{Binding ActivePlanOrNull.DisplayName}"
+              TextTrimming="CharacterEllipsis"
+              TextWrapping="NoWrap" />
           <Button.Flyout>
             <Flyout Placement="BottomEdgeAlignedRight">
-              <StackPanel Width="174" Margin="4" Spacing="2">
+              <StackPanel MinWidth="148" Margin="4" Spacing="2">
                 <Button
                     Classes="plan-management-action"
                     Click="onPlanManagementActionClick"
                     Command="{Binding BeginRenamePlanCommand}"
                     AutomationProperties.Name="현재 계획 이름 바꾸기">
-                  <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="9">
-                    <icons:FluentIcon Icon="Edit" IconVariant="Regular" FontSize="17" />
-                    <TextBlock Text="이름 바꾸기" />
+                  <StackPanel Classes="plan-action-content">
+                    <icons:FluentIcon Classes="plan-action-icon" Icon="Edit" IconVariant="Regular" />
+                    <TextBlock Classes="plan-action-label" Text="이름 바꾸기" />
                   </StackPanel>
                 </Button>
                 <Button
@@ -75,9 +76,9 @@
                     Click="onPlanManagementActionClick"
                     Command="{Binding BeginClearActivePlanCommand}"
                     AutomationProperties.Name="현재 시간표 비우기">
-                  <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="9">
-                    <icons:FluentIcon Icon="Delete" IconVariant="Regular" FontSize="17" />
-                    <TextBlock Text="시간표 비우기" />
+                  <StackPanel Classes="plan-action-content">
+                    <icons:FluentIcon Classes="plan-action-icon" Icon="Delete" IconVariant="Regular" />
+                    <TextBlock Classes="plan-action-label" Text="시간표 비우기" />
                   </StackPanel>
                 </Button>
                 <Button
@@ -86,9 +87,9 @@
                     Click="onPlanManagementActionClick"
                     Command="{Binding BeginDeletePlanCommand}"
                     AutomationProperties.Name="현재 계획 삭제">
-                  <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="9">
-                    <icons:FluentIcon Icon="Delete" IconVariant="Regular" FontSize="17" />
-                    <TextBlock Text="계획 삭제" />
+                  <StackPanel Classes="plan-action-content">
+                    <icons:FluentIcon Classes="plan-action-icon" Icon="Delete" IconVariant="Regular" />
+                    <TextBlock Classes="plan-action-label" Text="계획 삭제" />
                   </StackPanel>
                 </Button>
               </StackPanel>
@@ -97,12 +98,12 @@
         </Button>
         <Button
             x:Name="CloseInspectorPaneButton"
-            Grid.Column="2"
+            Grid.Column="1"
             Classes="icon"
             IsVisible="{Binding IsInspectorPaneDismissActionVisible}"
             Command="{Binding CloseInspectorPaneCommand}"
             AutomationProperties.Name="내 계획 패널 닫기"
-            ToolTip.Tip="내 계획 닫기">
+            ToolTip.Tip="계획 닫기">
           <icons:FluentIcon Icon="Dismiss" IconVariant="Regular" FontSize="17" />
         </Button>
       </Grid>
