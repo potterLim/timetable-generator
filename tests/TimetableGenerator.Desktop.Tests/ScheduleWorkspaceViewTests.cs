@@ -715,13 +715,13 @@ public sealed class ScheduleWorkspaceViewTests
 
             TextBlock exportStatus = exportStatusOrNull;
             Border exportStatusToast = exportStatusToastOrNull;
-            exportStatus.Text = "PNG로 저장했습니다.";
+            exportStatus.Text = "PNG 이미지로 저장했습니다.";
             exportStatus.Classes.Set("success", true);
             exportStatusToast.IsVisible = true;
             exportStatusToast.Classes.Set("success", true);
 
             AsyncDelegateCommand exportCommand = Assert.IsType<AsyncDelegateCommand>(
-                workspaceView.ExportCommand);
+                workspaceView.ExportPngCommand);
             exportCommand.Execute(null);
             await exportCommand.ExecutionTask;
             Dispatcher.UIThread.RunJobs();
@@ -767,13 +767,13 @@ public sealed class ScheduleWorkspaceViewTests
 
             Button exportButton = exportButtonOrNull;
             Assert.True(exportButton.IsEnabled);
-            Assert.NotNull(exportButton.Command);
             Assert.Equal(
-                "현재 시간표를 PNG로 저장",
+                "현재 시간표 내보내기",
                 AutomationProperties.GetName(exportButton));
             Assert.Equal(
-                "현재 시간표를 고해상도 PNG 파일로 저장합니다.",
+                "PNG 이미지 또는 캘린더로 내보냅니다.",
                 AutomationProperties.GetHelpText(exportButton));
+            Assert.NotNull(exportButton.Flyout);
         }
         finally
         {

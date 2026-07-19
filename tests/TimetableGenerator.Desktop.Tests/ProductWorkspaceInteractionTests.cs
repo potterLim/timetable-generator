@@ -941,14 +941,21 @@ public sealed class ProductWorkspaceInteractionTests
 
     private static void assertCompoundHeaderButtonAlignment(Button button)
     {
-        FluentIcon icon = button.GetVisualDescendants().OfType<FluentIcon>().Single();
+        FluentIcon[] icons = button
+            .GetVisualDescendants()
+            .OfType<FluentIcon>()
+            .ToArray();
         TextBlock text = button.GetVisualDescendants().OfType<TextBlock>().Single();
-        Point iconPosition = findRequiredPosition(icon, button);
         Point textPosition = findRequiredPosition(text, button);
-        double iconCenterY = iconPosition.Y + (icon.Bounds.Height / 2.0);
         double textCenterY = textPosition.Y + (text.Bounds.Height / 2.0);
 
+        Assert.NotEmpty(icons);
         Assert.InRange(button.Bounds.Height, 39.99, 40.01);
-        Assert.InRange(Math.Abs(iconCenterY - textCenterY), 0.0, 0.5);
+        foreach (FluentIcon icon in icons)
+        {
+            Point iconPosition = findRequiredPosition(icon, button);
+            double iconCenterY = iconPosition.Y + (icon.Bounds.Height / 2.0);
+            Assert.InRange(Math.Abs(iconCenterY - textCenterY), 0.0, 0.5);
+        }
     }
 }

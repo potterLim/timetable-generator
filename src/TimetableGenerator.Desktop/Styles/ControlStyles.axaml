@@ -1,6 +1,7 @@
 <Styles
     xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:icons="using:FluentIcons.Avalonia">
   <Styles.Resources>
     <ControlTheme x:Key="ProductFilledActionButtonTheme" TargetType="Button">
       <Setter Property="RenderTransform" Value="none" />
@@ -302,6 +303,49 @@
     <Setter Property="BorderBrush" Value="{DynamicResource StrongBorderBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="8" />
+  </Style>
+
+  <Style Selector="MenuFlyoutPresenter">
+    <Setter Property="Padding" Value="4" />
+    <Setter Property="Background" Value="{DynamicResource ElevatedSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource StrongBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="8" />
+  </Style>
+
+  <Style Selector="MenuItem">
+    <Setter Property="MinHeight" Value="40" />
+    <Setter Property="Padding" Value="10,0" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="6" />
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+  </Style>
+
+  <Style Selector="MenuItem:pointerover, MenuItem:selected">
+    <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
+  </Style>
+
+  <Style Selector="MenuItem:pressed">
+    <Setter Property="Background" Value="{DynamicResource PressedSurfaceBrush}" />
+  </Style>
+
+  <Style Selector="MenuItem:focus-visible">
+    <Setter Property="BorderBrush" Value="{DynamicResource ProductFocusStrokeBrush}" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
+
+  <Style Selector="icons|FluentIcon.export-status-icon.success">
+    <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
+  </Style>
+
+  <Style Selector="icons|FluentIcon.export-status-icon.information">
+    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+  </Style>
+
+  <Style Selector="icons|FluentIcon.export-status-icon.error">
+    <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
   </Style>
 
   <Style Selector="RadioButton">

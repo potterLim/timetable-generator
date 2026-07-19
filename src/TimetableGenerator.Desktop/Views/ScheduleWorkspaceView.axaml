@@ -18,6 +18,9 @@
     <Style Selector="TextBlock.export-status.error">
       <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
     </Style>
+    <Style Selector="TextBlock.export-status.information">
+      <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+    </Style>
     <Style Selector="Border.export-status-toast.success">
       <Setter Property="Background" Value="{DynamicResource SuccessSubtleBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource SuccessBrush}" />
@@ -25,6 +28,10 @@
     <Style Selector="Border.export-status-toast.error">
       <Setter Property="Background" Value="{DynamicResource ErrorSubtleBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}" />
+    </Style>
+    <Style Selector="Border.export-status-toast.information">
+      <Setter Property="Background" Value="{DynamicResource AccentTintBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
     </Style>
   </UserControl.Styles>
   <Grid Margin="18,18,18,16" RowDefinitions="40,14,*">
@@ -141,15 +148,77 @@
             Classes="accent"
             IsVisible="{Binding CanExportSchedule}"
             IsEnabled="{Binding CanExportSchedule}"
-            Command="{Binding ExportCommand, ElementName=WorkspaceRoot}"
             AutomationProperties.AutomationId="ExportSchedule"
-            AutomationProperties.Name="현재 시간표를 PNG로 저장"
-            AutomationProperties.HelpText="현재 시간표를 고해상도 PNG 파일로 저장합니다."
-            ToolTip.Tip="PNG로 저장">
-          <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="8">
-            <icons:FluentIcon Icon="Save" IconVariant="Regular" FontSize="18" />
-            <TextBlock VerticalAlignment="Center" Text="PNG로 저장" />
+            AutomationProperties.Name="현재 시간표 내보내기"
+            AutomationProperties.HelpText="PNG 이미지 또는 캘린더로 내보냅니다."
+            ToolTip.Tip="내보내기">
+          <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="7">
+            <icons:FluentIcon
+                AutomationProperties.AccessibilityView="Raw"
+                Icon="ArrowExport"
+                IconVariant="Regular"
+                FontSize="18" />
+            <TextBlock VerticalAlignment="Center" Text="내보내기" />
+            <icons:FluentIcon
+                AutomationProperties.AccessibilityView="Raw"
+                Icon="ChevronDown"
+                IconVariant="Regular"
+                FontSize="13" />
           </StackPanel>
+          <Button.Flyout>
+            <MenuFlyout Placement="BottomEdgeAlignedRight">
+              <MenuItem
+                  x:Name="ExportPngAction"
+                  MinWidth="224"
+                  Header="PNG 이미지"
+                  Command="{Binding #WorkspaceRoot.ExportPngCommand}"
+                  AutomationProperties.AutomationId="ExportPngImage"
+                  AutomationProperties.Name="현재 시간표를 PNG 이미지로 저장"
+                  AutomationProperties.HelpText="현재 시간표를 고해상도 PNG 이미지로 저장합니다.">
+                <MenuItem.Icon>
+                  <icons:FluentIcon
+                      AutomationProperties.AccessibilityView="Raw"
+                      Icon="Image"
+                      IconVariant="Regular"
+                      FontSize="17" />
+                </MenuItem.Icon>
+              </MenuItem>
+              <MenuItem Header="-" />
+              <MenuItem
+                  x:Name="ExportAppleCalendarAction"
+                  MinWidth="224"
+                  Header="Apple 캘린더"
+                  IsVisible="{Binding #WorkspaceRoot.IsAppleCalendarExportAvailable}"
+                  Command="{Binding #WorkspaceRoot.ExportAppleCalendarCommand}"
+                  AutomationProperties.AutomationId="ExportAppleCalendar"
+                  AutomationProperties.Name="현재 계획을 Apple 캘린더로 내보내기"
+                  AutomationProperties.HelpText="Apple 캘린더의 가져오기 화면을 엽니다.">
+                <MenuItem.Icon>
+                  <icons:FluentIcon
+                      AutomationProperties.AccessibilityView="Raw"
+                      Icon="CalendarArrowRight"
+                      IconVariant="Regular"
+                      FontSize="17" />
+                </MenuItem.Icon>
+              </MenuItem>
+              <MenuItem
+                  x:Name="ExportGoogleCalendarAction"
+                  MinWidth="224"
+                  Header="Google 캘린더"
+                  Command="{Binding #WorkspaceRoot.ExportGoogleCalendarCommand}"
+                  AutomationProperties.AutomationId="ExportGoogleCalendar"
+                  AutomationProperties.Name="현재 계획을 Google 캘린더로 내보내기"
+                  AutomationProperties.HelpText="처음 연결할 때 브라우저에서 Google 계정 승인이 필요합니다.">
+                <MenuItem.Icon>
+                    <icons:FluentIcon
+                        AutomationProperties.AccessibilityView="Raw"
+                        Icon="CalendarLink"
+                        IconVariant="Regular"
+                        FontSize="17" />
+                </MenuItem.Icon>
+              </MenuItem>
+            </MenuFlyout>
+          </Button.Flyout>
         </Button>
       </StackPanel>
     </Grid>
@@ -518,6 +587,8 @@
       <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="7">
         <icons:FluentIcon
             x:Name="ExportStatusIcon"
+            Classes="export-status-icon"
+            AutomationProperties.AccessibilityView="Raw"
             Width="17"
             Height="17"
             VerticalAlignment="Center"

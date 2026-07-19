@@ -1,7 +1,8 @@
 namespace TimetableGenerator.Desktop.Exporting;
 
-internal enum EPngExportStatus
+internal enum EExportStatus
 {
     Success,
+    Information,
     Failure,
 }
