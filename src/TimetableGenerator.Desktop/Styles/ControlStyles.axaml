@@ -368,6 +368,10 @@
 
   <Style Selector="ContextMenu.plan-tab-menu">
     <Setter Property="MinWidth" Value="174" />
+    <Setter Property="Background" Value="{DynamicResource ElevatedSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource StrongBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="8" />
   </Style>
 
   <Style Selector="MenuItem">
@@ -449,6 +453,14 @@
   </Style>
 
   <Style Selector="MenuItem.plan-tab-menu-item.destructive">
+    <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
+  </Style>
+
+  <Style Selector="MenuItem.plan-tab-menu-item.destructive /template/ ContentPresenter#PART_HeaderPresenter">
+    <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
+  </Style>
+
+  <Style Selector="MenuItem.plan-tab-menu-item.destructive icons|FluentIcon">
     <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
   </Style>
 

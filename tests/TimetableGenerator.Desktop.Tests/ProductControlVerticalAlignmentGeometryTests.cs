@@ -580,6 +580,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                 .Single(candidate => candidate.ContextMenu != null);
             ContextMenu contextMenu = Assert.IsType<ContextMenu>(
                 contextMenuOwner.ContextMenu);
+            Assert.Equal(new Thickness(4.0, 0.0), contextMenu.Padding);
             MenuItem[] menuItems = contextMenu.Items
                 .OfType<MenuItem>()
                 .ToArray();

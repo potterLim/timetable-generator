@@ -63,6 +63,7 @@
                   <StackPanel.ContextMenu>
                     <ContextMenu
                         Classes="plan-tab-menu"
+                        Padding="4,0"
                         x:DataType="models:PlanTabItem"
                         DataContext="{Binding #PlanTabContent.DataContext}">
                       <MenuItem
