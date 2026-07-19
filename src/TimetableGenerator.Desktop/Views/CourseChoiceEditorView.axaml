@@ -136,39 +136,46 @@
                     </Button>
                   </Grid>
 
-                  <TextBlock
-                      Margin="0,6,0,8"
-                      Classes="caption"
-                      IsVisible="{Binding !CanRemove}"
-                      LineHeight="17"
-                      Text="선호는 먼저 추천하고, 가능은 충돌할 때 사용합니다."
-                      TextWrapping="Wrap" />
-                  <Border
-                      Height="12"
-                      IsVisible="{Binding CanRemove}" />
+                  <Border Height="12" />
 
                   <ItemsControl ItemsSource="{Binding Offerings}">
                     <ItemsControl.ItemTemplate>
                       <DataTemplate x:DataType="models:CourseOfferingPreferenceItem">
                         <Border
+                            Classes="course-choice-offering"
+                            MinHeight="56"
                             Padding="12,10"
                             BorderBrush="{DynamicResource BorderBrush}"
                             BorderThickness="0,1,0,0"
                             AutomationProperties.Name="{Binding PreferenceAccessibleName}">
                           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
-                            <StackPanel Grid.Column="0" Spacing="3">
-                              <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
+                            <StackPanel
+                                Grid.Column="0"
+                                Classes="course-choice-offering-info"
+                                Height="36"
+                                Spacing="2"
+                                VerticalAlignment="Center">
+                              <Grid
+                                  Height="18"
+                                  ColumnDefinitions="Auto,Auto,*"
+                                  ColumnSpacing="8">
                                 <TextBlock
                                     Grid.Column="0"
                                     FontWeight="SemiBold"
+                                    LineHeight="18"
+                                    VerticalAlignment="Center"
                                     Text="{Binding SectionDisplayText}" />
                                 <TextBlock
                                     Grid.Column="1"
                                     Classes="caption"
+                                    LineHeight="18"
+                                    VerticalAlignment="Center"
                                     Text="{Binding EnglishInstructionDisplayText}" />
                                 <TextBlock
                                     Grid.Column="2"
                                     Classes="caption"
+                                    LineHeight="18"
+                                    VerticalAlignment="Center"
                                     Text="{Binding ScheduleDisplayText}"
                                     TextTrimming="CharacterEllipsis"
                                     TextWrapping="NoWrap"
@@ -176,12 +183,17 @@
                               </Grid>
                               <TextBlock
                                   Classes="caption"
+                                  Height="16"
+                                  LineHeight="16"
+                                  VerticalAlignment="Center"
                                   Text="{Binding LogisticsDisplayText}"
                                   TextTrimming="CharacterEllipsis"
+                                  TextWrapping="NoWrap"
                                   ToolTip.Tip="{Binding LogisticsDisplayText}" />
                             </StackPanel>
                             <StackPanel
                                 Grid.Column="1"
+                                Classes="course-choice-offering-actions"
                                 Orientation="Horizontal"
                                 Spacing="6"
                                 VerticalAlignment="Center">
@@ -191,21 +203,24 @@
                                   Command="{Binding SelectPreferredCommand}"
                                   Content="선호"
                                   AutomationProperties.Name="{Binding PreferredButtonAccessibleName}"
-                                  AutomationProperties.HelpText="추천에서 가장 먼저 사용합니다." />
+                                  AutomationProperties.HelpText="추천에서 먼저 사용"
+                                  ToolTip.Tip="추천에서 먼저 사용" />
                               <RadioButton
                                   Classes="preference-choice"
                                   IsChecked="{Binding IsAcceptable, Mode=OneWay}"
                                   Command="{Binding SelectAcceptableCommand}"
                                   Content="가능"
                                   AutomationProperties.Name="{Binding AcceptableButtonAccessibleName}"
-                                  AutomationProperties.HelpText="선호 분반과 충돌할 때 사용합니다." />
+                                  AutomationProperties.HelpText="추천 후보로 사용"
+                                  ToolTip.Tip="추천 후보로 사용" />
                               <RadioButton
                                   Classes="preference-choice"
                                   IsChecked="{Binding IsExcluded, Mode=OneWay}"
                                   Command="{Binding SelectExcludedCommand}"
                                   Content="제외"
                                   AutomationProperties.Name="{Binding ExcludedButtonAccessibleName}"
-                                  AutomationProperties.HelpText="추천 시간표에 포함하지 않습니다." />
+                                  AutomationProperties.HelpText="추천에서 사용하지 않음"
+                                  ToolTip.Tip="추천에서 사용하지 않음" />
                             </StackPanel>
                           </Grid>
                         </Border>

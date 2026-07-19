@@ -73,12 +73,50 @@ public sealed class CompactModalAndScheduleListLayoutTests
             Button saveButton = findRequiredControl<Button>(
                 editor,
                 "SaveCourseChoiceButton");
+            Border[] offeringRows = editor.GetVisualDescendants()
+                .OfType<Border>()
+                .Where(
+                    candidate => candidate.Classes.Contains(
+                        "course-choice-offering"))
+                .ToArray();
 
             assertDialogFitsWindow(dialog, window);
             assertControlFitsDialog(cancelButton, dialog);
             assertControlFitsDialog(saveButton, dialog);
             Assert.True(cancelButton.IsEffectivelyVisible);
             Assert.True(saveButton.IsEffectivelyVisible);
+            Assert.NotEmpty(offeringRows);
+            Assert.DoesNotContain(
+                editor.GetVisualDescendants().OfType<TextBlock>(),
+                candidate => candidate.Text
+                    == "선호는 먼저 추천하고, 가능은 충돌할 때 사용합니다.");
+            foreach (Border offeringRow in offeringRows)
+            {
+                StackPanel information = offeringRow.GetVisualDescendants()
+                    .OfType<StackPanel>()
+                    .Single(
+                        candidate => candidate.Classes.Contains(
+                            "course-choice-offering-info"));
+                StackPanel actions = offeringRow.GetVisualDescendants()
+                    .OfType<StackPanel>()
+                    .Single(
+                        candidate => candidate.Classes.Contains(
+                            "course-choice-offering-actions"));
+
+                Assert.True(
+                    offeringRow.Bounds.Height >= 56.0 - GEOMETRY_TOLERANCE);
+                Assert.InRange(
+                    Math.Abs(information.Bounds.Height - 36.0),
+                    0.0,
+                    GEOMETRY_TOLERANCE);
+                Assert.InRange(
+                    Math.Abs(actions.Bounds.Height - 36.0),
+                    0.0,
+                    GEOMETRY_TOLERANCE);
+                assertVerticallyCentered(information, offeringRow, offeringRow);
+                assertVerticallyCentered(actions, offeringRow, offeringRow);
+            }
+
             Assert.True(
                 editorScrollViewer.Extent.Width
                 <= editorScrollViewer.Viewport.Width + GEOMETRY_TOLERANCE);
