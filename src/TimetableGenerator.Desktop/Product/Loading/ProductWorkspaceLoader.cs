@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using TimetableGenerator.Application.Planning;
+using TimetableGenerator.Desktop.Planning;
 using TimetableGenerator.Domain.Planning;
 using TimetableGenerator.Infrastructure.Catalogs;
 
@@ -9,8 +10,6 @@ namespace TimetableGenerator.Desktop.Product.Loading;
 
 internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
 {
-    private static readonly PlanName DEFAULT_PLAN_NAME = new PlanName("나의 시간표");
-
     private readonly CatalogCacheFileStore mCatalogCacheStore;
 
     private readonly IPlanningWorkspaceStore mWorkspaceStore;
@@ -84,9 +83,12 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
     {
         PlanId planId = PlanId.CreateNew();
         PlanCatalogBinding catalogBinding = createCatalogBinding(catalogPackage);
+        PlanName initialPlanName =
+            AcademicTermPlanNameFactory.CreateInitialPlanName(
+                catalogBinding.Term);
         PlanningPlan plan = new PlanningPlan(
             planId,
-            DEFAULT_PLAN_NAME,
+            initialPlanName,
             catalogBinding,
             new PlanningPlanContent(
                 Array.Empty<CourseChoiceGroup>(),

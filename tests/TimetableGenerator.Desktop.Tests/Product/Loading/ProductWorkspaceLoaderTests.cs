@@ -35,6 +35,9 @@ public sealed class ProductWorkspaceLoaderTests
             Assert.Equal(EProductCatalogOrigin.OfflineCache, result.CatalogOrigin);
             Assert.Equal(EProductWorkspaceRecoveryFlags.None, result.RecoveryFlags);
             Assert.Equal(
+                "저장된 시간표",
+                result.Workspace.GetActivePlan().Name.Value);
+            Assert.Equal(
                 catalogPackage.Document.Catalog.Id,
                 result.CatalogPackage.Document.Catalog.Id);
             Assert.Same(workspace, result.Workspace);
@@ -152,7 +155,7 @@ public sealed class ProductWorkspaceLoaderTests
             PlanningPlan activePlan = result.Workspace.GetActivePlan();
             Assert.Equal(EProductCatalogOrigin.OfflineCache, result.CatalogOrigin);
             Assert.True(result.WasWorkspaceCreated);
-            Assert.Equal("나의 시간표", activePlan.Name.Value);
+            Assert.Equal("2026-2학기 시간표", activePlan.Name.Value);
             Assert.Empty(activePlan.CourseChoiceGroups);
             Assert.Empty(activePlan.UnscheduledOfferingSelections);
             Assert.Equal(catalogPackage.Entry.CatalogId, activePlan.CatalogBinding.CatalogId);

@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 
+using TimetableGenerator.Desktop.Planning;
 using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Domain.Planning;
 
@@ -264,7 +265,10 @@ internal sealed partial class PlannerWorkspaceViewModel
     private void addPlan()
     {
         throwIfDisposed();
-        PlanName availablePlanName = findAvailableNewPlanName();
+        PlanName availablePlanName =
+            AcademicTermPlanNameFactory.FindAvailableAdditionalPlanName(
+                mCatalogProjection.Document.Catalog.Term,
+                mSession.Workspace.Plans);
         mSession.AddPlan(
             PlanId.CreateNew(),
             availablePlanName);
@@ -499,36 +503,6 @@ internal sealed partial class PlannerWorkspaceViewModel
         throw new ArgumentException(
             "The active plan must belong to this workspace.",
             nameof(plan));
-    }
-
-    private PlanName findAvailableNewPlanName()
-    {
-        int planNumber = 1;
-        while (true)
-        {
-            PlanName candidateName = new PlanName("새 계획 " + planNumber);
-            if (hasPlanWithName(candidateName) == false)
-            {
-                return candidateName;
-            }
-
-            ++planNumber;
-        }
-    }
-
-    private bool hasPlanWithName(PlanName name)
-    {
-        foreach (PlanningPlan plan in mSession.Workspace.Plans)
-        {
-            if (StringComparer.OrdinalIgnoreCase.Equals(
-                plan.Name.Value,
-                name.Value))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private bool hasOtherPlanWithName(PlanId excludedPlanId, PlanName name)

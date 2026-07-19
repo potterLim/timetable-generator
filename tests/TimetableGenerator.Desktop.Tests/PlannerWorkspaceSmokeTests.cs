@@ -543,12 +543,12 @@ public sealed class PlannerWorkspaceSmokeTests
             PlannerWorkspaceTestFactory.CreateWorkspace())
         {
             workspace.BeginRenamePlanCommand.Execute(null);
-            workspace.PlanNameDraft = "새 계획 3";
+            workspace.PlanNameDraft = "2026-2학기 시간표 2";
             workspace.ConfirmRenamePlanCommand.Execute(null);
 
             workspace.AddPlanCommand.Execute(null);
 
-            Assert.Equal("새 계획 1", workspace.ActivePlan.DisplayName);
+            Assert.Equal("2026-2학기 시간표 3", workspace.ActivePlan.DisplayName);
             Assert.Equal(3, workspace.Plans.Count);
             Assert.True(workspace.IsRenamingPlan);
         }

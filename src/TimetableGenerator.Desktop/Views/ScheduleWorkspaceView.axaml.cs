@@ -231,18 +231,11 @@ internal sealed partial class ScheduleWorkspaceView : UserControl
             DataContext as PlannerWorkspaceViewModel;
         if (workspaceOrNull == null)
         {
-            return "시간표.png";
+            return SchedulePngFileNameFactory.Create(null);
         }
 
-        string fileName = workspaceOrNull.AcademicTermDisplayText
-            + "-시간표-"
-            + workspaceOrNull.ActivePlan.DisplayName;
-        foreach (char invalidCharacter in Path.GetInvalidFileNameChars())
-        {
-            fileName = fileName.Replace(invalidCharacter, '-');
-        }
-
-        return fileName + ".png";
+        return SchedulePngFileNameFactory.Create(
+            workspaceOrNull.ActivePlan.Name);
     }
 
     private void showExportFailure(Exception exception)
