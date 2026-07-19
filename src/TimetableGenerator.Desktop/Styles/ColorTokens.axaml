@@ -30,6 +30,7 @@
       <SolidColorBrush x:Key="ScheduleHalfHourGridLineBrush" Color="#E1E6ED" />
       <SolidColorBrush x:Key="BrandMarkBackgroundBrush" Color="#FFFFFF" />
       <SolidColorBrush x:Key="BrandMarkBorderBrush" Color="#C7D0DC" />
+      <SolidColorBrush x:Key="ExportPngLogoPlateBrush" Color="#00FFFFFF" />
       <SolidColorBrush x:Key="TextPrimaryBrush" Color="#172033" />
       <SolidColorBrush x:Key="TextSecondaryBrush" Color="#526176" />
       <SolidColorBrush x:Key="TextTertiaryBrush" Color="#627188" />
@@ -104,6 +105,7 @@
       <SolidColorBrush x:Key="ScheduleHalfHourGridLineBrush" Color="#2C3540" />
       <SolidColorBrush x:Key="BrandMarkBackgroundBrush" Color="#F4F7FB" />
       <SolidColorBrush x:Key="BrandMarkBorderBrush" Color="#728096" />
+      <SolidColorBrush x:Key="ExportPngLogoPlateBrush" Color="#F4F7FB" />
       <SolidColorBrush x:Key="TextPrimaryBrush" Color="#F4F7FB" />
       <SolidColorBrush x:Key="TextSecondaryBrush" Color="#B8C2CF" />
       <SolidColorBrush x:Key="TextTertiaryBrush" Color="#909CAA" />

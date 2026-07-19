@@ -178,13 +178,22 @@
                   AutomationProperties.Name="현재 시간표를 PNG 이미지로 저장"
                   AutomationProperties.HelpText="현재 시간표를 고해상도 PNG 이미지로 저장합니다.">
                 <MenuItem.Icon>
-                  <icons:FluentIcon
-                      Classes="export-menu-icon"
+                  <Grid
+                      x:Name="ExportPngLogoSlot"
+                      Classes="export-menu-logo-slot"
                       AutomationProperties.AccessibilityView="Raw"
-                      Icon="Image"
-                      IconVariant="Regular"
-                      IconSize="Size20"
-                      FontSize="20" />
+                      IsHitTestVisible="False">
+                    <Border
+                        x:Name="ExportPngLogoPlate"
+                        Classes="export-png-logo-plate">
+                      <Image
+                          x:Name="ExportPngLogoImage"
+                          Classes="export-menu-logo"
+                          Width="24"
+                          Height="18"
+                          Source="/Assets/Export/PngFormatLogo.png" />
+                    </Border>
+                  </Grid>
                 </MenuItem.Icon>
               </MenuItem>
               <MenuItem
@@ -215,13 +224,22 @@
                   AutomationProperties.Name="현재 계획을 Google 캘린더로 내보내기"
                   AutomationProperties.HelpText="처음 연결할 때 브라우저에서 Google 계정 승인이 필요합니다.">
                 <MenuItem.Icon>
-                  <icons:FluentIcon
-                      Classes="export-menu-icon"
+                  <Grid
+                      x:Name="ExportGoogleCalendarLogoSlot"
+                      Classes="export-menu-logo-slot"
                       AutomationProperties.AccessibilityView="Raw"
-                      Icon="CalendarMonth"
-                      IconVariant="Regular"
-                      IconSize="Size20"
-                      FontSize="20" />
+                      IsHitTestVisible="False">
+                    <Image
+                        x:Name="ExportGoogleCalendarLogoImage"
+                        Classes="export-menu-logo"
+                        Width="24"
+                        Height="24"
+                      Source="/Assets/Export/GoogleCalendarLogo.png">
+                      <Image.RenderTransform>
+                        <TranslateTransform Y="1.5" />
+                      </Image.RenderTransform>
+                    </Image>
+                  </Grid>
                 </MenuItem.Icon>
               </MenuItem>
             </MenuFlyout>

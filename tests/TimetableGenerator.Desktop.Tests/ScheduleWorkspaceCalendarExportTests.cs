@@ -3,11 +3,14 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 using FluentIcons.Avalonia;
 using FluentIcons.Common;
@@ -73,13 +76,17 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.Same(googleAction, menu.Items[2]);
             menu.ShowAt(exportButton);
             Dispatcher.UIThread.RunJobs();
-            assertExportMenuItemPresentation(pngAction, Icon.Image);
-            assertExportMenuItemPresentation(
+            assertExportPngLogoPresentation(pngAction);
+            assertExportFluentIconPresentation(
                 appleAction,
                 Icon.CalendarMonth);
-            assertExportMenuItemPresentation(
+            assertExportRasterLogoPresentation(
                 googleAction,
-                Icon.CalendarMonth);
+                "ExportGoogleCalendarLogoSlot",
+                "ExportGoogleCalendarLogoImage",
+                24.0,
+                24.0,
+                1.5);
             menu.Hide();
             Assert.Equal(
                 "ExportPngImage",
@@ -225,13 +232,17 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             MenuItem pngAction = findRequiredMenuItem(
                 menu,
                 "ExportPngAction");
-            assertExportMenuItemPresentation(pngAction, Icon.Image);
-            assertExportMenuItemPresentation(
+            assertExportPngLogoPresentation(pngAction);
+            assertExportFluentIconPresentation(
                 appleAction,
                 Icon.CalendarMonth);
-            assertExportMenuItemPresentation(
+            assertExportRasterLogoPresentation(
                 googleAction,
-                Icon.CalendarMonth);
+                "ExportGoogleCalendarLogoSlot",
+                "ExportGoogleCalendarLogoImage",
+                24.0,
+                24.0,
+                1.5);
             menu.Hide();
 
             AsyncDelegateCommand command = Assert.IsType<AsyncDelegateCommand>(
@@ -369,11 +380,110 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         return menuItemOrNull;
     }
 
-    private static void assertExportMenuItemPresentation(
+    private static void assertExportPngLogoPresentation(MenuItem menuItem)
+    {
+        Grid logoSlot = assertExportRasterLogoPresentation(
+            menuItem,
+            "ExportPngLogoSlot",
+            "ExportPngLogoImage",
+            24.0,
+            18.0,
+            null);
+        Border? logoPlateOrNull =
+            logoSlot.FindControl<Border>("ExportPngLogoPlate");
+        Assert.NotNull(logoPlateOrNull);
+        if (logoPlateOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The PNG export logo plate was not found.");
+        }
+
+        Assert.Equal(24.0, logoPlateOrNull.Width);
+        Assert.Equal(20.0, logoPlateOrNull.Height);
+        Assert.Equal(
+            HorizontalAlignment.Center,
+            logoPlateOrNull.HorizontalAlignment);
+        Assert.Equal(
+            VerticalAlignment.Center,
+            logoPlateOrNull.VerticalAlignment);
+        Assert.Equal(new CornerRadius(3.0), logoPlateOrNull.CornerRadius);
+        Assert.NotNull(logoPlateOrNull.Background);
+
+        object? expectedBackgroundOrNull;
+        bool hasExpectedBackground = ResourceNodeExtensions.TryFindResource(
+            logoPlateOrNull,
+            "ExportPngLogoPlateBrush",
+            logoPlateOrNull.ActualThemeVariant,
+            out expectedBackgroundOrNull);
+        Assert.True(hasExpectedBackground);
+        Assert.Same(expectedBackgroundOrNull, logoPlateOrNull.Background);
+
+        Image? logoImageOrNull =
+            logoSlot.FindControl<Image>("ExportPngLogoImage");
+        Assert.Same(logoImageOrNull, logoPlateOrNull.Child);
+    }
+
+    private static Grid assertExportRasterLogoPresentation(
+        MenuItem menuItem,
+        string slotName,
+        string imageName,
+        double imageWidth,
+        double imageHeight,
+        double? verticalTranslationOrNull)
+    {
+        assertExportMenuItemPresentation(menuItem);
+        Grid logoSlot = Assert.IsType<Grid>(menuItem.Icon);
+        Assert.Equal(slotName, logoSlot.Name);
+        Assert.Equal(24.0, logoSlot.Width);
+        Assert.Equal(24.0, logoSlot.Height);
+        Assert.Equal(
+            HorizontalAlignment.Center,
+            logoSlot.HorizontalAlignment);
+        Assert.Equal(
+            VerticalAlignment.Center,
+            logoSlot.VerticalAlignment);
+        Assert.Contains("export-menu-logo-slot", logoSlot.Classes);
+
+        Image? logoImageOrNull = logoSlot.FindControl<Image>(imageName);
+        Assert.NotNull(logoImageOrNull);
+        if (logoImageOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The export menu logo image was not found: " + imageName);
+        }
+
+        Assert.NotNull(logoImageOrNull.Source);
+        Assert.Equal(imageWidth, logoImageOrNull.Width);
+        Assert.Equal(imageHeight, logoImageOrNull.Height);
+        Assert.Equal(Stretch.Uniform, logoImageOrNull.Stretch);
+        Assert.Equal(
+            HorizontalAlignment.Center,
+            logoImageOrNull.HorizontalAlignment);
+        Assert.Equal(
+            VerticalAlignment.Center,
+            logoImageOrNull.VerticalAlignment);
+        Assert.Contains("export-menu-logo", logoImageOrNull.Classes);
+
+        if (verticalTranslationOrNull.HasValue)
+        {
+            TranslateTransform translation = Assert.IsType<TranslateTransform>(
+                logoImageOrNull.RenderTransform);
+            Assert.Equal(verticalTranslationOrNull.Value, translation.Y);
+        }
+
+        return logoSlot;
+    }
+
+    private static void assertExportFluentIconPresentation(
         MenuItem menuItem,
         Icon expectedIcon)
     {
         Assert.Contains("export-menu-item", menuItem.Classes);
+        if (menuItem.IsVisible)
+        {
+            assertExportMenuItemPresentation(menuItem);
+        }
+
         FluentIcon icon = Assert.IsType<FluentIcon>(menuItem.Icon);
         Assert.Equal(expectedIcon, icon.Icon);
         Assert.Equal(IconVariant.Regular, icon.IconVariant);
@@ -388,6 +498,33 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             VerticalAlignment.Center,
             icon.VerticalAlignment);
         Assert.Contains("export-menu-icon", icon.Classes);
+    }
+
+    private static void assertExportMenuItemPresentation(MenuItem menuItem)
+    {
+        Assert.Contains("export-menu-item", menuItem.Classes);
+
+        ContentControl iconPresenter = menuItem
+            .GetVisualDescendants()
+            .OfType<ContentControl>()
+            .Single(control => string.Equals(
+                control.Name,
+                "PART_IconPresenter",
+                StringComparison.Ordinal));
+        Assert.Equal(24.0, iconPresenter.Width);
+        Assert.Equal(24.0, iconPresenter.Height);
+        Assert.Equal(
+            HorizontalAlignment.Center,
+            iconPresenter.HorizontalAlignment);
+        Assert.Equal(
+            VerticalAlignment.Center,
+            iconPresenter.VerticalAlignment);
+        Assert.Equal(
+            HorizontalAlignment.Center,
+            iconPresenter.HorizontalContentAlignment);
+        Assert.Equal(
+            VerticalAlignment.Center,
+            iconPresenter.VerticalContentAlignment);
     }
 
     private static string createTemporaryDirectory()
