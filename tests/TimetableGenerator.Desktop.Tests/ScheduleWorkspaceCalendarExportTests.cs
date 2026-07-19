@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
@@ -76,7 +75,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.Same(googleAction, menu.Items[2]);
             menu.ShowAt(exportButton);
             Dispatcher.UIThread.RunJobs();
-            assertExportPngLogoPresentation(pngAction);
+            assertExportPngImageIconPresentation(pngAction);
             assertExportFluentIconPresentation(
                 appleAction,
                 Icon.CalendarMonth);
@@ -232,7 +231,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             MenuItem pngAction = findRequiredMenuItem(
                 menu,
                 "ExportPngAction");
-            assertExportPngLogoPresentation(pngAction);
+            assertExportPngImageIconPresentation(pngAction);
             assertExportFluentIconPresentation(
                 appleAction,
                 Icon.CalendarMonth);
@@ -380,47 +379,16 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         return menuItemOrNull;
     }
 
-    private static void assertExportPngLogoPresentation(MenuItem menuItem)
+    private static void assertExportPngImageIconPresentation(
+        MenuItem menuItem)
     {
-        Grid logoSlot = assertExportRasterLogoPresentation(
+        assertExportRasterLogoPresentation(
             menuItem,
             "ExportPngLogoSlot",
             "ExportPngLogoImage",
             24.0,
-            18.0,
+            24.0,
             null);
-        Border? logoPlateOrNull =
-            logoSlot.FindControl<Border>("ExportPngLogoPlate");
-        Assert.NotNull(logoPlateOrNull);
-        if (logoPlateOrNull == null)
-        {
-            throw new InvalidOperationException(
-                "The PNG export logo plate was not found.");
-        }
-
-        Assert.Equal(24.0, logoPlateOrNull.Width);
-        Assert.Equal(20.0, logoPlateOrNull.Height);
-        Assert.Equal(
-            HorizontalAlignment.Center,
-            logoPlateOrNull.HorizontalAlignment);
-        Assert.Equal(
-            VerticalAlignment.Center,
-            logoPlateOrNull.VerticalAlignment);
-        Assert.Equal(new CornerRadius(3.0), logoPlateOrNull.CornerRadius);
-        Assert.NotNull(logoPlateOrNull.Background);
-
-        object? expectedBackgroundOrNull;
-        bool hasExpectedBackground = ResourceNodeExtensions.TryFindResource(
-            logoPlateOrNull,
-            "ExportPngLogoPlateBrush",
-            logoPlateOrNull.ActualThemeVariant,
-            out expectedBackgroundOrNull);
-        Assert.True(hasExpectedBackground);
-        Assert.Same(expectedBackgroundOrNull, logoPlateOrNull.Background);
-
-        Image? logoImageOrNull =
-            logoSlot.FindControl<Image>("ExportPngLogoImage");
-        Assert.Same(logoImageOrNull, logoPlateOrNull.Child);
     }
 
     private static Grid assertExportRasterLogoPresentation(
@@ -463,12 +431,17 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             VerticalAlignment.Center,
             logoImageOrNull.VerticalAlignment);
         Assert.Contains("export-menu-logo", logoImageOrNull.Classes);
+        Assert.Same(logoImageOrNull, Assert.Single(logoSlot.Children));
 
         if (verticalTranslationOrNull.HasValue)
         {
             TranslateTransform translation = Assert.IsType<TranslateTransform>(
                 logoImageOrNull.RenderTransform);
             Assert.Equal(verticalTranslationOrNull.Value, translation.Y);
+        }
+        else
+        {
+            Assert.Null(logoImageOrNull.RenderTransform);
         }
 
         return logoSlot;

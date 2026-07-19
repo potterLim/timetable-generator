@@ -364,15 +364,6 @@
     <Setter Property="VerticalAlignment" Value="Center" />
   </Style>
 
-  <Style Selector="Border.export-png-logo-plate">
-    <Setter Property="Width" Value="24" />
-    <Setter Property="Height" Value="20" />
-    <Setter Property="HorizontalAlignment" Value="Center" />
-    <Setter Property="VerticalAlignment" Value="Center" />
-    <Setter Property="Background" Value="{DynamicResource ExportPngLogoPlateBrush}" />
-    <Setter Property="CornerRadius" Value="3" />
-  </Style>
-
   <Style Selector="Image.export-menu-logo">
     <Setter Property="HorizontalAlignment" Value="Center" />
     <Setter Property="VerticalAlignment" Value="Center" />

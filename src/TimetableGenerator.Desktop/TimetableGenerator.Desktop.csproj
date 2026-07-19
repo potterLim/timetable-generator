@@ -17,10 +17,16 @@
   <ItemGroup>
     <AvaloniaResource
         Include="Assets\**"
-        Exclude="Assets\Fonts\Pretendard\LICENSE.txt" />
+        Exclude="Assets\Fonts\Pretendard\LICENSE.txt;Assets\Export\FluentUiSystemIcons.LICENSE.txt" />
     <Content Include="Assets\Fonts\Pretendard\LICENSE.txt">
       <Link>ThirdPartyNotices\Pretendard-LICENSE.txt</Link>
       <TargetPath>ThirdPartyNotices\Pretendard-LICENSE.txt</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="Assets\Export\FluentUiSystemIcons.LICENSE.txt">
+      <Link>ThirdPartyNotices\FluentUiSystemIcons-LICENSE.txt</Link>
+      <TargetPath>ThirdPartyNotices\FluentUiSystemIcons-LICENSE.txt</TargetPath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>

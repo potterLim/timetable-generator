@@ -183,16 +183,12 @@
                       Classes="export-menu-logo-slot"
                       AutomationProperties.AccessibilityView="Raw"
                       IsHitTestVisible="False">
-                    <Border
-                        x:Name="ExportPngLogoPlate"
-                        Classes="export-png-logo-plate">
-                      <Image
-                          x:Name="ExportPngLogoImage"
-                          Classes="export-menu-logo"
-                          Width="24"
-                          Height="18"
-                          Source="/Assets/Export/PngFormatLogo.png" />
-                    </Border>
+                    <Image
+                        x:Name="ExportPngLogoImage"
+                        Classes="export-menu-logo"
+                        Width="24"
+                        Height="24"
+                        Source="/Assets/Export/PngImageIcon.png" />
                   </Grid>
                 </MenuItem.Icon>
               </MenuItem>
