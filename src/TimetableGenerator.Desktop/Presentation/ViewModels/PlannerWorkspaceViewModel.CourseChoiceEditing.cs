@@ -57,7 +57,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         {
             if (HasAlternativeCourseChoices)
             {
-                return "과목별 분반을 정하면 이 중 한 과목만 추천합니다.";
+                return "과목별 분반을 정하면 각 조합에는 이 중 한 과목만 포함됩니다.";
             }
 
             return string.Empty;

@@ -250,13 +250,13 @@ internal sealed class CourseSearchItem : ObservableObject
         {
             if (IsAdded)
             {
-                return Name + "은 현재 계획에 추가되어 있습니다.";
+                return Name + "은 현재 시간표에 추가되어 있습니다.";
             }
 
             if (SelectedSelectionOption.IsDirectAdd)
             {
                 return Name + ", " + SelectedSelectionOption.AccessibleName
-                    + ", 현재 계획에 추가";
+                    + ", 현재 시간표에 추가";
             }
 
             if (ScheduledOfferingCount > 1)
@@ -264,7 +264,7 @@ internal sealed class CourseSearchItem : ObservableObject
                 return Name + "의 분반 선호 설정 열기";
             }
 
-            return Name + "을 현재 계획에 추가";
+            return Name + "을 현재 시간표에 추가";
         }
     }
 
@@ -296,7 +296,7 @@ internal sealed class CourseSearchItem : ObservableObject
                 return "분반 선호 설정";
             }
 
-            return "계획에 추가";
+            return "시간표에 추가";
         }
     }
 
@@ -306,9 +306,9 @@ internal sealed class CourseSearchItem : ObservableObject
         {
             return mCourseSelectionAction switch
             {
-                ECourseSelectionAction.Remove => Name + "을 계획에서 제거",
+                ECourseSelectionAction.Remove => Name + "을 시간표에서 제거",
                 ECourseSelectionAction.Edit => Name + " 수강 선택 수정",
-                _ => Name + "은 현재 계획에 추가되어 있지 않습니다.",
+                _ => Name + "은 현재 시간표에 추가되어 있지 않습니다.",
             };
         }
     }
@@ -319,7 +319,7 @@ internal sealed class CourseSearchItem : ObservableObject
         {
             return mCourseSelectionAction switch
             {
-                ECourseSelectionAction.Remove => "계획에서 제거",
+                ECourseSelectionAction.Remove => "시간표에서 제거",
                 ECourseSelectionAction.Edit => "수강 선택 수정",
                 _ => string.Empty,
             };
@@ -512,7 +512,7 @@ internal sealed class CourseSearchItem : ObservableObject
             }
             else
             {
-                string scheduledDisplayName = "시간표가 있는 "
+                string scheduledDisplayName = "시간이 정해진 "
                     + projection.ScheduledOfferingIds.Count
                     + "개 분반의 선호 설정";
                 options.Add(CourseSelectionOption.CreatePreferenceEditor(
@@ -622,7 +622,7 @@ internal sealed class CourseSearchItem : ObservableObject
                     selection,
                     EMeetingScheduleStatus.Scheduled,
                     offering.Offering.SectionCode.Value
-                        + "분반 · 저장된 시간표 선택",
+                        + "분반 · 저장된 분반 선택",
                     offering.EnglishInstructionPercentage);
             }
 

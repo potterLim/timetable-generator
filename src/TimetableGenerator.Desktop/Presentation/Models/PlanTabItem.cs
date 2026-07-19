@@ -40,7 +40,7 @@ internal sealed class PlanTabItem
     {
         get
         {
-            return DisplayName + " 계획 삭제";
+            return DisplayName + " 시간표 삭제";
         }
     }
 
@@ -48,7 +48,7 @@ internal sealed class PlanTabItem
     {
         get
         {
-            return "계획 삭제";
+            return "시간표 삭제";
         }
     }
 

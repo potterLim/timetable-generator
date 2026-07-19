@@ -59,7 +59,7 @@ internal sealed partial class ScheduleBoardView
             scheduleCard,
             entry.Title
                 + Environment.NewLine
-                + "선택하여 일정 상세 정보 보기");
+                + "선택하여 개인 일정 상세 정보 보기");
         ToolTip.SetShowDelay(scheduleCard, 650);
     }
 

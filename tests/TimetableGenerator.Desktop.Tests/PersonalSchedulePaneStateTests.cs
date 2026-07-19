@@ -166,7 +166,7 @@ public sealed class PersonalSchedulePaneStateTests
             Assert.DoesNotContain(
                 host.GetVisualDescendants().OfType<TextBlock>(),
                 candidate => getTextOrEmpty(candidate).Contains(
-                    "계획에만 반영됩니다",
+                    "시간표에만 반영됩니다",
                     StringComparison.Ordinal));
 
             workspace.CancelPersonalScheduleEditCommand.Execute(null);

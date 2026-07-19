@@ -223,7 +223,7 @@ public sealed class CourseSearchExperienceTests
                     VerticalAlignment.Center,
                     selectedAction.VerticalContentAlignment);
                 Assert.Contains(
-                    "계획에서 제거",
+                    "시간표에서 제거",
                     AutomationProperties.GetName(selectedAction),
                     StringComparison.Ordinal);
 

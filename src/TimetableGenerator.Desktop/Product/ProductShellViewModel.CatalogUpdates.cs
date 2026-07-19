@@ -204,7 +204,7 @@ internal sealed partial class ProductShellViewModel
                 break;
             case EProductCatalogUpdateStatus.WorkspaceIncompatible:
                 mCatalogUpdateNotice =
-                    "새 과목 데이터가 현재 계획과 맞지 않아 기존 버전을 유지합니다.";
+                    "새 과목 데이터가 현재 시간표와 맞지 않아 기존 버전을 유지합니다.";
                 break;
             case EProductCatalogUpdateStatus.RevisionArtifactChanged:
                 mCatalogUpdateNotice =
@@ -232,10 +232,10 @@ internal sealed partial class ProductShellViewModel
             case EProductWorkspaceRecoveryFlags.CatalogPreviousGeneration:
                 return "최신 과목 데이터 저장본을 열 수 없어 이전에 검증한 데이터로 시작했습니다. 다음 실행 때 다시 확인합니다.";
             case EProductWorkspaceRecoveryFlags.WorkspacePreviousGeneration:
-                return "최근 계획 저장본을 열 수 없어 이전 안전 저장본을 복구했습니다. 최근 변경 일부가 보이지 않을 수 있습니다.";
+                return "최근 시간표 저장본을 열 수 없어 이전 안전 저장본을 복구했습니다. 최근 변경 일부가 보이지 않을 수 있습니다.";
             case EProductWorkspaceRecoveryFlags.CatalogPreviousGeneration
                 | EProductWorkspaceRecoveryFlags.WorkspacePreviousGeneration:
-                return "최신 과목 데이터와 최근 계획 저장본을 열 수 없어 이전 안전 저장본으로 복구했습니다. 최근 변경 일부가 보이지 않을 수 있습니다.";
+                return "최신 과목 데이터와 최근 시간표 저장본을 열 수 없어 이전 안전 저장본으로 복구했습니다. 최근 변경 일부가 보이지 않을 수 있습니다.";
             default:
                 Debug.Fail("Unexpected recovery notice flags: " + noticeFlags);
                 return "이전 안전 저장본으로 복구했습니다. 최근 변경 일부가 보이지 않을 수 있습니다.";

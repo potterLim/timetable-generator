@@ -55,9 +55,9 @@ internal sealed partial class PlannerWorkspaceViewModel
             case EPersonalScheduleDraftValidationError.None:
                 return string.Empty;
             case EPersonalScheduleDraftValidationError.TitleRequired:
-                return "일정 이름을 입력해 주세요.";
+                return "이름을 입력해 주세요.";
             case EPersonalScheduleDraftValidationError.TitleInvalid:
-                return "일정 이름은 줄바꿈 없이 "
+                return "이름은 줄바꿈 없이 "
                     + PersonalScheduleTitle.MAXIMUM_LENGTH
                     + "자 이내로 입력해 주세요.";
             case EPersonalScheduleDraftValidationError.DayRequired:

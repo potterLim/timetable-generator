@@ -150,9 +150,9 @@ public sealed class WorkspacePanelAccessibilityTests
                 workspace.ActivePlan.DisplayName,
                 AutomationProperties.GetName(managementButton));
             Assert.Equal(
-                "계획 관리",
+                "시간표 관리",
                 AutomationProperties.GetHelpText(managementButton));
-            Assert.Equal("계획 관리", ToolTip.GetTip(managementButton));
+            Assert.Equal("시간표 관리", ToolTip.GetTip(managementButton));
             Assert.Equal(
                 2,
                 (int)AutomationProperties.GetHeadingLevel(managementButton));
@@ -166,7 +166,7 @@ public sealed class WorkspacePanelAccessibilityTests
             assertActionAccessibleName(
                 managementContent,
                 workspace.BeginRenamePlanCommand,
-                "현재 계획 이름 바꾸기");
+                "현재 시간표 이름 바꾸기");
             assertActionAccessibleName(
                 managementContent,
                 workspace.BeginClearActivePlanCommand,
@@ -174,7 +174,7 @@ public sealed class WorkspacePanelAccessibilityTests
             assertActionAccessibleName(
                 managementContent,
                 workspace.BeginDeletePlanCommand,
-                "현재 계획 삭제");
+                "현재 시간표 삭제");
             managementFlyout.Hide();
         }
         finally
@@ -434,9 +434,9 @@ public sealed class WorkspacePanelAccessibilityTests
             Assert.True(closeInspectorPane.IsEffectivelyVisible);
             Assert.True(closeInspectorPane.IsKeyboardFocusWithin);
             Assert.Equal(
-                "내 계획 패널 닫기",
+                "시간표 관리 패널 닫기",
                 AutomationProperties.GetName(closeInspectorPane));
-            Assert.Equal("계획 닫기", ToolTip.GetTip(closeInspectorPane));
+            Assert.Equal("시간표 관리 닫기", ToolTip.GetTip(closeInspectorPane));
 
             closeInspectorPane.Command?.Execute(null);
             Dispatcher.UIThread.RunJobs();

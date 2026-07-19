@@ -4,15 +4,17 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:appearance="using:TimetableGenerator.Desktop.Presentation.Appearance"
     x:DataType="appearance:ProductAppearanceViewModel"
-    Width="252"
+    MinWidth="224"
+    MaxWidth="320"
     AutomationProperties.Name="화면 모드 설정">
   <UserControl.Resources>
     <DataTemplate x:Key="AppearanceOptionContentTemplate">
       <TextBlock
-          Height="20"
+          MinHeight="20"
           LineHeight="20"
           VerticalAlignment="Center"
-          Text="{Binding}" />
+          Text="{Binding}"
+          TextWrapping="Wrap" />
     </DataTemplate>
   </UserControl.Resources>
 

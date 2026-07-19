@@ -16,8 +16,20 @@
       <Setter Property="Padding" Value="28" />
     </Style>
     <Style Selector="Border.personal-schedule-dialog.delete-confirmation">
+      <Setter Property="MaxWidth" Value="384" />
+      <Setter Property="Padding" Value="24" />
+    </Style>
+    <Style Selector="Border.plan-editing-dialog">
       <Setter Property="MaxWidth" Value="440" />
       <Setter Property="Padding" Value="32" />
+    </Style>
+    <Style Selector="Border.plan-editing-dialog.delete-confirmation">
+      <Setter Property="MaxWidth" Value="384" />
+      <Setter Property="Padding" Value="24" />
+    </Style>
+    <Style Selector="Border.plan-editing-dialog.clear-confirmation">
+      <Setter Property="MaxWidth" Value="384" />
+      <Setter Property="Padding" Value="24" />
     </Style>
   </UserControl.Styles>
   <Grid>
@@ -46,7 +58,7 @@
               Classes="plan-tabs"
               ItemsSource="{Binding Plans}"
               SelectedItem="{Binding ActivePlanOrNull, Mode=TwoWay}"
-              AutomationProperties.Name="계획 목록">
+              AutomationProperties.Name="시간표 탭 목록">
             <TabStrip.Styles>
               <Style Selector="TabStripItem">
                 <Setter
@@ -79,7 +91,7 @@
                       </MenuItem>
                       <MenuItem
                           Classes="plan-tab-menu-item destructive"
-                          Header="계획 삭제"
+                          Header="시간표 삭제"
                           Command="{Binding CloseCommand}">
                         <MenuItem.Icon>
                           <icons:FluentIcon
@@ -126,8 +138,8 @@
             Classes="icon"
             Margin="8,4"
             Command="{Binding AddPlanCommand}"
-            AutomationProperties.Name="새 계획 추가"
-            ToolTip.Tip="새 계획 추가">
+            AutomationProperties.Name="새 시간표 만들기"
+            ToolTip.Tip="새 시간표 만들기">
           <icons:FluentIcon Icon="Add" IconVariant="Regular" FontSize="20" />
         </Button>
 
@@ -245,7 +257,7 @@
             TextAlignment="Center" />
         <TextBlock
             Classes="secondary"
-            Text="과목과 일정을 한곳에서 계획할 수 있어요."
+            Text="과목과 개인 일정을 한곳에서 관리할 수 있어요."
             TextAlignment="Center" />
         <Button
             x:Name="CreateFirstPlanButton"
@@ -305,9 +317,10 @@
         AutomationProperties.LiveSetting="Assertive">
       <Border
           x:Name="PlanEditingDialog"
-          MaxWidth="440"
+          Classes="plan-editing-dialog"
+          Classes.delete-confirmation="{Binding IsDeletePlanConfirmationVisible}"
+          Classes.clear-confirmation="{Binding IsClearActivePlanConfirmationVisible}"
           Margin="16"
-          Padding="32"
           HorizontalAlignment="Stretch"
           VerticalAlignment="Center"
           Background="{DynamicResource ElevatedSurfaceBrush}"
@@ -360,8 +373,8 @@
 
           <StackPanel
               IsVisible="{Binding IsDeletePlanConfirmationVisible}"
-              Spacing="14"
-              AutomationProperties.Name="계획 삭제 확인">
+              Spacing="12"
+              AutomationProperties.Name="시간표 삭제 확인">
             <Border
                 x:Name="DeletePlanIconSurface"
                 Width="44"
@@ -383,8 +396,9 @@
                 AutomationProperties.HeadingLevel="1"
                 FontSize="21"
                 FontWeight="SemiBold"
-                Text="계획을 삭제할까요?"
-                TextAlignment="Center" />
+                Text="시간표를 삭제할까요?"
+                TextAlignment="Center"
+                TextWrapping="Wrap" />
             <TextBlock
                 x:Name="DeletePlanDescription"
                 Classes="secondary"
@@ -406,13 +420,13 @@
                   x:Name="ConfirmDeletePlanButton"
                   Classes="danger"
                   Command="{Binding ConfirmDeletePlanCommand}"
-                  Content="계획 삭제" />
+                  Content="시간표 삭제" />
             </StackPanel>
           </StackPanel>
 
           <StackPanel
               IsVisible="{Binding IsClearActivePlanConfirmationVisible}"
-              Spacing="14"
+              Spacing="12"
               AutomationProperties.Name="시간표 비우기 확인">
             <Border
                 x:Name="ClearActivePlanIconSurface"
@@ -436,7 +450,8 @@
                 FontSize="21"
                 FontWeight="SemiBold"
                 Text="시간표를 비울까요?"
-                TextAlignment="Center" />
+                TextAlignment="Center"
+                TextWrapping="Wrap" />
             <TextBlock
                 x:Name="ClearActivePlanDescription"
                 Classes="secondary"
@@ -520,7 +535,7 @@
 
           <StackPanel
               IsVisible="{Binding IsDeletePersonalScheduleConfirmationVisible}"
-              Spacing="14"
+              Spacing="12"
               AutomationProperties.Name="개인 일정 삭제 확인">
             <Border
                 x:Name="DeletePersonalScheduleIconSurface"
@@ -544,7 +559,8 @@
                 FontSize="21"
                 FontWeight="SemiBold"
                 Text="개인 일정을 삭제할까요?"
-                TextAlignment="Center" />
+                TextAlignment="Center"
+                TextWrapping="Wrap" />
             <TextBlock
                 x:Name="DeletePersonalScheduleDescription"
                 Classes="secondary"
@@ -566,7 +582,7 @@
                   x:Name="ConfirmDeletePersonalScheduleButton"
                   Classes="danger"
                   Command="{Binding ConfirmDeletePersonalScheduleCommand}"
-                  Content="일정 삭제" />
+                  Content="삭제" />
             </StackPanel>
           </StackPanel>
         </Grid>

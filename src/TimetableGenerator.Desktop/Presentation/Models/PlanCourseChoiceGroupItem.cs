@@ -70,7 +70,7 @@ internal sealed class PlanCourseChoiceGroupItem
         {
             if (IsAlternativeGroup)
             {
-                return "각 추천에는 " + Courses.Count
+                return "각 조합에는 " + Courses.Count
                     + "개 과목 중 한 과목만 포함됩니다.";
             }
 
@@ -97,10 +97,10 @@ internal sealed class PlanCourseChoiceGroupItem
         {
             if (IsSingleCourseGroup)
             {
-                return SingleCourse.Name + " 계획에서 삭제";
+                return SingleCourse.Name + " 시간표에서 제거";
             }
 
-            return "이 중 하나 수강 선택 계획에서 삭제";
+            return "이 중 하나 수강 선택을 시간표에서 제거";
         }
     }
 

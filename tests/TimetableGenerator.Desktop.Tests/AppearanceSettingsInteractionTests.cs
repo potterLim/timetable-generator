@@ -104,6 +104,49 @@ public sealed class AppearanceSettingsInteractionTests
     }
 
     [AvaloniaFact]
+    public void AppearancePopupUsesCompactResponsiveWidthAndScalableLabels()
+    {
+        ProductAppearanceViewModel appearance =
+            ProductAppearanceTestFactory.CreateViewModel();
+        AppearanceSettingsView view = new AppearanceSettingsView();
+        view.DataContext = appearance;
+        view.FontSize = 24.0;
+        Window window = new Window();
+        window.Width = 224.0;
+        window.Height = 360.0;
+        window.Content = view;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            RadioButton systemOption = findRequiredControl<RadioButton>(
+                view,
+                "SystemThemeOption");
+            ContentPresenter presenter = systemOption.GetVisualDescendants()
+                .OfType<ContentPresenter>()
+                .Single(
+                    candidate => candidate.Name == "PART_ContentPresenter");
+            TextBlock label = systemOption.GetVisualDescendants()
+                .OfType<TextBlock>()
+                .Single(candidate => candidate.Text == "시스템 설정 사용");
+
+            Assert.Equal(224.0, view.MinWidth);
+            Assert.Equal(320.0, view.MaxWidth);
+            Assert.InRange(view.Bounds.Width, 224.0, 320.0);
+            Assert.True(systemOption.Bounds.Height >= 44.0);
+            Assert.True(presenter.MinHeight >= 20.0);
+            Assert.Equal(TextWrapping.Wrap, label.TextWrapping);
+            Assert.True(label.Bounds.Height <= presenter.Bounds.Height + 0.05);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void ThemeOptionLabelsShareOneHorizontalOriginAcrossVisualStates()
     {
         ControlledProductAppearanceSettingsStore settingsStore =

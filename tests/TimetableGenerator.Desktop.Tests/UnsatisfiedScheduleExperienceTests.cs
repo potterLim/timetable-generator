@@ -66,9 +66,6 @@ public sealed class UnsatisfiedScheduleExperienceTests
                 Button openPlanButton = findRequiredControl<Button>(
                     scheduleWorkspace,
                     "UnsatisfiedScheduleOpenPlanButton");
-                Button ordinaryAddScheduleButton = findRequiredControl<Button>(
-                    scheduleWorkspace,
-                    "EmptyScheduleAddPersonalScheduleButton");
                 Button exportButton = findRequiredControl<Button>(
                     scheduleWorkspace,
                     "ExportScheduleButton");
@@ -83,13 +80,14 @@ public sealed class UnsatisfiedScheduleExperienceTests
                     "현재 선택으로 만들 수 있는 시간표가 없습니다",
                     recoveryTexts);
                 Assert.Contains(
-                    "겹치는 일정이나 제외한 분반을 확인해 보세요.",
+                    "겹치는 개인 일정이나 제외한 분반을 확인해 보세요.",
                     recoveryTexts);
                 Assert.True(openPlanButton.IsEffectivelyVisible);
                 Assert.Equal(
-                    "충돌한 과목 선택을 내 계획에서 확인",
+                    "충돌한 과목 선택을 시간표 관리에서 확인",
                     AutomationProperties.GetName(openPlanButton));
-                Assert.False(ordinaryAddScheduleButton.IsEffectivelyVisible);
+                Assert.Empty(
+                    ordinaryEmptyState.GetVisualDescendants().OfType<Button>());
                 Assert.False(exportButton.IsEffectivelyVisible);
                 Assert.False(exportButton.IsEnabled);
 
@@ -177,10 +175,10 @@ public sealed class UnsatisfiedScheduleExperienceTests
                 Assert.False(centralRecoveryState.IsEffectivelyVisible);
                 Assert.Contains("과목은 배치하지 못했습니다", warningTexts);
                 Assert.Contains(
-                    "아래에는 개인 일정만 표시됩니다. 겹치는 일정이나 분반 선택을 조정해 보세요.",
+                    "아래에는 개인 일정만 표시됩니다. 겹치는 개인 일정이나 분반 선택을 조정해 보세요.",
                     warningTexts);
                 Assert.True(openPlanButton.IsEffectivelyVisible);
-                Assert.Equal("내 계획 확인", openPlanButton.Content);
+                Assert.Equal("선택 과목 확인", openPlanButton.Content);
                 Assert.False(exportButton.IsEffectivelyVisible);
                 Assert.False(exportButton.IsEnabled);
             }

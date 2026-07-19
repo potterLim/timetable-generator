@@ -83,7 +83,7 @@ public sealed class PersonalScheduleInteractionTests
             workspace.BeginDeletePersonalScheduleCommand.Execute(editedItem);
             Assert.True(workspace.IsDeletePersonalScheduleConfirmationVisible);
             Assert.Equal(
-                "'연구실 정기 미팅' 일정을 이 계획에서 삭제합니다.",
+                "시간표에서 개인 일정 '연구실 정기 미팅'을 삭제합니다.",
                 workspace.PersonalScheduleDeletionDescription);
             Assert.DoesNotContain(
                 "추천 시간표",
@@ -261,12 +261,17 @@ public sealed class PersonalScheduleInteractionTests
                 host,
                 "ConfirmDeletePersonalScheduleButton");
 
-            Assert.Equal(440.0, dialog.Bounds.Width);
+            Assert.Equal(384.0, dialog.MaxWidth);
+            Assert.Equal(384.0, dialog.Bounds.Width);
+            Assert.Equal(new Thickness(24.0), dialog.Padding);
             Assert.Equal(
                 HorizontalAlignment.Center,
                 iconSurface.HorizontalAlignment);
             Assert.Equal(TextAlignment.Center, heading.TextAlignment);
+            Assert.Equal(TextWrapping.Wrap, heading.TextWrapping);
             Assert.Equal(TextAlignment.Center, description.TextAlignment);
+            Assert.Equal(TextWrapping.Wrap, description.TextWrapping);
+            Assert.Equal("삭제", confirmButton.Content);
             Assert.Equal(
                 HorizontalAlignment.Center,
                 actions.HorizontalAlignment);
@@ -1021,7 +1026,7 @@ public sealed class PersonalScheduleInteractionTests
             Assert.Equal(
                 "사용자 경험 연구 정기 회의"
                     + Environment.NewLine
-                    + "선택하여 일정 상세 정보 보기",
+                    + "선택하여 개인 일정 상세 정보 보기",
                 ToolTip.GetTip(scheduleCard));
             Assert.DoesNotContain(
                 cardTexts,

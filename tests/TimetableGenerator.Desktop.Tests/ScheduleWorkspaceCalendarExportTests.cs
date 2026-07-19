@@ -106,7 +106,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                 workspaceView.ExportGoogleCalendarCommand,
                 googleAction.Command);
             Assert.Equal(
-                "현재 계획을 Google 캘린더로 내보내기",
+                "현재 시간표를 Google 캘린더로 내보내기",
                 AutomationProperties.GetName(googleAction));
         }
         finally
@@ -167,9 +167,9 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                 workspaceView,
                 "ExportStatusText");
             Assert.Equal(
-                "Google 캘린더에 '"
+                "Google 캘린더에 시간표를 반영했습니다: '"
                     + workspace.ActivePlan.Name.Value
-                    + "' 일정을 반영했습니다.",
+                    + "'",
                 status.Text);
         }
         finally

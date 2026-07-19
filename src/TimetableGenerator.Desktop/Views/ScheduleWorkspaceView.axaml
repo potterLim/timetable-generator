@@ -96,8 +96,8 @@
               Padding="8"
               Command="{Binding PreviousRecommendationCommand}"
               AutomationProperties.AutomationId="PreviousRecommendation"
-              AutomationProperties.Name="이전 추천 시간표"
-              ToolTip.Tip="이전 시간표">
+              AutomationProperties.Name="이전 시간표 조합"
+              ToolTip.Tip="이전 조합">
             <icons:FluentIcon Icon="ChevronLeft" IconVariant="Regular" FontSize="19" />
           </Button>
           <TextBlock
@@ -114,8 +114,8 @@
               Padding="8"
               Command="{Binding NextRecommendationCommand}"
               AutomationProperties.AutomationId="NextRecommendation"
-              AutomationProperties.Name="다음 추천 시간표"
-              ToolTip.Tip="다음 시간표">
+              AutomationProperties.Name="다음 시간표 조합"
+              ToolTip.Tip="다음 조합">
             <icons:FluentIcon Icon="ChevronRight" IconVariant="Regular" FontSize="19" />
           </Button>
         </StackPanel>
@@ -127,7 +127,7 @@
             ToolTip.Tip="개인 일정 추가">
           <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="7">
             <icons:FluentIcon Icon="Add" IconVariant="Regular" FontSize="17" />
-            <TextBlock VerticalAlignment="Center" Text="일정 추가" />
+            <TextBlock VerticalAlignment="Center" Text="개인 일정 추가" />
           </StackPanel>
         </Button>
         <Button
@@ -136,11 +136,11 @@
             IsVisible="{Binding IsInspectorPaneToggleVisible}"
             Command="{Binding OpenInspectorPaneCommand}"
             AutomationProperties.AutomationId="OpenInspectorPane"
-            AutomationProperties.Name="내 계획 패널 열기"
-            ToolTip.Tip="내 계획 열기">
+            AutomationProperties.Name="시간표 관리 패널 열기"
+            ToolTip.Tip="시간표 관리">
           <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="7">
             <icons:FluentIcon Icon="PanelRight" IconVariant="Regular" FontSize="17" />
-            <TextBlock VerticalAlignment="Center" Text="내 계획 열기" />
+            <TextBlock VerticalAlignment="Center" Text="시간표 관리" />
           </StackPanel>
         </Button>
         <Button
@@ -199,7 +199,7 @@
                   IsVisible="{Binding #WorkspaceRoot.IsAppleCalendarExportAvailable}"
                   Command="{Binding #WorkspaceRoot.ExportAppleCalendarCommand}"
                   AutomationProperties.AutomationId="ExportAppleCalendar"
-                  AutomationProperties.Name="현재 계획을 Apple 캘린더로 내보내기"
+                  AutomationProperties.Name="현재 시간표를 Apple 캘린더로 내보내기"
                   AutomationProperties.HelpText="Apple 캘린더의 가져오기 화면을 엽니다.">
                 <MenuItem.Icon>
                   <icons:FluentIcon
@@ -217,7 +217,7 @@
                   Header="Google 캘린더"
                   Command="{Binding #WorkspaceRoot.ExportGoogleCalendarCommand}"
                   AutomationProperties.AutomationId="ExportGoogleCalendar"
-                  AutomationProperties.Name="현재 계획을 Google 캘린더로 내보내기"
+                  AutomationProperties.Name="현재 시간표를 Google 캘린더로 내보내기"
                   AutomationProperties.HelpText="처음 연결할 때 브라우저에서 Google 계정 승인이 필요합니다.">
                 <MenuItem.Icon>
                   <Grid
@@ -273,7 +273,7 @@
                 Text="과목은 배치하지 못했습니다" />
             <TextBlock
                 Classes="caption"
-                Text="아래에는 개인 일정만 표시됩니다. 겹치는 일정이나 분반 선택을 조정해 보세요."
+                Text="아래에는 개인 일정만 표시됩니다. 겹치는 개인 일정이나 분반 선택을 조정해 보세요."
                 TextWrapping="Wrap" />
           </StackPanel>
           <Button
@@ -281,8 +281,8 @@
               Classes="outline"
               VerticalAlignment="Center"
               Command="{Binding OpenInspectorPaneCommand}"
-              Content="내 계획 확인"
-              AutomationProperties.Name="충돌한 과목 선택을 내 계획에서 확인" />
+              Content="선택 과목 확인"
+              AutomationProperties.Name="충돌한 과목 선택을 시간표 관리에서 확인" />
         </Grid>
       </Border>
 
@@ -311,7 +311,7 @@
                   AutomationProperties.HeadingLevel="2"
                   FontSize="17"
                   FontWeight="SemiBold"
-                  Text="주간 일정 목록" />
+                  Text="시간표 목록" />
               <TextBlock
                   Grid.Column="1"
                   Classes="caption"
@@ -457,18 +457,6 @@
               Text="{Binding EmptyScheduleMessage}"
               TextAlignment="Center"
               TextWrapping="Wrap" />
-          <Button
-              x:Name="EmptyScheduleAddPersonalScheduleButton"
-              Classes="outline"
-              Margin="0,6,0,0"
-              HorizontalAlignment="Center"
-              Command="{Binding BeginAddPersonalScheduleCommand}"
-              AutomationProperties.Name="빈 시간표에 개인 일정 추가">
-            <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="7">
-              <icons:FluentIcon Icon="Add" IconVariant="Regular" FontSize="17" />
-              <TextBlock Text="개인 일정 추가" />
-            </StackPanel>
-          </Button>
         </StackPanel>
       </Border>
 
@@ -509,7 +497,7 @@
               TextWrapping="Wrap" />
           <TextBlock
               Classes="secondary"
-              Text="겹치는 일정이나 제외한 분반을 확인해 보세요."
+              Text="겹치는 개인 일정이나 제외한 분반을 확인해 보세요."
               TextAlignment="Center"
               TextWrapping="Wrap" />
           <Button
@@ -518,10 +506,10 @@
               Margin="0,6,0,0"
               HorizontalAlignment="Center"
               Command="{Binding OpenInspectorPaneCommand}"
-              AutomationProperties.Name="충돌한 과목 선택을 내 계획에서 확인">
+              AutomationProperties.Name="충돌한 과목 선택을 시간표 관리에서 확인">
             <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="7">
               <icons:FluentIcon Icon="PanelRight" IconVariant="Regular" FontSize="17" />
-              <TextBlock Text="내 계획 확인" />
+              <TextBlock Text="선택 과목 확인" />
             </StackPanel>
           </Button>
         </StackPanel>
@@ -546,7 +534,7 @@
           <TextBlock
               FontSize="18"
               FontWeight="SemiBold"
-              Text="가능한 시간표 계산 중"
+              Text="시간표 조합 계산 중"
               TextAlignment="Center" />
           <TextBlock
               Classes="secondary"
@@ -578,7 +566,7 @@
           <TextBlock
               FontSize="18"
               FontWeight="SemiBold"
-              Text="추천 시간표를 계산하지 못했습니다"
+              Text="시간표 조합을 계산하지 못했습니다"
               TextAlignment="Center" />
           <TextBlock
               Classes="secondary"

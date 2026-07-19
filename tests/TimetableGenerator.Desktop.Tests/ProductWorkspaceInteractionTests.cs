@@ -83,19 +83,23 @@ public sealed class ProductWorkspaceInteractionTests
             Assert.False(workspaceSurface.IsEnabled);
             Assert.Equal(requestedPlanName, workspace.PlanPendingDeletionName);
             Assert.Equal(
-                "삭제할 계획: '" + requestedPlanName + "'",
+                "삭제할 시간표: '" + requestedPlanName + "'",
                 workspace.PlanDeletionDescription);
             Assert.True(cancelButton.IsKeyboardFocusWithin);
-            Assert.Equal(new Thickness(32.0), editingDialog.Padding);
+            Assert.Equal(384.0, editingDialog.MaxWidth);
+            Assert.Equal(384.0, editingDialog.Bounds.Width);
+            Assert.Equal(new Thickness(24.0), editingDialog.Padding);
             Assert.Equal(
-                "계획 삭제 확인",
+                "시간표 삭제 확인",
                 AutomationProperties.GetName(editingDialog));
             Assert.Equal(HorizontalAlignment.Center, iconSurface.HorizontalAlignment);
-            Assert.Equal("계획을 삭제할까요?", heading.Text);
+            Assert.Equal("시간표를 삭제할까요?", heading.Text);
             Assert.Equal(TextAlignment.Center, heading.TextAlignment);
+            Assert.Equal(TextWrapping.Wrap, heading.TextWrapping);
             Assert.Equal(TextAlignment.Center, description.TextAlignment);
+            Assert.Equal(TextWrapping.Wrap, description.TextWrapping);
             Assert.Equal(HorizontalAlignment.Center, actions.HorizontalAlignment);
-            Assert.Equal("계획 삭제", confirmButton.Content);
+            Assert.Equal("시간표 삭제", confirmButton.Content);
             Assert.Equal(
                 HorizontalAlignment.Center,
                 cancelButton.HorizontalContentAlignment);
@@ -354,11 +358,14 @@ public sealed class ProductWorkspaceInteractionTests
 
             Assert.True(workspace.IsClearActivePlanConfirmationVisible);
             Assert.True(cancelButton.IsKeyboardFocusWithin);
-            Assert.Equal(new Thickness(32.0), dialog.Padding);
+            Assert.Equal(384.0, dialog.MaxWidth);
+            Assert.Equal(new Thickness(24.0), dialog.Padding);
             Assert.Equal(HorizontalAlignment.Center, iconSurface.HorizontalAlignment);
             Assert.Equal("시간표를 비울까요?", heading.Text);
             Assert.Equal(TextAlignment.Center, heading.TextAlignment);
+            Assert.Equal(TextWrapping.Wrap, heading.TextWrapping);
             Assert.Equal(TextAlignment.Center, description.TextAlignment);
+            Assert.Equal(TextWrapping.Wrap, description.TextWrapping);
             Assert.Equal(HorizontalAlignment.Center, actions.HorizontalAlignment);
             Assert.Equal("모두 지우기", confirmButton.Content);
             Assert.Equal(
@@ -537,7 +544,7 @@ public sealed class ProductWorkspaceInteractionTests
                 addButtonPosition.X + addPlanButton.Bounds.Width
                 <= host.Bounds.Width + 1.0);
             Assert.Equal(
-                "새 계획 추가",
+                "새 시간표 만들기",
                 AutomationProperties.GetName(addPlanButton));
         }
         finally
@@ -565,7 +572,7 @@ public sealed class ProductWorkspaceInteractionTests
                 .OfType<TabStrip>()
                 .Single(
                     candidate => AutomationProperties.GetName(candidate)
-                        == "계획 목록");
+                        == "시간표 탭 목록");
             TabStripItem[] planTabItems = planTabs.GetVisualDescendants()
                 .OfType<TabStripItem>()
                 .ToArray();
@@ -617,7 +624,7 @@ public sealed class ProductWorkspaceInteractionTests
                 MenuItem deleteMenuItem = contextMenuItems[1];
                 Assert.Equal("이름 바꾸기", renameMenuItem.Header);
                 Assert.Same(plan.RenameCommand, renameMenuItem.Command);
-                Assert.Equal("계획 삭제", deleteMenuItem.Header);
+                Assert.Equal("시간표 삭제", deleteMenuItem.Header);
                 Assert.Same(plan.CloseCommand, deleteMenuItem.Command);
                 Assert.Contains("destructive", deleteMenuItem.Classes);
 
@@ -1034,15 +1041,15 @@ public sealed class ProductWorkspaceInteractionTests
                 workspace.OpenInspectorPaneCommand,
                 openInspector.Command);
             Assert.Equal(
-                "내 계획 패널 열기",
+                "시간표 관리 패널 열기",
                 AutomationProperties.GetName(openInspector));
             Assert.Equal(
                 "OpenInspectorPane",
                 AutomationProperties.GetAutomationId(openInspector));
-            Assert.Equal("내 계획 열기", ToolTip.GetTip(openInspector));
+            Assert.Equal("시간표 관리", ToolTip.GetTip(openInspector));
             Assert.Contains(
                 openInspector.GetVisualDescendants().OfType<TextBlock>(),
-                candidate => candidate.Text == "내 계획 열기");
+                candidate => candidate.Text == "시간표 관리");
             Assert.True(openInspector.Focusable);
             Assert.True(openInspector.IsTabStop);
             Assert.DoesNotContain(

@@ -220,10 +220,10 @@ internal sealed partial class PlannerWorkspaceViewModel
 
             if (ActivePlan.CourseChoiceGroups.Count == 0)
             {
-                return "시간표가 있는 과목이 없습니다";
+                return "시간이 정해진 과목이 없습니다";
             }
 
-            return "겹치지 않는 시간표를 찾지 못했습니다";
+            return "겹치지 않는 시간표 조합을 찾지 못했습니다";
         }
     }
 
@@ -243,7 +243,7 @@ internal sealed partial class PlannerWorkspaceViewModel
 
             if (ActivePlan.CourseChoiceGroups.Count == 0)
             {
-                return "시간 미정 과목은 내 계획에 보관됩니다.";
+                return "시간 미정 과목은 현재 시간표에 유지됩니다.";
             }
 
             return "겹치는 과목을 빼거나 분반 선호를 바꾸세요.";

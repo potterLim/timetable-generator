@@ -63,14 +63,38 @@ public sealed class PlanInspectorVisualStateTests
                     TextBlock planTitle = findRequiredControl<TextBlock>(
                         inspector,
                         "PlanManagementTitle");
+                    ContentPresenter managementPresenter = managementButton
+                        .GetVisualDescendants()
+                        .OfType<ContentPresenter>()
+                        .Single(
+                            candidate => candidate.Name
+                                == "PART_ContentPresenter");
                     TextBlock naturalTitle = new TextBlock();
                     naturalTitle.FontFamily = planTitle.FontFamily;
                     naturalTitle.FontSize = planTitle.FontSize;
                     naturalTitle.FontWeight = planTitle.FontWeight;
+                    naturalTitle.LineHeight = planTitle.LineHeight;
                     naturalTitle.Text = TERM_PLAN_NAME;
                     naturalTitle.Measure(Size.Infinity);
 
                     Assert.Equal(TERM_PLAN_NAME, planTitle.Text);
+                    Assert.Equal(20.0, planTitle.FontSize);
+                    Assert.Equal(24.0, planTitle.Height);
+                    Assert.Equal(24.0, planTitle.LineHeight);
+                    Assert.Equal(24.0, planTitle.Bounds.Height);
+                    Assert.Equal(24.0, managementPresenter.Bounds.Height);
+                    Assert.Equal(24.0, managementPresenter.LineHeight);
+                    Assert.True(
+                        naturalTitle.DesiredSize.Height
+                        <= planTitle.Bounds.Height + 0.05);
+                    assertControlsShareVerticalCenter(
+                        managementButton,
+                        managementButton,
+                        planTitle);
+                    assertControlsShareVerticalCenter(
+                        managementButton,
+                        managementPresenter,
+                        planTitle);
                     Assert.Equal(
                         TextTrimming.CharacterEllipsis,
                         planTitle.TextTrimming);
@@ -86,14 +110,14 @@ public sealed class PlanInspectorVisualStateTests
                         TERM_PLAN_NAME,
                         AutomationProperties.GetName(managementButton));
                     Assert.Equal(
-                        "계획 관리",
+                        "시간표 관리",
                         AutomationProperties.GetHelpText(managementButton));
                     Assert.Equal(
                         2,
                         (int)AutomationProperties.GetHeadingLevel(
                             managementButton));
                     Assert.Equal(
-                        "계획 관리",
+                        "시간표 관리",
                         ToolTip.GetTip(managementButton));
                     Assert.Empty(
                         managementButton

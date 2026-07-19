@@ -224,9 +224,9 @@ internal sealed partial class ScheduleWorkspaceView
             GoogleCalendarExportPlan exportPlan =
                 GoogleCalendarExportPlan.CreateFromDocument(document);
             showPersistentExportStatus(
-                "Google 캘린더에 '"
+                "Google 캘린더에 시간표를 반영하는 중입니다: '"
                     + document.CalendarName.Value
-                    + "' 일정을 반영하는 중입니다.",
+                    + "'",
                 EExportStatus.Information);
             GoogleCalendarExportResult result =
                 await mGoogleCalendarExporter.ExportAsync(
@@ -401,9 +401,9 @@ internal sealed partial class ScheduleWorkspaceView
         {
             case EGoogleCalendarExportStatus.Success:
                 showTransientExportStatus(
-                    "Google 캘린더에 '"
+                    "Google 캘린더에 시간표를 반영했습니다: '"
                         + calendarName.Value
-                        + "' 일정을 반영했습니다.",
+                        + "'",
                     EExportStatus.Success);
                 break;
             case EGoogleCalendarExportStatus.NotConfigured:

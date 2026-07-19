@@ -203,24 +203,24 @@
                                   Command="{Binding SelectPreferredCommand}"
                                   Content="선호"
                                   AutomationProperties.Name="{Binding PreferredButtonAccessibleName}"
-                                  AutomationProperties.HelpText="추천에서 먼저 사용"
-                                  ToolTip.Tip="추천에서 먼저 사용" />
+                                  AutomationProperties.HelpText="조합에서 우선 사용"
+                                  ToolTip.Tip="조합에서 우선 사용" />
                               <RadioButton
                                   Classes="preference-choice"
                                   IsChecked="{Binding IsAcceptable, Mode=OneWay}"
                                   Command="{Binding SelectAcceptableCommand}"
                                   Content="가능"
                                   AutomationProperties.Name="{Binding AcceptableButtonAccessibleName}"
-                                  AutomationProperties.HelpText="추천 후보로 사용"
-                                  ToolTip.Tip="추천 후보로 사용" />
+                                  AutomationProperties.HelpText="조합 후보로 사용"
+                                  ToolTip.Tip="조합 후보로 사용" />
                               <RadioButton
                                   Classes="preference-choice"
                                   IsChecked="{Binding IsExcluded, Mode=OneWay}"
                                   Command="{Binding SelectExcludedCommand}"
                                   Content="제외"
                                   AutomationProperties.Name="{Binding ExcludedButtonAccessibleName}"
-                                  AutomationProperties.HelpText="추천에서 사용하지 않음"
-                                  ToolTip.Tip="추천에서 사용하지 않음" />
+                                  AutomationProperties.HelpText="조합에서 사용하지 않음"
+                                  ToolTip.Tip="조합에서 사용하지 않음" />
                             </StackPanel>
                           </Grid>
                         </Border>

@@ -45,12 +45,14 @@
             Grid.Column="0"
             Classes="plan-title-action"
             AutomationProperties.Name="{Binding ActivePlanOrNull.DisplayName}"
-            AutomationProperties.HelpText="계획 관리"
+            AutomationProperties.HelpText="시간표 관리"
             AutomationProperties.HeadingLevel="2"
-            ToolTip.Tip="계획 관리">
+            ToolTip.Tip="시간표 관리">
           <TextBlock
               x:Name="PlanManagementTitle"
               Classes="title"
+              Height="24"
+              LineHeight="24"
               VerticalAlignment="Center"
               AutomationProperties.AccessibilityView="Raw"
               Text="{Binding ActivePlanOrNull.DisplayName}"
@@ -63,7 +65,7 @@
                     Classes="plan-management-action"
                     Click="onPlanManagementActionClick"
                     Command="{Binding BeginRenamePlanCommand}"
-                    AutomationProperties.Name="현재 계획 이름 바꾸기">
+                    AutomationProperties.Name="현재 시간표 이름 바꾸기">
                   <StackPanel Classes="plan-action-content">
                     <icons:FluentIcon Classes="plan-action-icon" Icon="Edit" IconVariant="Regular" />
                     <TextBlock Classes="plan-action-label" Text="이름 바꾸기" />
@@ -86,10 +88,10 @@
                     IsEnabled="{Binding CanDeleteActivePlan}"
                     Click="onPlanManagementActionClick"
                     Command="{Binding BeginDeletePlanCommand}"
-                    AutomationProperties.Name="현재 계획 삭제">
+                    AutomationProperties.Name="현재 시간표 삭제">
                   <StackPanel Classes="plan-action-content">
                     <icons:FluentIcon Classes="plan-action-icon" Icon="Delete" IconVariant="Regular" />
-                    <TextBlock Classes="plan-action-label" Text="계획 삭제" />
+                    <TextBlock Classes="plan-action-label" Text="시간표 삭제" />
                   </StackPanel>
                 </Button>
               </StackPanel>
@@ -102,8 +104,8 @@
             Classes="icon"
             IsVisible="{Binding IsInspectorPaneDismissActionVisible}"
             Command="{Binding CloseInspectorPaneCommand}"
-            AutomationProperties.Name="내 계획 패널 닫기"
-            ToolTip.Tip="계획 닫기">
+            AutomationProperties.Name="시간표 관리 패널 닫기"
+            ToolTip.Tip="시간표 관리 닫기">
           <icons:FluentIcon Icon="Dismiss" IconVariant="Regular" FontSize="17" />
         </Button>
       </Grid>
@@ -247,7 +249,7 @@
                           Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).RemoveCourseChoiceGroupCommand}"
                           CommandParameter="{Binding}"
                           AutomationProperties.Name="{Binding RemoveButtonAccessibleName}"
-                          ToolTip.Tip="계획에서 삭제">
+                          ToolTip.Tip="시간표에서 제거">
                         <icons:FluentIcon Icon="Delete" IconVariant="Regular" FontSize="16" />
                       </Button>
                     </Grid>
@@ -287,7 +289,7 @@
                             Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).RemoveCourseChoiceGroupCommand}"
                             CommandParameter="{Binding}"
                             AutomationProperties.Name="{Binding RemoveButtonAccessibleName}"
-                            ToolTip.Tip="대안 묶음을 계획에서 삭제">
+                            ToolTip.Tip="대안 묶음을 시간표에서 제거">
                           <icons:FluentIcon Icon="Delete" IconVariant="Regular" FontSize="16" />
                         </Button>
                       </Grid>
@@ -375,7 +377,7 @@
                           Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).RemoveTimeNotProvidedCourseCommand}"
                           CommandParameter="{Binding}"
                           AutomationProperties.Name="{Binding RemoveButtonAccessibleName}"
-                          ToolTip.Tip="계획에서 제거">
+                          ToolTip.Tip="시간표에서 제거">
                         <icons:FluentIcon Icon="Dismiss" IconVariant="Regular" FontSize="17" />
                       </Button>
                     </Grid>
@@ -473,7 +475,7 @@
                         Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).BeginEditPersonalScheduleCommand}"
                         CommandParameter="{Binding Id}"
                         AutomationProperties.Name="{Binding EditButtonAccessibleName}"
-                        ToolTip.Tip="일정 수정">
+                        ToolTip.Tip="개인 일정 수정">
                       <icons:FluentIcon Icon="Edit" IconVariant="Regular" FontSize="16" />
                     </Button>
                     <Button
@@ -489,7 +491,7 @@
                         Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).BeginDeletePersonalScheduleCommand}"
                         CommandParameter="{Binding}"
                         AutomationProperties.Name="{Binding RemoveButtonAccessibleName}"
-                        ToolTip.Tip="일정 삭제">
+                        ToolTip.Tip="개인 일정 삭제">
                       <icons:FluentIcon Icon="Delete" IconVariant="Regular" FontSize="16" />
                     </Button>
                   </Grid>

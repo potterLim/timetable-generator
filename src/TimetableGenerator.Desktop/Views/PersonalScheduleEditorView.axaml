@@ -83,7 +83,7 @@
         VerticalScrollBarVisibility="Auto">
       <StackPanel Spacing="16">
         <StackPanel Spacing="7">
-          <TextBlock FontWeight="SemiBold" Text="일정 이름 (필수)" />
+          <TextBlock FontWeight="SemiBold" Text="이름 (필수)" />
           <TextBox
               x:Name="PersonalScheduleNameInput"
               MaxLength="80"

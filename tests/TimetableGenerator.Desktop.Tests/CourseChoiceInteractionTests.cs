@@ -134,7 +134,7 @@ public sealed class CourseChoiceInteractionTests
             Assert.Equal(2, workspace.CourseChoiceDraftCourses.Count);
             Assert.True(workspace.HasAlternativeCourseChoices);
             Assert.Equal(
-                "과목별 분반을 정하면 이 중 한 과목만 추천합니다.",
+                "과목별 분반을 정하면 각 조합에는 이 중 한 과목만 포함됩니다.",
                 workspace.CourseChoiceEditorDescription);
             Assert.Empty(workspace.AlternativeCourseSearchResults);
             CourseChoiceDraftCourseItem seminarDraft = workspace
@@ -310,22 +310,22 @@ public sealed class CourseChoiceInteractionTests
                 "프로그래밍 I, 01분반, 선호",
                 AutomationProperties.GetName(preferenceButtons[0]));
             Assert.Equal(
-                "추천에서 먼저 사용",
+                "조합에서 우선 사용",
                 AutomationProperties.GetHelpText(preferenceButtons[0]));
             Assert.Equal(
-                "추천 후보로 사용",
+                "조합 후보로 사용",
                 AutomationProperties.GetHelpText(preferenceButtons[1]));
             Assert.Equal(
-                "추천에서 사용하지 않음",
+                "조합에서 사용하지 않음",
                 AutomationProperties.GetHelpText(preferenceButtons[2]));
             Assert.Equal(
-                "추천에서 먼저 사용",
+                "조합에서 우선 사용",
                 ToolTip.GetTip(preferenceButtons[0]));
             Assert.Equal(
-                "추천 후보로 사용",
+                "조합 후보로 사용",
                 ToolTip.GetTip(preferenceButtons[1]));
             Assert.Equal(
-                "추천에서 사용하지 않음",
+                "조합에서 사용하지 않음",
                 ToolTip.GetTip(preferenceButtons[2]));
             assertBrushUsesResource(
                 preferenceButtons[2].BorderBrush,

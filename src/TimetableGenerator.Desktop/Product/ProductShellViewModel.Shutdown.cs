@@ -120,7 +120,7 @@ internal sealed partial class ProductShellViewModel
         else
         {
             mShutdownMessage =
-                "계획은 화면에 그대로 남아 있습니다. 저장 오류를 해결한 뒤 다시 시도해 주세요.";
+                "시간표는 화면에 그대로 남아 있습니다. 저장 오류를 해결한 뒤 다시 시도해 주세요.";
         }
 
         raiseShutdownPropertiesChanged();

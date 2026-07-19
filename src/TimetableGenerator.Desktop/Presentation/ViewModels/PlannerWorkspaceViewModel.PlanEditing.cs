@@ -117,7 +117,7 @@ internal sealed partial class PlannerWorkspaceViewModel
 
             if (IsDeletePlanConfirmationVisible)
             {
-                return "계획 삭제 확인";
+                return "시간표 삭제 확인";
             }
 
             if (IsClearActivePlanConfirmationVisible)
@@ -161,7 +161,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                 return string.Empty;
             }
 
-            return "삭제할 계획: '"
+            return "삭제할 시간표: '"
                 + mPlanPendingDeletionOrNull.DisplayName
                 + "'";
         }

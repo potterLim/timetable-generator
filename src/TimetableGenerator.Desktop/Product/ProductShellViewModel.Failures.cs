@@ -58,7 +58,7 @@ internal sealed partial class ProductShellViewModel
 
         if (exception is ProductWorkspaceCatalogCompatibilityException)
         {
-            return "저장된 계획을 현재 과목 데이터와 안전하게 연결할 수 없습니다. 기존 계획은 변경하지 않았습니다.";
+            return "저장된 시간표를 현재 과목 데이터와 안전하게 연결할 수 없습니다. 기존 시간표는 변경하지 않았습니다.";
         }
 
         if (exception is CatalogCacheUpgradeRequiredException

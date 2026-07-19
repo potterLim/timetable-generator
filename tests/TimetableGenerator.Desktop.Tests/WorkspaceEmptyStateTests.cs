@@ -72,8 +72,8 @@ public sealed class WorkspaceEmptyStateTests
 
             assertEmptyScheduleState(
                 scheduleWorkspace,
-                "시간표가 있는 과목이 없습니다",
-                "시간 미정 과목은 내 계획에 보관됩니다.");
+                "시간이 정해진 과목이 없습니다",
+                "시간 미정 과목은 현재 시간표에 유지됩니다.");
             assertTimeNotProvidedInspectorState(planInspector);
         }
         finally
@@ -116,6 +116,7 @@ public sealed class WorkspaceEmptyStateTests
         Assert.False(exportButton.IsEffectivelyVisible);
         Assert.False(exportButton.IsEnabled);
         Assert.True(openInspectorPane.IsEffectivelyVisible);
+        Assert.Empty(scheduleEmptyState.GetVisualDescendants().OfType<Button>());
         Assert.Equal(expectedHeading, heading.Text);
         Assert.Equal(expectedDescription, description.Text);
     }

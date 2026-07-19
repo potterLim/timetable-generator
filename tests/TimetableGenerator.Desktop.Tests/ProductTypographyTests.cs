@@ -30,7 +30,7 @@ public sealed class ProductTypographyTests
         ComboBox selector = new ComboBox();
         selector.ItemsSource = new string[] { "개설 단위 전체" };
         Button popupAction = new Button();
-        popupAction.Content = "계획 이름 바꾸기";
+        popupAction.Content = "시간표 이름 바꾸기";
         Flyout actionFlyout = new Flyout();
         actionFlyout.Content = popupAction;
 

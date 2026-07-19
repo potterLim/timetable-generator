@@ -577,7 +577,7 @@ public sealed class PlannerWorkspaceSmokeTests
             Assert.True(planToClose.CanClose);
             Assert.True(planToClose.CloseCommand.CanExecute(null));
             Assert.Contains(planToClose.DisplayName, planToClose.CloseButtonAccessibleName);
-            Assert.Equal("계획 삭제", planToClose.CloseButtonHelpText);
+            Assert.Equal("시간표 삭제", planToClose.CloseButtonHelpText);
 
             planToClose.CloseCommand.Execute(null);
 
@@ -593,7 +593,7 @@ public sealed class PlannerWorkspaceSmokeTests
             Assert.Equal(activePlan.PlanId, remainingPlan.PlanId);
             Assert.True(remainingPlan.CanClose);
             Assert.True(remainingPlan.CloseCommand.CanExecute(null));
-            Assert.Equal("계획 삭제", remainingPlan.CloseButtonHelpText);
+            Assert.Equal("시간표 삭제", remainingPlan.CloseButtonHelpText);
             Assert.False(workspace.IsPlanEditingOverlayVisible);
             Assert.True(workspace.IsWorkspaceInteractionEnabled);
 

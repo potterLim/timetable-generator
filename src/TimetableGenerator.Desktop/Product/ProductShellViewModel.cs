@@ -101,7 +101,7 @@ internal sealed partial class ProductShellViewModel : ObservableObject, IDisposa
                 return "시간표";
             }
 
-            return mWorkspaceOrNull.InstitutionName + " 시간표 계획";
+            return mWorkspaceOrNull.InstitutionName + " 시간표";
         }
     }
 
@@ -134,7 +134,7 @@ internal sealed partial class ProductShellViewModel : ObservableObject, IDisposa
         mCatalogUpdateTask = Task.CompletedTask;
         mState = EProductShellState.Loading;
         mStatusTitle = "시간표 준비 중";
-        mStatusMessage = "과목 데이터와 저장된 계획을 확인하고 있습니다.";
+        mStatusMessage = "과목 데이터와 저장된 시간표를 확인하고 있습니다.";
         mShutdownState = EShutdownPresentationState.Idle;
         mShutdownTitle = string.Empty;
         mShutdownMessage = string.Empty;
@@ -227,7 +227,7 @@ internal sealed partial class ProductShellViewModel : ObservableObject, IDisposa
         mWorkspaceOrNull = null;
         mState = EProductShellState.Loading;
         mStatusTitle = "시간표 준비 중";
-        mStatusMessage = "과목 데이터와 저장된 계획을 확인하고 있습니다.";
+        mStatusMessage = "과목 데이터와 저장된 시간표를 확인하고 있습니다.";
         mCatalogUpdateNotice = string.Empty;
         mStartupRecoveryFlags = EProductWorkspaceRecoveryFlags.None;
         raiseStatePropertiesChanged();

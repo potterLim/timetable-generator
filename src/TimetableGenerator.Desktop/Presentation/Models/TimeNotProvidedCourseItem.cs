@@ -76,7 +76,7 @@ internal sealed class TimeNotProvidedCourseItem
     {
         get
         {
-            return Name + "을 현재 계획에서 제거";
+            return Name + "을 현재 시간표에서 제거";
         }
     }
 

@@ -82,7 +82,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         {
             return mEditingPersonalScheduleIdOrNull.HasValue
                 ? "변경 저장"
-                : "일정 추가";
+                : "추가";
         }
     }
 
@@ -223,8 +223,9 @@ internal sealed partial class PlannerWorkspaceViewModel
                 return string.Empty;
             }
 
-            return "'" + mPersonalSchedulePendingDeletionOrNull.Title
-                + "' 일정을 이 계획에서 삭제합니다.";
+            return "시간표에서 개인 일정 '"
+                + mPersonalSchedulePendingDeletionOrNull.Title
+                + "'을 삭제합니다.";
         }
     }
 
