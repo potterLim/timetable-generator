@@ -63,6 +63,7 @@ App_Data/
 # Local product configuration and generated QA artifacts
 /Directory.Build.local.props
 /src/TimetableGenerator.Desktop/catalog-source.local.json
+/src/TimetableGenerator.Desktop/google-calendar.local.json
 /artifacts/
 /tests/TimetableGenerator.Desktop.Tests/TestResults/
 

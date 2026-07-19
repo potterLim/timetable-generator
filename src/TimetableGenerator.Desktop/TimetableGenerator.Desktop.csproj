@@ -29,6 +29,11 @@
         Condition="Exists('catalog-source.local.json')"
         CopyToOutputDirectory="PreserveNewest"
         CopyToPublishDirectory="PreserveNewest" />
+    <Content
+        Include="google-calendar.local.json"
+        Condition="Exists('google-calendar.local.json')"
+        CopyToOutputDirectory="PreserveNewest"
+        CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
