@@ -178,18 +178,13 @@
                   AutomationProperties.Name="현재 시간표를 PNG 이미지로 저장"
                   AutomationProperties.HelpText="현재 시간표를 고해상도 PNG 이미지로 저장합니다.">
                 <MenuItem.Icon>
-                  <Grid
-                      x:Name="ExportPngLogoSlot"
-                      Classes="export-menu-logo-slot"
+                  <icons:FluentIcon
+                      Classes="export-menu-icon"
                       AutomationProperties.AccessibilityView="Raw"
-                      IsHitTestVisible="False">
-                    <Image
-                        x:Name="ExportPngLogoImage"
-                        Classes="export-menu-logo"
-                        Width="24"
-                        Height="24"
-                        Source="/Assets/Export/PngImageIcon.png" />
-                  </Grid>
+                      Icon="Image"
+                      IconVariant="Regular"
+                      IconSize="Size20"
+                      FontSize="20" />
                 </MenuItem.Icon>
               </MenuItem>
               <MenuItem

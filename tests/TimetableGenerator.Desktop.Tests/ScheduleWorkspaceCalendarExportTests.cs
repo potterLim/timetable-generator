@@ -75,7 +75,9 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.Same(googleAction, menu.Items[2]);
             menu.ShowAt(exportButton);
             Dispatcher.UIThread.RunJobs();
-            assertExportPngImageIconPresentation(pngAction);
+            assertExportFluentIconPresentation(
+                pngAction,
+                Icon.Image);
             assertExportFluentIconPresentation(
                 appleAction,
                 Icon.CalendarMonth);
@@ -231,7 +233,9 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             MenuItem pngAction = findRequiredMenuItem(
                 menu,
                 "ExportPngAction");
-            assertExportPngImageIconPresentation(pngAction);
+            assertExportFluentIconPresentation(
+                pngAction,
+                Icon.Image);
             assertExportFluentIconPresentation(
                 appleAction,
                 Icon.CalendarMonth);
@@ -377,18 +381,6 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         }
 
         return menuItemOrNull;
-    }
-
-    private static void assertExportPngImageIconPresentation(
-        MenuItem menuItem)
-    {
-        assertExportRasterLogoPresentation(
-            menuItem,
-            "ExportPngLogoSlot",
-            "ExportPngLogoImage",
-            24.0,
-            24.0,
-            null);
     }
 
     private static Grid assertExportRasterLogoPresentation(

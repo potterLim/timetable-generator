@@ -5,14 +5,12 @@
 ## PNG 이미지 아이콘
 
 - 원본 저장소: <https://github.com/microsoft/fluentui-system-icons>
-- 원본 자산: <https://github.com/microsoft/fluentui-system-icons/blob/16a524d18199ddaa81bef6628cafa48f70cbb4f4/assets/Image/SVG/ic_fluent_image_24_color.svg>
-- 원본: 24×24 SVG
-- 원본 SHA-256: `97d8d9226dac215783c8ce7121ad669eb78c9d79e6bb02b5bddbfe5ef17403b6`
-- 배포 파일: `src/TimetableGenerator.Desktop/Assets/Export/PngImageIcon.png`
-- 배포 파일 SHA-256: `7bdfc4795cd4b60e62a8bd7c5fd4a30a88af26c693b5e98dd9833528fc3c6dac`
+- 원본 자산: <https://github.com/microsoft/fluentui-system-icons/blob/16a524d18199ddaa81bef6628cafa48f70cbb4f4/assets/Image/SVG/ic_fluent_image_24_regular.svg>
+- 앱 구성 요소: `FluentIcons.Avalonia` 2.1.333의 `Image` Regular 아이콘
+- 표시 크기: 20 DIP
 - 라이선스: MIT
 
-원본의 비율과 알파 채널을 유지하면서 Sharp/libvips로 96×96 RGBA PNG를 렌더링했습니다. 화면에서는 24 DIP로 표시하여 고배율 환경에서도 선명하게 보입니다. Microsoft Photos 앱의 제품 로고가 아니라 이미지 파일을 뜻하는 Fluent Color 시스템 아이콘이므로, 특정 앱으로 전송하는 동작으로 오인되지 않습니다. MIT 고지문은 배포 결과물의 `ThirdPartyNotices` 디렉터리에 포함됩니다.
+별도의 PNG 래스터 자산을 포함하지 않고 Fluent 벡터 아이콘을 직접 렌더링합니다. 라이트·다크 모드의 전경색을 자동으로 따르고 고배율 환경에서도 선명합니다. Microsoft Photos 앱의 제품 로고가 아니라 이미지 파일을 뜻하는 시스템 아이콘이므로, 특정 앱으로 전송하는 동작으로 오인되지 않습니다. MIT 고지문은 배포 결과물의 `ThirdPartyNotices` 디렉터리에 포함됩니다.
 
 ## Google Calendar 로고
 
