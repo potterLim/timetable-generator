@@ -65,6 +65,7 @@
                         x:DataType="models:PlanTabItem"
                         DataContext="{Binding #PlanTabContent.DataContext}">
                       <MenuItem
+                          Classes="plan-tab-menu-item"
                           Header="이름 변경"
                           Command="{Binding RenameCommand}">
                         <MenuItem.Icon>
@@ -77,6 +78,8 @@
                     </ContextMenu>
                   </StackPanel.ContextMenu>
                   <TextBlock
+                      Height="18"
+                      LineHeight="18"
                       MaxWidth="160"
                       VerticalAlignment="Center"
                       Text="{Binding DisplayName}"

@@ -119,7 +119,9 @@
                     AutomationProperties.Name="{Binding AccessibleName}">
                   <Grid HorizontalAlignment="Stretch">
                     <TextBlock
+                        Height="18"
                         HorizontalAlignment="Center"
+                        LineHeight="18"
                         VerticalAlignment="Center"
                         Text="{Binding ShortName}" />
                     <icons:FluentIcon

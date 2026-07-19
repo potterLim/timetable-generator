@@ -17,6 +17,7 @@
               Content="{TemplateBinding Content}"
               ContentTemplate="{TemplateBinding ContentTemplate}"
               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+              LineHeight="18"
               Padding="{TemplateBinding Padding}"
               RecognizesAccessKey="True"
               VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
@@ -44,6 +45,7 @@
               ContentTemplate="{TemplateBinding ContentTemplate}"
               Foreground="{TemplateBinding Foreground}"
               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+              LineHeight="18"
               Padding="{TemplateBinding Padding}"
               RecognizesAccessKey="True"
               VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
@@ -71,6 +73,7 @@
               ContentTemplate="{TemplateBinding ContentTemplate}"
               Foreground="{TemplateBinding Foreground}"
               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+              LineHeight="18"
               Padding="{TemplateBinding Padding}"
               RecognizesAccessKey="True"
               VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
@@ -121,6 +124,10 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
   </Style>
 
+  <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="LineHeight" Value="18" />
+  </Style>
+
   <Style Selector="ToggleButton">
     <Setter Property="HorizontalContentAlignment" Value="Center" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -139,6 +146,11 @@
                    StackPanel.button-content > TextBlock,
                    StackPanel.button-content > Viewbox">
     <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="StackPanel.button-content > TextBlock">
+    <Setter Property="Height" Value="18" />
+    <Setter Property="LineHeight" Value="18" />
   </Style>
 
   <Style Selector="Button.icon">
@@ -279,6 +291,7 @@
   </Style>
 
   <Style Selector="TextBox">
+    <Setter Property="LineHeight" Value="18" />
     <Setter Property="Padding" Value="12,0" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
   </Style>
@@ -345,6 +358,15 @@
     <Setter Property="MinHeight" Value="42" />
     <Setter Property="Padding" Value="12,0" />
     <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="HeaderTemplate">
+      <DataTemplate>
+        <TextBlock
+            Height="18"
+            LineHeight="18"
+            VerticalAlignment="Center"
+            Text="{ReflectionBinding}" />
+      </DataTemplate>
+    </Setter>
   </Style>
 
   <Style Selector="MenuItem.export-menu-item /template/ ContentControl#PART_IconPresenter">
@@ -353,6 +375,35 @@
     <Setter Property="Margin" Value="0,0,10,0" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="MenuItem.plan-tab-menu-item">
+    <Setter Property="HeaderTemplate">
+      <DataTemplate>
+        <TextBlock
+            Height="18"
+            LineHeight="18"
+            VerticalAlignment="Center"
+            Text="{ReflectionBinding}" />
+      </DataTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="MenuItem.plan-tab-menu-item /template/ ContentControl#PART_IconPresenter">
+    <Setter Property="Width" Value="20" />
+    <Setter Property="Height" Value="20" />
+    <Setter Property="Margin" Value="0,0,8,0" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="MenuItem.plan-tab-menu-item icons|FluentIcon">
+    <Setter Property="Width" Value="18" />
+    <Setter Property="Height" Value="18" />
     <Setter Property="HorizontalAlignment" Value="Center" />
     <Setter Property="VerticalAlignment" Value="Center" />
   </Style>
@@ -398,10 +449,16 @@
 
   <Style Selector="RadioButton.appearance-option">
     <Setter Property="MinHeight" Value="44" />
-    <Setter Property="Padding" Value="8,0,0,2" />
+    <Setter Property="Padding" Value="8,0,0,0" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="CornerRadius" Value="6" />
     <Setter Property="FontWeight" Value="Medium" />
+  </Style>
+
+  <Style Selector="RadioButton.appearance-option /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Height" Value="20" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
   </Style>
 
   <Style Selector="RadioButton.appearance-option /template/ Border#RootBorder > Grid">
@@ -518,7 +575,9 @@
   </Style>
 
   <Style Selector="TabStrip.plan-tabs > TabStripItem">
-    <Setter Property="Padding" Value="20,0" />
+    <Setter Property="Height" Value="44" />
+    <Setter Property="MinHeight" Value="44" />
+    <Setter Property="Padding" Value="20,2,20,0" />
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderBrush" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0,0,0,2" />

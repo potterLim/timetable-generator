@@ -94,6 +94,8 @@
           <ComboBox.ItemTemplate>
             <DataTemplate x:DataType="models:CourseUnitFilterOption">
               <TextBlock
+                  Height="18"
+                  LineHeight="18"
                   VerticalAlignment="Center"
                   Text="{Binding DisplayName}"
                   TextTrimming="CharacterEllipsis"
@@ -113,6 +115,8 @@
           <ComboBox.ItemTemplate>
             <DataTemplate x:DataType="models:RequirementFilterOption">
               <TextBlock
+                  Height="18"
+                  LineHeight="18"
                   VerticalAlignment="Center"
                   Text="{Binding DisplayName}"
                   TextTrimming="CharacterEllipsis"
@@ -198,6 +202,8 @@
                     <ComboBox.ItemTemplate>
                       <DataTemplate x:DataType="models:CourseSelectionOption">
                         <TextBlock
+                            Height="18"
+                            LineHeight="18"
                             VerticalAlignment="Center"
                             Text="{Binding DisplayName}"
                             TextTrimming="CharacterEllipsis"

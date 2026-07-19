@@ -6,6 +6,16 @@
     x:DataType="appearance:ProductAppearanceViewModel"
     Width="252"
     AutomationProperties.Name="화면 모드 설정">
+  <UserControl.Resources>
+    <DataTemplate x:Key="AppearanceOptionContentTemplate">
+      <TextBlock
+          Height="20"
+          LineHeight="20"
+          VerticalAlignment="Center"
+          Text="{Binding}" />
+    </DataTemplate>
+  </UserControl.Resources>
+
   <StackPanel Margin="4" Spacing="2">
     <StackPanel Margin="12,10,12,6">
       <TextBlock
@@ -22,6 +32,7 @@
         GroupName="ProductThemePreference"
         IsChecked="{Binding IsSystemThemeSelected, Mode=TwoWay}"
         Content="시스템 설정 사용"
+        ContentTemplate="{StaticResource AppearanceOptionContentTemplate}"
         AutomationProperties.Name="시스템 설정에 맞춰 화면 모드 사용" />
     <RadioButton
         x:Name="LightThemeOption"
@@ -29,6 +40,7 @@
         GroupName="ProductThemePreference"
         IsChecked="{Binding IsLightThemeSelected, Mode=TwoWay}"
         Content="라이트"
+        ContentTemplate="{StaticResource AppearanceOptionContentTemplate}"
         AutomationProperties.Name="라이트 모드 사용" />
     <RadioButton
         x:Name="DarkThemeOption"
@@ -36,6 +48,7 @@
         GroupName="ProductThemePreference"
         IsChecked="{Binding IsDarkThemeSelected, Mode=TwoWay}"
         Content="다크"
+        ContentTemplate="{StaticResource AppearanceOptionContentTemplate}"
         AutomationProperties.Name="다크 모드 사용" />
 
     <Border

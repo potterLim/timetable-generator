@@ -230,9 +230,9 @@
                         Classes="export-menu-logo"
                         Width="24"
                         Height="24"
-                      Source="/Assets/Export/GoogleCalendarLogo.png">
+                        Source="/Assets/Export/GoogleCalendarLogo.png">
                       <Image.RenderTransform>
-                        <TranslateTransform Y="1.5" />
+                        <TranslateTransform Y="0.5" />
                       </Image.RenderTransform>
                     </Image>
                   </Grid>

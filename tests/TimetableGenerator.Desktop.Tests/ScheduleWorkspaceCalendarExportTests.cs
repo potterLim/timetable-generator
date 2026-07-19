@@ -3,11 +3,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -29,6 +31,8 @@ namespace TimetableGenerator.Desktop.Tests;
 
 public sealed class ScheduleWorkspaceCalendarExportTests
 {
+    private const double MAXIMUM_CENTER_DELTA_DIP = 0.05;
+
     [AvaloniaFact]
     public async Task WindowsExportMenuOffersPngAndGoogleCalendarAsync()
     {
@@ -73,20 +77,24 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.Same(pngAction, menu.Items[0]);
             Assert.Same(appleAction, menu.Items[1]);
             Assert.Same(googleAction, menu.Items[2]);
-            menu.ShowAt(exportButton);
-            Dispatcher.UIThread.RunJobs();
-            assertExportPngImageIconPresentation(pngAction);
-            assertExportFluentIconPresentation(
-                appleAction,
-                Icon.CalendarMonth);
-            assertExportRasterLogoPresentation(
-                googleAction,
-                "ExportGoogleCalendarLogoSlot",
-                "ExportGoogleCalendarLogoImage",
-                24.0,
-                24.0,
-                1.5);
-            menu.Hide();
+            foreach (ThemeVariant themeVariant in getProductThemeVariants())
+            {
+                window.RequestedThemeVariant = themeVariant;
+                menu.ShowAt(exportButton);
+                Dispatcher.UIThread.RunJobs();
+                assertExportPngImageIconPresentation(pngAction);
+                assertExportFluentIconPresentation(
+                    appleAction,
+                    Icon.CalendarMonth);
+                assertExportRasterLogoPresentation(
+                    googleAction,
+                    "ExportGoogleCalendarLogoSlot",
+                    "ExportGoogleCalendarLogoImage",
+                    24.0,
+                    24.0,
+                    0.5);
+                menu.Hide();
+            }
             Assert.Equal(
                 "ExportPngImage",
                 AutomationProperties.GetAutomationId(pngAction));
@@ -226,23 +234,27 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.Same(
                 workspaceView.ExportAppleCalendarCommand,
                 appleAction.Command);
-            menu.ShowAt(exportButton);
-            Dispatcher.UIThread.RunJobs();
             MenuItem pngAction = findRequiredMenuItem(
                 menu,
                 "ExportPngAction");
-            assertExportPngImageIconPresentation(pngAction);
-            assertExportFluentIconPresentation(
-                appleAction,
-                Icon.CalendarMonth);
-            assertExportRasterLogoPresentation(
-                googleAction,
-                "ExportGoogleCalendarLogoSlot",
-                "ExportGoogleCalendarLogoImage",
-                24.0,
-                24.0,
-                1.5);
-            menu.Hide();
+            foreach (ThemeVariant themeVariant in getProductThemeVariants())
+            {
+                window.RequestedThemeVariant = themeVariant;
+                menu.ShowAt(exportButton);
+                Dispatcher.UIThread.RunJobs();
+                assertExportPngImageIconPresentation(pngAction);
+                assertExportFluentIconPresentation(
+                    appleAction,
+                    Icon.CalendarMonth);
+                assertExportRasterLogoPresentation(
+                    googleAction,
+                    "ExportGoogleCalendarLogoSlot",
+                    "ExportGoogleCalendarLogoImage",
+                    24.0,
+                    24.0,
+                    0.5);
+                menu.Hide();
+            }
 
             AsyncDelegateCommand command = Assert.IsType<AsyncDelegateCommand>(
                 workspaceView.ExportAppleCalendarCommand);
@@ -498,6 +510,51 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         Assert.Equal(
             VerticalAlignment.Center,
             iconPresenter.VerticalContentAlignment);
+
+        Point? iconOriginOrNull = iconPresenter.TranslatePoint(
+            new Point(0.0, 0.0),
+            menuItem);
+        Assert.NotNull(iconOriginOrNull);
+        if (iconOriginOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The export menu icon geometry could not be resolved.");
+        }
+
+        double menuItemCenterY = menuItem.Bounds.Height / 2.0;
+        double iconCenterY = iconOriginOrNull.Value.Y
+            + (iconPresenter.Bounds.Height / 2.0);
+        double iconCenterDelta = iconCenterY - menuItemCenterY;
+        Assert.True(
+            Math.Abs(iconCenterDelta) <= MAXIMUM_CENTER_DELTA_DIP,
+            "Export menu icon center delta=" + iconCenterDelta
+                + ", item height=" + menuItem.Bounds.Height
+                + ", icon top=" + iconOriginOrNull.Value.Y
+                + ", icon height=" + iconPresenter.Bounds.Height + ".");
+
+        string headerText = Assert.IsType<string>(menuItem.Header);
+        TextBlock header = menuItem.GetVisualDescendants()
+            .OfType<TextBlock>()
+            .Single(candidate => candidate.Text == headerText);
+        Point? headerOriginOrNull = header.TranslatePoint(
+            new Point(0.0, 0.0),
+            menuItem);
+        Assert.NotNull(headerOriginOrNull);
+        if (headerOriginOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The export menu header geometry could not be resolved.");
+        }
+
+        double headerCenterY = headerOriginOrNull.Value.Y
+            + (header.Bounds.Height / 2.0);
+        double headerCenterDelta = headerCenterY - menuItemCenterY;
+        Assert.True(
+            Math.Abs(headerCenterDelta) <= MAXIMUM_CENTER_DELTA_DIP,
+            "Export menu header center delta=" + headerCenterDelta
+                + ", item height=" + menuItem.Bounds.Height
+                + ", header top=" + headerOriginOrNull.Value.Y
+                + ", header height=" + header.Bounds.Height + ".");
     }
 
     private static string createTemporaryDirectory()
@@ -508,6 +565,15 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(path);
         return path;
+    }
+
+    private static ThemeVariant[] getProductThemeVariants()
+    {
+        return new ThemeVariant[]
+        {
+            ThemeVariant.Light,
+            ThemeVariant.Dark,
+        };
     }
 
     private static async Task closeWindowAndDeleteDirectoryAsync(
