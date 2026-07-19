@@ -59,10 +59,7 @@
             <Flyout Placement="BottomEdgeAlignedRight">
               <StackPanel Width="174" Margin="4" Spacing="2">
                 <Button
-                    Padding="10,8"
-                    HorizontalContentAlignment="Left"
-                    Background="Transparent"
-                    BorderBrush="Transparent"
+                    Classes="plan-management-action"
                     Click="onPlanManagementActionClick"
                     Command="{Binding BeginRenamePlanCommand}"
                     AutomationProperties.Name="현재 계획 이름 바꾸기">
@@ -73,11 +70,7 @@
                 </Button>
                 <Button
                     x:Name="ClearActivePlanButton"
-                    Padding="10,8"
-                    HorizontalContentAlignment="Left"
-                    Background="Transparent"
-                    BorderBrush="Transparent"
-                    Foreground="{DynamicResource ErrorBrush}"
+                    Classes="plan-management-action destructive"
                     IsEnabled="{Binding CanClearActivePlan}"
                     Click="onPlanManagementActionClick"
                     Command="{Binding BeginClearActivePlanCommand}"
@@ -88,11 +81,7 @@
                   </StackPanel>
                 </Button>
                 <Button
-                    Padding="10,8"
-                    HorizontalContentAlignment="Left"
-                    Background="Transparent"
-                    BorderBrush="Transparent"
-                    Foreground="{DynamicResource ErrorBrush}"
+                    Classes="plan-management-action destructive"
                     IsEnabled="{Binding CanDeleteActivePlan}"
                     Click="onPlanManagementActionClick"
                     Command="{Binding BeginDeletePlanCommand}"
@@ -146,15 +135,19 @@
 
           <Border
               x:Name="EmptyPlanState"
-              Padding="18,24"
+              Padding="18,22"
               IsVisible="{Binding ActivePlanOrNull.IsCompletelyEmpty}"
               Background="{DynamicResource SubtleSurfaceBrush}"
               CornerRadius="10">
-            <StackPanel Spacing="8">
+            <StackPanel
+                x:Name="EmptyPlanStateContent"
+                HorizontalAlignment="Stretch"
+                Spacing="7">
               <Border
+                  x:Name="EmptyPlanStateIconSurface"
                   Width="40"
                   Height="40"
-                  HorizontalAlignment="Left"
+                  HorizontalAlignment="Center"
                   Background="{DynamicResource AccentTintBrush}"
                   CornerRadius="20">
                 <icons:FluentIcon
@@ -167,25 +160,20 @@
                     Foreground="{DynamicResource AccentBrush}" />
               </Border>
               <TextBlock
+                  x:Name="EmptyPlanStateHeading"
                   Margin="0,4,0,0"
+                  HorizontalAlignment="Stretch"
                   FontWeight="SemiBold"
                   Text="계획이 비어 있습니다"
+                  TextAlignment="Center"
                   TextWrapping="NoWrap" />
               <TextBlock
+                  x:Name="EmptyPlanStateDescription"
                   Classes="caption"
-                  Text="과목이나 개인 일정을 추가해 시작하세요."
-                  TextWrapping="NoWrap" />
-              <Button
-                  Classes="outline"
-                  Margin="0,4,0,0"
-                  HorizontalAlignment="Left"
-                  Command="{Binding BeginAddPersonalScheduleCommand}"
-                  AutomationProperties.Name="개인 일정 추가">
-                <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="7">
-                  <icons:FluentIcon Icon="Add" IconVariant="Regular" FontSize="17" />
-                  <TextBlock Text="개인 일정 추가" />
-                </StackPanel>
-              </Button>
+                  HorizontalAlignment="Stretch"
+                  Text="과목을 추가해 시작하세요."
+                  TextAlignment="Center"
+                  TextWrapping="Wrap" />
             </StackPanel>
           </Border>
 

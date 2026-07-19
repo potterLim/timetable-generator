@@ -122,13 +122,17 @@ public sealed class WorkspacePanelAccessibilityTests
             Border emptyPlanState = findRequiredControl<Border>(
                 inspector,
                 "EmptyPlanState");
-            Button addPersonalScheduleButton = emptyPlanState
-                .GetVisualDescendants()
-                .OfType<Button>()
-                .Single(
-                    candidate => ReferenceEquals(
-                        candidate.Command,
-                        workspace.BeginAddPersonalScheduleCommand));
+            Assert.Empty(
+                emptyPlanState
+                    .GetVisualDescendants()
+                    .OfType<Button>());
+            Button addPersonalScheduleButton = findRequiredControl<Button>(
+                inspector,
+                "AddPersonalScheduleButton");
+            Assert.True(
+                ReferenceEquals(
+                    addPersonalScheduleButton.Command,
+                    workspace.BeginAddPersonalScheduleCommand));
             Assert.Equal(
                 "개인 일정 추가",
                 AutomationProperties.GetName(addPersonalScheduleButton));

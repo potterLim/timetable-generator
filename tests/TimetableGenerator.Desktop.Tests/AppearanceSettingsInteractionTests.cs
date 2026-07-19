@@ -104,6 +104,57 @@ public sealed class AppearanceSettingsInteractionTests
     }
 
     [AvaloniaFact]
+    public void ThemeOptionLabelsShareOneHorizontalOriginAcrossVisualStates()
+    {
+        ControlledProductAppearanceSettingsStore settingsStore =
+            new ControlledProductAppearanceSettingsStore(
+                ProductAppearanceSettings.CreateDefault());
+        ProductAppearanceViewModel appearance =
+            new ProductAppearanceViewModel(
+                settingsStore,
+                new RecordingProductThemeVariantService());
+        AppearanceSettingsView view = new AppearanceSettingsView();
+        view.DataContext = appearance;
+        Window window = new Window();
+        window.Width = 320.0;
+        window.Height = 280.0;
+        window.Content = view;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            RadioButton[] options =
+            {
+                findRequiredControl<RadioButton>(view, "SystemThemeOption"),
+                findRequiredControl<RadioButton>(view, "LightThemeOption"),
+                findRequiredControl<RadioButton>(view, "DarkThemeOption"),
+            };
+            ThemeVariant[] themeVariants =
+            {
+                ThemeVariant.Light,
+                ThemeVariant.Dark,
+            };
+
+            foreach (ThemeVariant themeVariant in themeVariants)
+            {
+                window.RequestedThemeVariant = themeVariant;
+                foreach (RadioButton selectedOption in options)
+                {
+                    selectedOption.IsChecked = true;
+                    Dispatcher.UIThread.RunJobs();
+
+                    assertOptionsShareHorizontalOrigins(view, options);
+                }
+            }
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void ThemeOptionsUseCompleteVisualStatesAcrossThemes()
     {
         ControlledProductAppearanceSettingsStore settingsStore =
@@ -323,6 +374,85 @@ public sealed class AppearanceSettingsInteractionTests
         Assert.InRange(horizontalGap, 7.75, 8.25);
         double presenterCenterDelta = indicatorCenterY - presenterCenterY;
         Assert.InRange(presenterCenterDelta, -0.05, 0.05);
+    }
+
+    private static void assertOptionsShareHorizontalOrigins(
+        Control root,
+        RadioButton[] options)
+    {
+        Visual expectedIndicator = options[0].GetVisualDescendants()
+            .Single(candidate => candidate.Name == "OuterEllipse");
+        ContentPresenter expectedPresenter = options[0].GetVisualDescendants()
+            .OfType<ContentPresenter>()
+            .Single(candidate => candidate.Name == "PART_ContentPresenter");
+        TextBlock expectedText = options[0].GetVisualDescendants()
+            .OfType<TextBlock>()
+            .Single();
+        double expectedIndicatorX = findRequiredHorizontalOrigin(
+            expectedIndicator,
+            root);
+        double expectedPresenterX = findRequiredHorizontalOrigin(
+            expectedPresenter,
+            root);
+        double expectedTextX = findRequiredHorizontalOrigin(
+            expectedText,
+            root);
+        double expectedIndicatorToPresenterGap = expectedPresenterX
+            - expectedIndicatorX
+            - expectedIndicator.Bounds.Width;
+
+        foreach (RadioButton option in options)
+        {
+            Visual indicator = option.GetVisualDescendants()
+                .Single(candidate => candidate.Name == "OuterEllipse");
+            ContentPresenter presenter = option.GetVisualDescendants()
+                .OfType<ContentPresenter>()
+                .Single(candidate => candidate.Name == "PART_ContentPresenter");
+            TextBlock text = option.GetVisualDescendants()
+                .OfType<TextBlock>()
+                .Single();
+            double indicatorX = findRequiredHorizontalOrigin(indicator, root);
+            double presenterX = findRequiredHorizontalOrigin(presenter, root);
+            double textX = findRequiredHorizontalOrigin(text, root);
+            double indicatorToPresenterGap = presenterX
+                - indicatorX
+                - indicator.Bounds.Width;
+
+            Assert.InRange(
+                Math.Abs(indicatorX - expectedIndicatorX),
+                0.0,
+                0.05);
+            Assert.InRange(
+                Math.Abs(presenterX - expectedPresenterX),
+                0.0,
+                0.05);
+            Assert.InRange(
+                Math.Abs(textX - expectedTextX),
+                0.0,
+                0.05);
+            Assert.InRange(
+                Math.Abs(
+                    indicatorToPresenterGap - expectedIndicatorToPresenterGap),
+                0.0,
+                0.05);
+        }
+    }
+
+    private static double findRequiredHorizontalOrigin(
+        Visual visual,
+        Visual relativeTo)
+    {
+        Point? originOrNull = visual.TranslatePoint(
+            new Point(0.0, 0.0),
+            relativeTo);
+        Assert.NotNull(originOrNull);
+        if (originOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The appearance option horizontal origin could not be resolved.");
+        }
+
+        return originOrNull.Value.X;
     }
 
     private static void assertIndicatorHasSelectedSurfaceInset(

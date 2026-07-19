@@ -2,9 +2,12 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -139,10 +142,49 @@ public sealed class WorkspaceEmptyStateTests
         Expander timeNotProvidedCourses = findRequiredControl<Expander>(
             planInspector,
             "TimeNotProvidedCoursesExpander");
+        Border iconSurface = findRequiredControl<Border>(
+            planInspector,
+            "EmptyPlanStateIconSurface");
+        StackPanel emptyPlanStateContent = findRequiredControl<StackPanel>(
+            planInspector,
+            "EmptyPlanStateContent");
+        TextBlock heading = findRequiredControl<TextBlock>(
+            planInspector,
+            "EmptyPlanStateHeading");
+        TextBlock description = findRequiredControl<TextBlock>(
+            planInspector,
+            "EmptyPlanStateDescription");
+        Button addPersonalScheduleButton = findRequiredControl<Button>(
+            planInspector,
+            "AddPersonalScheduleButton");
 
         Assert.True(emptyPlanState.IsVisible);
         Assert.False(scheduledCourses.IsVisible);
         Assert.False(timeNotProvidedCourses.IsVisible);
+        Assert.Equal(emptyPlanState.Padding.Left, emptyPlanState.Padding.Right);
+        Assert.Empty(
+            emptyPlanState
+                .GetVisualDescendants()
+                .OfType<Button>());
+        Assert.Equal(HorizontalAlignment.Center, iconSurface.HorizontalAlignment);
+        Assert.Equal(TextAlignment.Center, heading.TextAlignment);
+        Assert.Equal(TextAlignment.Center, description.TextAlignment);
+        Assert.Equal(TextWrapping.Wrap, description.TextWrapping);
+        Assert.Equal("계획이 비어 있습니다", heading.Text);
+        Assert.Equal("과목을 추가해 시작하세요.", description.Text);
+        Assert.True(addPersonalScheduleButton.IsEffectivelyVisible);
+        assertControlSharesHorizontalCenter(
+            planInspector,
+            emptyPlanStateContent,
+            iconSurface);
+        assertControlSharesHorizontalCenter(
+            planInspector,
+            emptyPlanStateContent,
+            heading);
+        assertControlSharesHorizontalCenter(
+            planInspector,
+            emptyPlanStateContent,
+            description);
         assertExpectedCreditsSummary(planInspector, "0학점");
         assertSectionCounts(planInspector, "수강 선택 (0)", "개인 일정 (0)");
         Assert.Null(planInspector.FindControl<Border>("RecommendationPolicyCard"));
@@ -252,6 +294,35 @@ public sealed class WorkspaceEmptyStateTests
         }
 
         return controlOrNull;
+    }
+
+    private static void assertControlSharesHorizontalCenter(
+        Control coordinateRoot,
+        Control container,
+        Control centeredControl)
+    {
+        Point? containerOriginOrNull = container.TranslatePoint(
+            new Point(0.0, 0.0),
+            coordinateRoot);
+        Point? controlOriginOrNull = centeredControl.TranslatePoint(
+            new Point(0.0, 0.0),
+            coordinateRoot);
+        Assert.NotNull(containerOriginOrNull);
+        Assert.NotNull(controlOriginOrNull);
+        if (containerOriginOrNull == null || controlOriginOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The empty plan state control position could not be resolved.");
+        }
+
+        double containerCenterX = containerOriginOrNull.Value.X
+            + (container.Bounds.Width / 2.0);
+        double controlCenterX = controlOriginOrNull.Value.X
+            + (centeredControl.Bounds.Width / 2.0);
+        Assert.InRange(
+            Math.Abs(controlCenterX - containerCenterX),
+            0.0,
+            0.05);
     }
 
     private static TControl findRequiredControl<TControl>(
