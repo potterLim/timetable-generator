@@ -94,7 +94,7 @@ public sealed class CourseCatalogProjectorTests
             new OfferingId("offering-seminar-unscheduled"));
         Assert.Equal("교수 미정", seminar.InstructorSummary);
         Assert.Equal("강의실 미정", seminar.LocationSummary);
-        Assert.Equal("시간 미정 (충돌 자동 검증 제외)", seminar.ScheduleSummary);
+        Assert.Equal("시간 미정", seminar.ScheduleSummary);
     }
 
     [Fact]

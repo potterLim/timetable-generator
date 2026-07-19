@@ -294,8 +294,7 @@ public sealed class PlannerWorkspaceSmokeTests
 
         TimeNotProvidedCourseItem selectedCourse = Assert.Single(
             workspace.ActivePlan.TimeNotProvidedCourses);
-        Assert.Contains("02분반", selectedCourse.MeetingDisplayText);
-        Assert.Contains("충돌 자동 검증 제외", selectedCourse.MeetingDisplayText);
+        Assert.Equal("02분반 · 시간 미정", selectedCourse.MeetingDisplayText);
         Assert.False(seminar.IsSelectionEnabled);
     }
 
