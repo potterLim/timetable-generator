@@ -104,17 +104,31 @@ internal sealed class CourseChoiceDraftCourseItem : ObservableObject
         }
     }
 
-    public CourseChoiceDraftCourseItem(
+    private CourseChoiceDraftCourseItem(
         CatalogCourseProjection projection,
-        IEnumerable<OfferingCandidate>? savedCandidatesOrNull)
+        IReadOnlyDictionary<OfferingId, EOfferingPreference> savedPreferences,
+        EOfferingPreference defaultPreference)
     {
         if (projection == null)
         {
             throw new ArgumentNullException(nameof(projection));
         }
 
+        if (savedPreferences == null)
+        {
+            throw new ArgumentNullException(nameof(savedPreferences));
+        }
+
+        if (Enum.IsDefined(typeof(EOfferingPreference), defaultPreference) == false)
+        {
+            throw new ArgumentOutOfRangeException(nameof(defaultPreference));
+        }
+
         Projection = projection;
-        Offerings = createOfferings(projection, savedCandidatesOrNull);
+        Offerings = createOfferings(
+            projection,
+            savedPreferences,
+            defaultPreference);
         if (Offerings.Count == 0)
         {
             throw new ArgumentException(
@@ -126,6 +140,30 @@ internal sealed class CourseChoiceDraftCourseItem : ObservableObject
         {
             offering.PreferenceChanged += onOfferingPreferenceChanged;
         }
+    }
+
+    public static CourseChoiceDraftCourseItem CreateNew(
+        CatalogCourseProjection projection)
+    {
+        return new CourseChoiceDraftCourseItem(
+            projection,
+            new Dictionary<OfferingId, EOfferingPreference>(),
+            EOfferingPreference.Acceptable);
+    }
+
+    public static CourseChoiceDraftCourseItem Restore(
+        CatalogCourseProjection projection,
+        IEnumerable<OfferingCandidate> savedCandidates)
+    {
+        if (savedCandidates == null)
+        {
+            throw new ArgumentNullException(nameof(savedCandidates));
+        }
+
+        return new CourseChoiceDraftCourseItem(
+            projection,
+            createSavedPreferences(savedCandidates),
+            EOfferingPreference.Excluded);
     }
 
     public CourseCandidate CreateCandidate()
@@ -146,10 +184,9 @@ internal sealed class CourseChoiceDraftCourseItem : ObservableObject
 
     private static ObservableCollection<CourseOfferingPreferenceItem> createOfferings(
         CatalogCourseProjection projection,
-        IEnumerable<OfferingCandidate>? savedCandidatesOrNull)
+        IReadOnlyDictionary<OfferingId, EOfferingPreference> savedPreferences,
+        EOfferingPreference defaultPreference)
     {
-        Dictionary<OfferingId, EOfferingPreference> savedPreferences =
-            createSavedPreferences(savedCandidatesOrNull);
         ObservableCollection<CourseOfferingPreferenceItem> offerings =
             new ObservableCollection<CourseOfferingPreferenceItem>();
         foreach (CatalogOfferingProjection offering in projection.Offerings)
@@ -159,7 +196,7 @@ internal sealed class CourseChoiceDraftCourseItem : ObservableObject
                 continue;
             }
 
-            EOfferingPreference preference = EOfferingPreference.Excluded;
+            EOfferingPreference preference = defaultPreference;
             EOfferingPreference savedPreference;
             if (savedPreferences.TryGetValue(offering.Offering.Id, out savedPreference))
             {
@@ -176,16 +213,11 @@ internal sealed class CourseChoiceDraftCourseItem : ObservableObject
     }
 
     private static Dictionary<OfferingId, EOfferingPreference> createSavedPreferences(
-        IEnumerable<OfferingCandidate>? savedCandidatesOrNull)
+        IEnumerable<OfferingCandidate> savedCandidates)
     {
         Dictionary<OfferingId, EOfferingPreference> preferences =
             new Dictionary<OfferingId, EOfferingPreference>();
-        if (savedCandidatesOrNull == null)
-        {
-            return preferences;
-        }
-
-        foreach (OfferingCandidate candidate in savedCandidatesOrNull)
+        foreach (OfferingCandidate candidate in savedCandidates)
         {
             preferences.Add(candidate.OfferingId, candidate.Preference);
         }

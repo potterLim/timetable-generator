@@ -191,7 +191,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         closePersonalScheduleEditingState();
         closePlanEditingState();
         prepareCourseChoiceDraft(null);
-        addDraftCourse(course.Projection, null);
+        addNewDraftCourse(course.Projection);
         openCourseChoiceEditor();
     }
 
@@ -211,7 +211,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         {
             CatalogCourseProjection projection = mCatalogProjection.FindCourseById(
                 courseCandidate.CourseId);
-            addDraftCourse(projection, courseCandidate.OfferingCandidates);
+            restoreDraftCourse(projection, courseCandidate.OfferingCandidates);
         }
 
         openCourseChoiceEditor();
@@ -267,7 +267,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             return;
         }
 
-        addDraftCourse(course.Projection, null);
+        addNewDraftCourse(course.Projection);
         AlternativeCourseSearchText = string.Empty;
         updateCourseChoiceDraftState();
     }
@@ -344,13 +344,24 @@ internal sealed partial class PlannerWorkspaceViewModel
         raisePropertyChanged(nameof(CourseChoiceEditorTitle));
     }
 
-    private void addDraftCourse(
-        CatalogCourseProjection projection,
-        IEnumerable<OfferingCandidate>? savedCandidatesOrNull)
+    private void addNewDraftCourse(CatalogCourseProjection projection)
     {
-        CourseChoiceDraftCourseItem draftCourse = new CourseChoiceDraftCourseItem(
-            projection,
-            savedCandidatesOrNull);
+        CourseChoiceDraftCourseItem draftCourse =
+            CourseChoiceDraftCourseItem.CreateNew(projection);
+        addDraftCourse(draftCourse);
+    }
+
+    private void restoreDraftCourse(
+        CatalogCourseProjection projection,
+        IEnumerable<OfferingCandidate> savedCandidates)
+    {
+        CourseChoiceDraftCourseItem draftCourse =
+            CourseChoiceDraftCourseItem.Restore(projection, savedCandidates);
+        addDraftCourse(draftCourse);
+    }
+
+    private void addDraftCourse(CourseChoiceDraftCourseItem draftCourse)
+    {
         draftCourse.DraftChanged += onCourseChoiceDraftChanged;
         CourseChoiceDraftCourses.Add(draftCourse);
         updateCourseChoiceDraftState();

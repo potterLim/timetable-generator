@@ -201,6 +201,7 @@
                             VerticalAlignment="Center"
                             Text="{Binding DisplayName}"
                             TextTrimming="CharacterEllipsis"
+                            AutomationProperties.Name="{Binding AccessibleName}"
                             ToolTip.Tip="{Binding DisplayName}" />
                       </DataTemplate>
                     </ComboBox.ItemTemplate>
@@ -216,7 +217,7 @@
                       Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).AddCourseCommand}"
                       CommandParameter="{Binding}"
                       AutomationProperties.Name="{Binding AddButtonAccessibleName}"
-                      AutomationProperties.HelpText="{Binding EnglishInstructionAccessibleText}"
+                      AutomationProperties.HelpText="{Binding AddButtonHelpText}"
                       ToolTip.Tip="{Binding AddButtonToolTipText}">
                     <icons:FluentIcon
                         HorizontalAlignment="Center"

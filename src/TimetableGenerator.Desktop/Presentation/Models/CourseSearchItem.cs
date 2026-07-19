@@ -83,8 +83,13 @@ internal sealed class CourseSearchItem : ObservableObject
     {
         get
         {
-            return InstructorCreditDisplayText + " · "
-                + Projection.EnglishInstructionRange.DisplayText;
+            if (HasSingleOfferingDetails)
+            {
+                return InstructorCreditDisplayText + " · "
+                    + SelectedSelectionOption.EnglishInstructionDisplayText;
+            }
+
+            return InstructorCreditDisplayText;
         }
     }
 
@@ -92,7 +97,7 @@ internal sealed class CourseSearchItem : ObservableObject
     {
         get
         {
-            return Projection.EnglishInstructionRange.AccessibleText;
+            return SelectedSelectionOption.EnglishInstructionAccessibleText;
         }
     }
 
@@ -100,8 +105,14 @@ internal sealed class CourseSearchItem : ObservableObject
     {
         get
         {
-            return Code + ", " + Name + ", " + InstructorDisplayText + ", "
-                + CreditDisplayText + ", " + EnglishInstructionAccessibleText;
+            string accessibleName = Code + ", " + Name + ", "
+                + InstructorDisplayText + ", " + CreditDisplayText;
+            if (HasSingleOfferingDetails)
+            {
+                return accessibleName + ", " + EnglishInstructionAccessibleText;
+            }
+
+            return accessibleName;
         }
     }
 
@@ -153,7 +164,9 @@ internal sealed class CourseSearchItem : ObservableObject
 
             if (setProperty(ref mSelectedSelectionOption, value))
             {
+                raisePropertyChanged(nameof(EnglishInstructionAccessibleText));
                 raisePropertyChanged(nameof(AddButtonAccessibleName));
+                raisePropertyChanged(nameof(AddButtonHelpText));
                 raisePropertyChanged(nameof(AddButtonToolTipText));
             }
         }
@@ -240,9 +253,10 @@ internal sealed class CourseSearchItem : ObservableObject
                 return Name + "은 현재 계획에 추가되어 있습니다.";
             }
 
-            if (IsSelectedOptionTimeNotProvided)
+            if (SelectedSelectionOption.IsDirectAdd)
             {
-                return Name + "의 선택한 시간 미정 분반을 현재 계획에 추가";
+                return Name + ", " + SelectedSelectionOption.AccessibleName
+                    + ", 현재 계획에 추가";
             }
 
             if (ScheduledOfferingCount > 1)
@@ -254,13 +268,27 @@ internal sealed class CourseSearchItem : ObservableObject
         }
     }
 
+    public string AddButtonHelpText
+    {
+        get
+        {
+            if (SelectedSelectionOption.IsDirectAdd)
+            {
+                return "선택한 분반: "
+                    + SelectedSelectionOption.AccessibleName;
+            }
+
+            return "분반별 선호를 설정합니다.";
+        }
+    }
+
     public string AddButtonToolTipText
     {
         get
         {
-            if (IsSelectedOptionTimeNotProvided)
+            if (SelectedSelectionOption.IsDirectAdd)
             {
-                return "시간 미정 분반 추가";
+                return SelectedSelectionOption.DisplayName + " 추가";
             }
 
             if (ScheduledOfferingCount > 1)
@@ -468,13 +496,29 @@ internal sealed class CourseSearchItem : ObservableObject
                 PlanningCourseSelection.CreateScheduledAlternatives(
                     projection.Course.Id,
                     projection.ScheduledOfferingIds);
-            string scheduledDisplayName = "시간표가 있는 "
-                + projection.ScheduledOfferingIds.Count
-                + "개 분반의 선호 설정";
-            options.Add(new CourseSelectionOption(
-                scheduledSelection,
-                EMeetingScheduleStatus.Scheduled,
-                scheduledDisplayName));
+            if (projection.ScheduledOfferingIds.Count == 1)
+            {
+                CatalogOfferingProjection scheduledOffering = findOffering(
+                    projection,
+                    projection.ScheduledOfferingIds[0]);
+                string scheduledDisplayName =
+                    scheduledOffering.Offering.SectionCode.Value
+                    + "분반 · " + scheduledOffering.ScheduleSummary;
+                options.Add(CourseSelectionOption.CreateDirectAdd(
+                    scheduledSelection,
+                    EMeetingScheduleStatus.Scheduled,
+                    scheduledDisplayName,
+                    scheduledOffering.EnglishInstructionPercentage));
+            }
+            else
+            {
+                string scheduledDisplayName = "시간표가 있는 "
+                    + projection.ScheduledOfferingIds.Count
+                    + "개 분반의 선호 설정";
+                options.Add(CourseSelectionOption.CreatePreferenceEditor(
+                    scheduledSelection,
+                    scheduledDisplayName));
+            }
         }
 
         foreach (OfferingId offeringId in projection.TimeNotProvidedOfferingIds)
@@ -487,10 +531,11 @@ internal sealed class CourseSearchItem : ObservableObject
             string displayName = offering.Offering.SectionCode.Value
                 + "분반 · 시간 미정 · "
                 + offering.InstructorSummary;
-            options.Add(new CourseSelectionOption(
+            options.Add(CourseSelectionOption.CreateDirectAdd(
                 selection,
                 EMeetingScheduleStatus.NotProvided,
-                displayName));
+                displayName,
+                offering.EnglishInstructionPercentage));
         }
 
         return options;
@@ -566,11 +611,24 @@ internal sealed class CourseSearchItem : ObservableObject
     {
         if (selection.Kind == EPlanningCourseSelectionKind.ScheduledAlternatives)
         {
-            int offeringCount = selection.GetScheduledOfferingIds().Count;
-            return new CourseSelectionOption(
+            IReadOnlyList<OfferingId> offeringIds =
+                selection.GetScheduledOfferingIds();
+            if (offeringIds.Count == 1)
+            {
+                CatalogOfferingProjection offering = findOffering(
+                    Projection,
+                    offeringIds[0]);
+                return CourseSelectionOption.CreateDirectAdd(
+                    selection,
+                    EMeetingScheduleStatus.Scheduled,
+                    offering.Offering.SectionCode.Value
+                        + "분반 · 저장된 시간표 선택",
+                    offering.EnglishInstructionPercentage);
+            }
+
+            return CourseSelectionOption.CreatePreferenceEditor(
                 selection,
-                EMeetingScheduleStatus.Scheduled,
-                "저장된 " + offeringCount + "개 분반에서 자동 선택");
+                "저장된 " + offeringIds.Count + "개 분반에서 자동 선택");
         }
 
         if (selection.Kind == EPlanningCourseSelectionKind.TimeNotProvidedOffering)
@@ -578,11 +636,12 @@ internal sealed class CourseSearchItem : ObservableObject
             CatalogOfferingProjection offering = findOffering(
                 Projection,
                 selection.GetTimeNotProvidedOfferingId());
-            return new CourseSelectionOption(
+            return CourseSelectionOption.CreateDirectAdd(
                 selection,
                 EMeetingScheduleStatus.NotProvided,
                 offering.Offering.SectionCode.Value
-                    + "분반 · 저장된 시간 미정 선택");
+                    + "분반 · 저장된 시간 미정 선택",
+                offering.EnglishInstructionPercentage);
         }
 
         throw new ArgumentOutOfRangeException(

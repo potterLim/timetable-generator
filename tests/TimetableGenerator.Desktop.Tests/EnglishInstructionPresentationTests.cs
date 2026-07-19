@@ -82,7 +82,7 @@ public sealed class EnglishInstructionPresentationTests
     }
 
     [Fact]
-    public void CourseBrowserAggregatesEveryTimeNotProvidedOffering()
+    public void AllUnscheduledOptionsExposeExactPercentagesWithoutAggregate()
     {
         CourseCatalogProjection catalogProjection = CourseCatalogProjector.Project(
             CatalogProjectionTestFixture.CreateDocument());
@@ -101,15 +101,176 @@ public sealed class EnglishInstructionPresentationTests
             projectedCourse.Offerings,
             offering => Assert.False(offering.Offering.MeetingSchedule.IsScheduled));
         Assert.Equal(
-            "2개 분반 · 1학점 · 영어 0–100%",
+            "2개 분반 · 1학점",
             course.CourseBrowserMetadataDisplayText);
-        Assert.Contains(
-            "영어 강의 비율 0%에서 100%",
+        Assert.DoesNotContain(
+            "영어",
             course.CourseBrowserAccessibleName,
             StringComparison.Ordinal);
         Assert.DoesNotContain(
             "영어",
             course.InstructorCreditDisplayText,
+            StringComparison.Ordinal);
+        Assert.Collection(
+            course.SelectionOptions,
+            option =>
+            {
+                Assert.True(option.IsDirectAdd);
+                Assert.Equal(
+                    new EnglishInstructionPercentage(0m),
+                    option.ExactEnglishInstructionPercentageOrNull);
+                Assert.EndsWith("영어 0%", option.DisplayName);
+                Assert.Contains(
+                    "영어 강의 비율 0%",
+                    option.AccessibleName,
+                    StringComparison.Ordinal);
+            },
+            option =>
+            {
+                Assert.True(option.IsDirectAdd);
+                Assert.Equal(
+                    new EnglishInstructionPercentage(100m),
+                    option.ExactEnglishInstructionPercentageOrNull);
+                Assert.EndsWith("영어 100%", option.DisplayName);
+                Assert.Contains(
+                    "영어 강의 비율 100%",
+                    option.AccessibleName,
+                    StringComparison.Ordinal);
+            });
+
+        course.SelectedSelectionOption = course.SelectionOptions[1];
+
+        Assert.Equal(
+            "영어 강의 비율 100%",
+            course.EnglishInstructionAccessibleText);
+        Assert.Contains(
+            "영어 강의 비율 100%",
+            course.AddButtonAccessibleName,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "영어 강의 비율 100%",
+            course.AddButtonHelpText,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "영어 100%",
+            course.AddButtonToolTipText,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void MixedScheduledAndUnscheduledOptionsExposeTheirExactPercentages()
+    {
+        CourseCatalogProjection catalogProjection = CourseCatalogProjector.Project(
+            CatalogProjectionTestFixture
+                .CreateDocumentWithScheduledAlternativeCourse());
+        CatalogCourseProjection sourceCourse = catalogProjection.Courses.Single(
+            candidate => candidate.Course.Code.Value == "BFT30009");
+        CatalogCourseProjection projectedCourse = replaceEnglishPercentages(
+            sourceCourse,
+            new EnglishInstructionPercentage[]
+            {
+                new EnglishInstructionPercentage(12.5m),
+                new EnglishInstructionPercentage(100m),
+            });
+        CourseSearchItem course = new CourseSearchItem(projectedCourse);
+
+        Assert.Equal(1, course.ScheduledOfferingCount);
+        Assert.Equal("2개 분반 · 1학점", course.CourseBrowserMetadataDisplayText);
+        Assert.DoesNotContain(
+            "영어",
+            course.CourseBrowserAccessibleName,
+            StringComparison.Ordinal);
+        Assert.Collection(
+            course.SelectionOptions,
+            scheduledOption =>
+            {
+                Assert.True(scheduledOption.IsDirectAdd);
+                Assert.False(scheduledOption.IsTimeNotProvided);
+                Assert.EndsWith("영어 12.5%", scheduledOption.DisplayName);
+            },
+            unscheduledOption =>
+            {
+                Assert.True(unscheduledOption.IsDirectAdd);
+                Assert.True(unscheduledOption.IsTimeNotProvided);
+                Assert.EndsWith("영어 100%", unscheduledOption.DisplayName);
+            });
+
+        Assert.Contains(
+            "영어 강의 비율 12.5%",
+            course.AddButtonAccessibleName,
+            StringComparison.Ordinal);
+        course.SelectedSelectionOption = course.SelectionOptions[1];
+        Assert.Contains(
+            "영어 강의 비율 100%",
+            course.AddButtonAccessibleName,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void MultipleScheduledAlternativesKeepAggregatePercentageHidden()
+    {
+        CourseCatalogProjection catalogProjection = CourseCatalogProjector.Project(
+            CatalogProjectionTestFixture.CreateDocument());
+        CatalogCourseProjection sourceCourse = catalogProjection.Courses.Single(
+            candidate => candidate.Course.Code.Value == "CSE10001");
+        CatalogCourseProjection projectedCourse = replaceEnglishPercentages(
+            sourceCourse,
+            new EnglishInstructionPercentage[]
+            {
+                new EnglishInstructionPercentage(12.5m),
+                new EnglishInstructionPercentage(100m),
+            });
+        CourseSearchItem course = new CourseSearchItem(projectedCourse);
+        CourseSelectionOption preferenceEditorOption = Assert.Single(
+            course.SelectionOptions);
+
+        Assert.Equal("2개 분반 · 3학점", course.CourseBrowserMetadataDisplayText);
+        Assert.False(preferenceEditorOption.IsDirectAdd);
+        Assert.Null(preferenceEditorOption.ExactEnglishInstructionPercentageOrNull);
+        Assert.DoesNotContain(
+            "영어",
+            preferenceEditorOption.DisplayName,
+            StringComparison.Ordinal);
+        Assert.Equal(string.Empty, course.EnglishInstructionAccessibleText);
+        Assert.DoesNotContain(
+            "영어",
+            course.AddButtonAccessibleName,
+            StringComparison.Ordinal);
+        Assert.Equal(
+            "분반별 선호를 설정합니다.",
+            course.AddButtonHelpText);
+    }
+
+    [Fact]
+    public void SingleOfferingCourseBrowserRetainsExactPercentage()
+    {
+        CourseCatalogProjection catalogProjection = CourseCatalogProjector.Project(
+            CatalogProjectionTestFixture.CreateDocument());
+        CatalogCourseProjection sourceCourse = catalogProjection.Courses.Single(
+            candidate => candidate.Course.Code.Value == "BFT30009");
+        CatalogCourseProjection singleOfferingCourse =
+            new CatalogCourseProjection(
+                sourceCourse.Course,
+                sourceCourse.Accent,
+                new CatalogOfferingProjection[] { sourceCourse.Offerings[0] });
+        CatalogCourseProjection projectedCourse = replaceEnglishPercentages(
+            singleOfferingCourse,
+            new EnglishInstructionPercentage[]
+            {
+                new EnglishInstructionPercentage(12.5m),
+            });
+        CourseSearchItem course = new CourseSearchItem(projectedCourse);
+
+        Assert.True(course.HasSingleOfferingDetails);
+        Assert.Equal(
+            course.InstructorCreditDisplayText + " · 영어 12.5%",
+            course.CourseBrowserMetadataDisplayText);
+        Assert.Equal(
+            "영어 강의 비율 12.5%",
+            course.EnglishInstructionAccessibleText);
+        Assert.Contains(
+            "영어 강의 비율 12.5%",
+            course.CourseBrowserAccessibleName,
             StringComparison.Ordinal);
     }
 
@@ -127,9 +288,8 @@ public sealed class EnglishInstructionPresentationTests
                 new EnglishInstructionPercentage(12.5m),
                 new EnglishInstructionPercentage(100m),
             });
-        CourseChoiceDraftCourseItem draft = new CourseChoiceDraftCourseItem(
-            projectedCourse,
-            null);
+        CourseChoiceDraftCourseItem draft =
+            CourseChoiceDraftCourseItem.CreateNew(projectedCourse);
 
         Assert.Collection(
             draft.Offerings,
