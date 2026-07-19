@@ -423,6 +423,57 @@ public sealed class ScheduleRecommendationGeneratorTests
     }
 
     [TestMethod]
+    public void WednesdayPersonalSchedulePrunesOnlyTheWednesdayPeriod()
+    {
+        CatalogCourse course = ScheduleRecommendationTestData.CreateCourse("AAA10001");
+        CatalogOffering mondayOffering =
+            ScheduleRecommendationTestData.CreateScheduledOffering(
+                "AAA10001",
+                "01",
+                new MeetingSlot[]
+                {
+                    ScheduleRecommendationTestData.CreateMeetingSlot(
+                        EDay.Monday,
+                        1),
+                });
+        CatalogOffering wednesdayOffering =
+            ScheduleRecommendationTestData.CreateScheduledOffering(
+                "AAA10001",
+                "02",
+                new MeetingSlot[]
+                {
+                    ScheduleRecommendationTestData.CreateMeetingSlot(
+                        EDay.Wednesday,
+                        1),
+                });
+        CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(
+            new CatalogCourse[] { course },
+            new CatalogOffering[] { mondayOffering, wednesdayOffering });
+        PersonalSchedule personalSchedule = createPersonalSchedule(
+            EDay.Wednesday,
+            new ScheduleTime(8, 30),
+            new ScheduleTime(9, 0));
+        PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
+            catalog,
+            new CourseChoiceGroup[]
+            {
+                ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                    "AAA10001",
+                    "01",
+                    "02"),
+            },
+            Array.Empty<UnscheduledOfferingSelection>(),
+            new PersonalSchedule[] { personalSchedule });
+
+        ScheduleRecommendationResult result = generate(catalog, plan, 10);
+
+        Assert.HasCount(1, result.Recommendations);
+        Assert.AreEqual(
+            "01",
+            result.Recommendations[0].ScheduledOfferings[0].SectionCode.Value);
+    }
+
+    [TestMethod]
     public void PersonalOnlyPlanProducesAConfirmedRecommendation()
     {
         CatalogCourse catalogCourse =

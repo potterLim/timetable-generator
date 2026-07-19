@@ -11,7 +11,7 @@ namespace TimetableGenerator.Domain.Tests.Scheduling;
 public sealed class AcademicPeriodTimeTableTests
 {
     [TestMethod]
-    public void RegularDaysUseThePublishedPeriodTimeTable()
+    public void RegularDaysUseTheConfiguredPeriodTimeTable()
     {
         EDay[] regularDays =
         {
@@ -43,7 +43,7 @@ public sealed class AcademicPeriodTimeTableTests
     }
 
     [TestMethod]
-    public void WednesdayUsesThePublishedPeriodTimeTable()
+    public void WednesdayUsesTheConfiguredPeriodTimeTable()
     {
         ExpectedPeriodTime[] expectedPeriods =
         {

@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Headless;
@@ -233,6 +234,66 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                     textBlock => Assert.Equal(
                         "한동대학교 · 2026-2",
                         textBlock.Text));
+            }
+
+            Assert.Empty(exportHost.Children);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task PngSnapshotUsesTheWednesdayFirstPeriodTimeAsync()
+    {
+        ScheduleEntry wednesdayEntry = createScheduleEntry(
+            EDay.Wednesday,
+            new AcademicPeriod(1));
+        ScheduleBoardView sourceBoard = createSourceBoard(
+            new ScheduleEntry[] { wednesdayEntry });
+        Canvas exportHost = new Canvas();
+        exportHost.IsHitTestVisible = false;
+        exportHost.Opacity = 0.0;
+        exportHost.ZIndex = -1;
+        Grid root = new Grid();
+        root.Children.Add(exportHost);
+        root.Children.Add(sourceBoard);
+        Window window = createWindow(root, ThemeVariant.Light);
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            using (ScheduleBoardPngExportSnapshot snapshot =
+                ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
+            {
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.Equal(
+                    new ScheduleBoardTimeBoundary(510),
+                    snapshot.Layout.TimeAxis.Start);
+                Button exportCard = Assert.Single(
+                    findBoardGrid(snapshot.Surface).Children.OfType<Button>());
+                Assert.Contains(
+                    "수요일 08:30–09:45",
+                    AutomationProperties.GetName(exportCard));
+
+                AvaloniaControlPngExporter exporter =
+                    new AvaloniaControlPngExporter(PngExportScale.Create(1.0));
+                using (MemoryStream destinationStream = new MemoryStream())
+                {
+                    await exporter.ExportControlAsync(
+                        snapshot.Surface,
+                        destinationStream,
+                        CancellationToken.None);
+                    destinationStream.Position = 0L;
+                    using (Bitmap bitmap = new Bitmap(destinationStream))
+                    {
+                        assertBitmapContainsOpaqueContent(bitmap);
+                    }
+                }
             }
 
             Assert.Empty(exportHost.Children);
