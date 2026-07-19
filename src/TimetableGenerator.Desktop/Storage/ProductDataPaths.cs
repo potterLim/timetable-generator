@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+
+using TimetableGenerator.Desktop.Exporting.Calendar;
 using TimetableGenerator.Infrastructure.Catalogs;
 using TimetableGenerator.Infrastructure.Persistence;
 
@@ -20,6 +22,8 @@ internal sealed class ProductDataPaths
 
     public ProductAppearanceSettingsFilePath AppearanceSettings { get; }
 
+    public CalendarExportDirectoryPath CalendarExports { get; }
+
     public ProductDataPaths(ProductDataRootPath root)
     {
         if (root == null)
@@ -37,5 +41,7 @@ internal sealed class ProductDataPaths
                 root.Value,
                 "Settings",
                 APPEARANCE_SETTINGS_FILE_NAME));
+        CalendarExports = new CalendarExportDirectoryPath(
+            Path.Combine(root.Value, "Exports", "Calendar"));
     }
 }
