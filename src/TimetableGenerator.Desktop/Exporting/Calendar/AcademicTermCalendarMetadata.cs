@@ -9,9 +9,7 @@ internal sealed class AcademicTermCalendarMetadata
 {
     public AcademicTerm Term { get; }
 
-    public DateOnly FirstClassDate { get; }
-
-    public DateOnly LastClassDate { get; }
+    public AcademicTermDateRange DateRange { get; }
 
     public CalendarTimeZoneId TimeZoneId { get; }
 
@@ -19,8 +17,7 @@ internal sealed class AcademicTermCalendarMetadata
 
     public AcademicTermCalendarMetadata(
         AcademicTerm term,
-        DateOnly firstClassDate,
-        DateOnly lastClassDate,
+        AcademicTermDateRange dateRange,
         CalendarTimeZoneId timeZoneId,
         CalendarUtcOffset utcOffset)
     {
@@ -31,11 +28,11 @@ internal sealed class AcademicTermCalendarMetadata
                 nameof(term));
         }
 
-        if (lastClassDate < firstClassDate)
+        if (dateRange.IsValid == false)
         {
             throw new ArgumentException(
-                "The last class date cannot precede the first class date.",
-                nameof(lastClassDate));
+                "Academic calendar metadata requires a valid date range.",
+                nameof(dateRange));
         }
 
         if (timeZoneId.IsValid == false)
@@ -53,8 +50,7 @@ internal sealed class AcademicTermCalendarMetadata
         }
 
         Term = term;
-        FirstClassDate = firstClassDate;
-        LastClassDate = lastClassDate;
+        DateRange = dateRange;
         TimeZoneId = timeZoneId;
         UtcOffset = utcOffset;
     }
@@ -62,9 +58,11 @@ internal sealed class AcademicTermCalendarMetadata
     public DateOnly FindFirstOccurrenceDate(EDay day)
     {
         DayOfWeek targetDay = convertToDayOfWeek(day);
-        int daysUntilTarget = ((int)targetDay - (int)FirstClassDate.DayOfWeek + 7) % 7;
-        DateOnly firstOccurrenceDate = FirstClassDate.AddDays(daysUntilTarget);
-        if (firstOccurrenceDate > LastClassDate)
+        int daysUntilTarget =
+            ((int)targetDay - (int)DateRange.StartDate.DayOfWeek + 7) % 7;
+        DateOnly firstOccurrenceDate =
+            DateRange.StartDate.AddDays(daysUntilTarget);
+        if (firstOccurrenceDate > DateRange.EndDate)
         {
             throw new InvalidOperationException(
                 "The academic calendar does not contain the requested weekday.");
@@ -76,7 +74,7 @@ internal sealed class AcademicTermCalendarMetadata
     public DateTimeOffset GetLastIncludedInstantUtc()
     {
         TimeOnly finalTime = new TimeOnly(23, 59, 59);
-        DateTime finalLocalDateTime = LastClassDate.ToDateTime(
+        DateTime finalLocalDateTime = DateRange.EndDate.ToDateTime(
             finalTime,
             DateTimeKind.Unspecified);
         DateTimeOffset finalZonedDateTime = new DateTimeOffset(

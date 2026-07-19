@@ -18,7 +18,7 @@ internal sealed class ProcessAppleCalendarOpenCommand : IAppleCalendarOpenComman
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        ProcessStartInfo startInfo = CreateStartInfo(calendarFilePath);
+        ProcessStartInfo startInfo = createStartInfo(calendarFilePath);
         Process? processOrNull;
 
         try
@@ -54,7 +54,7 @@ internal sealed class ProcessAppleCalendarOpenCommand : IAppleCalendarOpenComman
         }
     }
 
-    internal static ProcessStartInfo CreateStartInfo(
+    internal static ProcessStartInfo createStartInfo(
         IcsCalendarFilePath calendarFilePath)
     {
         ArgumentNullException.ThrowIfNull(calendarFilePath);

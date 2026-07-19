@@ -17,8 +17,8 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
             AcademicTermCalendarMetadataRegistry.FindByTerm(
                 AcademicTerm.Parse("2026-2"));
 
-        Assert.Equal(new DateOnly(2026, 8, 31), metadata.FirstClassDate);
-        Assert.Equal(new DateOnly(2026, 12, 20), metadata.LastClassDate);
+        Assert.Equal(new DateOnly(2026, 8, 31), metadata.DateRange.StartDate);
+        Assert.Equal(new DateOnly(2026, 12, 20), metadata.DateRange.EndDate);
         Assert.Equal("Asia/Seoul", metadata.TimeZoneId.Value);
         Assert.Equal(TimeSpan.FromHours(9), metadata.UtcOffset.Value);
     }
@@ -71,9 +71,22 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
         Assert.Throws<ArgumentException>(
             () => new AcademicTermCalendarMetadata(
                 AcademicTerm.Parse("2026-2"),
-                new DateOnly(2026, 8, 31),
-                new DateOnly(2026, 12, 20),
+                new AcademicTermDateRange(
+                    new DateOnly(2026, 8, 31),
+                    new DateOnly(2026, 12, 20)),
                 new CalendarTimeZoneId("Asia/Seoul"),
                 default));
+    }
+
+    [Fact]
+    public void DefaultDateRangeCannotBypassMetadataValidation()
+    {
+        Assert.False(default(AcademicTermDateRange).IsValid);
+        Assert.Throws<ArgumentException>(
+            () => new AcademicTermCalendarMetadata(
+                AcademicTerm.Parse("2026-2"),
+                default,
+                new CalendarTimeZoneId("Asia/Seoul"),
+                new CalendarUtcOffset(TimeSpan.FromHours(9))));
     }
 }

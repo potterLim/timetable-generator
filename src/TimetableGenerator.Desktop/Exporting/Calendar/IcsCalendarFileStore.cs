@@ -13,7 +13,7 @@ internal sealed class IcsCalendarFileStore
 {
     private const int WRITE_BUFFER_SIZE_BYTES = 8_192;
 
-    private static readonly UTF8Encoding sUtf8WithoutByteOrderMark =
+    private static readonly UTF8Encoding UTF8_WITHOUT_BYTE_ORDER_MARK =
         new UTF8Encoding(false, true);
 
     private readonly CalendarExportDirectoryPath mDirectoryPath;
@@ -53,7 +53,7 @@ internal sealed class IcsCalendarFileStore
             string serializedCalendar = IcsCalendarSerializer.Serialize(
                 document,
                 exportTimestamp);
-            byte[] content = sUtf8WithoutByteOrderMark.GetBytes(
+            byte[] content = UTF8_WITHOUT_BYTE_ORDER_MARK.GetBytes(
                 serializedCalendar);
             using (FileStream outputStream = new FileStream(
                 temporaryPath,

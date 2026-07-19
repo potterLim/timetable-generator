@@ -18,7 +18,7 @@ public sealed class ProcessAppleCalendarOpenCommandTests
         IcsCalendarFilePath calendarFilePath = new IcsCalendarFilePath(sourcePath);
 
         ProcessStartInfo startInfo =
-            ProcessAppleCalendarOpenCommand.CreateStartInfo(calendarFilePath);
+            ProcessAppleCalendarOpenCommand.createStartInfo(calendarFilePath);
 
         Assert.Equal("/usr/bin/open", startInfo.FileName);
         Assert.False(startInfo.UseShellExecute);

@@ -12,8 +12,9 @@ internal static class AcademicTermCalendarMetadataRegistry
     private static readonly AcademicTermCalendarMetadata SECOND_SEMESTER_2026_METADATA =
         new AcademicTermCalendarMetadata(
             SECOND_SEMESTER_2026,
-            new DateOnly(2026, 8, 31),
-            new DateOnly(2026, 12, 20),
+            new AcademicTermDateRange(
+                new DateOnly(2026, 8, 31),
+                new DateOnly(2026, 12, 20)),
             new CalendarTimeZoneId("Asia/Seoul"),
             new CalendarUtcOffset(TimeSpan.FromHours(9)));
 
