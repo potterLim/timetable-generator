@@ -166,10 +166,12 @@
                 FontSize="13" />
           </StackPanel>
           <Button.Flyout>
-            <MenuFlyout Placement="BottomEdgeAlignedRight">
+            <MenuFlyout
+                Placement="BottomEdgeAlignedRight"
+                FlyoutPresenterClasses="export-menu">
               <MenuItem
                   x:Name="ExportPngAction"
-                  MinWidth="224"
+                  Classes="export-menu-item"
                   Header="PNG 이미지"
                   Command="{Binding #WorkspaceRoot.ExportPngCommand}"
                   AutomationProperties.AutomationId="ExportPngImage"
@@ -177,16 +179,16 @@
                   AutomationProperties.HelpText="현재 시간표를 고해상도 PNG 이미지로 저장합니다.">
                 <MenuItem.Icon>
                   <icons:FluentIcon
+                      Classes="export-menu-icon"
                       AutomationProperties.AccessibilityView="Raw"
                       Icon="Image"
                       IconVariant="Regular"
-                      FontSize="17" />
+                      FontSize="18" />
                 </MenuItem.Icon>
               </MenuItem>
-              <MenuItem Header="-" />
               <MenuItem
                   x:Name="ExportAppleCalendarAction"
-                  MinWidth="224"
+                  Classes="export-menu-item"
                   Header="Apple 캘린더"
                   IsVisible="{Binding #WorkspaceRoot.IsAppleCalendarExportAvailable}"
                   Command="{Binding #WorkspaceRoot.ExportAppleCalendarCommand}"
@@ -195,26 +197,28 @@
                   AutomationProperties.HelpText="Apple 캘린더의 가져오기 화면을 엽니다.">
                 <MenuItem.Icon>
                   <icons:FluentIcon
+                      Classes="export-menu-icon"
                       AutomationProperties.AccessibilityView="Raw"
-                      Icon="CalendarArrowRight"
+                      Icon="CalendarEmpty"
                       IconVariant="Regular"
-                      FontSize="17" />
+                      FontSize="18" />
                 </MenuItem.Icon>
               </MenuItem>
               <MenuItem
                   x:Name="ExportGoogleCalendarAction"
-                  MinWidth="224"
+                  Classes="export-menu-item"
                   Header="Google 캘린더"
                   Command="{Binding #WorkspaceRoot.ExportGoogleCalendarCommand}"
                   AutomationProperties.AutomationId="ExportGoogleCalendar"
                   AutomationProperties.Name="현재 계획을 Google 캘린더로 내보내기"
                   AutomationProperties.HelpText="처음 연결할 때 브라우저에서 Google 계정 승인이 필요합니다.">
                 <MenuItem.Icon>
-                    <icons:FluentIcon
-                        AutomationProperties.AccessibilityView="Raw"
-                        Icon="CalendarLink"
-                        IconVariant="Regular"
-                        FontSize="17" />
+                  <icons:FluentIcon
+                      Classes="export-menu-icon"
+                      AutomationProperties.AccessibilityView="Raw"
+                      Icon="CalendarEmpty"
+                      IconVariant="Regular"
+                      FontSize="18" />
                 </MenuItem.Icon>
               </MenuItem>
             </MenuFlyout>

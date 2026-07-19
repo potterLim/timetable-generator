@@ -8,6 +8,9 @@ using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 
+using FluentIcons.Avalonia;
+using FluentIcons.Common;
+
 using TimetableGenerator.Desktop.Exporting;
 using TimetableGenerator.Desktop.Exporting.AppleCalendar;
 using TimetableGenerator.Desktop.Exporting.Calendar;
@@ -49,6 +52,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                 workspaceView,
                 "ExportScheduleButton");
             MenuFlyout menu = Assert.IsType<MenuFlyout>(exportButton.Flyout);
+            Assert.Contains("export-menu", menu.FlyoutPresenterClasses);
             MenuItem pngAction = findRequiredMenuItem(
                 menu,
                 "ExportPngAction");
@@ -62,6 +66,17 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.True(pngAction.IsVisible);
             Assert.False(appleAction.IsVisible);
             Assert.True(googleAction.IsVisible);
+            Assert.Equal(3, menu.Items.Count);
+            Assert.Same(pngAction, menu.Items[0]);
+            Assert.Same(appleAction, menu.Items[1]);
+            Assert.Same(googleAction, menu.Items[2]);
+            assertExportMenuItemPresentation(pngAction, Icon.Image);
+            assertExportMenuItemPresentation(
+                appleAction,
+                Icon.CalendarEmpty);
+            assertExportMenuItemPresentation(
+                googleAction,
+                Icon.CalendarEmpty);
             Assert.Equal(
                 "ExportPngImage",
                 AutomationProperties.GetAutomationId(pngAction));
@@ -177,7 +192,24 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             MenuItem appleAction = findRequiredMenuItem(
                 menu,
                 "ExportAppleCalendarAction");
+            MenuItem googleAction = findRequiredMenuItem(
+                menu,
+                "ExportGoogleCalendarAction");
             Assert.True(appleAction.IsVisible);
+            Assert.True(googleAction.IsVisible);
+            Assert.Equal(3, menu.Items.Count);
+            Assert.Equal(
+                new[]
+                {
+                    "PNG 이미지",
+                    "Apple 캘린더",
+                    "Google 캘린더",
+                },
+                menu.Items
+                    .OfType<MenuItem>()
+                    .Select(menuItem => menuItem.Header)
+                    .Cast<string>()
+                    .ToArray());
             Assert.Equal(
                 "ExportAppleCalendar",
                 AutomationProperties.GetAutomationId(appleAction));
@@ -318,6 +350,17 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         }
 
         return menuItemOrNull;
+    }
+
+    private static void assertExportMenuItemPresentation(
+        MenuItem menuItem,
+        Icon expectedIcon)
+    {
+        Assert.Contains("export-menu-item", menuItem.Classes);
+        FluentIcon icon = Assert.IsType<FluentIcon>(menuItem.Icon);
+        Assert.Equal(expectedIcon, icon.Icon);
+        Assert.Equal(18.0, icon.FontSize);
+        Assert.Contains("export-menu-icon", icon.Classes);
     }
 
     private static string createTemporaryDirectory()
