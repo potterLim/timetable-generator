@@ -161,9 +161,9 @@ internal sealed partial class PlannerWorkspaceViewModel
                 return string.Empty;
             }
 
-            return "삭제할 계획: ‘"
+            return "삭제할 계획: '"
                 + mPlanPendingDeletionOrNull.DisplayName
-                + "’";
+                + "'";
         }
     }
 
@@ -189,8 +189,8 @@ internal sealed partial class PlannerWorkspaceViewModel
                 return string.Empty;
             }
 
-            return "‘" + mPlanPendingClearOrNull.DisplayName
-                + "’의 모든 내용을 지웁니다.";
+            return "'" + mPlanPendingClearOrNull.DisplayName
+                + "'의 모든 내용을 지웁니다.";
         }
     }
 

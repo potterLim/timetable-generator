@@ -223,8 +223,8 @@ internal sealed partial class PlannerWorkspaceViewModel
                 return string.Empty;
             }
 
-            return "‘" + mPersonalSchedulePendingDeletionOrNull.Title
-                + "’ 일정을 이 계획에서 삭제합니다.";
+            return "'" + mPersonalSchedulePendingDeletionOrNull.Title
+                + "' 일정을 이 계획에서 삭제합니다.";
         }
     }
 

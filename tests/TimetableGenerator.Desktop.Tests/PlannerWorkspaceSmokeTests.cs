@@ -433,7 +433,7 @@ public sealed class PlannerWorkspaceSmokeTests
                 workspace.PlanEditingDialogAccessibleName);
             Assert.Equal(originalPlanName.Value, workspace.PlanPendingClearName);
             Assert.Equal(
-                "‘" + originalPlanName.Value + "’의 모든 내용을 지웁니다.",
+                "'" + originalPlanName.Value + "'의 모든 내용을 지웁니다.",
                 workspace.PlanClearDescription);
             Assert.False(workspace.ActivePlan.IsCompletelyEmpty);
 

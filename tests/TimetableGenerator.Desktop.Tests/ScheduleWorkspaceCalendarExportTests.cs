@@ -159,9 +159,9 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                 workspaceView,
                 "ExportStatusText");
             Assert.Equal(
-                "Google 캘린더에 ‘"
+                "Google 캘린더에 '"
                     + workspace.ActivePlan.Name.Value
-                    + "’ 일정을 반영했습니다.",
+                    + "' 일정을 반영했습니다.",
                 status.Text);
         }
         finally

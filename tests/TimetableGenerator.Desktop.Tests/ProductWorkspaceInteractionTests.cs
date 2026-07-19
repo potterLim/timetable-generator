@@ -83,7 +83,7 @@ public sealed class ProductWorkspaceInteractionTests
             Assert.False(workspaceSurface.IsEnabled);
             Assert.Equal(requestedPlanName, workspace.PlanPendingDeletionName);
             Assert.Equal(
-                "삭제할 계획: ‘" + requestedPlanName + "’",
+                "삭제할 계획: '" + requestedPlanName + "'",
                 workspace.PlanDeletionDescription);
             Assert.True(cancelButton.IsKeyboardFocusWithin);
             Assert.Equal(new Thickness(32.0), editingDialog.Padding);

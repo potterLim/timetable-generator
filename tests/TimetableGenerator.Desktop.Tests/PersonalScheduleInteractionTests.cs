@@ -83,7 +83,7 @@ public sealed class PersonalScheduleInteractionTests
             workspace.BeginDeletePersonalScheduleCommand.Execute(editedItem);
             Assert.True(workspace.IsDeletePersonalScheduleConfirmationVisible);
             Assert.Equal(
-                "‘연구실 정기 미팅’ 일정을 이 계획에서 삭제합니다.",
+                "'연구실 정기 미팅' 일정을 이 계획에서 삭제합니다.",
                 workspace.PersonalScheduleDeletionDescription);
             Assert.DoesNotContain(
                 "추천 시간표",
