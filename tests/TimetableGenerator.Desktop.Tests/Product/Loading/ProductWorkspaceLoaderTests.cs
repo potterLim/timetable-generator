@@ -425,12 +425,14 @@ public sealed class ProductWorkspaceLoaderTests
     }
 
     [Fact]
-    public async Task MixedWorkspaceBindingsBlockCatalogSelectionAsync()
+    public async Task EmptyWorkspaceRebindsToTheLatestCatalogAsync()
     {
+        CatalogRevision savedRevision = new CatalogRevision(1);
+        CatalogRevision latestRevision = new CatalogRevision(2);
         VerifiedCatalogPackage catalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackage(new CatalogRevision(2));
+            ProductWorkspaceLoaderTestData.CreateCatalogPackage(latestRevision);
         PlanningWorkspace workspace =
-            ProductWorkspaceLoaderTestData.CreateMixedBindingWorkspace();
+            ProductWorkspaceLoaderTestData.CreateWorkspaceWithoutPlans(savedRevision);
         using (ProductWorkspaceLoaderTestContext context = createContext(
             PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(workspace)))
         {
@@ -438,17 +440,18 @@ public sealed class ProductWorkspaceLoaderTests
                 catalogPackage,
                 CancellationToken.None);
 
-            ProductWorkspaceCatalogCompatibilityException exception =
-                await Assert.ThrowsAsync<ProductWorkspaceCatalogCompatibilityException>(
-                    async delegate
-                    {
-                        await context.Loader.LoadAsync(CancellationToken.None);
-                    });
+            ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(
+                CancellationToken.None);
 
+            Assert.True(result.WasWorkspaceCatalogRebound);
             Assert.Equal(
-                EPlanningWorkspaceCatalogRebindStatus.MixedCatalogBindings,
-                exception.RebindStatus);
-            Assert.Empty(context.WorkspaceStore.SavedWorkspaces);
+                catalogPackage.CreatePlanCatalogBinding(),
+                result.Workspace.CatalogBinding);
+            Assert.Null(result.Workspace.ActivePlanIdOrNull);
+            Assert.Empty(result.Workspace.Plans);
+            Assert.Same(
+                result.Workspace,
+                Assert.Single(context.WorkspaceStore.SavedWorkspaces));
             Assert.Equal(0, context.CatalogDownloader.DownloadCount);
         }
     }

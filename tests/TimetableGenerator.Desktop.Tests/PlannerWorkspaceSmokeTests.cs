@@ -199,7 +199,7 @@ public sealed class PlannerWorkspaceSmokeTests
         ScheduleRecommendation firstRecommendation = workspace.ActiveRecommendation;
         Assert.Equal(
             new ScheduleBoardTimeBoundary(510),
-            workspace.DisplayedScheduleBoard.Layout.TimeAxis.Start);
+            workspace.DisplayedScheduleBoard!.Layout.TimeAxis.Start);
 
         workspace.NextRecommendationCommand.Execute(null);
 
@@ -211,7 +211,7 @@ public sealed class PlannerWorkspaceSmokeTests
                 entry.TimeRange.Start.MinutesFromMidnight >= 600));
         Assert.Equal(
             new ScheduleBoardTimeBoundary(510),
-            workspace.DisplayedScheduleBoard.Layout.TimeAxis.Start);
+            workspace.DisplayedScheduleBoard!.Layout.TimeAxis.Start);
 
         workspace.PreviousRecommendationCommand.Execute(null);
 
@@ -428,6 +428,9 @@ public sealed class PlannerWorkspaceSmokeTests
             Assert.True(workspace.IsClearActivePlanConfirmationVisible);
             Assert.True(workspace.IsPlanEditingOverlayVisible);
             Assert.False(workspace.IsWorkspaceInteractionEnabled);
+            Assert.Equal(
+                "시간표 비우기 확인",
+                workspace.PlanEditingDialogAccessibleName);
             Assert.Equal(originalPlanName.Value, workspace.PlanPendingClearName);
             Assert.Equal(
                 "‘" + originalPlanName.Value + "’의 모든 내용을 지웁니다.",
@@ -563,7 +566,7 @@ public sealed class PlannerWorkspaceSmokeTests
     }
 
     [AvaloniaFact]
-    public void ClosingAPlanTargetsTheVisibleTabAndProtectsTheLastPlan()
+    public void DeletingPlansTargetsTheVisibleTabAndAllowsAnEmptyWorkspace()
     {
         using (PlannerWorkspaceViewModel workspace =
             PlannerWorkspaceTestFactory.CreateWorkspace())
@@ -589,13 +592,21 @@ public sealed class PlannerWorkspaceSmokeTests
 
             PlanTabItem remainingPlan = Assert.Single(workspace.Plans);
             Assert.Equal(activePlan.PlanId, remainingPlan.PlanId);
-            Assert.False(remainingPlan.CanClose);
-            Assert.False(remainingPlan.CloseCommand.CanExecute(null));
-            Assert.Equal(
-                "마지막 계획은 닫을 수 없습니다",
-                remainingPlan.CloseButtonHelpText);
+            Assert.True(remainingPlan.CanClose);
+            Assert.True(remainingPlan.CloseCommand.CanExecute(null));
+            Assert.Equal("계획 삭제", remainingPlan.CloseButtonHelpText);
             Assert.False(workspace.IsPlanEditingOverlayVisible);
             Assert.True(workspace.IsWorkspaceInteractionEnabled);
+
+            remainingPlan.CloseCommand.Execute(null);
+            workspace.ConfirmDeletePlanCommand.Execute(null);
+
+            Assert.Empty(workspace.Plans);
+            Assert.Null(workspace.ActivePlanOrNull);
+            Assert.False(workspace.HasActivePlan);
+            Assert.True(workspace.IsWorkspaceEmpty);
+            Assert.False(workspace.CanDeleteActivePlan);
+            Assert.False(workspace.BeginDeletePlanCommand.CanExecute(null));
         }
     }
 

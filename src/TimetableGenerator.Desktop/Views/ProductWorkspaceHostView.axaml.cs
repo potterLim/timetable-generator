@@ -268,6 +268,12 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
             return;
         }
 
+        if (mWorkspaceOrNull?.IsWorkspaceEmpty == true)
+        {
+            focusButton("CreateFirstPlanButton");
+            return;
+        }
+
         focusButton("AddPlanButton");
     }
 
@@ -303,12 +309,18 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
             return false;
         }
 
+        PlanTabItem? activePlanOrNull = mWorkspaceOrNull.ActivePlanOrNull;
+        if (activePlanOrNull == null)
+        {
+            return false;
+        }
+
         TabStripItem? activePlanTabOrNull = this.GetVisualDescendants()
             .OfType<TabStripItem>()
             .FirstOrDefault(
                 candidate => ReferenceEquals(
                     candidate.DataContext,
-                    mWorkspaceOrNull.ActivePlan));
+                    activePlanOrNull));
         return activePlanTabOrNull != null && activePlanTabOrNull.Focus();
     }
 

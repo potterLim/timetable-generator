@@ -45,6 +45,37 @@ public sealed class PlanningWorkspaceFileStoreTests
     }
 
     [TestMethod]
+    public async Task StoreSavesAndLoadsAWorkspaceWithoutPlansAsync()
+    {
+        string testDirectoryPath = createTestDirectoryPath();
+        try
+        {
+            PlanningWorkspaceFileStore store = createStore(testDirectoryPath);
+            PlanCatalogBinding binding = createCatalogBinding();
+            PlanningWorkspace workspace = new PlanningWorkspace(
+                binding,
+                null,
+                Array.Empty<PlanningPlan>());
+
+            await store.SaveAsync(workspace, CancellationToken.None);
+            PlanningWorkspaceLoadResult result = await store.LoadAsync(
+                CancellationToken.None);
+
+            PlanningWorkspace restoredWorkspace = getWorkspace(result);
+            Assert.AreEqual(
+                EPlanningWorkspaceLoadStatus.LoadedLatestGeneration,
+                result.Status);
+            Assert.AreEqual(binding, restoredWorkspace.CatalogBinding);
+            Assert.IsNull(restoredWorkspace.ActivePlanIdOrNull);
+            Assert.IsEmpty(restoredWorkspace.Plans);
+        }
+        finally
+        {
+            deleteTestDirectory(testDirectoryPath);
+        }
+    }
+
+    [TestMethod]
     public async Task StoreRecoversThePreviousImmutableGenerationAsync()
     {
         string testDirectoryPath = createTestDirectoryPath();
@@ -216,8 +247,8 @@ public sealed class PlanningWorkspaceFileStoreTests
                 latestPath,
                 CancellationToken.None);
             string futureContent = latestContent.Replace(
-                "\"schemaVersion\": 4,",
                 "\"schemaVersion\": 5,",
+                "\"schemaVersion\": 6,",
                 StringComparison.Ordinal);
             await File.WriteAllTextAsync(
                 latestPath,
@@ -239,8 +270,8 @@ public sealed class PlanningWorkspaceFileStoreTests
             byte[][] contentAfterSave = await readGenerationContentsAsync(
                 testDirectoryPath);
 
-            Assert.AreEqual(5, exception.UnsupportedSchemaVersion);
-            Assert.AreEqual(5, saveException.UnsupportedSchemaVersion);
+            Assert.AreEqual(6, exception.UnsupportedSchemaVersion);
+            Assert.AreEqual(6, saveException.UnsupportedSchemaVersion);
             Assert.HasCount(contentBeforeSave.Length, contentAfterSave);
             for (int index = 0; index < contentBeforeSave.Length; index++)
             {
@@ -267,8 +298,8 @@ public sealed class PlanningWorkspaceFileStoreTests
                 futurePath,
                 CancellationToken.None);
             futureContent = futureContent.Replace(
-                "\"schemaVersion\": 4,",
                 "\"schemaVersion\": 5,",
+                "\"schemaVersion\": 6,",
                 StringComparison.Ordinal);
             await File.WriteAllTextAsync(
                 futurePath,
@@ -480,12 +511,7 @@ public sealed class PlanningWorkspaceFileStoreTests
     {
         PlanId planId = new PlanId(
             Guid.Parse("11111111-1111-1111-1111-111111111111"));
-        PlanCatalogBinding binding = new PlanCatalogBinding(
-            new CatalogId("handong-global-university:2026-2:r0001"),
-            new InstitutionId("handong-global-university"),
-            AcademicTerm.Parse("2026-2"),
-            new CatalogRevision(1),
-            new CatalogArtifactSha256(new string('a', 64)));
+        PlanCatalogBinding binding = createCatalogBinding();
         PlanningPlan plan = new PlanningPlan(
             planId,
             new PlanName(name),
@@ -494,7 +520,20 @@ public sealed class PlanningWorkspaceFileStoreTests
                 Array.Empty<CourseChoiceGroup>(),
                 Array.Empty<UnscheduledOfferingSelection>(),
                 Array.Empty<PersonalSchedule>()));
-        return new PlanningWorkspace(planId, new PlanningPlan[] { plan });
+        return new PlanningWorkspace(
+            binding,
+            planId,
+            new PlanningPlan[] { plan });
+    }
+
+    private static PlanCatalogBinding createCatalogBinding()
+    {
+        return new PlanCatalogBinding(
+            new CatalogId("handong-global-university:2026-2:r0001"),
+            new InstitutionId("handong-global-university"),
+            AcademicTerm.Parse("2026-2"),
+            new CatalogRevision(1),
+            new CatalogArtifactSha256(new string('a', 64)));
     }
 
     private static string getGenerationPath(

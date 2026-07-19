@@ -94,7 +94,10 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
                 Array.Empty<CourseChoiceGroup>(),
                 Array.Empty<UnscheduledOfferingSelection>(),
                 Array.Empty<PersonalSchedule>()));
-        return new PlanningWorkspace(planId, new PlanningPlan[] { plan });
+        return new PlanningWorkspace(
+            catalogBinding,
+            planId,
+            new PlanningPlan[] { plan });
     }
 
     private static PlanCatalogBinding createCatalogBinding(
@@ -118,17 +121,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
     private static PlanCatalogBinding getSharedCatalogBinding(
         PlanningWorkspace workspace)
     {
-        PlanCatalogBinding sharedBinding = workspace.Plans[0].CatalogBinding;
-        foreach (PlanningPlan plan in workspace.Plans)
-        {
-            if (plan.CatalogBinding != sharedBinding)
-            {
-                throw new ProductWorkspaceCatalogCompatibilityException(
-                    EPlanningWorkspaceCatalogRebindStatus.MixedCatalogBindings);
-            }
-        }
-
-        return sharedBinding;
+        return workspace.CatalogBinding;
     }
 
     private static bool hasMatchingCatalogBinding(

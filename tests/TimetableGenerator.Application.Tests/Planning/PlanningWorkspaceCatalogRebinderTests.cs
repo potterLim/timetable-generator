@@ -45,6 +45,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             Array.Empty<CourseChoiceGroup>(),
             new UnscheduledOfferingSelection[] { unscheduledSelection });
         PlanningWorkspace workspace = new PlanningWorkspace(
+            secondPlan.CatalogBinding,
             secondPlan.Id,
             new PlanningPlan[] { firstPlan, secondPlan });
         CourseCatalog newCatalog = createCompatibleCatalog();
@@ -57,7 +58,9 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
         PlanningWorkspace? reboundWorkspaceOrNull = result.ReboundWorkspaceOrNull;
         Assert.IsNotNull(reboundWorkspaceOrNull);
         Assert.AreNotSame(workspace, reboundWorkspaceOrNull);
-        Assert.AreEqual(workspace.ActivePlanId, reboundWorkspaceOrNull.ActivePlanId);
+        Assert.AreEqual(
+            workspace.ActivePlanIdOrNull,
+            reboundWorkspaceOrNull.ActivePlanIdOrNull);
         Assert.HasCount(2, reboundWorkspaceOrNull.Plans);
         assertPlanWasRebound(
             firstPlan,
@@ -160,6 +163,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
                 Array.Empty<UnscheduledOfferingSelection>(),
                 Array.Empty<PersonalSchedule>()));
         PlanningWorkspace workspace = new PlanningWorkspace(
+            plan.CatalogBinding,
             plan.Id,
             new PlanningPlan[] { plan });
 
@@ -187,6 +191,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             Array.Empty<CourseChoiceGroup>(),
             Array.Empty<UnscheduledOfferingSelection>());
         PlanningWorkspace workspace = new PlanningWorkspace(
+            plan.CatalogBinding,
             plan.Id,
             new PlanningPlan[] { plan });
         CourseCatalog nextTermCatalog = createCatalog(
@@ -226,6 +231,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             Array.Empty<CourseChoiceGroup>(),
             Array.Empty<UnscheduledOfferingSelection>());
         PlanningWorkspace workspace = new PlanningWorkspace(
+            plan.CatalogBinding,
             plan.Id,
             new PlanningPlan[] { plan });
         CourseCatalog otherInstitutionCatalog = createCatalog(
@@ -247,39 +253,28 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
     }
 
     [TestMethod]
-    public void TryRebindRejectsMixedExistingCatalogBindingsBeforeAnyMigration()
+    public void TryRebindPreservesAnEmptyWorkspaceAndUpdatesItsRootBinding()
     {
         CourseCatalog originalCatalog = createOriginalCatalog();
-        CourseCatalog otherCatalog = createCatalog(
-            "handong-global-university:2026-2:r0099",
-            "2026-2",
-            99,
-            originalCatalog.Courses,
-            originalCatalog.Offerings);
-        PlanningPlan firstPlan = createPlan(
-            originalCatalog,
-            "첫 계획",
-            Array.Empty<CourseChoiceGroup>(),
-            Array.Empty<UnscheduledOfferingSelection>());
-        PlanningPlan secondPlan = createPlan(
-            otherCatalog,
-            "둘째 계획",
-            Array.Empty<CourseChoiceGroup>(),
-            Array.Empty<UnscheduledOfferingSelection>());
+        PlanCatalogBinding originalBinding = createBinding(originalCatalog);
         PlanningWorkspace workspace = new PlanningWorkspace(
-            firstPlan.Id,
-            new PlanningPlan[] { firstPlan, secondPlan });
+            originalBinding,
+            null,
+            Array.Empty<PlanningPlan>());
+        CourseCatalog compatibleCatalog = createCompatibleCatalog();
 
         PlanningWorkspaceCatalogRebindResult result =
-            tryRebind(
-                createCompatibleCatalog(),
-                workspace);
+            tryRebind(compatibleCatalog, workspace);
 
-        assertFailure(
-            result,
-            EPlanningWorkspaceCatalogRebindStatus.MixedCatalogBindings);
-        Assert.AreSame(firstPlan, workspace.Plans[0]);
-        Assert.AreSame(secondPlan, workspace.Plans[1]);
+        Assert.IsTrue(result.IsRebound);
+        Assert.AreEqual(EPlanningWorkspaceCatalogRebindStatus.Rebound, result.Status);
+        PlanningWorkspace? reboundWorkspaceOrNull = result.ReboundWorkspaceOrNull;
+        Assert.IsNotNull(reboundWorkspaceOrNull);
+        Assert.AreEqual(
+            createBinding(compatibleCatalog),
+            reboundWorkspaceOrNull.CatalogBinding);
+        Assert.IsNull(reboundWorkspaceOrNull.ActivePlanIdOrNull);
+        Assert.IsEmpty(reboundWorkspaceOrNull.Plans);
     }
 
     [TestMethod]
@@ -292,6 +287,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             Array.Empty<CourseChoiceGroup>(),
             Array.Empty<UnscheduledOfferingSelection>());
         PlanningWorkspace workspace = new PlanningWorkspace(
+            plan.CatalogBinding,
             plan.Id,
             new PlanningPlan[] { plan });
         PlanCatalogBinding changedArtifactBinding = new PlanCatalogBinding(
@@ -466,6 +462,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             Array.Empty<CourseChoiceGroup>(),
             new UnscheduledOfferingSelection[] { selection });
         PlanningWorkspace workspace = new PlanningWorkspace(
+            plan.CatalogBinding,
             plan.Id,
             new PlanningPlan[] { plan });
         CatalogCourse course = ScheduleRecommendationTestData.CreateCourse("BBB10001");
@@ -516,6 +513,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
                     "01"),
             });
         PlanningWorkspace workspace = new PlanningWorkspace(
+            firstPlan.CatalogBinding,
             firstPlan.Id,
             new PlanningPlan[] { firstPlan, secondPlan });
         CourseCatalog incompatibleCatalog = createCatalog(
@@ -551,6 +549,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             Array.Empty<CourseChoiceGroup>(),
             Array.Empty<UnscheduledOfferingSelection>());
         PlanningWorkspace workspace = new PlanningWorkspace(
+            plan.CatalogBinding,
             plan.Id,
             new PlanningPlan[] { plan });
 
@@ -648,7 +647,10 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             "기본 계획",
             new CourseChoiceGroup[] { choiceGroup },
             Array.Empty<UnscheduledOfferingSelection>());
-        return new PlanningWorkspace(plan.Id, new PlanningPlan[] { plan });
+        return new PlanningWorkspace(
+            plan.CatalogBinding,
+            plan.Id,
+            new PlanningPlan[] { plan });
     }
 
     private static PlanningPlan createPlan(

@@ -245,6 +245,11 @@ internal sealed partial class PlannerWorkspaceViewModel
     private void beginAddPersonalSchedule()
     {
         throwIfDisposed();
+        if (HasActivePlan == false)
+        {
+            return;
+        }
+
         rememberInspectorPaneStateBeforePersonalScheduleEditing();
         closeCourseChoiceEditingState();
         closePlanEditingState();

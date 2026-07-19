@@ -28,7 +28,8 @@ public sealed class PlanningWorkspaceJsonCodecTests
 
         CollectionAssert.AreEqual(firstContent, secondContent);
         StringAssert.Contains(json, "기본 시간표");
-        StringAssert.Contains(json, "\"schemaVersion\": 4");
+        StringAssert.Contains(json, "\"schemaVersion\": 5");
+        StringAssert.Contains(json, "\"catalog\": {");
         StringAssert.Contains(json, "\"courseChoiceGroups\"");
         StringAssert.Contains(json, "\"lastViewedRecommendation\"");
         StringAssert.Contains(json, "\"preference\": \"acceptable\"");
@@ -40,7 +41,10 @@ public sealed class PlanningWorkspaceJsonCodecTests
             json,
             "\"artifactSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"");
         Assert.AreEqual(new WorkspaceGeneration(7), restoredDocument.Generation);
-        Assert.AreEqual(workspace.ActivePlanId, restoredWorkspace.ActivePlanId);
+        Assert.AreEqual(
+            workspace.ActivePlanIdOrNull,
+            restoredWorkspace.ActivePlanIdOrNull);
+        Assert.AreEqual(workspace.CatalogBinding, restoredWorkspace.CatalogBinding);
         Assert.HasCount(2, restoredWorkspace.Plans);
         Assert.HasCount(1, restoredWorkspace.Plans[0].CourseChoiceGroups);
         Assert.HasCount(1, restoredWorkspace.Plans[0].UnscheduledOfferingSelections);
@@ -77,22 +81,51 @@ public sealed class PlanningWorkspaceJsonCodecTests
     }
 
     [TestMethod]
+    public void CodecRoundTripsAnEmptyWorkspaceWithItsCatalogBinding()
+    {
+        PlanCatalogBinding catalogBinding = createCatalogBinding();
+        PlanningWorkspace workspace = new PlanningWorkspace(
+            catalogBinding,
+            null,
+            Array.Empty<PlanningPlan>());
+        PlanningWorkspaceJsonCodec codec = new PlanningWorkspaceJsonCodec();
+
+        byte[] content = codec.Serialize(new PlanningWorkspaceDocument(
+            new WorkspaceGeneration(11),
+            workspace));
+        PlanningWorkspaceDocument restoredDocument = codec.Deserialize(content);
+        string json = Encoding.UTF8.GetString(content);
+
+        StringAssert.Contains(json, "\"schemaVersion\": 5");
+        StringAssert.Contains(json, "\"activePlanId\": null");
+        StringAssert.Contains(json, "\"plans\": []");
+        StringAssert.Contains(
+            json,
+            "\"catalogId\": \"handong-global-university:2026-2:r0001\"");
+        Assert.AreEqual(new WorkspaceGeneration(11), restoredDocument.Generation);
+        Assert.AreEqual(catalogBinding, restoredDocument.Workspace.CatalogBinding);
+        Assert.IsNull(restoredDocument.Workspace.ActivePlanIdOrNull);
+        Assert.IsFalse(restoredDocument.Workspace.HasPlans);
+        Assert.IsEmpty(restoredDocument.Workspace.Plans);
+    }
+
+    [TestMethod]
     public void CodecRejectsUnknownDuplicateAndUnsupportedSchemaProperties()
     {
         PlanningWorkspaceJsonCodec codec = new PlanningWorkspaceJsonCodec();
         string validJson = Encoding.UTF8.GetString(
             createContent(codec, "기본 시간표"));
         string unknownPropertyJson = validJson.Replace(
-            "\"schemaVersion\": 4,",
-            "\"schemaVersion\": 4,\n  \"unexpected\": true,",
+            "\"schemaVersion\": 5,",
+            "\"schemaVersion\": 5,\n  \"unexpected\": true,",
             StringComparison.Ordinal);
         string duplicatePropertyJson = validJson.Replace(
-            "\"schemaVersion\": 4,",
-            "\"schemaVersion\": 4,\n  \"schemaVersion\": 4,",
+            "\"schemaVersion\": 5,",
+            "\"schemaVersion\": 5,\n  \"schemaVersion\": 5,",
             StringComparison.Ordinal);
         string unsupportedSchemaJson = validJson.Replace(
-            "\"schemaVersion\": 4,",
             "\"schemaVersion\": 5,",
+            "\"schemaVersion\": 6,",
             StringComparison.Ordinal);
 
         Assert.ThrowsExactly<WorkspaceDocumentException>(
@@ -141,6 +174,46 @@ public sealed class PlanningWorkspaceJsonCodecTests
     }
 
     [TestMethod]
+    public void CodecRejectsCurrentDocumentsWithInconsistentWorkspaceState()
+    {
+        PlanningWorkspaceJsonCodec codec = new PlanningWorkspaceJsonCodec();
+        string populatedJson = Encoding.UTF8.GetString(
+            createContent(codec, "기본 시간표"));
+        string missingActivePlanJson = replaceFirst(
+            populatedJson,
+            "\"activePlanId\": \"11111111-1111-1111-1111-111111111111\"",
+            "\"activePlanId\": null");
+        string mismatchedCatalogBindingJson = replaceFirst(
+            populatedJson,
+            new string('a', 64),
+            new string('b', 64));
+
+        PlanCatalogBinding catalogBinding = createCatalogBinding();
+        PlanningWorkspace emptyWorkspace = new PlanningWorkspace(
+            catalogBinding,
+            null,
+            Array.Empty<PlanningPlan>());
+        string emptyJson = Encoding.UTF8.GetString(codec.Serialize(
+            new PlanningWorkspaceDocument(
+                new WorkspaceGeneration(1),
+                emptyWorkspace)));
+        string unexpectedActivePlanJson = emptyJson.Replace(
+            "\"activePlanId\": null",
+            "\"activePlanId\": \"11111111-1111-1111-1111-111111111111\"",
+            StringComparison.Ordinal);
+
+        Assert.ThrowsExactly<WorkspaceDocumentException>(
+            () => codec.Deserialize(
+                Encoding.UTF8.GetBytes(missingActivePlanJson)));
+        Assert.ThrowsExactly<WorkspaceDocumentException>(
+            () => codec.Deserialize(
+                Encoding.UTF8.GetBytes(mismatchedCatalogBindingJson)));
+        Assert.ThrowsExactly<WorkspaceDocumentException>(
+            () => codec.Deserialize(
+                Encoding.UTF8.GetBytes(unexpectedActivePlanJson)));
+    }
+
+    [TestMethod]
     public void CodecRejectsPersonalSchedulesOutsideSupportedTimePolicy()
     {
         PlanningWorkspaceJsonCodec codec = new PlanningWorkspaceJsonCodec();
@@ -173,7 +246,7 @@ public sealed class PlanningWorkspaceJsonCodecTests
               "plans": [
                 {
                   "id": "11111111-1111-1111-1111-111111111111",
-                  "name": "기존 계획",
+                  "name": "나의 시간표",
                   "catalog": {
                     "catalogId": "handong-global-university:2026-2:r0001",
                     "institutionId": "handong-global-university",
@@ -196,7 +269,11 @@ public sealed class PlanningWorkspaceJsonCodecTests
 
         Assert.AreEqual(new WorkspaceGeneration(4), restoredDocument.Generation);
         Assert.IsEmpty(restoredDocument.Workspace.Plans[0].PersonalSchedules);
-        StringAssert.Contains(migratedJson, "\"schemaVersion\": 4");
+        Assert.AreEqual(
+            "2026-2학기 시간표",
+            restoredDocument.Workspace.Plans[0].Name.Value);
+        StringAssert.Contains(migratedJson, "\"schemaVersion\": 5");
+        StringAssert.Contains(migratedJson, "\"catalog\": {");
         StringAssert.Contains(migratedJson, "\"courseChoiceGroups\": []");
         StringAssert.Contains(migratedJson, "\"personalSchedules\": []");
         StringAssert.Contains(migratedJson, "\"lastViewedRecommendation\": null");
@@ -255,7 +332,7 @@ public sealed class PlanningWorkspaceJsonCodecTests
         Assert.AreEqual(
             EOfferingPreference.Acceptable,
             firstGroup.CourseCandidates[0].OfferingCandidates[0].Preference);
-        StringAssert.Contains(migratedJson, "\"schemaVersion\": 4");
+        StringAssert.Contains(migratedJson, "\"schemaVersion\": 5");
         StringAssert.Contains(migratedJson, "\"courseChoiceGroups\"");
     }
 
@@ -310,8 +387,152 @@ public sealed class PlanningWorkspaceJsonCodecTests
 
         Assert.IsNull(
             restoredDocument.Workspace.Plans[0].LastViewedRecommendationOrNull);
-        StringAssert.Contains(migratedJson, "\"schemaVersion\": 4");
+        StringAssert.Contains(migratedJson, "\"schemaVersion\": 5");
         StringAssert.Contains(migratedJson, "\"lastViewedRecommendation\": null");
+    }
+
+    [TestMethod]
+    public void CodecMigratesVersionFourWithoutLosingRecommendationBookmarks()
+    {
+        const string VERSION_FOUR_JSON = """
+            {
+              "schemaVersion": 4,
+              "generation": 9,
+              "activePlanId": "11111111-1111-1111-1111-111111111111",
+              "plans": [
+                {
+                  "id": "11111111-1111-1111-1111-111111111111",
+                  "name": "나의 시간표",
+                  "catalog": {
+                    "catalogId": "handong-global-university:2026-2:r0001",
+                    "institutionId": "handong-global-university",
+                    "term": "2026-2",
+                    "revision": 1,
+                    "artifactSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  },
+                  "courseChoiceGroups": [
+                    {
+                      "id": "33333333-3333-3333-3333-333333333333",
+                      "cardinality": "exactlyOne",
+                      "courseCandidates": [
+                        {
+                          "courseId": "handong-global-university:CSE30001",
+                          "offeringCandidates": [
+                            {
+                              "offeringId": "handong-global-university:2026-2:CSE30001:02",
+                              "preference": "acceptable"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ],
+                  "unscheduledSelections": [],
+                  "personalSchedules": [],
+                  "lastViewedRecommendation": {
+                    "scheduledOfferingIds": [
+                      "handong-global-university:2026-2:CSE30001:02"
+                    ]
+                  }
+                },
+                {
+                  "id": "22222222-2222-2222-2222-222222222222",
+                  "name": "2026-2학기 시간표 2",
+                  "catalog": {
+                    "catalogId": "handong-global-university:2026-2:r0001",
+                    "institutionId": "handong-global-university",
+                    "term": "2026-2",
+                    "revision": 1,
+                    "artifactSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  },
+                  "courseChoiceGroups": [],
+                  "unscheduledSelections": [],
+                  "personalSchedules": [],
+                  "lastViewedRecommendation": null
+                }
+              ]
+            }
+            """;
+        PlanningWorkspaceJsonCodec codec = new PlanningWorkspaceJsonCodec();
+
+        PlanningWorkspaceDocument restoredDocument = codec.Deserialize(
+            Encoding.UTF8.GetBytes(VERSION_FOUR_JSON));
+        PlanningWorkspace restoredWorkspace = restoredDocument.Workspace;
+        ScheduleRecommendationBookmark? restoredBookmarkOrNull =
+            restoredWorkspace.Plans[0].LastViewedRecommendationOrNull;
+        string migratedJson = Encoding.UTF8.GetString(
+            codec.Serialize(restoredDocument));
+
+        Assert.IsNotNull(restoredBookmarkOrNull);
+        Assert.AreEqual(
+            "handong-global-university:2026-2:CSE30001:02",
+            restoredBookmarkOrNull.ScheduledOfferingIds[0].Value);
+        Assert.AreEqual(
+            restoredWorkspace.Plans[0].CatalogBinding,
+            restoredWorkspace.CatalogBinding);
+        Assert.AreEqual("2026-2학기 시간표", restoredWorkspace.Plans[0].Name.Value);
+        Assert.AreEqual("2026-2학기 시간표(2)", restoredWorkspace.Plans[1].Name.Value);
+        StringAssert.Contains(migratedJson, "\"schemaVersion\": 5");
+        StringAssert.Contains(migratedJson, "\"catalog\": {");
+        StringAssert.Contains(
+            migratedJson,
+            "handong-global-university:2026-2:CSE30001:02");
+    }
+
+    [TestMethod]
+    public void CodecPreservesUserNamesWhenLegacyMigrationWouldCollideOrIsComplete()
+    {
+        const string LEGACY_COLLISION_JSON = """
+            {
+              "schemaVersion": 1,
+              "generation": 4,
+              "activePlanId": "11111111-1111-1111-1111-111111111111",
+              "plans": [
+                {
+                  "id": "11111111-1111-1111-1111-111111111111",
+                  "name": "나의 시간표",
+                  "catalog": {
+                    "catalogId": "handong-global-university:2026-2:r0001",
+                    "institutionId": "handong-global-university",
+                    "term": "2026-2",
+                    "revision": 1,
+                    "artifactSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  },
+                  "scheduledChoices": [],
+                  "unscheduledSelections": []
+                },
+                {
+                  "id": "22222222-2222-2222-2222-222222222222",
+                  "name": "2026-2학기 시간표",
+                  "catalog": {
+                    "catalogId": "handong-global-university:2026-2:r0001",
+                    "institutionId": "handong-global-university",
+                    "term": "2026-2",
+                    "revision": 1,
+                    "artifactSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                  },
+                  "scheduledChoices": [],
+                  "unscheduledSelections": []
+                }
+              ]
+            }
+            """;
+        PlanningWorkspaceJsonCodec codec = new PlanningWorkspaceJsonCodec();
+
+        PlanningWorkspaceDocument legacyDocument = codec.Deserialize(
+            Encoding.UTF8.GetBytes(LEGACY_COLLISION_JSON));
+        PlanningWorkspaceDocument currentDocument = codec.Deserialize(
+            createContent(codec, "나의 시간표"));
+
+        Assert.AreEqual(
+            "나의 시간표",
+            legacyDocument.Workspace.Plans[0].Name.Value);
+        Assert.AreEqual(
+            "2026-2학기 시간표",
+            legacyDocument.Workspace.Plans[1].Name.Value);
+        Assert.AreEqual(
+            "나의 시간표",
+            currentDocument.Workspace.Plans[0].Name.Value);
     }
 
     [TestMethod]
@@ -394,6 +615,7 @@ public sealed class PlanningWorkspaceJsonCodecTests
                 Array.Empty<UnscheduledOfferingSelection>(),
                 Array.Empty<PersonalSchedule>()));
         PlanningWorkspace workspace = new PlanningWorkspace(
+            binding,
             plan.Id,
             new PlanningPlan[] { plan });
         PlanningWorkspaceJsonCodec codec = new PlanningWorkspaceJsonCodec();
@@ -434,12 +656,7 @@ public sealed class PlanningWorkspaceJsonCodecTests
 
     private static PlanningWorkspace createWorkspace(string firstPlanName)
     {
-        PlanCatalogBinding catalogBinding = new PlanCatalogBinding(
-            new CatalogId("handong-global-university:2026-2:r0001"),
-            new InstitutionId("handong-global-university"),
-            AcademicTerm.Parse("2026-2"),
-            new CatalogRevision(1),
-            new CatalogArtifactSha256(new string('a', 64)));
+        PlanCatalogBinding catalogBinding = createCatalogBinding();
         OfferingId lastViewedOfferingId = new OfferingId(
             "handong-global-university:2026-2:CSE30001:02");
         PlanningPlan firstPlan = new PlanningPlan(
@@ -479,8 +696,34 @@ public sealed class PlanningWorkspaceJsonCodecTests
                 Array.Empty<UnscheduledOfferingSelection>(),
                 Array.Empty<PersonalSchedule>()));
         return new PlanningWorkspace(
+            catalogBinding,
             firstPlan.Id,
             new PlanningPlan[] { firstPlan, secondPlan });
+    }
+
+    private static PlanCatalogBinding createCatalogBinding()
+    {
+        return new PlanCatalogBinding(
+            new CatalogId("handong-global-university:2026-2:r0001"),
+            new InstitutionId("handong-global-university"),
+            AcademicTerm.Parse("2026-2"),
+            new CatalogRevision(1),
+            new CatalogArtifactSha256(new string('a', 64)));
+    }
+
+    private static string replaceFirst(
+        string source,
+        string oldValue,
+        string newValue)
+    {
+        int valueIndex = source.IndexOf(oldValue, StringComparison.Ordinal);
+        if (valueIndex < 0)
+        {
+            throw new InvalidOperationException(
+                "The test JSON does not contain the expected value.");
+        }
+
+        return source.Remove(valueIndex, oldValue.Length).Insert(valueIndex, newValue);
     }
 
     private static PersonalSchedule createPersonalSchedule()

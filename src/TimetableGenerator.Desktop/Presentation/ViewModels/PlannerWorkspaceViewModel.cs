@@ -103,14 +103,15 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         mSelectedUnitFilter = UnitFilters[0];
         mSelectedRequirementFilter = RequirementFilters[0];
         rebuildPlanItems();
-        mActivePlan = findPlanItem(mSession.Workspace.ActivePlanId);
-        mPlanNameDraft = mActivePlan.DisplayName;
+        mActivePlanOrNull = findPlanItemOrNull(
+            mSession.Workspace.ActivePlanIdOrNull);
+        mPlanNameDraft = mActivePlanOrNull?.DisplayName ?? string.Empty;
         mPlanNameValidationMessage = string.Empty;
         mAutosaveStatus = EPlanningWorkspaceAutosaveStatus.Saved;
         mAutosaveStatusText = "자동 저장됨";
         mRecommendationCancellationSource = new CancellationTokenSource();
         mRecommendationRefreshTask = Task.CompletedTask;
-        mRecommendationCalculationState = ERecommendationCalculationState.Calculating;
+        mRecommendationCalculationState = ERecommendationCalculationState.Ready;
         mRecommendationCalculationError = string.Empty;
         mLayoutMode = EWorkspaceLayoutMode.ExtraWide;
         mIsCoursePaneOpen = true;

@@ -7,7 +7,7 @@
     xmlns:viewModels="using:TimetableGenerator.Desktop.Presentation.ViewModels"
     x:DataType="viewModels:PlannerWorkspaceViewModel"
     AutomationProperties.LandmarkType="Complementary"
-    AutomationProperties.Name="{Binding ActivePlan.DisplayName}">
+    AutomationProperties.Name="{Binding ActivePlanOrNull.DisplayName}">
   <UserControl.Styles>
     <Style Selector="Border.plan-course.blue">
       <Setter Property="BorderBrush" Value="{DynamicResource CourseBlueBorderBrush}" />
@@ -45,9 +45,9 @@
             MaxWidth="184"
             VerticalAlignment="Center"
             AutomationProperties.HeadingLevel="2"
-            Text="{Binding ActivePlan.DisplayName}"
+            Text="{Binding ActivePlanOrNull.DisplayName}"
             TextTrimming="CharacterEllipsis"
-            ToolTip.Tip="{Binding ActivePlan.DisplayName}" />
+            ToolTip.Tip="{Binding ActivePlanOrNull.DisplayName}" />
         <Button
             x:Name="PlanManagementButton"
             Grid.Column="1"
@@ -138,8 +138,8 @@
                 Grid.Column="1"
                 VerticalAlignment="Center"
                 FontWeight="SemiBold"
-                Text="{Binding ActivePlan.ExpectedCreditsDisplayText}"
-                AutomationProperties.Name="{Binding ActivePlan.ExpectedCreditsAccessibleName}" />
+                Text="{Binding ActivePlanOrNull.ExpectedCreditsDisplayText}"
+                AutomationProperties.Name="{Binding ActivePlanOrNull.ExpectedCreditsAccessibleName}" />
           </Grid>
 
           <Border Height="1" Background="{DynamicResource BorderBrush}" />
@@ -147,7 +147,7 @@
           <Border
               x:Name="EmptyPlanState"
               Padding="18,24"
-              IsVisible="{Binding ActivePlan.IsCompletelyEmpty}"
+              IsVisible="{Binding ActivePlanOrNull.IsCompletelyEmpty}"
               Background="{DynamicResource SubtleSurfaceBrush}"
               CornerRadius="10">
             <StackPanel Spacing="8">
@@ -191,7 +191,7 @@
 
           <Border
               Padding="12,10"
-              IsVisible="{Binding ActivePlan.HasOnlyPersonalSchedules}"
+              IsVisible="{Binding ActivePlanOrNull.HasOnlyPersonalSchedules}"
               Background="{DynamicResource SubtleSurfaceBrush}"
               CornerRadius="7">
             <TextBlock
@@ -203,14 +203,14 @@
           <TextBlock
               x:Name="ScheduledCoursesHeading"
               FontWeight="SemiBold"
-              IsVisible="{Binding ActivePlan.HasScheduledCourses}"
-              Text="{Binding ActivePlan.ScheduledCourseHeading}" />
+              IsVisible="{Binding ActivePlanOrNull.HasScheduledCourses}"
+              Text="{Binding ActivePlanOrNull.ScheduledCourseHeading}" />
 
           <ListBox
               x:Name="ScheduledCoursesList"
               Classes="workspace-list"
-              IsVisible="{Binding ActivePlan.HasScheduledCourses}"
-              ItemsSource="{Binding ActivePlan.CourseChoiceGroups}"
+              IsVisible="{Binding ActivePlanOrNull.HasScheduledCourses}"
+              ItemsSource="{Binding ActivePlanOrNull.CourseChoiceGroups}"
               AutomationProperties.AutomationId="SelectedCourses"
               AutomationProperties.Name="선택한 수강 선택">
             <ListBox.ItemTemplate>
@@ -341,7 +341,7 @@
 
           <Expander
               x:Name="TimeNotProvidedCoursesExpander"
-              IsVisible="{Binding ActivePlan.HasTimeNotProvidedCourses}"
+              IsVisible="{Binding ActivePlanOrNull.HasTimeNotProvidedCourses}"
               IsExpanded="True"
               AutomationProperties.Name="시간 미정 과목">
             <Expander.Header>
@@ -360,10 +360,10 @@
                 <TextBlock
                     VerticalAlignment="Center"
                     FontWeight="SemiBold"
-                    Text="{Binding ActivePlan.TimeNotProvidedHeading}" />
+                    Text="{Binding ActivePlanOrNull.TimeNotProvidedHeading}" />
               </StackPanel>
             </Expander.Header>
-            <ItemsControl ItemsSource="{Binding ActivePlan.TimeNotProvidedCourses}">
+            <ItemsControl ItemsSource="{Binding ActivePlanOrNull.TimeNotProvidedCourses}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="models:TimeNotProvidedCourseItem">
                   <Border
@@ -403,7 +403,7 @@
                 x:Name="PersonalSchedulesHeading"
                 VerticalAlignment="Center"
                 FontWeight="SemiBold"
-                Text="{Binding ActivePlan.PersonalScheduleHeading}" />
+                Text="{Binding ActivePlanOrNull.PersonalScheduleHeading}" />
             <Button
                 x:Name="AddPersonalScheduleButton"
                 Grid.Column="1"
@@ -424,7 +424,7 @@
           <Border
               x:Name="PersonalScheduleEmptyState"
               Padding="12"
-              IsVisible="{Binding !ActivePlan.HasPersonalSchedules}"
+              IsVisible="{Binding !ActivePlanOrNull.HasPersonalSchedules}"
               Background="{DynamicResource SubtleSurfaceBrush}"
               CornerRadius="7">
             <TextBlock
@@ -437,8 +437,8 @@
 
           <ItemsControl
               x:Name="PersonalSchedulesList"
-              IsVisible="{Binding ActivePlan.HasPersonalSchedules}"
-              ItemsSource="{Binding ActivePlan.PersonalSchedules}"
+              IsVisible="{Binding ActivePlanOrNull.HasPersonalSchedules}"
+              ItemsSource="{Binding ActivePlanOrNull.PersonalSchedules}"
               AutomationProperties.Name="개인 일정 목록">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="models:PersonalScheduleItem">

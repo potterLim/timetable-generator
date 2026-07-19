@@ -837,7 +837,7 @@ public sealed class ScheduleWorkspaceViewTests
                 "시간표를 주간 표로 보기",
                 AutomationProperties.GetName(modeButtonOrNull));
             Assert.Equal(
-                workspace.DisplayedScheduleBoard.ListGroups.Count,
+                workspace.DisplayedScheduleBoard!.ListGroups.Count,
                 listItemsOrNull.ItemCount);
             ListBoxItem semanticListEntry = listItemsOrNull
                 .GetVisualDescendants()
@@ -855,7 +855,7 @@ public sealed class ScheduleWorkspaceViewTests
             Assert.DoesNotContain("담당", visibleListText);
 
             ScheduleListOccurrence occurrenceWithMetadata = workspace
-                .DisplayedScheduleBoard
+                .DisplayedScheduleBoard!
                 .ListGroups
                 .SelectMany(group => group.Occurrences)
                 .First(occurrence => occurrence.HasMetadata);

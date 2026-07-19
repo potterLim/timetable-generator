@@ -28,6 +28,9 @@ internal static class PlanningWorkspaceTestFactory
                 Array.Empty<CourseChoiceGroup>(),
                 Array.Empty<UnscheduledOfferingSelection>(),
                 Array.Empty<PersonalSchedule>()));
-        return new PlanningWorkspace(planId, new PlanningPlan[] { plan });
+        return new PlanningWorkspace(
+            catalogBinding,
+            planId,
+            new PlanningPlan[] { plan });
     }
 }

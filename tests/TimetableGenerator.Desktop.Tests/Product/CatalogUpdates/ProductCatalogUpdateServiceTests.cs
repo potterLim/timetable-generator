@@ -56,6 +56,40 @@ public sealed class ProductCatalogUpdateServiceTests
     }
 
     [Fact]
+    public async Task WorkspaceWithoutPlansCanStageACompatibleForwardRevisionAsync()
+    {
+        CatalogRevision activeRevision = new CatalogRevision(1);
+        CatalogRevision candidateRevision = new CatalogRevision(2);
+        VerifiedCatalogPackage activePackage =
+            ProductWorkspaceLoaderTestData.CreateCatalogPackage(activeRevision);
+        VerifiedCatalogPackage candidatePackage =
+            ProductWorkspaceLoaderTestData.CreateCatalogPackage(candidateRevision);
+        PlanningWorkspace workspace =
+            ProductWorkspaceLoaderTestData.CreateWorkspaceWithoutPlans(
+                activeRevision);
+        using (ProductWorkspaceLoaderTestContext context = createContext(candidatePackage))
+        {
+            ProductCatalogUpdateService service = new ProductCatalogUpdateService(
+                context.CatalogDownloader,
+                context.CatalogCacheStore);
+
+            ProductCatalogUpdateResult result = await service.CheckAndStageAsync(
+                activePackage,
+                workspace,
+                CancellationToken.None);
+            CatalogCacheLoadResult latestLoad = await context.CatalogCacheStore.LoadAsync(
+                CancellationToken.None);
+
+            Assert.Equal(EProductCatalogUpdateStatus.Staged, result.Status);
+            Assert.Equal(candidateRevision, result.CandidateRevision);
+            Assert.Equal(candidateRevision, latestLoad.GetPackage().Entry.Revision);
+            Assert.Empty(workspace.Plans);
+            Assert.Null(workspace.ActivePlanIdOrNull);
+            Assert.Equal(activeRevision, workspace.CatalogBinding.Revision);
+        }
+    }
+
+    [Fact]
     public async Task CurrentArtifactDoesNotCreateAReplacementGenerationAsync()
     {
         CatalogRevision revision = new CatalogRevision(1);

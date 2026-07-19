@@ -74,15 +74,21 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
-    public ScheduleBoardPresentation DisplayedScheduleBoard
+    public ScheduleBoardPresentation? DisplayedScheduleBoard
     {
         get
         {
+            PlanTabItem? activePlanOrNull = mActivePlanOrNull;
+            if (activePlanOrNull == null)
+            {
+                return null;
+            }
+
             CourseCatalog catalog = mCatalogProjection.Document.Catalog;
             return new ScheduleBoardPresentation(
                 DisplayedSchedule,
                 createScheduleBoardLayout(),
-                ActivePlan.Name,
+                activePlanOrNull.Name,
                 catalog.InstitutionName,
                 catalog.Term);
         }
@@ -137,7 +143,9 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return HasScheduleEntries && HasUnsatisfiedScheduleConstraints == false;
+            return HasActivePlan
+                && HasScheduleEntries
+                && HasUnsatisfiedScheduleConstraints == false;
         }
     }
 
@@ -145,7 +153,8 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return HasScheduleEntries == false
+            return HasActivePlan
+                && HasScheduleEntries == false
                 && HasUnsatisfiedScheduleConstraints == false
                 && IsRecommendationCalculating == false
                 && HasRecommendationCalculationError == false;
@@ -199,6 +208,11 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
+            if (HasActivePlan == false)
+            {
+                return string.Empty;
+            }
+
             if (ActivePlan.SelectedCourseCount == 0)
             {
                 return "과목을 추가해 시작하세요";
@@ -217,6 +231,11 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
+            if (HasActivePlan == false)
+            {
+                return string.Empty;
+            }
+
             if (ActivePlan.SelectedCourseCount == 0)
             {
                 return "과목을 추가하면 가능한 시간표를 자동으로 만듭니다.";
@@ -314,15 +333,24 @@ internal sealed partial class PlannerWorkspaceViewModel
         mRecommendationCancellationSource.Dispose();
         CancellationTokenSource cancellationSource = new CancellationTokenSource();
         mRecommendationCancellationSource = cancellationSource;
-        PlanningPlan planSnapshot = mSession.Workspace.GetActivePlan();
 
         mRecommendations = Array.Empty<ScheduleRecommendationViewItem>();
         mPersonalSchedulePreview = EMPTY_RECOMMENDATION;
         mRecommendationIndex = 0;
-        mRecommendationCalculationState = ERecommendationCalculationState.Calculating;
+        mRecommendationCalculationState = ERecommendationCalculationState.Ready;
         mRecommendationCalculationError = string.Empty;
         mHasUnsatisfiedScheduleConstraints = false;
         notifyRecommendationChanged();
+        notifyRecommendationCalculationStateChanged();
+        PlanTabItem? activePlanOrNull = mActivePlanOrNull;
+        if (activePlanOrNull == null)
+        {
+            mRecommendationRefreshTask = Task.CompletedTask;
+            return;
+        }
+
+        PlanningPlan planSnapshot = activePlanOrNull.Plan;
+        mRecommendationCalculationState = ERecommendationCalculationState.Calculating;
         notifyRecommendationCalculationStateChanged();
         mRecommendationRefreshTask = calculateRecommendationsAsync(
             planSnapshot,
@@ -535,7 +563,9 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private void synchronizeLastViewedRecommendation(PlanId calculatedPlanId)
     {
-        if (mSession.Workspace.ActivePlanId != calculatedPlanId)
+        PlanId? activePlanIdOrNull = mSession.Workspace.ActivePlanIdOrNull;
+        if (activePlanIdOrNull.HasValue == false
+            || activePlanIdOrNull.Value != calculatedPlanId)
         {
             return;
         }
@@ -552,6 +582,11 @@ internal sealed partial class PlannerWorkspaceViewModel
     private void updateLastViewedRecommendation(
         ScheduleRecommendationBookmark? bookmarkOrNull)
     {
+        if (mSession.Workspace.ActivePlanIdOrNull.HasValue == false)
+        {
+            return;
+        }
+
         PlanningPlan activePlan = mSession.Workspace.GetActivePlan();
         ScheduleRecommendationBookmark? existingBookmarkOrNull =
             activePlan.LastViewedRecommendationOrNull;

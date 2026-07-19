@@ -35,7 +35,7 @@ internal static class PlannerWorkspaceTestFactory
     }
 
     public static PlannerWorkspaceViewModel CreateWorkspace(
-        ImmediatePlanningWorkspaceStore planningWorkspaceStore)
+        IPlanningWorkspaceStore planningWorkspaceStore)
     {
         if (planningWorkspaceStore == null)
         {
@@ -54,7 +54,7 @@ internal static class PlannerWorkspaceTestFactory
 
     public static PlannerWorkspaceViewModel CreateWorkspace(
         ScheduleRecommendationBookmark recommendationBookmark,
-        ImmediatePlanningWorkspaceStore planningWorkspaceStore)
+        IPlanningWorkspaceStore planningWorkspaceStore)
     {
         if (recommendationBookmark == null)
         {
@@ -107,6 +107,34 @@ internal static class PlannerWorkspaceTestFactory
             recommendationProvider,
             null,
             new ImmediatePlanningWorkspaceStore());
+    }
+
+    public static PlannerWorkspaceViewModel CreateWorkspaceWithoutPlans()
+    {
+        return CreateWorkspaceWithoutPlans(new ImmediatePlanningWorkspaceStore());
+    }
+
+    public static PlannerWorkspaceViewModel CreateWorkspaceWithoutPlans(
+        IPlanningWorkspaceStore planningWorkspaceStore)
+    {
+        if (planningWorkspaceStore == null)
+        {
+            throw new ArgumentNullException(nameof(planningWorkspaceStore));
+        }
+
+        CourseCatalogDocument document = CatalogProjectionTestFixture.CreateDocument();
+        IScheduleRecommendationProvider recommendationProvider =
+            new CatalogScheduleRecommendationProvider(document.Catalog);
+        PlanCatalogBinding binding = createCatalogBinding(document);
+        PlanningWorkspace workspace = new PlanningWorkspace(
+            binding,
+            null,
+            Array.Empty<PlanningPlan>());
+        return createWorkspaceFromSnapshot(
+            document,
+            recommendationProvider,
+            workspace,
+            planningWorkspaceStore);
     }
 
     public static ProductShellViewModel CreateShell(
@@ -196,11 +224,24 @@ internal static class PlannerWorkspaceTestFactory
         CourseCatalogDocument document,
         IScheduleRecommendationProvider recommendationProvider,
         ScheduleRecommendationBookmark? recommendationBookmarkOrNull,
-        ImmediatePlanningWorkspaceStore planningWorkspaceStore)
+        IPlanningWorkspaceStore planningWorkspaceStore)
     {
         PlanningWorkspace workspace = createPlanningWorkspace(
             document,
             recommendationBookmarkOrNull);
+        return createWorkspaceFromSnapshot(
+            document,
+            recommendationProvider,
+            workspace,
+            planningWorkspaceStore);
+    }
+
+    private static PlannerWorkspaceViewModel createWorkspaceFromSnapshot(
+        CourseCatalogDocument document,
+        IScheduleRecommendationProvider recommendationProvider,
+        PlanningWorkspace workspace,
+        IPlanningWorkspaceStore planningWorkspaceStore)
+    {
         PlanningWorkspaceSession session = new PlanningWorkspaceSession(
             document.Catalog,
             workspace);
@@ -218,12 +259,7 @@ internal static class PlannerWorkspaceTestFactory
         CourseCatalogDocument document,
         ScheduleRecommendationBookmark? recommendationBookmarkOrNull)
     {
-        PlanCatalogBinding binding = new PlanCatalogBinding(
-            document.Catalog.Id,
-            document.Catalog.InstitutionId,
-            document.Catalog.Term,
-            document.Catalog.Revision,
-            new CatalogArtifactSha256(new string('a', 64)));
+        PlanCatalogBinding binding = createCatalogBinding(document);
         CourseId programmingCourseId = new CourseId("course-programming");
         CourseChoiceGroup programmingChoiceGroup =
             CourseChoiceGroup.CreateWithAcceptableOfferings(
@@ -253,7 +289,19 @@ internal static class PlannerWorkspaceTestFactory
                 Array.Empty<UnscheduledOfferingSelection>(),
                 Array.Empty<PersonalSchedule>()));
         return new PlanningWorkspace(
+            binding,
             primaryPlanId,
             new PlanningPlan[] { primaryPlan, secondaryPlan });
+    }
+
+    private static PlanCatalogBinding createCatalogBinding(
+        CourseCatalogDocument document)
+    {
+        return new PlanCatalogBinding(
+            document.Catalog.Id,
+            document.Catalog.InstitutionId,
+            document.Catalog.Term,
+            document.Catalog.Revision,
+            new CatalogArtifactSha256(new string('a', 64)));
     }
 }

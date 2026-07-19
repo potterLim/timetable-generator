@@ -18,6 +18,7 @@ using TimetableGenerator.Desktop.Exporting.AppleCalendar;
 using TimetableGenerator.Desktop.Exporting.Calendar;
 using TimetableGenerator.Desktop.Integrations.GoogleCalendar;
 using TimetableGenerator.Desktop.Presentation;
+using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Domain.Planning;
 
@@ -274,12 +275,21 @@ internal sealed partial class ScheduleWorkspaceView
     private CalendarExportDocument createCalendarExportDocument()
     {
         PlannerWorkspaceViewModel workspace = getRequiredWorkspace();
+        PlanTabItem? activePlanOrNull = workspace.ActivePlanOrNull;
+        ScheduleBoardPresentation? scheduleBoardOrNull =
+            workspace.DisplayedScheduleBoard;
+        if (activePlanOrNull == null || scheduleBoardOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "Schedule export requires an active plan.");
+        }
+
         AcademicTermCalendarMetadata academicCalendar =
             AcademicTermCalendarMetadataRegistry.FindByTerm(
-                workspace.DisplayedScheduleBoard.AcademicTerm);
+                scheduleBoardOrNull.AcademicTerm);
         return ScheduleCalendarProjector.Project(
-            workspace.ActivePlan.PlanId,
-            workspace.ActivePlan.Name,
+            activePlanOrNull.PlanId,
+            activePlanOrNull.Name,
             workspace.DisplayedSchedule,
             academicCalendar);
     }
@@ -299,7 +309,11 @@ internal sealed partial class ScheduleWorkspaceView
 
     private bool tryBeginExportOperation()
     {
-        if (mIsExportInProgress)
+        PlannerWorkspaceViewModel? workspaceOrNull =
+            DataContext as PlannerWorkspaceViewModel;
+        if (mIsExportInProgress
+            || workspaceOrNull == null
+            || workspaceOrNull.CanExportSchedule == false)
         {
             return false;
         }
@@ -360,13 +374,13 @@ internal sealed partial class ScheduleWorkspaceView
     {
         PlannerWorkspaceViewModel? workspaceOrNull =
             DataContext as PlannerWorkspaceViewModel;
-        if (workspaceOrNull == null)
+        if (workspaceOrNull?.ActivePlanOrNull == null)
         {
             return SchedulePngFileNameFactory.Create(null);
         }
 
         return SchedulePngFileNameFactory.Create(
-            workspaceOrNull.ActivePlan.Name);
+            workspaceOrNull.ActivePlanOrNull.Name);
     }
 
     private void showGoogleCalendarExportResult(

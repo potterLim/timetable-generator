@@ -23,10 +23,13 @@
   <Grid>
     <Grid
         x:Name="WorkspaceSurface"
-        RowDefinitions="44,*"
+        RowDefinitions="Auto,*"
         IsEnabled="{Binding IsWorkspaceInteractionEnabled}">
     <Border
+        x:Name="PlanNavigationBar"
         Grid.Row="0"
+        Height="44"
+        IsVisible="{Binding HasActivePlan}"
         Background="{DynamicResource ChromeSurfaceBrush}"
         BorderBrush="{DynamicResource BorderBrush}"
         BorderThickness="0,0,0,1"
@@ -42,7 +45,7 @@
           <TabStrip
               Classes="plan-tabs"
               ItemsSource="{Binding Plans}"
-              SelectedItem="{Binding ActivePlan, Mode=TwoWay}"
+              SelectedItem="{Binding ActivePlanOrNull, Mode=TwoWay}"
               AutomationProperties.Name="계획 목록">
             <TabStrip.Styles>
               <Style Selector="TabStripItem">
@@ -154,7 +157,9 @@
     </Border>
 
     <SplitView
+        x:Name="PlanningWorkspaceContent"
         Grid.Row="1"
+        IsVisible="{Binding HasActivePlan}"
         PanePlacement="Left"
         DisplayMode="{Binding CoursePaneDisplayMode}"
         IsPaneOpen="{Binding IsCoursePaneOpen, Mode=TwoWay}"
@@ -186,6 +191,94 @@
         </SplitView>
       </SplitView.Content>
     </SplitView>
+
+    <Border
+        x:Name="EmptyWorkspaceState"
+        Grid.Row="1"
+        Padding="32"
+        IsVisible="{Binding IsWorkspaceEmpty}"
+        Background="{DynamicResource WorkspaceBackdropBrush}"
+        AutomationProperties.LiveSetting="Polite">
+      <StackPanel
+          MaxWidth="430"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center"
+          Spacing="10">
+        <Border
+            Width="52"
+            Height="52"
+            HorizontalAlignment="Center"
+            Background="{DynamicResource AccentTintBrush}"
+            CornerRadius="26">
+          <icons:FluentIcon
+              Width="24"
+              Height="24"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              FontSize="24"
+              Icon="CalendarEmpty"
+              IconVariant="Regular"
+              Foreground="{DynamicResource AccentBrush}" />
+        </Border>
+        <TextBlock
+            Margin="0,6,0,0"
+            AutomationProperties.HeadingLevel="1"
+            FontSize="22"
+            FontWeight="SemiBold"
+            Text="새 시간표를 만들어 보세요"
+            TextAlignment="Center" />
+        <TextBlock
+            Classes="secondary"
+            Text="과목과 일정을 한곳에서 계획할 수 있어요."
+            TextAlignment="Center" />
+        <Button
+            x:Name="CreateFirstPlanButton"
+            Classes="accent"
+            Margin="0,8,0,0"
+            HorizontalAlignment="Center"
+            Command="{Binding AddPlanCommand}"
+            AutomationProperties.Name="새 시간표 만들기">
+          <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="7">
+            <icons:FluentIcon Icon="Add" IconVariant="Regular" FontSize="17" />
+            <TextBlock VerticalAlignment="Center" Text="시간표 만들기" />
+          </StackPanel>
+        </Button>
+        <StackPanel
+            Margin="0,8,0,0"
+            HorizontalAlignment="Center"
+            Orientation="Horizontal"
+            Spacing="8"
+            IsVisible="{Binding IsAutosaveSaving}"
+            AutomationProperties.LiveSetting="Polite">
+          <ProgressBar
+              Width="34"
+              Height="3"
+              VerticalAlignment="Center"
+              IsIndeterminate="True" />
+          <TextBlock
+              Classes="secondary"
+              VerticalAlignment="Center"
+              Text="저장 중" />
+        </StackPanel>
+        <Button
+            x:Name="EmptyWorkspaceRetryAutosaveButton"
+            MinHeight="32"
+            Margin="0,6,0,0"
+            Padding="8,4"
+            HorizontalAlignment="Center"
+            Background="Transparent"
+            BorderBrush="Transparent"
+            Foreground="{DynamicResource ErrorBrush}"
+            IsVisible="{Binding HasAutosaveError}"
+            Command="{Binding RetryAutosaveCommand}"
+            AutomationProperties.Name="저장 다시 시도">
+          <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="8">
+            <icons:FluentIcon Icon="ErrorCircle" IconVariant="Regular" FontSize="18" />
+            <TextBlock VerticalAlignment="Center" Text="저장 실패 · 다시 시도" />
+          </StackPanel>
+        </Button>
+      </StackPanel>
+    </Border>
     </Grid>
 
     <Border
@@ -208,7 +301,7 @@
            CornerRadius="12"
            KeyboardNavigation.TabNavigation="Cycle"
            AutomationProperties.ControlTypeOverride="Window"
-           AutomationProperties.Name="시간표 편집 대화상자">
+           AutomationProperties.Name="{Binding PlanEditingDialogAccessibleName}">
         <Grid>
           <StackPanel
               IsVisible="{Binding IsRenamingPlan}"

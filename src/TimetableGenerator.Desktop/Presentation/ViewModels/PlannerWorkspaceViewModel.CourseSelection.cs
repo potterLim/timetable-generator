@@ -245,6 +245,11 @@ internal sealed partial class PlannerWorkspaceViewModel
     private void addCourse(CourseSearchItem course)
     {
         throwIfDisposed();
+        if (mActivePlanOrNull == null)
+        {
+            return;
+        }
+
         if (ActivePlan.ContainsCourse(course.CourseId))
         {
             return;
@@ -442,6 +447,11 @@ internal sealed partial class PlannerWorkspaceViewModel
     private ECourseSelectionAction findActiveCourseSelectionAction(
         CourseId courseId)
     {
+        if (mActivePlanOrNull == null)
+        {
+            return ECourseSelectionAction.None;
+        }
+
         foreach (UnscheduledOfferingSelection selection
             in ActivePlan.Plan.UnscheduledOfferingSelections)
         {
@@ -467,6 +477,11 @@ internal sealed partial class PlannerWorkspaceViewModel
     private PlanningCourseSelection? findActiveCourseSelectionOrNull(
         CourseSearchItem course)
     {
+        if (mActivePlanOrNull == null)
+        {
+            return null;
+        }
+
         foreach (UnscheduledOfferingSelection selection
             in ActivePlan.Plan.UnscheduledOfferingSelections)
         {

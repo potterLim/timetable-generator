@@ -17,7 +17,10 @@ public sealed partial class PlanningWorkspaceEditor
         }
 
         findPlanIndex(workspace, planId);
-        return new PlanningWorkspace(planId, workspace.Plans);
+        return new PlanningWorkspace(
+            workspace.CatalogBinding,
+            planId,
+            workspace.Plans);
     }
 
     public PlanningWorkspace AddPlan(
@@ -36,7 +39,10 @@ public sealed partial class PlanningWorkspaceEditor
 
         List<PlanningPlan> plans = new List<PlanningPlan>(workspace.Plans);
         plans.Add(plan);
-        return new PlanningWorkspace(plan.Id, plans);
+        return new PlanningWorkspace(
+            workspace.CatalogBinding,
+            plan.Id,
+            plans);
     }
 
     public PlanningWorkspace RenamePlan(
@@ -73,29 +79,34 @@ public sealed partial class PlanningWorkspaceEditor
             throw new ArgumentNullException(nameof(workspace));
         }
 
-        if (workspace.Plans.Count == 1)
-        {
-            throw new InvalidOperationException(
-                "A planning workspace must retain at least one plan.");
-        }
-
         int removedPlanIndex = findPlanIndex(workspace, planId);
         List<PlanningPlan> remainingPlans = new List<PlanningPlan>(workspace.Plans);
         remainingPlans.RemoveAt(removedPlanIndex);
 
-        PlanId activePlanId = workspace.ActivePlanId;
-        if (activePlanId == planId)
+        PlanId? activePlanIdOrNull = workspace.ActivePlanIdOrNull;
+        if (activePlanIdOrNull.HasValue
+            && activePlanIdOrNull.Value == planId)
         {
-            int replacementIndex = removedPlanIndex;
-            if (replacementIndex >= remainingPlans.Count)
+            if (remainingPlans.Count == 0)
             {
-                replacementIndex = remainingPlans.Count - 1;
+                activePlanIdOrNull = null;
             }
+            else
+            {
+                int replacementIndex = removedPlanIndex;
+                if (replacementIndex >= remainingPlans.Count)
+                {
+                    replacementIndex = remainingPlans.Count - 1;
+                }
 
-            activePlanId = remainingPlans[replacementIndex].Id;
+                activePlanIdOrNull = remainingPlans[replacementIndex].Id;
+            }
         }
 
-        return new PlanningWorkspace(activePlanId, remainingPlans);
+        return new PlanningWorkspace(
+            workspace.CatalogBinding,
+            activePlanIdOrNull,
+            remainingPlans);
     }
 
     public PlanningWorkspace ClearPlanContent(
@@ -333,7 +344,10 @@ public sealed partial class PlanningWorkspaceEditor
             }
         }
 
-        return new PlanningWorkspace(workspace.ActivePlanId, plans);
+        return new PlanningWorkspace(
+            workspace.CatalogBinding,
+            workspace.ActivePlanIdOrNull,
+            plans);
     }
 
     private static PlanningWorkspace replacePersonalSchedules(

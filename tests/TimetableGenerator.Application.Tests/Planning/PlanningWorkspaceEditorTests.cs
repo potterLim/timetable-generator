@@ -17,13 +17,14 @@ public sealed class PlanningWorkspaceEditorTests
         PlanningPlan firstPlan = createPlan("첫 계획");
         PlanningPlan secondPlan = createPlan("둘째 계획");
         PlanningWorkspace workspace = new PlanningWorkspace(
+            firstPlan.CatalogBinding,
             firstPlan.Id,
             new PlanningPlan[] { firstPlan, secondPlan });
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
 
         PlanningWorkspace result = editor.ActivatePlan(workspace, secondPlan.Id);
 
-        Assert.AreEqual(secondPlan.Id, result.ActivePlanId);
+        Assert.AreEqual(secondPlan.Id, result.ActivePlanIdOrNull);
         Assert.HasCount(2, result.Plans);
         Assert.AreSame(firstPlan, result.Plans[0]);
         Assert.AreSame(secondPlan, result.Plans[1]);
@@ -35,13 +36,14 @@ public sealed class PlanningWorkspaceEditorTests
         PlanningPlan existingPlan = createPlan("기본 계획");
         PlanningPlan addedPlan = createPlan("새 계획");
         PlanningWorkspace workspace = new PlanningWorkspace(
+            existingPlan.CatalogBinding,
             existingPlan.Id,
             new PlanningPlan[] { existingPlan });
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
 
         PlanningWorkspace result = editor.AddPlan(workspace, addedPlan);
 
-        Assert.AreEqual(addedPlan.Id, result.ActivePlanId);
+        Assert.AreEqual(addedPlan.Id, result.ActivePlanIdOrNull);
         Assert.HasCount(2, result.Plans);
         Assert.AreSame(addedPlan, result.Plans[1]);
     }
@@ -58,6 +60,7 @@ public sealed class PlanningWorkspaceEditorTests
             new CourseChoiceGroup[] { choiceGroup },
             Array.Empty<UnscheduledOfferingSelection>());
         PlanningWorkspace workspace = new PlanningWorkspace(
+            plan.CatalogBinding,
             plan.Id,
             new PlanningPlan[] { plan });
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
@@ -79,6 +82,7 @@ public sealed class PlanningWorkspaceEditorTests
         PlanningPlan firstPlan = createPlan("첫 계획");
         PlanningPlan secondPlan = createPlan("둘째 계획");
         PlanningWorkspace workspace = new PlanningWorkspace(
+            firstPlan.CatalogBinding,
             firstPlan.Id,
             new PlanningPlan[] { firstPlan, secondPlan });
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
@@ -103,6 +107,7 @@ public sealed class PlanningWorkspaceEditorTests
     {
         PlanningPlan plan = createPlan("기본 계획");
         PlanningWorkspace workspace = new PlanningWorkspace(
+            plan.CatalogBinding,
             plan.Id,
             new PlanningPlan[] { plan });
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
@@ -138,6 +143,7 @@ public sealed class PlanningWorkspaceEditorTests
             new CourseChoiceGroup[] { scheduledChoiceGroup },
             new UnscheduledOfferingSelection[] { unscheduledSelection });
         PlanningWorkspace workspace = new PlanningWorkspace(
+            plan.CatalogBinding,
             plan.Id,
             new PlanningPlan[] { plan });
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
@@ -168,6 +174,7 @@ public sealed class PlanningWorkspaceEditorTests
             Array.Empty<UnscheduledOfferingSelection>());
         PlanningPlan secondPlan = createPlan("둘째 계획");
         PlanningWorkspace workspace = new PlanningWorkspace(
+            secondPlan.CatalogBinding,
             secondPlan.Id,
             new PlanningPlan[] { firstPlan, secondPlan });
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
@@ -197,19 +204,19 @@ public sealed class PlanningWorkspaceEditorTests
             existingChoiceGroup,
             withSchedule.Plans[0].CourseChoiceGroups[0]);
         Assert.AreSame(secondPlan, withSchedule.Plans[1]);
-        Assert.AreEqual(secondPlan.Id, withSchedule.ActivePlanId);
+        Assert.AreEqual(secondPlan.Id, withSchedule.ActivePlanIdOrNull);
         Assert.AreSame(updatedSchedule, withUpdate.Plans[0].PersonalSchedules[0]);
         Assert.AreSame(
             existingChoiceGroup,
             withUpdate.Plans[0].CourseChoiceGroups[0]);
         Assert.AreSame(secondPlan, withUpdate.Plans[1]);
-        Assert.AreEqual(secondPlan.Id, withUpdate.ActivePlanId);
+        Assert.AreEqual(secondPlan.Id, withUpdate.ActivePlanIdOrNull);
         Assert.IsEmpty(withoutSchedule.Plans[0].PersonalSchedules);
         Assert.AreSame(
             existingChoiceGroup,
             withoutSchedule.Plans[0].CourseChoiceGroups[0]);
         Assert.AreSame(secondPlan, withoutSchedule.Plans[1]);
-        Assert.AreEqual(secondPlan.Id, withoutSchedule.ActivePlanId);
+        Assert.AreEqual(secondPlan.Id, withoutSchedule.ActivePlanIdOrNull);
     }
 
     [TestMethod]
@@ -224,6 +231,7 @@ public sealed class PlanningWorkspaceEditorTests
             Array.Empty<UnscheduledOfferingSelection>(),
             new PersonalSchedule[] { existingSchedule });
         PlanningWorkspace workspace = new PlanningWorkspace(
+            plan.CatalogBinding,
             plan.Id,
             new PlanningPlan[] { plan });
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
@@ -270,6 +278,7 @@ public sealed class PlanningWorkspaceEditorTests
             Array.Empty<UnscheduledOfferingSelection>());
         PlanningPlan secondPlan = createPlan("둘째 계획");
         PlanningWorkspace workspace = new PlanningWorkspace(
+            secondPlan.CatalogBinding,
             secondPlan.Id,
             new PlanningPlan[] { firstPlan, secondPlan });
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
@@ -292,7 +301,7 @@ public sealed class PlanningWorkspaceEditorTests
             firstPlan.Id,
             createPersonalSchedule(PersonalScheduleId.CreateNew(), "고정 일정"));
 
-        Assert.AreEqual(secondPlan.Id, remembered.ActivePlanId);
+        Assert.AreEqual(secondPlan.Id, remembered.ActivePlanIdOrNull);
         Assert.AreSame(
             bookmark,
             remembered.Plans[0].LastViewedRecommendationOrNull);
@@ -335,6 +344,7 @@ public sealed class PlanningWorkspaceEditorTests
                 new OfferingId[] { bookmarkedOfferingId }));
         PlanningPlan untouchedPlan = createPlan("다른 계획");
         PlanningWorkspace workspace = new PlanningWorkspace(
+            bookmarkedPlan.CatalogBinding,
             bookmarkedPlan.Id,
             new PlanningPlan[] { bookmarkedPlan, untouchedPlan });
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
@@ -344,7 +354,9 @@ public sealed class PlanningWorkspaceEditorTests
             bookmarkedPlan.Id);
 
         PlanningPlan clearedPlan = result.GetActivePlan();
-        Assert.AreEqual(workspace.ActivePlanId, result.ActivePlanId);
+        Assert.AreEqual(
+            workspace.ActivePlanIdOrNull,
+            result.ActivePlanIdOrNull);
         Assert.HasCount(2, result.Plans);
         Assert.AreEqual(bookmarkedPlan.Id, clearedPlan.Id);
         Assert.AreSame(bookmarkedPlan.Name, clearedPlan.Name);
@@ -367,29 +379,51 @@ public sealed class PlanningWorkspaceEditorTests
         PlanningPlan secondPlan = createPlan("둘째 계획");
         PlanningPlan thirdPlan = createPlan("셋째 계획");
         PlanningWorkspace workspace = new PlanningWorkspace(
+            secondPlan.CatalogBinding,
             secondPlan.Id,
             new PlanningPlan[] { firstPlan, secondPlan, thirdPlan });
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
 
         PlanningWorkspace result = editor.RemovePlan(workspace, secondPlan.Id);
 
-        Assert.AreEqual(thirdPlan.Id, result.ActivePlanId);
+        Assert.AreEqual(thirdPlan.Id, result.ActivePlanIdOrNull);
         Assert.HasCount(2, result.Plans);
         Assert.AreSame(firstPlan, result.Plans[0]);
         Assert.AreSame(thirdPlan, result.Plans[1]);
     }
 
     [TestMethod]
-    public void RemovePlanRejectsDeletingTheFinalPlan()
+    public void RemovePlanDeletesTheFinalPlanAndPreservesCatalogBinding()
     {
         PlanningPlan plan = createPlan("기본 계획");
         PlanningWorkspace workspace = new PlanningWorkspace(
+            plan.CatalogBinding,
             plan.Id,
             new PlanningPlan[] { plan });
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
 
-        Assert.ThrowsExactly<InvalidOperationException>(
-            () => editor.RemovePlan(workspace, plan.Id));
+        PlanningWorkspace result = editor.RemovePlan(workspace, plan.Id);
+
+        Assert.AreSame(plan.CatalogBinding, result.CatalogBinding);
+        Assert.IsNull(result.ActivePlanIdOrNull);
+        Assert.IsEmpty(result.Plans);
+    }
+
+    [TestMethod]
+    public void AddPlanToAnEmptyWorkspaceMakesTheAddedPlanActive()
+    {
+        PlanningPlan addedPlan = createPlan("새 계획");
+        PlanningWorkspace workspace = new PlanningWorkspace(
+            addedPlan.CatalogBinding,
+            null,
+            Array.Empty<PlanningPlan>());
+        PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
+
+        PlanningWorkspace result = editor.AddPlan(workspace, addedPlan);
+
+        Assert.AreEqual(addedPlan.Id, result.ActivePlanIdOrNull);
+        Assert.HasCount(1, result.Plans);
+        Assert.AreSame(addedPlan, result.Plans[0]);
     }
 
     private static PlanningPlan createPlan(string name)

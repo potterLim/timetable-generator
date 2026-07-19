@@ -113,6 +113,7 @@ public sealed class CourseChoiceGroupEditingTests
                 Array.Empty<UnscheduledOfferingSelection>(),
                 Array.Empty<PersonalSchedule>()));
         PlanningWorkspace workspace = new PlanningWorkspace(
+            plan.CatalogBinding,
             plan.Id,
             new PlanningPlan[] { plan });
         PlanningWorkspaceSession session = new PlanningWorkspaceSession(
@@ -175,7 +176,10 @@ public sealed class CourseChoiceGroupEditingTests
                 Array.Empty<CourseChoiceGroup>(),
                 Array.Empty<UnscheduledOfferingSelection>(),
                 Array.Empty<PersonalSchedule>()));
-        return new PlanningWorkspace(plan.Id, new PlanningPlan[] { plan });
+        return new PlanningWorkspace(
+            plan.CatalogBinding,
+            plan.Id,
+            new PlanningPlan[] { plan });
     }
 
     private static CourseChoiceGroup createGroup(

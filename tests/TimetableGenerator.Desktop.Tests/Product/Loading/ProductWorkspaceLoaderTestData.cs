@@ -79,21 +79,13 @@ internal static class ProductWorkspaceLoaderTestData
             new CourseChoiceGroup[] { choiceGroup });
     }
 
-    public static PlanningWorkspace CreateMixedBindingWorkspace()
+    public static PlanningWorkspace CreateWorkspaceWithoutPlans(
+        CatalogRevision revision)
     {
-        PlanId firstPlanId = PlanId.CreateNew();
-        PlanningPlan firstPlan = createEmptyPlan(
-            firstPlanId,
-            new PlanName("첫 번째 시간표"),
-            new CatalogRevision(1));
-        PlanId secondPlanId = PlanId.CreateNew();
-        PlanningPlan secondPlan = createEmptyPlan(
-            secondPlanId,
-            new PlanName("두 번째 시간표"),
-            new CatalogRevision(2));
         return new PlanningWorkspace(
-            firstPlanId,
-            new PlanningPlan[] { firstPlan, secondPlan });
+            createCatalogBinding(revision),
+            null,
+            Array.Empty<PlanningPlan>());
     }
 
     private static VerifiedCatalogPackage createCatalogPackage(
@@ -332,22 +324,10 @@ internal static class ProductWorkspaceLoaderTestData
                 courseChoiceGroups,
                 Array.Empty<UnscheduledOfferingSelection>(),
                 Array.Empty<PersonalSchedule>()));
-        return new PlanningWorkspace(planId, new PlanningPlan[] { plan });
-    }
-
-    private static PlanningPlan createEmptyPlan(
-        PlanId planId,
-        PlanName planName,
-        CatalogRevision revision)
-    {
-        return new PlanningPlan(
+        return new PlanningWorkspace(
+            plan.CatalogBinding,
             planId,
-            planName,
-            createCatalogBinding(revision),
-            new PlanningPlanContent(
-                Array.Empty<CourseChoiceGroup>(),
-                Array.Empty<UnscheduledOfferingSelection>(),
-                Array.Empty<PersonalSchedule>()));
+            new PlanningPlan[] { plan });
     }
 
     private static CourseChoiceGroup createCourseChoiceGroup(

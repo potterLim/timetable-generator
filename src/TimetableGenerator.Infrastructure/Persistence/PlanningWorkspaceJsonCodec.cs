@@ -11,10 +11,15 @@ namespace TimetableGenerator.Infrastructure.Persistence;
 
 public sealed partial class PlanningWorkspaceJsonCodec
 {
-    private const int CURRENT_SCHEMA_VERSION = 4;
+    private const int CURRENT_SCHEMA_VERSION = 5;
+    private const int RECOMMENDATION_BOOKMARK_SCHEMA_VERSION = 4;
     private const int COURSE_CHOICE_GROUP_SCHEMA_VERSION = 3;
     private const int PERSONAL_SCHEDULE_SCHEMA_VERSION = 2;
     private const int LEGACY_SCHEMA_VERSION = 1;
+    private const int FIRST_ADDITIONAL_PLAN_NUMBER = 2;
+
+    private const string LEGACY_INITIAL_PLAN_NAME = "나의 시간표";
+    private const string TERM_PLAN_NAME_SUFFIX = "학기 시간표";
 
     public byte[] Serialize(PlanningWorkspaceDocument document)
     {
@@ -79,7 +84,8 @@ public sealed partial class PlanningWorkspaceJsonCodec
         writer.WriteNumber("schemaVersion", CURRENT_SCHEMA_VERSION);
         writer.WriteNumber("generation", document.Generation.Value);
         PlanningWorkspace workspace = document.Workspace;
-        writer.WriteString("activePlanId", workspace.ActivePlanId.ToString());
+        writeCatalogBinding(writer, "catalog", workspace.CatalogBinding);
+        writeOptionalPlanId(writer, "activePlanId", workspace.ActivePlanIdOrNull);
         writer.WriteStartArray("plans");
         foreach (PlanningPlan plan in workspace.Plans)
         {
@@ -128,15 +134,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         writer.WriteStartObject();
         writer.WriteString("id", plan.Id.ToString());
         writer.WriteString("name", plan.Name.Value);
-        writer.WriteStartObject("catalog");
-        writer.WriteString("catalogId", plan.CatalogBinding.CatalogId.Value);
-        writer.WriteString("institutionId", plan.CatalogBinding.InstitutionId.Value);
-        writer.WriteString("term", plan.CatalogBinding.Term.Id);
-        writer.WriteNumber("revision", plan.CatalogBinding.Revision.Value);
-        writer.WriteString(
-            "artifactSha256",
-            plan.CatalogBinding.ArtifactSha256.HexValue);
-        writer.WriteEndObject();
+        writeCatalogBinding(writer, "catalog", plan.CatalogBinding);
         writer.WriteStartArray("courseChoiceGroups");
         foreach (CourseChoiceGroup courseChoiceGroup in plan.CourseChoiceGroups)
         {
@@ -176,6 +174,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
             case LEGACY_SCHEMA_VERSION:
             case PERSONAL_SCHEDULE_SCHEMA_VERSION:
             case COURSE_CHOICE_GROUP_SCHEMA_VERSION:
+            case RECOMMENDATION_BOOKMARK_SCHEMA_VERSION:
             case CURRENT_SCHEMA_VERSION:
                 return readWorkspaceVersion(element, schemaVersion);
             default:
@@ -187,13 +186,35 @@ public sealed partial class PlanningWorkspaceJsonCodec
         JsonElement element,
         int schemaVersion)
     {
+        IReadOnlyList<string> expectedPropertyNames;
+        if (schemaVersion == CURRENT_SCHEMA_VERSION)
+        {
+            expectedPropertyNames = new string[]
+            {
+                "schemaVersion",
+                "generation",
+                "catalog",
+                "activePlanId",
+                "plans",
+            };
+        }
+        else
+        {
+            expectedPropertyNames = new string[]
+            {
+                "schemaVersion",
+                "generation",
+                "activePlanId",
+                "plans",
+            };
+        }
+
         Dictionary<string, JsonElement> properties = readExactObject(
             element,
             "workspace",
-            new string[] { "schemaVersion", "generation", "activePlanId", "plans" });
+            expectedPropertyNames);
         WorkspaceGeneration generation = new WorkspaceGeneration(
             readInt64(properties["generation"], "generation"));
-        PlanId activePlanId = readPlanId(properties["activePlanId"], "activePlanId");
         JsonElement plansElement = properties["plans"];
         requireValueKind(plansElement, JsonValueKind.Array, "plans");
         List<PlanningPlan> plans = new List<PlanningPlan>();
@@ -202,8 +223,104 @@ public sealed partial class PlanningWorkspaceJsonCodec
             plans.Add(readPlan(planElement, schemaVersion));
         }
 
-        PlanningWorkspace workspace = new PlanningWorkspace(activePlanId, plans);
+        if (schemaVersion < CURRENT_SCHEMA_VERSION)
+        {
+            migrateLegacyPlanNames(plans);
+        }
+
+        PlanCatalogBinding catalogBinding;
+        PlanId? activePlanIdOrNull;
+        if (schemaVersion == CURRENT_SCHEMA_VERSION)
+        {
+            catalogBinding = readCatalogBinding(
+                properties["catalog"],
+                "workspace.catalog");
+            activePlanIdOrNull = readOptionalPlanId(
+                properties["activePlanId"],
+                "activePlanId");
+        }
+        else
+        {
+            if (plans.Count == 0)
+            {
+                throw new WorkspaceDocumentException(
+                    "Legacy planning workspace documents require at least one plan.");
+            }
+
+            catalogBinding = plans[0].CatalogBinding;
+            activePlanIdOrNull = readPlanId(
+                properties["activePlanId"],
+                "activePlanId");
+        }
+
+        PlanningWorkspace workspace = new PlanningWorkspace(
+            catalogBinding,
+            activePlanIdOrNull,
+            plans);
         return new PlanningWorkspaceDocument(generation, workspace);
+    }
+
+    private static void migrateLegacyPlanNames(List<PlanningPlan> plans)
+    {
+        HashSet<string> existingPlanNames = new HashSet<string>(
+            StringComparer.OrdinalIgnoreCase);
+        foreach (PlanningPlan plan in plans)
+        {
+            existingPlanNames.Add(plan.Name.Value);
+        }
+
+        for (int planIndex = 0; planIndex < plans.Count; ++planIndex)
+        {
+            PlanningPlan plan = plans[planIndex];
+            string? migratedNameOrNull = findMigratedPlanNameOrNull(plan);
+            if (migratedNameOrNull == null
+                || existingPlanNames.Contains(migratedNameOrNull))
+            {
+                continue;
+            }
+
+            existingPlanNames.Add(migratedNameOrNull);
+            plans[planIndex] = new PlanningPlan(
+                plan.Id,
+                new PlanName(migratedNameOrNull),
+                plan.CatalogBinding,
+                plan.Content,
+                plan.LastViewedRecommendationOrNull);
+        }
+    }
+
+    private static string? findMigratedPlanNameOrNull(PlanningPlan plan)
+    {
+        string termPlanName = plan.CatalogBinding.Term.Id + TERM_PLAN_NAME_SUFFIX;
+        if (plan.Name.Value == LEGACY_INITIAL_PLAN_NAME)
+        {
+            return termPlanName;
+        }
+
+        string numberedNamePrefix = termPlanName + " ";
+        if (plan.Name.Value.StartsWith(
+            numberedNamePrefix,
+            StringComparison.Ordinal) == false)
+        {
+            return null;
+        }
+
+        string planNumberText = plan.Name.Value.Substring(numberedNamePrefix.Length);
+        int planNumber;
+        bool hasPlanNumber = int.TryParse(
+            planNumberText,
+            System.Globalization.NumberStyles.None,
+            System.Globalization.CultureInfo.InvariantCulture,
+            out planNumber);
+        if (hasPlanNumber == false || planNumber < FIRST_ADDITIONAL_PLAN_NUMBER)
+        {
+            return null;
+        }
+
+        return termPlanName
+            + "("
+            + planNumber.ToString(System.Globalization.CultureInfo.InvariantCulture)
+            + ")";
     }
 
     private static int readSchemaVersion(JsonElement element)
@@ -293,7 +410,9 @@ public sealed partial class PlanningWorkspaceJsonCodec
             expectedPropertyNames);
         PlanId planId = readPlanId(properties["id"], "plan.id");
         PlanName planName = new PlanName(readString(properties["name"], "plan.name"));
-        PlanCatalogBinding catalogBinding = readCatalogBinding(properties["catalog"]);
+        PlanCatalogBinding catalogBinding = readCatalogBinding(
+            properties["catalog"],
+            "plan.catalog");
         IReadOnlyList<CourseChoiceGroup> courseChoiceGroups;
         if (schemaVersion >= COURSE_CHOICE_GROUP_SCHEMA_VERSION)
         {
@@ -323,7 +442,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         }
 
         ScheduleRecommendationBookmark? lastViewedRecommendationOrNull = null;
-        if (schemaVersion == CURRENT_SCHEMA_VERSION)
+        if (schemaVersion >= RECOMMENDATION_BOOKMARK_SCHEMA_VERSION)
         {
             lastViewedRecommendationOrNull = readLastViewedRecommendationOrNull(
                 properties["lastViewedRecommendation"]);
@@ -411,11 +530,13 @@ public sealed partial class PlanningWorkspaceJsonCodec
         return timeRanges.AsReadOnly();
     }
 
-    private static PlanCatalogBinding readCatalogBinding(JsonElement element)
+    private static PlanCatalogBinding readCatalogBinding(
+        JsonElement element,
+        string context)
     {
         Dictionary<string, JsonElement> properties = readExactObject(
             element,
-            "plan.catalog",
+            context,
             new string[]
             {
                 "catalogId",
@@ -425,18 +546,18 @@ public sealed partial class PlanningWorkspaceJsonCodec
                 "artifactSha256",
             });
         CatalogId catalogId = new CatalogId(
-            readString(properties["catalogId"], "plan.catalog.catalogId"));
+            readString(properties["catalogId"], context + ".catalogId"));
         InstitutionId institutionId = new InstitutionId(
-            readString(properties["institutionId"], "plan.catalog.institutionId"));
+            readString(properties["institutionId"], context + ".institutionId"));
         AcademicTerm term = AcademicTerm.Parse(
-            readString(properties["term"], "plan.catalog.term"));
+            readString(properties["term"], context + ".term"));
         CatalogRevision revision = new CatalogRevision(
-            readInt32(properties["revision"], "plan.catalog.revision"));
+            readInt32(properties["revision"], context + ".revision"));
         CatalogArtifactSha256 artifactSha256 =
             new CatalogArtifactSha256(
                 readString(
                     properties["artifactSha256"],
-                    "plan.catalog.artifactSha256"));
+                    context + ".artifactSha256"));
         return new PlanCatalogBinding(
             catalogId,
             institutionId,
@@ -520,6 +641,16 @@ public sealed partial class PlanningWorkspaceJsonCodec
         }
 
         return new PlanId(parsedValue);
+    }
+
+    private static PlanId? readOptionalPlanId(JsonElement element, string context)
+    {
+        if (element.ValueKind == JsonValueKind.Null)
+        {
+            return null;
+        }
+
+        return readPlanId(element, context);
     }
 
     private static PersonalScheduleId readPersonalScheduleId(
@@ -682,6 +813,36 @@ public sealed partial class PlanningWorkspaceJsonCodec
         }
 
         return details.LocationOrNull.Value;
+    }
+
+    private static void writeCatalogBinding(
+        Utf8JsonWriter writer,
+        string propertyName,
+        PlanCatalogBinding catalogBinding)
+    {
+        writer.WriteStartObject(propertyName);
+        writer.WriteString("catalogId", catalogBinding.CatalogId.Value);
+        writer.WriteString("institutionId", catalogBinding.InstitutionId.Value);
+        writer.WriteString("term", catalogBinding.Term.Id);
+        writer.WriteNumber("revision", catalogBinding.Revision.Value);
+        writer.WriteString(
+            "artifactSha256",
+            catalogBinding.ArtifactSha256.HexValue);
+        writer.WriteEndObject();
+    }
+
+    private static void writeOptionalPlanId(
+        Utf8JsonWriter writer,
+        string propertyName,
+        PlanId? planIdOrNull)
+    {
+        if (planIdOrNull.HasValue == false)
+        {
+            writer.WriteNull(propertyName);
+            return;
+        }
+
+        writer.WriteString(propertyName, planIdOrNull.Value.ToString());
     }
 
     private static void writeOptionalString(

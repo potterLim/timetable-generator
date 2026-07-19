@@ -29,13 +29,7 @@ public static class PlanningWorkspaceCatalogRebinder
 
         requireBindingMatchesCatalog(newCatalog, newBinding);
 
-        if (hasMixedCatalogBindings(workspace))
-        {
-            return PlanningWorkspaceCatalogRebindResult.createFailure(
-                EPlanningWorkspaceCatalogRebindStatus.MixedCatalogBindings);
-        }
-
-        PlanCatalogBinding currentBinding = workspace.Plans[0].CatalogBinding;
+        PlanCatalogBinding currentBinding = workspace.CatalogBinding;
         EPlanningCatalogTransitionStatus transitionStatus =
             PlanningCatalogTransitionPolicy.EvaluateTransition(
                 currentBinding,
@@ -62,7 +56,8 @@ public static class PlanningWorkspaceCatalogRebinder
 
         List<PlanningPlan> reboundPlans = createReboundPlans(workspace, newBinding);
         PlanningWorkspace reboundWorkspace = new PlanningWorkspace(
-            workspace.ActivePlanId,
+            newBinding,
+            workspace.ActivePlanIdOrNull,
             reboundPlans);
         return PlanningWorkspaceCatalogRebindResult.createRebound(reboundWorkspace);
     }
@@ -107,20 +102,6 @@ public static class PlanningWorkspaceCatalogRebinder
                     transitionStatus,
                     "Unknown catalog transition status.");
         }
-    }
-
-    private static bool hasMixedCatalogBindings(PlanningWorkspace workspace)
-    {
-        PlanCatalogBinding firstBinding = workspace.Plans[0].CatalogBinding;
-        foreach (PlanningPlan plan in workspace.Plans)
-        {
-            if (plan.CatalogBinding != firstBinding)
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private static Dictionary<CourseId, CatalogCourse> createCoursesById(

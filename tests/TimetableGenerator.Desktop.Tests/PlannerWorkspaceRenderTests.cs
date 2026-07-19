@@ -78,7 +78,7 @@ public sealed class PlannerWorkspaceRenderTests
     }
 
     [AvaloniaFact]
-    public async Task PlanCloseDialogRendersToPngAsync()
+    public async Task PlanDeleteConfirmationRendersInLightAndDarkThemesAsync()
     {
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         await workspace.RecommendationRefreshTask;
@@ -91,15 +91,103 @@ public sealed class PlannerWorkspaceRenderTests
 
         try
         {
+            window.RequestedThemeVariant = ThemeVariant.Light;
             window.Show();
             workspace.Plans[1].CloseCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
 
-            saveRenderedFrame(window, "plan-close-dialog-1487x1058.png");
+            saveRenderedFrame(
+                window,
+                "plan-delete-confirmation-light-1487x1058.png");
+
+            window.RequestedThemeVariant = ThemeVariant.Dark;
+            Dispatcher.UIThread.RunJobs();
+            saveRenderedFrame(
+                window,
+                "plan-delete-confirmation-dark-1487x1058.png");
         }
         finally
         {
             window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task PlanClearConfirmationRendersInLightAndDarkThemesAsync()
+    {
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+        await workspace.RecommendationRefreshTask;
+        ProductShellViewModel shell = PlannerWorkspaceTestFactory.CreateShell(workspace);
+        MainWindow window = new MainWindow(
+            shell,
+            ProductAppearanceTestFactory.CreateViewModel());
+        window.Width = REFERENCE_WIDTH;
+        window.Height = REFERENCE_HEIGHT;
+
+        try
+        {
+            window.RequestedThemeVariant = ThemeVariant.Light;
+            window.Show();
+            Assert.True(workspace.BeginClearActivePlanCommand.CanExecute(null));
+            workspace.BeginClearActivePlanCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            saveRenderedFrame(
+                window,
+                "plan-clear-confirmation-light-1487x1058.png");
+
+            window.RequestedThemeVariant = ThemeVariant.Dark;
+            Dispatcher.UIThread.RunJobs();
+            saveRenderedFrame(
+                window,
+                "plan-clear-confirmation-dark-1487x1058.png");
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task EmptyWorkspaceRendersInLightAndDarkThemesAsync()
+    {
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+        await workspace.RecommendationRefreshTask;
+        ProductShellViewModel shell = PlannerWorkspaceTestFactory.CreateShell(workspace);
+        MainWindow window = new MainWindow(
+            shell,
+            ProductAppearanceTestFactory.CreateViewModel());
+        window.Width = REFERENCE_WIDTH;
+        window.Height = REFERENCE_HEIGHT;
+
+        try
+        {
+            window.RequestedThemeVariant = ThemeVariant.Light;
+            window.Show();
+            while (workspace.Plans.Count > 0)
+            {
+                workspace.Plans[0].CloseCommand.Execute(null);
+                workspace.ConfirmDeletePlanCommand.Execute(null);
+            }
+
+            Dispatcher.UIThread.RunJobs();
+            Assert.True(workspace.IsWorkspaceEmpty);
+            saveRenderedFrame(
+                window,
+                "empty-workspace-light-1487x1058.png");
+
+            window.RequestedThemeVariant = ThemeVariant.Dark;
+            Dispatcher.UIThread.RunJobs();
+            saveRenderedFrame(
+                window,
+                "empty-workspace-dark-1487x1058.png");
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
         }
     }
 

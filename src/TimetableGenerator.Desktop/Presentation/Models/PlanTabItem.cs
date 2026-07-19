@@ -10,8 +10,6 @@ namespace TimetableGenerator.Desktop.Presentation.Models;
 
 internal sealed class PlanTabItem
 {
-    private readonly EPlanCloseAvailability mCloseAvailability;
-
     public PlanningPlan Plan { get; }
 
     public PlanId PlanId
@@ -50,12 +48,7 @@ internal sealed class PlanTabItem
     {
         get
         {
-            if (CanClose)
-            {
-                return "계획 삭제";
-            }
-
-            return "마지막 계획은 닫을 수 없습니다";
+            return "계획 삭제";
         }
     }
 
@@ -63,7 +56,7 @@ internal sealed class PlanTabItem
     {
         get
         {
-            return mCloseAvailability == EPlanCloseAvailability.Available;
+            return true;
         }
     }
 
@@ -187,7 +180,6 @@ internal sealed class PlanTabItem
     public PlanTabItem(
         PlanningPlan plan,
         CourseCatalogProjection catalogProjection,
-        EPlanCloseAvailability closeAvailability,
         Action<PlanTabItem> requestRenamePlan,
         Action<PlanTabItem> requestClosePlan)
     {
@@ -201,11 +193,6 @@ internal sealed class PlanTabItem
             throw new ArgumentNullException(nameof(catalogProjection));
         }
 
-        if (Enum.IsDefined(typeof(EPlanCloseAvailability), closeAvailability) == false)
-        {
-            throw new ArgumentOutOfRangeException(nameof(closeAvailability));
-        }
-
         if (requestClosePlan == null)
         {
             throw new ArgumentNullException(nameof(requestClosePlan));
@@ -217,7 +204,6 @@ internal sealed class PlanTabItem
         }
 
         Plan = plan;
-        mCloseAvailability = closeAvailability;
         RenameCommand = new DelegateCommand(
             delegate
             {

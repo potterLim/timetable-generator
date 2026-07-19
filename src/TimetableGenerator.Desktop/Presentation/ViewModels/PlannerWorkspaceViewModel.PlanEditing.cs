@@ -16,7 +16,7 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private readonly DelegateCommand mBeginClearActivePlanCommand;
 
-    private PlanTabItem mActivePlan;
+    private PlanTabItem? mActivePlanOrNull;
 
     private PlanTabItem? mPlanBeingRenamedOrNull;
 
@@ -36,11 +36,39 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return mActivePlan;
+            return getRequiredActivePlanItem();
         }
         set
         {
             activatePlan(value);
+        }
+    }
+
+    public PlanTabItem? ActivePlanOrNull
+    {
+        get
+        {
+            return mActivePlanOrNull;
+        }
+        set
+        {
+            activatePlan(value);
+        }
+    }
+
+    public bool HasActivePlan
+    {
+        get
+        {
+            return mActivePlanOrNull != null;
+        }
+    }
+
+    public bool IsWorkspaceEmpty
+    {
+        get
+        {
+            return HasActivePlan == false;
         }
     }
 
@@ -78,6 +106,29 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
+    public string PlanEditingDialogAccessibleName
+    {
+        get
+        {
+            if (IsRenamingPlan)
+            {
+                return "시간표 이름 변경";
+            }
+
+            if (IsDeletePlanConfirmationVisible)
+            {
+                return "계획 삭제 확인";
+            }
+
+            if (IsClearActivePlanConfirmationVisible)
+            {
+                return "시간표 비우기 확인";
+            }
+
+            return "시간표 편집";
+        }
+    }
+
     public bool IsWorkspaceInteractionEnabled
     {
         get
@@ -110,8 +161,9 @@ internal sealed partial class PlannerWorkspaceViewModel
                 return string.Empty;
             }
 
-            return "‘" + mPlanPendingDeletionOrNull.DisplayName
-                + "’ 계획을 삭제합니다.";
+            return "삭제할 계획: ‘"
+                + mPlanPendingDeletionOrNull.DisplayName
+                + "’";
         }
     }
 
@@ -183,7 +235,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return Plans.Count > 1;
+            return HasActivePlan;
         }
     }
 
@@ -191,7 +243,8 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return ActivePlan.IsCompletelyEmpty == false;
+            return mActivePlanOrNull != null
+                && mActivePlanOrNull.IsCompletelyEmpty == false;
         }
     }
 
@@ -233,10 +286,10 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     public ICommand CancelClearActivePlanCommand { get; }
 
-    private void activatePlan(PlanTabItem plan)
+    private void activatePlan(PlanTabItem? planOrNull)
     {
         throwIfDisposed();
-        if (plan == null)
+        if (planOrNull == null)
         {
             return;
         }
@@ -246,18 +299,19 @@ internal sealed partial class PlannerWorkspaceViewModel
             return;
         }
 
-        if (ReferenceEquals(mActivePlan, plan))
+        if (ReferenceEquals(mActivePlanOrNull, planOrNull))
         {
             return;
         }
 
-        requirePlanItem(plan);
+        requirePlanItem(planOrNull);
         closePersonalScheduleEditingState();
         closeCourseChoiceEditingState();
         closePlanEditingState();
-        mSession.ActivatePlan(plan.PlanId);
-        mActivePlan = plan;
+        mSession.ActivatePlan(planOrNull.PlanId);
+        mActivePlanOrNull = planOrNull;
         raisePropertyChanged(nameof(ActivePlan));
+        raisePropertyChanged(nameof(ActivePlanOrNull));
         notifyClearActivePlanAvailabilityChanged();
         afterWorkspaceMutation();
     }
@@ -279,7 +333,10 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private void beginRenamePlan()
     {
-        beginRenamePlan(ActivePlan);
+        if (mActivePlanOrNull != null)
+        {
+            beginRenamePlan(mActivePlanOrNull);
+        }
     }
 
     private void beginRenamePlan(PlanTabItem plan)
@@ -345,18 +402,16 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private void beginDeletePlan()
     {
-        requestClosePlan(ActivePlan);
+        if (mActivePlanOrNull != null)
+        {
+            requestClosePlan(mActivePlanOrNull);
+        }
     }
 
     private void requestClosePlan(PlanTabItem plan)
     {
         throwIfDisposed();
         requirePlanItem(plan);
-        if (Plans.Count <= 1)
-        {
-            return;
-        }
-
         hideRenamePlanEditor();
         clearPlanPendingClear();
         mPlanPendingDeletionOrNull = plan;
@@ -367,11 +422,13 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         throwIfDisposed();
         PlanTabItem? planPendingDeletionOrNull = mPlanPendingDeletionOrNull;
-        if (planPendingDeletionOrNull == null || Plans.Count <= 1)
+        if (planPendingDeletionOrNull == null)
         {
             return;
         }
 
+        closePersonalScheduleEditingState();
+        closeCourseChoiceEditingState();
         mSession.RemovePlan(planPendingDeletionOrNull.PlanId);
         clearPlanPendingDeletion();
         rebuildPlanItemsAndNotify();
@@ -398,7 +455,7 @@ internal sealed partial class PlannerWorkspaceViewModel
 
         hideRenamePlanEditor();
         clearPlanPendingDeletion();
-        mPlanPendingClearOrNull = ActivePlan;
+        mPlanPendingClearOrNull = getRequiredActivePlanItem();
         raisePlanEditingStateChanged();
     }
 
@@ -407,7 +464,8 @@ internal sealed partial class PlannerWorkspaceViewModel
         throwIfDisposed();
         PlanTabItem? planPendingClearOrNull = mPlanPendingClearOrNull;
         if (planPendingClearOrNull == null
-            || planPendingClearOrNull.PlanId != ActivePlan.PlanId)
+            || mActivePlanOrNull == null
+            || planPendingClearOrNull.PlanId != mActivePlanOrNull.PlanId)
         {
             return;
         }
@@ -437,25 +495,24 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private void rebuildPlanItemsAndNotify()
     {
+        bool previouslyHadActivePlan = mActivePlanOrNull != null;
         rebuildPlanItems();
-        mActivePlan = findPlanItem(mSession.Workspace.ActivePlanId);
-        mPlanNameDraft = mActivePlan.DisplayName;
+        mActivePlanOrNull = findPlanItemOrNull(
+            mSession.Workspace.ActivePlanIdOrNull);
+        mPlanNameDraft = mActivePlanOrNull?.DisplayName ?? string.Empty;
         raisePropertyChanged(nameof(ActivePlan));
+        raisePropertyChanged(nameof(ActivePlanOrNull));
+        raisePropertyChanged(nameof(HasActivePlan));
+        raisePropertyChanged(nameof(IsWorkspaceEmpty));
         raisePropertyChanged(nameof(PlanNameDraft));
         raisePropertyChanged(nameof(CanDeleteActivePlan));
         mBeginDeletePlanCommand.NotifyCanExecuteChanged();
         notifyClearActivePlanAvailabilityChanged();
+        updatePaneStateAfterPlanCollectionChanged(previouslyHadActivePlan);
     }
 
     private void rebuildPlanItems()
     {
-        EPlanCloseAvailability closeAvailability =
-            EPlanCloseAvailability.Unavailable;
-        if (mSession.Workspace.Plans.Count > 1)
-        {
-            closeAvailability = EPlanCloseAvailability.Available;
-        }
-
         mIsRebuildingPlanItems = true;
         try
         {
@@ -465,7 +522,6 @@ internal sealed partial class PlannerWorkspaceViewModel
                 Plans.Add(new PlanTabItem(
                     plan,
                     mCatalogProjection,
-                    closeAvailability,
                     beginRenamePlan,
                     requestClosePlan));
             }
@@ -476,11 +532,16 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
-    private PlanTabItem findPlanItem(PlanId planId)
+    private PlanTabItem? findPlanItemOrNull(PlanId? planIdOrNull)
     {
+        if (planIdOrNull.HasValue == false)
+        {
+            return null;
+        }
+
         foreach (PlanTabItem plan in Plans)
         {
-            if (plan.PlanId == planId)
+            if (plan.PlanId == planIdOrNull.Value)
             {
                 return plan;
             }
@@ -488,6 +549,17 @@ internal sealed partial class PlannerWorkspaceViewModel
 
         throw new InvalidOperationException(
             "The active planning session plan was not projected for the UI.");
+    }
+
+    private PlanTabItem getRequiredActivePlanItem()
+    {
+        if (mActivePlanOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The workspace does not currently contain an active plan.");
+        }
+
+        return mActivePlanOrNull;
     }
 
     private void requirePlanItem(PlanTabItem plan)
@@ -574,6 +646,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         raisePropertyChanged(nameof(IsClearActivePlanConfirmationVisible));
         raisePropertyChanged(nameof(IsPlanEditingOverlayVisible));
         raisePropertyChanged(nameof(IsWorkspaceInteractionEnabled));
+        raisePropertyChanged(nameof(PlanEditingDialogAccessibleName));
         raisePropertyChanged(nameof(PlanPendingDeletionName));
         raisePropertyChanged(nameof(PlanDeletionDescription));
         raisePropertyChanged(nameof(PlanPendingClearName));

@@ -140,7 +140,7 @@ public sealed class PlanningWorkspaceSessionTests
     {
         CourseCatalog catalog = createCatalog();
         PlanningWorkspaceSession session = createEmptySession(catalog);
-        PlanId firstPlanId = session.Workspace.ActivePlanId;
+        PlanId firstPlanId = session.Workspace.ActivePlanIdOrNull!.Value;
         PlanName firstPlanName = session.Workspace.GetActivePlan().Name;
         session.AddPersonalSchedule(createPersonalSchedule(
             PersonalScheduleId.CreateNew(),
@@ -155,7 +155,7 @@ public sealed class PlanningWorkspaceSessionTests
         PlanningWorkspace result = session.ClearActivePlanContent();
 
         PlanningPlan clearedPlan = result.GetActivePlan();
-        Assert.AreEqual(secondPlanId, result.ActivePlanId);
+        Assert.AreEqual(secondPlanId, result.ActivePlanIdOrNull);
         Assert.AreEqual(secondPlanId, clearedPlan.Id);
         Assert.AreEqual("둘째 계획", clearedPlan.Name.Value);
         Assert.IsEmpty(clearedPlan.CourseChoiceGroups);
@@ -209,6 +209,7 @@ public sealed class PlanningWorkspaceSessionTests
             Array.Empty<CourseChoiceGroup>(),
             Array.Empty<UnscheduledOfferingSelection>());
         PlanningWorkspace workspace = new PlanningWorkspace(
+            plan.CatalogBinding,
             plan.Id,
             new PlanningPlan[] { plan });
 
@@ -217,33 +218,55 @@ public sealed class PlanningWorkspaceSessionTests
     }
 
     [TestMethod]
-    public void ConstructorRejectsMixedArtifactBindingsAtSameRevision()
+    public void AddPlanSucceedsWhenTheWorkspaceHasNoPlans()
     {
         CourseCatalog catalog = createCatalog();
-        PlanningPlan firstPlan = ScheduleRecommendationTestData.CreatePlan(
-            catalog,
-            Array.Empty<CourseChoiceGroup>(),
-            Array.Empty<UnscheduledOfferingSelection>());
-        PlanCatalogBinding changedArtifactBinding = new PlanCatalogBinding(
+        PlanCatalogBinding binding = new PlanCatalogBinding(
             catalog.Id,
             catalog.InstitutionId,
             catalog.Term,
             catalog.Revision,
-            new CatalogArtifactSha256(new string('b', 64)));
-        PlanningPlan secondPlan = new PlanningPlan(
-            PlanId.CreateNew(),
-            new PlanName("둘째 시간표"),
-            changedArtifactBinding,
-            new PlanningPlanContent(
-                Array.Empty<CourseChoiceGroup>(),
-                Array.Empty<UnscheduledOfferingSelection>(),
-                Array.Empty<PersonalSchedule>()));
+            new CatalogArtifactSha256(new string('a', 64)));
         PlanningWorkspace workspace = new PlanningWorkspace(
-            firstPlan.Id,
-            new PlanningPlan[] { firstPlan, secondPlan });
+            binding,
+            null,
+            Array.Empty<PlanningPlan>());
+        PlanningWorkspaceSession session = new PlanningWorkspaceSession(
+            catalog,
+            workspace);
+        PlanId addedPlanId = PlanId.CreateNew();
 
-        Assert.ThrowsExactly<ArgumentException>(
-            () => new PlanningWorkspaceSession(catalog, workspace));
+        PlanningWorkspace result = session.AddPlan(
+            addedPlanId,
+            new PlanName("새 시간표"));
+
+        Assert.AreSame(binding, result.CatalogBinding);
+        Assert.AreEqual(addedPlanId, result.ActivePlanIdOrNull);
+        Assert.HasCount(1, result.Plans);
+        Assert.AreEqual("새 시간표", result.GetActivePlan().Name.Value);
+    }
+
+    [TestMethod]
+    public void ActivePlanOperationRejectsWhenTheWorkspaceHasNoPlans()
+    {
+        CourseCatalog catalog = createCatalog();
+        PlanCatalogBinding binding = new PlanCatalogBinding(
+            catalog.Id,
+            catalog.InstitutionId,
+            catalog.Term,
+            catalog.Revision,
+            new CatalogArtifactSha256(new string('a', 64)));
+        PlanningWorkspace workspace = new PlanningWorkspace(
+            binding,
+            null,
+            Array.Empty<PlanningPlan>());
+        PlanningWorkspaceSession session = new PlanningWorkspaceSession(
+            catalog,
+            workspace);
+
+        Assert.ThrowsExactly<InvalidOperationException>(
+            () => session.ClearActivePlanContent());
+        Assert.AreSame(workspace, session.Workspace);
     }
 
     [TestMethod]
@@ -299,6 +322,7 @@ public sealed class PlanningWorkspaceSessionTests
             Array.Empty<UnscheduledOfferingSelection>(),
             new PersonalSchedule[] { blockingSchedule });
         PlanningWorkspace workspace = new PlanningWorkspace(
+            plan.CatalogBinding,
             plan.Id,
             new PlanningPlan[] { plan });
 
@@ -356,6 +380,7 @@ public sealed class PlanningWorkspaceSessionTests
             Array.Empty<CourseChoiceGroup>(),
             Array.Empty<UnscheduledOfferingSelection>());
         PlanningWorkspace workspace = new PlanningWorkspace(
+            plan.CatalogBinding,
             plan.Id,
             new PlanningPlan[] { plan });
         return new PlanningWorkspaceSession(catalog, workspace);

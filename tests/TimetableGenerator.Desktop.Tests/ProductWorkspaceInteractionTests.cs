@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Avalonia;
@@ -21,6 +22,7 @@ using FluentIcons.Avalonia;
 using TimetableGenerator.Desktop.Presentation.Layout;
 using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
+using TimetableGenerator.Desktop.Tests.Storage;
 using TimetableGenerator.Desktop.Views;
 
 using Xunit;
@@ -81,10 +83,13 @@ public sealed class ProductWorkspaceInteractionTests
             Assert.False(workspaceSurface.IsEnabled);
             Assert.Equal(requestedPlanName, workspace.PlanPendingDeletionName);
             Assert.Equal(
-                "‘" + requestedPlanName + "’ 계획을 삭제합니다.",
+                "삭제할 계획: ‘" + requestedPlanName + "’",
                 workspace.PlanDeletionDescription);
             Assert.True(cancelButton.IsKeyboardFocusWithin);
             Assert.Equal(new Thickness(32.0), editingDialog.Padding);
+            Assert.Equal(
+                "계획 삭제 확인",
+                AutomationProperties.GetName(editingDialog));
             Assert.Equal(HorizontalAlignment.Center, iconSurface.HorizontalAlignment);
             Assert.Equal("계획을 삭제할까요?", heading.Text);
             Assert.Equal(TextAlignment.Center, heading.TextAlignment);
@@ -609,7 +614,7 @@ public sealed class ProductWorkspaceInteractionTests
     }
 
     [AvaloniaFact]
-    public void LastPlanHidesItsUnavailableCloseAction()
+    public void LastPlanDeletionShowsTheEmptyWorkspaceAndCreationAction()
     {
         PlannerWorkspaceViewModel workspace =
             PlannerWorkspaceTestFactory.CreateWorkspace();
@@ -632,9 +637,9 @@ public sealed class ProductWorkspaceInteractionTests
                         candidate.Command,
                         workspace.ActivePlan.CloseCommand));
 
-            Assert.False(closeButton.IsVisible);
-            Assert.False(closeButton.IsEnabled);
-            Assert.False(closeButton.Command?.CanExecute(null));
+            Assert.True(closeButton.IsVisible);
+            Assert.True(closeButton.IsEnabled);
+            Assert.True(closeButton.Command?.CanExecute(null));
             Assert.Equal(
                 workspace.ActivePlan.CloseButtonAccessibleName,
                 AutomationProperties.GetName(closeButton));
@@ -644,6 +649,159 @@ public sealed class ProductWorkspaceInteractionTests
             Assert.Equal(
                 workspace.ActivePlan.CloseButtonHelpText,
                 ToolTip.GetTip(closeButton));
+
+            closeButton.Command?.Execute(null);
+            workspace.ConfirmDeletePlanCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            Border emptyWorkspaceState = findRequiredControl<Border>(
+                host,
+                "EmptyWorkspaceState");
+            Border planNavigationBar = findRequiredControl<Border>(
+                host,
+                "PlanNavigationBar");
+            SplitView planningWorkspaceContent = findRequiredControl<SplitView>(
+                host,
+                "PlanningWorkspaceContent");
+            Button createFirstPlanButton = findRequiredControl<Button>(
+                host,
+                "CreateFirstPlanButton");
+
+            Assert.Empty(workspace.Plans);
+            Assert.Null(workspace.ActivePlanOrNull);
+            Assert.False(workspace.HasActivePlan);
+            Assert.True(workspace.IsWorkspaceEmpty);
+            Assert.True(emptyWorkspaceState.IsEffectivelyVisible);
+            Assert.False(planNavigationBar.IsVisible);
+            Assert.False(planningWorkspaceContent.IsVisible);
+            Assert.True(createFirstPlanButton.IsEffectivelyVisible);
+            Assert.True(createFirstPlanButton.IsKeyboardFocusWithin);
+            Assert.Equal(
+                "새 시간표 만들기",
+                AutomationProperties.GetName(createFirstPlanButton));
+
+            createFirstPlanButton.Command?.Execute(null);
+
+            PlanTabItem createdPlan = Assert.Single(workspace.Plans);
+            Assert.Same(createdPlan, workspace.ActivePlan);
+            Assert.Equal("2026-2학기 시간표", createdPlan.DisplayName);
+            Assert.True(workspace.HasActivePlan);
+            Assert.False(workspace.IsWorkspaceEmpty);
+            Assert.True(planNavigationBar.IsVisible);
+            Assert.True(workspace.IsRenamingPlan);
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
+    public void WorkspaceWithoutPlansStartsInTheEmptyExperience()
+    {
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspaceWithoutPlans();
+        ProductWorkspaceHostView host = new ProductWorkspaceHostView();
+        host.DataContext = workspace;
+        Window window = createWindow(host, 1_280.0);
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Border emptyWorkspaceState = findRequiredControl<Border>(
+                host,
+                "EmptyWorkspaceState");
+            Border planNavigationBar = findRequiredControl<Border>(
+                host,
+                "PlanNavigationBar");
+            SplitView planningWorkspaceContent = findRequiredControl<SplitView>(
+                host,
+                "PlanningWorkspaceContent");
+            Button createFirstPlanButton = findRequiredControl<Button>(
+                host,
+                "CreateFirstPlanButton");
+
+            Assert.Empty(workspace.Plans);
+            Assert.Null(workspace.ActivePlanOrNull);
+            Assert.True(workspace.IsWorkspaceEmpty);
+            Assert.True(emptyWorkspaceState.IsEffectivelyVisible);
+            Assert.False(planNavigationBar.IsVisible);
+            Assert.False(planningWorkspaceContent.IsVisible);
+            Assert.True(createFirstPlanButton.IsEffectivelyVisible);
+
+            createFirstPlanButton.Command?.Execute(null);
+
+            PlanTabItem createdPlan = Assert.Single(workspace.Plans);
+            Assert.Equal("2026-2학기 시간표", createdPlan.DisplayName);
+            Assert.Same(createdPlan, workspace.ActivePlan);
+            Assert.True(planNavigationBar.IsVisible);
+            Assert.True(workspace.IsRenamingPlan);
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task EmptyWorkspaceKeepsAutosaveFailureRecoveryVisibleAsync()
+    {
+        ControlledPlanningWorkspaceStore store =
+            new ControlledPlanningWorkspaceStore();
+        ControlledSaveAttempt creationSaveAttempt = new ControlledSaveAttempt();
+        ControlledSaveAttempt deletionSaveAttempt = new ControlledSaveAttempt();
+        ControlledSaveAttempt retrySaveAttempt = new ControlledSaveAttempt();
+        store.EnqueueSaveAttempt(creationSaveAttempt);
+        store.EnqueueSaveAttempt(deletionSaveAttempt);
+        store.EnqueueSaveAttempt(retrySaveAttempt);
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspaceWithoutPlans(store);
+        ProductWorkspaceHostView host = new ProductWorkspaceHostView();
+        host.DataContext = workspace;
+        Window window = createWindow(host, 1_280.0);
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            Button createFirstPlanButton = findRequiredControl<Button>(
+                host,
+                "CreateFirstPlanButton");
+            createFirstPlanButton.Command?.Execute(null);
+            await creationSaveAttempt.WaitForStartAsync();
+            creationSaveAttempt.CompleteSuccessfully();
+            await workspace.FlushAutosaveAsync(CancellationToken.None);
+            workspace.CancelRenamePlanCommand.Execute(null);
+
+            workspace.ActivePlan.CloseCommand.Execute(null);
+            workspace.ConfirmDeletePlanCommand.Execute(null);
+            await deletionSaveAttempt.WaitForStartAsync();
+            deletionSaveAttempt.CompleteWithFailure(
+                new InvalidOperationException("Expected save failure."));
+            await workspace.FlushAutosaveAsync(CancellationToken.None);
+            Dispatcher.UIThread.RunJobs();
+
+            Button retryButton = findRequiredControl<Button>(
+                host,
+                "EmptyWorkspaceRetryAutosaveButton");
+            Assert.True(workspace.IsWorkspaceEmpty);
+            Assert.True(workspace.HasAutosaveError);
+            Assert.True(retryButton.IsEffectivelyVisible);
+            Assert.True(retryButton.IsEnabled);
+            Assert.Equal("저장 다시 시도", AutomationProperties.GetName(retryButton));
+
+            retryButton.Command?.Execute(null);
+            await retrySaveAttempt.WaitForStartAsync();
+            retrySaveAttempt.CompleteSuccessfully();
+            await workspace.FlushAutosaveAsync(CancellationToken.None);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(workspace.HasAutosaveError);
+            Assert.False(retryButton.IsVisible);
         }
         finally
         {

@@ -197,12 +197,22 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private void toggleCoursePane()
     {
+        if (HasActivePlan == false)
+        {
+            return;
+        }
+
         bool isOpeningCoursePane = IsCoursePaneOpen == false;
         IsCoursePaneOpen = isOpeningCoursePane;
     }
 
     private void openInspectorPane()
     {
+        if (HasActivePlan == false)
+        {
+            return;
+        }
+
         closeCoursePaneBeforeOpeningInspectorOverlay();
         IsInspectorPaneOpen = true;
     }
@@ -210,6 +220,23 @@ internal sealed partial class PlannerWorkspaceViewModel
     private void closeInspectorPane()
     {
         IsInspectorPaneOpen = false;
+    }
+
+    private void updatePaneStateAfterPlanCollectionChanged(
+        bool previouslyHadActivePlan)
+    {
+        if (HasActivePlan == false)
+        {
+            IsCoursePaneOpen = false;
+            IsInspectorPaneOpen = false;
+            return;
+        }
+
+        if (previouslyHadActivePlan == false)
+        {
+            IsCoursePaneOpen = LayoutMode != EWorkspaceLayoutMode.Compact;
+            IsInspectorPaneOpen = false;
+        }
     }
 
     private void configurePanePresentationForLayoutMode()

@@ -76,7 +76,7 @@ public sealed class PlanningWorkspaceSession
             throw new ArgumentNullException(nameof(name));
         }
 
-        PlanCatalogBinding binding = mWorkspace.GetActivePlan().CatalogBinding;
+        PlanCatalogBinding binding = mWorkspace.CatalogBinding;
         PlanningPlan plan = new PlanningPlan(
             planId,
             name,
@@ -105,7 +105,7 @@ public sealed class PlanningWorkspaceSession
     {
         mWorkspace = mEditor.ClearPlanContent(
             mWorkspace,
-            mWorkspace.ActivePlanId);
+            getRequiredActivePlanId());
         return mWorkspace;
     }
 
@@ -124,7 +124,7 @@ public sealed class PlanningWorkspaceSession
                     createCourseChoiceGroup(selection);
                 editedWorkspace = mEditor.AddCourseChoiceGroup(
                     mWorkspace,
-                    mWorkspace.ActivePlanId,
+                    getRequiredActivePlanId(),
                     courseChoiceGroup);
                 break;
             case EPlanningCourseSelectionKind.TimeNotProvidedOffering:
@@ -134,7 +134,7 @@ public sealed class PlanningWorkspaceSession
                         selection.GetTimeNotProvidedOfferingId());
                 editedWorkspace = mEditor.AddUnscheduledOfferingSelection(
                     mWorkspace,
-                    mWorkspace.ActivePlanId,
+                    getRequiredActivePlanId(),
                     unscheduledSelection);
                 break;
             default:
@@ -159,7 +159,7 @@ public sealed class PlanningWorkspaceSession
 
         PlanningWorkspace editedWorkspace = mEditor.AddCourseChoiceGroup(
             mWorkspace,
-            mWorkspace.ActivePlanId,
+            getRequiredActivePlanId(),
             courseChoiceGroup);
         validatePlan(editedWorkspace.GetActivePlan());
         mWorkspace = editedWorkspace;
@@ -176,7 +176,7 @@ public sealed class PlanningWorkspaceSession
 
         PlanningWorkspace editedWorkspace = mEditor.UpdateCourseChoiceGroup(
             mWorkspace,
-            mWorkspace.ActivePlanId,
+            getRequiredActivePlanId(),
             courseChoiceGroup);
         validatePlan(editedWorkspace.GetActivePlan());
         mWorkspace = editedWorkspace;
@@ -188,7 +188,7 @@ public sealed class PlanningWorkspaceSession
     {
         mWorkspace = mEditor.RemoveCourseChoiceGroup(
             mWorkspace,
-            mWorkspace.ActivePlanId,
+            getRequiredActivePlanId(),
             courseChoiceGroupId);
         return mWorkspace;
     }
@@ -197,7 +197,7 @@ public sealed class PlanningWorkspaceSession
     {
         mWorkspace = mEditor.RemoveCourse(
             mWorkspace,
-            mWorkspace.ActivePlanId,
+            getRequiredActivePlanId(),
             courseId);
         return mWorkspace;
     }
@@ -211,7 +211,7 @@ public sealed class PlanningWorkspaceSession
 
         mWorkspace = mEditor.AddPersonalSchedule(
             mWorkspace,
-            mWorkspace.ActivePlanId,
+            getRequiredActivePlanId(),
             personalSchedule);
         return mWorkspace;
     }
@@ -225,7 +225,7 @@ public sealed class PlanningWorkspaceSession
 
         mWorkspace = mEditor.UpdatePersonalSchedule(
             mWorkspace,
-            mWorkspace.ActivePlanId,
+            getRequiredActivePlanId(),
             personalSchedule);
         return mWorkspace;
     }
@@ -235,7 +235,7 @@ public sealed class PlanningWorkspaceSession
     {
         mWorkspace = mEditor.RemovePersonalSchedule(
             mWorkspace,
-            mWorkspace.ActivePlanId,
+            getRequiredActivePlanId(),
             personalScheduleId);
         return mWorkspace;
     }
@@ -250,7 +250,7 @@ public sealed class PlanningWorkspaceSession
 
         mWorkspace = mEditor.RememberLastViewedRecommendation(
             mWorkspace,
-            mWorkspace.ActivePlanId,
+            getRequiredActivePlanId(),
             recommendationBookmark);
         return mWorkspace;
     }
@@ -259,7 +259,7 @@ public sealed class PlanningWorkspaceSession
     {
         mWorkspace = mEditor.ForgetLastViewedRecommendation(
             mWorkspace,
-            mWorkspace.ActivePlanId);
+            getRequiredActivePlanId());
         return mWorkspace;
     }
 
@@ -269,7 +269,7 @@ public sealed class PlanningWorkspaceSession
     {
         ScheduleRecommendationRequest request = new ScheduleRecommendationRequest(
             mCatalog,
-            mWorkspace.GetActivePlan(),
+            getRequiredActivePlan(),
             recommendationLimit);
         return mRecommendationGenerator.GenerateRecommendations(
             request,
@@ -278,18 +278,39 @@ public sealed class PlanningWorkspaceSession
 
     private void validateWorkspace(PlanningWorkspace workspace)
     {
-        PlanCatalogBinding sharedBinding = workspace.Plans[0].CatalogBinding;
+        PlanCatalogBinding binding = workspace.CatalogBinding;
+        bool doesBindingMatchCatalog = binding.CatalogId == mCatalog.Id
+            && binding.InstitutionId == mCatalog.InstitutionId
+            && binding.Term == mCatalog.Term
+            && binding.Revision == mCatalog.Revision;
+        if (doesBindingMatchCatalog == false)
+        {
+            throw new ArgumentException(
+                "The planning workspace must match the session catalog.",
+                nameof(workspace));
+        }
+
         foreach (PlanningPlan plan in workspace.Plans)
         {
-            if (plan.CatalogBinding != sharedBinding)
-            {
-                throw new ArgumentException(
-                    "Every session plan must share one catalog artifact binding.",
-                    nameof(workspace));
-            }
-
             validatePlan(plan);
         }
+    }
+
+    private PlanId getRequiredActivePlanId()
+    {
+        PlanId? activePlanIdOrNull = mWorkspace.ActivePlanIdOrNull;
+        if (activePlanIdOrNull.HasValue == false)
+        {
+            throw new InvalidOperationException(
+                "This planning operation requires an active plan.");
+        }
+
+        return activePlanIdOrNull.Value;
+    }
+
+    private PlanningPlan getRequiredActivePlan()
+    {
+        return mWorkspace.GetActivePlan();
     }
 
     private static CourseChoiceGroup createCourseChoiceGroup(

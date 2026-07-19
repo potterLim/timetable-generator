@@ -132,6 +132,13 @@ internal sealed class ProductWorkspaceLoadResult
         PlanningWorkspace workspace)
     {
         PlanCatalogBinding packageBinding = catalogPackage.CreatePlanCatalogBinding();
+        if (workspace.CatalogBinding != packageBinding)
+        {
+            throw new ArgumentException(
+                "The loaded workspace must be bound to the loaded catalog.",
+                nameof(workspace));
+        }
+
         foreach (PlanningPlan plan in workspace.Plans)
         {
             PlanCatalogBinding binding = plan.CatalogBinding;

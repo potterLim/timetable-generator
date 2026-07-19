@@ -48,7 +48,7 @@ internal sealed class ProductCatalogUpdateService : IProductCatalogUpdateService
             throw new ArgumentNullException(nameof(workspaceSnapshot));
         }
 
-        PlanCatalogBinding activeBinding = requireActiveBinding(
+        PlanCatalogBinding activeBinding = requireWorkspaceBinding(
             activePackage,
             workspaceSnapshot);
         VerifiedCatalogPackage candidatePackage =
@@ -101,20 +101,11 @@ internal sealed class ProductCatalogUpdateService : IProductCatalogUpdateService
             candidatePackage.Entry.Revision);
     }
 
-    private static PlanCatalogBinding requireActiveBinding(
+    private static PlanCatalogBinding requireWorkspaceBinding(
         VerifiedCatalogPackage activePackage,
         PlanningWorkspace workspaceSnapshot)
     {
-        PlanCatalogBinding activeBinding = workspaceSnapshot.Plans[0].CatalogBinding;
-        foreach (PlanningPlan plan in workspaceSnapshot.Plans)
-        {
-            if (plan.CatalogBinding != activeBinding)
-            {
-                throw new ArgumentException(
-                    "Catalog update checks require one active catalog binding.",
-                    nameof(workspaceSnapshot));
-            }
-        }
+        PlanCatalogBinding activeBinding = workspaceSnapshot.CatalogBinding;
 
         EPlanningCatalogTransitionStatus activeTransitionStatus =
             PlanningCatalogTransitionPolicy.EvaluateTransition(
