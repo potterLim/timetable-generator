@@ -48,7 +48,10 @@ public sealed class WorkspaceEmptyStateTests
             PlanInspectorView planInspector =
                 findRequiredDescendant<PlanInspectorView>(host);
 
-            assertEmptyScheduleState(scheduleWorkspace);
+            assertEmptyScheduleState(
+                scheduleWorkspace,
+                "과목을 선택해 시간표를 구성해 보세요",
+                "과목을 선택하면 가능한 시간표를 자동으로 만듭니다.");
             assertEmptyInspectorState(planInspector);
 
             workspace.ActivePlan = workspace.Plans[0];
@@ -67,7 +70,10 @@ public sealed class WorkspaceEmptyStateTests
             await workspace.RecommendationRefreshTask;
             Dispatcher.UIThread.RunJobs();
 
-            assertEmptyScheduleState(scheduleWorkspace);
+            assertEmptyScheduleState(
+                scheduleWorkspace,
+                "시간표가 있는 과목이 없습니다",
+                "시간 미정 과목은 내 계획에 보관됩니다.");
             assertTimeNotProvidedInspectorState(planInspector);
         }
         finally
@@ -78,7 +84,9 @@ public sealed class WorkspaceEmptyStateTests
     }
 
     private static void assertEmptyScheduleState(
-        ScheduleWorkspaceView scheduleWorkspace)
+        ScheduleWorkspaceView scheduleWorkspace,
+        string expectedHeading,
+        string expectedDescription)
     {
         StackPanel recommendationActions = findRequiredControl<StackPanel>(
             scheduleWorkspace,
@@ -95,6 +103,12 @@ public sealed class WorkspaceEmptyStateTests
         Button openInspectorPane = findRequiredControl<Button>(
             scheduleWorkspace,
             "OpenInspectorPaneButton");
+        TextBlock heading = findRequiredControl<TextBlock>(
+            scheduleWorkspace,
+            "ScheduleEmptyStateHeading");
+        TextBlock description = findRequiredControl<TextBlock>(
+            scheduleWorkspace,
+            "ScheduleEmptyStateDescription");
 
         Assert.False(recommendationActions.IsVisible);
         Assert.False(scheduleBoardContainer.IsVisible);
@@ -102,6 +116,8 @@ public sealed class WorkspaceEmptyStateTests
         Assert.False(exportButton.IsEffectivelyVisible);
         Assert.False(exportButton.IsEnabled);
         Assert.True(openInspectorPane.IsEffectivelyVisible);
+        Assert.Equal(expectedHeading, heading.Text);
+        Assert.Equal(expectedDescription, description.Text);
     }
 
     private static void assertPopulatedScheduleState(
@@ -170,8 +186,10 @@ public sealed class WorkspaceEmptyStateTests
         Assert.Equal(TextAlignment.Center, heading.TextAlignment);
         Assert.Equal(TextAlignment.Center, description.TextAlignment);
         Assert.Equal(TextWrapping.Wrap, description.TextWrapping);
-        Assert.Equal("계획이 비어 있습니다", heading.Text);
-        Assert.Equal("과목을 추가해 시작하세요.", description.Text);
+        Assert.Equal("선택한 과목이 없습니다", heading.Text);
+        Assert.Equal(
+            "과목을 선택해 시간표를 구성해 보세요.",
+            description.Text);
         Assert.True(addPersonalScheduleButton.IsEffectivelyVisible);
         assertControlSharesHorizontalCenter(
             planInspector,

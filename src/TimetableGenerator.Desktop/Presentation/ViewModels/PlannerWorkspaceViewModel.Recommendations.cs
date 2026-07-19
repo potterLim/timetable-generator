@@ -215,7 +215,7 @@ internal sealed partial class PlannerWorkspaceViewModel
 
             if (ActivePlan.SelectedCourseCount == 0)
             {
-                return "과목을 추가해 시작하세요";
+                return "과목을 선택해 시간표를 구성해 보세요";
             }
 
             if (ActivePlan.CourseChoiceGroups.Count == 0)
@@ -238,7 +238,7 @@ internal sealed partial class PlannerWorkspaceViewModel
 
             if (ActivePlan.SelectedCourseCount == 0)
             {
-                return "과목을 추가하면 가능한 시간표를 자동으로 만듭니다.";
+                return "과목을 선택하면 가능한 시간표를 자동으로 만듭니다.";
             }
 
             if (ActivePlan.CourseChoiceGroups.Count == 0)
