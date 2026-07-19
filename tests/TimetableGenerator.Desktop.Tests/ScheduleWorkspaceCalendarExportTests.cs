@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.Layout;
 using Avalonia.Threading;
 
 using FluentIcons.Avalonia;
@@ -70,13 +71,16 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.Same(pngAction, menu.Items[0]);
             Assert.Same(appleAction, menu.Items[1]);
             Assert.Same(googleAction, menu.Items[2]);
+            menu.ShowAt(exportButton);
+            Dispatcher.UIThread.RunJobs();
             assertExportMenuItemPresentation(pngAction, Icon.Image);
             assertExportMenuItemPresentation(
                 appleAction,
-                Icon.CalendarEmpty);
+                Icon.CalendarMonth);
             assertExportMenuItemPresentation(
                 googleAction,
-                Icon.CalendarEmpty);
+                Icon.CalendarMonth);
+            menu.Hide();
             Assert.Equal(
                 "ExportPngImage",
                 AutomationProperties.GetAutomationId(pngAction));
@@ -216,6 +220,19 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.Same(
                 workspaceView.ExportAppleCalendarCommand,
                 appleAction.Command);
+            menu.ShowAt(exportButton);
+            Dispatcher.UIThread.RunJobs();
+            MenuItem pngAction = findRequiredMenuItem(
+                menu,
+                "ExportPngAction");
+            assertExportMenuItemPresentation(pngAction, Icon.Image);
+            assertExportMenuItemPresentation(
+                appleAction,
+                Icon.CalendarMonth);
+            assertExportMenuItemPresentation(
+                googleAction,
+                Icon.CalendarMonth);
+            menu.Hide();
 
             AsyncDelegateCommand command = Assert.IsType<AsyncDelegateCommand>(
                 workspaceView.ExportAppleCalendarCommand);
@@ -359,7 +376,17 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         Assert.Contains("export-menu-item", menuItem.Classes);
         FluentIcon icon = Assert.IsType<FluentIcon>(menuItem.Icon);
         Assert.Equal(expectedIcon, icon.Icon);
-        Assert.Equal(18.0, icon.FontSize);
+        Assert.Equal(IconVariant.Regular, icon.IconVariant);
+        Assert.Equal(IconSize.Size20, icon.IconSize);
+        Assert.Equal(20.0, icon.FontSize);
+        Assert.Equal(20.0, icon.Width);
+        Assert.Equal(20.0, icon.Height);
+        Assert.Equal(
+            HorizontalAlignment.Center,
+            icon.HorizontalAlignment);
+        Assert.Equal(
+            VerticalAlignment.Center,
+            icon.VerticalAlignment);
         Assert.Contains("export-menu-icon", icon.Classes);
     }
 

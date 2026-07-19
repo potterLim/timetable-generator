@@ -183,7 +183,8 @@
                       AutomationProperties.AccessibilityView="Raw"
                       Icon="Image"
                       IconVariant="Regular"
-                      FontSize="18" />
+                      IconSize="Size20"
+                      FontSize="20" />
                 </MenuItem.Icon>
               </MenuItem>
               <MenuItem
@@ -199,9 +200,10 @@
                   <icons:FluentIcon
                       Classes="export-menu-icon"
                       AutomationProperties.AccessibilityView="Raw"
-                      Icon="CalendarEmpty"
+                      Icon="CalendarMonth"
                       IconVariant="Regular"
-                      FontSize="18" />
+                      IconSize="Size20"
+                      FontSize="20" />
                 </MenuItem.Icon>
               </MenuItem>
               <MenuItem
@@ -216,9 +218,10 @@
                   <icons:FluentIcon
                       Classes="export-menu-icon"
                       AutomationProperties.AccessibilityView="Raw"
-                      Icon="CalendarEmpty"
+                      Icon="CalendarMonth"
                       IconVariant="Regular"
-                      FontSize="18" />
+                      IconSize="Size20"
+                      FontSize="20" />
                 </MenuItem.Icon>
               </MenuItem>
             </MenuFlyout>
