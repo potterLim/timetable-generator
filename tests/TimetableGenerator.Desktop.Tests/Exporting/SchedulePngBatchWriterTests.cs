@@ -34,10 +34,10 @@ public sealed class SchedulePngBatchWriterTests
         {
             Directory.CreateDirectory(Path.Combine(
                 parentDirectoryPath,
-                "2026-2학기 시간표 - 모든 시간표"));
+                "2026-2학기 시간표 - 가능한 시간표"));
             Directory.CreateDirectory(Path.Combine(
                 parentDirectoryPath,
-                "2026-2학기 시간표 - 모든 시간표 (2)"));
+                "2026-2학기 시간표 - 가능한 시간표 (2)"));
 
             using (SchedulePngBatchDirectory directory =
                 SchedulePngBatchDirectoryAllocator.createUnique(
@@ -46,7 +46,7 @@ public sealed class SchedulePngBatchWriterTests
                     CancellationToken.None))
             {
                 Assert.Equal(
-                    "2026-2학기 시간표 - 모든 시간표 (3)",
+                    "2026-2학기 시간표 - 가능한 시간표 (3)",
                     Path.GetFileName(directory.DirectoryPath));
             }
         }
@@ -65,7 +65,7 @@ public sealed class SchedulePngBatchWriterTests
             File.WriteAllText(
                 Path.Combine(
                     parentDirectoryPath,
-                    "2026-2학기 시간표 - 모든 시간표"),
+                    "2026-2학기 시간표 - 가능한 시간표"),
                 "preserve");
 
             using (SchedulePngBatchDirectory directory =
@@ -75,7 +75,7 @@ public sealed class SchedulePngBatchWriterTests
                     CancellationToken.None))
             {
                 Assert.Equal(
-                    "2026-2학기 시간표 - 모든 시간표 (2)",
+                    "2026-2학기 시간표 - 가능한 시간표 (2)",
                     Path.GetFileName(directory.DirectoryPath));
             }
         }
@@ -110,7 +110,7 @@ public sealed class SchedulePngBatchWriterTests
                     System.Text.Encoding.UTF8.GetByteCount(folderName)
                         <= 255);
                 Assert.EndsWith(
-                    " - 모든 시간표 (2)",
+                    " - 가능한 시간표 (2)",
                     folderName,
                     StringComparison.Ordinal);
             }

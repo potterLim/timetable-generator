@@ -14,7 +14,7 @@ internal static class SchedulePngFileNameFactory
 
     private const string FALLBACK_BASE_NAME = "시간표";
 
-    private const string BATCH_FOLDER_SUFFIX = " - 모든 시간표";
+    private const string BATCH_FOLDER_SUFFIX = " - 가능한 시간표";
 
     private const string PNG_EXTENSION = ".png";
 

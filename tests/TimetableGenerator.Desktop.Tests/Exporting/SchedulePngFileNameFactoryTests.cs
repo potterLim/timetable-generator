@@ -81,7 +81,7 @@ public sealed class SchedulePngFileNameFactoryTests
         string folderName =
             SchedulePngFileNameFactory.CreateBatchFolderName(planName);
 
-        Assert.Equal("2026-2-야간 - 모든 시간표", folderName);
+        Assert.Equal("2026-2-야간 - 가능한 시간표", folderName);
     }
 
     [Theory]
@@ -132,7 +132,7 @@ public sealed class SchedulePngFileNameFactoryTests
 
         Assert.True(Encoding.UTF8.GetByteCount(folderName) <= 255);
         Assert.True(Encoding.UTF8.GetByteCount(candidateFileName) <= 255);
-        Assert.EndsWith(" - 모든 시간표", folderName, StringComparison.Ordinal);
+        Assert.EndsWith(" - 가능한 시간표", folderName, StringComparison.Ordinal);
         Assert.EndsWith(" (24).png", candidateFileName, StringComparison.Ordinal);
     }
 
@@ -146,7 +146,7 @@ public sealed class SchedulePngFileNameFactoryTests
 
         Assert.True(Encoding.UTF8.GetByteCount(folderName) <= 255);
         Assert.EndsWith(
-            " - 모든 시간표 (2)",
+            " - 가능한 시간표 (2)",
             folderName,
             StringComparison.Ordinal);
     }

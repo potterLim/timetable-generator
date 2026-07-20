@@ -43,6 +43,8 @@ public sealed class ScheduleWorkspaceViewTests
 
     private static readonly ColorToken BORDER =
         new ColorToken("BorderBrush");
+    private static readonly ColorToken STRONG_BORDER =
+        new ColorToken("StrongBorderBrush");
     private static readonly ColorToken TEXT_SECONDARY =
         new ColorToken("TextSecondaryBrush");
     private static readonly ColorToken ACCENT =
@@ -711,15 +713,71 @@ public sealed class ScheduleWorkspaceViewTests
     }
 
     [AvaloniaFact]
-    public void PngExportSurfaceRetainsTheOuterRightBoundary()
+    public void ScheduleBoardUsesAContinuousOuterFrameInProductThemes()
+    {
+        ScheduleBoardView scheduleBoard = new ScheduleBoardView();
+        Window window = new Window();
+        window.Width = 800.0;
+        window.Height = 420.0;
+        window.Content = scheduleBoard;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Border? boardFrameOrNull = scheduleBoard.FindControl<Border>(
+                "BoardFrame");
+            Border? rightBoundaryOrNull = scheduleBoard.FindControl<Border>(
+                "BoardContentRightBoundary");
+            Assert.NotNull(boardFrameOrNull);
+            Assert.NotNull(rightBoundaryOrNull);
+            if (boardFrameOrNull == null || rightBoundaryOrNull == null)
+            {
+                throw new InvalidOperationException(
+                    "The timetable outer frame was not available.");
+            }
+
+            Assert.True(boardFrameOrNull.UseLayoutRounding);
+            Assert.Equal(new Thickness(1.0), boardFrameOrNull.BorderThickness);
+            Assert.Equal(new CornerRadius(7.0), boardFrameOrNull.CornerRadius);
+
+            ThemeVariant[] themeVariants = new ThemeVariant[]
+            {
+                ThemeVariant.Light,
+                ThemeVariant.Dark,
+            };
+            foreach (ThemeVariant themeVariant in themeVariants)
+            {
+                window.RequestedThemeVariant = themeVariant;
+                Dispatcher.UIThread.RunJobs();
+
+                SolidColorBrush expectedBrush = findRequiredThemeBrush(
+                    STRONG_BORDER,
+                    themeVariant);
+                SolidColorBrush frameBrush = Assert.IsType<SolidColorBrush>(
+                    boardFrameOrNull.BorderBrush);
+                SolidColorBrush rightBoundaryBrush =
+                    Assert.IsType<SolidColorBrush>(
+                        rightBoundaryOrNull.Background);
+                Assert.Equal(expectedBrush.Color, frameBrush.Color);
+                Assert.Equal(expectedBrush.Color, rightBoundaryBrush.Color);
+            }
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void PngExportSurfaceRetainsACompleteOuterFrame()
     {
         ScheduleBoardView scheduleBoard = ScheduleBoardView.createForPngExport();
         Border exportSurface = Assert.IsType<Border>(
             scheduleBoard.PngExportSurface);
 
-        Assert.Equal(
-            new Thickness(0.0, 0.0, 1.0, 0.0),
-            exportSurface.BorderThickness);
+        Assert.Equal(new Thickness(1.0), exportSurface.BorderThickness);
     }
 
     [AvaloniaFact]
@@ -863,7 +921,7 @@ public sealed class ScheduleWorkspaceViewTests
                 "시간표 내보내기",
                 AutomationProperties.GetName(exportButton));
             Assert.Equal(
-                "현재 시간표를 내보내거나 모든 후보를 PNG 이미지로 저장합니다.",
+                "현재 시간표를 내보내거나 가능한 시간표를 모두 PNG 이미지로 저장합니다.",
                 AutomationProperties.GetHelpText(exportButton));
             Assert.NotNull(exportButton.Flyout);
         }

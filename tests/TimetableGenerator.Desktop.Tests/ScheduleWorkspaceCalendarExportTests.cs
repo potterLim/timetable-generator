@@ -119,10 +119,15 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.Equal(
                 "ExportAllPngImages",
                 AutomationProperties.GetAutomationId(allPngAction));
-            Assert.Equal("모든 후보 PNG", allPngAction.Header);
             Assert.Equal(
-                "모든 시간표 후보를 PNG 이미지로 저장",
+                "가능한 시간표 모두 PNG로 저장",
+                allPngAction.Header);
+            Assert.Equal(
+                "가능한 시간표 모두 PNG로 저장",
                 AutomationProperties.GetName(allPngAction));
+            Assert.Equal(
+                "현재 조건으로 만든 가능한 시간표를 각각 번호가 붙은 PNG 이미지로 저장합니다.",
+                AutomationProperties.GetHelpText(allPngAction));
             Assert.Equal(
                 "ExportGoogleCalendar",
                 AutomationProperties.GetAutomationId(googleAction));
@@ -250,7 +255,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                     "PNG 이미지",
                     "Apple 캘린더",
                     "Google 캘린더",
-                    "모든 후보 PNG",
+                    "가능한 시간표 모두 PNG로 저장",
                 },
                 menu.Items
                     .OfType<MenuItem>()

@@ -209,16 +209,27 @@ public sealed class PlanInspectorVisualStateTests
                         "course-choice-group")
                         && candidate.Classes.Contains("alternative"));
                 Assert.True(alternativeGroup.ClipToBounds);
+                Assert.True(alternativeGroup.UseLayoutRounding);
                 Assert.Equal(new CornerRadius(10.0), alternativeGroup.CornerRadius);
                 Assert.Equal(new Thickness(0.0), alternativeGroup.BorderThickness);
-                Assert.Equal(new Thickness(1.0), alternativeGroup.Padding);
+                Assert.Equal(new Thickness(0.0), alternativeGroup.Padding);
                 Assert.Single(
                     alternativeGroup.GetVisualDescendants()
                         .OfType<TextBlock>(),
                     candidate => candidate.Text == "2개 과목 중 1개 선택");
 
+                Grid groupSurface = Assert.IsType<Grid>(alternativeGroup.Child);
+                Assert.Equal(2, groupSurface.Children.Count);
                 StackPanel groupContent = Assert.IsType<StackPanel>(
-                    alternativeGroup.Child);
+                    groupSurface.Children[0]);
+                Border frame = Assert.IsType<Border>(groupSurface.Children[1]);
+                Assert.Equal("AlternativeCourseChoiceFrame", frame.Name);
+                Assert.Equal(1, frame.ZIndex);
+                Assert.False(frame.IsHitTestVisible);
+                Assert.True(frame.UseLayoutRounding);
+                Assert.Equal(new Thickness(1.0), frame.BorderThickness);
+                Assert.Equal(new CornerRadius(10.0), frame.CornerRadius);
+                Assert.NotNull(frame.BorderBrush);
                 Point? groupContentOriginOrNull = groupContent.TranslatePoint(
                     new Point(0.0, 0.0),
                     alternativeGroup);
@@ -229,12 +240,13 @@ public sealed class PlanInspectorVisualStateTests
                         "The alternative course group content position was unavailable.");
                 }
 
-                Assert.Equal(1.0, groupContentOriginOrNull.Value.X, 3);
-                Assert.Equal(1.0, groupContentOriginOrNull.Value.Y, 3);
+                Assert.Equal(0.0, groupContentOriginOrNull.Value.X, 3);
+                Assert.Equal(0.0, groupContentOriginOrNull.Value.Y, 3);
                 Assert.Equal(
-                    alternativeGroup.Bounds.Width - 2.0,
+                    alternativeGroup.Bounds.Width,
                     groupContent.Bounds.Width,
                     3);
+                Assert.Equal(alternativeGroup.Bounds, frame.Bounds);
 
                 Border[] courseCards = alternativeGroup.GetVisualDescendants()
                     .OfType<Border>()

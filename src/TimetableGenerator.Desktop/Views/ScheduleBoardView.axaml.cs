@@ -110,11 +110,7 @@ internal sealed partial class ScheduleBoardView : UserControl
         scheduleBoard.mIsPngExport = true;
         scheduleBoard.mBoardContextHeader.IsVisible = true;
         scheduleBoard.mBoardStickyHeaderContainer.IsVisible = false;
-        scheduleBoard.mBoardExportSurface.BorderThickness = new Thickness(
-            0.0,
-            0.0,
-            1.0,
-            0.0);
+        scheduleBoard.mBoardExportSurface.BorderThickness = new Thickness(1.0);
         return scheduleBoard;
     }
 

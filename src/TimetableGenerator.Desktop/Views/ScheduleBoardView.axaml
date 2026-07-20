@@ -97,11 +97,13 @@
   </UserControl.Styles>
 
   <Border
+      x:Name="BoardFrame"
       CornerRadius="7"
-      BorderBrush="{DynamicResource BorderBrush}"
+      BorderBrush="{DynamicResource StrongBorderBrush}"
       BorderThickness="1"
       ClipToBounds="True"
-      Background="{DynamicResource ElevatedSurfaceBrush}">
+      Background="{DynamicResource ElevatedSurfaceBrush}"
+      UseLayoutRounding="True">
     <Grid RowDefinitions="Auto,*">
       <Border
           x:Name="BoardStickyHeaderContainer"
@@ -168,7 +170,7 @@
           Width="1"
           Margin="0,0,16,0"
           HorizontalAlignment="Right"
-          Background="{DynamicResource BorderBrush}"
+          Background="{DynamicResource StrongBorderBrush}"
           IsHitTestVisible="False" />
     </Grid>
   </Border>
