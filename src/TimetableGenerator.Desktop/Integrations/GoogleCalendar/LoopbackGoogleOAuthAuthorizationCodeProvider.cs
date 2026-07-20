@@ -222,8 +222,6 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
             ["scope"] = GOOGLE_CALENDAR_SCOPES,
             ["code_challenge"] = codeChallenge.Value,
             ["code_challenge_method"] = "S256",
-            ["access_type"] = "offline",
-            ["prompt"] = "consent",
             ["state"] = state.Value,
         };
 

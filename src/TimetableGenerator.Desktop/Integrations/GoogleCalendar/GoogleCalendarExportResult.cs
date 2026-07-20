@@ -1,4 +1,5 @@
 using System;
+using TimetableGenerator.Domain.Planning;
 
 namespace TimetableGenerator.Desktop.Integrations.GoogleCalendar;
 
@@ -7,6 +8,8 @@ internal sealed class GoogleCalendarExportResult
     public EGoogleCalendarExportStatus Status { get; }
 
     public GoogleCalendarId? CalendarIdOrNull { get; }
+
+    public PlanName? CalendarNameOrNull { get; }
 
     public int CreatedEventCount { get; }
 
@@ -19,6 +22,7 @@ internal sealed class GoogleCalendarExportResult
     private GoogleCalendarExportResult(
         EGoogleCalendarExportStatus status,
         GoogleCalendarId? calendarIdOrNull,
+        PlanName? calendarNameOrNull,
         int createdEventCount,
         int updatedEventCount,
         int deletedEventCount,
@@ -36,6 +40,7 @@ internal sealed class GoogleCalendarExportResult
 
         Status = status;
         CalendarIdOrNull = calendarIdOrNull;
+        CalendarNameOrNull = calendarNameOrNull;
         CreatedEventCount = createdEventCount;
         UpdatedEventCount = updatedEventCount;
         DeletedEventCount = deletedEventCount;
@@ -44,6 +49,7 @@ internal sealed class GoogleCalendarExportResult
 
     public static GoogleCalendarExportResult Complete(
         GoogleCalendarId calendarId,
+        PlanName calendarName,
         GoogleCalendarReconciliationResult reconciliationResult)
     {
         if (calendarId == null)
@@ -51,9 +57,15 @@ internal sealed class GoogleCalendarExportResult
             throw new ArgumentNullException(nameof(calendarId));
         }
 
+        if (calendarName == null)
+        {
+            throw new ArgumentNullException(nameof(calendarName));
+        }
+
         return new GoogleCalendarExportResult(
             EGoogleCalendarExportStatus.Success,
             calendarId,
+            calendarName,
             reconciliationResult.CreatedEventCount,
             reconciliationResult.UpdatedEventCount,
             reconciliationResult.DeletedEventCount,
@@ -72,7 +84,14 @@ internal sealed class GoogleCalendarExportResult
                 nameof(status));
         }
 
-        return new GoogleCalendarExportResult(status, null, 0, 0, 0, diagnosticCodeOrNull);
+        return new GoogleCalendarExportResult(
+            status,
+            null,
+            null,
+            0,
+            0,
+            0,
+            diagnosticCodeOrNull);
     }
 
     private static void ensureNonNegative(int value, string parameterName)

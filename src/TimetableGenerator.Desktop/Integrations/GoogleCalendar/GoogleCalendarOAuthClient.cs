@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -23,13 +22,11 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
 
     private readonly HttpClient mHttpClient;
     private readonly IGoogleCalendarOAuthConfigurationProvider mConfigurationProvider;
-    private readonly IGoogleCalendarCredentialStore mCredentialStore;
     private readonly IGoogleOAuthAuthorizationCodeProvider mAuthorizationCodeProvider;
 
     public GoogleCalendarOAuthClient(
         HttpClient httpClient,
         IGoogleCalendarOAuthConfigurationProvider configurationProvider,
-        IGoogleCalendarCredentialStore credentialStore,
         IGoogleOAuthAuthorizationCodeProvider authorizationCodeProvider)
     {
         if (httpClient == null)
@@ -42,11 +39,6 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
             throw new ArgumentNullException(nameof(configurationProvider));
         }
 
-        if (credentialStore == null)
-        {
-            throw new ArgumentNullException(nameof(credentialStore));
-        }
-
         if (authorizationCodeProvider == null)
         {
             throw new ArgumentNullException(nameof(authorizationCodeProvider));
@@ -54,7 +46,6 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
 
         mHttpClient = httpClient;
         mConfigurationProvider = configurationProvider;
-        mCredentialStore = credentialStore;
         mAuthorizationCodeProvider = authorizationCodeProvider;
     }
 
@@ -72,42 +63,6 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
 
         try
         {
-            GoogleRefreshToken? refreshTokenOrNull =
-                await mCredentialStore.ReadRefreshTokenOrNullAsync(
-                    configurationOrNull.ClientId,
-                    cancellationToken).ConfigureAwait(false);
-            if (refreshTokenOrNull != null)
-            {
-                GoogleTokenExchangeResult refreshResult = await refreshAccessTokenAsync(
-                    configurationOrNull.ClientId,
-                    refreshTokenOrNull,
-                    cancellationToken).ConfigureAwait(false);
-                if (refreshResult.AccessTokenOrNull != null)
-                {
-                    return GoogleOAuthAuthorizationResult.Complete(
-                        refreshResult.AccessTokenOrNull);
-                }
-
-                if (refreshResult.FailureKind == EGoogleTokenExchangeFailureKind.Network)
-                {
-                    return GoogleOAuthAuthorizationResult.Fail(
-                        EGoogleOAuthAuthorizationStatus.NetworkFailed,
-                        refreshResult.DiagnosticCodeOrNull);
-                }
-
-                if (refreshResult.FailureKind
-                    != EGoogleTokenExchangeFailureKind.InvalidGrant)
-                {
-                    return GoogleOAuthAuthorizationResult.Fail(
-                        EGoogleOAuthAuthorizationStatus.Failed,
-                        refreshResult.DiagnosticCodeOrNull);
-                }
-
-                await mCredentialStore.DeleteRefreshTokenAsync(
-                    configurationOrNull.ClientId,
-                    cancellationToken).ConfigureAwait(false);
-            }
-
             return await authorizeInteractivelyAsync(
                 configurationOrNull.ClientId,
                 cancellationToken).ConfigureAwait(false);
@@ -139,7 +94,6 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
         }
         catch (Exception exception) when (
             exception is JsonException
-            || exception is Win32Exception
             || exception is PlatformNotSupportedException
             || exception is InvalidOperationException)
         {
@@ -192,38 +146,16 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
             codeVerifier,
             codeResult.RedirectUri,
             cancellationToken).ConfigureAwait(false);
-        if (exchangeResult.AccessTokenOrNull == null
-            || exchangeResult.RefreshTokenOrNull == null)
+        if (exchangeResult.AccessTokenOrNull == null)
         {
-            string diagnosticCode = exchangeResult.DiagnosticCodeOrNull == null
-                ? "refresh_token_missing"
-                : exchangeResult.DiagnosticCodeOrNull;
             return GoogleOAuthAuthorizationResult.Fail(
                 exchangeResult.FailureKind == EGoogleTokenExchangeFailureKind.Network
                     ? EGoogleOAuthAuthorizationStatus.NetworkFailed
                     : EGoogleOAuthAuthorizationStatus.Failed,
-                diagnosticCode);
+                exchangeResult.DiagnosticCodeOrNull);
         }
 
-        await mCredentialStore.SaveRefreshTokenAsync(
-            clientId,
-            exchangeResult.RefreshTokenOrNull,
-            cancellationToken).ConfigureAwait(false);
         return GoogleOAuthAuthorizationResult.Complete(exchangeResult.AccessTokenOrNull);
-    }
-
-    private async Task<GoogleTokenExchangeResult> refreshAccessTokenAsync(
-        GoogleOAuthClientId clientId,
-        GoogleRefreshToken refreshToken,
-        CancellationToken cancellationToken)
-    {
-        Dictionary<string, string> parameters = new Dictionary<string, string>
-        {
-            ["client_id"] = clientId.Value,
-            ["refresh_token"] = refreshToken.Value,
-            ["grant_type"] = "refresh_token",
-        };
-        return await sendTokenRequestAsync(parameters, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<GoogleTokenExchangeResult> exchangeAuthorizationCodeAsync(
@@ -288,13 +220,6 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
                 {
                     failureKind = EGoogleTokenExchangeFailureKind.Network;
                 }
-                else if (string.Equals(
-                    errorOrNull,
-                    "invalid_grant",
-                    StringComparison.Ordinal))
-                {
-                    failureKind = EGoogleTokenExchangeFailureKind.InvalidGrant;
-                }
                 else
                 {
                     failureKind = EGoogleTokenExchangeFailureKind.Permanent;
@@ -330,14 +255,8 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
                         "unsupported_token_type");
                 }
 
-                string? refreshTokenOrNull = getStringOrNull(
-                    document.RootElement,
-                    "refresh_token");
                 return GoogleTokenExchangeResult.Complete(
-                    new GoogleAccessToken(accessTokenOrNull),
-                    string.IsNullOrWhiteSpace(refreshTokenOrNull)
-                        ? null
-                        : new GoogleRefreshToken(refreshTokenOrNull));
+                    new GoogleAccessToken(accessTokenOrNull));
             }
         }
     }

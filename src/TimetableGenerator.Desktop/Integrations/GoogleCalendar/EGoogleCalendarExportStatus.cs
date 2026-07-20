@@ -10,4 +10,5 @@ internal enum EGoogleCalendarExportStatus
     AccessDenied = 5,
     NetworkFailed = 6,
     Failed = 7,
+    Cancelled = 8,
 }

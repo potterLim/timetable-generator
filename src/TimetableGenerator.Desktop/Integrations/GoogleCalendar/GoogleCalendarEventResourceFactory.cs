@@ -153,6 +153,29 @@ internal static class GoogleCalendarEventResourceFactory
                 StringComparison.Ordinal);
     }
 
+    internal static bool isManaged(JsonElement eventResource)
+    {
+        JsonElement extendedProperties;
+        JsonElement privateProperties;
+        if (eventResource.ValueKind != JsonValueKind.Object
+            || eventResource.TryGetProperty(
+                "extendedProperties",
+                out extendedProperties) == false
+            || extendedProperties.ValueKind != JsonValueKind.Object
+            || extendedProperties.TryGetProperty(
+                "private",
+                out privateProperties) == false
+            || privateProperties.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        return string.Equals(
+            getStringOrNull(privateProperties, MANAGED_PROPERTY_NAME),
+            "true",
+            StringComparison.Ordinal);
+    }
+
     private static JsonObject createDateTimeResource(
         DateTimeOffset dateTime,
         CalendarTimeZoneId timeZoneId)

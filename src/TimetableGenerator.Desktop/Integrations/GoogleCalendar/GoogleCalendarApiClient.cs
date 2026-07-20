@@ -38,52 +38,12 @@ internal sealed class GoogleCalendarApiClient
         mHttpClient = httpClient;
     }
 
-    public async Task<bool> IsCalendarOwnedByPlanAsync(
+    public async Task<IReadOnlyList<GoogleCalendarDescriptor>> ListCalendarsAsync(
         GoogleAccessToken accessToken,
-        GoogleCalendarId calendarId,
-        PlanId planId,
         CancellationToken cancellationToken)
     {
-        using (HttpRequestMessage request = createRequest(
-            HttpMethod.Get,
-            "users/me/calendarList/" + escapePathSegment(calendarId.Value),
-            accessToken))
-        {
-            using (HttpResponseMessage response = await sendAsync(
-                request,
-                cancellationToken).ConfigureAwait(false))
-            {
-                if (response.StatusCode == HttpStatusCode.NotFound)
-                {
-                    return false;
-                }
-
-                await ensureSuccessAsync(
-                    response,
-                    "calendar_get_failed",
-                    cancellationToken).ConfigureAwait(false);
-                using (JsonDocument document = await readJsonAsync(
-                    response,
-                    cancellationToken).ConfigureAwait(false))
-                {
-                    string? descriptionOrNull = getStringOrNull(
-                        document.RootElement,
-                        "description");
-                    return string.Equals(
-                        descriptionOrNull,
-                        createPlanMarker(planId),
-                        StringComparison.Ordinal);
-                }
-            }
-        }
-    }
-
-    public async Task<GoogleCalendarId?> FindPlanCalendarOrNullAsync(
-        GoogleAccessToken accessToken,
-        PlanId planId,
-        CancellationToken cancellationToken)
-    {
-        string marker = createPlanMarker(planId);
+        List<GoogleCalendarDescriptor> calendars =
+            new List<GoogleCalendarDescriptor>();
         GoogleCalendarPaginationGuard paginationGuard =
             new GoogleCalendarPaginationGuard(
                 MAXIMUM_CALENDAR_LIST_PAGE_COUNT,
@@ -123,18 +83,35 @@ internal sealed class GoogleCalendarApiClient
                         {
                             foreach (JsonElement item in items.EnumerateArray())
                             {
+                                if (getBooleanOrDefault(item, "deleted"))
+                                {
+                                    continue;
+                                }
+
                                 string? descriptionOrNull = getStringOrNull(
                                     item,
                                     "description");
                                 string? idOrNull = getStringOrNull(item, "id");
-                                if (string.Equals(
-                                    descriptionOrNull,
-                                    marker,
-                                    StringComparison.Ordinal)
-                                    && string.IsNullOrWhiteSpace(idOrNull) == false)
+                                string? summaryOverrideOrNull = getStringOrNull(
+                                    item,
+                                    "summaryOverride");
+                                string? summaryOrNull = getStringOrNull(item, "summary");
+                                string? displayNameOrNull =
+                                    string.IsNullOrWhiteSpace(summaryOverrideOrNull)
+                                        ? summaryOrNull
+                                        : summaryOverrideOrNull;
+                                if (string.IsNullOrWhiteSpace(idOrNull)
+                                    || string.IsNullOrWhiteSpace(displayNameOrNull))
                                 {
-                                    return new GoogleCalendarId(idOrNull);
+                                    continue;
                                 }
+
+                                calendars.Add(
+                                    new GoogleCalendarDescriptor(
+                                        new GoogleCalendarId(idOrNull),
+                                        displayNameOrNull,
+                                        getBooleanOrDefault(item, "primary"),
+                                        isApplicationManagedMarker(descriptionOrNull)));
                             }
                         }
 
@@ -148,7 +125,7 @@ internal sealed class GoogleCalendarApiClient
         }
         while (pageTokenOrNull != null);
 
-        return null;
+        return calendars.AsReadOnly();
     }
 
     public async Task<GoogleCalendarId> CreatePlanCalendarAsync(
@@ -223,7 +200,6 @@ internal sealed class GoogleCalendarApiClient
         HashSet<GoogleCalendarEventId> existingEventIds = await listManagedEventIdsAsync(
             accessToken,
             calendarId,
-            plan.PlanId,
             cancellationToken).ConfigureAwait(false);
         HashSet<GoogleCalendarEventId> desiredEventIds = new HashSet<GoogleCalendarEventId>();
         int createdEventCount = 0;
@@ -296,7 +272,6 @@ internal sealed class GoogleCalendarApiClient
     private async Task<HashSet<GoogleCalendarEventId>> listManagedEventIdsAsync(
         GoogleAccessToken accessToken,
         GoogleCalendarId calendarId,
-        PlanId planId,
         CancellationToken cancellationToken)
     {
         HashSet<GoogleCalendarEventId> eventIds = new HashSet<GoogleCalendarEventId>();
@@ -314,10 +289,7 @@ internal sealed class GoogleCalendarApiClient
                 + MAXIMUM_EVENT_LIST_PAGE_SIZE.ToString(CultureInfo.InvariantCulture)
                 + "&showDeleted=false&singleEvents=false&privateExtendedProperty="
                 + Uri.EscapeDataString(
-                    GoogleCalendarEventResourceFactory.CreateManagedPropertyFilter())
-                + "&privateExtendedProperty="
-                + Uri.EscapeDataString(
-                    GoogleCalendarEventResourceFactory.CreatePlanPropertyFilter(planId));
+                    GoogleCalendarEventResourceFactory.CreateManagedPropertyFilter());
             if (pageTokenOrNull != null)
             {
                 relativeUri += "&pageToken=" + Uri.EscapeDataString(pageTokenOrNull);
@@ -346,9 +318,7 @@ internal sealed class GoogleCalendarApiClient
                         {
                             foreach (JsonElement item in items.EnumerateArray())
                             {
-                                if (GoogleCalendarEventResourceFactory.isManagedByPlan(
-                                    item,
-                                    planId) == false)
+                                if (GoogleCalendarEventResourceFactory.isManaged(item) == false)
                                 {
                                     continue;
                                 }
@@ -658,6 +628,31 @@ internal sealed class GoogleCalendarApiClient
         }
 
         return property.GetString();
+    }
+
+    private static bool getBooleanOrDefault(JsonElement element, string propertyName)
+    {
+        JsonElement property;
+        return element.ValueKind == JsonValueKind.Object
+            && element.TryGetProperty(propertyName, out property)
+            && property.ValueKind == JsonValueKind.True;
+    }
+
+    private static bool isApplicationManagedMarker(string? descriptionOrNull)
+    {
+        const string markerPrefix = "TimetableGenerator-Plan:";
+        if (descriptionOrNull == null
+            || descriptionOrNull.StartsWith(
+                markerPrefix,
+                StringComparison.Ordinal) == false)
+        {
+            return false;
+        }
+
+        return Guid.TryParseExact(
+            descriptionOrNull[markerPrefix.Length..],
+            "N",
+            out _);
     }
 
 }

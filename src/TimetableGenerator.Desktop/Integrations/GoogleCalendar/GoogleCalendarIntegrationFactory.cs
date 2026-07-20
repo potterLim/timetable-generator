@@ -7,7 +7,6 @@ namespace TimetableGenerator.Desktop.Integrations.GoogleCalendar;
 
 internal static class GoogleCalendarIntegrationFactory
 {
-    private const string BINDING_FILE_NAME = "google-calendar-bindings-v1.json";
     private const string EXPORT_LOCK_FILE_NAME = "google-calendar-export.lock";
 
     public static IGoogleCalendarExporter Create(ProductDataRootPath dataRootPath)
@@ -21,24 +20,14 @@ internal static class GoogleCalendarIntegrationFactory
         {
             Timeout = TimeSpan.FromSeconds(30.0),
         };
-        FileGoogleCalendarBindingStore bindingStore =
-            new FileGoogleCalendarBindingStore(
-                new GoogleCalendarBindingFilePath(
-                    Path.Combine(
-                        dataRootPath.Value,
-                        "Integrations",
-                        BINDING_FILE_NAME)));
         ProductGoogleCalendarOAuthConfigurationProvider configurationProvider =
             new ProductGoogleCalendarOAuthConfigurationProvider();
-        OperatingSystemGoogleCalendarCredentialStore credentialStore =
-            new OperatingSystemGoogleCalendarCredentialStore();
         LoopbackGoogleOAuthAuthorizationCodeProvider codeProvider =
             new LoopbackGoogleOAuthAuthorizationCodeProvider(
                 new DefaultExternalBrowserLauncher());
         GoogleCalendarOAuthClient oauthClient = new GoogleCalendarOAuthClient(
             httpClient,
             configurationProvider,
-            credentialStore,
             codeProvider);
         GoogleCalendarApiClient apiClient = new GoogleCalendarApiClient(httpClient);
         FileGoogleCalendarExportLeaseProvider exportLeaseProvider =
@@ -49,11 +38,10 @@ internal static class GoogleCalendarIntegrationFactory
                         "Integrations",
                         EXPORT_LOCK_FILE_NAME)));
         GoogleCalendarIntegrationResources resources =
-            new GoogleCalendarIntegrationResources(httpClient, bindingStore);
+            new GoogleCalendarIntegrationResources(httpClient);
         return new GoogleCalendarExportService(
             oauthClient,
             apiClient,
-            bindingStore,
             exportLeaseProvider,
             resources);
     }
@@ -61,19 +49,14 @@ internal static class GoogleCalendarIntegrationFactory
     private sealed class GoogleCalendarIntegrationResources : IDisposable
     {
         private readonly HttpClient mHttpClient;
-        private readonly FileGoogleCalendarBindingStore mBindingStore;
 
-        public GoogleCalendarIntegrationResources(
-            HttpClient httpClient,
-            FileGoogleCalendarBindingStore bindingStore)
+        public GoogleCalendarIntegrationResources(HttpClient httpClient)
         {
             mHttpClient = httpClient;
-            mBindingStore = bindingStore;
         }
 
         public void Dispose()
         {
-            mBindingStore.Dispose();
             mHttpClient.Dispose();
         }
     }

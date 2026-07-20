@@ -1,11 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using TimetableGenerator.Desktop.Exporting.Calendar;
+using TimetableGenerator.Domain.Planning;
 
 namespace TimetableGenerator.Desktop.Integrations.GoogleCalendar;
 
@@ -13,7 +17,6 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
 {
     private readonly IGoogleAccessTokenProvider mAccessTokenProvider;
     private readonly GoogleCalendarApiClient mApiClient;
-    private readonly IGoogleCalendarBindingStore mBindingStore;
     private readonly IGoogleCalendarExportLeaseProvider mExportLeaseProvider;
     private readonly SemaphoreSlim mExportGate;
     private readonly IDisposable? mOwnedResourcesOrNull;
@@ -26,12 +29,10 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
 
     public GoogleCalendarExportService(
         IGoogleAccessTokenProvider accessTokenProvider,
-        GoogleCalendarApiClient apiClient,
-        IGoogleCalendarBindingStore bindingStore)
+        GoogleCalendarApiClient apiClient)
         : this(
             accessTokenProvider,
             apiClient,
-            bindingStore,
             NoOpGoogleCalendarExportLeaseProvider.Instance,
             null)
     {
@@ -40,12 +41,10 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
     internal GoogleCalendarExportService(
         IGoogleAccessTokenProvider accessTokenProvider,
         GoogleCalendarApiClient apiClient,
-        IGoogleCalendarBindingStore bindingStore,
         IDisposable? ownedResourcesOrNull)
         : this(
             accessTokenProvider,
             apiClient,
-            bindingStore,
             NoOpGoogleCalendarExportLeaseProvider.Instance,
             ownedResourcesOrNull)
     {
@@ -54,7 +53,6 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
     internal GoogleCalendarExportService(
         IGoogleAccessTokenProvider accessTokenProvider,
         GoogleCalendarApiClient apiClient,
-        IGoogleCalendarBindingStore bindingStore,
         IGoogleCalendarExportLeaseProvider exportLeaseProvider,
         IDisposable? ownedResourcesOrNull)
     {
@@ -68,11 +66,6 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
             throw new ArgumentNullException(nameof(apiClient));
         }
 
-        if (bindingStore == null)
-        {
-            throw new ArgumentNullException(nameof(bindingStore));
-        }
-
         if (exportLeaseProvider == null)
         {
             throw new ArgumentNullException(nameof(exportLeaseProvider));
@@ -80,7 +73,6 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
 
         mAccessTokenProvider = accessTokenProvider;
         mApiClient = apiClient;
-        mBindingStore = bindingStore;
         mExportLeaseProvider = exportLeaseProvider;
         mOwnedResourcesOrNull = ownedResourcesOrNull;
         mExportGate = new SemaphoreSlim(1, 1);
@@ -90,11 +82,17 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
 
     public async Task<GoogleCalendarExportResult> ExportAsync(
         GoogleCalendarExportPlan plan,
+        ICalendarNameConflictResolver conflictResolver,
         CancellationToken cancellationToken)
     {
         if (plan == null)
         {
             throw new ArgumentNullException(nameof(plan));
+        }
+
+        if (conflictResolver == null)
+        {
+            throw new ArgumentNullException(nameof(conflictResolver));
         }
 
         CancellationTokenSource linkedCancellationSource = beginOperation(
@@ -125,23 +123,46 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
                 await mExportLeaseProvider.AcquireAsync(
                     linkedCancellationSource.Token).ConfigureAwait(false))
             {
-                GoogleCalendarId calendarId = await findOrCreateCalendarAsync(
+                GoogleCalendarDestination? destinationOrNull =
+                    await selectDestinationAsync(
                     accessToken,
                     plan,
+                    conflictResolver,
                     linkedCancellationSource.Token).ConfigureAwait(false);
-                await mApiClient.UpdatePlanCalendarAsync(
-                    accessToken,
-                    calendarId,
-                    plan,
-                    linkedCancellationSource.Token).ConfigureAwait(false);
+                if (destinationOrNull == null)
+                {
+                    return GoogleCalendarExportResult.Fail(
+                        EGoogleCalendarExportStatus.Cancelled,
+                        "calendar_name_conflict_cancelled");
+                }
+
+                GoogleCalendarDestination destination = destinationOrNull;
+                GoogleCalendarId calendarId;
+                if (destination.ExistingCalendarIdOrNull == null)
+                {
+                    calendarId = await mApiClient.CreatePlanCalendarAsync(
+                        accessToken,
+                        destination.Plan,
+                        linkedCancellationSource.Token).ConfigureAwait(false);
+                }
+                else
+                {
+                    calendarId = destination.ExistingCalendarIdOrNull;
+                    await mApiClient.UpdatePlanCalendarAsync(
+                        accessToken,
+                        calendarId,
+                        destination.Plan,
+                        linkedCancellationSource.Token).ConfigureAwait(false);
+                }
                 GoogleCalendarReconciliationResult reconciliation =
                     await mApiClient.ReconcileEventsAsync(
                         accessToken,
                         calendarId,
-                        plan,
+                        destination.Plan,
                         linkedCancellationSource.Token).ConfigureAwait(false);
                 return GoogleCalendarExportResult.Complete(
                     calendarId,
+                    destination.Plan.CalendarName,
                     reconciliation);
             }
         }
@@ -232,55 +253,122 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
         }
     }
 
-    private async Task<GoogleCalendarId> findOrCreateCalendarAsync(
+    private async Task<GoogleCalendarDestination?> selectDestinationAsync(
         GoogleAccessToken accessToken,
         GoogleCalendarExportPlan plan,
+        ICalendarNameConflictResolver conflictResolver,
         CancellationToken cancellationToken)
     {
-        GoogleCalendarId? boundCalendarIdOrNull =
-            await mBindingStore.GetCalendarIdOrNullAsync(
-                plan.PlanId,
-                cancellationToken).ConfigureAwait(false);
-        if (boundCalendarIdOrNull != null)
-        {
-            bool belongsToPlan = await mApiClient.IsCalendarOwnedByPlanAsync(
+        IReadOnlyList<GoogleCalendarDescriptor> calendars =
+            await mApiClient.ListCalendarsAsync(
                 accessToken,
-                boundCalendarIdOrNull,
-                plan.PlanId,
                 cancellationToken).ConfigureAwait(false);
-            if (belongsToPlan)
+        IReadOnlyList<GoogleCalendarDescriptor> matches = findNameMatches(
+            plan.CalendarName,
+            calendars);
+        if (matches.Count == 0)
+        {
+            return new GoogleCalendarDestination(plan, null);
+        }
+
+        IReadOnlyList<PlanName> existingNames = getExistingNames(calendars);
+        ECalendarReplacementAvailability replacementAvailability =
+            matches.Count == 1 && matches[0].CanReplace
+                ? ECalendarReplacementAvailability.Available
+                : ECalendarReplacementAvailability.Unavailable;
+        CalendarNameConflict conflict = new CalendarNameConflict(
+            ECalendarExportProvider.Google,
+            plan.CalendarName,
+            CalendarNameConflictPolicy.FindNextAvailableName(
+                plan.CalendarName,
+                existingNames),
+            replacementAvailability);
+        ECalendarNameConflictResolution resolution =
+            await conflictResolver.ResolveAsync(
+                conflict,
+                cancellationToken).ConfigureAwait(false);
+        CalendarNameConflictPolicy.EnsureResolutionIsSupported(conflict, resolution);
+
+        if (resolution == ECalendarNameConflictResolution.Cancel)
+        {
+            return null;
+        }
+
+        IReadOnlyList<GoogleCalendarDescriptor> currentCalendars =
+            await mApiClient.ListCalendarsAsync(
+                accessToken,
+                cancellationToken).ConfigureAwait(false);
+        if (resolution == ECalendarNameConflictResolution.CreateWithAvailableName)
+        {
+            PlanName availableName = CalendarNameConflictPolicy.FindNextAvailableName(
+                plan.CalendarName,
+                getExistingNames(currentCalendars));
+            return new GoogleCalendarDestination(
+                plan.WithCalendarName(availableName),
+                null);
+        }
+
+        IReadOnlyList<GoogleCalendarDescriptor> currentMatches = findNameMatches(
+            plan.CalendarName,
+            currentCalendars);
+        if (currentMatches.Count != 1 || currentMatches[0].CanReplace == false)
+        {
+            throw new InvalidOperationException(
+                "The selected Google calendar is no longer safe to replace.");
+        }
+
+        return new GoogleCalendarDestination(
+            plan,
+            currentMatches[0].CalendarId);
+    }
+
+    private static IReadOnlyList<GoogleCalendarDescriptor> findNameMatches(
+        PlanName requestedName,
+        IReadOnlyList<GoogleCalendarDescriptor> calendars)
+    {
+        List<GoogleCalendarDescriptor> matches =
+            new List<GoogleCalendarDescriptor>();
+        foreach (GoogleCalendarDescriptor calendar in calendars)
+        {
+            PlanName? displayNameOrNull = tryCreatePlanNameOrNull(calendar.DisplayName);
+            if (displayNameOrNull != null
+                && CalendarNameConflictPolicy.IsSameName(
+                    requestedName,
+                    displayNameOrNull))
             {
-                return boundCalendarIdOrNull;
+                matches.Add(calendar);
             }
-
-            await mBindingStore.DeleteCalendarIdAsync(
-                plan.PlanId,
-                cancellationToken).ConfigureAwait(false);
         }
 
-        GoogleCalendarId? discoveredCalendarIdOrNull =
-            await mApiClient.FindPlanCalendarOrNullAsync(
-                accessToken,
-                plan.PlanId,
-                cancellationToken).ConfigureAwait(false);
-        GoogleCalendarId calendarId;
-        if (discoveredCalendarIdOrNull == null)
+        return matches.AsReadOnly();
+    }
+
+    private static IReadOnlyList<PlanName> getExistingNames(
+        IReadOnlyList<GoogleCalendarDescriptor> calendars)
+    {
+        List<PlanName> existingNames = new List<PlanName>(calendars.Count);
+        foreach (GoogleCalendarDescriptor calendar in calendars)
         {
-            calendarId = await mApiClient.CreatePlanCalendarAsync(
-                accessToken,
-                plan,
-                cancellationToken).ConfigureAwait(false);
-        }
-        else
-        {
-            calendarId = discoveredCalendarIdOrNull;
+            PlanName? displayNameOrNull = tryCreatePlanNameOrNull(calendar.DisplayName);
+            if (displayNameOrNull != null)
+            {
+                existingNames.Add(displayNameOrNull);
+            }
         }
 
-        await mBindingStore.SaveCalendarIdAsync(
-            plan.PlanId,
-            calendarId,
-            cancellationToken).ConfigureAwait(false);
-        return calendarId;
+        return existingNames.AsReadOnly();
+    }
+
+    private static PlanName? tryCreatePlanNameOrNull(string value)
+    {
+        string normalizedValue = value.Trim().Normalize(NormalizationForm.FormC);
+        if (normalizedValue.Length == 0
+            || normalizedValue.Length > PlanName.MAXIMUM_LENGTH)
+        {
+            return null;
+        }
+
+        return new PlanName(normalizedValue);
     }
 
     private static GoogleCalendarExportResult mapAuthorizationFailure(
@@ -390,4 +478,8 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
             mLifetimeCancellationSource.Dispose();
         }
     }
+
+    private sealed record GoogleCalendarDestination(
+        GoogleCalendarExportPlan Plan,
+        GoogleCalendarId? ExistingCalendarIdOrNull);
 }

@@ -113,6 +113,15 @@ internal sealed class GoogleCalendarExportPlan
             events);
     }
 
+    public GoogleCalendarExportPlan WithCalendarName(PlanName calendarName)
+    {
+        return new GoogleCalendarExportPlan(
+            PlanId,
+            calendarName,
+            TimeZoneId,
+            mEvents);
+    }
+
     private static DateOnly findFirstOccurrenceDate(
         AcademicTermCalendarMetadata academicCalendar,
         IReadOnlyList<EDay> days)

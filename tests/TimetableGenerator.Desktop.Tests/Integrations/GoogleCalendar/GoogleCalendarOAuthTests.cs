@@ -22,7 +22,6 @@ public sealed class GoogleCalendarOAuthTests
         GoogleCalendarOAuthClient client = new GoogleCalendarOAuthClient(
             new HttpClient(httpHandler),
             new FixedConfigurationProvider(null),
-            new ThrowingCredentialStore(),
             new ThrowingCodeProvider());
 
         GoogleOAuthAuthorizationResult result = await client.AuthorizeAsync(
@@ -33,9 +32,8 @@ public sealed class GoogleCalendarOAuthTests
     }
 
     [Fact]
-    public async Task InteractiveAuthorizationUsesPkceAndStoresOnlyRefreshTokenAsync()
+    public async Task InteractiveAuthorizationUsesPkceWithoutPersistingCredentialsAsync()
     {
-        RecordingCredentialStore credentialStore = new RecordingCredentialStore(null);
         RecordingCodeProvider codeProvider = new RecordingCodeProvider();
         PkceTokenHttpMessageHandler httpHandler = new PkceTokenHttpMessageHandler(
             codeProvider);
@@ -44,7 +42,6 @@ public sealed class GoogleCalendarOAuthTests
             new FixedConfigurationProvider(
                 new GoogleCalendarOAuthConfiguration(
                     new GoogleOAuthClientId("client.apps.googleusercontent.com"))),
-            credentialStore,
             codeProvider);
 
         GoogleOAuthAuthorizationResult result = await client.AuthorizeAsync(
@@ -52,11 +49,34 @@ public sealed class GoogleCalendarOAuthTests
 
         Assert.Equal(EGoogleOAuthAuthorizationStatus.Completed, result.Status);
         Assert.Equal("[redacted]", result.AccessTokenOrNull?.ToString());
-        Assert.Equal("saved-refresh-token", credentialStore.SavedTokenOrNull?.Value);
         Assert.True(httpHandler.PkceVerified);
         Assert.NotEqual(
             codeProvider.StateOrNull?.Value,
             codeProvider.CodeChallengeOrNull?.Value);
+    }
+
+    [Fact]
+    public async Task EveryAuthorizationStartsANewInteractiveFlowAsync()
+    {
+        RecordingCodeProvider codeProvider = new RecordingCodeProvider();
+        PkceTokenHttpMessageHandler httpHandler = new PkceTokenHttpMessageHandler(
+            codeProvider);
+        GoogleCalendarOAuthClient client = new GoogleCalendarOAuthClient(
+            new HttpClient(httpHandler),
+            new FixedConfigurationProvider(
+                new GoogleCalendarOAuthConfiguration(
+                    new GoogleOAuthClientId("client.apps.googleusercontent.com"))),
+            codeProvider);
+
+        GoogleOAuthAuthorizationResult firstResult = await client.AuthorizeAsync(
+            CancellationToken.None);
+        GoogleOAuthAuthorizationResult secondResult = await client.AuthorizeAsync(
+            CancellationToken.None);
+
+        Assert.Equal(EGoogleOAuthAuthorizationStatus.Completed, firstResult.Status);
+        Assert.Equal(EGoogleOAuthAuthorizationStatus.Completed, secondResult.Status);
+        Assert.Equal(2, codeProvider.RequestCount);
+        Assert.Equal(2, httpHandler.RequestCount);
     }
 
     [Fact]
@@ -79,6 +99,8 @@ public sealed class GoogleCalendarOAuthTests
         Assert.Contains(
             "calendar.calendarlist.readonly",
             Uri.UnescapeDataString(authorizationUri.Query));
+        Assert.DoesNotContain("access_type", authorizationUri.Query, StringComparison.Ordinal);
+        Assert.DoesNotContain("prompt", authorizationUri.Query, StringComparison.Ordinal);
         Assert.DoesNotContain("client_secret", authorizationUri.Query, StringComparison.Ordinal);
     }
 
@@ -168,7 +190,7 @@ public sealed class GoogleCalendarOAuthTests
     [Fact]
     public async Task TokenEndpointTimeoutIsReportedAsNetworkFailureAsync()
     {
-        GoogleCalendarOAuthClient client = createRefreshClient(
+        GoogleCalendarOAuthClient client = createInteractiveClient(
             new TimeoutHttpMessageHandler());
 
         GoogleOAuthAuthorizationResult result = await client.AuthorizeAsync(
@@ -181,7 +203,7 @@ public sealed class GoogleCalendarOAuthTests
     [Fact]
     public async Task TokenEndpointServiceFailureIsReportedAsNetworkFailureAsync()
     {
-        GoogleCalendarOAuthClient client = createRefreshClient(
+        GoogleCalendarOAuthClient client = createInteractiveClient(
             new ServiceUnavailableHttpMessageHandler());
 
         GoogleOAuthAuthorizationResult result = await client.AuthorizeAsync(
@@ -194,7 +216,7 @@ public sealed class GoogleCalendarOAuthTests
     [Fact]
     public async Task OversizedTokenResponseIsRejectedAsync()
     {
-        GoogleCalendarOAuthClient client = createRefreshClient(
+        GoogleCalendarOAuthClient client = createInteractiveClient(
             new OversizedTokenResponseHttpMessageHandler());
 
         GoogleOAuthAuthorizationResult result = await client.AuthorizeAsync(
@@ -202,24 +224,6 @@ public sealed class GoogleCalendarOAuthTests
 
         Assert.Equal(EGoogleOAuthAuthorizationStatus.Failed, result.Status);
         Assert.Equal("oauth_response_too_large", result.DiagnosticCodeOrNull);
-    }
-
-    [Fact]
-    public async Task CredentialManagerFailureIsReportedAsInfrastructureFailureAsync()
-    {
-        GoogleCalendarOAuthClient client = new GoogleCalendarOAuthClient(
-            new HttpClient(new ThrowingHttpMessageHandler()),
-            new FixedConfigurationProvider(
-                new GoogleCalendarOAuthConfiguration(
-                    new GoogleOAuthClientId("client.apps.googleusercontent.com"))),
-            new FailingCredentialStore(),
-            new ThrowingCodeProvider());
-
-        GoogleOAuthAuthorizationResult result = await client.AuthorizeAsync(
-            CancellationToken.None);
-
-        Assert.Equal(EGoogleOAuthAuthorizationStatus.Failed, result.Status);
-        Assert.Equal("oauth_infrastructure_failed", result.DiagnosticCodeOrNull);
     }
 
     [Fact]
@@ -266,7 +270,7 @@ public sealed class GoogleCalendarOAuthTests
         Assert.Equal(HttpStatusCode.OK, launcher.CallbackStatusCodeOrNull);
     }
 
-    private static GoogleCalendarOAuthClient createRefreshClient(
+    private static GoogleCalendarOAuthClient createInteractiveClient(
         HttpMessageHandler handler)
     {
         return new GoogleCalendarOAuthClient(
@@ -274,8 +278,7 @@ public sealed class GoogleCalendarOAuthTests
             new FixedConfigurationProvider(
                 new GoogleCalendarOAuthConfiguration(
                     new GoogleOAuthClientId("client.apps.googleusercontent.com"))),
-            new RecordingCredentialStore(new GoogleRefreshToken("refresh-secret")),
-            new ThrowingCodeProvider());
+            new RecordingCodeProvider());
     }
 
     private sealed class FixedConfigurationProvider
@@ -295,43 +298,10 @@ public sealed class GoogleCalendarOAuthTests
         }
     }
 
-    private sealed class RecordingCredentialStore : IGoogleCalendarCredentialStore
-    {
-        private readonly GoogleRefreshToken? mInitialTokenOrNull;
-
-        public GoogleRefreshToken? SavedTokenOrNull { get; private set; }
-
-        public RecordingCredentialStore(GoogleRefreshToken? initialTokenOrNull)
-        {
-            mInitialTokenOrNull = initialTokenOrNull;
-        }
-
-        public Task<GoogleRefreshToken?> ReadRefreshTokenOrNullAsync(
-            GoogleOAuthClientId clientId,
-            CancellationToken cancellationToken)
-        {
-            return Task.FromResult(mInitialTokenOrNull);
-        }
-
-        public Task SaveRefreshTokenAsync(
-            GoogleOAuthClientId clientId,
-            GoogleRefreshToken refreshToken,
-            CancellationToken cancellationToken)
-        {
-            SavedTokenOrNull = refreshToken;
-            return Task.CompletedTask;
-        }
-
-        public Task DeleteRefreshTokenAsync(
-            GoogleOAuthClientId clientId,
-            CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
-        }
-    }
-
     private sealed class RecordingCodeProvider : IGoogleOAuthAuthorizationCodeProvider
     {
+        public int RequestCount { get; private set; }
+
         public GoogleOAuthState? StateOrNull { get; private set; }
 
         public GooglePkceCodeChallenge? CodeChallengeOrNull { get; private set; }
@@ -342,6 +312,7 @@ public sealed class GoogleCalendarOAuthTests
             GooglePkceCodeChallenge codeChallenge,
             CancellationToken cancellationToken)
         {
+            RequestCount++;
             StateOrNull = state;
             CodeChallengeOrNull = codeChallenge;
             return Task.FromResult(
@@ -360,6 +331,8 @@ public sealed class GoogleCalendarOAuthTests
 
         public bool PkceVerified { get; private set; }
 
+        public int RequestCount { get; private set; }
+
         public PkceTokenHttpMessageHandler(RecordingCodeProvider codeProvider)
         {
             mCodeProvider = codeProvider;
@@ -369,6 +342,7 @@ public sealed class GoogleCalendarOAuthTests
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
+            RequestCount++;
             HttpContent? contentOrNull = request.Content;
             if (contentOrNull == null)
             {
@@ -390,7 +364,7 @@ public sealed class GoogleCalendarOAuthTests
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(
-                    "{\"access_token\":\"access-secret\",\"refresh_token\":\"saved-refresh-token\",\"token_type\":\"Bearer\"}",
+                    "{\"access_token\":\"access-secret\",\"token_type\":\"Bearer\"}",
                     Encoding.UTF8,
                     "application/json"),
             };
@@ -462,56 +436,6 @@ public sealed class GoogleCalendarOAuthTests
                         Encoding.UTF8,
                         "application/json"),
                 });
-        }
-    }
-
-    private sealed class ThrowingCredentialStore : IGoogleCalendarCredentialStore
-    {
-        public Task<GoogleRefreshToken?> ReadRefreshTokenOrNullAsync(
-            GoogleOAuthClientId clientId,
-            CancellationToken cancellationToken)
-        {
-            throw new InvalidOperationException("Credential storage must not be called.");
-        }
-
-        public Task SaveRefreshTokenAsync(
-            GoogleOAuthClientId clientId,
-            GoogleRefreshToken refreshToken,
-            CancellationToken cancellationToken)
-        {
-            throw new InvalidOperationException("Credential storage must not be called.");
-        }
-
-        public Task DeleteRefreshTokenAsync(
-            GoogleOAuthClientId clientId,
-            CancellationToken cancellationToken)
-        {
-            throw new InvalidOperationException("Credential storage must not be called.");
-        }
-    }
-
-    private sealed class FailingCredentialStore : IGoogleCalendarCredentialStore
-    {
-        public Task<GoogleRefreshToken?> ReadRefreshTokenOrNullAsync(
-            GoogleOAuthClientId clientId,
-            CancellationToken cancellationToken)
-        {
-            throw new Win32Exception(5);
-        }
-
-        public Task SaveRefreshTokenAsync(
-            GoogleOAuthClientId clientId,
-            GoogleRefreshToken refreshToken,
-            CancellationToken cancellationToken)
-        {
-            throw new Win32Exception(5);
-        }
-
-        public Task DeleteRefreshTokenAsync(
-            GoogleOAuthClientId clientId,
-            CancellationToken cancellationToken)
-        {
-            throw new Win32Exception(5);
         }
     }
 

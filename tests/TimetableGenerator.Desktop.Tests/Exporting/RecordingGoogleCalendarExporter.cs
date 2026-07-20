@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
+using TimetableGenerator.Desktop.Exporting.Calendar;
 using TimetableGenerator.Desktop.Integrations.GoogleCalendar;
 
 namespace TimetableGenerator.Desktop.Tests.Exporting;
@@ -26,11 +27,17 @@ internal sealed class RecordingGoogleCalendarExporter : IGoogleCalendarExporter
 
     public Task<GoogleCalendarExportResult> ExportAsync(
         GoogleCalendarExportPlan plan,
+        ICalendarNameConflictResolver conflictResolver,
         CancellationToken cancellationToken)
     {
         if (plan == null)
         {
             throw new ArgumentNullException(nameof(plan));
+        }
+
+        if (conflictResolver == null)
+        {
+            throw new ArgumentNullException(nameof(conflictResolver));
         }
 
         cancellationToken.ThrowIfCancellationRequested();

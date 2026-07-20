@@ -6,15 +6,12 @@ internal sealed class GoogleTokenExchangeResult
 {
     public GoogleAccessToken? AccessTokenOrNull { get; }
 
-    public GoogleRefreshToken? RefreshTokenOrNull { get; }
-
     public EGoogleTokenExchangeFailureKind FailureKind { get; }
 
     public string? DiagnosticCodeOrNull { get; }
 
     private GoogleTokenExchangeResult(
         GoogleAccessToken? accessTokenOrNull,
-        GoogleRefreshToken? refreshTokenOrNull,
         EGoogleTokenExchangeFailureKind failureKind,
         string? diagnosticCodeOrNull)
     {
@@ -32,18 +29,14 @@ internal sealed class GoogleTokenExchangeResult
         }
 
         AccessTokenOrNull = accessTokenOrNull;
-        RefreshTokenOrNull = refreshTokenOrNull;
         FailureKind = failureKind;
         DiagnosticCodeOrNull = diagnosticCodeOrNull;
     }
 
-    public static GoogleTokenExchangeResult Complete(
-        GoogleAccessToken accessToken,
-        GoogleRefreshToken? refreshTokenOrNull)
+    public static GoogleTokenExchangeResult Complete(GoogleAccessToken accessToken)
     {
         return new GoogleTokenExchangeResult(
             accessToken,
-            refreshTokenOrNull,
             EGoogleTokenExchangeFailureKind.None,
             null);
     }
@@ -67,7 +60,6 @@ internal sealed class GoogleTokenExchangeResult
         }
 
         return new GoogleTokenExchangeResult(
-            null,
             null,
             failureKind,
             diagnosticCode);
