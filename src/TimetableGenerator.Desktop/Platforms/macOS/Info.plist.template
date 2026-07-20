@@ -32,6 +32,8 @@
   <string>14.0</string>
   <key>NSHighResolutionCapable</key>
   <true/>
+  <key>NSAppleEventsUsageDescription</key>
+  <string>시간표를 Apple 캘린더에 내보내기 위해 캘린더 앱을 사용합니다.</string>
   <key>NSPrincipalClass</key>
   <string>NSApplication</string>
   <key>NSSupportsAutomaticGraphicsSwitching</key>

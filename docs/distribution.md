@@ -64,15 +64,15 @@ pwsh ./scripts/publish-desktop.ps1 `
 
 ## macOS 서명·notarization 경계
 
-서명과 notarization은 Developer ID Application 인증서와 Xcode Command Line Tools가 설치된 macOS 빌드 기기에서 수행합니다. 일반 .NET self-contained 앱은 JIT 권한이 필요하므로 저장소의 `Platforms/macOS/TimetableGenerator.entitlements`를 사용합니다. 불필요한 디버깅·Apple Events·sandbox 예외는 포함하지 않았습니다.
+서명과 notarization은 Developer ID Application 인증서와 Xcode Command Line Tools가 설치된 macOS 빌드 기기에서 수행합니다. 일반 .NET self-contained 앱의 JIT 권한과 Apple Calendar 자동화에 필요한 Apple Events 권한은 저장소의 `Platforms/macOS/TimetableGenerator.entitlements`에 명시되어 있습니다. 불필요한 디버깅·sandbox 예외는 포함하지 않습니다.
 
-### Apple Calendar 가져오기 경계
+### Apple Calendar 내보내기 경계
 
-현재 데스크톱 프로젝트는 Apple 플랫폼 바인딩이 없는 일반 `net10.0` Avalonia 앱입니다. 따라서 EventKit을 직접 호출하거나 Apple Events 자동화를 추가하지 않습니다. macOS에서는 생성한 `.ics` 파일을 LaunchServices의 Apple Calendar 번들 식별자(`com.apple.iCal`)로 열고, 최종 가져오기는 사용자가 Calendar에서 확인합니다.
+현재 데스크톱 프로젝트는 일반 `net10.0` Avalonia 앱이므로 EventKit 바인딩 대신 macOS의 Calendar 스크립팅 인터페이스를 사용합니다. 앱은 `/usr/bin/osascript`의 JavaScript for Automation으로 캘린더 목록을 확인하고, 사용자가 선택한 대상에 현재 시간표를 직접 내보냅니다.
 
-이 방식은 캘린더 데이터 권한이나 Apple Events 권한을 앱이 직접 요청하지 않으므로 `Info.plist` 사용 목적 문구와 추가 entitlement가 필요하지 않습니다. `.ics` 파일은 Calendar가 비동기로 읽을 수 있도록 열기 명령 직후 삭제하지 않습니다. 파일을 만든 계층이 앱 전용 임시 저장소에서 수명을 관리하고, 다음 실행 또는 정해진 보존 기간에 오래된 파일을 정리해야 합니다.
+같은 이름의 캘린더가 있으면 앱이 만든 단일 쓰기 가능 캘린더만 대체할 수 있습니다. 그 밖의 캘린더는 변경하지 않고 ` (2)`, ` (3)` 순서의 첫 사용 가능 이름으로 새 캘린더를 만듭니다. 대체 직전에도 캘린더 ID·이름·소유 표식·쓰기 가능 여부를 다시 확인합니다.
 
-LaunchServices로 여는 동작은 가져오기 화면을 시작할 뿐 완료나 이후 동기화를 보장하지 않습니다. 동일한 `.ics`를 반복해서 가져오면 사용자의 선택에 따라 일정이 중복될 수 있으므로, 직접 업데이트가 필요한 경우에는 별도의 EventKit 지원 타깃과 캘린더 권한·서명 구성을 설계해야 합니다.
+서명된 hardened runtime 앱에서 이 동작을 허용하려면 `NSAppleEventsUsageDescription`과 `com.apple.security.automation.apple-events=true`가 모두 필요합니다. 실제 공개 전에 새 사용자 프로필에서 최초 권한 요청, 허용, 거부, 시스템 설정에서 권한 철회, 재시도 동작을 실기기로 검증합니다.
 
 다음 순서를 배포 담당자의 실제 identity와 keychain profile로 실행합니다. `codesign --deep`으로 서명하지 말고 내부 Mach-O부터 바깥 bundle 순서로 서명합니다.
 

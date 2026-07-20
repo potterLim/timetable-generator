@@ -27,9 +27,6 @@ public sealed class ProductDataPathsTests
         Assert.Equal(
             Path.Combine(rootPath, "Settings", "appearance-v1.json"),
             paths.AppearanceSettings.Value);
-        Assert.Equal(
-            Path.Combine(rootPath, "Exports", "Calendar"),
-            paths.CalendarExports.Value);
         Assert.Equal(Path.GetFullPath(rootPath), paths.Root.Value);
     }
 }

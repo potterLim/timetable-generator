@@ -24,19 +24,19 @@
 1. 확인하지 않은 항목을 PASS로 처리하지 마라.
 2. 모든 검증 항목은 반드시 `PASS`, `FAIL`, `BLOCKED`, `NOT APPLICABLE` 중 하나로 판정하라.
 3. `BLOCKED`에는 정확히 무엇이 부족한지, 어떻게 해야 검증할 수 있는지 적어라.
-4. 자동 테스트 결과만으로 실제 macOS UI, VoiceOver, Retina, Keychain, Gatekeeper, Apple Calendar를 검증했다고 판단하지 마라.
+4. 자동 테스트 결과만으로 실제 macOS UI, VoiceOver, Retina, Gatekeeper, Apple Calendar를 검증했다고 판단하지 마라.
 5. 화면 캡처만 보고 렌더링 문제라고 단정하지 마라. 실제 화면, 다른 배율에서의 재현, 반복 캡처, PNG 내보내기 결과를 비교해 실제 앱 문제인지 캡처 과정의 문제인지 구분하라.
 6. 한두 개의 문제를 발견했다고 중단하지 말고, 아래 체크리스트 전체에 판정이 생길 때까지 계속 진행하라.
 7. 이번 작업은 검증과 원인 분석이 목적이다. 추적 중인 소스·문서·설정 파일을 수정하거나 커밋하지 마라. 실제 결함은 최소 수정 방향과 관련 파일까지 제안하되, 수정은 별도 요청을 받은 뒤 진행한다.
 8. `git reset`, `git checkout --`, `git clean` 등 기존 작업을 손상시킬 수 있는 명령을 사용하지 마라.
-9. 실제 서비스 주소, OAuth Client ID, 토큰, Keychain 값, 서명 인증서 정보, 사용자 계획 내용 등 민감한 값은 출력·스크린샷·보고서에서 마스킹하라.
+9. 실제 서비스 주소, OAuth Client ID, 토큰, 서명 인증서 정보, 사용자 계획 내용 등 민감한 값은 출력·스크린샷·보고서에서 마스킹하라.
 10. 실제 닷홈 게시 파일을 변경하거나 Google/Apple의 실제 사용자 캘린더를 임의로 변경하지 마라. 외부 계정 검증은 전용 QA 계정·QA 캘린더와 사용자의 명시적 확인이 있을 때만 수행하라.
 11. 카탈로그 손상, 저장 권한 실패, 데이터 복구 시험은 실제 사용자 데이터를 직접 훼손하지 말고 반드시 백업과 격리된 복사본 또는 테스트용 데이터 루트에서 수행하라.
 12. 마지막에는 "대체로 정상" 같은 표현 대신, 출시 가능 여부와 남은 위험을 증거에 따라 명확히 판정하라.
 
 현재 기준 정보
 
-- 현재 전송본이 동일하다면 기준 커밋은 `de8a93a`다. 실제 커밋을 기록하되 다르다고 임의로 되돌리지 마라.
+- 실제 검증을 시작한 커밋을 기록하되 문서의 과거 커밋으로 임의로 되돌리지 마라.
 - 브랜치는 `main`을 유지한다.
 - 기술 스택: .NET 10 / net10.0 / Avalonia 12.1
 - 제품 버전: 1.0.0
@@ -56,7 +56,7 @@
   - `src/TimetableGenerator.Desktop/catalog-source.local.json`
   - `src/TimetableGenerator.Desktop/google-calendar.local.json`
 - 사용자 계획과 카탈로그 캐시는 .NET의 `Environment.SpecialFolder.LocalApplicationData` 아래 `TimetableGenerator`에 저장된다. macOS의 실제 해석 경로를 코드와 실행 결과로 확인하고, 경로를 추측만 하지 마라.
-- 현재 Windows 기준 자동 테스트 기준선은 614개, 실패 0, 건너뜀 0이었다. macOS에서 테스트 수가 달라진다면 이유를 분석하라.
+- Windows와 macOS의 실제 테스트 수를 각각 기록하고 차이가 있다면 이유를 분석하라.
 
 1단계: 작업 환경과 안전 상태 기록
 
@@ -145,7 +145,7 @@ dotnet test TimetableGenerator.sln --configuration Release --no-restore
 - 의도하지 않은 skip 0
 - 테스트 프로세스 충돌·hang 없음
 - 실행마다 테스트 결과가 달라지는 flaky test 없음
-- 현재 기준선 614개와 차이가 있으면 정확한 이유 설명
+- Windows 기준선과 테스트 수가 다르면 정확한 이유 설명
 - macOS에서만 발생하는 경로 구분자, 대소문자, Unicode 파일명, 로캘, 시간대 오류 없음
 
 추천 알고리즘 관련 테스트는 특히 다음을 확인하라.
@@ -222,6 +222,7 @@ otool -L "$MAIN"
 - `CFBundleSupportedPlatforms = MacOSX`
 - `LSMinimumSystemVersion = 14.0`
 - Education category
+- Apple Calendar 자동화 목적을 설명하는 `NSAppleEventsUsageDescription`
 - `NSPrincipalClass = NSApplication`
 - Retina 지원
 - 자동 그래픽 전환 지원
@@ -829,40 +830,36 @@ PNG 결과는 실제 Preview에서 열어 스크린샷을 남긴다.
 
 19단계: Apple Calendar 내보내기
 
-Apple Calendar 내보내기는 EventKit 직접 쓰기가 아니라 `.ics` 파일을 다음 의미로 여는 구현이다.
-
-```bash
-/usr/bin/open -b com.apple.iCal "<absolute-path-to-file.ics>"
-```
+Apple Calendar 내보내기는 `/usr/bin/osascript`의 JavaScript for Automation을 통해 Calendar의 스크립팅 인터페이스를 사용하는 구현이다. 실제 검증은 전용 QA 사용자와 QA 캘린더에서만 수행한다.
 
 다음을 검증한다.
 
 - Apple Calendar 항목이 macOS에서만 보이는지
 - Calendar 앱이 닫혀 있는 상태와 이미 열려 있는 상태
-- `.ics` 생성
-- Calendar 앱 실행
-- 사용자가 가져오기를 확인하기 전 앱이 Calendar를 직접 변경하지 않는지
-- 가져오기 취소
-- 가져오기 확인
-- 대상 캘린더 선택
-- `.ics`가 Calendar가 읽기 전에 삭제되지 않는지
-- 임시파일 수명주기와 읽기 권한
-- 계획명과 캘린더 표시
+- 첫 자동화 권한 요청의 목적 문구
+- 권한 허용·거부·철회 후 재시도
+- 계획명과 같은 이름의 캘린더가 없을 때 직접 생성
+- 같은 이름의 앱 관리 캘린더가 하나 있을 때 `기존 캘린더 대체`와 번호를 붙인 `새로 만들기` 선택
+- 같은 이름의 사용자 캘린더·읽기 전용 캘린더·복수 캘린더가 있을 때 대체가 비활성화되는지
+- ` (2)`, ` (3)` 순서로 첫 사용 가능 이름을 선택하는지
+- 충돌 선택에서 취소하면 캘린더가 바뀌지 않는지
+- 대체 직전 ID·이름·소유 표식·쓰기 가능 여부가 달라지면 변경하지 않고 실패하는지
+- 임시 JSON 요청 파일이 사용자 전용 권한으로 생성되고 작업 뒤 제거되는지
+- 계획명과 실제 생성된 캘린더 이름
 - 학기 기간 `2026-08-31`부터 `2026-12-20`
 - 첫 수업 날짜
-- 마지막 반복 날짜
-- 여러 요일의 BYDAY
+- 마지막 수업 날짜
+- 여러 요일이 정확한 개별 occurrence로 반영되는지
 - 과목명과 `(01)`
 - 장소
 - 담당자·과목 코드 설명
 - 개인 일정의 선택 정보
 - 여러 요일
-- 반복 가져오기 시 중복 가능성과 사용자 안내
 - Apple Calendar에서 실제 표시되는 현지 시각
 
 중요한 요구사항:
 
-캘린더 내보내기 시간대는 사용자의 macOS 로컬 시간대를 따라야 한다. 현재 코드 또는 테스트가 `Asia/Seoul`을 고정하고 있을 가능성이 있으므로 이를 추측하지 말고 실제 `.ics`, Google payload, 코드, 실행 결과를 대조하라.
+캘린더 내보내기 시간대는 사용자의 macOS 로컬 시간대를 따라야 한다. 현재 코드 또는 테스트가 `Asia/Seoul`을 고정하고 있을 가능성이 있으므로 이를 추측하지 말고 Apple Calendar 결과, Google payload, 코드, 실행 결과를 대조하라.
 
 Mac의 시간대를 다음처럼 서로 다른 IANA 시간대로 바꾸거나 안전한 격리 실행 환경을 사용해 검증한다.
 
@@ -871,7 +868,7 @@ Mac의 시간대를 다음처럼 서로 다른 IANA 시간대로 바꾸거나 �
 - America/Los_Angeles처럼 학기 중 DST 전환이 있는 지역
 - 가능하면 30분 또는 45분 오프셋 시간대
 
-비서울 시간대에서도 항상 `TZID:Asia/Seoul`이 생성된다면 "로컬 시간대를 따른다"는 합의 요구와 불일치하는 실제 결함으로 판정하라. DST의 존재하지 않는 시각과 중복 시각도 검증한다. 시스템 설정 변경은 사용자에게 알리고 원래 값으로 복구한다.
+비서울 시간대에서도 서울 시각으로 고정된다면 "로컬 시간대를 따른다"는 합의 요구와 불일치하는 실제 결함으로 판정하라. DST의 존재하지 않는 시각과 중복 시각도 검증한다. 시스템 설정 변경은 사용자에게 알리고 원래 값으로 복구한다.
 
 20단계: Google Calendar 내보내기
 
@@ -890,33 +887,27 @@ Mac의 시간대를 다음처럼 서로 다른 IANA 시간대로 바꾸거나 �
 - 접근 거부
 - 브라우저 실행 실패
 - loopback port 충돌
-- firewall 또는 locked Keychain
+- firewall
 - timeout
 - 네트워크 실패
 - 잘못된 authorization code
 - 401, 403, 429, 5xx
 - access token 만료
-- refresh token
-- refresh token 취소·폐기
-- macOS Keychain 저장
-- 앱 재실행 후 Keychain에서 복원
-- Keychain 항목 삭제 후 재인증
-- 토큰이 평문 JSON, 로그, URL query, 앱 번들에 남지 않는지
-- Keychain service 이름 `TimetableGenerator.GoogleCalendar`
+- 각 내보내기마다 새로운 대화형 승인을 수행하는지
+- 액세스 토큰이 작업 중 메모리에만 존재하고 refresh token을 요청·저장하지 않는지
+- 토큰이 평문 JSON, 로그, URL query, Keychain, 앱 번들에 남지 않는지
 - 계획명 기반 별도 캘린더 생성
-- 계획 이름 변경 시 캘린더 이름 조정
-- 같은 계획 재내보내기 시 중복 calendar 방지
-- 같은 일정 재내보내기 시 중복 event 방지
-- 변경된 일정 update
-- 삭제된 앱 관리 일정 delete
+- 같은 이름의 캘린더가 있을 때 대체·번호를 붙여 생성·취소 선택
+- 기본 캘린더, 사용자 캘린더, 복수의 같은 이름 캘린더는 대체할 수 없는지
+- 앱 관리 캘린더 대체 직전 소유 상태를 다시 검증하는지
+- 대체한 캘린더의 앱 관리 일정을 현재 시간표로 조정하는지
 - 사용자가 직접 만든 일정 보존
-- binding 파일 유실 시 plan marker로 재탐색
 - 동시 export lock
 - UI가 OAuth·네트워크 대기 중 멈추지 않는지
 - macOS 로컬 시간대와 DST
 - Apple Calendar와 동일한 학기 범위
 
-외부 계정을 사용할 수 없다면 unit/integration fixture 검증과 실제 계정 검증을 구분하고 실제 OAuth·API·Keychain end-to-end를 `BLOCKED`로 남긴다.
+외부 계정을 사용할 수 없다면 unit/integration fixture 검증과 실제 계정 검증을 구분하고 실제 OAuth·API end-to-end를 `BLOCKED`로 남긴다.
 
 21단계: 저장·복구·종료
 
@@ -966,7 +957,7 @@ Mac의 시간대를 다음처럼 서로 다른 IANA 시간대로 바꾸거나 �
 - 테마 전환
 - 시간표↔목록 전환
 - PNG 생성
-- Apple Calendar ICS 생성
+- Apple Calendar 자동 내보내기
 - Google Calendar export
 - 창 resize와 breakpoint 반복 횡단
 - Retina 렌더링
@@ -989,19 +980,19 @@ Activity Monitor, Console, `sample`, `leaks` 또는 사용 가능한 Instruments
 - 로컬 설정 파일 Git 제외
 - 사용자 계획이 원격 서버로 업로드되지 않음
 - OAuth token이 로그·파일·번들에 포함되지 않음
-- refresh token은 Keychain에만 저장
-- access token은 메모리에만 유지
+- refresh token을 요청하거나 저장하지 않음
+- access token은 해당 내보내기 작업의 메모리에만 유지
 - OAuth loopback의 state·PKCE 검증
 - 민감한 URL query 로깅 없음
-- 앱 데이터·binding·임시 ICS·PNG 파일 권한
-- 임시 ICS 정리 시점
+- 앱 데이터·Apple 자동화 임시 요청·PNG 파일 권한
+- Apple 자동화 임시 요청 정리 시점
 - 경로 traversal 및 잘못된 계획명 파일명
 - 원격 catalog 크기·SHA 검증
 - revision downgrade와 동일 revision 변조 차단
 - 손상된 업데이트의 원자적 교체
 - 배포물에 PDB와 개발용 파일 미포함
-- 예상하지 않은 entitlement 없음
-- Apple Events 또는 Calendar 권한을 요구하지 않는지
+- JIT와 Apple Calendar 자동화 외 예상하지 않은 entitlement 없음
+- Apple Events 권한 요청과 사용 목적 문구가 실제 기능과 일치하는지
 - 사용자가 선택하지 않은 외부 동작 없음
 
 24단계: 서명·공증·Gatekeeper
@@ -1022,6 +1013,7 @@ quarantine을 제거해서 실행시킨 뒤 Gatekeeper 검증이 완료됐다고
 - 내부 Mach-O부터 바깥 bundle 순으로 서명
 - hardened runtime
 - 메인 실행 파일의 `com.apple.security.cs.allow-jit=true`
+- 메인 실행 파일의 `com.apple.security.automation.apple-events=true`
 - 예상하지 않은 entitlement 없음
 - timestamp
 - nested Mach-O 서명
@@ -1061,7 +1053,7 @@ quarantine을 제거해서 실행시킨 뒤 Gatekeeper 검증이 완료됐다고
 11. 키보드·VoiceOver·접근성 결과
 12. PNG 결과
 13. Apple Calendar 결과
-14. Google Calendar·Keychain 결과
+14. Google Calendar 결과
 15. 저장·복구 결과
 16. 성능 측정
 17. 보안·개인정보 결과
@@ -1113,8 +1105,8 @@ quarantine을 제거해서 실행시킨 뒤 Gatekeeper 검증이 완료됐다고
 - VoiceOver 검증 여부
 - Retina와 외부 모니터 검증 여부
 - PNG 검증 여부
-- Apple Calendar 실제 가져오기 검증 여부
-- Google OAuth/API/Keychain 실제 검증 여부
+- Apple Calendar 실제 자동 내보내기 검증 여부
+- Google OAuth/API 실제 검증 여부
 - Developer ID 서명 여부
 - notarization 여부
 - Gatekeeper 다운로드 후 최초 실행 여부

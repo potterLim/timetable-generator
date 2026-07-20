@@ -68,9 +68,18 @@ function Assert-MacOSEntitlements {
     )
 
     $contents = Get-InfoPlistContents -Path $Path
-    $requiredEntitlement = "com.apple.security.cs.allow-jit"
-    if ($contents.KeyCount -ne 1 -or -not $contents.TrueKeys.Contains($requiredEntitlement)) {
-        throw "macOS entitlement는 allow-jit 하나만 true로 포함해야 합니다: $Path"
+    $requiredEntitlements = @(
+        "com.apple.security.cs.allow-jit",
+        "com.apple.security.automation.apple-events"
+    )
+    if ($contents.KeyCount -ne $requiredEntitlements.Count) {
+        throw "macOS entitlement 구성이 예상과 일치하지 않습니다: $Path"
+    }
+
+    foreach ($requiredEntitlement in $requiredEntitlements) {
+        if (-not $contents.TrueKeys.Contains($requiredEntitlement)) {
+            throw "macOS entitlement에 $requiredEntitlement=true가 없습니다: $Path"
+        }
     }
 }
 
@@ -104,6 +113,7 @@ function Assert-MacOSInfoPlist {
         CFBundleVersion = $ProductVersion
         LSApplicationCategoryType = "public.app-category.education"
         LSMinimumSystemVersion = "14.0"
+        NSAppleEventsUsageDescription = "시간표를 Apple 캘린더에 내보내기 위해 캘린더 앱을 사용합니다."
         NSPrincipalClass = "NSApplication"
     }
 
