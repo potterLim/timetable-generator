@@ -1,0 +1,43 @@
+name: Quality
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+          - macos-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore TimetableGenerator.sln
+
+      - name: Verify formatting
+        run: dotnet format TimetableGenerator.sln --no-restore --verify-no-changes
+
+      - name: Build release configuration
+        run: dotnet build TimetableGenerator.sln --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test TimetableGenerator.sln --configuration Release --no-build
