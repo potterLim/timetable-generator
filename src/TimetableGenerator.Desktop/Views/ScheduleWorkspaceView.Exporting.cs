@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -7,7 +6,6 @@ using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 
 using FluentIcons.Avalonia;
@@ -29,8 +27,6 @@ internal sealed partial class ScheduleWorkspaceView
     private static readonly TimeSpan EXPORT_STATUS_DURATION =
         TimeSpan.FromSeconds(3.5);
 
-    private readonly IControlPngExporter mPngExporter;
-
     private readonly IGoogleCalendarExporter mGoogleCalendarExporter;
 
     private readonly IAppleCalendarImporter mAppleCalendarImporter;
@@ -40,8 +36,6 @@ internal sealed partial class ScheduleWorkspaceView
     private readonly ICalendarExportClock mCalendarExportClock;
 
     private readonly ICalendarTimeZoneProvider mCalendarTimeZoneProvider;
-
-    private readonly AsyncDelegateCommand mExportPngCommand;
 
     private readonly AsyncDelegateCommand mExportGoogleCalendarCommand;
 
@@ -56,14 +50,6 @@ internal sealed partial class ScheduleWorkspaceView
     private Exception? mExportResourceReleaseExceptionOrNull;
 
     private bool mIsExportInProgress;
-
-    public ICommand ExportPngCommand
-    {
-        get
-        {
-            return mExportPngCommand;
-        }
-    }
 
     public ICommand ExportGoogleCalendarCommand
     {
@@ -132,6 +118,9 @@ internal sealed partial class ScheduleWorkspaceView
         mExportPngCommand = new AsyncDelegateCommand(
             exportPngAsync,
             showPngExportFailure);
+        mExportAllPngCommand = new AsyncDelegateCommand(
+            exportAllPngAsync,
+            showPngExportFailure);
         mExportGoogleCalendarCommand = new AsyncDelegateCommand(
             exportGoogleCalendarAsync,
             showGoogleCalendarExportFailure);
@@ -145,70 +134,6 @@ internal sealed partial class ScheduleWorkspaceView
                 beginEditPersonalSchedule);
         AvaloniaXamlLoader.Load(this);
         DetachedFromVisualTree += onDetachedFromVisualTree;
-    }
-
-    private async Task exportPngAsync()
-    {
-        if (tryBeginExportOperation() == false)
-        {
-            return;
-        }
-
-        try
-        {
-            CancellationToken cancellationToken =
-                mLifetimeCancellationSource.Token;
-            cancellationToken.ThrowIfCancellationRequested();
-
-            TopLevel? topLevelOrNull = TopLevel.GetTopLevel(this);
-            if (topLevelOrNull == null)
-            {
-                throw new InvalidOperationException(
-                    "The schedule export view is not attached to a product window.");
-            }
-
-            FilePickerSaveOptions saveOptions = createPngSaveOptions();
-            IStorageFile? destinationFileOrNull =
-                await topLevelOrNull.StorageProvider.SaveFilePickerAsync(
-                    saveOptions);
-            if (destinationFileOrNull == null)
-            {
-                return;
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-            ScheduleBoardView? scheduleBoardOrNull =
-                this.FindControl<ScheduleBoardView>("ScheduleBoard");
-            Canvas? pngExportHostOrNull =
-                this.FindControl<Canvas>("PngExportHost");
-            if (scheduleBoardOrNull == null || pngExportHostOrNull == null)
-            {
-                throw new InvalidOperationException(
-                    "The schedule board export surface could not be prepared.");
-            }
-
-            using (ScheduleBoardPngExportSnapshot snapshot =
-                ScheduleBoardPngExportSnapshot.Create(
-                    pngExportHostOrNull,
-                    scheduleBoardOrNull))
-            using (Stream destinationStream =
-                await destinationFileOrNull.OpenWriteAsync())
-            {
-                await mPngExporter.ExportControlAsync(
-                    snapshot.Surface,
-                    destinationStream,
-                    cancellationToken);
-                await destinationStream.FlushAsync(cancellationToken);
-            }
-
-            showTransientExportStatus(
-                "PNG 이미지로 저장했습니다.",
-                EExportStatus.Success);
-        }
-        finally
-        {
-            completeExportOperation();
-        }
     }
 
     private async Task exportGoogleCalendarAsync()
@@ -358,35 +283,6 @@ internal sealed partial class ScheduleWorkspaceView
         }
     }
 
-    private FilePickerSaveOptions createPngSaveOptions()
-    {
-        FilePickerSaveOptions options = new FilePickerSaveOptions();
-        options.Title = "시간표를 PNG 이미지로 저장";
-        options.DefaultExtension = "png";
-        options.ShowOverwritePrompt = true;
-        options.SuggestedFileName = createSuggestedPngFileName();
-        FilePickerFileType pngFileType = new FilePickerFileType("PNG 이미지");
-        pngFileType.Patterns = new string[] { "*.png" };
-        pngFileType.MimeTypes = new string[] { "image/png" };
-        pngFileType.AppleUniformTypeIdentifiers = new string[] { "public.png" };
-        options.FileTypeChoices = new FilePickerFileType[] { pngFileType };
-        options.SuggestedFileType = pngFileType;
-        return options;
-    }
-
-    private string createSuggestedPngFileName()
-    {
-        PlannerWorkspaceViewModel? workspaceOrNull =
-            DataContext as PlannerWorkspaceViewModel;
-        if (workspaceOrNull?.ActivePlanOrNull == null)
-        {
-            return SchedulePngFileNameFactory.Create(null);
-        }
-
-        return SchedulePngFileNameFactory.Create(
-            workspaceOrNull.ActivePlanOrNull.Name);
-    }
-
     private void showGoogleCalendarExportResult(
         GoogleCalendarExportResult result,
         PlanName calendarName)
@@ -447,13 +343,6 @@ internal sealed partial class ScheduleWorkspaceView
                     result.Status,
                     "Unknown Google Calendar export status.");
         }
-    }
-
-    private void showPngExportFailure(Exception exception)
-    {
-        showExportFailure(
-            exception,
-            "PNG 이미지를 저장하지 못했습니다. 다시 시도해 주세요.");
     }
 
     private void showGoogleCalendarExportFailure(Exception exception)
@@ -618,6 +507,7 @@ internal sealed partial class ScheduleWorkspaceView
         {
             await Task.WhenAll(
                 mExportPngCommand.ExecutionTask,
+                mExportAllPngCommand.ExecutionTask,
                 mExportGoogleCalendarCommand.ExecutionTask,
                 mExportAppleCalendarCommand.ExecutionTask);
             mGoogleCalendarExporter.Dispose();

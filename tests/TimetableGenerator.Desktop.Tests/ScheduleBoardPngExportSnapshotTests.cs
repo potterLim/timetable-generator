@@ -245,6 +245,65 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     }
 
     [AvaloniaFact]
+    public void PngSnapshotCanRenderAnotherCandidateWithoutChangingTheBoard()
+    {
+        ScheduleEntry displayedEntry = createScheduleEntry(
+            EDay.Monday,
+            new AcademicPeriod(1));
+        ScheduleEntry exportedEntry = createScheduleEntry(
+            EDay.Sunday,
+            new AcademicPeriod(2));
+        ScheduleBoardView sourceBoard = createSourceBoard(
+            new ScheduleEntry[] { displayedEntry });
+        ScheduleBoardPresentation exportedPresentation =
+            new ScheduleBoardPresentation(
+                new ScheduleRecommendation(
+                    new ScheduleEntry[] { exportedEntry }),
+                new PlanName("PNG 후보 내보내기 테스트"),
+                new InstitutionName("한동대학교"),
+                AcademicTerm.Parse("2026-2"));
+        Canvas exportHost = new Canvas();
+        exportHost.IsHitTestVisible = false;
+        exportHost.Opacity = 0.0;
+        exportHost.ZIndex = -1;
+        Grid root = new Grid();
+        root.Children.Add(exportHost);
+        root.Children.Add(sourceBoard);
+        Window window = createWindow(root, ThemeVariant.Light);
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            using (ScheduleBoardPngExportSnapshot snapshot =
+                ScheduleBoardPngExportSnapshot.create(
+                    exportHost,
+                    exportedPresentation,
+                    sourceBoard))
+            {
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.Equal(7, snapshot.Layout.DayRange.DayCount);
+                Assert.Equal(
+                    new ScheduleBoardTimeBoundary(600),
+                    snapshot.Layout.TimeAxis.Start);
+                Assert.Same(
+                    displayedEntry,
+                    Assert.Single(
+                        Assert.IsType<ScheduleBoardPresentation>(
+                            sourceBoard.DataContext).Schedule.Entries));
+            }
+
+            Assert.Empty(exportHost.Children);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public async Task PngSnapshotUsesTheWednesdayFirstPeriodTimeAsync()
     {
         ScheduleEntry wednesdayEntry = createScheduleEntry(

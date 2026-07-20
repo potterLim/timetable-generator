@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 
@@ -9,7 +10,11 @@ namespace TimetableGenerator.Desktop.Exporting;
 
 internal static class SchedulePngFileNameFactory
 {
+    private const int MAXIMUM_UTF8_COMPONENT_BYTE_COUNT = 255;
+
     private const string FALLBACK_BASE_NAME = "시간표";
+
+    private const string BATCH_FOLDER_SUFFIX = " - 모든 시간표";
 
     private const string PNG_EXTENSION = ".png";
 
@@ -52,18 +57,66 @@ internal static class SchedulePngFileNameFactory
 
     public static string Create(PlanName? planNameOrNull)
     {
+        return createFileSystemComponent(
+            getBaseName(planNameOrNull),
+            PNG_EXTENSION);
+    }
+
+    public static string CreateBatchFolderName(PlanName? planNameOrNull)
+    {
+        return CreateBatchFolderName(planNameOrNull, 1);
+    }
+
+    public static string CreateBatchFolderName(
+        PlanName? planNameOrNull,
+        int copyNumber)
+    {
+        if (copyNumber < 1)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(copyNumber),
+                copyNumber,
+                "A PNG export folder copy number must be positive.");
+        }
+
+        string copySuffix = copyNumber == 1
+            ? string.Empty
+            : " (" + copyNumber + ")";
+        return createFileSystemComponent(
+            getBaseName(planNameOrNull),
+            BATCH_FOLDER_SUFFIX + copySuffix);
+    }
+
+    public static string CreateBatchCandidate(
+        PlanName? planNameOrNull,
+        SchedulePngCandidateNumber candidateNumber)
+    {
+        int digitCount = candidateNumber.Total
+            .ToString(CultureInfo.InvariantCulture)
+            .Length;
+        string sequenceText = candidateNumber.Value.ToString(
+            "D" + digitCount,
+            CultureInfo.InvariantCulture);
+        string suffix = " ("
+            + sequenceText
+            + ")"
+            + PNG_EXTENSION;
+        return createFileSystemComponent(
+            getBaseName(planNameOrNull),
+            suffix);
+    }
+
+    private static string getBaseName(PlanName? planNameOrNull)
+    {
         if (planNameOrNull == null)
         {
-            return FALLBACK_BASE_NAME + PNG_EXTENSION;
+            return FALLBACK_BASE_NAME;
         }
 
         string sanitizedBaseName = sanitizeBaseName(planNameOrNull.Value);
-        if (string.IsNullOrWhiteSpace(sanitizedBaseName))
-        {
-            return FALLBACK_BASE_NAME + PNG_EXTENSION;
-        }
-
-        return sanitizedBaseName + PNG_EXTENSION;
+        return string.IsNullOrWhiteSpace(sanitizedBaseName)
+            ? FALLBACK_BASE_NAME
+            : sanitizedBaseName;
     }
 
     private static string sanitizeBaseName(string value)
@@ -95,6 +148,54 @@ internal static class SchedulePngFileNameFactory
         }
 
         return sanitizedBaseName;
+    }
+
+    private static string createFileSystemComponent(
+        string baseName,
+        string suffix)
+    {
+        int suffixByteCount = Encoding.UTF8.GetByteCount(suffix);
+        int baseNameByteBudget = MAXIMUM_UTF8_COMPONENT_BYTE_COUNT
+            - suffixByteCount;
+        if (baseNameByteBudget <= 0)
+        {
+            throw new InvalidOperationException(
+                "The PNG export suffix exceeds the file-system name limit.");
+        }
+
+        string truncatedBaseName = truncateToUtf8ByteCount(
+            baseName,
+            baseNameByteBudget);
+        if (string.IsNullOrWhiteSpace(truncatedBaseName))
+        {
+            truncatedBaseName = FALLBACK_BASE_NAME;
+        }
+
+        return truncatedBaseName + suffix;
+    }
+
+    private static string truncateToUtf8ByteCount(
+        string value,
+        int maximumByteCount)
+    {
+        StringBuilder builder = new StringBuilder(value.Length);
+        TextElementEnumerator enumerator =
+            StringInfo.GetTextElementEnumerator(value);
+        int byteCount = 0;
+        while (enumerator.MoveNext())
+        {
+            string textElement = enumerator.GetTextElement();
+            int elementByteCount = Encoding.UTF8.GetByteCount(textElement);
+            if (byteCount + elementByteCount > maximumByteCount)
+            {
+                break;
+            }
+
+            builder.Append(textElement);
+            byteCount += elementByteCount;
+        }
+
+        return builder.ToString().TrimEnd(' ', '.');
     }
 
     private static string getWindowsDeviceBaseName(string baseName)

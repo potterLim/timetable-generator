@@ -1,3 +1,6 @@
+using System;
+using System.Text;
+
 using TimetableGenerator.Desktop.Exporting;
 using TimetableGenerator.Domain.Planning;
 
@@ -68,5 +71,83 @@ public sealed class SchedulePngFileNameFactoryTests
             new PlanName("..."));
 
         Assert.Equal("시간표.png", fileName);
+    }
+
+    [Fact]
+    public void BatchFolderNameUsesTheSanitizedPlanName()
+    {
+        PlanName planName = new PlanName("2026-2/야간");
+
+        string folderName =
+            SchedulePngFileNameFactory.CreateBatchFolderName(planName);
+
+        Assert.Equal("2026-2-야간 - 모든 시간표", folderName);
+    }
+
+    [Theory]
+    [InlineData(1, 4, "2026-2학기 시간표 (1).png")]
+    [InlineData(1, 24, "2026-2학기 시간표 (01).png")]
+    [InlineData(24, 24, "2026-2학기 시간표 (24).png")]
+    public void BatchCandidateFileNameSortsInRecommendationOrder(
+        int value,
+        int total,
+        string expectedFileName)
+    {
+        SchedulePngCandidateNumber candidateNumber =
+            new SchedulePngCandidateNumber(value, total);
+
+        string fileName = SchedulePngFileNameFactory.CreateBatchCandidate(
+            new PlanName("2026-2학기 시간표"),
+            candidateNumber);
+
+        Assert.Equal(expectedFileName, fileName);
+    }
+
+    [Theory]
+    [InlineData(0, 1)]
+    [InlineData(2, 1)]
+    [InlineData(1, 0)]
+    public void BatchCandidateNumberRejectsValuesOutsideTheBatch(
+        int value,
+        int total)
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(
+            delegate
+            {
+                _ = new SchedulePngCandidateNumber(value, total);
+            });
+    }
+
+    [Fact]
+    public void LongKoreanPlanNameFitsMacOsFileSystemComponentLimit()
+    {
+        PlanName planName = new PlanName(new string('한', 80));
+
+        string folderName =
+            SchedulePngFileNameFactory.CreateBatchFolderName(planName);
+        string candidateFileName =
+            SchedulePngFileNameFactory.CreateBatchCandidate(
+                planName,
+                new SchedulePngCandidateNumber(24, 24));
+
+        Assert.True(Encoding.UTF8.GetByteCount(folderName) <= 255);
+        Assert.True(Encoding.UTF8.GetByteCount(candidateFileName) <= 255);
+        Assert.EndsWith(" - 모든 시간표", folderName, StringComparison.Ordinal);
+        Assert.EndsWith(" (24).png", candidateFileName, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void LongBatchFolderCopyNameIncludesSuffixWithinComponentLimit()
+    {
+        PlanName planName = new PlanName(new string('한', 80));
+
+        string folderName =
+            SchedulePngFileNameFactory.CreateBatchFolderName(planName, 2);
+
+        Assert.True(Encoding.UTF8.GetByteCount(folderName) <= 255);
+        Assert.EndsWith(
+            " - 모든 시간표 (2)",
+            folderName,
+            StringComparison.Ordinal);
     }
 }

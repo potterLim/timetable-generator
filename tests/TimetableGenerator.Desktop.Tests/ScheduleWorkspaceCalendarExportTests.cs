@@ -63,6 +63,9 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             MenuItem pngAction = findRequiredMenuItem(
                 menu,
                 "ExportPngAction");
+            MenuItem allPngAction = findRequiredMenuItem(
+                menu,
+                "ExportAllPngAction");
             MenuItem appleAction = findRequiredMenuItem(
                 menu,
                 "ExportAppleCalendarAction");
@@ -71,18 +74,25 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                 "ExportGoogleCalendarAction");
 
             Assert.True(pngAction.IsVisible);
+            Assert.Equal(
+                workspace.HasMultipleRecommendations,
+                allPngAction.IsVisible);
             Assert.False(appleAction.IsVisible);
             Assert.True(googleAction.IsVisible);
-            Assert.Equal(3, menu.Items.Count);
+            Assert.Equal(4, menu.Items.Count);
             Assert.Same(pngAction, menu.Items[0]);
-            Assert.Same(appleAction, menu.Items[1]);
-            Assert.Same(googleAction, menu.Items[2]);
+            Assert.Same(allPngAction, menu.Items[1]);
+            Assert.Same(appleAction, menu.Items[2]);
+            Assert.Same(googleAction, menu.Items[3]);
             foreach (ThemeVariant themeVariant in getProductThemeVariants())
             {
                 window.RequestedThemeVariant = themeVariant;
                 menu.ShowAt(exportButton);
                 Dispatcher.UIThread.RunJobs();
                 assertExportPngImageIconPresentation(pngAction);
+                assertExportFluentIconPresentation(
+                    allPngAction,
+                    Icon.ImageMultiple);
                 assertExportFluentIconPresentation(
                     appleAction,
                     Icon.CalendarMonth);
@@ -99,9 +109,15 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                 "ExportPngImage",
                 AutomationProperties.GetAutomationId(pngAction));
             Assert.Equal(
+                "ExportAllPngImages",
+                AutomationProperties.GetAutomationId(allPngAction));
+            Assert.Equal(
                 "ExportGoogleCalendar",
                 AutomationProperties.GetAutomationId(googleAction));
             Assert.Same(workspaceView.ExportPngCommand, pngAction.Command);
+            Assert.Same(
+                workspaceView.ExportAllPngCommand,
+                allPngAction.Command);
             Assert.Same(
                 workspaceView.ExportGoogleCalendarCommand,
                 googleAction.Command);
@@ -215,11 +231,12 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                 "ExportGoogleCalendarAction");
             Assert.True(appleAction.IsVisible);
             Assert.True(googleAction.IsVisible);
-            Assert.Equal(3, menu.Items.Count);
+            Assert.Equal(4, menu.Items.Count);
             Assert.Equal(
                 new[]
                 {
                     "PNG 이미지",
+                    "모든 시간표 이미지",
                     "Apple 캘린더",
                     "Google 캘린더",
                 },
@@ -237,12 +254,18 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             MenuItem pngAction = findRequiredMenuItem(
                 menu,
                 "ExportPngAction");
+            MenuItem allPngAction = findRequiredMenuItem(
+                menu,
+                "ExportAllPngAction");
             foreach (ThemeVariant themeVariant in getProductThemeVariants())
             {
                 window.RequestedThemeVariant = themeVariant;
                 menu.ShowAt(exportButton);
                 Dispatcher.UIThread.RunJobs();
                 assertExportPngImageIconPresentation(pngAction);
+                assertExportFluentIconPresentation(
+                    allPngAction,
+                    Icon.ImageMultiple);
                 assertExportFluentIconPresentation(
                     appleAction,
                     Icon.CalendarMonth);

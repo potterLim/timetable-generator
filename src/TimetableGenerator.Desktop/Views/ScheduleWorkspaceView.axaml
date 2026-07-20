@@ -193,6 +193,25 @@
                 </MenuItem.Icon>
               </MenuItem>
               <MenuItem
+                  x:Name="ExportAllPngAction"
+                  Classes="export-menu-item"
+                  Header="모든 시간표 이미지"
+                  IsVisible="{Binding CanExportAllPngCandidates}"
+                  Command="{Binding #WorkspaceRoot.ExportAllPngCommand}"
+                  AutomationProperties.AutomationId="ExportAllPngImages"
+                  AutomationProperties.Name="모든 시간표 후보를 PNG 이미지로 저장"
+                  AutomationProperties.HelpText="생성된 모든 시간표 후보를 번호가 붙은 PNG 이미지로 저장합니다.">
+                <MenuItem.Icon>
+                  <icons:FluentIcon
+                      Classes="export-menu-icon"
+                      AutomationProperties.AccessibilityView="Raw"
+                      Icon="ImageMultiple"
+                      IconVariant="Regular"
+                      IconSize="Size20"
+                      FontSize="20" />
+                </MenuItem.Icon>
+              </MenuItem>
+              <MenuItem
                   x:Name="ExportAppleCalendarAction"
                   Classes="export-menu-item"
                   Header="Apple 캘린더"

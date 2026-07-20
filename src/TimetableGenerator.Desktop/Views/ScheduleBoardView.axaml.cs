@@ -113,6 +113,20 @@ internal sealed partial class ScheduleBoardView : UserControl
         return scheduleBoard;
     }
 
+    internal void prepareForPngExport(
+        ScheduleBoardPresentation presentation)
+    {
+        ArgumentNullException.ThrowIfNull(presentation);
+        if (mIsPngExport == false)
+        {
+            throw new InvalidOperationException(
+                "Only a PNG export board can be prepared for export.");
+        }
+
+        DataContext = presentation;
+        rebuildBoard();
+    }
+
     private void onDataContextChanged(object? senderOrNull, EventArgs eventArgs)
     {
         if (VisualRoot == null)
