@@ -36,7 +36,7 @@ public sealed class PlanInspectorVisualStateTests
         {
             workspace.BeginRenamePlanCommand.Execute(null);
             workspace.PlanNameDraft = TERM_PLAN_NAME;
-            workspace.ConfirmRenamePlanCommand.Execute(null);
+            workspace.ConfirmPlanNameCommand.Execute(null);
 
             double[] inspectorWidths = new double[]
             {

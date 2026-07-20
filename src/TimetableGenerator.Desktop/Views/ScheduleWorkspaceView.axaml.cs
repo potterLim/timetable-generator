@@ -2,7 +2,6 @@ using System;
 using System.Windows.Input;
 
 using Avalonia.Controls;
-using Avalonia.Input;
 
 using FluentIcons.Avalonia;
 using FluentIcons.Common;
@@ -98,21 +97,5 @@ internal sealed partial class ScheduleWorkspaceView : UserControl
         }
 
         workspaceOrNull.BeginEditPersonalScheduleCommand.Execute(scheduleId);
-    }
-
-    private void onScheduleContentSurfacePointerPressed(
-        object? senderOrNull,
-        PointerPressedEventArgs eventArgs)
-    {
-        PointerPoint currentPoint = eventArgs.GetCurrentPoint(this);
-        if (currentPoint.Properties.PointerUpdateKind
-            != PointerUpdateKind.LeftButtonPressed)
-        {
-            return;
-        }
-
-        PlannerWorkspaceViewModel? workspaceOrNull =
-            DataContext as PlannerWorkspaceViewModel;
-        workspaceOrNull?.CloseInspectorPaneCommand.Execute(null);
     }
 }

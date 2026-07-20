@@ -120,7 +120,7 @@ public sealed class PersonalSchedulePaneStateTests
     }
 
     [AvaloniaFact]
-    public void PersonalScheduleEditorLocksLightDismissAtOverlayWidth()
+    public void PersonalScheduleEditorPreservesInspectorAtOverlayWidth()
     {
         const double MEDIUM_WORKSPACE_WIDTH = 1_080.0;
 
@@ -141,28 +141,24 @@ public sealed class PersonalSchedulePaneStateTests
             workspace.OpenInspectorPaneCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
 
-            SplitView inspectorSplitView = host.GetVisualDescendants()
-                .OfType<SplitView>()
-                .Single(
-                    candidate => candidate.PanePlacement
-                        == SplitViewPanePlacement.Right);
+            Border inspectorPaneHost = host.GetVisualDescendants()
+                .OfType<Border>()
+                .Single(candidate => candidate.Name == "InspectorPaneHost");
             Button inspectorAddButton = host.GetVisualDescendants()
                 .OfType<Button>()
                 .Single(
                     candidate => candidate.Name == "AddPersonalScheduleButton");
 
-            Assert.Equal(
-                SplitViewDisplayMode.Overlay,
-                inspectorSplitView.DisplayMode);
+            Assert.Contains("overlay", inspectorPaneHost.Classes);
             Assert.True(workspace.IsInspectorPaneOpen);
-            Assert.False(inspectorSplitView.UseLightDismissOverlayMode);
+            Assert.True(inspectorPaneHost.IsEffectivelyVisible);
             Assert.True(inspectorAddButton.Focus());
 
             clickButton(window, inspectorAddButton);
             Dispatcher.UIThread.RunJobs();
 
             Assert.True(workspace.IsInspectorPaneOpen);
-            Assert.False(inspectorSplitView.UseLightDismissOverlayMode);
+            Assert.True(inspectorPaneHost.IsEffectivelyVisible);
             Assert.DoesNotContain(
                 host.GetVisualDescendants().OfType<TextBlock>(),
                 candidate => getTextOrEmpty(candidate).Contains(
@@ -173,7 +169,7 @@ public sealed class PersonalSchedulePaneStateTests
             Dispatcher.UIThread.RunJobs();
 
             Assert.True(workspace.IsInspectorPaneOpen);
-            Assert.False(inspectorSplitView.UseLightDismissOverlayMode);
+            Assert.True(inspectorPaneHost.IsEffectivelyVisible);
             Assert.True(inspectorAddButton.IsKeyboardFocusWithin);
 
             inspectorAddButton.Command?.Execute(null);
@@ -190,8 +186,7 @@ public sealed class PersonalSchedulePaneStateTests
 
             Assert.False(workspace.IsPersonalScheduleEditorVisible);
             Assert.True(workspace.IsInspectorPaneOpen);
-            Assert.True(inspectorSplitView.IsPaneOpen);
-            Assert.False(inspectorSplitView.UseLightDismissOverlayMode);
+            Assert.True(inspectorPaneHost.IsEffectivelyVisible);
             Assert.Single(workspace.ActivePlan.PersonalSchedules);
         }
         finally

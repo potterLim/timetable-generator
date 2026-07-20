@@ -10,8 +10,6 @@ namespace TimetableGenerator.Desktop.Presentation.ViewModels;
 
 internal sealed partial class PlannerWorkspaceViewModel
 {
-    private readonly DelegateCommand mConfirmRenamePlanCommand;
-
     private readonly DelegateCommand mBeginDeletePlanCommand;
 
     private readonly DelegateCommand mBeginClearActivePlanCommand;
@@ -19,6 +17,8 @@ internal sealed partial class PlannerWorkspaceViewModel
     private PlanTabItem? mActivePlanOrNull;
 
     private PlanTabItem? mPlanBeingRenamedOrNull;
+
+    private EPlanNameEditorPurpose? mPlanNameEditorPurposeOrNull;
 
     private PlanTabItem? mPlanPendingDeletionOrNull;
 
@@ -72,11 +72,59 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
+    public bool IsPlanNameEditorVisible
+    {
+        get
+        {
+            return mPlanNameEditorPurposeOrNull.HasValue;
+        }
+    }
+
+    public bool IsCreatingPlan
+    {
+        get
+        {
+            return mPlanNameEditorPurposeOrNull
+                == EPlanNameEditorPurpose.Create;
+        }
+    }
+
     public bool IsRenamingPlan
     {
         get
         {
-            return mPlanBeingRenamedOrNull != null;
+            return mPlanNameEditorPurposeOrNull
+                == EPlanNameEditorPurpose.Rename;
+        }
+    }
+
+    public string PlanNameEditorTitle
+    {
+        get
+        {
+            return mPlanNameEditorPurposeOrNull switch
+            {
+                EPlanNameEditorPurpose.Create => "시간표 이름",
+                EPlanNameEditorPurpose.Rename => "시간표 이름 바꾸기",
+                null => string.Empty,
+                _ => throw new InvalidOperationException(
+                    "The plan name editor purpose is not supported."),
+            };
+        }
+    }
+
+    public string PlanNameEditorPrimaryActionText
+    {
+        get
+        {
+            return mPlanNameEditorPurposeOrNull switch
+            {
+                EPlanNameEditorPurpose.Create => "만들기",
+                EPlanNameEditorPurpose.Rename => "저장",
+                null => string.Empty,
+                _ => throw new InvalidOperationException(
+                    "The plan name editor purpose is not supported."),
+            };
         }
     }
 
@@ -100,7 +148,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return IsRenamingPlan
+            return IsPlanNameEditorVisible
                 || IsDeletePlanConfirmationVisible
                 || IsClearActivePlanConfirmationVisible;
         }
@@ -110,9 +158,9 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            if (IsRenamingPlan)
+            if (IsPlanNameEditorVisible)
             {
-                return "시간표 이름 바꾸기";
+                return PlanNameEditorTitle;
             }
 
             if (IsDeletePlanConfirmationVisible)
@@ -252,15 +300,9 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     public ICommand BeginRenamePlanCommand { get; }
 
-    public ICommand ConfirmRenamePlanCommand
-    {
-        get
-        {
-            return mConfirmRenamePlanCommand;
-        }
-    }
+    public ICommand ConfirmPlanNameCommand { get; }
 
-    public ICommand CancelRenamePlanCommand { get; }
+    public ICommand CancelPlanNameCommand { get; }
 
     public ICommand BeginDeletePlanCommand
     {
@@ -316,19 +358,18 @@ internal sealed partial class PlannerWorkspaceViewModel
         afterWorkspaceMutation();
     }
 
-    private void addPlan()
+    private void beginCreatePlan()
     {
         throwIfDisposed();
         PlanName availablePlanName =
             AcademicTermPlanNameFactory.FindAvailablePlanName(
                 mCatalogProjection.Document.Catalog.Term,
                 mSession.Workspace.Plans);
-        mSession.AddPlan(
-            PlanId.CreateNew(),
-            availablePlanName);
-        rebuildPlanItemsAndNotify();
-        beginRenamePlan();
-        afterWorkspaceMutation();
+        PlanNameDraft = availablePlanName.Value;
+        clearPlanNameValidationMessage();
+        clearPlanPendingDeletion();
+        clearPlanPendingClear();
+        showCreatePlanEditor();
     }
 
     private void beginRenamePlan()
@@ -350,11 +391,11 @@ internal sealed partial class PlannerWorkspaceViewModel
         showRenamePlanEditor(plan);
     }
 
-    private void confirmRenamePlan()
+    private void confirmPlanName()
     {
         throwIfDisposed();
-        PlanTabItem? planBeingRenamedOrNull = mPlanBeingRenamedOrNull;
-        if (planBeingRenamedOrNull == null)
+        EPlanNameEditorPurpose? purposeOrNull = mPlanNameEditorPurposeOrNull;
+        if (purposeOrNull.HasValue == false)
         {
             return;
         }
@@ -370,6 +411,45 @@ internal sealed partial class PlannerWorkspaceViewModel
             return;
         }
 
+        switch (purposeOrNull.Value)
+        {
+            case EPlanNameEditorPurpose.Create:
+                confirmCreatePlan(newName);
+                break;
+            case EPlanNameEditorPurpose.Rename:
+                confirmRenamePlan(newName);
+                break;
+            default:
+                throw new InvalidOperationException(
+                    "The plan name editor purpose is not supported.");
+        }
+    }
+
+    private void confirmCreatePlan(PlanName newName)
+    {
+        if (hasPlanWithName(newName))
+        {
+            showDuplicatePlanNameValidationMessage();
+            return;
+        }
+
+        hidePlanNameEditor();
+        mSession.AddPlan(
+            PlanId.CreateNew(),
+            newName);
+        rebuildPlanItemsAndNotify();
+        afterWorkspaceMutation();
+    }
+
+    private void confirmRenamePlan(PlanName newName)
+    {
+        PlanTabItem? planBeingRenamedOrNull = mPlanBeingRenamedOrNull;
+        if (planBeingRenamedOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "A rename operation requires a target plan.");
+        }
+
         if (hasOtherPlanWithName(planBeingRenamedOrNull.PlanId, newName))
         {
             showDuplicatePlanNameValidationMessage();
@@ -378,26 +458,35 @@ internal sealed partial class PlannerWorkspaceViewModel
 
         if (planBeingRenamedOrNull.Name == newName)
         {
-            hideRenamePlanEditor();
+            hidePlanNameEditor();
             return;
         }
 
         PlanId renamedPlanId = planBeingRenamedOrNull.PlanId;
-        hideRenamePlanEditor();
+        hidePlanNameEditor();
         mSession.RenamePlan(renamedPlanId, newName);
         rebuildPlanItemsAndNotify();
         afterWorkspaceMetadataMutation();
     }
 
-    private void cancelRenamePlan()
+    private void cancelPlanNameEditing()
     {
-        if (mPlanBeingRenamedOrNull != null)
+        throwIfDisposed();
+        if (IsRenamingPlan && mPlanBeingRenamedOrNull != null)
         {
             PlanNameDraft = mPlanBeingRenamedOrNull.DisplayName;
         }
+        else if (mActivePlanOrNull != null)
+        {
+            PlanNameDraft = mActivePlanOrNull.DisplayName;
+        }
+        else
+        {
+            PlanNameDraft = string.Empty;
+        }
 
         clearPlanNameValidationMessage();
-        hideRenamePlanEditor();
+        hidePlanNameEditor();
     }
 
     private void beginDeletePlan()
@@ -412,7 +501,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         throwIfDisposed();
         requirePlanItem(plan);
-        hideRenamePlanEditor();
+        hidePlanNameEditor();
         clearPlanPendingClear();
         mPlanPendingDeletionOrNull = plan;
         raisePlanEditingStateChanged();
@@ -453,7 +542,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             return;
         }
 
-        hideRenamePlanEditor();
+        hidePlanNameEditor();
         clearPlanPendingDeletion();
         mPlanPendingClearOrNull = getRequiredActivePlanItem();
         raisePlanEditingStateChanged();
@@ -487,7 +576,7 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private void closePlanEditingState()
     {
-        hideRenamePlanEditor();
+        hidePlanNameEditor();
         clearPlanPendingDeletion();
         clearPlanPendingClear();
         clearPlanNameValidationMessage();
@@ -598,23 +687,45 @@ internal sealed partial class PlannerWorkspaceViewModel
         return false;
     }
 
+    private bool hasPlanWithName(PlanName name)
+    {
+        foreach (PlanningPlan plan in mSession.Workspace.Plans)
+        {
+            if (StringComparer.OrdinalIgnoreCase.Equals(
+                plan.Name.Value,
+                name.Value))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void showCreatePlanEditor()
+    {
+        mPlanBeingRenamedOrNull = null;
+        mPlanNameEditorPurposeOrNull = EPlanNameEditorPurpose.Create;
+        raisePlanNameEditorStateChanged();
+    }
+
     private void showRenamePlanEditor(PlanTabItem plan)
     {
         mPlanBeingRenamedOrNull = plan;
-        raisePropertyChanged(nameof(IsRenamingPlan));
-        raisePlanEditingStateChanged();
+        mPlanNameEditorPurposeOrNull = EPlanNameEditorPurpose.Rename;
+        raisePlanNameEditorStateChanged();
     }
 
-    private void hideRenamePlanEditor()
+    private void hidePlanNameEditor()
     {
-        if (mPlanBeingRenamedOrNull == null)
+        if (mPlanNameEditorPurposeOrNull.HasValue == false)
         {
             return;
         }
 
         mPlanBeingRenamedOrNull = null;
-        raisePropertyChanged(nameof(IsRenamingPlan));
-        raisePlanEditingStateChanged();
+        mPlanNameEditorPurposeOrNull = null;
+        raisePlanNameEditorStateChanged();
     }
 
     private void clearPlanPendingDeletion()
@@ -643,6 +754,16 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         raisePropertyChanged(nameof(CanClearActivePlan));
         mBeginClearActivePlanCommand.NotifyCanExecuteChanged();
+    }
+
+    private void raisePlanNameEditorStateChanged()
+    {
+        raisePropertyChanged(nameof(IsPlanNameEditorVisible));
+        raisePropertyChanged(nameof(IsCreatingPlan));
+        raisePropertyChanged(nameof(IsRenamingPlan));
+        raisePropertyChanged(nameof(PlanNameEditorTitle));
+        raisePropertyChanged(nameof(PlanNameEditorPrimaryActionText));
+        raisePlanEditingStateChanged();
     }
 
     private void raisePlanEditingStateChanged()

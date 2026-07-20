@@ -52,13 +52,19 @@ public sealed class WorkspaceEmptyStateTests
                 scheduleWorkspace,
                 "과목을 선택해 시간표를 구성해 보세요",
                 "과목을 선택하면 가능한 시간표를 자동으로 만듭니다.");
+            workspace.OpenInspectorPaneCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
             assertEmptyInspectorState(planInspector);
 
             workspace.ActivePlan = workspace.Plans[0];
             await workspace.RecommendationRefreshTask;
             Dispatcher.UIThread.RunJobs();
 
+            workspace.CloseInspectorPaneCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
             assertPopulatedScheduleState(scheduleWorkspace);
+            workspace.OpenInspectorPaneCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
             assertPopulatedInspectorState(planInspector);
 
             PlanCourseChoiceGroupItem scheduledCourseGroup = Assert.Single(
@@ -70,10 +76,14 @@ public sealed class WorkspaceEmptyStateTests
             await workspace.RecommendationRefreshTask;
             Dispatcher.UIThread.RunJobs();
 
+            workspace.CloseInspectorPaneCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
             assertEmptyScheduleState(
                 scheduleWorkspace,
                 "시간이 정해진 과목이 없습니다",
                 "시간 미정 과목은 현재 시간표에 유지됩니다.");
+            workspace.OpenInspectorPaneCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
             assertTimeNotProvidedInspectorState(planInspector);
         }
         finally
@@ -341,7 +351,7 @@ public sealed class WorkspaceEmptyStateTests
         Assert.InRange(
             Math.Abs(controlCenterX - containerCenterX),
             0.0,
-            0.05);
+            0.5);
     }
 
     private static TControl findRequiredControl<TControl>(

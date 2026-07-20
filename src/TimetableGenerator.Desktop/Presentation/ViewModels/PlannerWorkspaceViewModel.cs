@@ -174,7 +174,7 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
             confirmDeletePersonalSchedule);
         CancelDeletePersonalScheduleCommand = new DelegateCommand(
             cancelDeletePersonalSchedule);
-        AddPlanCommand = new DelegateCommand(addPlan);
+        AddPlanCommand = new DelegateCommand(beginCreatePlan);
         mPreviousRecommendationCommand = new DelegateCommand(
             selectPreviousRecommendation,
             canNavigateRecommendations);
@@ -185,8 +185,8 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         OpenInspectorPaneCommand = new DelegateCommand(openInspectorPane);
         CloseInspectorPaneCommand = new DelegateCommand(closeInspectorPane);
         BeginRenamePlanCommand = new DelegateCommand(beginRenamePlan);
-        mConfirmRenamePlanCommand = new DelegateCommand(confirmRenamePlan);
-        CancelRenamePlanCommand = new DelegateCommand(cancelRenamePlan);
+        ConfirmPlanNameCommand = new DelegateCommand(confirmPlanName);
+        CancelPlanNameCommand = new DelegateCommand(cancelPlanNameEditing);
         mBeginDeletePlanCommand = new DelegateCommand(
             beginDeletePlan,
             canDeletePlan);

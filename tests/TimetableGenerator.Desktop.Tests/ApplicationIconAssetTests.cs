@@ -39,12 +39,9 @@ public sealed class ApplicationIconAssetTests
     [Fact]
     public void AppIconMasterIsSquareHighResolutionPngWithAlpha()
     {
-        string repositoryRoot = findRepositoryRoot();
         string iconPath = Path.Combine(
-            repositoryRoot,
-            "src",
-            "TimetableGenerator.Desktop",
-            "Assets",
+            AppContext.BaseDirectory,
+            "ProductAssets",
             "AppIcon.png");
         byte[] bytes = File.ReadAllBytes(iconPath);
 
@@ -61,13 +58,9 @@ public sealed class ApplicationIconAssetTests
     [Fact]
     public void WindowsIconContainsEveryRequiredDesktopSize()
     {
-        string repositoryRoot = findRepositoryRoot();
         string iconPath = Path.Combine(
-            repositoryRoot,
-            "src",
-            "TimetableGenerator.Desktop",
-            "Platforms",
-            "Windows",
+            AppContext.BaseDirectory,
+            "ProductAssets",
             "AppIcon.ico");
         byte[] bytes = File.ReadAllBytes(iconPath);
 
@@ -100,27 +93,6 @@ public sealed class ApplicationIconAssetTests
         {
             Assert.Contains(requiredSize, sizes);
         }
-    }
-
-    private static string findRepositoryRoot()
-    {
-        DirectoryInfo? currentDirectoryOrNull =
-            new DirectoryInfo(AppContext.BaseDirectory);
-        while (currentDirectoryOrNull != null)
-        {
-            string solutionPath = Path.Combine(
-                currentDirectoryOrNull.FullName,
-                "TimetableGenerator.sln");
-            if (File.Exists(solutionPath))
-            {
-                return currentDirectoryOrNull.FullName;
-            }
-
-            currentDirectoryOrNull = currentDirectoryOrNull.Parent;
-        }
-
-        throw new InvalidOperationException(
-            "The repository root could not be located from the test output directory.");
     }
 
     private static int readBigEndianInt32(byte[] bytes, int offset)

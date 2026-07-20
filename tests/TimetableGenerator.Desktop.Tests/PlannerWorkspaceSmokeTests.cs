@@ -76,7 +76,7 @@ public sealed class PlannerWorkspaceSmokeTests
 
         Assert.Equal(EWorkspaceLayoutMode.Wide, workspace.LayoutMode);
         Assert.Equal(SplitViewDisplayMode.Inline, workspace.CoursePaneDisplayMode);
-        Assert.Equal(SplitViewDisplayMode.Overlay, workspace.InspectorPaneDisplayMode);
+        Assert.Equal(SplitViewDisplayMode.Inline, workspace.InspectorPaneDisplayMode);
         Assert.Equal(312.0, workspace.CoursePaneWidth);
         Assert.Equal(304.0, workspace.InspectorPaneWidth);
         Assert.False(workspace.IsCoursePaneOpen);
@@ -358,7 +358,7 @@ public sealed class PlannerWorkspaceSmokeTests
             workspace.PlanNameDraft = "잘못 적용되면 안 되는 이름";
             workspace.ActivePlan = workspace.Plans[0];
             Assert.False(workspace.IsRenamingPlan);
-            workspace.ConfirmRenamePlanCommand.Execute(null);
+            workspace.ConfirmPlanNameCommand.Execute(null);
             Assert.Equal(originalPrimaryName, workspace.ActivePlan.DisplayName);
         }
     }
@@ -476,11 +476,16 @@ public sealed class PlannerWorkspaceSmokeTests
         Assert.Equal(2, workspace.Plans.Count);
 
         workspace.AddPlanCommand.Execute(null);
-        Assert.Equal(3, workspace.Plans.Count);
-        Assert.True(workspace.IsRenamingPlan);
+        Assert.Equal(2, workspace.Plans.Count);
+        Assert.True(workspace.IsCreatingPlan);
+        Assert.False(workspace.IsRenamingPlan);
+        Assert.Equal("시간표 이름", workspace.PlanNameEditorTitle);
+        Assert.Equal("만들기", workspace.PlanNameEditorPrimaryActionText);
 
         workspace.PlanNameDraft = "집중 수업 계획";
-        workspace.ConfirmRenamePlanCommand.Execute(null);
+        workspace.ConfirmPlanNameCommand.Execute(null);
+        Assert.Equal(3, workspace.Plans.Count);
+        Assert.False(workspace.IsPlanNameEditorVisible);
         Assert.Equal("집중 수업 계획", workspace.ActivePlan.DisplayName);
 
         workspace.BeginDeletePlanCommand.Execute(null);
@@ -510,7 +515,7 @@ public sealed class PlannerWorkspaceSmokeTests
             Assert.Equal(activePlanId, workspace.ActivePlan.PlanId);
 
             workspace.PlanNameDraft = "오후 수업 시간표";
-            workspace.ConfirmRenamePlanCommand.Execute(null);
+            workspace.ConfirmPlanNameCommand.Execute(null);
 
             Assert.False(workspace.IsRenamingPlan);
             Assert.Equal(activePlanId, workspace.ActivePlan.PlanId);
@@ -532,7 +537,7 @@ public sealed class PlannerWorkspaceSmokeTests
             planToRename.RenameCommand.Execute(null);
             workspace.PlanNameDraft = existingPlanName.ToUpperInvariant();
 
-            workspace.ConfirmRenamePlanCommand.Execute(null);
+            workspace.ConfirmPlanNameCommand.Execute(null);
 
             Assert.True(workspace.IsRenamingPlan);
             Assert.Equal(
@@ -550,17 +555,74 @@ public sealed class PlannerWorkspaceSmokeTests
             workspace.ActivePlan = workspace.Plans[0];
             workspace.BeginRenamePlanCommand.Execute(null);
             workspace.PlanNameDraft = "2026-2학기 시간표";
-            workspace.ConfirmRenamePlanCommand.Execute(null);
+            workspace.ConfirmPlanNameCommand.Execute(null);
             workspace.ActivePlan = workspace.Plans[1];
             workspace.BeginRenamePlanCommand.Execute(null);
             workspace.PlanNameDraft = "2026-2학기 시간표(2)";
-            workspace.ConfirmRenamePlanCommand.Execute(null);
+            workspace.ConfirmPlanNameCommand.Execute(null);
 
             workspace.AddPlanCommand.Execute(null);
 
+            Assert.Equal("2026-2학기 시간표(3)", workspace.PlanNameDraft);
+            Assert.Equal(2, workspace.Plans.Count);
+            Assert.True(workspace.IsCreatingPlan);
+
+            workspace.ConfirmPlanNameCommand.Execute(null);
+
             Assert.Equal("2026-2학기 시간표(3)", workspace.ActivePlan.DisplayName);
             Assert.Equal(3, workspace.Plans.Count);
-            Assert.True(workspace.IsRenamingPlan);
+            Assert.False(workspace.IsPlanNameEditorVisible);
+        }
+    }
+
+    [AvaloniaFact]
+    public void CancelingPlanCreationLeavesTheWorkspaceUnchanged()
+    {
+        using (PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace())
+        {
+            int originalPlanCount = workspace.Plans.Count;
+            PlanId originalActivePlanId = workspace.ActivePlan.PlanId;
+
+            workspace.AddPlanCommand.Execute(null);
+
+            Assert.True(workspace.IsCreatingPlan);
+            Assert.Equal(originalPlanCount, workspace.Plans.Count);
+            Assert.Equal(originalActivePlanId, workspace.ActivePlan.PlanId);
+
+            workspace.CancelPlanNameCommand.Execute(null);
+
+            Assert.False(workspace.IsPlanNameEditorVisible);
+            Assert.Equal(originalPlanCount, workspace.Plans.Count);
+            Assert.Equal(originalActivePlanId, workspace.ActivePlan.PlanId);
+        }
+    }
+
+    [AvaloniaFact]
+    public void PlanCreationValidatesTheDraftBeforeMutatingTheWorkspace()
+    {
+        using (PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace())
+        {
+            int originalPlanCount = workspace.Plans.Count;
+            string existingPlanName = workspace.Plans[0].DisplayName;
+
+            workspace.AddPlanCommand.Execute(null);
+            workspace.PlanNameDraft = existingPlanName.ToUpperInvariant();
+            workspace.ConfirmPlanNameCommand.Execute(null);
+
+            Assert.True(workspace.IsCreatingPlan);
+            Assert.Equal(originalPlanCount, workspace.Plans.Count);
+            Assert.Equal(
+                "같은 이름의 시간표가 이미 있습니다.",
+                workspace.PlanNameValidationMessage);
+
+            workspace.PlanNameDraft = "새 학기 시간표";
+            workspace.ConfirmPlanNameCommand.Execute(null);
+
+            Assert.False(workspace.IsPlanNameEditorVisible);
+            Assert.Equal(originalPlanCount + 1, workspace.Plans.Count);
+            Assert.Equal("새 학기 시간표", workspace.ActivePlan.DisplayName);
         }
     }
 

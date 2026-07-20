@@ -80,36 +80,36 @@ public sealed class ScheduleListGroupingTests
     {
         CourseId courseId = new CourseId("course-electromagnetics");
         OfferingId offeringId = new OfferingId("offering-electromagnetics-01");
-        CourseScheduleEntry mondayEntry = createCourseEntry(
-            courseId,
-            offeringId,
-            new KoreanCourseName("전자기학"),
-            new CourseSectionCode("01"),
-            EDay.Monday,
-            new AcademicPeriod(1),
-            CONFIRMED_INSTRUCTOR,
-            ASSIGNED_LOCATION);
         CourseScheduleEntry wednesdayEntry = createCourseEntry(
             courseId,
             offeringId,
             new KoreanCourseName("전자기학"),
             new CourseSectionCode("01"),
             EDay.Wednesday,
-            new AcademicPeriod(1),
+            new AcademicPeriod(2),
+            CONFIRMED_INSTRUCTOR,
+            ASSIGNED_LOCATION);
+        CourseScheduleEntry fridayEntry = createCourseEntry(
+            courseId,
+            offeringId,
+            new KoreanCourseName("전자기학"),
+            new CourseSectionCode("01"),
+            EDay.Friday,
+            new AcademicPeriod(2),
             CONFIRMED_INSTRUCTOR,
             ASSIGNED_LOCATION);
 
         ScheduleListGroup group = Assert.Single(ScheduleListProjector.Project(
-            new ScheduleEntry[] { wednesdayEntry, mondayEntry }));
+            new ScheduleEntry[] { fridayEntry, wednesdayEntry }));
 
         Assert.True(group.HasMultipleOccurrences);
         Assert.Collection(
             group.Occurrences,
             occurrence => Assert.Equal(
-                "월: 09:00–10:15",
+                "수: 10:00–11:15",
                 occurrence.ScheduleDisplayText),
             occurrence => Assert.Equal(
-                "수: 08:30–09:45",
+                "금: 10:30–11:45",
                 occurrence.ScheduleDisplayText));
     }
 

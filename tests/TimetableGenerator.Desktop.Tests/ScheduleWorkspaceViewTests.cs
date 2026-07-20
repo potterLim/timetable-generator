@@ -123,6 +123,7 @@ public sealed class ScheduleWorkspaceViewTests
                 scheduleBoard,
                 boardGrid,
                 scrollViewer);
+            assertStickyHeaderMatchesBoardSurface(scheduleBoard);
             assertDayColumnsAreEqual(boardGrid);
         }
         finally
@@ -194,6 +195,36 @@ public sealed class ScheduleWorkspaceViewTests
             Assert.Contains(
                 boardGridOrNull,
                 scheduleBoard.PngExportSurface.GetVisualDescendants());
+            assertStickyHeaderMatchesBoardSurface(scheduleBoard);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void ScheduleBoardHeaderBoundaryMatchesSixDayLayout()
+    {
+        ScheduleEntry saturdayEntry = createScheduleEntry(
+            EDay.Saturday,
+            new AcademicPeriod(2));
+        ScheduleBoardView scheduleBoard = new ScheduleBoardView();
+        scheduleBoard.DataContext = createScheduleBoardPresentation(
+            new ScheduleRecommendation(new ScheduleEntry[] { saturdayEntry }));
+
+        Window window = new Window();
+        window.Width = 900.0;
+        window.Height = 420.0;
+        window.Content = scheduleBoard;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal(6, scheduleBoard.RenderedLayout.DayRange.DayCount);
+            assertStickyHeaderMatchesBoardSurface(scheduleBoard);
         }
         finally
         {
@@ -1245,6 +1276,61 @@ public sealed class ScheduleWorkspaceViewTests
             exportSurface.Bounds.Width - exportSurface.BorderThickness.Right,
             boardGrid.Bounds.Width,
             3);
+    }
+
+    private static void assertStickyHeaderMatchesBoardSurface(
+        ScheduleBoardView scheduleBoard)
+    {
+        Border? stickyHeaderContainerOrNull = scheduleBoard.FindControl<Border>(
+            "BoardStickyHeaderContainer");
+        Border? stickyHeaderSurfaceOrNull = scheduleBoard.FindControl<Border>(
+            "BoardStickyDayHeaderSurface");
+        Border? exportSurfaceOrNull = scheduleBoard.FindControl<Border>(
+            "BoardExportSurface");
+        Assert.NotNull(stickyHeaderContainerOrNull);
+        Assert.NotNull(stickyHeaderSurfaceOrNull);
+        Assert.NotNull(exportSurfaceOrNull);
+        if (stickyHeaderContainerOrNull == null
+            || stickyHeaderSurfaceOrNull == null
+            || exportSurfaceOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The timetable header and board surfaces were not available.");
+        }
+
+        Assert.Equal(
+            new Thickness(0.0),
+            stickyHeaderContainerOrNull.BorderThickness);
+        Assert.Equal(
+            new Thickness(0.0, 0.0, 1.0, 1.0),
+            stickyHeaderSurfaceOrNull.BorderThickness);
+        Assert.Equal(
+            new Thickness(0.0, 0.0, 1.0, 0.0),
+            exportSurfaceOrNull.BorderThickness);
+        Assert.Equal(
+            exportSurfaceOrNull.Bounds.Width,
+            stickyHeaderSurfaceOrNull.Bounds.Width,
+            3);
+
+        Point? headerOriginOrNull = stickyHeaderSurfaceOrNull.TranslatePoint(
+            new Point(0.0, 0.0),
+            scheduleBoard);
+        Point? exportOriginOrNull = exportSurfaceOrNull.TranslatePoint(
+            new Point(0.0, 0.0),
+            scheduleBoard);
+        Assert.NotNull(headerOriginOrNull);
+        Assert.NotNull(exportOriginOrNull);
+        if (headerOriginOrNull == null || exportOriginOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The timetable header and board positions were not available.");
+        }
+
+        double headerRight = headerOriginOrNull.Value.X
+            + stickyHeaderSurfaceOrNull.Bounds.Width;
+        double exportRight = exportOriginOrNull.Value.X
+            + exportSurfaceOrNull.Bounds.Width;
+        Assert.InRange(Math.Abs(headerRight - exportRight), 0.0, 0.5);
     }
 
     private static void assertDayColumnsAreEqual(Grid boardGrid)

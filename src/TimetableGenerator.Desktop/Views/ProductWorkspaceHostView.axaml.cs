@@ -6,7 +6,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -52,18 +51,6 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         }
 
         connectWorkspace(DataContext as PlannerWorkspaceViewModel);
-    }
-
-    private void onInspectorPaneClosing(
-        object? senderOrNull,
-        CancelRoutedEventArgs eventArgs)
-    {
-        bool isFrameworkInitiatedClose =
-            mWorkspaceOrNull?.IsInspectorPaneOpen == true;
-        if (isFrameworkInitiatedClose)
-        {
-            eventArgs.Cancel = true;
-        }
     }
 
     private void onAttachedToVisualTree(
@@ -203,7 +190,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
             return;
         }
 
-        if (mWorkspaceOrNull.IsRenamingPlan)
+        if (mWorkspaceOrNull.IsPlanNameEditorVisible)
         {
             TextBox? editorOrNull = this.FindControl<TextBox>("PlanNameEditor");
             if (editorOrNull != null)
@@ -286,7 +273,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
     private void focusPlanNameValidationControlWhenRequired()
     {
         if (mWorkspaceOrNull == null
-            || mWorkspaceOrNull.IsRenamingPlan == false
+            || mWorkspaceOrNull.IsPlanNameEditorVisible == false
             || mWorkspaceOrNull.HasPlanNameValidationMessage == false)
         {
             return;

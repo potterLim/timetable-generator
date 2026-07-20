@@ -247,8 +247,7 @@
     <Grid
         x:Name="ScheduleContentSurface"
         Grid.Row="2"
-        RowDefinitions="Auto,*"
-        PointerPressed="onScheduleContentSurfacePointerPressed">
+        RowDefinitions="Auto,*">
       <Border
           x:Name="UnsatisfiedPersonalScheduleBanner"
           Grid.Row="0"

@@ -143,18 +143,9 @@ public sealed class EnglishInstructionPresentationTests
         Assert.Equal(
             "영어 강의 비율 100%",
             course.EnglishInstructionAccessibleText);
-        Assert.Contains(
-            "영어 강의 비율 100%",
-            course.AddButtonAccessibleName,
-            StringComparison.Ordinal);
-        Assert.Contains(
-            "영어 강의 비율 100%",
-            course.AddButtonHelpText,
-            StringComparison.Ordinal);
-        Assert.Contains(
-            "영어 100%",
-            course.AddButtonToolTipText,
-            StringComparison.Ordinal);
+        Assert.Equal(course.SelectionAccessibleName, course.AddButtonAccessibleName);
+        Assert.Equal("추가할 분반을 선택합니다.", course.AddButtonHelpText);
+        Assert.Equal("분반 선택", course.AddButtonToolTipText);
     }
 
     [Fact]
@@ -187,23 +178,27 @@ public sealed class EnglishInstructionPresentationTests
                 Assert.True(scheduledOption.IsDirectAdd);
                 Assert.False(scheduledOption.IsTimeNotProvided);
                 Assert.EndsWith("영어 12.5%", scheduledOption.DisplayName);
+                Assert.Contains(
+                    "영어 강의 비율 12.5%",
+                    scheduledOption.AccessibleName,
+                    StringComparison.Ordinal);
             },
             unscheduledOption =>
             {
                 Assert.True(unscheduledOption.IsDirectAdd);
                 Assert.True(unscheduledOption.IsTimeNotProvided);
                 Assert.EndsWith("영어 100%", unscheduledOption.DisplayName);
+                Assert.Contains(
+                    "영어 강의 비율 100%",
+                    unscheduledOption.AccessibleName,
+                    StringComparison.Ordinal);
             });
 
-        Assert.Contains(
-            "영어 강의 비율 12.5%",
-            course.AddButtonAccessibleName,
-            StringComparison.Ordinal);
+        Assert.Equal(course.SelectionAccessibleName, course.AddButtonAccessibleName);
+        Assert.Equal("추가할 분반을 선택합니다.", course.AddButtonHelpText);
+        Assert.Equal("분반 선택", course.AddButtonToolTipText);
         course.SelectedSelectionOption = course.SelectionOptions[1];
-        Assert.Contains(
-            "영어 강의 비율 100%",
-            course.AddButtonAccessibleName,
-            StringComparison.Ordinal);
+        Assert.Equal(course.SelectionAccessibleName, course.AddButtonAccessibleName);
     }
 
     [Fact]

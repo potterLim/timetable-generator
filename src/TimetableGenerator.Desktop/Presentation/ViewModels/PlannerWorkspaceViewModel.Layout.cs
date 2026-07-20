@@ -102,11 +102,27 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
+    public bool UsesCourseOverlayPresentation
+    {
+        get
+        {
+            return CoursePaneDisplayMode == SplitViewDisplayMode.Overlay;
+        }
+    }
+
     public double InspectorPaneWidth
     {
         get
         {
             return mInspectorPaneWidth.Value;
+        }
+    }
+
+    public bool UsesInspectorOverlayPresentation
+    {
+        get
+        {
+            return InspectorPaneDisplayMode == SplitViewDisplayMode.Overlay;
         }
     }
 
@@ -256,7 +272,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                     SplitViewDisplayMode.Inline,
                     WIDE_COURSE_PANE_WIDTH);
                 setInspectorPanePresentation(
-                    SplitViewDisplayMode.Overlay,
+                    SplitViewDisplayMode.Inline,
                     WIDE_INSPECTOR_PANE_WIDTH);
                 break;
             case EWorkspaceLayoutMode.Medium:
@@ -307,6 +323,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         mCoursePaneWidth = paneWidth;
         raisePropertyChanged(nameof(CoursePaneDisplayMode));
         raisePropertyChanged(nameof(CoursePaneWidth));
+        raisePropertyChanged(nameof(UsesCourseOverlayPresentation));
     }
 
     private void setInspectorPanePresentation(
@@ -317,5 +334,6 @@ internal sealed partial class PlannerWorkspaceViewModel
         mInspectorPaneWidth = paneWidth;
         raisePropertyChanged(nameof(InspectorPaneDisplayMode));
         raisePropertyChanged(nameof(InspectorPaneWidth));
+        raisePropertyChanged(nameof(UsesInspectorOverlayPresentation));
     }
 }

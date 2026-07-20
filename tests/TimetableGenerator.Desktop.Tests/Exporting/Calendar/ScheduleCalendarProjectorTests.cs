@@ -80,13 +80,13 @@ public sealed class ScheduleCalendarProjectorTests
                 createCourseEntry(
                     courseId,
                     offeringId,
-                    EDay.Monday,
-                    new AcademicPeriod(1)),
+                    EDay.Wednesday,
+                    new AcademicPeriod(2)),
                 createCourseEntry(
                     courseId,
                     offeringId,
-                    EDay.Wednesday,
-                    new AcademicPeriod(1)),
+                    EDay.Friday,
+                    new AcademicPeriod(2)),
             });
 
         CalendarExportDocument document = ScheduleCalendarProjector.Project(
@@ -102,17 +102,17 @@ public sealed class ScheduleCalendarProjectorTests
                 Assert.Equal(new EDay[] { EDay.Wednesday }, calendarEvent.Days);
                 Assert.Equal(
                     new DailyTimeRange(
-                        new ScheduleTime(8, 30),
-                        new ScheduleTime(9, 45)),
+                        new ScheduleTime(10, 0),
+                        new ScheduleTime(11, 15)),
                     calendarEvent.TimeRange);
             },
             calendarEvent =>
             {
-                Assert.Equal(new EDay[] { EDay.Monday }, calendarEvent.Days);
+                Assert.Equal(new EDay[] { EDay.Friday }, calendarEvent.Days);
                 Assert.Equal(
                     new DailyTimeRange(
-                        new ScheduleTime(9, 0),
-                        new ScheduleTime(10, 15)),
+                        new ScheduleTime(10, 30),
+                        new ScheduleTime(11, 45)),
                     calendarEvent.TimeRange);
             });
         Assert.NotEqual(document.Events[0].Uid, document.Events[1].Uid);

@@ -3,6 +3,7 @@ using System;
 using TimetableGenerator.CatalogJson;
 using TimetableGenerator.Desktop.Presentation.Catalog;
 using TimetableGenerator.Domain.Catalogs;
+using TimetableGenerator.Domain.Scheduling;
 
 using Xunit;
 
@@ -95,6 +96,21 @@ public sealed class CourseCatalogProjectorTests
         Assert.Equal("교수 미정", seminar.InstructorSummary);
         Assert.Equal("강의실 미정", seminar.LocationSummary);
         Assert.Equal("시간 미정", seminar.ScheduleSummary);
+    }
+
+    [Fact]
+    public void WednesdayAndFridaySecondPeriodSummaryPreservesBothAcademicSlots()
+    {
+        MeetingSchedule schedule = MeetingSchedule.CreateScheduled(
+            new MeetingSlot[]
+            {
+                new MeetingSlot(EDay.Friday, new AcademicPeriod(2)),
+                new MeetingSlot(EDay.Wednesday, new AcademicPeriod(2)),
+            });
+
+        Assert.Equal(
+            "수 2교시, 금 2교시",
+            CatalogSummaryFormatter.FormatScheduleSummary(schedule));
     }
 
     [Fact]

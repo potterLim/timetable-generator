@@ -147,6 +147,10 @@ public sealed class ProductWorkspaceInteractionTests
             TextBox editor = findRequiredControl<TextBox>(host, "PlanNameEditor");
             int expectedCaretIndex = workspace.ActivePlan.DisplayName.Length;
 
+            Assert.True(workspace.IsRenamingPlan);
+            Assert.False(workspace.IsCreatingPlan);
+            Assert.Equal("시간표 이름 바꾸기", workspace.PlanNameEditorTitle);
+            Assert.Equal("저장", workspace.PlanNameEditorPrimaryActionText);
             Assert.True(editor.IsKeyboardFocusWithin);
             Assert.Equal(workspace.ActivePlan.DisplayName, editor.Text);
             Assert.Equal(expectedCaretIndex, editor.CaretIndex);
@@ -161,7 +165,59 @@ public sealed class ProductWorkspaceInteractionTests
     }
 
     [AvaloniaFact]
-    public void ScheduleSurfaceAndCloseActionAreTheOnlyInspectorDismissals()
+    public void PlanCreationEditorUsesCreationCopyWithoutCreatingAPrematurePlan()
+    {
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+        int originalPlanCount = workspace.Plans.Count;
+        ProductWorkspaceHostView host = new ProductWorkspaceHostView();
+        host.DataContext = workspace;
+        Window window = createWindow(host, 1200.0);
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            workspace.AddPlanCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            Border dialog = findRequiredControl<Border>(host, "PlanEditingDialog");
+            TextBox editor = findRequiredControl<TextBox>(host, "PlanNameEditor");
+            Button primaryAction = host.GetVisualDescendants()
+                .OfType<Button>()
+                .Single(
+                    candidate => ReferenceEquals(
+                        candidate.Command,
+                        workspace.ConfirmPlanNameCommand));
+            int expectedCaretIndex = workspace.PlanNameDraft.Length;
+
+            Assert.Equal(originalPlanCount, workspace.Plans.Count);
+            Assert.True(workspace.IsCreatingPlan);
+            Assert.False(workspace.IsRenamingPlan);
+            Assert.Equal("시간표 이름", workspace.PlanNameEditorTitle);
+            Assert.Equal("만들기", workspace.PlanNameEditorPrimaryActionText);
+            Assert.Equal("시간표 이름", AutomationProperties.GetName(dialog));
+            Assert.Equal("만들기", primaryAction.Content);
+            Assert.True(editor.IsKeyboardFocusWithin);
+            Assert.Equal(expectedCaretIndex, editor.CaretIndex);
+            Assert.Equal(expectedCaretIndex, editor.SelectionStart);
+            Assert.Equal(expectedCaretIndex, editor.SelectionEnd);
+
+            workspace.CancelPlanNameCommand.Execute(null);
+
+            Assert.Equal(originalPlanCount, workspace.Plans.Count);
+            Assert.False(workspace.IsPlanNameEditorVisible);
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
+    public void ScheduleSurfacePreservesInspectorUntilExplicitCloseAction()
     {
         PlannerWorkspaceViewModel workspace =
             PlannerWorkspaceTestFactory.CreateWorkspace();
@@ -176,17 +232,12 @@ public sealed class ProductWorkspaceInteractionTests
             workspace.OpenInspectorPaneCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
 
-            SplitView inspectorSplitView = findRequiredControl<SplitView>(
-                host,
-                "InspectorSplitView");
-            Assert.False(inspectorSplitView.UseLightDismissOverlayMode);
-
             workspace.BeginRenamePlanCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
 
             Assert.True(workspace.IsInspectorPaneOpen);
 
-            workspace.CancelRenamePlanCommand.Execute(null);
+            workspace.CancelPlanNameCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
 
             ScheduleWorkspaceView scheduleWorkspace = host.GetVisualDescendants()
@@ -210,12 +261,67 @@ public sealed class ProductWorkspaceInteractionTests
                 RawInputModifiers.None);
             Dispatcher.UIThread.RunJobs();
 
-            Assert.False(workspace.IsInspectorPaneOpen);
+            Assert.True(workspace.IsInspectorPaneOpen);
 
-            workspace.OpenInspectorPaneCommand.Execute(null);
             workspace.CloseInspectorPaneCommand.Execute(null);
 
             Assert.False(workspace.IsInspectorPaneOpen);
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
+    public void WideWorkspaceReflowsForBothPersistentSidePanes()
+    {
+        const double WIDE_WIDTH = 1_300.0;
+
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+        workspace.applyWorkspaceWidth(new WorkspaceWidth(WIDE_WIDTH));
+        ProductWorkspaceHostView host = new ProductWorkspaceHostView();
+        host.DataContext = workspace;
+        Window window = createWindow(host, WIDE_WIDTH);
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            ScheduleWorkspaceView scheduleWorkspace = host.GetVisualDescendants()
+                .OfType<ScheduleWorkspaceView>()
+                .Single();
+            double widthWithCoursePane = scheduleWorkspace.Bounds.Width;
+
+            workspace.OpenInspectorPaneCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            double widthWithBothPanes = scheduleWorkspace.Bounds.Width;
+            Assert.InRange(
+                widthWithCoursePane - widthWithBothPanes,
+                workspace.InspectorPaneWidth - 1.0,
+                workspace.InspectorPaneWidth + 1.0);
+
+            workspace.ToggleCoursePaneCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            double widthWithInspectorPane = scheduleWorkspace.Bounds.Width;
+            Assert.InRange(
+                widthWithInspectorPane - widthWithBothPanes,
+                workspace.CoursePaneWidth - 1.0,
+                workspace.CoursePaneWidth + 1.0);
+
+            workspace.CloseInspectorPaneCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            double widthWithoutPanes = scheduleWorkspace.Bounds.Width;
+            Assert.InRange(
+                widthWithoutPanes - widthWithInspectorPane,
+                workspace.InspectorPaneWidth - 1.0,
+                workspace.InspectorPaneWidth + 1.0);
         }
         finally
         {
@@ -248,17 +354,11 @@ public sealed class ProductWorkspaceInteractionTests
             Button openCoursePane = findRequiredControl<Button>(
                 scheduleWorkspace,
                 "OpenCoursePaneButton");
-            SplitView inspectorSplitView = findRequiredControl<SplitView>(
+            Border inspectorPaneHost = findRequiredControl<Border>(
                 host,
-                "InspectorSplitView");
-            Control lightDismissLayer = inspectorSplitView.GetVisualDescendants()
-                .OfType<Control>()
-                .Single(candidate => candidate.Name == "LightDismissLayer");
+                "InspectorPaneHost");
 
-            Assert.Equal(
-                SplitViewDisplayMode.Overlay,
-                inspectorSplitView.DisplayMode);
-            Assert.False(lightDismissLayer.IsHitTestVisible);
+            Assert.Contains("overlay", inspectorPaneHost.Classes);
 
             Point buttonPosition = findRequiredPosition(openCoursePane, window);
             Point clickPosition = new Point(
@@ -304,7 +404,7 @@ public sealed class ProductWorkspaceInteractionTests
                 RawInputModifiers.None);
             Dispatcher.UIThread.RunJobs();
 
-            Assert.False(workspace.IsInspectorPaneOpen);
+            Assert.True(workspace.IsInspectorPaneOpen);
         }
         finally
         {
@@ -508,7 +608,7 @@ public sealed class ProductWorkspaceInteractionTests
         for (int planIndex = 0; planIndex < 10; ++planIndex)
         {
             workspace.AddPlanCommand.Execute(null);
-            workspace.ConfirmRenamePlanCommand.Execute(null);
+            workspace.ConfirmPlanNameCommand.Execute(null);
         }
 
         ProductWorkspaceHostView host = new ProductWorkspaceHostView();
@@ -697,7 +797,7 @@ public sealed class ProductWorkspaceInteractionTests
             Border planNavigationBar = findRequiredControl<Border>(
                 host,
                 "PlanNavigationBar");
-            SplitView planningWorkspaceContent = findRequiredControl<SplitView>(
+            Grid planningWorkspaceContent = findRequiredControl<Grid>(
                 host,
                 "PlanningWorkspaceContent");
             Button createFirstPlanButton = findRequiredControl<Button>(
@@ -718,6 +818,33 @@ public sealed class ProductWorkspaceInteractionTests
                 AutomationProperties.GetName(createFirstPlanButton));
 
             createFirstPlanButton.Command?.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Empty(workspace.Plans);
+            Assert.True(workspace.IsCreatingPlan);
+            Assert.False(workspace.IsRenamingPlan);
+            Assert.Equal("시간표 이름", workspace.PlanNameEditorTitle);
+            Assert.Equal("만들기", workspace.PlanNameEditorPrimaryActionText);
+            Assert.Equal(
+                "시간표 이름",
+                workspace.PlanEditingDialogAccessibleName);
+            Border planEditingDialog = findRequiredControl<Border>(
+                host,
+                "PlanEditingDialog");
+            Assert.Equal(
+                "시간표 이름",
+                AutomationProperties.GetName(planEditingDialog));
+            TextBox planNameEditor = findRequiredControl<TextBox>(
+                host,
+                "PlanNameEditor");
+            int expectedCaretIndex = workspace.PlanNameDraft.Length;
+            Assert.True(planNameEditor.IsKeyboardFocusWithin);
+            Assert.Equal(expectedCaretIndex, planNameEditor.CaretIndex);
+            Assert.Equal(expectedCaretIndex, planNameEditor.SelectionStart);
+            Assert.Equal(expectedCaretIndex, planNameEditor.SelectionEnd);
+
+            workspace.ConfirmPlanNameCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
 
             PlanTabItem createdPlan = Assert.Single(workspace.Plans);
             Assert.Same(createdPlan, workspace.ActivePlan);
@@ -725,7 +852,7 @@ public sealed class ProductWorkspaceInteractionTests
             Assert.True(workspace.HasActivePlan);
             Assert.False(workspace.IsWorkspaceEmpty);
             Assert.True(planNavigationBar.IsVisible);
-            Assert.True(workspace.IsRenamingPlan);
+            Assert.False(workspace.IsPlanNameEditorVisible);
         }
         finally
         {
@@ -754,7 +881,7 @@ public sealed class ProductWorkspaceInteractionTests
             Border planNavigationBar = findRequiredControl<Border>(
                 host,
                 "PlanNavigationBar");
-            SplitView planningWorkspaceContent = findRequiredControl<SplitView>(
+            Grid planningWorkspaceContent = findRequiredControl<Grid>(
                 host,
                 "PlanningWorkspaceContent");
             Button createFirstPlanButton = findRequiredControl<Button>(
@@ -771,11 +898,20 @@ public sealed class ProductWorkspaceInteractionTests
 
             createFirstPlanButton.Command?.Execute(null);
 
-            PlanTabItem createdPlan = Assert.Single(workspace.Plans);
-            Assert.Equal("2026-2학기 시간표", createdPlan.DisplayName);
-            Assert.Same(createdPlan, workspace.ActivePlan);
-            Assert.True(planNavigationBar.IsVisible);
-            Assert.True(workspace.IsRenamingPlan);
+            Assert.Empty(workspace.Plans);
+            Assert.Null(workspace.ActivePlanOrNull);
+            Assert.True(workspace.IsCreatingPlan);
+            Assert.Equal("2026-2학기 시간표", workspace.PlanNameDraft);
+
+            workspace.CancelPlanNameCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Empty(workspace.Plans);
+            Assert.Null(workspace.ActivePlanOrNull);
+            Assert.True(workspace.IsWorkspaceEmpty);
+            Assert.False(workspace.IsPlanNameEditorVisible);
+            Assert.True(emptyWorkspaceState.IsEffectivelyVisible);
+            Assert.False(planNavigationBar.IsVisible);
         }
         finally
         {
@@ -809,10 +945,10 @@ public sealed class ProductWorkspaceInteractionTests
                 host,
                 "CreateFirstPlanButton");
             createFirstPlanButton.Command?.Execute(null);
+            workspace.ConfirmPlanNameCommand.Execute(null);
             await creationSaveAttempt.WaitForStartAsync();
             creationSaveAttempt.CompleteSuccessfully();
             await workspace.FlushAutosaveAsync(CancellationToken.None);
-            workspace.CancelRenamePlanCommand.Execute(null);
 
             workspace.ActivePlan.CloseCommand.Execute(null);
             workspace.ConfirmDeletePlanCommand.Execute(null);
@@ -948,7 +1084,7 @@ public sealed class ProductWorkspaceInteractionTests
             workspace.PlanNameDraft = workspace.Plans
                 .Single(plan => plan.PlanId != workspace.ActivePlan.PlanId)
                 .DisplayName;
-            workspace.ConfirmRenamePlanCommand.Execute(null);
+            workspace.ConfirmPlanNameCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
 
             TextBox editor = findRequiredControl<TextBox>(host, "PlanNameEditor");

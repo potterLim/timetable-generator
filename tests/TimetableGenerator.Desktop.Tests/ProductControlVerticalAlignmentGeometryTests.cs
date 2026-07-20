@@ -363,7 +363,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                 .OfType<ComboBox>()
                 .Where(candidate => candidate.IsEffectivelyVisible)
                 .ToArray();
-            Assert.Equal(3, selectionInputs.Length);
+            Assert.Equal(2, selectionInputs.Length);
             List<VerticalCenterComparison> comparisons =
                 new List<VerticalCenterComparison>();
 

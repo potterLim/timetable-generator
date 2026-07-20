@@ -14,4 +14,15 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\TimetableGenerator.Desktop\TimetableGenerator.Desktop.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None
+        Include="..\..\src\TimetableGenerator.Desktop\Assets\AppIcon.png"
+        Link="ProductAssets\AppIcon.png"
+        CopyToOutputDirectory="PreserveNewest" />
+    <None
+        Include="..\..\src\TimetableGenerator.Desktop\Platforms\Windows\AppIcon.ico"
+        Link="ProductAssets\AppIcon.ico"
+        CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
