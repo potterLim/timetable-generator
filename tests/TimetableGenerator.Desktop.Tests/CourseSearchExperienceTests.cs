@@ -61,6 +61,46 @@ public sealed class CourseSearchExperienceTests
     }
 
     [AvaloniaFact]
+    public void SearchIgnoresCaseAndUnicodeWhitespaceWithoutFuzzyMatching()
+    {
+        using (PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace())
+        {
+            CourseSearchItem programming = workspace.VisibleCourses.Single(
+                course => course.Code == "CSE10001");
+
+            assertMatchKind(
+                programming,
+                " c s e\u00A01 0 0 0 1 ",
+                ECourseSearchMatchKind.ExactCourseCode);
+            assertMatchKind(
+                programming,
+                "프 로\u2003그 래 밍 I",
+                ECourseSearchMatchKind.ExactCourseTitle);
+            assertMatchKind(
+                programming,
+                " pRoGrAmMiNg\u202FI ",
+                ECourseSearchMatchKind.ExactCourseTitle);
+            assertMatchKind(
+                programming,
+                "그 래 밍",
+                ECourseSearchMatchKind.CourseTitleContains);
+
+            CourseSearchMatch? typoMatchOrNull =
+                programming.FindSearchMatchOrNull(
+                    CourseSearchQuery.Create("Programing I"));
+            CourseSearchMatch? reorderedMatchOrNull =
+                programming.FindSearchMatchOrNull(
+                    CourseSearchQuery.Create("I Programming"));
+            Assert.Null(typoMatchOrNull);
+            Assert.Null(reorderedMatchOrNull);
+
+            workspace.SearchText = "\u00A0 \u2003 \u202F";
+            Assert.Equal(2, workspace.VisibleCourses.Count);
+        }
+    }
+
+    [AvaloniaFact]
     public void SearchResultsUseStableCodeAndTitleOrderForEqualMatches()
     {
         using (PlannerWorkspaceViewModel workspace =
@@ -136,11 +176,19 @@ public sealed class CourseSearchExperienceTests
             workspace.ActivePlan = workspace.Plans[1];
             CourseSearchItem seminar = workspace.VisibleCourses.Single(
                 course => course.Code == "BFT30009");
+            Assert.True(seminar.HasMultipleSelectionOptions);
+            Assert.False(seminar.IsDirectAddButtonVisible);
+            Assert.True(seminar.IsSelectionButtonVisible);
+            CourseSelectionOption selectedOption = seminar.SelectionOptions[1];
 
-            workspace.AddCourseCommand.Execute(seminar);
+            workspace.AddCourseSelectionOptionCommand.Execute(selectedOption);
             Assert.True(seminar.IsAdded);
-            Assert.Single(
-                workspace.ActivePlan.Plan.UnscheduledOfferingSelections);
+            Assert.Equal(
+                selectedOption.Selection.GetTimeNotProvidedOfferingId(),
+                Assert.Single(
+                    workspace.ActivePlan.Plan.UnscheduledOfferingSelections)
+                    .OfferingId);
+            Assert.False(seminar.IsSelectionButtonVisible);
 
             workspace.EditOrRemoveSelectedCourseCommand.Execute(seminar);
 

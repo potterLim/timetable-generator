@@ -236,6 +236,22 @@ internal sealed class CourseSearchItem : ObservableObject
         }
     }
 
+    public bool IsDirectAddButtonVisible
+    {
+        get
+        {
+            return IsAdded == false && HasMultipleSelectionOptions == false;
+        }
+    }
+
+    public bool IsSelectionButtonVisible
+    {
+        get
+        {
+            return IsAdded == false && HasMultipleSelectionOptions;
+        }
+    }
+
     public bool IsSelectionEnabled
     {
         get
@@ -251,6 +267,11 @@ internal sealed class CourseSearchItem : ObservableObject
             if (IsAdded)
             {
                 return Name + "은 현재 시간표에 추가되어 있습니다.";
+            }
+
+            if (HasMultipleSelectionOptions)
+            {
+                return SelectionAccessibleName;
             }
 
             if (SelectedSelectionOption.IsDirectAdd)
@@ -272,6 +293,11 @@ internal sealed class CourseSearchItem : ObservableObject
     {
         get
         {
+            if (HasMultipleSelectionOptions)
+            {
+                return "추가할 분반을 선택합니다.";
+            }
+
             if (SelectedSelectionOption.IsDirectAdd)
             {
                 return "선택한 분반: "
@@ -286,6 +312,11 @@ internal sealed class CourseSearchItem : ObservableObject
     {
         get
         {
+            if (HasMultipleSelectionOptions)
+            {
+                return "분반 선택";
+            }
+
             if (SelectedSelectionOption.IsDirectAdd)
             {
                 return SelectedSelectionOption.DisplayName + " 추가";
@@ -378,39 +409,38 @@ internal sealed class CourseSearchItem : ObservableObject
             return null;
         }
 
-        StringComparison comparison = StringComparison.OrdinalIgnoreCase;
-        if (Code.Equals(query.Value, comparison))
+        if (query.IsExactMatch(Code))
         {
             return new CourseSearchMatch(
                 this,
                 ECourseSearchMatchKind.ExactCourseCode);
         }
 
-        if (Code.StartsWith(query.Value, comparison))
+        if (query.IsPrefixMatch(Code))
         {
             return new CourseSearchMatch(
                 this,
                 ECourseSearchMatchKind.CourseCodePrefix);
         }
 
-        if (Name.Equals(query.Value, comparison)
-            || EnglishName.Equals(query.Value, comparison))
+        if (query.IsExactMatch(Name)
+            || query.IsExactMatch(EnglishName))
         {
             return new CourseSearchMatch(
                 this,
                 ECourseSearchMatchKind.ExactCourseTitle);
         }
 
-        if (Name.StartsWith(query.Value, comparison)
-            || EnglishName.StartsWith(query.Value, comparison))
+        if (query.IsPrefixMatch(Name)
+            || query.IsPrefixMatch(EnglishName))
         {
             return new CourseSearchMatch(
                 this,
                 ECourseSearchMatchKind.CourseTitlePrefix);
         }
 
-        if (Name.Contains(query.Value, comparison)
-            || EnglishName.Contains(query.Value, comparison))
+        if (query.IsContainedIn(Name)
+            || query.IsContainedIn(EnglishName))
         {
             return new CourseSearchMatch(
                 this,
@@ -419,7 +449,7 @@ internal sealed class CourseSearchItem : ObservableObject
 
         foreach (CatalogOfferingProjection offering in Projection.Offerings)
         {
-            if (offering.InstructorSummary.Contains(query.Value, comparison))
+            if (query.IsContainedIn(offering.InstructorSummary))
             {
                 return new CourseSearchMatch(
                     this,
@@ -667,6 +697,8 @@ internal sealed class CourseSearchItem : ObservableObject
         {
             raisePropertyChanged(nameof(AddButtonAccessibleName));
             raisePropertyChanged(nameof(AddButtonToolTipText));
+            raisePropertyChanged(nameof(IsDirectAddButtonVisible));
+            raisePropertyChanged(nameof(IsSelectionButtonVisible));
             raisePropertyChanged(nameof(IsSelectionEnabled));
         }
     }

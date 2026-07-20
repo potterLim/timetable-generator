@@ -9,6 +9,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Styling;
@@ -216,7 +217,7 @@ public sealed class WorkspacePanelAccessibilityTests
                 inspector,
                 "ScheduledCoursesList");
 
-            assertListDelegatesFocusToCommand(
+            assertCourseListDelegatesFocusToAction(
                 courseResults,
                 workspace.AddCourseCommand);
             assertListDelegatesFocusToCommand(
@@ -307,6 +308,79 @@ public sealed class WorkspacePanelAccessibilityTests
                         && candidate.Text.Contains(
                             "분반별 강의실",
                             StringComparison.Ordinal));
+            }
+            finally
+            {
+                window.Close();
+            }
+        }
+    }
+
+    [AvaloniaFact]
+    public void MultiTimeNotProvidedCourseUsesAnAccessibleSelectionFlyout()
+    {
+        using (PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace())
+        {
+            workspace.ActivePlan = workspace.Plans[1];
+            workspace.SearchText = "세미나";
+            CourseSearchItem seminar = Assert.Single(workspace.VisibleCourses);
+            CourseBrowserView courseBrowser = new CourseBrowserView();
+            courseBrowser.DataContext = workspace;
+            Window window = createPanelWindow(courseBrowser);
+
+            try
+            {
+                window.Show();
+                Dispatcher.UIThread.RunJobs();
+
+                ComboBox[] inlineSelectors = courseBrowser.GetVisualDescendants()
+                    .OfType<ComboBox>()
+                    .ToArray();
+                Assert.Equal(2, inlineSelectors.Length);
+
+                Button selectionButton = courseBrowser.GetVisualDescendants()
+                    .OfType<Button>()
+                    .Single(
+                        candidate => candidate.IsVisible
+                            && candidate.Flyout != null);
+                Assert.Equal(
+                    seminar.SelectionAccessibleName,
+                    AutomationProperties.GetName(selectionButton));
+
+                Flyout selectionFlyout = Assert.IsType<Flyout>(
+                    selectionButton.Flyout);
+                selectionFlyout.ShowAt(selectionButton);
+                Dispatcher.UIThread.RunJobs();
+
+                Control selectionContent = Assert.IsAssignableFrom<Control>(
+                    selectionFlyout.Content);
+                Button[] optionButtons = selectionContent.GetVisualDescendants()
+                    .OfType<Button>()
+                    .Where(
+                        candidate => candidate.Classes.Contains(
+                            "course-selection-option"))
+                    .ToArray();
+                Assert.Equal(2, optionButtons.Length);
+                Assert.True(optionButtons[0].IsFocused);
+                Assert.All(
+                    optionButtons,
+                    optionButton => Assert.False(string.IsNullOrWhiteSpace(
+                        AutomationProperties.GetName(optionButton))));
+
+                CourseSelectionOption selectedOption =
+                    Assert.IsType<CourseSelectionOption>(
+                        optionButtons[1].DataContext);
+                optionButtons[1].RaiseEvent(
+                    new RoutedEventArgs(Button.ClickEvent));
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.False(selectionFlyout.IsOpen);
+                Assert.Equal(
+                    selectedOption.Selection.GetTimeNotProvidedOfferingId(),
+                    Assert.Single(
+                        workspace.ActivePlan.Plan.UnscheduledOfferingSelections)
+                        .OfferingId);
             }
             finally
             {
@@ -524,6 +598,26 @@ public sealed class WorkspacePanelAccessibilityTests
         ListBox listBox,
         ICommand nestedActionCommand)
     {
+        assertListDelegatesFocusToAction(
+            listBox,
+            candidate => ReferenceEquals(candidate.Command, nestedActionCommand));
+    }
+
+    private static void assertCourseListDelegatesFocusToAction(
+        ListBox listBox,
+        ICommand directAddCommand)
+    {
+        assertListDelegatesFocusToAction(
+            listBox,
+            candidate => candidate.IsEffectivelyVisible
+                && (ReferenceEquals(candidate.Command, directAddCommand)
+                    || candidate.Flyout != null));
+    }
+
+    private static void assertListDelegatesFocusToAction(
+        ListBox listBox,
+        Func<Button, bool> isExpectedAction)
+    {
         Control? itemContainerOrNull = listBox.ContainerFromIndex(0);
         Assert.NotNull(itemContainerOrNull);
         if (itemContainerOrNull == null)
@@ -536,8 +630,7 @@ public sealed class WorkspacePanelAccessibilityTests
         Button? nestedActionOrNull = itemContainer
             .GetVisualDescendants()
             .OfType<Button>()
-            .FirstOrDefault(
-                candidate => ReferenceEquals(candidate.Command, nestedActionCommand));
+            .FirstOrDefault(isExpectedAction);
         Assert.NotNull(nestedActionOrNull);
         if (nestedActionOrNull == null)
         {

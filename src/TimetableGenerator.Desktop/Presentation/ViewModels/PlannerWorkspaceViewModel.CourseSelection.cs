@@ -18,6 +18,9 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private DelegateCommand? mResetCourseSearchCommandOrNull;
 
+    private ParameterizedCommand<CourseSelectionOption>?
+        mAddCourseSelectionOptionCommandOrNull;
+
     private ParameterizedCommand<CourseSearchItem>?
         mEditOrRemoveSelectedCourseCommandOrNull;
 
@@ -136,6 +139,21 @@ internal sealed partial class PlannerWorkspaceViewModel
     }
 
     public ICommand AddCourseCommand { get; }
+
+    public ICommand AddCourseSelectionOptionCommand
+    {
+        get
+        {
+            if (mAddCourseSelectionOptionCommandOrNull == null)
+            {
+                mAddCourseSelectionOptionCommandOrNull =
+                    new ParameterizedCommand<CourseSelectionOption>(
+                        addCourseSelectionOption);
+            }
+
+            return mAddCourseSelectionOptionCommandOrNull;
+        }
+    }
 
     public ICommand RemoveTimeNotProvidedCourseCommand { get; }
 
@@ -273,6 +291,25 @@ internal sealed partial class PlannerWorkspaceViewModel
         addScheduledCourse(course);
     }
 
+    private void addCourseSelectionOption(CourseSelectionOption selectionOption)
+    {
+        throwIfDisposed();
+        if (selectionOption == null)
+        {
+            throw new ArgumentNullException(nameof(selectionOption));
+        }
+
+        CourseSearchItem course = findCourseById(
+            selectionOption.Selection.CourseId);
+        if (course.IsAdded)
+        {
+            return;
+        }
+
+        course.SelectedSelectionOption = selectionOption;
+        addCourse(course);
+    }
+
     private void removeTimeNotProvidedCourse(TimeNotProvidedCourseItem course)
     {
         throwIfDisposed();
@@ -333,6 +370,21 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
 
         return false;
+    }
+
+    private CourseSearchItem findCourseById(CourseId courseId)
+    {
+        foreach (CourseSearchItem course in mAllCourses)
+        {
+            if (course.CourseId == courseId)
+            {
+                return course;
+            }
+        }
+
+        throw new ArgumentException(
+            "The selected course option must belong to the active catalog.",
+            nameof(courseId));
     }
 
     private PlanCourseChoiceGroupItem findActivePlanCourseChoiceGroupItem(

@@ -57,24 +57,24 @@ internal sealed class PlanCourseChoiceGroupItem
         {
             if (IsAlternativeGroup)
             {
-                return "이 중 하나";
+                return Courses.Count + "개 중 1개";
             }
 
             return "수강 과목";
         }
     }
 
-    public string Description
+    public string AccessibleName
     {
         get
         {
             if (IsAlternativeGroup)
             {
-                return "각 조합에는 " + Courses.Count
-                    + "개 과목 중 한 과목만 포함됩니다.";
+                return Courses.Count
+                    + "개 과목 중 한 과목이 포함되는 수강 선택";
             }
 
-            return Courses[0].PreferenceSummary;
+            return SingleCourse.Name + " 수강 선택";
         }
     }
 
@@ -87,7 +87,7 @@ internal sealed class PlanCourseChoiceGroupItem
                 return SingleCourse.Name + " 수강 설정 수정";
             }
 
-            return "이 중 하나 수강 선택 수정";
+            return Heading + " 수강 선택 수정";
         }
     }
 
@@ -100,7 +100,7 @@ internal sealed class PlanCourseChoiceGroupItem
                 return SingleCourse.Name + " 시간표에서 제거";
             }
 
-            return "이 중 하나 수강 선택을 시간표에서 제거";
+            return Heading + " 수강 선택을 시간표에서 제거";
         }
     }
 

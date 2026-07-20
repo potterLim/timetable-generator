@@ -156,7 +156,7 @@
                   MinHeight="80"
                   Margin="0,0,2,4"
                   AutomationProperties.Name="{Binding CourseBrowserAccessibleName}">
-                <Grid Margin="13,10,10,9" ColumnDefinitions="*,38" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                <Grid Margin="13,10,10,9" ColumnDefinitions="*,38" RowDefinitions="Auto,Auto,Auto,Auto">
                   <TextBlock
                       Grid.Row="0"
                       Grid.Column="0"
@@ -188,38 +188,13 @@
                       TextTrimming="CharacterEllipsis"
                       ToolTip.Tip="{Binding SingleOfferingDetailsDisplayText}" />
 
-                  <ComboBox
-                      Grid.Row="4"
-                      Grid.Column="0"
-                      Grid.ColumnSpan="2"
-                      Margin="0,8,0,2"
-                      ItemsSource="{Binding SelectionOptions}"
-                      SelectedItem="{Binding SelectedSelectionOption, Mode=TwoWay}"
-                      IsEnabled="{Binding IsSelectionEnabled}"
-                      IsVisible="{Binding HasMultipleSelectionOptions}"
-                      AutomationProperties.Name="{Binding SelectionAccessibleName}"
-                      AutomationProperties.HelpText="{Binding EnglishInstructionAccessibleText}">
-                    <ComboBox.ItemTemplate>
-                      <DataTemplate x:DataType="models:CourseSelectionOption">
-                        <TextBlock
-                            Height="18"
-                            LineHeight="18"
-                            VerticalAlignment="Center"
-                            Text="{Binding DisplayName}"
-                            TextTrimming="CharacterEllipsis"
-                            AutomationProperties.Name="{Binding AccessibleName}"
-                            ToolTip.Tip="{Binding DisplayName}" />
-                      </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                  </ComboBox>
-
                   <Button
                       Grid.Row="0"
                       Grid.RowSpan="4"
                       Grid.Column="1"
                       Classes="icon course-add"
                       VerticalAlignment="Center"
-                      IsVisible="{Binding !IsAdded}"
+                      IsVisible="{Binding IsDirectAddButtonVisible}"
                       Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).AddCourseCommand}"
                       CommandParameter="{Binding}"
                       AutomationProperties.Name="{Binding AddButtonAccessibleName}"
@@ -232,6 +207,73 @@
                         IconVariant="Regular"
                         FontSize="22"
                         Foreground="{DynamicResource AccentBrush}" />
+                  </Button>
+
+                  <Button
+                      Grid.Row="0"
+                      Grid.RowSpan="4"
+                      Grid.Column="1"
+                      Classes="icon course-add"
+                      VerticalAlignment="Center"
+                      IsVisible="{Binding IsSelectionButtonVisible}"
+                      AutomationProperties.Name="{Binding AddButtonAccessibleName}"
+                      AutomationProperties.HelpText="{Binding AddButtonHelpText}"
+                      ToolTip.Tip="{Binding AddButtonToolTipText}">
+                    <icons:FluentIcon
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Icon="AddCircle"
+                        IconVariant="Regular"
+                        FontSize="22"
+                        Foreground="{DynamicResource AccentBrush}" />
+                    <Button.Flyout>
+                      <Flyout
+                          Placement="BottomEdgeAlignedRight"
+                          Opened="onCourseSelectionFlyoutOpened"
+                          Closed="onCourseSelectionFlyoutClosed">
+                        <Border
+                            Width="318"
+                            Padding="14,12"
+                            AutomationProperties.Name="{Binding SelectionAccessibleName}">
+                          <StackPanel Spacing="10">
+                            <StackPanel Spacing="3">
+                              <TextBlock
+                                  FontSize="15"
+                                  FontWeight="SemiBold"
+                                  AutomationProperties.HeadingLevel="3"
+                                  Text="분반 선택" />
+                              <TextBlock
+                                  Classes="caption"
+                                  Text="{Binding Name}"
+                                  TextTrimming="CharacterEllipsis"
+                                  ToolTip.Tip="{Binding Name}" />
+                            </StackPanel>
+                            <ScrollViewer MaxHeight="320">
+                              <ItemsControl ItemsSource="{Binding SelectionOptions}">
+                                <ItemsControl.ItemTemplate>
+                                  <DataTemplate x:DataType="models:CourseSelectionOption">
+                                    <Button
+                                        Classes="plan-management-action course-selection-option"
+                                        Margin="0,0,0,2"
+                                        Click="onCourseSelectionOptionClick"
+                                        AutomationProperties.Name="{Binding AccessibleName}"
+                                        AutomationProperties.HelpText="선택한 분반을 시간표에 추가합니다.">
+                                      <TextBlock
+                                          Height="18"
+                                          LineHeight="18"
+                                          VerticalAlignment="Center"
+                                          Text="{Binding DisplayName}"
+                                          TextTrimming="CharacterEllipsis"
+                                          ToolTip.Tip="{Binding DisplayName}" />
+                                    </Button>
+                                  </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                              </ItemsControl>
+                            </ScrollViewer>
+                          </StackPanel>
+                        </Border>
+                      </Flyout>
+                    </Button.Flyout>
                   </Button>
 
                   <Button

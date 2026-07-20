@@ -167,6 +167,13 @@ public sealed class CourseChoiceInteractionTests
 
             PlanCourseChoiceGroupItem savedItem = Assert.Single(
                 workspace.ActivePlan.CourseChoiceGroups);
+            Assert.Equal("2개 중 1개", savedItem.Heading);
+            Assert.Equal(
+                "2개 과목 중 한 과목이 포함되는 수강 선택",
+                savedItem.AccessibleName);
+            Assert.Equal(
+                "2개 중 1개 수강 선택 수정",
+                savedItem.EditButtonAccessibleName);
             workspace.BeginEditCourseChoiceGroupCommand.Execute(savedItem);
 
             Assert.True(workspace.IsCourseChoiceEditorVisible);

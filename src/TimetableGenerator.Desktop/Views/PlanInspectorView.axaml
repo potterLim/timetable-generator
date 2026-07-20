@@ -258,21 +258,16 @@
                   <Border
                       Classes="course-choice-group alternative"
                       Margin="0,0,0,10"
-                      IsVisible="{Binding IsAlternativeGroup}">
+                      IsVisible="{Binding IsAlternativeGroup}"
+                      AutomationProperties.Name="{Binding AccessibleName}">
                     <StackPanel>
-                      <Grid Margin="12,9,7,8" ColumnDefinitions="*,34,34" ColumnSpacing="2">
-                        <StackPanel Grid.Column="0" Spacing="2">
-                          <TextBlock
-                              FontWeight="SemiBold"
-                              Foreground="{DynamicResource AccentBrush}"
-                              Text="이 중 하나" />
-                          <TextBlock
-                              Classes="caption"
-                              Text="{Binding Description}"
-                              TextTrimming="CharacterEllipsis"
-                              TextWrapping="NoWrap"
-                              ToolTip.Tip="{Binding Description}" />
-                        </StackPanel>
+                      <Grid Margin="12,8,7,8" ColumnDefinitions="*,34,34" ColumnSpacing="2">
+                        <TextBlock
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Classes="caption"
+                            FontWeight="SemiBold"
+                            Text="{Binding Heading}" />
                         <Button
                             x:Name="AlternativeCourseChoiceGroupEditButton"
                             Grid.Column="1"
@@ -280,7 +275,7 @@
                             Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).BeginEditCourseChoiceGroupCommand}"
                             CommandParameter="{Binding}"
                             AutomationProperties.Name="{Binding EditButtonAccessibleName}"
-                            ToolTip.Tip="대안 과목과 분반 선호 수정">
+                            ToolTip.Tip="수강 선택 수정">
                           <icons:FluentIcon Icon="Edit" IconVariant="Regular" FontSize="16" />
                         </Button>
                         <Button
@@ -289,7 +284,7 @@
                             Command="{Binding $parent[UserControl].((viewModels:PlannerWorkspaceViewModel)DataContext).RemoveCourseChoiceGroupCommand}"
                             CommandParameter="{Binding}"
                             AutomationProperties.Name="{Binding RemoveButtonAccessibleName}"
-                            ToolTip.Tip="대안 묶음을 시간표에서 제거">
+                            ToolTip.Tip="시간표에서 제거">
                           <icons:FluentIcon Icon="Delete" IconVariant="Regular" FontSize="16" />
                         </Button>
                       </Grid>
