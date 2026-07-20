@@ -1,4 +1,4 @@
-<Project Sdk="MSTest.Sdk/4.0.2">
+<Project Sdk="MSTest.Sdk/4.3.2">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
@@ -10,6 +10,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\TimetableGenerator.CatalogJson\TimetableGenerator.CatalogJson.csproj" />
+    <ProjectReference Include="..\..\src\TimetableGenerator.Domain\TimetableGenerator.Domain.csproj" />
+    <ProjectReference Include="..\..\src\TimetableGenerator.Infrastructure\TimetableGenerator.Infrastructure.csproj" />
     <ProjectReference Include="..\..\tools\TimetableGenerator.HandongCatalogGenerator\TimetableGenerator.HandongCatalogGenerator.csproj" />
   </ItemGroup>
 </Project>
