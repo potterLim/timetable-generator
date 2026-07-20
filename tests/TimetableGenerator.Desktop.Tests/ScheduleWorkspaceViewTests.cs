@@ -711,6 +711,18 @@ public sealed class ScheduleWorkspaceViewTests
     }
 
     [AvaloniaFact]
+    public void PngExportSurfaceRetainsTheOuterRightBoundary()
+    {
+        ScheduleBoardView scheduleBoard = ScheduleBoardView.createForPngExport();
+        Border exportSurface = Assert.IsType<Border>(
+            scheduleBoard.PngExportSurface);
+
+        Assert.Equal(
+            new Thickness(0.0, 0.0, 1.0, 0.0),
+            exportSurface.BorderThickness);
+    }
+
+    [AvaloniaFact]
     public async Task PngExportSurfaceIncludesEveryPeriodAndExpandedCardContentAsync()
     {
         List<ScheduleEntry> entries = new List<ScheduleEntry>();
@@ -848,10 +860,10 @@ public sealed class ScheduleWorkspaceViewTests
             Button exportButton = exportButtonOrNull;
             Assert.True(exportButton.IsEnabled);
             Assert.Equal(
-                "현재 시간표 내보내기",
+                "시간표 내보내기",
                 AutomationProperties.GetName(exportButton));
             Assert.Equal(
-                "PNG 이미지 또는 캘린더로 내보냅니다.",
+                "현재 시간표를 내보내거나 모든 후보를 PNG 이미지로 저장합니다.",
                 AutomationProperties.GetHelpText(exportButton));
             Assert.NotNull(exportButton.Flyout);
         }
@@ -1234,12 +1246,17 @@ public sealed class ScheduleWorkspaceViewTests
     {
         Border? exportSurfaceOrNull = scheduleBoard.FindControl<Border>(
             "BoardExportSurface");
+        Border? rightBoundaryOrNull = scheduleBoard.FindControl<Border>(
+            "BoardContentRightBoundary");
         ScrollBar? verticalScrollBarOrNull = scrollViewer.GetVisualDescendants()
             .OfType<ScrollBar>()
             .SingleOrDefault(scrollBar => scrollBar.Orientation == Orientation.Vertical);
         Assert.NotNull(exportSurfaceOrNull);
+        Assert.NotNull(rightBoundaryOrNull);
         Assert.NotNull(verticalScrollBarOrNull);
-        if (exportSurfaceOrNull == null || verticalScrollBarOrNull == null)
+        if (exportSurfaceOrNull == null
+            || rightBoundaryOrNull == null
+            || verticalScrollBarOrNull == null)
         {
             throw new InvalidOperationException(
                 "The timetable scrollbar geometry was not available.");
@@ -1248,9 +1265,11 @@ public sealed class ScheduleWorkspaceViewTests
         Border exportSurface = exportSurfaceOrNull;
         ScrollBar verticalScrollBar = verticalScrollBarOrNull;
         Assert.True(verticalScrollBar.IsEffectivelyVisible);
+        Assert.Equal(new Thickness(0.0), exportSurface.BorderThickness);
+        Assert.Equal(1.0, rightBoundaryOrNull.Width);
         Assert.Equal(
-            new Thickness(0.0, 0.0, 1.0, 0.0),
-            exportSurface.BorderThickness);
+            new Thickness(0.0, 0.0, SCROLLBAR_GUTTER_WIDTH, 0.0),
+            rightBoundaryOrNull.Margin);
         Assert.InRange(
             scrollViewer.Viewport.Width - exportSurface.Bounds.Width,
             SCROLLBAR_GUTTER_WIDTH - 0.5,
@@ -1273,7 +1292,7 @@ public sealed class ScheduleWorkspaceViewTests
         double exportRight = exportOriginOrNull.Value.X + exportSurface.Bounds.Width;
         Assert.True(exportRight <= scrollBarOriginOrNull.Value.X + 0.5);
         Assert.Equal(
-            exportSurface.Bounds.Width - exportSurface.BorderThickness.Right,
+            exportSurface.Bounds.Width,
             boardGrid.Bounds.Width,
             3);
     }
@@ -1287,26 +1306,26 @@ public sealed class ScheduleWorkspaceViewTests
             "BoardStickyDayHeaderSurface");
         Border? exportSurfaceOrNull = scheduleBoard.FindControl<Border>(
             "BoardExportSurface");
+        Border? rightBoundaryOrNull = scheduleBoard.FindControl<Border>(
+            "BoardContentRightBoundary");
         Assert.NotNull(stickyHeaderContainerOrNull);
         Assert.NotNull(stickyHeaderSurfaceOrNull);
         Assert.NotNull(exportSurfaceOrNull);
+        Assert.NotNull(rightBoundaryOrNull);
         if (stickyHeaderContainerOrNull == null
             || stickyHeaderSurfaceOrNull == null
-            || exportSurfaceOrNull == null)
+            || exportSurfaceOrNull == null
+            || rightBoundaryOrNull == null)
         {
             throw new InvalidOperationException(
                 "The timetable header and board surfaces were not available.");
         }
 
         Assert.Equal(
-            new Thickness(0.0),
+            new Thickness(0.0, 0.0, 0.0, 1.0),
             stickyHeaderContainerOrNull.BorderThickness);
-        Assert.Equal(
-            new Thickness(0.0, 0.0, 1.0, 1.0),
-            stickyHeaderSurfaceOrNull.BorderThickness);
-        Assert.Equal(
-            new Thickness(0.0, 0.0, 1.0, 0.0),
-            exportSurfaceOrNull.BorderThickness);
+        Assert.Equal(new Thickness(0.0), stickyHeaderSurfaceOrNull.BorderThickness);
+        Assert.Equal(new Thickness(0.0), exportSurfaceOrNull.BorderThickness);
         Assert.Equal(
             exportSurfaceOrNull.Bounds.Width,
             stickyHeaderSurfaceOrNull.Bounds.Width,
@@ -1318,9 +1337,15 @@ public sealed class ScheduleWorkspaceViewTests
         Point? exportOriginOrNull = exportSurfaceOrNull.TranslatePoint(
             new Point(0.0, 0.0),
             scheduleBoard);
+        Point? rightBoundaryOriginOrNull = rightBoundaryOrNull.TranslatePoint(
+            new Point(0.0, 0.0),
+            scheduleBoard);
         Assert.NotNull(headerOriginOrNull);
         Assert.NotNull(exportOriginOrNull);
-        if (headerOriginOrNull == null || exportOriginOrNull == null)
+        Assert.NotNull(rightBoundaryOriginOrNull);
+        if (headerOriginOrNull == null
+            || exportOriginOrNull == null
+            || rightBoundaryOriginOrNull == null)
         {
             throw new InvalidOperationException(
                 "The timetable header and board positions were not available.");
@@ -1330,7 +1355,10 @@ public sealed class ScheduleWorkspaceViewTests
             + stickyHeaderSurfaceOrNull.Bounds.Width;
         double exportRight = exportOriginOrNull.Value.X
             + exportSurfaceOrNull.Bounds.Width;
-        Assert.InRange(Math.Abs(headerRight - exportRight), 0.0, 0.5);
+        double rightBoundaryRight = rightBoundaryOriginOrNull.Value.X
+            + rightBoundaryOrNull.Bounds.Width;
+        Assert.Equal(exportRight, headerRight, 3);
+        Assert.Equal(exportRight, rightBoundaryRight, 3);
     }
 
     private static void assertDayColumnsAreEqual(Grid boardGrid)

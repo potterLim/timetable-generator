@@ -149,8 +149,8 @@
             IsVisible="{Binding CanExportSchedule}"
             IsEnabled="{Binding CanExportSchedule}"
             AutomationProperties.AutomationId="ExportSchedule"
-            AutomationProperties.Name="현재 시간표 내보내기"
-            AutomationProperties.HelpText="PNG 이미지 또는 캘린더로 내보냅니다."
+            AutomationProperties.Name="시간표 내보내기"
+            AutomationProperties.HelpText="현재 시간표를 내보내거나 모든 후보를 PNG 이미지로 저장합니다."
             ToolTip.Tip="내보내기">
           <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="7">
             <icons:FluentIcon
@@ -190,25 +190,6 @@
                         Height="24"
                         Source="/Assets/Export/PngImageIcon.png" />
                   </Grid>
-                </MenuItem.Icon>
-              </MenuItem>
-              <MenuItem
-                  x:Name="ExportAllPngAction"
-                  Classes="export-menu-item"
-                  Header="모든 시간표 이미지"
-                  IsVisible="{Binding CanExportAllPngCandidates}"
-                  Command="{Binding #WorkspaceRoot.ExportAllPngCommand}"
-                  AutomationProperties.AutomationId="ExportAllPngImages"
-                  AutomationProperties.Name="모든 시간표 후보를 PNG 이미지로 저장"
-                  AutomationProperties.HelpText="생성된 모든 시간표 후보를 번호가 붙은 PNG 이미지로 저장합니다.">
-                <MenuItem.Icon>
-                  <icons:FluentIcon
-                      Classes="export-menu-icon"
-                      AutomationProperties.AccessibilityView="Raw"
-                      Icon="ImageMultiple"
-                      IconVariant="Regular"
-                      IconSize="Size20"
-                      FontSize="20" />
                 </MenuItem.Icon>
               </MenuItem>
               <MenuItem
@@ -254,6 +235,34 @@
                         <TranslateTransform Y="0.5" />
                       </Image.RenderTransform>
                     </Image>
+                  </Grid>
+                </MenuItem.Icon>
+              </MenuItem>
+              <Separator
+                  x:Name="ExportAllPngSeparator"
+                  Margin="8,4"
+                  IsVisible="{Binding CanExportAllPngCandidates}" />
+              <MenuItem
+                  x:Name="ExportAllPngAction"
+                  Classes="export-menu-item"
+                  Header="모든 후보 PNG"
+                  IsVisible="{Binding CanExportAllPngCandidates}"
+                  Command="{Binding #WorkspaceRoot.ExportAllPngCommand}"
+                  AutomationProperties.AutomationId="ExportAllPngImages"
+                  AutomationProperties.Name="모든 시간표 후보를 PNG 이미지로 저장"
+                  AutomationProperties.HelpText="생성된 모든 시간표 후보를 번호가 붙은 PNG 이미지로 저장합니다.">
+                <MenuItem.Icon>
+                  <Grid
+                      x:Name="ExportAllPngLogoSlot"
+                      Classes="export-menu-logo-slot"
+                      AutomationProperties.AccessibilityView="Raw"
+                      IsHitTestVisible="False">
+                    <Image
+                        x:Name="ExportAllPngLogoImage"
+                        Classes="export-menu-logo"
+                        Width="24"
+                        Height="24"
+                        Source="/Assets/Export/PngImageIcon.png" />
                   </Grid>
                 </MenuItem.Icon>
               </MenuItem>

@@ -57,7 +57,7 @@ internal sealed class PlanCourseChoiceGroupItem
         {
             if (IsAlternativeGroup)
             {
-                return "한 과목 선택";
+                return Courses.Count + "개 과목 중 1개 선택";
             }
 
             return "수강 과목";
@@ -71,7 +71,7 @@ internal sealed class PlanCourseChoiceGroupItem
             if (IsAlternativeGroup)
             {
                 return Courses.Count
-                    + "개 과목 중 한 과목이 포함되는 수강 선택";
+                    + "개 과목 중 1개를 선택하는 수강 선택";
             }
 
             return SingleCourse.Name + " 수강 선택";

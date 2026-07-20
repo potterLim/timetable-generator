@@ -261,7 +261,7 @@ public sealed class ProductModalAndTabVisualStateTests
     }
 
     [AvaloniaFact]
-    public void PlanTabsRenderOneProductSelectionIndicator()
+    public void PlanTabsRenderOneFullWidthProductSelectionIndicator()
     {
         PlannerWorkspaceViewModel workspace =
             PlannerWorkspaceTestFactory.CreateWorkspace();
@@ -304,16 +304,15 @@ public sealed class ProductModalAndTabVisualStateTests
                     selectedTab,
                     "PART_SelectedPipe");
 
-                Assert.Equal(new Thickness(0.0), selectedTab.BorderThickness);
-                Assert.Single(
+                Assert.Equal(
+                    new Thickness(0.0, 0.0, 0.0, 2.0),
+                    selectedTab.BorderThickness);
+                Assert.All(
                     selectionPipes,
-                    static pipe => pipe.IsVisible);
-                Assert.True(selectedPipe.IsVisible);
-                Assert.Equal(2.0, selectedPipe.Height);
-                Assert.Equal(new Thickness(0.0, 0.0, 0.0, 2.0), selectedPipe.Margin);
-                Assert.Equal(new CornerRadius(1.0), selectedPipe.CornerRadius);
+                    static pipe => Assert.False(pipe.IsVisible));
+                Assert.False(selectedPipe.IsVisible);
                 assertBrushUsesToken(
-                    selectedPipe.Background,
+                    selectedTab.BorderBrush,
                     SELECTION_INDICATOR,
                     themeVariant);
             }

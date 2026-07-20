@@ -176,7 +176,7 @@ public sealed class PlanInspectorVisualStateTests
     }
 
     [AvaloniaFact]
-    public void AlternativeChoiceCardUsesOneClippedSurfaceAndConciseHeading()
+    public void AlternativeChoiceCardUsesAContinuousFrameAndCountedHeading()
     {
         using (PlannerWorkspaceViewModel workspace =
             PlannerWorkspaceTestFactory.CreateWorkspace(
@@ -210,10 +210,31 @@ public sealed class PlanInspectorVisualStateTests
                         && candidate.Classes.Contains("alternative"));
                 Assert.True(alternativeGroup.ClipToBounds);
                 Assert.Equal(new CornerRadius(10.0), alternativeGroup.CornerRadius);
+                Assert.Equal(new Thickness(0.0), alternativeGroup.BorderThickness);
+                Assert.Equal(new Thickness(1.0), alternativeGroup.Padding);
                 Assert.Single(
                     alternativeGroup.GetVisualDescendants()
                         .OfType<TextBlock>(),
-                    candidate => candidate.Text == "한 과목 선택");
+                    candidate => candidate.Text == "2개 과목 중 1개 선택");
+
+                StackPanel groupContent = Assert.IsType<StackPanel>(
+                    alternativeGroup.Child);
+                Point? groupContentOriginOrNull = groupContent.TranslatePoint(
+                    new Point(0.0, 0.0),
+                    alternativeGroup);
+                Assert.NotNull(groupContentOriginOrNull);
+                if (groupContentOriginOrNull == null)
+                {
+                    throw new InvalidOperationException(
+                        "The alternative course group content position was unavailable.");
+                }
+
+                Assert.Equal(1.0, groupContentOriginOrNull.Value.X, 3);
+                Assert.Equal(1.0, groupContentOriginOrNull.Value.Y, 3);
+                Assert.Equal(
+                    alternativeGroup.Bounds.Width - 2.0,
+                    groupContent.Bounds.Width,
+                    3);
 
                 Border[] courseCards = alternativeGroup.GetVisualDescendants()
                     .OfType<Border>()

@@ -240,7 +240,7 @@ internal sealed partial class ScheduleWorkspaceView
     private static FolderPickerOpenOptions createPngBatchFolderPickerOptions()
     {
         FolderPickerOpenOptions options = new FolderPickerOpenOptions();
-        options.Title = "모든 시간표 이미지를 저장할 위치 선택";
+        options.Title = "모든 후보 PNG 저장 위치 선택";
         options.AllowMultiple = false;
         return options;
     }

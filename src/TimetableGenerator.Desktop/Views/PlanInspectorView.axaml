@@ -25,8 +25,10 @@
       <Setter Property="CornerRadius" Value="10" />
     </Style>
     <Style Selector="Border.course-choice-group.alternative">
-      <Setter Property="Background" Value="{DynamicResource SelectionSurfaceBrush}" />
+      <Setter Property="Background" Value="{DynamicResource SelectionIndicatorBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource SelectionIndicatorBrush}" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="1" />
     </Style>
   </UserControl.Styles>
 
