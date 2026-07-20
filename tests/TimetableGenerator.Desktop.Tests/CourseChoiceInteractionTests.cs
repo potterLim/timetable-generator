@@ -306,6 +306,11 @@ public sealed class CourseChoiceInteractionTests
             Assert.Equal(true, preferenceButtons[1].IsChecked);
             Assert.Equal("제외", preferenceButtons[2].Content);
             Assert.Equal(false, preferenceButtons[2].IsChecked);
+            foreach (RadioButton preferenceButton in preferenceButtons)
+            {
+                assertPreferenceOutlineEnclosesControl(preferenceButton);
+            }
+
             Assert.Equal(
                 "프로그래밍 I, 01분반, 선호",
                 AutomationProperties.GetName(preferenceButtons[0]));
@@ -386,11 +391,13 @@ public sealed class CourseChoiceInteractionTests
                         preferenceButton,
                         themeVariant,
                         "SelectionSurfaceBrush");
+                    assertPreferenceOutlineEnclosesControl(preferenceButton);
                     Assert.True(preferenceButton.Focus(NavigationMethod.Tab));
                     Dispatcher.UIThread.RunJobs();
                     assertSelectedPreferenceFocusVisuals(
                         preferenceButton,
                         themeVariant);
+                    assertPreferenceOutlineEnclosesControl(preferenceButton);
                 }
 
                 Assert.True(closeEditorButton.Focus(NavigationMethod.Tab));
@@ -407,6 +414,8 @@ public sealed class CourseChoiceInteractionTests
                     selectedExcludedPreferenceButton,
                     themeVariant,
                     "SelectionHoverSurfaceBrush");
+                assertPreferenceOutlineEnclosesControl(
+                    selectedExcludedPreferenceButton);
 
                 window.MouseDown(
                     selectedPreferenceCenter,
@@ -436,6 +445,8 @@ public sealed class CourseChoiceInteractionTests
                     unselectedPreferenceButton,
                     themeVariant,
                     "HoverSurfaceBrush");
+                assertPreferenceOutlineEnclosesControl(
+                    unselectedPreferenceButton);
                 window.MouseDown(
                     unselectedPreferenceCenter,
                     MouseButton.Left,
@@ -582,6 +593,24 @@ public sealed class CourseChoiceInteractionTests
             "TextPrimaryBrush",
             themeVariant);
         Assert.Equal(FontWeight.Normal, preferenceButton.FontWeight);
+    }
+
+    private static void assertPreferenceOutlineEnclosesControl(
+        RadioButton preferenceButton)
+    {
+        Assert.True(preferenceButton.UseLayoutRounding);
+        Border outline = preferenceButton.GetVisualDescendants()
+            .OfType<Border>()
+            .Single(candidate => candidate.Name == "PART_Outline");
+
+        Assert.Equal(preferenceButton.Bounds.Width, outline.Bounds.Width);
+        Assert.Equal(preferenceButton.Bounds.Height, outline.Bounds.Height);
+        Assert.Equal(preferenceButton.BorderBrush, outline.BorderBrush);
+        Assert.Equal(preferenceButton.BorderThickness, outline.BorderThickness);
+        Assert.True(outline.BorderThickness.Left > 0.0);
+        Assert.Equal(outline.BorderThickness.Left, outline.BorderThickness.Top);
+        Assert.Equal(outline.BorderThickness.Left, outline.BorderThickness.Right);
+        Assert.Equal(outline.BorderThickness.Left, outline.BorderThickness.Bottom);
     }
 
     private static void movePointerOutsidePreferenceButtons(Window window)

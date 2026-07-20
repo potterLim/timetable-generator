@@ -31,13 +31,39 @@ internal sealed class ScheduleListOccurrence
 
     public string ScheduleDisplayText { get; }
 
-    public string SectionDisplayText { get; }
+    public ScheduleListMetadata Metadata { get; }
 
-    public string LocationDisplayText { get; }
+    public string SectionDisplayText
+    {
+        get
+        {
+            return Metadata.SectionDisplayText;
+        }
+    }
 
-    public string ResponsiblePersonDisplayText { get; }
+    public string LocationDisplayText
+    {
+        get
+        {
+            return Metadata.LocationDisplayText;
+        }
+    }
 
-    public string MetadataDisplayText { get; }
+    public string ResponsiblePersonDisplayText
+    {
+        get
+        {
+            return Metadata.ResponsiblePersonDisplayText;
+        }
+    }
+
+    public string MetadataDisplayText
+    {
+        get
+        {
+            return Metadata.DisplayText;
+        }
+    }
 
     public IReadOnlyList<ScheduleListSource> Sources
     {
@@ -51,7 +77,7 @@ internal sealed class ScheduleListOccurrence
     {
         get
         {
-            return string.IsNullOrWhiteSpace(SectionDisplayText) == false;
+            return Metadata.HasSection;
         }
     }
 
@@ -59,7 +85,7 @@ internal sealed class ScheduleListOccurrence
     {
         get
         {
-            return string.IsNullOrWhiteSpace(LocationDisplayText) == false;
+            return Metadata.HasLocation;
         }
     }
 
@@ -67,7 +93,7 @@ internal sealed class ScheduleListOccurrence
     {
         get
         {
-            return string.IsNullOrWhiteSpace(ResponsiblePersonDisplayText) == false;
+            return Metadata.HasResponsiblePerson;
         }
     }
 
@@ -75,7 +101,7 @@ internal sealed class ScheduleListOccurrence
     {
         get
         {
-            return string.IsNullOrWhiteSpace(MetadataDisplayText) == false;
+            return Metadata.HasDisplayText;
         }
     }
 
@@ -107,11 +133,8 @@ internal sealed class ScheduleListOccurrence
     internal ScheduleListOccurrence(
         IReadOnlyList<EDay> days,
         DailyTimeRange timeRange,
-        string sectionDisplayText,
-        string locationDisplayText,
-        string responsiblePersonDisplayText,
-        IReadOnlyList<ScheduleListSource> sources,
-        bool includeSectionInMetadata)
+        ScheduleListMetadata metadata,
+        IReadOnlyList<ScheduleListSource> sources)
     {
         if (days == null)
         {
@@ -132,19 +155,9 @@ internal sealed class ScheduleListOccurrence
                 nameof(timeRange));
         }
 
-        if (sectionDisplayText == null)
+        if (metadata == null)
         {
-            throw new ArgumentNullException(nameof(sectionDisplayText));
-        }
-
-        if (locationDisplayText == null)
-        {
-            throw new ArgumentNullException(nameof(locationDisplayText));
-        }
-
-        if (responsiblePersonDisplayText == null)
-        {
-            throw new ArgumentNullException(nameof(responsiblePersonDisplayText));
+            throw new ArgumentNullException(nameof(metadata));
         }
 
         if (sources == null)
@@ -162,15 +175,8 @@ internal sealed class ScheduleListOccurrence
         mDays = copyAndValidateDays(days);
         mSources = new List<ScheduleListSource>(sources).AsReadOnly();
         TimeRange = timeRange;
-        SectionDisplayText = sectionDisplayText;
-        LocationDisplayText = locationDisplayText;
-        ResponsiblePersonDisplayText = responsiblePersonDisplayText;
+        Metadata = metadata;
         ScheduleDisplayText = createScheduleDisplayText(mDays, timeRange);
-        MetadataDisplayText = createMetadataDisplayText(
-            sectionDisplayText,
-            locationDisplayText,
-            responsiblePersonDisplayText,
-            includeSectionInMetadata);
     }
 
     private static IReadOnlyList<EDay> copyAndValidateDays(
@@ -210,31 +216,6 @@ internal sealed class ScheduleListOccurrence
         }
 
         return string.Join(", ", dayNames) + " " + timeRange;
-    }
-
-    private static string createMetadataDisplayText(
-        string sectionDisplayText,
-        string locationDisplayText,
-        string responsiblePersonDisplayText,
-        bool includeSection)
-    {
-        List<string> metadata = new List<string>();
-        if (includeSection && string.IsNullOrWhiteSpace(sectionDisplayText) == false)
-        {
-            metadata.Add("(" + sectionDisplayText + ")");
-        }
-
-        if (string.IsNullOrWhiteSpace(locationDisplayText) == false)
-        {
-            metadata.Add(locationDisplayText);
-        }
-
-        if (string.IsNullOrWhiteSpace(responsiblePersonDisplayText) == false)
-        {
-            metadata.Add(responsiblePersonDisplayText);
-        }
-
-        return string.Join(" · ", metadata);
     }
 
     private static void ensureDefinedDay(EDay day)

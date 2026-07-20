@@ -35,26 +35,29 @@
       <Setter Property="RenderTransformOrigin" Value="50%,50%" />
       <Setter Property="Template">
         <ControlTemplate>
-          <ContentPresenter
-              x:Name="PART_ContentPresenter"
+          <Border
+              x:Name="PART_Outline"
               Background="{TemplateBinding Background}"
               BorderBrush="{TemplateBinding BorderBrush}"
               BorderThickness="{TemplateBinding BorderThickness}"
-              CornerRadius="{TemplateBinding CornerRadius}"
-              Content="{TemplateBinding Content}"
-              ContentTemplate="{TemplateBinding ContentTemplate}"
-              Foreground="{TemplateBinding Foreground}"
-              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-              LineHeight="18"
-              Padding="{TemplateBinding Padding}"
-              RecognizesAccessKey="True"
-              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+              CornerRadius="{TemplateBinding CornerRadius}">
+            <ContentPresenter
+                x:Name="PART_ContentPresenter"
+                Content="{TemplateBinding Content}"
+                ContentTemplate="{TemplateBinding ContentTemplate}"
+                Foreground="{TemplateBinding Foreground}"
+                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                LineHeight="18"
+                Padding="{TemplateBinding Padding}"
+                RecognizesAccessKey="True"
+                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+          </Border>
         </ControlTemplate>
       </Setter>
       <Style Selector="^:pressed">
         <Setter Property="RenderTransform" Value="scale(0.98)" />
       </Style>
-      <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Style Selector="^:disabled /template/ Border#PART_Outline">
         <Setter Property="Opacity" Value="0.45" />
       </Style>
     </ControlTheme>

@@ -30,9 +30,10 @@ internal static class ScheduleListProjector
 
             ScheduleListProjectionItem item = createProjectionItem(entry);
             string normalizedTitle = normalizeTitle(item.Title);
+            ScheduleListGroupBuilder? builderOrNull;
             if (buildersByTitle.TryGetValue(
                 normalizedTitle,
-                out ScheduleListGroupBuilder? builderOrNull) == false)
+                out builderOrNull) == false)
             {
                 builderOrNull = new ScheduleListGroupBuilder(normalizedTitle);
                 buildersByTitle.Add(normalizedTitle, builderOrNull);
@@ -62,13 +63,7 @@ internal static class ScheduleListProjector
                 courseEntryOrNull.Name,
                 courseEntryOrNull.Day,
                 courseEntryOrNull.TimeRange,
-                courseEntryOrNull.SectionCode.Value,
-                courseEntryOrNull.HasAssignedLocation
-                    ? courseEntryOrNull.LocationDisplayText
-                    : string.Empty,
-                courseEntryOrNull.HasConfirmedInstructor
-                    ? courseEntryOrNull.InstructorDisplayText
-                    : string.Empty,
+                new ScheduleListMetadata(courseEntryOrNull),
                 new CourseScheduleListSource(
                     courseEntryOrNull.CourseId,
                     courseEntryOrNull.OfferingId));
@@ -82,9 +77,7 @@ internal static class ScheduleListProjector
                 personalEntryOrNull.Title,
                 personalEntryOrNull.Day,
                 personalEntryOrNull.TimeRange,
-                personalEntryOrNull.SectionDisplayText,
-                personalEntryOrNull.LocationDisplayText,
-                personalEntryOrNull.InstructorDisplayText,
+                new ScheduleListMetadata(personalEntryOrNull),
                 new PersonalScheduleListSource(
                     personalEntryOrNull.ScheduleId));
         }
@@ -199,14 +192,15 @@ internal static class ScheduleListProjector
             List<ScheduleListSource> groupSources = collectUniqueSources();
             string? sharedCourseSectionOrNull = findSharedCourseSectionOrNull(
                 groupSources);
-            bool includeSectionInMetadata = sharedCourseSectionOrNull == null;
             List<ScheduleListOccurrence> occurrences =
                 new List<ScheduleListOccurrence>(mOccurrenceBuilders.Count);
             foreach (ScheduleListOccurrenceBuilder occurrenceBuilder
                 in mOccurrenceBuilders)
             {
-                occurrences.Add(
-                    occurrenceBuilder.Build(includeSectionInMetadata));
+                ScheduleListOccurrence occurrence = sharedCourseSectionOrNull == null
+                    ? occurrenceBuilder.Build()
+                    : occurrenceBuilder.BuildWithSectionInTitle();
+                occurrences.Add(occurrence);
             }
 
             string titleDisplayText = sharedCourseSectionOrNull == null
@@ -251,20 +245,20 @@ internal static class ScheduleListProjector
                 in mOccurrenceBuilders)
             {
                 if (string.IsNullOrWhiteSpace(
-                    occurrenceBuilder.SectionDisplayText))
+                    occurrenceBuilder.Metadata.SectionDisplayText))
                 {
                     return null;
                 }
 
                 if (sharedSectionOrNull == null)
                 {
-                    sharedSectionOrNull = occurrenceBuilder.SectionDisplayText;
+                    sharedSectionOrNull = occurrenceBuilder.Metadata.SectionDisplayText;
                     continue;
                 }
 
                 if (string.Equals(
                     sharedSectionOrNull,
-                    occurrenceBuilder.SectionDisplayText,
+                    occurrenceBuilder.Metadata.SectionDisplayText,
                     StringComparison.Ordinal) == false)
                 {
                     return null;
@@ -292,8 +286,8 @@ internal static class ScheduleListProjector
             }
 
             int sectionComparison = string.Compare(
-                left.SectionDisplayText,
-                right.SectionDisplayText,
+                left.Metadata.SectionDisplayText,
+                right.Metadata.SectionDisplayText,
                 StringComparison.Ordinal);
             if (sectionComparison != 0)
             {
@@ -301,8 +295,8 @@ internal static class ScheduleListProjector
             }
 
             int locationComparison = string.Compare(
-                left.LocationDisplayText,
-                right.LocationDisplayText,
+                left.Metadata.LocationDisplayText,
+                right.Metadata.LocationDisplayText,
                 StringComparison.Ordinal);
             if (locationComparison != 0)
             {
@@ -310,8 +304,8 @@ internal static class ScheduleListProjector
             }
 
             return string.Compare(
-                left.ResponsiblePersonDisplayText,
-                right.ResponsiblePersonDisplayText,
+                left.Metadata.ResponsiblePersonDisplayText,
+                right.Metadata.ResponsiblePersonDisplayText,
                 StringComparison.Ordinal);
         }
     }
@@ -341,11 +335,7 @@ internal static class ScheduleListProjector
 
         public DailyTimeRange TimeRange { get; }
 
-        public string SectionDisplayText { get; }
-
-        public string LocationDisplayText { get; }
-
-        public string ResponsiblePersonDisplayText { get; }
+        public ScheduleListMetadata Metadata { get; }
 
         public IReadOnlyList<ScheduleListSource> Sources
         {
@@ -360,9 +350,7 @@ internal static class ScheduleListProjector
             mDays = new List<EDay>();
             mSources = new List<ScheduleListSource>();
             TimeRange = item.TimeRange;
-            SectionDisplayText = item.SectionDisplayText;
-            LocationDisplayText = item.LocationDisplayText;
-            ResponsiblePersonDisplayText = item.ResponsiblePersonDisplayText;
+            Metadata = item.Metadata;
             Add(item);
         }
 
@@ -370,18 +358,7 @@ internal static class ScheduleListProjector
             ScheduleListProjectionItem item)
         {
             return TimeRange == item.TimeRange
-                && string.Equals(
-                    SectionDisplayText,
-                    item.SectionDisplayText,
-                    StringComparison.Ordinal)
-                && string.Equals(
-                    LocationDisplayText,
-                    item.LocationDisplayText,
-                    StringComparison.Ordinal)
-                && string.Equals(
-                    ResponsiblePersonDisplayText,
-                    item.ResponsiblePersonDisplayText,
-                    StringComparison.Ordinal);
+                && Metadata.HasSameContentAs(item.Metadata);
         }
 
         public void Add(ScheduleListProjectionItem item)
@@ -401,7 +378,17 @@ internal static class ScheduleListProjector
             addUniqueSource(mSources, item.Source);
         }
 
-        public ScheduleListOccurrence Build(bool includeSectionInMetadata)
+        public ScheduleListOccurrence Build()
+        {
+            return build(Metadata);
+        }
+
+        public ScheduleListOccurrence BuildWithSectionInTitle()
+        {
+            return build(Metadata.WithoutSectionInDisplay());
+        }
+
+        private ScheduleListOccurrence build(ScheduleListMetadata metadata)
         {
             List<ScheduleListSource> orderedSources =
                 new List<ScheduleListSource>(mSources);
@@ -409,11 +396,8 @@ internal static class ScheduleListProjector
             return new ScheduleListOccurrence(
                 mDays.AsReadOnly(),
                 TimeRange,
-                SectionDisplayText,
-                LocationDisplayText,
-                ResponsiblePersonDisplayText,
-                orderedSources.AsReadOnly(),
-                includeSectionInMetadata);
+                metadata,
+                orderedSources.AsReadOnly());
         }
     }
 
@@ -425,11 +409,7 @@ internal static class ScheduleListProjector
 
         public DailyTimeRange TimeRange { get; }
 
-        public string SectionDisplayText { get; }
-
-        public string LocationDisplayText { get; }
-
-        public string ResponsiblePersonDisplayText { get; }
+        public ScheduleListMetadata Metadata { get; }
 
         public ScheduleListSource Source { get; }
 
@@ -437,17 +417,13 @@ internal static class ScheduleListProjector
             string title,
             EDay day,
             DailyTimeRange timeRange,
-            string sectionDisplayText,
-            string locationDisplayText,
-            string responsiblePersonDisplayText,
+            ScheduleListMetadata metadata,
             ScheduleListSource source)
         {
             Title = title;
             Day = day;
             TimeRange = timeRange;
-            SectionDisplayText = sectionDisplayText;
-            LocationDisplayText = locationDisplayText;
-            ResponsiblePersonDisplayText = responsiblePersonDisplayText;
+            Metadata = metadata;
             Source = source;
         }
     }

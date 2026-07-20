@@ -242,6 +242,46 @@ public sealed class ScheduleListGroupingTests
     }
 
     [Fact]
+    public void OnePersonalScheduleListsEveryMatchingSelectedDayInOneOccurrence()
+    {
+        DailyTimeRange timeRange = new DailyTimeRange(
+            new ScheduleTime(18, 0),
+            new ScheduleTime(19, 0));
+        WeeklyTimeRange wednesdayRange = new WeeklyTimeRange(
+            EDay.Wednesday,
+            timeRange);
+        WeeklyTimeRange sundayRange = new WeeklyTimeRange(
+            EDay.Sunday,
+            timeRange);
+        PersonalScheduleId scheduleId = new PersonalScheduleId(
+            new Guid("7e8a4f55-78eb-4e03-bf61-9db52985e845"));
+        PersonalSchedule schedule = new PersonalSchedule(
+            scheduleId,
+            new PersonalScheduleTitle("저녁 모임"),
+            new WeeklyTimeRange[] { sundayRange, wednesdayRange },
+            PersonalScheduleDetails.CreateEmpty());
+
+        ScheduleListGroup group = Assert.Single(ScheduleListProjector.Project(
+            new ScheduleEntry[]
+            {
+                new PersonalScheduleEntry(schedule, sundayRange),
+                new PersonalScheduleEntry(schedule, wednesdayRange),
+            }));
+        ScheduleListOccurrence occurrence = Assert.Single(group.Occurrences);
+        PersonalScheduleListSource source =
+            Assert.IsType<PersonalScheduleListSource>(
+                Assert.Single(occurrence.Sources));
+
+        Assert.Equal("저녁 모임", group.TitleDisplayText);
+        Assert.Equal(
+            new EDay[] { EDay.Wednesday, EDay.Sunday },
+            occurrence.Days);
+        Assert.Equal("수·일: 18:00–19:00", occurrence.ScheduleDisplayText);
+        Assert.Equal(scheduleId, source.ScheduleId);
+        Assert.Contains("수요일, 일요일 18:00–19:00", group.AccessibleName);
+    }
+
+    [Fact]
     public void GroupsAreSortedByEarliestDayThenTimeAndOmitUnavailableMetadata()
     {
         CourseScheduleEntry tuesdayMorning = createCourseEntry(

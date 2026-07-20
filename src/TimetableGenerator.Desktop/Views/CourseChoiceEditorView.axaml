@@ -22,6 +22,7 @@
       <Setter Property="BorderThickness" Value="1" />
       <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
       <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="UseLayoutRounding" Value="True" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
     <Style Selector="RadioButton.preference-choice:pointerover">
