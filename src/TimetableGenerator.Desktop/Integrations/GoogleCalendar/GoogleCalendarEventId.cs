@@ -16,6 +16,32 @@ internal sealed record GoogleCalendarEventId
         Value = value;
     }
 
+    public static GoogleCalendarEventId Create(
+        PlanId planId,
+        GoogleCalendarSourceEventId sourceEventId)
+    {
+        if (planId.IsValid == false)
+        {
+            throw new ArgumentException(
+                "Google Calendar event IDs require a valid plan ID.",
+                nameof(planId));
+        }
+
+        if (sourceEventId == null)
+        {
+            throw new ArgumentNullException(nameof(sourceEventId));
+        }
+
+        string identity = planId.Value.ToString("N") + ":" + sourceEventId.Value;
+        byte[] digest = SHA256.HashData(Encoding.UTF8.GetBytes(identity));
+        return new GoogleCalendarEventId("tg" + encodeBase32Hex(digest));
+    }
+
+    public override string ToString()
+    {
+        return Value;
+    }
+
     internal static GoogleCalendarEventId createFromExisting(string value)
     {
         if (value == null)
@@ -46,27 +72,6 @@ internal sealed record GoogleCalendarEventId
         return new GoogleCalendarEventId(normalizedValue);
     }
 
-    public static GoogleCalendarEventId Create(
-        PlanId planId,
-        GoogleCalendarSourceEventId sourceEventId)
-    {
-        if (planId.IsValid == false)
-        {
-            throw new ArgumentException(
-                "Google Calendar event IDs require a valid plan ID.",
-                nameof(planId));
-        }
-
-        if (sourceEventId == null)
-        {
-            throw new ArgumentNullException(nameof(sourceEventId));
-        }
-
-        string identity = planId.Value.ToString("N") + ":" + sourceEventId.Value;
-        byte[] digest = SHA256.HashData(Encoding.UTF8.GetBytes(identity));
-        return new GoogleCalendarEventId("tg" + encodeBase32Hex(digest));
-    }
-
     private static string encodeBase32Hex(byte[] value)
     {
         StringBuilder builder = new StringBuilder((value.Length * 8 + 4) / 5);
@@ -92,10 +97,5 @@ internal sealed record GoogleCalendarEventId
         }
 
         return builder.ToString();
-    }
-
-    public override string ToString()
-    {
-        return Value;
     }
 }

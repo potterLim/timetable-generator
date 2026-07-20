@@ -39,6 +39,8 @@ internal sealed partial class ScheduleWorkspaceView
 
     private readonly ICalendarExportClock mCalendarExportClock;
 
+    private readonly ICalendarTimeZoneProvider mCalendarTimeZoneProvider;
+
     private readonly AsyncDelegateCommand mExportPngCommand;
 
     private readonly AsyncDelegateCommand mExportGoogleCalendarCommand;
@@ -120,6 +122,7 @@ internal sealed partial class ScheduleWorkspaceView
         mAppleCalendarImporter = exportServices.AppleCalendarImporter;
         mIcsFileStore = exportServices.IcsFileStore;
         mCalendarExportClock = exportServices.Clock;
+        mCalendarTimeZoneProvider = exportServices.CalendarTimeZoneProvider;
         mLifetimeCancellationSource = new CancellationTokenSource();
         mExportStatusTimer = new DispatcherTimer();
         mExportStatusTimer.Interval = EXPORT_STATUS_DURATION;
@@ -285,8 +288,9 @@ internal sealed partial class ScheduleWorkspaceView
         }
 
         AcademicTermCalendarMetadata academicCalendar =
-            AcademicTermCalendarMetadataRegistry.FindByTerm(
-                scheduleBoardOrNull.AcademicTerm);
+            AcademicTermCalendarMetadataRegistry.findByTerm(
+                scheduleBoardOrNull.AcademicTerm,
+                mCalendarTimeZoneProvider.GetTimeZoneId());
         return ScheduleCalendarProjector.Project(
             activePlanOrNull.PlanId,
             activePlanOrNull.Name,

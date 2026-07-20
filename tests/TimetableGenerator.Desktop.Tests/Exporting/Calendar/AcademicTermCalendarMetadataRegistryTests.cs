@@ -14,8 +14,7 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
     public void SecondSemesterOf2026UsesTheConfiguredInclusiveClassPeriod()
     {
         AcademicTermCalendarMetadata metadata =
-            AcademicTermCalendarMetadataRegistry.FindByTerm(
-                AcademicTerm.Parse("2026-2"));
+            getSeoulCalendarMetadata();
 
         Assert.Equal(new DateOnly(2026, 8, 31), metadata.DateRange.StartDate);
         Assert.Equal(new DateOnly(2026, 12, 20), metadata.DateRange.EndDate);
@@ -31,8 +30,7 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
     public void LastIncludedInstantConvertsKoreanLocalTimeToUtc()
     {
         AcademicTermCalendarMetadata metadata =
-            AcademicTermCalendarMetadataRegistry.FindByTerm(
-                AcademicTerm.Parse("2026-2"));
+            getSeoulCalendarMetadata();
 
         DateTimeOffset lastIncludedInstant =
             metadata.GetLastIncludedInstantUtc();
@@ -52,8 +50,7 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
         int date)
     {
         AcademicTermCalendarMetadata metadata =
-            AcademicTermCalendarMetadataRegistry.FindByTerm(
-                AcademicTerm.Parse("2026-2"));
+            getSeoulCalendarMetadata();
 
         DateOnly firstOccurrenceDate = metadata.FindFirstOccurrenceDate(day);
 
@@ -64,8 +61,22 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
     public void UnconfiguredAcademicTermIsRejected()
     {
         Assert.Throws<NotSupportedException>(
-            () => AcademicTermCalendarMetadataRegistry.FindByTerm(
-                AcademicTerm.Parse("2027-1")));
+            () => AcademicTermCalendarMetadataRegistry.findByTerm(
+                AcademicTerm.Parse("2027-1"),
+                new CalendarTimeZoneId("Asia/Seoul")));
+    }
+
+    [Fact]
+    public void DefaultRegistryMetadataUsesTheCurrentSystemTimeZone()
+    {
+        CalendarTimeZoneId expectedTimeZoneId =
+            CalendarTimeZoneId.CreateFromSystemTimeZone(TimeZoneInfo.Local);
+
+        AcademicTermCalendarMetadata metadata =
+            AcademicTermCalendarMetadataRegistry.FindByTerm(
+                AcademicTerm.Parse("2026-2"));
+
+        Assert.Equal(expectedTimeZoneId, metadata.TimeZoneId);
     }
 
     [Fact]
@@ -149,5 +160,53 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
     {
         Assert.Throws<ArgumentException>(
             () => new CalendarTimeZoneId("Korea Standard Time"));
+    }
+
+    [Fact]
+    public void WindowsSystemTimeZoneIdIsNormalizedToIana()
+    {
+        TimeZoneInfo windowsTimeZone = TimeZoneInfo.CreateCustomTimeZone(
+            "Korea Standard Time",
+            TimeSpan.FromHours(9.0),
+            "Korea Standard Time",
+            "Korea Standard Time");
+
+        CalendarTimeZoneId timeZoneId =
+            CalendarTimeZoneId.CreateFromSystemTimeZone(windowsTimeZone);
+
+        Assert.Equal("Asia/Seoul", timeZoneId.Value);
+    }
+
+    [Fact]
+    public void IanaSystemTimeZoneIdIsPreserved()
+    {
+        TimeZoneInfo ianaTimeZone =
+            TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
+
+        CalendarTimeZoneId timeZoneId =
+            CalendarTimeZoneId.CreateFromSystemTimeZone(ianaTimeZone);
+
+        Assert.Equal("America/New_York", timeZoneId.Value);
+    }
+
+    [Fact]
+    public void UnknownSystemTimeZoneIdCannotBeExported()
+    {
+        TimeZoneInfo unsupportedTimeZone = TimeZoneInfo.CreateCustomTimeZone(
+            "Product Custom Time",
+            TimeSpan.FromHours(3.0),
+            "Product Custom Time",
+            "Product Custom Time");
+
+        Assert.Throws<ArgumentException>(
+            () => CalendarTimeZoneId.CreateFromSystemTimeZone(
+                unsupportedTimeZone));
+    }
+
+    private static AcademicTermCalendarMetadata getSeoulCalendarMetadata()
+    {
+        return AcademicTermCalendarMetadataRegistry.findByTerm(
+            AcademicTerm.Parse("2026-2"),
+            new CalendarTimeZoneId("Asia/Seoul"));
     }
 }

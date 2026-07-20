@@ -63,6 +63,34 @@ internal readonly record struct CalendarTimeZoneId
         mIsInitialized = true;
     }
 
+    public static CalendarTimeZoneId CreateFromSystemTimeZone(
+        TimeZoneInfo timeZone)
+    {
+        if (timeZone == null)
+        {
+            throw new ArgumentNullException(nameof(timeZone));
+        }
+
+        if (timeZone.HasIanaId)
+        {
+            return new CalendarTimeZoneId(timeZone.Id);
+        }
+
+        string? ianaTimeZoneIdOrNull;
+        bool hasIanaTimeZoneId = TimeZoneInfo.TryConvertWindowsIdToIanaId(
+            timeZone.Id,
+            out ianaTimeZoneIdOrNull);
+        if (hasIanaTimeZoneId == false
+            || string.IsNullOrWhiteSpace(ianaTimeZoneIdOrNull))
+        {
+            throw new ArgumentException(
+                "The system time zone cannot be represented by a portable IANA identifier.",
+                nameof(timeZone));
+        }
+
+        return new CalendarTimeZoneId(ianaTimeZoneIdOrNull);
+    }
+
     public CalendarUtcOffset FindUtcOffset(DateOnly date, TimeOnly time)
     {
         DateTime localDateTime = date.ToDateTime(

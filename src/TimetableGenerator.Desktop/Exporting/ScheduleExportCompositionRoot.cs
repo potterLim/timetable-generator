@@ -16,6 +16,7 @@ internal static class ScheduleExportCompositionRoot
             GoogleCalendarIntegrationFactory.Create(dataRootPath),
             new AppleCalendarImporter(),
             new IcsCalendarFileStore(dataPaths.CalendarExports),
-            new SystemCalendarExportClock());
+            new SystemCalendarExportClock(),
+            new SystemCalendarTimeZoneProvider());
     }
 }

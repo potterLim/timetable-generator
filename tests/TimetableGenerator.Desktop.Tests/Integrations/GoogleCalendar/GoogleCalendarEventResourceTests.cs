@@ -12,15 +12,22 @@ namespace TimetableGenerator.Desktop.Tests.Integrations.GoogleCalendar;
 public sealed class GoogleCalendarEventResourceTests
 {
     [Fact]
-    public void ResourceDerivesKoreaOffsetAndGroupsWeekdays()
+    public void ResourceUsesNormalizedIanaIdAndGroupsWeekdays()
     {
         PlanId planId = new PlanId(
             Guid.Parse("71f3be04-d4c6-41d4-a269-792321e71423"));
         GoogleCalendarExportEvent exportEvent = createEvent("course:ITP30003");
+        TimeZoneInfo windowsTimeZone = TimeZoneInfo.CreateCustomTimeZone(
+            "Korea Standard Time",
+            TimeSpan.FromHours(9.0),
+            "Korea Standard Time",
+            "Korea Standard Time");
+        CalendarTimeZoneId timeZoneId =
+            CalendarTimeZoneId.CreateFromSystemTimeZone(windowsTimeZone);
 
         JsonObject resource = GoogleCalendarEventResourceFactory.Create(
             planId,
-            new CalendarTimeZoneId("Asia/Seoul"),
+            timeZoneId,
             exportEvent);
         JsonObject start = Assert.IsType<JsonObject>(resource["start"]);
         JsonValue startDateTime = Assert.IsAssignableFrom<JsonValue>(start["dateTime"]);

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -158,6 +159,10 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
         }
         catch (GoogleCalendarApiException exception)
         {
+            Trace.TraceError(
+                "Google Calendar export failed with diagnostic code '{0}': {1}",
+                exception.DiagnosticCode,
+                exception);
             return GoogleCalendarExportResult.Fail(
                 exception.FailureKind == EGoogleCalendarApiFailureKind.Transient
                     ? EGoogleCalendarExportStatus.NetworkFailed
@@ -168,6 +173,9 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
             exception is HttpRequestException
             || exception is TimeoutException)
         {
+            Trace.TraceError(
+                "Google Calendar export transport failed: {0}",
+                exception);
             return GoogleCalendarExportResult.Fail(
                 EGoogleCalendarExportStatus.NetworkFailed,
                 "google_calendar_transport_failed");
@@ -178,6 +186,9 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
             || exception is JsonException
             || exception is InvalidOperationException)
         {
+            Trace.TraceError(
+                "Google Calendar export infrastructure failed: {0}",
+                exception);
             return GoogleCalendarExportResult.Fail(
                 EGoogleCalendarExportStatus.Failed,
                 "google_calendar_local_state_failed");

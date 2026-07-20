@@ -313,7 +313,8 @@ public sealed class ScheduleCalendarProjectorTests
 
     private static AcademicTermCalendarMetadata getAcademicCalendar()
     {
-        return AcademicTermCalendarMetadataRegistry.FindByTerm(
-            AcademicTerm.Parse("2026-2"));
+        return AcademicTermCalendarMetadataRegistry.findByTerm(
+            AcademicTerm.Parse("2026-2"),
+            new CalendarTimeZoneId("Asia/Seoul"));
     }
 }

@@ -11,6 +11,11 @@ internal sealed record GoogleAccessToken
         Value = validate(value, "Google access tokens cannot be empty.");
     }
 
+    public override string ToString()
+    {
+        return "[redacted]";
+    }
+
     private static string validate(string value, string message)
     {
         if (value == null)
@@ -25,10 +30,5 @@ internal sealed record GoogleAccessToken
         }
 
         return normalizedValue;
-    }
-
-    public override string ToString()
-    {
-        return "[redacted]";
     }
 }

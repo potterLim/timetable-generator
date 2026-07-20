@@ -95,8 +95,9 @@ public sealed class IcsCalendarFileStoreTests
         return new CalendarExportDocument(
             planId,
             planName,
-            AcademicTermCalendarMetadataRegistry.FindByTerm(
-                AcademicTerm.Parse("2026-2")),
+            AcademicTermCalendarMetadataRegistry.findByTerm(
+                AcademicTerm.Parse("2026-2"),
+                new CalendarTimeZoneId("Asia/Seoul")),
             new List<RecurringCalendarEvent>());
     }
 

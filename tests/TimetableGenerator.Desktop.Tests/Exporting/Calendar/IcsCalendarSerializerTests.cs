@@ -309,8 +309,9 @@ public sealed class IcsCalendarSerializerTests
             new PlanId(
                 new Guid("11111111-1111-1111-1111-111111111111")),
             new PlanName("2026-2학기 시간표"),
-            AcademicTermCalendarMetadataRegistry.FindByTerm(
-                AcademicTerm.Parse("2026-2")),
+            AcademicTermCalendarMetadataRegistry.findByTerm(
+                AcademicTerm.Parse("2026-2"),
+                new CalendarTimeZoneId("Asia/Seoul")),
             new List<RecurringCalendarEvent> { calendarEvent });
     }
 }

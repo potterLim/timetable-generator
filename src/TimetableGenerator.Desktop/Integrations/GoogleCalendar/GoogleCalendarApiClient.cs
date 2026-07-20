@@ -16,7 +16,10 @@ namespace TimetableGenerator.Desktop.Integrations.GoogleCalendar;
 
 internal sealed class GoogleCalendarApiClient
 {
+    private const int MAXIMUM_CALENDAR_LIST_PAGE_COUNT = 64;
     private const int MAXIMUM_CALENDAR_LIST_PAGE_SIZE = 250;
+    private const long MAXIMUM_RESPONSE_BODY_BYTES = 4_194_304L;
+    private const int MAXIMUM_EVENT_LIST_PAGE_COUNT = 64;
     private const int MAXIMUM_EVENT_LIST_PAGE_SIZE = 2_500;
 
     private static readonly Uri API_ROOT = new Uri(
@@ -81,9 +84,14 @@ internal sealed class GoogleCalendarApiClient
         CancellationToken cancellationToken)
     {
         string marker = createPlanMarker(planId);
+        GoogleCalendarPaginationGuard paginationGuard =
+            new GoogleCalendarPaginationGuard(
+                MAXIMUM_CALENDAR_LIST_PAGE_COUNT,
+                "calendar_list_invalid_pagination");
         string? pageTokenOrNull = null;
         do
         {
+            paginationGuard.BeginPage();
             string relativeUri = "users/me/calendarList?maxResults="
                 + MAXIMUM_CALENDAR_LIST_PAGE_SIZE.ToString(CultureInfo.InvariantCulture)
                 + "&showHidden=true";
@@ -130,7 +138,7 @@ internal sealed class GoogleCalendarApiClient
                             }
                         }
 
-                        pageTokenOrNull = normalizePageTokenOrNull(
+                        pageTokenOrNull = paginationGuard.AcceptNextPageTokenOrNull(
                             getStringOrNull(
                                 document.RootElement,
                                 "nextPageToken"));
@@ -292,9 +300,14 @@ internal sealed class GoogleCalendarApiClient
         CancellationToken cancellationToken)
     {
         HashSet<GoogleCalendarEventId> eventIds = new HashSet<GoogleCalendarEventId>();
+        GoogleCalendarPaginationGuard paginationGuard =
+            new GoogleCalendarPaginationGuard(
+                MAXIMUM_EVENT_LIST_PAGE_COUNT,
+                "event_list_invalid_pagination");
         string? pageTokenOrNull = null;
         do
         {
+            paginationGuard.BeginPage();
             string relativeUri = "calendars/"
                 + escapePathSegment(calendarId.Value)
                 + "/events?maxResults="
@@ -349,7 +362,7 @@ internal sealed class GoogleCalendarApiClient
                             }
                         }
 
-                        pageTokenOrNull = normalizePageTokenOrNull(
+                        pageTokenOrNull = paginationGuard.AcceptNextPageTokenOrNull(
                             getStringOrNull(
                                 document.RootElement,
                                 "nextPageToken"));
@@ -503,9 +516,17 @@ internal sealed class GoogleCalendarApiClient
     {
         try
         {
-            byte[] content = await response.Content.ReadAsByteArrayAsync(
+            byte[] content = await GoogleHttpResponseBodyReader.ReadAsync(
+                response.Content,
+                MAXIMUM_RESPONSE_BODY_BYTES,
                 cancellationToken).ConfigureAwait(false);
             return JsonDocument.Parse(content);
+        }
+        catch (GoogleHttpResponseBodyLimitExceededException)
+        {
+            throw new GoogleCalendarApiException(
+                response.StatusCode,
+                "google_calendar_response_too_large");
         }
         catch (IOException exception)
         {
@@ -554,8 +575,14 @@ internal sealed class GoogleCalendarApiClient
         byte[] content;
         try
         {
-            content = await response.Content.ReadAsByteArrayAsync(
+            content = await GoogleHttpResponseBodyReader.ReadAsync(
+                response.Content,
+                MAXIMUM_RESPONSE_BODY_BYTES,
                 cancellationToken).ConfigureAwait(false);
+        }
+        catch (GoogleHttpResponseBodyLimitExceededException)
+        {
+            return false;
         }
         catch (IOException exception)
         {
@@ -633,10 +660,4 @@ internal sealed class GoogleCalendarApiClient
         return property.GetString();
     }
 
-    private static string? normalizePageTokenOrNull(string? pageTokenOrNull)
-    {
-        return string.IsNullOrWhiteSpace(pageTokenOrNull)
-            ? null
-            : pageTokenOrNull;
-    }
 }

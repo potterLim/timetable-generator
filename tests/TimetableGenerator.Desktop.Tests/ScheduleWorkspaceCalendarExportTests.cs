@@ -318,7 +318,9 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                     10,
                     30,
                     0,
-                    TimeSpan.FromHours(9.0))));
+                    TimeSpan.FromHours(9.0))),
+            new FixedCalendarTimeZoneProvider(
+                new CalendarTimeZoneId("Asia/Seoul")));
     }
 
     private static RecordingGoogleCalendarExporter

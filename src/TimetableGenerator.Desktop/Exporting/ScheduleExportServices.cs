@@ -18,12 +18,15 @@ internal sealed class ScheduleExportServices
 
     public ICalendarExportClock Clock { get; }
 
+    public ICalendarTimeZoneProvider CalendarTimeZoneProvider { get; }
+
     public ScheduleExportServices(
         IControlPngExporter pngExporter,
         IGoogleCalendarExporter googleCalendarExporter,
         IAppleCalendarImporter appleCalendarImporter,
         IcsCalendarFileStore icsFileStore,
-        ICalendarExportClock clock)
+        ICalendarExportClock clock,
+        ICalendarTimeZoneProvider calendarTimeZoneProvider)
     {
         if (pngExporter == null)
         {
@@ -50,10 +53,16 @@ internal sealed class ScheduleExportServices
             throw new ArgumentNullException(nameof(clock));
         }
 
+        if (calendarTimeZoneProvider == null)
+        {
+            throw new ArgumentNullException(nameof(calendarTimeZoneProvider));
+        }
+
         PngExporter = pngExporter;
         GoogleCalendarExporter = googleCalendarExporter;
         AppleCalendarImporter = appleCalendarImporter;
         IcsFileStore = icsFileStore;
         Clock = clock;
+        CalendarTimeZoneProvider = calendarTimeZoneProvider;
     }
 }

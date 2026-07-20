@@ -205,6 +205,50 @@ public sealed class GoogleCalendarExportServiceTests
     }
 
     [Fact]
+    public async Task RepeatedCalendarListPageTokenIsRejectedAsync()
+    {
+        RepeatingCalendarPageHttpMessageHandler handler =
+            new RepeatingCalendarPageHttpMessageHandler();
+        GoogleCalendarApiClient apiClient = new GoogleCalendarApiClient(
+            new HttpClient(handler));
+
+        GoogleCalendarApiException exception = await Assert.ThrowsAsync<
+            GoogleCalendarApiException>(
+            async delegate
+            {
+                await apiClient.FindPlanCalendarOrNullAsync(
+                    new GoogleAccessToken("access-secret"),
+                    new PlanId(Guid.NewGuid()),
+                    CancellationToken.None);
+            });
+
+        Assert.Equal("calendar_list_invalid_pagination", exception.DiagnosticCode);
+        Assert.Equal(2, handler.RequestCount);
+    }
+
+    [Fact]
+    public async Task OversizedCalendarListResponseIsRejectedAsync()
+    {
+        GoogleCalendarApiClient apiClient = new GoogleCalendarApiClient(
+            new HttpClient(
+                new FixedResponseHttpMessageHandler(
+                    HttpStatusCode.OK,
+                    new string('x', 5_000_000))));
+
+        GoogleCalendarApiException exception = await Assert.ThrowsAsync<
+            GoogleCalendarApiException>(
+            async delegate
+            {
+                await apiClient.FindPlanCalendarOrNullAsync(
+                    new GoogleAccessToken("access-secret"),
+                    new PlanId(Guid.NewGuid()),
+                    CancellationToken.None);
+            });
+
+        Assert.Equal("google_calendar_response_too_large", exception.DiagnosticCode);
+    }
+
+    [Fact]
     public async Task DisposeDuringActiveExportCancelsBeforeReleasingOwnedResourcesAsync()
     {
         BlockingAccessTokenProvider accessTokenProvider =
@@ -402,6 +446,26 @@ public sealed class GoogleCalendarExportServiceTests
                 new HttpResponseMessage(mStatusCode)
                 {
                     Content = new StringContent(mBody, Encoding.UTF8, "application/json"),
+                });
+        }
+    }
+
+    private sealed class RepeatingCalendarPageHttpMessageHandler : HttpMessageHandler
+    {
+        public int RequestCount { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            RequestCount++;
+            return Task.FromResult(
+                new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(
+                        "{\"items\":[],\"nextPageToken\":\"repeated\"}",
+                        Encoding.UTF8,
+                        "application/json"),
                 });
         }
     }

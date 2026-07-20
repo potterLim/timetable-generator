@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -14,6 +15,8 @@ namespace TimetableGenerator.Desktop.Integrations.GoogleCalendar;
 
 internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
 {
+    private const long MAXIMUM_TOKEN_RESPONSE_BODY_BYTES = 65_536L;
+
     private static readonly Uri TOKEN_ENDPOINT = new Uri(
         "https://oauth2.googleapis.com/token",
         UriKind.Absolute);
@@ -109,9 +112,12 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
                 configurationOrNull.ClientId,
                 cancellationToken).ConfigureAwait(false);
         }
-        catch (OperationCanceledException) when (
+        catch (OperationCanceledException exception) when (
             cancellationToken.IsCancellationRequested == false)
         {
+            Trace.TraceError(
+                $"Google Calendar authorization timed out.{Environment.NewLine}{exception}");
+
             return GoogleOAuthAuthorizationResult.Fail(
                 EGoogleOAuthAuthorizationStatus.NetworkFailed,
                 "oauth_timeout");
@@ -124,6 +130,9 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
             exception is HttpRequestException
             || exception is IOException)
         {
+            Trace.TraceError(
+                $"Google Calendar authorization transport failed.{Environment.NewLine}{exception}");
+
             return GoogleOAuthAuthorizationResult.Fail(
                 EGoogleOAuthAuthorizationStatus.NetworkFailed,
                 "oauth_transport_failed");
@@ -134,6 +143,9 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
             || exception is PlatformNotSupportedException
             || exception is InvalidOperationException)
         {
+            Trace.TraceError(
+                $"Google Calendar authorization infrastructure failed.{Environment.NewLine}{exception}");
+
             return GoogleOAuthAuthorizationResult.Fail(
                 EGoogleOAuthAuthorizationStatus.Failed,
                 "oauth_infrastructure_failed");
@@ -246,8 +258,21 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
             HttpCompletionOption.ResponseHeadersRead,
             cancellationToken).ConfigureAwait(false))
         {
-            byte[] responseContent = await response.Content.ReadAsByteArrayAsync(
-                cancellationToken).ConfigureAwait(false);
+            byte[] responseContent;
+            try
+            {
+                responseContent = await GoogleHttpResponseBodyReader.ReadAsync(
+                    response.Content,
+                    MAXIMUM_TOKEN_RESPONSE_BODY_BYTES,
+                    cancellationToken).ConfigureAwait(false);
+            }
+            catch (GoogleHttpResponseBodyLimitExceededException)
+            {
+                return GoogleTokenExchangeResult.Fail(
+                    EGoogleTokenExchangeFailureKind.Permanent,
+                    "oauth_response_too_large");
+            }
+
             if (response.IsSuccessStatusCode == false)
             {
                 string? errorOrNull = getErrorOrNull(responseContent);

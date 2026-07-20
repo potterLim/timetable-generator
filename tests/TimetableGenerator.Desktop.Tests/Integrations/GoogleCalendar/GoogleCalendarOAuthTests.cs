@@ -192,6 +192,19 @@ public sealed class GoogleCalendarOAuthTests
     }
 
     [Fact]
+    public async Task OversizedTokenResponseIsRejectedAsync()
+    {
+        GoogleCalendarOAuthClient client = createRefreshClient(
+            new OversizedTokenResponseHttpMessageHandler());
+
+        GoogleOAuthAuthorizationResult result = await client.AuthorizeAsync(
+            CancellationToken.None);
+
+        Assert.Equal(EGoogleOAuthAuthorizationStatus.Failed, result.Status);
+        Assert.Equal("oauth_response_too_large", result.DiagnosticCodeOrNull);
+    }
+
+    [Fact]
     public async Task CredentialManagerFailureIsReportedAsInfrastructureFailureAsync()
     {
         GoogleCalendarOAuthClient client = new GoogleCalendarOAuthClient(
@@ -429,6 +442,23 @@ public sealed class GoogleCalendarOAuthTests
                 {
                     Content = new StringContent(
                         "{\"error\":\"temporarily_unavailable\"}",
+                        Encoding.UTF8,
+                        "application/json"),
+                });
+        }
+    }
+
+    private sealed class OversizedTokenResponseHttpMessageHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            return Task.FromResult(
+                new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(
+                        new string('x', 70_000),
                         Encoding.UTF8,
                         "application/json"),
                 });
