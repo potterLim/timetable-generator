@@ -32,7 +32,10 @@ internal static class ScheduleRecommendationBookmarkRestorer
 
         foreach (ScheduleRecommendation recommendation in state.Recommendations)
         {
-            if (bookmarkMatchesRecommendation(bookmarkOrNull, recommendation))
+            if (bookmarkMatchesRecommendation(
+                bookmarkOrNull,
+                recommendation,
+                state.UnscheduledSelections))
             {
                 return;
             }
@@ -71,10 +74,11 @@ internal static class ScheduleRecommendationBookmarkRestorer
                 return null;
             }
 
-            if (ScheduleRecommendationConflictChecker.CanAddOffering(
-                node,
-                matchingCandidateOrNull.Offering,
-                plan.PersonalSchedules) == false)
+            if (matchingCandidateOrNull.IsScheduled
+                && ScheduleRecommendationConflictChecker.CanAddOffering(
+                    node,
+                    matchingCandidateOrNull.GetScheduledOffering(),
+                    plan.PersonalSchedules) == false)
             {
                 return null;
             }
@@ -84,7 +88,8 @@ internal static class ScheduleRecommendationBookmarkRestorer
 
         return new ScheduleRecommendation(
             node.SelectedOfferings,
-            state.UnscheduledSelections,
+            state.CombineUnscheduledSelections(
+                node.SelectedUnscheduledSelections),
             plan.PersonalSchedules,
             node.Score);
     }
@@ -96,8 +101,7 @@ internal static class ScheduleRecommendationBookmarkRestorer
         foreach (ValidatedOfferingCandidate offeringCandidate
             in courseChoiceGroup.OfferingCandidates)
         {
-            if (bookmark.ContainsScheduledOffering(
-                offeringCandidate.Offering.OfferingId))
+            if (bookmark.ContainsOffering(offeringCandidate.OfferingId))
             {
                 return offeringCandidate;
             }
@@ -108,15 +112,43 @@ internal static class ScheduleRecommendationBookmarkRestorer
 
     private static bool bookmarkMatchesRecommendation(
         ScheduleRecommendationBookmark bookmark,
-        ScheduleRecommendation recommendation)
+        ScheduleRecommendation recommendation,
+        IReadOnlyList<UnscheduledOfferingSelection> fixedUnscheduledSelections)
     {
         List<OfferingId> offeringIds = new List<OfferingId>(
-            recommendation.ScheduledOfferings.Count);
+            recommendation.ScheduledOfferings.Count
+                + recommendation.UnscheduledSelections.Count);
         foreach (ScheduledOffering offering in recommendation.ScheduledOfferings)
         {
             offeringIds.Add(offering.OfferingId);
         }
 
-        return bookmark.HasSameScheduledOfferingIds(offeringIds);
+        foreach (UnscheduledOfferingSelection selection
+            in recommendation.UnscheduledSelections)
+        {
+            if (containsOfferingId(
+                fixedUnscheduledSelections,
+                selection.OfferingId) == false)
+            {
+                offeringIds.Add(selection.OfferingId);
+            }
+        }
+
+        return bookmark.HasSameOfferingIds(offeringIds);
+    }
+
+    private static bool containsOfferingId(
+        IReadOnlyList<UnscheduledOfferingSelection> selections,
+        OfferingId offeringId)
+    {
+        foreach (UnscheduledOfferingSelection selection in selections)
+        {
+            if (selection.OfferingId == offeringId)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

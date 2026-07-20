@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 
 using TimetableGenerator.Desktop.Presentation.Catalog;
+using TimetableGenerator.Desktop.Presentation.Collections;
 using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Planning;
@@ -15,6 +16,9 @@ internal sealed partial class PlannerWorkspaceViewModel
     private const int MAXIMUM_ALTERNATIVE_SEARCH_RESULT_COUNT = 8;
 
     private readonly DelegateCommand mSaveCourseChoiceCommand;
+
+    private readonly IReadOnlyDictionary<CourseId, CourseChoiceAlternativeSearchItem>
+        mAlternativeCourseSearchItemsByCourseId;
 
     private CourseChoiceGroupId? mEditingCourseChoiceGroupIdOrNull;
 
@@ -57,7 +61,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         {
             if (HasAlternativeCourseChoices)
             {
-                return "과목별 분반을 정하면 각 조합에는 이 중 한 과목만 포함됩니다.";
+                return "각 시간표에는 한 과목만 포함됩니다.";
             }
 
             return string.Empty;
@@ -313,7 +317,7 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private static CourseChoiceGroup createSingleOfferingGroup(CourseSearchItem course)
     {
-        OfferingId offeringId = course.Projection.ScheduledOfferingIds[0];
+        OfferingId offeringId = course.Projection.Offerings[0].Offering.Id;
         CourseCandidate courseCandidate = new CourseCandidate(
             course.CourseId,
             new OfferingCandidate[]
@@ -416,16 +420,28 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private void refreshAlternativeCourseSearchResults()
     {
-        AlternativeCourseSearchResults.Clear();
+        IReadOnlyList<CourseChoiceAlternativeSearchItem> searchResults =
+            findAlternativeCourseSearchResults();
+        KeyedObservableCollectionSynchronizer.Synchronize(
+            AlternativeCourseSearchResults,
+            searchResults,
+            findAlternativeCourseSearchItemId);
+        raiseAlternativeSearchStateChanged();
+    }
+
+    private IReadOnlyList<CourseChoiceAlternativeSearchItem>
+        findAlternativeCourseSearchResults()
+    {
+        List<CourseChoiceAlternativeSearchItem> searchResults =
+            new List<CourseChoiceAlternativeSearchItem>();
         if (string.IsNullOrWhiteSpace(AlternativeCourseSearchText))
         {
-            raiseAlternativeSearchStateChanged();
-            return;
+            return searchResults;
         }
 
         foreach (CourseSearchItem course in mAllCourses)
         {
-            if (course.ScheduledOfferingCount == 0
+            if (course.Projection.Offerings.Count == 0
                 || containsDraftCourse(course.CourseId)
                 || isCourseSelectedOutsideEditedGroup(course.CourseId)
                 || course.MatchesSearchText(AlternativeCourseSearchText) == false)
@@ -433,16 +449,43 @@ internal sealed partial class PlannerWorkspaceViewModel
                 continue;
             }
 
-            AlternativeCourseSearchResults.Add(
-                new CourseChoiceAlternativeSearchItem(course.Projection));
-            if (AlternativeCourseSearchResults.Count
-                >= MAXIMUM_ALTERNATIVE_SEARCH_RESULT_COUNT)
+            searchResults.Add(
+                mAlternativeCourseSearchItemsByCourseId[course.CourseId]);
+            if (searchResults.Count >= MAXIMUM_ALTERNATIVE_SEARCH_RESULT_COUNT)
             {
                 break;
             }
         }
 
-        raiseAlternativeSearchStateChanged();
+        return searchResults;
+    }
+
+    private static IReadOnlyDictionary<CourseId, CourseChoiceAlternativeSearchItem>
+        createAlternativeCourseSearchItemsByCourseId(
+            IReadOnlyList<CourseSearchItem> courses)
+    {
+        Dictionary<CourseId, CourseChoiceAlternativeSearchItem>
+            searchItemsByCourseId =
+                new Dictionary<CourseId, CourseChoiceAlternativeSearchItem>();
+        foreach (CourseSearchItem course in courses)
+        {
+            if (course.Projection.Offerings.Count == 0)
+            {
+                continue;
+            }
+
+            CourseChoiceAlternativeSearchItem searchItem =
+                new CourseChoiceAlternativeSearchItem(course.Projection);
+            searchItemsByCourseId.Add(course.CourseId, searchItem);
+        }
+
+        return searchItemsByCourseId;
+    }
+
+    private static CourseId findAlternativeCourseSearchItemId(
+        CourseChoiceAlternativeSearchItem course)
+    {
+        return course.CourseId;
     }
 
     private bool containsDraftCourse(CourseId courseId)

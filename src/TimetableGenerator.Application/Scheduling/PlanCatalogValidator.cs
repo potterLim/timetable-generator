@@ -119,17 +119,22 @@ internal sealed class PlanCatalogValidator
                     return EPlanCatalogValidationError.OfferingCourseMismatch;
                 }
 
-                if (catalogOfferingOrNull.MeetingSchedule.IsScheduled == false)
-                {
-                    return EPlanCatalogValidationError
-                        .ScheduledChoiceHasNoProvidedTime;
-                }
-
                 if (offeringCandidate.IsEligible)
                 {
-                    validatedCandidates.Add(new ValidatedOfferingCandidate(
-                        new ScheduledOffering(catalogOfferingOrNull),
-                        offeringCandidate.Preference));
+                    if (catalogOfferingOrNull.MeetingSchedule.IsScheduled)
+                    {
+                        validatedCandidates.Add(new ValidatedOfferingCandidate(
+                            new ScheduledOffering(catalogOfferingOrNull),
+                            offeringCandidate.Preference));
+                    }
+                    else
+                    {
+                        validatedCandidates.Add(new ValidatedOfferingCandidate(
+                            new UnscheduledOfferingSelection(
+                                courseCandidate.CourseId,
+                                offeringCandidate.OfferingId),
+                            offeringCandidate.Preference));
+                    }
                 }
             }
         }

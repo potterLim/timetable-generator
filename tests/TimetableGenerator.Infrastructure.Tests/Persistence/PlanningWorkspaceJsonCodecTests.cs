@@ -54,7 +54,7 @@ public sealed class PlanningWorkspaceJsonCodecTests
         Assert.IsNotNull(restoredBookmarkOrNull);
         Assert.AreEqual(
             "handong-global-university:2026-2:CSE30001:02",
-            restoredBookmarkOrNull.ScheduledOfferingIds[0].Value);
+            restoredBookmarkOrNull.SelectedOfferingIds[0].Value);
         Assert.IsNull(restoredWorkspace.Plans[1].LastViewedRecommendationOrNull);
         PersonalSchedule restoredPersonalSchedule =
             restoredWorkspace.Plans[0].PersonalSchedules[0];

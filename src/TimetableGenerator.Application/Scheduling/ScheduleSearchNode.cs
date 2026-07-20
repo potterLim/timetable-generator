@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TimetableGenerator.Domain.Planning;
 using TimetableGenerator.Domain.Scheduling;
 
 namespace TimetableGenerator.Application.Scheduling;
@@ -7,6 +8,9 @@ namespace TimetableGenerator.Application.Scheduling;
 internal sealed class ScheduleSearchNode
 {
     private readonly IReadOnlyList<ScheduledOffering> mSelectedOfferings;
+
+    private readonly IReadOnlyList<UnscheduledOfferingSelection>
+        mSelectedUnscheduledSelections;
 
     private readonly HashSet<MeetingSlot> mOccupiedSlots;
 
@@ -28,11 +32,21 @@ internal sealed class ScheduleSearchNode
         }
     }
 
+    public IReadOnlyList<UnscheduledOfferingSelection>
+        SelectedUnscheduledSelections
+    {
+        get
+        {
+            return mSelectedUnscheduledSelections;
+        }
+    }
+
     public RecommendationScore Score { get; }
 
     private ScheduleSearchNode(
         int nextGroupIndex,
         IReadOnlyList<ScheduledOffering> selectedOfferings,
+        IReadOnlyList<UnscheduledOfferingSelection> selectedUnscheduledSelections,
         HashSet<MeetingSlot> occupiedSlots,
         RecommendationScore score)
     {
@@ -51,8 +65,14 @@ internal sealed class ScheduleSearchNode
             throw new ArgumentNullException(nameof(occupiedSlots));
         }
 
+        if (selectedUnscheduledSelections == null)
+        {
+            throw new ArgumentNullException(nameof(selectedUnscheduledSelections));
+        }
+
         NextGroupIndex = nextGroupIndex;
         mSelectedOfferings = selectedOfferings;
+        mSelectedUnscheduledSelections = selectedUnscheduledSelections;
         mOccupiedSlots = occupiedSlots;
         Score = score;
     }
@@ -62,6 +82,7 @@ internal sealed class ScheduleSearchNode
         return new ScheduleSearchNode(
             0,
             Array.Empty<ScheduledOffering>(),
+            Array.Empty<UnscheduledOfferingSelection>(),
             new HashSet<MeetingSlot>(),
             RecommendationScore.ZERO);
     }
@@ -76,22 +97,36 @@ internal sealed class ScheduleSearchNode
 
         List<ScheduledOffering> selectedOfferings =
             new List<ScheduledOffering>(mSelectedOfferings);
-        selectedOfferings.Add(offeringCandidate.Offering);
+        List<UnscheduledOfferingSelection> selectedUnscheduledSelections =
+            new List<UnscheduledOfferingSelection>(
+                mSelectedUnscheduledSelections);
 
         HashSet<MeetingSlot> occupiedSlots = new HashSet<MeetingSlot>(mOccupiedSlots);
-        foreach (MeetingSlot meetingSlot in offeringCandidate.Offering.MeetingSlots)
+        if (offeringCandidate.IsScheduled)
         {
-            bool hasAddedSlot = occupiedSlots.Add(meetingSlot);
-            if (hasAddedSlot == false)
+            ScheduledOffering scheduledOffering =
+                offeringCandidate.GetScheduledOffering();
+            selectedOfferings.Add(scheduledOffering);
+            foreach (MeetingSlot meetingSlot in scheduledOffering.MeetingSlots)
             {
-                throw new InvalidOperationException(
-                    "A validated offering contains an occupied meeting slot.");
+                bool hasAddedSlot = occupiedSlots.Add(meetingSlot);
+                if (hasAddedSlot == false)
+                {
+                    throw new InvalidOperationException(
+                        "A validated offering contains an occupied meeting slot.");
+                }
             }
+        }
+        else
+        {
+            selectedUnscheduledSelections.Add(
+                offeringCandidate.GetUnscheduledSelection());
         }
 
         return new ScheduleSearchNode(
             NextGroupIndex + 1,
             selectedOfferings.AsReadOnly(),
+            selectedUnscheduledSelections.AsReadOnly(),
             occupiedSlots,
             Score.Add(offeringCandidate.Score));
     }

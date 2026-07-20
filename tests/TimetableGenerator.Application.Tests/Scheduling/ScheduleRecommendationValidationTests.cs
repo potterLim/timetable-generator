@@ -147,7 +147,7 @@ public sealed class ScheduleRecommendationValidationTests
     }
 
     [TestMethod]
-    public void GenerateRecommendationsRejectsUnscheduledOfferingInScheduledChoice()
+    public void GenerateRecommendationsAcceptsTimeNotProvidedOfferingInChoiceGroup()
     {
         CatalogCourse course = ScheduleRecommendationTestData.CreateCourse("AAA10001");
         CatalogOffering offering = ScheduleRecommendationTestData.CreateUnscheduledOffering(
@@ -166,10 +166,24 @@ public sealed class ScheduleRecommendationValidationTests
             },
             Array.Empty<UnscheduledOfferingSelection>());
 
-        assertValidationError(
-            catalog,
-            plan,
-            EPlanCatalogValidationError.ScheduledChoiceHasNoProvidedTime);
+        ScheduleRecommendationGenerator generator =
+            new ScheduleRecommendationGenerator();
+        ScheduleRecommendationResult result = generator.GenerateRecommendations(
+            new ScheduleRecommendationRequest(
+                catalog,
+                plan,
+                new ScheduleRecommendationLimit(10)),
+            System.Threading.CancellationToken.None);
+
+        Assert.AreEqual(
+            EScheduleRecommendationCompletion.Completed,
+            result.Completion);
+        Assert.HasCount(1, result.Recommendations);
+        Assert.IsEmpty(result.Recommendations[0].ScheduledOfferings);
+        Assert.HasCount(1, result.Recommendations[0].UnscheduledSelections);
+        Assert.AreEqual(
+            ERecommendationVerificationStatus.RequiresManualReview,
+            result.Recommendations[0].VerificationStatus);
     }
 
     [TestMethod]

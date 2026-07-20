@@ -215,12 +215,6 @@ public static class PlanningWorkspaceCatalogRebinder
                     return EPlanningWorkspaceCatalogRebindStatus
                         .OfferingCourseMismatch;
                 }
-
-                if (offeringOrNull.MeetingSchedule.IsScheduled == false)
-                {
-                    return EPlanningWorkspaceCatalogRebindStatus
-                        .ScheduledChoiceHasNoProvidedTime;
-                }
             }
         }
 

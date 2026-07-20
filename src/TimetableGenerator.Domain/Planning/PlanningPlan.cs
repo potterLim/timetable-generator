@@ -100,7 +100,7 @@ public sealed class PlanningPlan
             return;
         }
 
-        if (lastViewedRecommendationOrNull.ScheduledOfferingIds.Count
+        if (lastViewedRecommendationOrNull.SelectedOfferingIds.Count
             != content.CourseChoiceGroups.Count)
         {
             throw new ArgumentException(
@@ -131,7 +131,7 @@ public sealed class PlanningPlan
                 in courseCandidate.OfferingCandidates)
             {
                 if (offeringCandidate.IsEligible
-                    && bookmark.ContainsScheduledOffering(
+                    && bookmark.ContainsOffering(
                         offeringCandidate.OfferingId))
                 {
                     return true;

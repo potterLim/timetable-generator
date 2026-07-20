@@ -14,7 +14,9 @@ using Avalonia.VisualTree;
 
 using FluentIcons.Avalonia;
 
+using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
+using TimetableGenerator.Desktop.Tests.Presentation.Catalog;
 using TimetableGenerator.Desktop.Views;
 
 using Xunit;
@@ -165,6 +167,64 @@ public sealed class PlanInspectorVisualStateTests
                         inspector,
                         themeVariant);
                 }
+            }
+            finally
+            {
+                window.Close();
+            }
+        }
+    }
+
+    [AvaloniaFact]
+    public void AlternativeChoiceCardUsesOneClippedSurfaceAndConciseHeading()
+    {
+        using (PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace(
+                CatalogProjectionTestFixture
+                    .CreateDocumentWithScheduledAlternativeCourse()))
+        {
+            PlanCourseChoiceGroupItem initialGroup = Assert.Single(
+                workspace.ActivePlan.CourseChoiceGroups);
+            workspace.BeginEditCourseChoiceGroupCommand.Execute(initialGroup);
+            workspace.AlternativeCourseSearchText = "세미나";
+            workspace.AddAlternativeCourseCommand.Execute(
+                Assert.Single(workspace.AlternativeCourseSearchResults));
+            workspace.SaveCourseChoiceCommand.Execute(null);
+
+            PlanInspectorView inspector = new PlanInspectorView();
+            inspector.DataContext = workspace;
+            Window window = new Window();
+            window.Width = INSPECTOR_WIDTH;
+            window.Height = INSPECTOR_HEIGHT;
+            window.Content = inspector;
+
+            try
+            {
+                window.Show();
+                Dispatcher.UIThread.RunJobs();
+
+                Border alternativeGroup = inspector.GetVisualDescendants()
+                    .OfType<Border>()
+                    .Single(candidate => candidate.Classes.Contains(
+                        "course-choice-group")
+                        && candidate.Classes.Contains("alternative"));
+                Assert.True(alternativeGroup.ClipToBounds);
+                Assert.Equal(new CornerRadius(10.0), alternativeGroup.CornerRadius);
+                Assert.Single(
+                    alternativeGroup.GetVisualDescendants()
+                        .OfType<TextBlock>(),
+                    candidate => candidate.Text == "한 과목 선택");
+
+                Border[] courseCards = alternativeGroup.GetVisualDescendants()
+                    .OfType<Border>()
+                    .Where(candidate => candidate.Classes.Contains("plan-course"))
+                    .ToArray();
+                Assert.Equal(2, courseCards.Length);
+                Assert.All(
+                    courseCards,
+                    courseCard => Assert.Equal(
+                        new Thickness(3.0, 0.0, 0.0, 0.0),
+                        courseCard.BorderThickness));
             }
             finally
             {

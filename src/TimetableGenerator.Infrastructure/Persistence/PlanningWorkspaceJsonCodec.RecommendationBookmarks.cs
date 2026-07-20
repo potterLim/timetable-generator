@@ -21,7 +21,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         writer.WriteStartObject("lastViewedRecommendation");
         writer.WriteStartArray("scheduledOfferingIds");
         foreach (OfferingId offeringId
-            in recommendationBookmarkOrNull.ScheduledOfferingIds)
+            in recommendationBookmarkOrNull.SelectedOfferingIds)
         {
             writer.WriteStringValue(offeringId.Value);
         }

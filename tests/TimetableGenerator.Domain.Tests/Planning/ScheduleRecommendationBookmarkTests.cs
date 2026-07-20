@@ -25,8 +25,11 @@ public sealed class ScheduleRecommendationBookmarkTests
             new ScheduleRecommendationBookmark(mutableOfferingIds);
         mutableOfferingIds[0] = new OfferingId("offering-03");
 
-        Assert.AreEqual(firstOfferingId, bookmark.ScheduledOfferingIds[0]);
-        Assert.AreEqual(secondOfferingId, bookmark.ScheduledOfferingIds[1]);
+        Assert.AreEqual(firstOfferingId, bookmark.SelectedOfferingIds[0]);
+        Assert.AreEqual(secondOfferingId, bookmark.SelectedOfferingIds[1]);
+        Assert.IsTrue(bookmark.ContainsOffering(secondOfferingId));
+        Assert.IsTrue(bookmark.HasSameOfferingIds(
+            new OfferingId[] { secondOfferingId, firstOfferingId }));
         Assert.IsTrue(bookmark.HasSameScheduledOfferingIds(
             new OfferingId[] { secondOfferingId, firstOfferingId }));
         Assert.IsFalse(bookmark.HasSameScheduledOfferingIds(

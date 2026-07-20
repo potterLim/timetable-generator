@@ -120,6 +120,7 @@ public sealed class PlanningWorkspaceSession
         switch (selection.Kind)
         {
             case EPlanningCourseSelectionKind.ScheduledAlternatives:
+                validateScheduledSelection(selection);
                 CourseChoiceGroup courseChoiceGroup =
                     createCourseChoiceGroup(selection);
                 editedWorkspace = mEditor.AddCourseChoiceGroup(
@@ -320,6 +321,30 @@ public sealed class PlanningWorkspaceSession
             CourseChoiceGroupId.CreateNew(),
             selection.CourseId,
             selection.GetScheduledOfferingIds());
+    }
+
+    private void validateScheduledSelection(PlanningCourseSelection selection)
+    {
+        foreach (OfferingId offeringId in selection.GetScheduledOfferingIds())
+        {
+            CatalogOffering? matchingOfferingOrNull = null;
+            foreach (CatalogOffering offering in mCatalog.Offerings)
+            {
+                if (offering.Id == offeringId)
+                {
+                    matchingOfferingOrNull = offering;
+                    break;
+                }
+            }
+
+            if (matchingOfferingOrNull != null
+                && matchingOfferingOrNull.MeetingSchedule.IsScheduled == false)
+            {
+                throw new ArgumentException(
+                    "Scheduled course selections require offerings with provided times.",
+                    nameof(selection));
+            }
+        }
     }
 
     private void validatePlan(PlanningPlan plan)

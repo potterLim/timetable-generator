@@ -132,7 +132,7 @@ internal sealed class CourseChoiceDraftCourseItem : ObservableObject
         if (Offerings.Count == 0)
         {
             throw new ArgumentException(
-                "Course choice drafts require at least one scheduled offering.",
+                "Course choice drafts require at least one offering.",
                 nameof(projection));
         }
 
@@ -196,11 +196,6 @@ internal sealed class CourseChoiceDraftCourseItem : ObservableObject
             new ObservableCollection<CourseOfferingPreferenceItem>();
         foreach (CatalogOfferingProjection offering in projection.Offerings)
         {
-            if (offering.Offering.MeetingSchedule.IsScheduled == false)
-            {
-                continue;
-            }
-
             EOfferingPreference preference = defaultPreference;
             EOfferingPreference savedPreference;
             if (savedPreferences.TryGetValue(offering.Offering.Id, out savedPreference))

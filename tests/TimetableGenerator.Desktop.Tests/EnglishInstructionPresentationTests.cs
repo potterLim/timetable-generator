@@ -143,9 +143,11 @@ public sealed class EnglishInstructionPresentationTests
         Assert.Equal(
             "영어 강의 비율 100%",
             course.EnglishInstructionAccessibleText);
-        Assert.Equal(course.SelectionAccessibleName, course.AddButtonAccessibleName);
-        Assert.Equal("추가할 분반을 선택합니다.", course.AddButtonHelpText);
-        Assert.Equal("분반 선택", course.AddButtonToolTipText);
+        Assert.Equal(
+            course.Name + " 수강 선택 설정 열기",
+            course.AddButtonAccessibleName);
+        Assert.Equal("분반별 선호를 설정합니다.", course.AddButtonHelpText);
+        Assert.Equal("수강 선택 설정", course.AddButtonToolTipText);
     }
 
     [Fact]
@@ -194,11 +196,15 @@ public sealed class EnglishInstructionPresentationTests
                     StringComparison.Ordinal);
             });
 
-        Assert.Equal(course.SelectionAccessibleName, course.AddButtonAccessibleName);
-        Assert.Equal("추가할 분반을 선택합니다.", course.AddButtonHelpText);
-        Assert.Equal("분반 선택", course.AddButtonToolTipText);
+        Assert.Equal(
+            course.Name + " 수강 선택 설정 열기",
+            course.AddButtonAccessibleName);
+        Assert.Equal("분반별 선호를 설정합니다.", course.AddButtonHelpText);
+        Assert.Equal("수강 선택 설정", course.AddButtonToolTipText);
         course.SelectedSelectionOption = course.SelectionOptions[1];
-        Assert.Equal(course.SelectionAccessibleName, course.AddButtonAccessibleName);
+        Assert.Equal(
+            course.Name + " 수강 선택 설정 열기",
+            course.AddButtonAccessibleName);
     }
 
     [Fact]

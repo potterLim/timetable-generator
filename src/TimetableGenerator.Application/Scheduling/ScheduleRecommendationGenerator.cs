@@ -116,10 +116,11 @@ public sealed class ScheduleRecommendationGenerator
                     return;
                 }
 
-                if (ScheduleRecommendationConflictChecker.CanAddOffering(
-                    node,
-                    offeringCandidate.Offering,
-                    state.PersonalSchedules) == false)
+                if (offeringCandidate.IsScheduled
+                    && ScheduleRecommendationConflictChecker.CanAddOffering(
+                        node,
+                        offeringCandidate.GetScheduledOffering(),
+                        state.PersonalSchedules) == false)
                 {
                     continue;
                 }
@@ -141,7 +142,8 @@ public sealed class ScheduleRecommendationGenerator
 
         ScheduleRecommendation recommendation = new ScheduleRecommendation(
             node.SelectedOfferings,
-            state.UnscheduledSelections,
+            state.CombineUnscheduledSelections(
+                node.SelectedUnscheduledSelections),
             state.PersonalSchedules,
             node.Score);
         state.Recommendations.Add(recommendation);

@@ -204,6 +204,50 @@ public sealed class ScheduleRecommendationGeneratorTests
     }
 
     [TestMethod]
+    public void TimeNotProvidedChoiceBookmarkRestoresTheExactOffering()
+    {
+        CatalogCourse course = ScheduleRecommendationTestData.CreateCourse("AAA10001");
+        CatalogOffering firstOffering =
+            ScheduleRecommendationTestData.CreateUnscheduledOffering(
+                "AAA10001",
+                "01");
+        CatalogOffering secondOffering =
+            ScheduleRecommendationTestData.CreateUnscheduledOffering(
+                "AAA10001",
+                "02");
+        CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(
+            new CatalogCourse[] { course },
+            new CatalogOffering[] { firstOffering, secondOffering });
+        PlanningPlan basePlan = ScheduleRecommendationTestData.CreatePlan(
+            catalog,
+            new CourseChoiceGroup[]
+            {
+                ScheduleRecommendationTestData.CreateCourseChoiceGroup(
+                    "AAA10001",
+                    "01",
+                    "02"),
+            },
+            Array.Empty<UnscheduledOfferingSelection>());
+        PlanningPlan bookmarkedPlan = new PlanningPlan(
+            basePlan.Id,
+            basePlan.Name,
+            basePlan.CatalogBinding,
+            basePlan.Content,
+            new ScheduleRecommendationBookmark(
+                new OfferingId[] { secondOffering.Id }));
+
+        ScheduleRecommendationResult result = generate(
+            catalog,
+            bookmarkedPlan,
+            1);
+
+        Assert.HasCount(1, result.Recommendations);
+        Assert.AreEqual(
+            secondOffering.Id,
+            result.Recommendations[0].UnscheduledSelections[0].OfferingId);
+    }
+
+    [TestMethod]
     public void GenerateRecommendationsReturnsTypedCancellation()
     {
         CourseCatalog catalog = createCartesianCatalog();
@@ -268,6 +312,135 @@ public sealed class ScheduleRecommendationGeneratorTests
         Assert.AreEqual(
             ERecommendationVerificationStatus.RequiresManualReview,
             recommendation.VerificationStatus);
+    }
+
+    [TestMethod]
+    public void TimeNotProvidedChoiceGroupHonorsPreferencesAndExclusions()
+    {
+        CatalogCourse course = ScheduleRecommendationTestData.CreateCourse("AAA10001");
+        CatalogOffering preferredOffering =
+            ScheduleRecommendationTestData.CreateUnscheduledOffering(
+                "AAA10001",
+                "01");
+        CatalogOffering acceptableOffering =
+            ScheduleRecommendationTestData.CreateUnscheduledOffering(
+                "AAA10001",
+                "02");
+        CatalogOffering excludedOffering =
+            ScheduleRecommendationTestData.CreateUnscheduledOffering(
+                "AAA10001",
+                "03");
+        CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(
+            new CatalogCourse[] { course },
+            new CatalogOffering[]
+            {
+                preferredOffering,
+                acceptableOffering,
+                excludedOffering,
+            });
+        CourseCandidate courseCandidate = new CourseCandidate(
+            course.Id,
+            new OfferingCandidate[]
+            {
+                new OfferingCandidate(
+                    preferredOffering.Id,
+                    EOfferingPreference.Preferred),
+                new OfferingCandidate(
+                    acceptableOffering.Id,
+                    EOfferingPreference.Acceptable),
+                new OfferingCandidate(
+                    excludedOffering.Id,
+                    EOfferingPreference.Excluded),
+            });
+        PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
+            catalog,
+            new CourseChoiceGroup[]
+            {
+                ScheduleRecommendationTestData.CreateCourseChoiceGroupFromCandidates(
+                    courseCandidate),
+            },
+            Array.Empty<UnscheduledOfferingSelection>());
+
+        ScheduleRecommendationResult result = generate(catalog, plan, 10);
+
+        Assert.HasCount(2, result.Recommendations);
+        Assert.AreEqual(
+            preferredOffering.Id,
+            result.Recommendations[0].UnscheduledSelections[0].OfferingId);
+        Assert.AreEqual(
+            RecommendationScore.ZERO,
+            result.Recommendations[0].Score);
+        Assert.AreEqual(
+            acceptableOffering.Id,
+            result.Recommendations[1].UnscheduledSelections[0].OfferingId);
+        Assert.AreEqual(
+            new RecommendationScore(1),
+            result.Recommendations[1].Score);
+        Assert.AreEqual(
+            ERecommendationVerificationStatus.RequiresManualReview,
+            result.Recommendations[0].VerificationStatus);
+    }
+
+    [TestMethod]
+    public void TimeNotProvidedChoiceRemainsWhenScheduledAlternativeConflicts()
+    {
+        CatalogCourse course = ScheduleRecommendationTestData.CreateCourse("AAA10001");
+        CatalogOffering scheduledOffering =
+            ScheduleRecommendationTestData.CreateScheduledOffering(
+                "AAA10001",
+                "01",
+                new MeetingSlot[]
+                {
+                    ScheduleRecommendationTestData.CreateMeetingSlot(
+                        EDay.Monday,
+                        1),
+                });
+        CatalogOffering timeNotProvidedOffering =
+            ScheduleRecommendationTestData.CreateUnscheduledOffering(
+                "AAA10001",
+                "02");
+        CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(
+            new CatalogCourse[] { course },
+            new CatalogOffering[]
+            {
+                scheduledOffering,
+                timeNotProvidedOffering,
+            });
+        CourseCandidate courseCandidate = new CourseCandidate(
+            course.Id,
+            new OfferingCandidate[]
+            {
+                new OfferingCandidate(
+                    scheduledOffering.Id,
+                    EOfferingPreference.Preferred),
+                new OfferingCandidate(
+                    timeNotProvidedOffering.Id,
+                    EOfferingPreference.Acceptable),
+            });
+        PersonalSchedule personalSchedule = createPersonalSchedule(
+            EDay.Monday,
+            new ScheduleTime(9, 0),
+            new ScheduleTime(10, 15));
+        PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
+            catalog,
+            new CourseChoiceGroup[]
+            {
+                ScheduleRecommendationTestData.CreateCourseChoiceGroupFromCandidates(
+                    courseCandidate),
+            },
+            Array.Empty<UnscheduledOfferingSelection>(),
+            new PersonalSchedule[] { personalSchedule });
+
+        ScheduleRecommendationResult result = generate(catalog, plan, 10);
+
+        Assert.HasCount(1, result.Recommendations);
+        Assert.IsEmpty(result.Recommendations[0].ScheduledOfferings);
+        Assert.AreEqual(
+            timeNotProvidedOffering.Id,
+            result.Recommendations[0].UnscheduledSelections[0].OfferingId);
+        Assert.AreEqual(
+            new RecommendationScore(1),
+            result.Recommendations[0].Score);
     }
 
     [TestMethod]

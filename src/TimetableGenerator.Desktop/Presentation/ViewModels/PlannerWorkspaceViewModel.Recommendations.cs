@@ -94,6 +94,48 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
+    internal IReadOnlyList<ScheduleBoardPresentation> PngExportCandidates
+    {
+        get
+        {
+            PlanTabItem? activePlanOrNull = mActivePlanOrNull;
+            if (activePlanOrNull == null || mRecommendations.Count == 0)
+            {
+                return Array.Empty<ScheduleBoardPresentation>();
+            }
+
+            CourseCatalog catalog = mCatalogProjection.Document.Catalog;
+            List<ScheduleBoardPresentation> candidates =
+                new List<ScheduleBoardPresentation>(mRecommendations.Count);
+            foreach (ScheduleRecommendationViewItem recommendation
+                in mRecommendations)
+            {
+                if (containsSameScheduledOfferings(
+                    candidates,
+                    recommendation.Schedule))
+                {
+                    continue;
+                }
+
+                candidates.Add(new ScheduleBoardPresentation(
+                    recommendation.Schedule,
+                    activePlanOrNull.Name,
+                    catalog.InstitutionName,
+                    catalog.Term));
+            }
+
+            return candidates.AsReadOnly();
+        }
+    }
+
+    public bool CanExportAllPngCandidates
+    {
+        get
+        {
+            return PngExportCandidates.Count > 1;
+        }
+    }
+
     public string RecommendationSummary
     {
         get
@@ -218,7 +260,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                 return "과목을 선택해 시간표를 구성해 보세요";
             }
 
-            if (ActivePlan.CourseChoiceGroups.Count == 0)
+            if (HasRecommendations && HasScheduleEntries == false)
             {
                 return "시간이 정해진 과목이 없습니다";
             }
@@ -241,7 +283,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                 return "과목을 선택하면 가능한 시간표를 자동으로 만듭니다.";
             }
 
-            if (ActivePlan.CourseChoiceGroups.Count == 0)
+            if (HasRecommendations && HasScheduleEntries == false)
             {
                 return "시간 미정 과목은 현재 시간표에 유지됩니다.";
             }
@@ -444,7 +486,9 @@ internal sealed partial class PlannerWorkspaceViewModel
                     recommendation,
                     mCatalogProjection);
             ScheduleRecommendationBookmark? bookmarkOrNull =
-                createRecommendationBookmarkOrNull(recommendation);
+                createRecommendationBookmarkOrNull(
+                    recommendation,
+                    planSnapshot);
             recommendations.Add(new ScheduleRecommendationViewItem(
                 schedule,
                 bookmarkOrNull));
@@ -510,22 +554,34 @@ internal sealed partial class PlannerWorkspaceViewModel
     }
 
     private static ScheduleRecommendationBookmark? createRecommendationBookmarkOrNull(
-        ApplicationScheduleRecommendation recommendation)
+        ApplicationScheduleRecommendation recommendation,
+        PlanningPlan plan)
     {
-        if (recommendation.ScheduledOfferings.Count == 0)
+        if (plan.CourseChoiceGroups.Count == 0)
         {
             return null;
         }
 
-        List<OfferingId> scheduledOfferingIds = new List<OfferingId>(
-            recommendation.ScheduledOfferings.Count);
+        List<OfferingId> selectedOfferingIds = new List<OfferingId>(
+            plan.CourseChoiceGroups.Count);
         foreach (ScheduledOffering scheduledOffering
             in recommendation.ScheduledOfferings)
         {
-            scheduledOfferingIds.Add(scheduledOffering.OfferingId);
+            selectedOfferingIds.Add(scheduledOffering.OfferingId);
         }
 
-        return new ScheduleRecommendationBookmark(scheduledOfferingIds);
+        foreach (UnscheduledOfferingSelection selection
+            in recommendation.UnscheduledSelections)
+        {
+            if (containsUnscheduledSelection(
+                plan.UnscheduledOfferingSelections,
+                selection.OfferingId) == false)
+            {
+                selectedOfferingIds.Add(selection.OfferingId);
+            }
+        }
+
+        return new ScheduleRecommendationBookmark(selectedOfferingIds);
     }
 
     private static int findRestoredRecommendationIndex(
@@ -544,14 +600,65 @@ internal sealed partial class PlannerWorkspaceViewModel
             ScheduleRecommendationBookmark? candidateBookmarkOrNull =
                 recommendations[recommendationIndex].BookmarkOrNull;
             if (candidateBookmarkOrNull != null
-                && bookmarkOrNull.HasSameScheduledOfferingIds(
-                    candidateBookmarkOrNull.ScheduledOfferingIds))
+                && bookmarkOrNull.HasSameOfferingIds(
+                    candidateBookmarkOrNull.SelectedOfferingIds))
             {
                 return recommendationIndex;
             }
         }
 
         return 0;
+    }
+
+    private static bool containsUnscheduledSelection(
+        IReadOnlyList<UnscheduledOfferingSelection> selections,
+        OfferingId offeringId)
+    {
+        foreach (UnscheduledOfferingSelection selection in selections)
+        {
+            if (selection.OfferingId == offeringId)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool containsSameScheduledOfferings(
+        IReadOnlyList<ScheduleBoardPresentation> candidates,
+        PresentationScheduleRecommendation recommendation)
+    {
+        HashSet<OfferingId> scheduledOfferingIds =
+            createScheduledOfferingIds(recommendation);
+        foreach (ScheduleBoardPresentation candidate in candidates)
+        {
+            HashSet<OfferingId> candidateOfferingIds =
+                createScheduledOfferingIds(candidate.Schedule);
+            if (candidateOfferingIds.SetEquals(scheduledOfferingIds))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static HashSet<OfferingId> createScheduledOfferingIds(
+        PresentationScheduleRecommendation recommendation)
+    {
+        HashSet<OfferingId> scheduledOfferingIds = new HashSet<OfferingId>();
+        foreach (ScheduleEntry entry in recommendation.Entries)
+        {
+            CourseScheduleEntry? courseEntryOrNull =
+                entry as CourseScheduleEntry;
+            if (courseEntryOrNull != null)
+            {
+                scheduledOfferingIds.Add(courseEntryOrNull.OfferingId);
+            }
+        }
+
+        return scheduledOfferingIds;
     }
 
     private void rememberActiveRecommendation()
@@ -618,8 +725,8 @@ internal sealed partial class PlannerWorkspaceViewModel
             return leftOrNull == null && rightOrNull == null;
         }
 
-        return leftOrNull.HasSameScheduledOfferingIds(
-            rightOrNull.ScheduledOfferingIds);
+        return leftOrNull.HasSameOfferingIds(
+            rightOrNull.SelectedOfferingIds);
     }
 
     private void notifyRecommendationCalculationStateChanged()
@@ -636,12 +743,14 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private void notifyRecommendationChanged()
     {
+        synchronizeDisplayedTimeNotProvidedSelections();
         raisePropertyChanged(nameof(ActiveRecommendation));
         raisePropertyChanged(nameof(DisplayedSchedule));
         raisePropertyChanged(nameof(DisplayedScheduleBoard));
         raisePropertyChanged(nameof(RecommendationSummary));
         raisePropertyChanged(nameof(HasRecommendations));
         raisePropertyChanged(nameof(HasMultipleRecommendations));
+        raisePropertyChanged(nameof(CanExportAllPngCandidates));
         raisePropertyChanged(nameof(HasUnsatisfiedScheduleConstraints));
         raisePropertyChanged(nameof(CanExportSchedule));
         raisePropertyChanged(nameof(HasScheduleEntries));
@@ -652,5 +761,28 @@ internal sealed partial class PlannerWorkspaceViewModel
         raisePropertyChanged(nameof(EmptyScheduleMessage));
         mPreviousRecommendationCommand.NotifyCanExecuteChanged();
         mNextRecommendationCommand.NotifyCanExecuteChanged();
+    }
+
+    private void synchronizeDisplayedTimeNotProvidedSelections()
+    {
+        ScheduleRecommendationBookmark? recommendationBookmarkOrNull = null;
+        if (mRecommendations.Count > 0)
+        {
+            recommendationBookmarkOrNull =
+                mRecommendations[mRecommendationIndex].BookmarkOrNull;
+        }
+
+        PlanTabItem? activePlanOrNull = mActivePlanOrNull;
+        if (activePlanOrNull == null)
+        {
+            return;
+        }
+
+        foreach (PlanCourseChoiceGroupItem group
+            in activePlanOrNull.CourseChoiceGroups)
+        {
+            group.SynchronizeSelectedOfferings(
+                recommendationBookmarkOrNull);
+        }
     }
 }

@@ -87,6 +87,8 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         mAutosaveQueue = autosaveQueue;
         mRecommendationProvider = recommendationProvider;
         mAllCourses = createCourseItems(catalogProjection);
+        mAlternativeCourseSearchItemsByCourseId =
+            createAlternativeCourseSearchItemsByCourseId(mAllCourses);
         mRecommendations = Array.Empty<ScheduleRecommendationViewItem>();
         mPersonalSchedulePreview = EMPTY_RECOMMENDATION;
 

@@ -49,6 +49,44 @@ public sealed class CourseChoiceDraftCourseItemTests
         Assert.True(newOffering.IsExcluded);
     }
 
+    [Fact]
+    public void TimeNotProvidedOfferingsParticipateInTheSameDraft()
+    {
+        CourseCatalogProjection catalog = CourseCatalogProjector.Project(
+            CatalogProjectionTestFixture.CreateDocument());
+        CatalogCourseProjection course = catalog.Courses.Single(
+            candidate => candidate.Course.Code.Value == "BFT30009");
+
+        CourseChoiceDraftCourseItem draft =
+            CourseChoiceDraftCourseItem.CreateNew(course);
+
+        Assert.Equal(course.Offerings.Count, draft.Offerings.Count);
+        Assert.All(
+            draft.Offerings,
+            offering =>
+            {
+                Assert.False(
+                    offering.Projection.Offering.MeetingSchedule.IsScheduled);
+                Assert.Equal("시간 미정", offering.ScheduleDisplayText);
+                Assert.True(offering.IsAcceptable);
+            });
+    }
+
+    [Fact]
+    public void TimeNotProvidedCourseCanBePresentedAsAnAlternative()
+    {
+        CourseCatalogProjection catalog = CourseCatalogProjector.Project(
+            CatalogProjectionTestFixture.CreateDocument());
+        CatalogCourseProjection course = catalog.Courses.Single(
+            candidate => candidate.Course.Code.Value == "BFT30009");
+
+        CourseChoiceAlternativeSearchItem searchItem =
+            new CourseChoiceAlternativeSearchItem(course);
+
+        Assert.Equal(course.Course.Id, searchItem.CourseId);
+        Assert.Equal("2개 분반 · 1학점", searchItem.DetailText);
+    }
+
     private static CatalogCourseProjection createProgrammingCourseProjection()
     {
         CourseCatalogProjection catalog = CourseCatalogProjector.Project(

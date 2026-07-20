@@ -76,6 +76,11 @@ public sealed class ScheduleRecommendation
             copyUnscheduledSelections(unscheduledSelections);
         IReadOnlyList<PersonalSchedule> copiedPersonalSchedules =
             copyPersonalSchedules(personalSchedules);
+        validateUniqueCourseAndOfferingSelections(
+            copiedScheduledOfferings,
+            copiedUnscheduledSelections,
+            nameof(scheduledOfferings),
+            nameof(unscheduledSelections));
         validateFixedScheduleConflicts(
             copiedScheduledOfferings,
             copiedPersonalSchedules);
@@ -100,28 +105,12 @@ public sealed class ScheduleRecommendation
         IEnumerable<ScheduledOffering> scheduledOfferings)
     {
         List<ScheduledOffering> copiedOfferings = new List<ScheduledOffering>();
-        HashSet<CourseId> selectedCourseIds = new HashSet<CourseId>();
-        HashSet<OfferingId> selectedOfferingIds = new HashSet<OfferingId>();
         foreach (ScheduledOffering scheduledOffering in scheduledOfferings)
         {
             if (scheduledOffering == null)
             {
                 throw new ArgumentException(
                     "Schedule recommendations cannot contain null offerings.",
-                    nameof(scheduledOfferings));
-            }
-
-            if (selectedCourseIds.Add(scheduledOffering.CourseId) == false)
-            {
-                throw new ArgumentException(
-                    "Schedule recommendations can select only one offering per course.",
-                    nameof(scheduledOfferings));
-            }
-
-            if (selectedOfferingIds.Add(scheduledOffering.OfferingId) == false)
-            {
-                throw new ArgumentException(
-                    "Schedule recommendations cannot contain duplicate offerings.",
                     nameof(scheduledOfferings));
             }
 
@@ -159,6 +148,57 @@ public sealed class ScheduleRecommendation
         }
 
         return copiedSelections.AsReadOnly();
+    }
+
+    private static void validateUniqueCourseAndOfferingSelections(
+        IReadOnlyList<ScheduledOffering> scheduledOfferings,
+        IReadOnlyList<UnscheduledOfferingSelection> unscheduledSelections,
+        string scheduledParameterName,
+        string unscheduledParameterName)
+    {
+        HashSet<CourseId> selectedCourseIds = new HashSet<CourseId>();
+        HashSet<OfferingId> selectedOfferingIds = new HashSet<OfferingId>();
+        foreach (ScheduledOffering offering in scheduledOfferings)
+        {
+            addUniqueSelection(
+                offering.CourseId,
+                offering.OfferingId,
+                selectedCourseIds,
+                selectedOfferingIds,
+                scheduledParameterName);
+        }
+
+        foreach (UnscheduledOfferingSelection selection in unscheduledSelections)
+        {
+            addUniqueSelection(
+                selection.CourseId,
+                selection.OfferingId,
+                selectedCourseIds,
+                selectedOfferingIds,
+                unscheduledParameterName);
+        }
+    }
+
+    private static void addUniqueSelection(
+        CourseId courseId,
+        OfferingId offeringId,
+        ISet<CourseId> selectedCourseIds,
+        ISet<OfferingId> selectedOfferingIds,
+        string parameterName)
+    {
+        if (selectedCourseIds.Add(courseId) == false)
+        {
+            throw new ArgumentException(
+                "Schedule recommendations can select only one offering per course.",
+                parameterName);
+        }
+
+        if (selectedOfferingIds.Add(offeringId) == false)
+        {
+            throw new ArgumentException(
+                "Schedule recommendations cannot contain duplicate offerings.",
+                parameterName);
+        }
     }
 
     private static IReadOnlyList<PersonalSchedule> copyPersonalSchedules(

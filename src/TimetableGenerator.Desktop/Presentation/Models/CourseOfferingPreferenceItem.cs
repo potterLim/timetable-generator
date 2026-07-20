@@ -211,13 +211,6 @@ internal sealed class CourseOfferingPreferenceItem : ObservableObject
                 nameof(projection));
         }
 
-        if (projection.Offering.MeetingSchedule.IsScheduled == false)
-        {
-            throw new ArgumentException(
-                "Course choice drafts require offerings with provided schedules.",
-                nameof(projection));
-        }
-
         if (Enum.IsDefined(typeof(EOfferingPreference), preference) == false)
         {
             throw new ArgumentOutOfRangeException(nameof(preference));

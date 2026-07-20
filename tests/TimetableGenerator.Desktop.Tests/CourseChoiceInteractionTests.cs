@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Avalonia;
 using Avalonia.Automation;
@@ -26,7 +27,7 @@ namespace TimetableGenerator.Desktop.Tests;
 public sealed class CourseChoiceInteractionTests
 {
     [AvaloniaFact]
-    public void SingleScheduledOfferingIsAddedAsAnAcceptableSingleton()
+    public void MixedScheduleStatusOfferingsUseTheSharedEditor()
     {
         PlannerWorkspaceViewModel workspace = createChoiceWorkspace();
 
@@ -39,15 +40,18 @@ public sealed class CourseChoiceInteractionTests
 
             workspace.AddCourseCommand.Execute(seminar);
 
-            Assert.False(workspace.IsCourseChoiceEditorVisible);
-            CourseChoiceGroup group = Assert.Single(
-                workspace.ActivePlan.Plan.CourseChoiceGroups);
-            CourseCandidate courseCandidate = Assert.Single(group.CourseCandidates);
-            OfferingCandidate offeringCandidate = Assert.Single(
-                courseCandidate.OfferingCandidates);
-            Assert.Equal(ECourseChoiceCardinality.ExactlyOne, group.Cardinality);
-            Assert.Equal(seminar.CourseId, courseCandidate.CourseId);
-            Assert.Equal(EOfferingPreference.Acceptable, offeringCandidate.Preference);
+            Assert.True(workspace.IsCourseChoiceEditorVisible);
+            CourseChoiceDraftCourseItem draft = Assert.Single(
+                workspace.CourseChoiceDraftCourses);
+            Assert.Equal(2, draft.Offerings.Count);
+            Assert.Single(
+                draft.Offerings,
+                offering => offering.Projection.Offering.MeetingSchedule.IsScheduled);
+            Assert.Single(
+                draft.Offerings,
+                offering => offering.Projection.Offering.MeetingSchedule.IsScheduled
+                    == false);
+            Assert.All(draft.Offerings, offering => Assert.True(offering.IsAcceptable));
         }
         finally
         {
@@ -134,7 +138,7 @@ public sealed class CourseChoiceInteractionTests
             Assert.Equal(2, workspace.CourseChoiceDraftCourses.Count);
             Assert.True(workspace.HasAlternativeCourseChoices);
             Assert.Equal(
-                "과목별 분반을 정하면 각 조합에는 이 중 한 과목만 포함됩니다.",
+                "각 시간표에는 한 과목만 포함됩니다.",
                 workspace.CourseChoiceEditorDescription);
             Assert.Empty(workspace.AlternativeCourseSearchResults);
             CourseChoiceDraftCourseItem seminarDraft = workspace
@@ -167,12 +171,12 @@ public sealed class CourseChoiceInteractionTests
 
             PlanCourseChoiceGroupItem savedItem = Assert.Single(
                 workspace.ActivePlan.CourseChoiceGroups);
-            Assert.Equal("2개 중 1개", savedItem.Heading);
+            Assert.Equal("한 과목 선택", savedItem.Heading);
             Assert.Equal(
                 "2개 과목 중 한 과목이 포함되는 수강 선택",
                 savedItem.AccessibleName);
             Assert.Equal(
-                "2개 중 1개 수강 선택 수정",
+                "대안 과목 수강 선택 수정",
                 savedItem.EditButtonAccessibleName);
             workspace.BeginEditCourseChoiceGroupCommand.Execute(savedItem);
 
@@ -214,7 +218,7 @@ public sealed class CourseChoiceInteractionTests
     }
 
     [AvaloniaFact]
-    public void PlanSwitchRestoresEachTimeNotProvidedOfferingSelection()
+    public async Task TimeNotProvidedOfferingsUseTheSamePreferenceEditorAsync()
     {
         PlannerWorkspaceViewModel workspace =
             PlannerWorkspaceTestFactory.CreateWorkspace();
@@ -223,26 +227,87 @@ public sealed class CourseChoiceInteractionTests
         {
             CourseSearchItem seminar = findCourse(workspace, "세미나");
             Assert.Equal(2, seminar.SelectionOptions.Count);
+            workspace.AddCourseCommand.Execute(seminar);
+
+            Assert.True(workspace.IsCourseChoiceEditorVisible);
+            CourseChoiceDraftCourseItem draft = Assert.Single(
+                workspace.CourseChoiceDraftCourses);
+            Assert.Equal(2, draft.Offerings.Count);
+            Assert.All(
+                draft.Offerings,
+                offering => Assert.Equal("시간 미정", offering.ScheduleDisplayText));
+            draft.Offerings[0].SelectPreferredCommand.Execute(null);
+            draft.Offerings[1].SelectExcludedCommand.Execute(null);
+            workspace.SaveCourseChoiceCommand.Execute(null);
+            await workspace.RecommendationRefreshTask;
+
+            Assert.True(seminar.IsAdded);
+            Assert.Empty(
+                workspace.ActivePlan.Plan.UnscheduledOfferingSelections);
+            CourseChoiceGroup seminarGroup = workspace.ActivePlan.Plan
+                .CourseChoiceGroups
+                .Single(group => group.CourseCandidates.Any(
+                    candidate => candidate.CourseId == seminar.CourseId));
+            CourseCandidate candidate = Assert.Single(
+                seminarGroup.CourseCandidates);
+            PlanCourseChoiceCandidateItem displayedCandidate = Assert.Single(
+                workspace.ActivePlan.CourseChoiceGroups
+                    .Single(group => group.GroupId == seminarGroup.Id)
+                    .Courses);
+            Assert.True(displayedCandidate.HasSelectedTimeNotProvidedOffering);
             Assert.Equal(
-                "세미나 3, 추가할 분반 선택",
-                seminar.SelectionAccessibleName);
-            CourseSelectionOption firstOffering = seminar.SelectionOptions[0];
-            CourseSelectionOption secondOffering = seminar.SelectionOptions[1];
+                "01분반: 시간 미정",
+                displayedCandidate.SelectedTimeNotProvidedOfferingDisplayText);
+            Assert.Collection(
+                candidate.OfferingCandidates,
+                offering => Assert.Equal(
+                    EOfferingPreference.Preferred,
+                    offering.Preference),
+                offering => Assert.Equal(
+                    EOfferingPreference.Excluded,
+                    offering.Preference));
 
-            seminar.SelectedSelectionOption = firstOffering;
-            workspace.AddCourseCommand.Execute(seminar);
+            workspace.EditOrRemoveSelectedCourseCommand.Execute(seminar);
+            Assert.True(workspace.IsCourseChoiceEditorVisible);
+            Assert.True(workspace.CourseChoiceDraftCourses[0].Offerings[0].IsPreferred);
+            Assert.True(workspace.CourseChoiceDraftCourses[0].Offerings[1].IsExcluded);
+        }
+        finally
+        {
+            workspace.Dispose();
+        }
+    }
 
+    [AvaloniaFact]
+    public async Task TimeNotProvidedRecommendationsExposeTheSelectedSectionAsync()
+    {
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+
+        try
+        {
             workspace.ActivePlan = workspace.Plans[1];
-            seminar.SelectedSelectionOption = secondOffering;
+            CourseSearchItem seminar = findCourse(workspace, "세미나");
             workspace.AddCourseCommand.Execute(seminar);
+            workspace.SaveCourseChoiceCommand.Execute(null);
+            await workspace.RecommendationRefreshTask;
 
-            workspace.ActivePlan = workspace.Plans[0];
-            Assert.True(seminar.IsAdded);
-            Assert.Same(firstOffering, seminar.SelectedSelectionOption);
+            PlanCourseChoiceCandidateItem displayedCandidate = Assert.Single(
+                Assert.Single(workspace.ActivePlan.CourseChoiceGroups).Courses);
+            Assert.True(workspace.HasMultipleRecommendations);
+            Assert.False(workspace.CanExportAllPngCandidates);
+            Assert.Single(workspace.PngExportCandidates);
+            Assert.Equal("1 / 2", workspace.RecommendationSummary);
+            Assert.Equal(
+                "01분반: 시간 미정",
+                displayedCandidate.SelectedTimeNotProvidedOfferingDisplayText);
 
-            workspace.ActivePlan = workspace.Plans[1];
-            Assert.True(seminar.IsAdded);
-            Assert.Same(secondOffering, seminar.SelectedSelectionOption);
+            workspace.NextRecommendationCommand.Execute(null);
+
+            Assert.Equal("2 / 2", workspace.RecommendationSummary);
+            Assert.Equal(
+                "02분반: 시간 미정",
+                displayedCandidate.SelectedTimeNotProvidedOfferingDisplayText);
         }
         finally
         {

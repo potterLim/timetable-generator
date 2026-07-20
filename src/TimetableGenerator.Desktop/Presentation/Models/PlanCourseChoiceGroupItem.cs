@@ -57,7 +57,7 @@ internal sealed class PlanCourseChoiceGroupItem
         {
             if (IsAlternativeGroup)
             {
-                return Courses.Count + "개 중 1개";
+                return "한 과목 선택";
             }
 
             return "수강 과목";
@@ -87,7 +87,7 @@ internal sealed class PlanCourseChoiceGroupItem
                 return SingleCourse.Name + " 수강 설정 수정";
             }
 
-            return Heading + " 수강 선택 수정";
+            return "대안 과목 수강 선택 수정";
         }
     }
 
@@ -100,7 +100,7 @@ internal sealed class PlanCourseChoiceGroupItem
                 return SingleCourse.Name + " 시간표에서 제거";
             }
 
-            return Heading + " 수강 선택을 시간표에서 제거";
+            return "대안 과목 수강 선택을 시간표에서 제거";
         }
     }
 
@@ -147,5 +147,14 @@ internal sealed class PlanCourseChoiceGroupItem
 
         MinimumCredits = new CourseCredits(minimumCreditValue);
         MaximumCredits = new CourseCredits(maximumCreditValue);
+    }
+
+    public void SynchronizeSelectedOfferings(
+        ScheduleRecommendationBookmark? recommendationBookmarkOrNull)
+    {
+        foreach (PlanCourseChoiceCandidateItem course in Courses)
+        {
+            course.SynchronizeSelectedOffering(recommendationBookmarkOrNull);
+        }
     }
 }

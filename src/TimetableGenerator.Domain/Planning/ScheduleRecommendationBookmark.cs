@@ -7,40 +7,48 @@ namespace TimetableGenerator.Domain.Planning;
 
 public sealed class ScheduleRecommendationBookmark
 {
-    private readonly IReadOnlyList<OfferingId> mScheduledOfferingIds;
+    private readonly IReadOnlyList<OfferingId> mSelectedOfferingIds;
+
+    public IReadOnlyList<OfferingId> SelectedOfferingIds
+    {
+        get
+        {
+            return mSelectedOfferingIds;
+        }
+    }
 
     public IReadOnlyList<OfferingId> ScheduledOfferingIds
     {
         get
         {
-            return mScheduledOfferingIds;
+            return mSelectedOfferingIds;
         }
     }
 
     public ScheduleRecommendationBookmark(
-        IEnumerable<OfferingId> scheduledOfferingIds)
+        IEnumerable<OfferingId> selectedOfferingIds)
     {
-        if (scheduledOfferingIds == null)
+        if (selectedOfferingIds == null)
         {
-            throw new ArgumentNullException(nameof(scheduledOfferingIds));
+            throw new ArgumentNullException(nameof(selectedOfferingIds));
         }
 
         List<OfferingId> copiedOfferingIds = new List<OfferingId>();
         HashSet<OfferingId> uniqueOfferingIds = new HashSet<OfferingId>();
-        foreach (OfferingId offeringId in scheduledOfferingIds)
+        foreach (OfferingId offeringId in selectedOfferingIds)
         {
             if (offeringId == null)
             {
                 throw new ArgumentException(
                     "Schedule recommendation bookmarks cannot contain null offering IDs.",
-                    nameof(scheduledOfferingIds));
+                    nameof(selectedOfferingIds));
             }
 
             if (uniqueOfferingIds.Add(offeringId) == false)
             {
                 throw new ArgumentException(
                     "Schedule recommendation bookmarks require unique offering IDs.",
-                    nameof(scheduledOfferingIds));
+                    nameof(selectedOfferingIds));
             }
 
             copiedOfferingIds.Add(offeringId);
@@ -50,61 +58,34 @@ public sealed class ScheduleRecommendationBookmark
         {
             throw new ArgumentException(
                 "Schedule recommendation bookmarks require at least one offering ID.",
-                nameof(scheduledOfferingIds));
+                nameof(selectedOfferingIds));
         }
 
         copiedOfferingIds.Sort(compareOfferingIds);
-        mScheduledOfferingIds = copiedOfferingIds.AsReadOnly();
+        mSelectedOfferingIds = copiedOfferingIds.AsReadOnly();
+    }
+
+    public bool HasSameOfferingIds(IEnumerable<OfferingId> offeringIds)
+    {
+        return hasSameOfferingIds(offeringIds, nameof(offeringIds));
     }
 
     public bool HasSameScheduledOfferingIds(
         IEnumerable<OfferingId> scheduledOfferingIds)
     {
-        if (scheduledOfferingIds == null)
-        {
-            throw new ArgumentNullException(nameof(scheduledOfferingIds));
-        }
-
-        HashSet<OfferingId> candidateOfferingIds = new HashSet<OfferingId>();
-        foreach (OfferingId offeringId in scheduledOfferingIds)
-        {
-            if (offeringId == null)
-            {
-                throw new ArgumentException(
-                    "Compared recommendation offerings cannot contain null IDs.",
-                    nameof(scheduledOfferingIds));
-            }
-
-            if (candidateOfferingIds.Add(offeringId) == false)
-            {
-                return false;
-            }
-        }
-
-        if (candidateOfferingIds.Count != mScheduledOfferingIds.Count)
-        {
-            return false;
-        }
-
-        foreach (OfferingId offeringId in mScheduledOfferingIds)
-        {
-            if (candidateOfferingIds.Contains(offeringId) == false)
-            {
-                return false;
-            }
-        }
-
-        return true;
+        return hasSameOfferingIds(
+            scheduledOfferingIds,
+            nameof(scheduledOfferingIds));
     }
 
-    public bool ContainsScheduledOffering(OfferingId offeringId)
+    public bool ContainsOffering(OfferingId offeringId)
     {
         if (offeringId == null)
         {
             throw new ArgumentNullException(nameof(offeringId));
         }
 
-        foreach (OfferingId bookmarkedOfferingId in mScheduledOfferingIds)
+        foreach (OfferingId bookmarkedOfferingId in mSelectedOfferingIds)
         {
             if (bookmarkedOfferingId == offeringId)
             {
@@ -113,6 +94,52 @@ public sealed class ScheduleRecommendationBookmark
         }
 
         return false;
+    }
+
+    public bool ContainsScheduledOffering(OfferingId offeringId)
+    {
+        return ContainsOffering(offeringId);
+    }
+
+    private bool hasSameOfferingIds(
+        IEnumerable<OfferingId> offeringIds,
+        string parameterName)
+    {
+        if (offeringIds == null)
+        {
+            throw new ArgumentNullException(parameterName);
+        }
+
+        HashSet<OfferingId> candidateOfferingIds = new HashSet<OfferingId>();
+        foreach (OfferingId offeringId in offeringIds)
+        {
+            if (offeringId == null)
+            {
+                throw new ArgumentException(
+                    "Compared recommendation offerings cannot contain null IDs.",
+                    parameterName);
+            }
+
+            if (candidateOfferingIds.Add(offeringId) == false)
+            {
+                return false;
+            }
+        }
+
+        if (candidateOfferingIds.Count != mSelectedOfferingIds.Count)
+        {
+            return false;
+        }
+
+        foreach (OfferingId offeringId in mSelectedOfferingIds)
+        {
+            if (candidateOfferingIds.Contains(offeringId) == false)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static int compareOfferingIds(OfferingId left, OfferingId right)

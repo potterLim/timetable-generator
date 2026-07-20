@@ -118,6 +118,23 @@ internal sealed class ScheduleRecommendationGenerationState
         Completion = EScheduleRecommendationCompletion.MaximumRecommendationCountReached;
     }
 
+    public IReadOnlyList<UnscheduledOfferingSelection>
+        CombineUnscheduledSelections(
+            IReadOnlyList<UnscheduledOfferingSelection> selectedByGroups)
+    {
+        if (selectedByGroups == null)
+        {
+            throw new ArgumentNullException(nameof(selectedByGroups));
+        }
+
+        List<UnscheduledOfferingSelection> combinedSelections =
+            new List<UnscheduledOfferingSelection>(
+                selectedByGroups.Count + UnscheduledSelections.Count);
+        combinedSelections.AddRange(selectedByGroups);
+        combinedSelections.AddRange(UnscheduledSelections);
+        return combinedSelections.AsReadOnly();
+    }
+
     private static IReadOnlyList<RecommendationScore> createRemainingMinimumScores(
         IReadOnlyList<ValidatedCourseChoiceGroup> courseChoiceGroups)
     {

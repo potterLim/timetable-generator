@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using TimetableGenerator.Application.Planning;
 using TimetableGenerator.Desktop.Presentation.Catalog;
 using TimetableGenerator.Domain.Catalogs;
+using TimetableGenerator.Domain.Planning;
 using TimetableGenerator.Domain.Scheduling;
 
 namespace TimetableGenerator.Desktop.Presentation.Models;
@@ -240,7 +241,7 @@ internal sealed class CourseSearchItem : ObservableObject
     {
         get
         {
-            return IsAdded == false && HasMultipleSelectionOptions == false;
+            return IsAdded == false;
         }
     }
 
@@ -248,7 +249,7 @@ internal sealed class CourseSearchItem : ObservableObject
     {
         get
         {
-            return IsAdded == false && HasMultipleSelectionOptions;
+            return false;
         }
     }
 
@@ -269,9 +270,9 @@ internal sealed class CourseSearchItem : ObservableObject
                 return Name + "은 현재 시간표에 추가되어 있습니다.";
             }
 
-            if (HasMultipleSelectionOptions)
+            if (Projection.Offerings.Count > 1)
             {
-                return SelectionAccessibleName;
+                return Name + " 수강 선택 설정 열기";
             }
 
             if (SelectedSelectionOption.IsDirectAdd)
@@ -293,9 +294,9 @@ internal sealed class CourseSearchItem : ObservableObject
     {
         get
         {
-            if (HasMultipleSelectionOptions)
+            if (Projection.Offerings.Count > 1)
             {
-                return "추가할 분반을 선택합니다.";
+                return "분반별 선호를 설정합니다.";
             }
 
             if (SelectedSelectionOption.IsDirectAdd)
@@ -312,9 +313,9 @@ internal sealed class CourseSearchItem : ObservableObject
     {
         get
         {
-            if (HasMultipleSelectionOptions)
+            if (Projection.Offerings.Count > 1)
             {
-                return "분반 선택";
+                return "수강 선택 설정";
             }
 
             if (SelectedSelectionOption.IsDirectAdd)
@@ -490,6 +491,28 @@ internal sealed class CourseSearchItem : ObservableObject
 
         SelectedSelectionOption = matchingOptionOrNull;
         markAdded();
+    }
+
+    public void SynchronizeCourseChoiceGroup(CourseChoiceGroup courseChoiceGroup)
+    {
+        if (courseChoiceGroup == null)
+        {
+            throw new ArgumentNullException(nameof(courseChoiceGroup));
+        }
+
+        foreach (CourseCandidate courseCandidate
+            in courseChoiceGroup.CourseCandidates)
+        {
+            if (courseCandidate.CourseId == CourseId)
+            {
+                markAdded();
+                return;
+            }
+        }
+
+        throw new ArgumentException(
+            "The synchronized course choice group must contain this course.",
+            nameof(courseChoiceGroup));
     }
 
     public void SynchronizeSelectedAction(ECourseSelectionAction selectionAction)

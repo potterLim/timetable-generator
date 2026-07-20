@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,8 +22,7 @@ public sealed class PlannerWorkspaceSmokeTests
     public void SearchAndCourseCommandsUpdateTheActivePlan()
     {
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
-        int originalCourseCount =
-            workspace.ActivePlan.TimeNotProvidedCourses.Count;
+        int originalCourseCount = workspace.ActivePlan.CourseChoiceGroups.Count;
 
         workspace.SearchText = "세미나";
 
@@ -30,21 +30,23 @@ public sealed class PlannerWorkspaceSmokeTests
         Assert.False(visibleCourse.IsAdded);
 
         workspace.AddCourseCommand.Execute(visibleCourse);
+        Assert.True(workspace.IsCourseChoiceEditorVisible);
+        workspace.SaveCourseChoiceCommand.Execute(null);
 
         Assert.True(visibleCourse.IsAdded);
         Assert.Equal(
             originalCourseCount + 1,
-            workspace.ActivePlan.TimeNotProvidedCourses.Count);
+            workspace.ActivePlan.CourseChoiceGroups.Count);
 
-        TimeNotProvidedCourseItem addedCourse =
-            workspace.ActivePlan.TimeNotProvidedCourses[
-                workspace.ActivePlan.TimeNotProvidedCourses.Count - 1];
-        workspace.RemoveTimeNotProvidedCourseCommand.Execute(addedCourse);
+        PlanCourseChoiceGroupItem addedCourse =
+            workspace.ActivePlan.CourseChoiceGroups[
+                workspace.ActivePlan.CourseChoiceGroups.Count - 1];
+        workspace.RemoveCourseChoiceGroupCommand.Execute(addedCourse);
 
         Assert.False(visibleCourse.IsAdded);
         Assert.Equal(
             originalCourseCount,
-            workspace.ActivePlan.TimeNotProvidedCourses.Count);
+            workspace.ActivePlan.CourseChoiceGroups.Count);
     }
 
     [AvaloniaFact]
@@ -197,6 +199,11 @@ public sealed class PlannerWorkspaceSmokeTests
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         await workspace.RecommendationRefreshTask;
         ScheduleRecommendation firstRecommendation = workspace.ActiveRecommendation;
+        Assert.Equal(2, workspace.PngExportCandidates.Count);
+        Assert.True(workspace.CanExportAllPngCandidates);
+        Assert.Same(
+            firstRecommendation,
+            workspace.PngExportCandidates[0].Schedule);
         Assert.Equal(
             new ScheduleBoardTimeBoundary(540),
             workspace.DisplayedScheduleBoard!.Layout.TimeAxis.Start);
@@ -280,7 +287,7 @@ public sealed class PlannerWorkspaceSmokeTests
     }
 
     [AvaloniaFact]
-    public void EveryTimeNotProvidedOfferingCanBeSelectedExplicitly()
+    public void EveryTimeNotProvidedOfferingCanBePreferredOrExcluded()
     {
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         workspace.SearchText = "세미나";
@@ -289,12 +296,26 @@ public sealed class PlannerWorkspaceSmokeTests
         CourseSelectionOption secondOffering = seminar.SelectionOptions[1];
         Assert.True(secondOffering.IsTimeNotProvided);
 
-        seminar.SelectedSelectionOption = secondOffering;
         workspace.AddCourseCommand.Execute(seminar);
+        CourseChoiceDraftCourseItem draft = Assert.Single(
+            workspace.CourseChoiceDraftCourses);
+        draft.Offerings[0].SelectExcludedCommand.Execute(null);
+        draft.Offerings[1].SelectPreferredCommand.Execute(null);
+        workspace.SaveCourseChoiceCommand.Execute(null);
 
-        TimeNotProvidedCourseItem selectedCourse = Assert.Single(
-            workspace.ActivePlan.TimeNotProvidedCourses);
-        Assert.Equal("02분반 · 시간 미정", selectedCourse.MeetingDisplayText);
+        CourseChoiceGroup seminarGroup = workspace.ActivePlan.Plan
+            .CourseChoiceGroups
+            .Single(group => group.CourseCandidates.Any(
+                candidate => candidate.CourseId == seminar.CourseId));
+        CourseCandidate candidate = Assert.Single(
+            seminarGroup.CourseCandidates);
+        Assert.Equal(
+            EOfferingPreference.Excluded,
+            candidate.OfferingCandidates[0].Preference);
+        Assert.Equal(
+            EOfferingPreference.Preferred,
+            candidate.OfferingCandidates[1].Preference);
+        Assert.Empty(workspace.ActivePlan.TimeNotProvidedCourses);
         Assert.False(seminar.IsSelectionEnabled);
     }
 
@@ -322,9 +343,12 @@ public sealed class PlannerWorkspaceSmokeTests
         {
             workspace.SearchText = "세미나";
             CourseSearchItem seminar = Assert.Single(workspace.VisibleCourses);
-            CourseSelectionOption secondOffering = seminar.SelectionOptions[1];
-            seminar.SelectedSelectionOption = secondOffering;
             workspace.AddCourseCommand.Execute(seminar);
+            CourseChoiceDraftCourseItem draft = Assert.Single(
+                workspace.CourseChoiceDraftCourses);
+            draft.Offerings[0].SelectExcludedCommand.Execute(null);
+            draft.Offerings[1].SelectPreferredCommand.Execute(null);
+            workspace.SaveCourseChoiceCommand.Execute(null);
 
             workspace.ActivePlan = workspace.Plans[1];
             Assert.False(seminar.IsAdded);
@@ -332,8 +356,10 @@ public sealed class PlannerWorkspaceSmokeTests
 
             Assert.True(seminar.IsAdded);
             Assert.False(seminar.IsSelectionEnabled);
-            Assert.True(
-                seminar.SelectedSelectionOption.Represents(secondOffering.Selection));
+            workspace.EditOrRemoveSelectedCourseCommand.Execute(seminar);
+            Assert.True(workspace.IsCourseChoiceEditorVisible);
+            Assert.True(workspace.CourseChoiceDraftCourses[0].Offerings[0].IsExcluded);
+            Assert.True(workspace.CourseChoiceDraftCourses[0].Offerings[1].IsPreferred);
             await workspace.RecommendationRefreshTask;
         }
     }
@@ -377,6 +403,7 @@ public sealed class PlannerWorkspaceSmokeTests
             CourseSearchItem seminar = Assert.Single(workspace.VisibleCourses);
 
             workspace.AddCourseCommand.Execute(seminar);
+            workspace.SaveCourseChoiceCommand.Execute(null);
 
             await recommendationProvider.FirstCallCanceled.WaitAsync(
                 TimeSpan.FromSeconds(5.0));

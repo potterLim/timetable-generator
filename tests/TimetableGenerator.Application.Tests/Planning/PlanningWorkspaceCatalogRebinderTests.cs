@@ -418,7 +418,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
     }
 
     [TestMethod]
-    public void TryRebindRejectsScheduledChoiceWhoseTimeBecameNotProvided()
+    public void TryRebindPreservesChoiceWhenOfferingTimeBecomesNotProvided()
     {
         CourseChoiceGroup choiceGroup =
             ScheduleRecommendationTestData.CreateCourseChoiceGroup(
@@ -431,7 +431,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             ScheduleRecommendationTestData.CreateUnscheduledOffering(
                 "AAA10001",
                 "01");
-        CourseCatalog incompatibleCatalog = createCatalog(
+        CourseCatalog updatedCatalog = createCatalog(
             "handong-global-university:2026-2:r0002",
             "2026-2",
             2,
@@ -440,12 +440,17 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
 
         PlanningWorkspaceCatalogRebindResult result =
             tryRebind(
-                incompatibleCatalog,
+                updatedCatalog,
                 workspace);
 
-        assertFailure(
-            result,
-            EPlanningWorkspaceCatalogRebindStatus.ScheduledChoiceHasNoProvidedTime);
+        Assert.IsTrue(result.IsRebound);
+        Assert.AreEqual(
+            EPlanningWorkspaceCatalogRebindStatus.Rebound,
+            result.Status);
+        Assert.IsNotNull(result.ReboundWorkspaceOrNull);
+        Assert.HasCount(
+            1,
+            result.ReboundWorkspaceOrNull.GetActivePlan().CourseChoiceGroups);
     }
 
     [TestMethod]

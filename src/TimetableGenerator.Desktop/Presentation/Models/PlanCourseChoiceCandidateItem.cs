@@ -6,8 +6,16 @@ using TimetableGenerator.Domain.Planning;
 
 namespace TimetableGenerator.Desktop.Presentation.Models;
 
-internal sealed class PlanCourseChoiceCandidateItem
+internal sealed class PlanCourseChoiceCandidateItem : ObservableObject
 {
+    private readonly CatalogCourseProjection mProjection;
+
+    private readonly CourseCandidate mCourseCandidate;
+
+    private string mSelectedTimeNotProvidedOfferingDisplayText;
+
+    private bool mHasSelectedTimeNotProvidedOffering;
+
     public CourseId CourseId { get; }
 
     public string Code { get; }
@@ -29,6 +37,22 @@ internal sealed class PlanCourseChoiceCandidateItem
     public string OfferingSummary { get; }
 
     public ECourseAccent Accent { get; }
+
+    public string SelectedTimeNotProvidedOfferingDisplayText
+    {
+        get
+        {
+            return mSelectedTimeNotProvidedOfferingDisplayText;
+        }
+    }
+
+    public bool HasSelectedTimeNotProvidedOffering
+    {
+        get
+        {
+            return mHasSelectedTimeNotProvidedOffering;
+        }
+    }
 
     public bool IsBlue
     {
@@ -75,6 +99,9 @@ internal sealed class PlanCourseChoiceCandidateItem
                 nameof(courseCandidate));
         }
 
+        mProjection = projection;
+        mCourseCandidate = courseCandidate;
+        mSelectedTimeNotProvidedOfferingDisplayText = string.Empty;
         CourseId = courseCandidate.CourseId;
         Code = projection.Course.Code.Value;
         Name = projection.Course.KoreanName.Value;
@@ -82,6 +109,62 @@ internal sealed class PlanCourseChoiceCandidateItem
         Accent = projection.Accent;
         PreferenceSummary = createPreferenceSummary(courseCandidate);
         OfferingSummary = createOfferingSummary(courseCandidate);
+    }
+
+    public void SynchronizeSelectedOffering(
+        ScheduleRecommendationBookmark? recommendationBookmarkOrNull)
+    {
+        CatalogOfferingProjection? selectedOfferingOrNull =
+            findSelectedOfferingOrNull(recommendationBookmarkOrNull);
+        bool hasTimeNotProvidedSelection = selectedOfferingOrNull != null
+            && selectedOfferingOrNull.Offering.MeetingSchedule.IsScheduled == false;
+        string displayText = string.Empty;
+        if (hasTimeNotProvidedSelection && selectedOfferingOrNull != null)
+        {
+            displayText = selectedOfferingOrNull.Offering.SectionCode.Value
+                + "분반: 시간 미정";
+        }
+
+        setProperty(
+            ref mSelectedTimeNotProvidedOfferingDisplayText,
+            displayText,
+            nameof(SelectedTimeNotProvidedOfferingDisplayText));
+        setProperty(
+            ref mHasSelectedTimeNotProvidedOffering,
+            hasTimeNotProvidedSelection,
+            nameof(HasSelectedTimeNotProvidedOffering));
+    }
+
+    private CatalogOfferingProjection? findSelectedOfferingOrNull(
+        ScheduleRecommendationBookmark? recommendationBookmarkOrNull)
+    {
+        if (recommendationBookmarkOrNull == null)
+        {
+            return null;
+        }
+
+        foreach (OfferingCandidate offeringCandidate
+            in mCourseCandidate.OfferingCandidates)
+        {
+            if (recommendationBookmarkOrNull.ContainsOffering(
+                offeringCandidate.OfferingId) == false)
+            {
+                continue;
+            }
+
+            foreach (CatalogOfferingProjection offering in mProjection.Offerings)
+            {
+                if (offering.Offering.Id == offeringCandidate.OfferingId)
+                {
+                    return offering;
+                }
+            }
+
+            throw new InvalidOperationException(
+                "A selected plan offering is missing from its catalog projection.");
+        }
+
+        return null;
     }
 
     private static string createPreferenceSummary(CourseCandidate courseCandidate)
