@@ -29,11 +29,7 @@ internal sealed partial class ScheduleWorkspaceView
 
     private readonly IGoogleCalendarExporter mGoogleCalendarExporter;
 
-    private readonly IAppleCalendarImporter mAppleCalendarImporter;
-
-    private readonly IcsCalendarFileStore mIcsFileStore;
-
-    private readonly ICalendarExportClock mCalendarExportClock;
+    private readonly IAppleCalendarExporter mAppleCalendarExporter;
 
     private readonly ICalendarTimeZoneProvider mCalendarTimeZoneProvider;
 
@@ -71,7 +67,7 @@ internal sealed partial class ScheduleWorkspaceView
     {
         get
         {
-            return mAppleCalendarImporter.IsAvailable;
+            return mAppleCalendarExporter.IsAvailable;
         }
     }
 
@@ -105,9 +101,7 @@ internal sealed partial class ScheduleWorkspaceView
 
         mPngExporter = exportServices.PngExporter;
         mGoogleCalendarExporter = exportServices.GoogleCalendarExporter;
-        mAppleCalendarImporter = exportServices.AppleCalendarImporter;
-        mIcsFileStore = exportServices.IcsFileStore;
-        mCalendarExportClock = exportServices.Clock;
+        mAppleCalendarExporter = exportServices.AppleCalendarExporter;
         mCalendarTimeZoneProvider = exportServices.CalendarTimeZoneProvider;
         mLifetimeCancellationSource = new CancellationTokenSource();
         mExportStatusTimer = new DispatcherTimer();
@@ -152,17 +146,14 @@ internal sealed partial class ScheduleWorkspaceView
             GoogleCalendarExportPlan exportPlan =
                 GoogleCalendarExportPlan.CreateFromDocument(document);
             showPersistentExportStatus(
-                "Google 캘린더에 시간표를 반영하는 중입니다: '"
-                    + document.CalendarName.Value
-                    + "'",
+                "Google 캘린더로 내보내는 중입니다.",
                 EExportStatus.Information);
             GoogleCalendarExportResult result =
                 await mGoogleCalendarExporter.ExportAsync(
                     exportPlan,
+                    this,
                     cancellationToken);
-            showGoogleCalendarExportResult(
-                result,
-                document.CalendarName);
+            showGoogleCalendarExportResult(result);
         }
         finally
         {
@@ -183,16 +174,15 @@ internal sealed partial class ScheduleWorkspaceView
                 mLifetimeCancellationSource.Token;
             cancellationToken.ThrowIfCancellationRequested();
             CalendarExportDocument document = createCalendarExportDocument();
-            IcsCalendarFilePath importFilePath = await mIcsFileStore.SaveAsync(
-                document,
-                mCalendarExportClock.GetCurrentTimestamp(),
-                cancellationToken);
-            await mAppleCalendarImporter.OpenImportAsync(
-                importFilePath,
-                cancellationToken);
-            showTransientExportStatus(
-                "Apple 캘린더에서 가져오기를 확인해 주세요.",
+            showPersistentExportStatus(
+                "Apple 캘린더로 내보내는 중입니다.",
                 EExportStatus.Information);
+            AppleCalendarExportResult result =
+                await mAppleCalendarExporter.ExportAsync(
+                document,
+                this,
+                cancellationToken);
+            showAppleCalendarExportResult(result);
         }
         finally
         {
@@ -284,26 +274,18 @@ internal sealed partial class ScheduleWorkspaceView
     }
 
     private void showGoogleCalendarExportResult(
-        GoogleCalendarExportResult result,
-        PlanName calendarName)
+        GoogleCalendarExportResult result)
     {
         if (result == null)
         {
             throw new ArgumentNullException(nameof(result));
         }
 
-        if (calendarName == null)
-        {
-            throw new ArgumentNullException(nameof(calendarName));
-        }
-
         switch (result.Status)
         {
             case EGoogleCalendarExportStatus.Success:
                 showTransientExportStatus(
-                    "Google 캘린더에 시간표를 반영했습니다: '"
-                        + calendarName.Value
-                        + "'",
+                    "Google 캘린더로 내보냈습니다.",
                     EExportStatus.Success);
                 break;
             case EGoogleCalendarExportStatus.NotConfigured:
@@ -312,9 +294,8 @@ internal sealed partial class ScheduleWorkspaceView
                     EExportStatus.Information);
                 break;
             case EGoogleCalendarExportStatus.AuthenticationCancelled:
-                showTransientExportStatus(
-                    "Google 캘린더 연결을 취소했습니다.",
-                    EExportStatus.Information);
+            case EGoogleCalendarExportStatus.Cancelled:
+                clearExportStatus();
                 break;
             case EGoogleCalendarExportStatus.AuthenticationFailed:
                 showTransientExportStatus(
@@ -352,11 +333,53 @@ internal sealed partial class ScheduleWorkspaceView
             "Google 캘린더에 반영하지 못했습니다. 다시 시도해 주세요.");
     }
 
+    private void showAppleCalendarExportResult(
+        AppleCalendarExportResult result)
+    {
+        if (result == null)
+        {
+            throw new ArgumentNullException(nameof(result));
+        }
+
+        switch (result.Status)
+        {
+            case EAppleCalendarExportStatus.Success:
+                showTransientExportStatus(
+                    "Apple 캘린더로 내보냈습니다.",
+                    EExportStatus.Success);
+                break;
+            case EAppleCalendarExportStatus.Cancelled:
+                clearExportStatus();
+                break;
+            case EAppleCalendarExportStatus.Unavailable:
+                showTransientExportStatus(
+                    "Apple 캘린더를 사용할 수 없습니다.",
+                    EExportStatus.Information);
+                break;
+            case EAppleCalendarExportStatus.AccessDenied:
+                showTransientExportStatus(
+                    "Apple 캘린더 접근 권한을 확인해 주세요.",
+                    EExportStatus.Failure);
+                break;
+            case EAppleCalendarExportStatus.Failed:
+                showTransientExportStatus(
+                    "Apple 캘린더로 내보내지 못했습니다. 다시 시도해 주세요.",
+                    EExportStatus.Failure);
+                break;
+            case EAppleCalendarExportStatus.None:
+            default:
+                throw new ArgumentOutOfRangeException(
+                    nameof(result),
+                    result.Status,
+                    "Unknown Apple Calendar export status.");
+        }
+    }
+
     private void showAppleCalendarExportFailure(Exception exception)
     {
         showCalendarExportFailure(
             exception,
-            "Apple 캘린더를 열지 못했습니다. 다시 시도해 주세요.");
+            "Apple 캘린더로 내보내지 못했습니다. 다시 시도해 주세요.");
     }
 
     private void showCalendarExportFailure(

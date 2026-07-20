@@ -10,13 +10,11 @@ internal static class ScheduleExportCompositionRoot
     public static ScheduleExportServices CreateDefault()
     {
         ProductDataRootPath dataRootPath = ProductDataRootPath.CreateDefault();
-        ProductDataPaths dataPaths = new ProductDataPaths(dataRootPath);
         return new ScheduleExportServices(
             new AvaloniaControlPngExporter(PngExportScale.PRODUCT_QUALITY),
             GoogleCalendarIntegrationFactory.Create(dataRootPath),
-            new AppleCalendarImporter(),
-            new IcsCalendarFileStore(dataPaths.CalendarExports),
-            new SystemCalendarExportClock(),
+            new AppleCalendarExportService(
+                new JxaAppleCalendarNativeBridge()),
             new SystemCalendarTimeZoneProvider());
     }
 }

@@ -1,18 +1,18 @@
 using System;
 using System.Windows.Input;
-
 using Avalonia.Controls;
-
 using FluentIcons.Avalonia;
 using FluentIcons.Common;
-
+using TimetableGenerator.Desktop.Exporting.Calendar;
 using TimetableGenerator.Desktop.Presentation;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Domain.Planning;
 
 namespace TimetableGenerator.Desktop.Views;
 
-internal sealed partial class ScheduleWorkspaceView : UserControl
+internal sealed partial class ScheduleWorkspaceView :
+    UserControl,
+    ICalendarNameConflictResolver
 {
     private readonly DelegateCommand mToggleSchedulePresentationCommand;
 

@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -24,6 +23,7 @@ using TimetableGenerator.Desktop.Presentation;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Desktop.Tests.Exporting;
 using TimetableGenerator.Desktop.Views;
+using TimetableGenerator.Domain.Planning;
 
 using Xunit;
 
@@ -39,17 +39,14 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         PlannerWorkspaceViewModel workspace =
             PlannerWorkspaceTestFactory.CreateWorkspace();
         await workspace.RecommendationRefreshTask;
-        string exportDirectory = createTemporaryDirectory();
         RecordingGoogleCalendarExporter googleExporter =
             createSuccessfulGoogleExporter();
-        RecordingAppleCalendarImporter appleImporter =
-            new RecordingAppleCalendarImporter(
-                EAppleCalendarRuntimePlatform.Unsupported);
+        RecordingAppleCalendarExporter appleExporter =
+            createUnavailableAppleExporter();
         ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
             createServices(
-                exportDirectory,
                 googleExporter,
-                appleImporter));
+                appleExporter));
         workspaceView.DataContext = workspace;
         Window window = showInWindow(workspaceView);
 
@@ -144,10 +141,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         }
         finally
         {
-            await closeWindowAndDeleteDirectoryAsync(
-                window,
-                workspaceView,
-                exportDirectory);
+            await closeWindowAsync(window, workspaceView);
         }
     }
 
@@ -157,17 +151,14 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         PlannerWorkspaceViewModel workspace =
             PlannerWorkspaceTestFactory.CreateWorkspace();
         await workspace.RecommendationRefreshTask;
-        string exportDirectory = createTemporaryDirectory();
         RecordingGoogleCalendarExporter googleExporter =
             createSuccessfulGoogleExporter();
-        RecordingAppleCalendarImporter appleImporter =
-            new RecordingAppleCalendarImporter(
-                EAppleCalendarRuntimePlatform.Unsupported);
+        RecordingAppleCalendarExporter appleExporter =
+            createUnavailableAppleExporter();
         ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
             createServices(
-                exportDirectory,
                 googleExporter,
-                appleImporter));
+                appleExporter));
         workspaceView.DataContext = workspace;
         Window window = showInWindow(workspaceView);
 
@@ -199,38 +190,28 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             TextBlock status = findRequiredTextBlock(
                 workspaceView,
                 "ExportStatusText");
-            Assert.Equal(
-                "Google 캘린더에 시간표를 반영했습니다: '"
-                    + workspace.ActivePlan.Name.Value
-                    + "'",
-                status.Text);
+            Assert.Equal("Google 캘린더로 내보냈습니다.", status.Text);
         }
         finally
         {
-            await closeWindowAndDeleteDirectoryAsync(
-                window,
-                workspaceView,
-                exportDirectory);
+            await closeWindowAsync(window, workspaceView);
         }
     }
 
     [AvaloniaFact]
-    public async Task MacExportMenuAndImportUseAPersistentPlanCalendarAsync()
+    public async Task MacExportMenuAndExportUseTheCurrentPlanCalendarAsync()
     {
         PlannerWorkspaceViewModel workspace =
             PlannerWorkspaceTestFactory.CreateWorkspace();
         await workspace.RecommendationRefreshTask;
-        string exportDirectory = createTemporaryDirectory();
         RecordingGoogleCalendarExporter googleExporter =
             createSuccessfulGoogleExporter();
-        RecordingAppleCalendarImporter appleImporter =
-            new RecordingAppleCalendarImporter(
-                EAppleCalendarRuntimePlatform.MacOS);
+        RecordingAppleCalendarExporter appleExporter =
+            createSuccessfulAppleExporter();
         ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
             createServices(
-                exportDirectory,
                 googleExporter,
-                appleImporter));
+                appleExporter));
         workspaceView.DataContext = workspace;
         Window window = showInWindow(workspaceView);
 
@@ -305,66 +286,63 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             command.Execute(null);
             await command.ExecutionTask;
 
-            IcsCalendarFilePath? filePathOrNull =
-                appleImporter.OpenedFilePathOrNull;
-            Assert.NotNull(filePathOrNull);
-            if (filePathOrNull == null)
+            CalendarExportDocument? documentOrNull =
+                appleExporter.ExportedDocumentOrNull;
+            Assert.NotNull(documentOrNull);
+            if (documentOrNull == null)
             {
                 throw new InvalidOperationException(
-                    "The Apple Calendar import path was not recorded.");
+                    "The Apple Calendar export document was not recorded.");
             }
 
-            string calendarContent = File.ReadAllText(filePathOrNull.Value);
-            Assert.Contains(
-                "X-WR-CALNAME:" + workspace.ActivePlan.Name.Value,
-                calendarContent,
-                StringComparison.Ordinal);
-            Assert.Contains(
-                "TZID:Asia/Seoul",
-                calendarContent,
-                StringComparison.Ordinal);
-            Assert.Contains(
-                "UNTIL=20261220T145959Z",
-                calendarContent,
-                StringComparison.Ordinal);
+            Assert.Equal(workspace.ActivePlan.PlanId, documentOrNull.PlanId);
+            Assert.Equal(workspace.ActivePlan.Name, documentOrNull.CalendarName);
+            Assert.Equal("Asia/Seoul", documentOrNull.AcademicCalendar.TimeZoneId.Value);
+            Assert.NotEmpty(documentOrNull.Events);
             TextBlock status = findRequiredTextBlock(
                 workspaceView,
                 "ExportStatusText");
-            Assert.Equal(
-                "Apple 캘린더에서 가져오기를 확인해 주세요.",
-                status.Text);
+            Assert.Equal("Apple 캘린더로 내보냈습니다.", status.Text);
         }
         finally
         {
-            await closeWindowAndDeleteDirectoryAsync(
-                window,
-                workspaceView,
-                exportDirectory);
+            await closeWindowAsync(window, workspaceView);
         }
     }
 
     private static ScheduleExportServices createServices(
-        string exportDirectory,
         RecordingGoogleCalendarExporter googleExporter,
-        RecordingAppleCalendarImporter appleImporter)
+        RecordingAppleCalendarExporter appleExporter)
     {
         return new ScheduleExportServices(
             new AvaloniaControlPngExporter(PngExportScale.Create(1.0)),
             googleExporter,
-            appleImporter,
-            new IcsCalendarFileStore(
-                new CalendarExportDirectoryPath(exportDirectory)),
-            new FixedCalendarExportClock(
-                new DateTimeOffset(
-                    2026,
-                    8,
-                    20,
-                    10,
-                    30,
-                    0,
-                    TimeSpan.FromHours(9.0))),
+            appleExporter,
             new FixedCalendarTimeZoneProvider(
                 new CalendarTimeZoneId("Asia/Seoul")));
+    }
+
+    private static RecordingAppleCalendarExporter
+        createUnavailableAppleExporter()
+    {
+        return new RecordingAppleCalendarExporter(
+            false,
+            AppleCalendarExportResult.Fail(
+                EAppleCalendarExportStatus.Unavailable,
+                "test_unavailable"));
+    }
+
+    private static RecordingAppleCalendarExporter createSuccessfulAppleExporter()
+    {
+        AppleCalendarNativeExportResult nativeResult =
+            new AppleCalendarNativeExportResult(
+                new AppleCalendarId("test-apple-calendar"),
+                new PlanName("2026-2학기 시간표"),
+                1,
+                0);
+        return new RecordingAppleCalendarExporter(
+            true,
+            AppleCalendarExportResult.Complete(nativeResult));
     }
 
     private static RecordingGoogleCalendarExporter
@@ -373,6 +351,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         GoogleCalendarExportResult result =
             GoogleCalendarExportResult.Complete(
                 new GoogleCalendarId("test-calendar@group.calendar.google.com"),
+                new PlanName("2026-2학기 시간표"),
                 new GoogleCalendarReconciliationResult(1, 0, 0));
         return new RecordingGoogleCalendarExporter(result);
     }
@@ -603,16 +582,6 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                 + ", header height=" + header.Bounds.Height + ".");
     }
 
-    private static string createTemporaryDirectory()
-    {
-        string path = Path.Combine(
-            Path.GetTempPath(),
-            "TimetableGeneratorTests",
-            Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(path);
-        return path;
-    }
-
     private static ThemeVariant[] getProductThemeVariants()
     {
         return new ThemeVariant[]
@@ -622,18 +591,13 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         };
     }
 
-    private static async Task closeWindowAndDeleteDirectoryAsync(
+    private static async Task closeWindowAsync(
         Window window,
-        ScheduleWorkspaceView workspaceView,
-        string exportDirectory)
+        ScheduleWorkspaceView workspaceView)
     {
         window.Close();
         Dispatcher.UIThread.RunJobs();
         await workspaceView.ExportResourceReleaseTask;
         Assert.Null(workspaceView.ExportResourceReleaseExceptionOrNull);
-        if (Directory.Exists(exportDirectory))
-        {
-            Directory.Delete(exportDirectory, true);
-        }
     }
 }

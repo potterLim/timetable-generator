@@ -200,7 +200,7 @@
                   Command="{Binding #WorkspaceRoot.ExportAppleCalendarCommand}"
                   AutomationProperties.AutomationId="ExportAppleCalendar"
                   AutomationProperties.Name="현재 시간표를 Apple 캘린더로 내보내기"
-                  AutomationProperties.HelpText="Apple 캘린더의 가져오기 화면을 엽니다.">
+                  AutomationProperties.HelpText="Apple 캘린더에 현재 시간표를 한 번 내보냅니다.">
                 <MenuItem.Icon>
                   <icons:FluentIcon
                       Classes="export-menu-icon"
@@ -218,7 +218,7 @@
                   Command="{Binding #WorkspaceRoot.ExportGoogleCalendarCommand}"
                   AutomationProperties.AutomationId="ExportGoogleCalendar"
                   AutomationProperties.Name="현재 시간표를 Google 캘린더로 내보내기"
-                  AutomationProperties.HelpText="처음 연결할 때 브라우저에서 Google 계정 승인이 필요합니다.">
+                  AutomationProperties.HelpText="Google 캘린더에 현재 시간표를 한 번 내보냅니다.">
                 <MenuItem.Icon>
                   <Grid
                       x:Name="ExportGoogleCalendarLogoSlot"

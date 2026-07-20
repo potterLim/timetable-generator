@@ -12,20 +12,14 @@ internal sealed class ScheduleExportServices
 
     public IGoogleCalendarExporter GoogleCalendarExporter { get; }
 
-    public IAppleCalendarImporter AppleCalendarImporter { get; }
-
-    public IcsCalendarFileStore IcsFileStore { get; }
-
-    public ICalendarExportClock Clock { get; }
+    public IAppleCalendarExporter AppleCalendarExporter { get; }
 
     public ICalendarTimeZoneProvider CalendarTimeZoneProvider { get; }
 
     public ScheduleExportServices(
         IControlPngExporter pngExporter,
         IGoogleCalendarExporter googleCalendarExporter,
-        IAppleCalendarImporter appleCalendarImporter,
-        IcsCalendarFileStore icsFileStore,
-        ICalendarExportClock clock,
+        IAppleCalendarExporter appleCalendarExporter,
         ICalendarTimeZoneProvider calendarTimeZoneProvider)
     {
         if (pngExporter == null)
@@ -38,19 +32,9 @@ internal sealed class ScheduleExportServices
             throw new ArgumentNullException(nameof(googleCalendarExporter));
         }
 
-        if (appleCalendarImporter == null)
+        if (appleCalendarExporter == null)
         {
-            throw new ArgumentNullException(nameof(appleCalendarImporter));
-        }
-
-        if (icsFileStore == null)
-        {
-            throw new ArgumentNullException(nameof(icsFileStore));
-        }
-
-        if (clock == null)
-        {
-            throw new ArgumentNullException(nameof(clock));
+            throw new ArgumentNullException(nameof(appleCalendarExporter));
         }
 
         if (calendarTimeZoneProvider == null)
@@ -60,9 +44,7 @@ internal sealed class ScheduleExportServices
 
         PngExporter = pngExporter;
         GoogleCalendarExporter = googleCalendarExporter;
-        AppleCalendarImporter = appleCalendarImporter;
-        IcsFileStore = icsFileStore;
-        Clock = clock;
+        AppleCalendarExporter = appleCalendarExporter;
         CalendarTimeZoneProvider = calendarTimeZoneProvider;
     }
 }
