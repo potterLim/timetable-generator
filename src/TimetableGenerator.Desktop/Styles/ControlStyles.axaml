@@ -215,6 +215,17 @@
     <Setter Property="Background" Value="{DynamicResource PressedSurfaceBrush}" />
   </Style>
 
+  <Style Selector="Button.icon:disabled">
+    <Setter Property="Opacity" Value="0.62" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+  </Style>
+
+  <Style Selector="Button.icon:disabled /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+  </Style>
+
   <Style Selector="Button.accent">
     <Setter Property="MinHeight" Value="40" />
     <Setter Property="Theme" Value="{StaticResource ProductFilledActionButtonTheme}" />
@@ -690,28 +701,38 @@
   <Style Selector="TabStrip.plan-tabs > TabStripItem">
     <Setter Property="Height" Value="44" />
     <Setter Property="MinHeight" Value="44" />
-    <Setter Property="Padding" Value="20,2,20,0" />
+    <Setter Property="Padding" Value="20,1" />
     <Setter Property="Background" Value="Transparent" />
-    <Setter Property="BorderBrush" Value="Transparent" />
-    <Setter Property="BorderThickness" Value="0,0,0,2" />
     <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
     <Setter Property="FontSize" Value="16" />
     <Setter Property="FontWeight" Value="SemiBold" />
   </Style>
 
+  <Style Selector="TabStrip.plan-tabs > TabStripItem /template/ Border#PART_SelectedPipe">
+    <Setter Property="Height" Value="2" />
+    <Setter Property="Margin" Value="0,0,0,2" />
+    <Setter Property="Background" Value="{DynamicResource SelectionIndicatorBrush}" />
+    <Setter Property="CornerRadius" Value="1" />
+  </Style>
+
   <Style Selector="TabStrip.plan-tabs > TabStripItem:selected">
     <Setter Property="Background" Value="Transparent" />
-    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
   </Style>
 
   <Style Selector="TabStrip.plan-tabs > TabStripItem:selected:pointerover">
-    <Setter Property="BorderBrush" Value="{DynamicResource AccentHoverBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource AccentHoverBrush}" />
   </Style>
 
+  <Style Selector="TabStrip.plan-tabs > TabStripItem:selected:pointerover /template/ Border#PART_SelectedPipe">
+    <Setter Property="Background" Value="{DynamicResource AccentHoverBrush}" />
+  </Style>
+
   <Style Selector="TabStrip.plan-tabs > TabStripItem:selected:pressed">
-    <Setter Property="BorderBrush" Value="{DynamicResource AccentPressedBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource AccentPressedBrush}" />
+  </Style>
+
+  <Style Selector="TabStrip.plan-tabs > TabStripItem:selected:pressed /template/ Border#PART_SelectedPipe">
+    <Setter Property="Background" Value="{DynamicResource AccentPressedBrush}" />
   </Style>
 </Styles>

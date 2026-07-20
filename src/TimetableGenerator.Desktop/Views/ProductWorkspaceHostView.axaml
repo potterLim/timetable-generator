@@ -48,6 +48,50 @@
       <Setter Property="MaxWidth" Value="384" />
       <Setter Property="Padding" Value="24" />
     </Style>
+    <Style Selector="Grid#WorkspaceSurface:disabled Button.icon:disabled,
+                     Grid#WorkspaceSurface:disabled Button.subtle:disabled,
+                     Grid#WorkspaceSurface:disabled Button.plan-title-action:disabled">
+      <Setter Property="Opacity" Value="1" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="Grid#WorkspaceSurface:disabled Button.icon:disabled /template/ ContentPresenter#PART_ContentPresenter,
+                     Grid#WorkspaceSurface:disabled Button.subtle:disabled /template/ ContentPresenter#PART_ContentPresenter,
+                     Grid#WorkspaceSurface:disabled Button.plan-title-action:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Opacity" Value="1" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="Grid#WorkspaceSurface:disabled Button.accent:disabled /template/ ContentPresenter#PART_ContentPresenter,
+                     Grid#WorkspaceSurface:disabled Button.danger:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="Grid#WorkspaceSurface:disabled Button.outline:disabled">
+      <Setter Property="Opacity" Value="1" />
+      <Setter Property="Background" Value="{DynamicResource ControlSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+    <Style Selector="Grid#WorkspaceSurface:disabled Button.outline:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Opacity" Value="1" />
+      <Setter Property="Background" Value="{DynamicResource ControlSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
+    </Style>
+    <Style Selector="Grid#WorkspaceSurface:disabled TextBox:disabled,
+                     Grid#WorkspaceSurface:disabled ComboBox:disabled">
+      <Setter Property="Opacity" Value="1" />
+      <Setter Property="Background" Value="{DynamicResource ControlSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+    <Style Selector="Grid#WorkspaceSurface:disabled TextBox:disabled /template/ Border#PART_BorderElement">
+      <Setter Property="Background" Value="{DynamicResource ControlSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
+    </Style>
+    <Style Selector="Grid#WorkspaceSurface:disabled ComboBox:disabled /template/ Border#Background">
+      <Setter Property="Background" Value="{DynamicResource ControlSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
+    </Style>
   </UserControl.Styles>
   <Grid>
     <Grid
@@ -182,6 +226,8 @@
                 Text="{Binding AutosaveStatusText}" />
           </StackPanel>
           <Button
+              x:Name="WorkspaceRetryAutosaveButton"
+              Classes="subtle"
               MinHeight="32"
               Padding="8,4"
               HorizontalAlignment="Right"
@@ -300,6 +346,7 @@
         </StackPanel>
         <Button
             x:Name="EmptyWorkspaceRetryAutosaveButton"
+            Classes="subtle"
             MinHeight="32"
             Margin="0,6,0,0"
             Padding="8,4"
