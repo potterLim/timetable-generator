@@ -111,7 +111,9 @@ internal sealed class GoogleCalendarApiClient
                                         new GoogleCalendarId(idOrNull),
                                         displayNameOrNull,
                                         getBooleanOrDefault(item, "primary"),
-                                        isApplicationManagedMarker(descriptionOrNull)));
+                                        tryParseManagedPlanIdOrNull(
+                                            descriptionOrNull),
+                                        parseAccessRole(item)));
                             }
                         }
 
@@ -638,21 +640,45 @@ internal sealed class GoogleCalendarApiClient
             && property.ValueKind == JsonValueKind.True;
     }
 
-    private static bool isApplicationManagedMarker(string? descriptionOrNull)
+    private static EGoogleCalendarAccessRole parseAccessRole(
+        JsonElement calendarListEntry)
     {
-        const string markerPrefix = "TimetableGenerator-Plan:";
+        string? accessRoleOrNull = getStringOrNull(
+            calendarListEntry,
+            "accessRole");
+        return accessRoleOrNull switch
+        {
+            "freeBusyReader" => EGoogleCalendarAccessRole.FreeBusyReader,
+            "reader" => EGoogleCalendarAccessRole.Reader,
+            "writer" => EGoogleCalendarAccessRole.Writer,
+            "writerWithoutPrivateAccess" =>
+                EGoogleCalendarAccessRole.WriterWithoutPrivateAccess,
+            "owner" => EGoogleCalendarAccessRole.Owner,
+            null => EGoogleCalendarAccessRole.None,
+            _ => EGoogleCalendarAccessRole.None,
+        };
+    }
+
+    private static PlanId? tryParseManagedPlanIdOrNull(
+        string? descriptionOrNull)
+    {
+        const string MARKER_PREFIX = "TimetableGenerator-Plan:";
         if (descriptionOrNull == null
             || descriptionOrNull.StartsWith(
-                markerPrefix,
+                MARKER_PREFIX,
                 StringComparison.Ordinal) == false)
         {
-            return false;
+            return null;
         }
 
+        Guid planIdValue;
         return Guid.TryParseExact(
-            descriptionOrNull[markerPrefix.Length..],
-            "N",
-            out _);
+                descriptionOrNull[MARKER_PREFIX.Length..],
+                "N",
+                out planIdValue)
+            && planIdValue != Guid.Empty
+                ? new PlanId(planIdValue)
+                : null;
     }
 
 }

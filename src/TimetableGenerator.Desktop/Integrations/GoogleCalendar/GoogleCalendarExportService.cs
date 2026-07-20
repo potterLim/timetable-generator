@@ -15,6 +15,8 @@ namespace TimetableGenerator.Desktop.Integrations.GoogleCalendar;
 
 internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
 {
+    private const int MAXIMUM_DESTINATION_SELECTION_ATTEMPTS = 3;
+
     private readonly IGoogleAccessTokenProvider mAccessTokenProvider;
     private readonly GoogleCalendarApiClient mApiClient;
     private readonly IGoogleCalendarExportLeaseProvider mExportLeaseProvider;
@@ -263,63 +265,137 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
             await mApiClient.ListCalendarsAsync(
                 accessToken,
                 cancellationToken).ConfigureAwait(false);
-        IReadOnlyList<GoogleCalendarDescriptor> matches = findNameMatches(
-            plan.CalendarName,
-            calendars);
-        if (matches.Count == 0)
+        for (int attempt = 0;
+            attempt < MAXIMUM_DESTINATION_SELECTION_ATTEMPTS;
+            ++attempt)
         {
-            return new GoogleCalendarDestination(plan, null);
+            IReadOnlyList<GoogleCalendarDescriptor> matches = findNameMatches(
+                plan.CalendarName,
+                calendars);
+            if (matches.Count == 0)
+            {
+                if (attempt > 0)
+                {
+                    throw new InvalidOperationException(
+                        "The original Google calendar name conflict changed before confirmation.");
+                }
+
+                return new GoogleCalendarDestination(plan, null);
+            }
+
+            GoogleCalendarDescriptor? replaceableCalendarOrNull =
+                findSoleReplaceableCalendarOrNull(matches);
+            ECalendarReplacementAvailability replacementAvailability =
+                replaceableCalendarOrNull == null
+                    ? ECalendarReplacementAvailability.Unavailable
+                    : ECalendarReplacementAvailability.Available;
+            PlanName nextAvailableName =
+                CalendarNameConflictPolicy.FindNextAvailableName(
+                    plan.CalendarName,
+                    getExistingNames(calendars));
+            CalendarNameConflict conflict = new CalendarNameConflict(
+                ECalendarExportProvider.Google,
+                plan.CalendarName,
+                nextAvailableName,
+                replacementAvailability);
+            ECalendarNameConflictResolution resolution =
+                await conflictResolver.ResolveAsync(
+                    conflict,
+                    cancellationToken).ConfigureAwait(false);
+            CalendarNameConflictPolicy.EnsureResolutionIsSupported(
+                conflict,
+                resolution);
+
+            if (resolution == ECalendarNameConflictResolution.Cancel)
+            {
+                return null;
+            }
+
+            IReadOnlyList<GoogleCalendarDescriptor> currentCalendars =
+                await mApiClient.ListCalendarsAsync(
+                    accessToken,
+                    cancellationToken).ConfigureAwait(false);
+            if (resolution
+                == ECalendarNameConflictResolution.CreateWithAvailableName)
+            {
+                if (CalendarNameConflictPolicy.IsNameInUse(
+                        nextAvailableName,
+                        getExistingNames(currentCalendars)) == false)
+                {
+                    return new GoogleCalendarDestination(
+                        plan.WithCalendarName(nextAvailableName),
+                        null);
+                }
+
+                calendars = currentCalendars;
+                continue;
+            }
+
+            GoogleCalendarDescriptor? currentCalendarOrNull =
+                findCalendarByIdOrNull(
+                    replaceableCalendarOrNull!.CalendarId,
+                    currentCalendars);
+            if (currentCalendarOrNull == null
+                || isSafeReplacementTarget(
+                    currentCalendarOrNull,
+                    replaceableCalendarOrNull,
+                    plan.CalendarName) == false)
+            {
+                throw new InvalidOperationException(
+                    "The selected Google calendar is no longer safe to replace.");
+            }
+
+            return new GoogleCalendarDestination(
+                plan,
+                replaceableCalendarOrNull.CalendarId);
         }
 
-        IReadOnlyList<PlanName> existingNames = getExistingNames(calendars);
-        ECalendarReplacementAvailability replacementAvailability =
-            matches.Count == 1 && matches[0].CanReplace
-                ? ECalendarReplacementAvailability.Available
-                : ECalendarReplacementAvailability.Unavailable;
-        CalendarNameConflict conflict = new CalendarNameConflict(
-            ECalendarExportProvider.Google,
-            plan.CalendarName,
-            CalendarNameConflictPolicy.FindNextAvailableName(
-                plan.CalendarName,
-                existingNames),
-            replacementAvailability);
-        ECalendarNameConflictResolution resolution =
-            await conflictResolver.ResolveAsync(
-                conflict,
-                cancellationToken).ConfigureAwait(false);
-        CalendarNameConflictPolicy.EnsureResolutionIsSupported(conflict, resolution);
+        throw new InvalidOperationException(
+            "The Google calendar destination changed too many times.");
+    }
 
-        if (resolution == ECalendarNameConflictResolution.Cancel)
+    private static GoogleCalendarDescriptor? findSoleReplaceableCalendarOrNull(
+        IReadOnlyList<GoogleCalendarDescriptor> matchingCalendars)
+    {
+        if (matchingCalendars.Count != 1
+            || matchingCalendars[0].CanReplace == false)
         {
             return null;
         }
 
-        IReadOnlyList<GoogleCalendarDescriptor> currentCalendars =
-            await mApiClient.ListCalendarsAsync(
-                accessToken,
-                cancellationToken).ConfigureAwait(false);
-        if (resolution == ECalendarNameConflictResolution.CreateWithAvailableName)
+        return matchingCalendars[0];
+    }
+
+    private static GoogleCalendarDescriptor? findCalendarByIdOrNull(
+        GoogleCalendarId calendarId,
+        IReadOnlyList<GoogleCalendarDescriptor> calendars)
+    {
+        foreach (GoogleCalendarDescriptor calendar in calendars)
         {
-            PlanName availableName = CalendarNameConflictPolicy.FindNextAvailableName(
-                plan.CalendarName,
-                getExistingNames(currentCalendars));
-            return new GoogleCalendarDestination(
-                plan.WithCalendarName(availableName),
-                null);
+            if (calendar.CalendarId == calendarId)
+            {
+                return calendar;
+            }
         }
 
-        IReadOnlyList<GoogleCalendarDescriptor> currentMatches = findNameMatches(
-            plan.CalendarName,
-            currentCalendars);
-        if (currentMatches.Count != 1 || currentMatches[0].CanReplace == false)
-        {
-            throw new InvalidOperationException(
-                "The selected Google calendar is no longer safe to replace.");
-        }
+        return null;
+    }
 
-        return new GoogleCalendarDestination(
-            plan,
-            currentMatches[0].CalendarId);
+    private static bool isSafeReplacementTarget(
+        GoogleCalendarDescriptor currentCalendar,
+        GoogleCalendarDescriptor confirmedCalendar,
+        PlanName requestedName)
+    {
+        PlanName? displayNameOrNull = tryCreatePlanNameOrNull(
+            currentCalendar.DisplayName);
+        return currentCalendar.CalendarId == confirmedCalendar.CalendarId
+            && currentCalendar.ManagedPlanIdOrNull
+                == confirmedCalendar.ManagedPlanIdOrNull
+            && currentCalendar.CanReplace
+            && displayNameOrNull != null
+            && CalendarNameConflictPolicy.IsSameName(
+                requestedName,
+                displayNameOrNull);
     }
 
     private static IReadOnlyList<GoogleCalendarDescriptor> findNameMatches(

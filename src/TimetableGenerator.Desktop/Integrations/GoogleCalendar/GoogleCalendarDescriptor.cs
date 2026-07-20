@@ -1,5 +1,7 @@
 using System;
 
+using TimetableGenerator.Domain.Planning;
+
 namespace TimetableGenerator.Desktop.Integrations.GoogleCalendar;
 
 internal sealed class GoogleCalendarDescriptor
@@ -10,13 +12,36 @@ internal sealed class GoogleCalendarDescriptor
 
     public bool IsPrimary { get; }
 
-    public bool IsApplicationManaged { get; }
+    public PlanId? ManagedPlanIdOrNull { get; }
+
+    public bool IsApplicationManaged
+    {
+        get
+        {
+            return ManagedPlanIdOrNull != null;
+        }
+    }
+
+    public EGoogleCalendarAccessRole AccessRole { get; }
+
+    public bool CanWrite
+    {
+        get
+        {
+            return AccessRole == EGoogleCalendarAccessRole.Writer
+                || AccessRole
+                    == EGoogleCalendarAccessRole.WriterWithoutPrivateAccess
+                || AccessRole == EGoogleCalendarAccessRole.Owner;
+        }
+    }
 
     public bool CanReplace
     {
         get
         {
-            return IsPrimary == false && IsApplicationManaged;
+            return IsPrimary == false
+                && IsApplicationManaged
+                && CanWrite;
         }
     }
 
@@ -24,7 +49,8 @@ internal sealed class GoogleCalendarDescriptor
         GoogleCalendarId calendarId,
         string displayName,
         bool isPrimary,
-        bool isApplicationManaged)
+        PlanId? managedPlanIdOrNull,
+        EGoogleCalendarAccessRole accessRole)
     {
         if (calendarId == null)
         {
@@ -44,9 +70,40 @@ internal sealed class GoogleCalendarDescriptor
                 nameof(displayName));
         }
 
+        if (managedPlanIdOrNull.HasValue
+            && managedPlanIdOrNull.Value.IsValid == false)
+        {
+            throw new ArgumentException(
+                "Managed Google calendars require a valid plan ID.",
+                nameof(managedPlanIdOrNull));
+        }
+
+        validateAccessRole(accessRole);
+
         CalendarId = calendarId;
         DisplayName = normalizedDisplayName;
         IsPrimary = isPrimary;
-        IsApplicationManaged = isApplicationManaged;
+        ManagedPlanIdOrNull = managedPlanIdOrNull;
+        AccessRole = accessRole;
+    }
+
+    private static void validateAccessRole(
+        EGoogleCalendarAccessRole accessRole)
+    {
+        switch (accessRole)
+        {
+            case EGoogleCalendarAccessRole.None:
+            case EGoogleCalendarAccessRole.FreeBusyReader:
+            case EGoogleCalendarAccessRole.Reader:
+            case EGoogleCalendarAccessRole.Writer:
+            case EGoogleCalendarAccessRole.WriterWithoutPrivateAccess:
+            case EGoogleCalendarAccessRole.Owner:
+                return;
+            default:
+                throw new ArgumentOutOfRangeException(
+                    nameof(accessRole),
+                    accessRole,
+                    "Unknown Google Calendar access role.");
+        }
     }
 }
