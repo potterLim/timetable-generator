@@ -959,7 +959,14 @@ public sealed class ProductWorkspaceInteractionTests
             Assert.True(workspace.HasPlanNameValidationMessage);
             Assert.True(editor.IsKeyboardFocusWithin);
             Assert.Equal(0, editor.SelectionStart);
-            Assert.Equal(editor.Text?.Length ?? 0, editor.SelectionEnd);
+            int editorTextLength = 0;
+            string? editorTextOrNull = editor.Text;
+            if (editorTextOrNull != null)
+            {
+                editorTextLength = editorTextOrNull.Length;
+            }
+
+            Assert.Equal(editorTextLength, editor.SelectionEnd);
             Assert.Equal(
                 workspace.PlanNameValidationMessage,
                 AutomationProperties.GetHelpText(editor));

@@ -209,7 +209,13 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
             if (editorOrNull != null)
             {
                 editorOrNull.Focus();
-                int caretIndex = editorOrNull.Text?.Length ?? 0;
+                int caretIndex = 0;
+                string? editorTextOrNull = editorOrNull.Text;
+                if (editorTextOrNull != null)
+                {
+                    caretIndex = editorTextOrNull.Length;
+                }
+
                 editorOrNull.CaretIndex = caretIndex;
                 editorOrNull.SelectionStart = caretIndex;
                 editorOrNull.SelectionEnd = caretIndex;

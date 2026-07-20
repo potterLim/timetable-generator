@@ -105,7 +105,12 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         rebuildPlanItems();
         mActivePlanOrNull = findPlanItemOrNull(
             mSession.Workspace.ActivePlanIdOrNull);
-        mPlanNameDraft = mActivePlanOrNull?.DisplayName ?? string.Empty;
+        mPlanNameDraft = string.Empty;
+        if (mActivePlanOrNull != null)
+        {
+            mPlanNameDraft = mActivePlanOrNull.DisplayName;
+        }
+
         mPlanNameValidationMessage = string.Empty;
         mAutosaveStatus = EPlanningWorkspaceAutosaveStatus.Saved;
         mAutosaveStatusText = "자동 저장됨";

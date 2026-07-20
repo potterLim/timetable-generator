@@ -343,10 +343,15 @@ public sealed class PersonalScheduleInteractionTests
             Assert.Equal(8.0, dayOptionsGrid.ColumnSpacing);
             for (int dayIndex = 0; dayIndex < dayInputs.Length; ++dayIndex)
             {
-                Control dayContainer = dayOptions.ContainerFromIndex(dayIndex)
-                    ?? throw new InvalidOperationException(
+                Control? dayContainerOrNull =
+                    dayOptions.ContainerFromIndex(dayIndex);
+                if (dayContainerOrNull == null)
+                {
+                    throw new InvalidOperationException(
                         "The weekday option container was not prepared.");
-                Assert.Equal(dayIndex, Grid.GetColumn(dayContainer));
+                }
+
+                Assert.Equal(dayIndex, Grid.GetColumn(dayContainerOrNull));
             }
 
             Assert.All(
@@ -1423,10 +1428,11 @@ public sealed class PersonalScheduleInteractionTests
                 "The Avalonia test application was not initialized.");
         }
 
+        object? resourceOrNull;
         bool hasResource = applicationOrNull.TryGetResource(
             resourceKey,
             themeVariant,
-            out object? resourceOrNull);
+            out resourceOrNull);
         Assert.True(hasResource, "Missing brush resource: " + resourceKey);
         SolidColorBrush actualBrush = Assert.IsType<SolidColorBrush>(
             actualBrushOrNull);

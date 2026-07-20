@@ -389,7 +389,14 @@ internal sealed partial class PlannerWorkspaceViewModel
         bool canRemoveCourse = CourseChoiceDraftCourses.Count > 1;
         foreach (CourseChoiceDraftCourseItem course in CourseChoiceDraftCourses)
         {
-            course.SetCanRemove(canRemoveCourse);
+            if (canRemoveCourse)
+            {
+                course.AllowRemoval();
+            }
+            else
+            {
+                course.PreventRemoval();
+            }
         }
 
         raisePropertyChanged(nameof(CourseChoiceEditorDescription));

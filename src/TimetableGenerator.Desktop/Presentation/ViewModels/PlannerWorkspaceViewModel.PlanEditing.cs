@@ -499,7 +499,12 @@ internal sealed partial class PlannerWorkspaceViewModel
         rebuildPlanItems();
         mActivePlanOrNull = findPlanItemOrNull(
             mSession.Workspace.ActivePlanIdOrNull);
-        mPlanNameDraft = mActivePlanOrNull?.DisplayName ?? string.Empty;
+        mPlanNameDraft = string.Empty;
+        if (mActivePlanOrNull != null)
+        {
+            mPlanNameDraft = mActivePlanOrNull.DisplayName;
+        }
+
         raisePropertyChanged(nameof(ActivePlan));
         raisePropertyChanged(nameof(ActivePlanOrNull));
         raisePropertyChanged(nameof(HasActivePlan));
@@ -667,7 +672,9 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private void showInvalidPlanNameValidationMessage()
     {
-        mPlanNameValidationMessage = "시간표 이름은 1~80자로 입력해 주세요.";
+        mPlanNameValidationMessage = "시간표 이름은 1~"
+            + PlanName.MAXIMUM_LENGTH
+            + "자로 입력해 주세요.";
         raisePropertyChanged(nameof(PlanNameValidationMessage));
         raisePropertyChanged(nameof(HasPlanNameValidationMessage));
     }

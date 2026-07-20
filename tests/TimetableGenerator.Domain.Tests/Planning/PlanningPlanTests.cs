@@ -17,7 +17,8 @@ public sealed class PlanningPlanTests
         Assert.AreEqual("공강 중심", planName.Value);
         Assert.ThrowsExactly<ArgumentException>(() => new PlanName("  "));
         Assert.ThrowsExactly<ArgumentException>(() => new PlanName("첫째 줄\n둘째 줄"));
-        Assert.ThrowsExactly<ArgumentException>(() => new PlanName(new string('가', 81)));
+        Assert.ThrowsExactly<ArgumentException>(
+            () => new PlanName(new string('가', PlanName.MAXIMUM_LENGTH + 1)));
     }
 
     [TestMethod]

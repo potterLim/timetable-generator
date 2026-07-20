@@ -75,12 +75,20 @@ internal sealed partial class MainWindow
 
     private void synchronizeMaximizeRestoreAction()
     {
-        Button maximizeRestoreButton = mMaximizeRestoreButtonOrNull
-            ?? throw new InvalidOperationException(
+        if (mMaximizeRestoreButtonOrNull == null)
+        {
+            throw new InvalidOperationException(
                 "The maximize or restore button was not initialized.");
-        FluentIcon maximizeRestoreIcon = mMaximizeRestoreIconOrNull
-            ?? throw new InvalidOperationException(
+        }
+
+        if (mMaximizeRestoreIconOrNull == null)
+        {
+            throw new InvalidOperationException(
                 "The maximize or restore icon was not initialized.");
+        }
+
+        Button maximizeRestoreButton = mMaximizeRestoreButtonOrNull;
+        FluentIcon maximizeRestoreIcon = mMaximizeRestoreIconOrNull;
         bool isMaximized = WindowState == WindowState.Maximized;
         string actionName = isMaximized ? "복원" : "최대화";
 

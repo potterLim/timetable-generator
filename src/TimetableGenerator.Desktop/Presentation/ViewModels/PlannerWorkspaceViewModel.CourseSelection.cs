@@ -143,8 +143,12 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            mResetCourseSearchCommandOrNull ??=
-                new DelegateCommand(resetCourseSearch);
+            if (mResetCourseSearchCommandOrNull == null)
+            {
+                mResetCourseSearchCommandOrNull =
+                    new DelegateCommand(resetCourseSearch);
+            }
+
             return mResetCourseSearchCommandOrNull;
         }
     }
@@ -153,9 +157,13 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            mEditOrRemoveSelectedCourseCommandOrNull ??=
-                new ParameterizedCommand<CourseSearchItem>(
-                    editOrRemoveSelectedCourse);
+            if (mEditOrRemoveSelectedCourseCommandOrNull == null)
+            {
+                mEditOrRemoveSelectedCourseCommandOrNull =
+                    new ParameterizedCommand<CourseSearchItem>(
+                        editOrRemoveSelectedCourse);
+            }
+
             return mEditOrRemoveSelectedCourseCommandOrNull;
         }
     }

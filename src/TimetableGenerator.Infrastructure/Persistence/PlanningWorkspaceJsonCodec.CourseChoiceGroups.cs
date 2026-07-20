@@ -131,6 +131,45 @@ public sealed partial class PlanningWorkspaceJsonCodec
         return offeringCandidates.AsReadOnly();
     }
 
+    private static IReadOnlyList<LegacyScheduledCourseChoiceDocument>
+        readLegacyScheduledChoiceDocuments(
+        JsonElement element)
+    {
+        requireValueKind(element, JsonValueKind.Array, "plan.scheduledChoices");
+        List<LegacyScheduledCourseChoiceDocument> choices =
+            new List<LegacyScheduledCourseChoiceDocument>();
+        foreach (JsonElement choiceElement in element.EnumerateArray())
+        {
+            Dictionary<string, JsonElement> properties = readExactObject(
+                choiceElement,
+                "scheduled choice",
+                new string[] { "courseId", "offeringIds" });
+            CourseId courseId = new CourseId(
+                readString(properties["courseId"], "scheduledChoice.courseId"));
+            JsonElement offeringIdsElement = properties["offeringIds"];
+            requireValueKind(
+                offeringIdsElement,
+                JsonValueKind.Array,
+                "scheduledChoice.offeringIds");
+            List<OfferingId> offeringIds = new List<OfferingId>();
+            foreach (JsonElement offeringIdElement
+                in offeringIdsElement.EnumerateArray())
+            {
+                offeringIds.Add(
+                    new OfferingId(
+                        readString(
+                            offeringIdElement,
+                            "scheduledChoice.offeringIds[]")));
+            }
+
+            choices.Add(new LegacyScheduledCourseChoiceDocument(
+                courseId,
+                offeringIds));
+        }
+
+        return choices.AsReadOnly();
+    }
+
     private static IReadOnlyList<CourseChoiceGroup>
         migrateLegacyScheduledChoiceDocuments(
             PlanId planId,

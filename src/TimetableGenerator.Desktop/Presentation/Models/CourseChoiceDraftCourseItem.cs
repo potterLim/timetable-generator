@@ -177,9 +177,14 @@ internal sealed class CourseChoiceDraftCourseItem : ObservableObject
         return new CourseCandidate(CourseId, offeringCandidates);
     }
 
-    public void SetCanRemove(bool canRemove)
+    public void AllowRemoval()
     {
-        setProperty(ref mCanRemove, canRemove, nameof(CanRemove));
+        setProperty(ref mCanRemove, true, nameof(CanRemove));
+    }
+
+    public void PreventRemoval()
+    {
+        setProperty(ref mCanRemove, false, nameof(CanRemove));
     }
 
     private static ObservableCollection<CourseOfferingPreferenceItem> createOfferings(

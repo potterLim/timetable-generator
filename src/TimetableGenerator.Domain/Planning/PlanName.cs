@@ -4,7 +4,7 @@ namespace TimetableGenerator.Domain.Planning;
 
 public sealed record PlanName
 {
-    private const int MAXIMUM_LENGTH = 80;
+    public const int MAXIMUM_LENGTH = 80;
 
     public string Value { get; }
 
@@ -24,7 +24,9 @@ public sealed record PlanName
         if (normalizedValue.Length > MAXIMUM_LENGTH)
         {
             throw new ArgumentException(
-                "Plan names cannot exceed 80 characters.",
+                "Plan names cannot exceed "
+                    + MAXIMUM_LENGTH
+                    + " characters.",
                 nameof(value));
         }
 

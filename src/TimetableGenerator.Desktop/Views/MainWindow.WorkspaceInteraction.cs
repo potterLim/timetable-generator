@@ -15,9 +15,13 @@ internal sealed partial class MainWindow
 
     private void initializeWorkspaceInteraction()
     {
-        mAppearanceButtonOrNull = this.FindControl<Button>("AppearanceButton")
-            ?? throw new InvalidOperationException(
+        mAppearanceButtonOrNull = this.FindControl<Button>("AppearanceButton");
+        if (mAppearanceButtonOrNull == null)
+        {
+            throw new InvalidOperationException(
                 "The appearance button could not be resolved.");
+        }
+
         connectWorkspaceInteraction();
     }
 
@@ -72,9 +76,13 @@ internal sealed partial class MainWindow
             return;
         }
 
-        bool isWorkspaceInteractionEnabled =
-            mInteractionWorkspaceOrNull?.IsWorkspaceInteractionEnabled
-                ?? true;
+        bool isWorkspaceInteractionEnabled = true;
+        if (mInteractionWorkspaceOrNull != null)
+        {
+            isWorkspaceInteractionEnabled =
+                mInteractionWorkspaceOrNull.IsWorkspaceInteractionEnabled;
+        }
+
         bool isAppearanceInteractionEnabled =
             mProductShellViewModel.IsProductInteractionEnabled
                 && isWorkspaceInteractionEnabled;

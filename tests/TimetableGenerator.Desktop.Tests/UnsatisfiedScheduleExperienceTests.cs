@@ -289,7 +289,12 @@ public sealed class UnsatisfiedScheduleExperienceTests
 
         public ForcedConflictRecommendationProvider(CourseCatalog catalog)
         {
-            mCatalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
+            if (catalog == null)
+            {
+                throw new ArgumentNullException(nameof(catalog));
+            }
+
+            mCatalog = catalog;
             mGenerator = new ScheduleRecommendationGenerator();
         }
 

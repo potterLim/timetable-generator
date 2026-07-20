@@ -75,6 +75,36 @@ internal sealed class ScheduleBoardTimeAxis
         return createForEntries(entries, PNG_EXPORT_DEFAULT_END_MINUTE);
     }
 
+    public int FindStartingRowOffset(ScheduleTime time)
+    {
+        ensureTimeIsWithinAxis(time);
+        int minuteOffset = time.MinutesFromMidnight - Start.MinutesFromMidnight;
+        return minuteOffset / LAYOUT_INCREMENT_MINUTES;
+    }
+
+    public int FindEndingRowOffset(ScheduleTime time)
+    {
+        ensureTimeIsWithinAxis(time);
+        int minuteOffset = time.MinutesFromMidnight - Start.MinutesFromMidnight;
+        return (minuteOffset + LAYOUT_INCREMENT_MINUTES - 1)
+            / LAYOUT_INCREMENT_MINUTES;
+    }
+
+    public int FindBoundaryRowOffset(ScheduleBoardTimeBoundary boundary)
+    {
+        if (boundary.CompareTo(Start) < 0 || boundary.CompareTo(End) > 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(boundary),
+                boundary,
+                "The time boundary is outside the visible schedule axis.");
+        }
+
+        int minuteOffset = boundary.MinutesFromMidnight
+            - Start.MinutesFromMidnight;
+        return minuteOffset / LAYOUT_INCREMENT_MINUTES;
+    }
+
     private static ScheduleBoardTimeAxis createForEntries(
         IReadOnlyList<ScheduleEntry> entries,
         int defaultEndMinute)
@@ -124,36 +154,6 @@ internal sealed class ScheduleBoardTimeAxis
         return Math.Max(
             DEFAULT_START_MINUTE,
             roundDown(contextualMinute, MINUTES_PER_HOUR));
-    }
-
-    public int FindStartingRowOffset(ScheduleTime time)
-    {
-        ensureTimeIsWithinAxis(time);
-        int minuteOffset = time.MinutesFromMidnight - Start.MinutesFromMidnight;
-        return minuteOffset / LAYOUT_INCREMENT_MINUTES;
-    }
-
-    public int FindEndingRowOffset(ScheduleTime time)
-    {
-        ensureTimeIsWithinAxis(time);
-        int minuteOffset = time.MinutesFromMidnight - Start.MinutesFromMidnight;
-        return (minuteOffset + LAYOUT_INCREMENT_MINUTES - 1)
-            / LAYOUT_INCREMENT_MINUTES;
-    }
-
-    public int FindBoundaryRowOffset(ScheduleBoardTimeBoundary boundary)
-    {
-        if (boundary.CompareTo(Start) < 0 || boundary.CompareTo(End) > 0)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(boundary),
-                boundary,
-                "The time boundary is outside the visible schedule axis.");
-        }
-
-        int minuteOffset = boundary.MinutesFromMidnight
-            - Start.MinutesFromMidnight;
-        return minuteOffset / LAYOUT_INCREMENT_MINUTES;
     }
 
     private static IReadOnlyList<ScheduleBoardTimeBoundary> createLabelTimes(
