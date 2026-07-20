@@ -42,8 +42,9 @@ internal sealed class RecordingPlanningWorkspaceStore : IPlanningWorkspaceStore
         return Task.FromResult(mLoadResult);
     }
 
-    public Task SaveAsync(
+    public Task<PlanningWorkspaceConcurrencyToken> SaveAsync(
         PlanningWorkspace workspace,
+        PlanningWorkspaceConcurrencyToken expectedToken,
         CancellationToken cancellationToken)
     {
         if (workspace == null)
@@ -52,8 +53,19 @@ internal sealed class RecordingPlanningWorkspaceStore : IPlanningWorkspaceStore
         }
 
         cancellationToken.ThrowIfCancellationRequested();
+        PlanningWorkspaceConcurrencyToken actualToken = mLoadResult.ConcurrencyToken;
+        if (expectedToken != actualToken)
+        {
+            throw new PlanningWorkspaceConcurrencyException(
+                expectedToken,
+                actualToken);
+        }
+
+        PlanningWorkspaceConcurrencyToken savedToken = actualToken.GetNext();
         mSavedWorkspaces.Add(workspace);
-        mLoadResult = PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(workspace);
-        return Task.CompletedTask;
+        mLoadResult = PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(
+            workspace,
+            savedToken);
+        return Task.FromResult(savedToken);
     }
 }

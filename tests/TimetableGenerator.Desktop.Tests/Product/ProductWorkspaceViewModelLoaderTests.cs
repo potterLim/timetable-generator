@@ -23,7 +23,9 @@ public sealed class ProductWorkspaceViewModelLoaderTests
         PlanningWorkspace workspace =
             ProductWorkspaceLoaderTestData.CreateEmptyWorkspace(revision);
         PlanningWorkspaceLoadResult persistedWorkspaceLoadResult =
-            PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(workspace);
+            PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(
+                workspace,
+                new PlanningWorkspaceConcurrencyToken(1L));
         RecordingPlanningWorkspaceStore workspaceStore =
             new RecordingPlanningWorkspaceStore(persistedWorkspaceLoadResult);
         EProductWorkspaceRecoveryFlags recoveryFlags =
@@ -34,6 +36,7 @@ public sealed class ProductWorkspaceViewModelLoaderTests
                 catalogPackage,
                 workspace,
                 workspaceStore,
+                persistedWorkspaceLoadResult.ConcurrencyToken,
                 EProductCatalogOrigin.OfflineCache,
                 recoveryFlags);
         FixedProductWorkspaceDataLoader dataLoader =

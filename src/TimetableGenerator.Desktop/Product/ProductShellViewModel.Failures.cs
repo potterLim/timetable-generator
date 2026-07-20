@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 
 using TimetableGenerator.Application.Planning;
 using TimetableGenerator.Desktop.Configuration;
@@ -12,6 +13,9 @@ internal sealed partial class ProductShellViewModel
 {
     private void showFailure(Exception exception)
     {
+        Trace.TraceError(
+            "The product workspace could not be loaded: {0}",
+            exception);
         mWorkspaceOrNull = null;
         mState = EProductShellState.Error;
         mStatusTitle = "과목 데이터를 불러오지 못했습니다";
@@ -59,6 +63,11 @@ internal sealed partial class ProductShellViewModel
         if (exception is ProductWorkspaceCatalogCompatibilityException)
         {
             return "저장된 시간표를 현재 과목 데이터와 안전하게 연결할 수 없습니다. 기존 시간표는 변경하지 않았습니다.";
+        }
+
+        if (exception is PlanningWorkspaceConcurrencyException)
+        {
+            return "다른 앱 창에서 시간표가 변경되었습니다. 이 창을 닫고 다시 열어 최신 내용을 불러와 주세요.";
         }
 
         if (exception is CatalogCacheUpgradeRequiredException

@@ -21,7 +21,7 @@ public sealed class PlanningWorkspaceFileStoreTests
         string testDirectoryPath = createTestDirectoryPath();
         try
         {
-            PlanningWorkspaceFileStore store = createStore(testDirectoryPath);
+            PlanningWorkspaceFileStoreSession store = createStore(testDirectoryPath);
             PlanningWorkspace workspace = createWorkspace("기본 시간표");
 
             await store.SaveAsync(workspace, CancellationToken.None);
@@ -32,6 +32,8 @@ public sealed class PlanningWorkspaceFileStoreTests
             Assert.AreEqual(
                 EPlanningWorkspaceLoadStatus.LoadedLatestGeneration,
                 result.Status);
+            Assert.IsTrue(
+                result.ConcurrencyToken == new PlanningWorkspaceConcurrencyToken(1L));
             Assert.AreEqual(
                 "기본 시간표",
                 getWorkspace(result).GetActivePlan().Name.Value);
@@ -50,7 +52,7 @@ public sealed class PlanningWorkspaceFileStoreTests
         string testDirectoryPath = createTestDirectoryPath();
         try
         {
-            PlanningWorkspaceFileStore store = createStore(testDirectoryPath);
+            PlanningWorkspaceFileStoreSession store = createStore(testDirectoryPath);
             PlanCatalogBinding binding = createCatalogBinding();
             PlanningWorkspace workspace = new PlanningWorkspace(
                 binding,
@@ -81,7 +83,7 @@ public sealed class PlanningWorkspaceFileStoreTests
         string testDirectoryPath = createTestDirectoryPath();
         try
         {
-            PlanningWorkspaceFileStore store = createStore(testDirectoryPath);
+            PlanningWorkspaceFileStoreSession store = createStore(testDirectoryPath);
             await store.SaveAsync(createWorkspace("이전 시간표"), CancellationToken.None);
             await store.SaveAsync(createWorkspace("현재 시간표"), CancellationToken.None);
             await File.WriteAllTextAsync(
@@ -95,6 +97,8 @@ public sealed class PlanningWorkspaceFileStoreTests
             Assert.AreEqual(
                 EPlanningWorkspaceLoadStatus.RecoveredPreviousGeneration,
                 result.Status);
+            Assert.IsTrue(
+                result.ConcurrencyToken == new PlanningWorkspaceConcurrencyToken(2L));
             Assert.AreEqual(
                 "이전 시간표",
                 getWorkspace(result).GetActivePlan().Name.Value);
@@ -111,7 +115,7 @@ public sealed class PlanningWorkspaceFileStoreTests
         string testDirectoryPath = createTestDirectoryPath();
         try
         {
-            PlanningWorkspaceFileStore store = createStore(testDirectoryPath);
+            PlanningWorkspaceFileStoreSession store = createStore(testDirectoryPath);
             await store.SaveAsync(
                 createWorkspace("복구 기준 시간표"),
                 CancellationToken.None);
@@ -157,7 +161,7 @@ public sealed class PlanningWorkspaceFileStoreTests
         string testDirectoryPath = createTestDirectoryPath();
         try
         {
-            PlanningWorkspaceFileStore store = createStore(testDirectoryPath);
+            PlanningWorkspaceFileStoreSession store = createStore(testDirectoryPath);
 
             PlanningWorkspaceLoadResult result = await store.LoadAsync(
                 CancellationToken.None);
@@ -179,7 +183,7 @@ public sealed class PlanningWorkspaceFileStoreTests
         string testDirectoryPath = createTestDirectoryPath();
         try
         {
-            PlanningWorkspaceFileStore store = createStore(testDirectoryPath);
+            PlanningWorkspaceFileStoreSession store = createStore(testDirectoryPath);
             using (CancellationTokenSource cancellationSource =
                 new CancellationTokenSource())
             {
@@ -222,7 +226,7 @@ public sealed class PlanningWorkspaceFileStoreTests
                 getGenerationPath(testDirectoryPath, 2),
                 "{ damaged second",
                 CancellationToken.None);
-            PlanningWorkspaceFileStore store = createStore(testDirectoryPath);
+            PlanningWorkspaceFileStoreSession store = createStore(testDirectoryPath);
 
             await Assert.ThrowsExactlyAsync<WorkspacePersistenceException>(
                 () => store.LoadAsync(CancellationToken.None));
@@ -239,7 +243,7 @@ public sealed class PlanningWorkspaceFileStoreTests
         string testDirectoryPath = createTestDirectoryPath();
         try
         {
-            PlanningWorkspaceFileStore store = createStore(testDirectoryPath);
+            PlanningWorkspaceFileStoreSession store = createStore(testDirectoryPath);
             await store.SaveAsync(createWorkspace("이전 시간표"), CancellationToken.None);
             await store.SaveAsync(createWorkspace("미래 시간표"), CancellationToken.None);
             string latestPath = getGenerationPath(testDirectoryPath, 2);
@@ -290,7 +294,7 @@ public sealed class PlanningWorkspaceFileStoreTests
         string testDirectoryPath = createTestDirectoryPath();
         try
         {
-            PlanningWorkspaceFileStore store = createStore(testDirectoryPath);
+            PlanningWorkspaceFileStoreSession store = createStore(testDirectoryPath);
             await store.SaveAsync(createWorkspace("이전 시간표"), CancellationToken.None);
             await store.SaveAsync(createWorkspace("미래 시간표"), CancellationToken.None);
             string futurePath = getGenerationPath(testDirectoryPath, 2);
@@ -315,6 +319,8 @@ public sealed class PlanningWorkspaceFileStoreTests
 
             await Assert.ThrowsExactlyAsync<PlanningWorkspaceUpgradeRequiredException>(
                 () => store.LoadAsync(CancellationToken.None));
+            store.AssumeConcurrencyToken(
+                new PlanningWorkspaceConcurrencyToken(3L));
             await Assert.ThrowsExactlyAsync<PlanningWorkspaceUpgradeRequiredException>(
                 () => store.SaveAsync(
                     createWorkspace("덮어쓰면 안 되는 시간표"),
@@ -340,7 +346,7 @@ public sealed class PlanningWorkspaceFileStoreTests
         string testDirectoryPath = createTestDirectoryPath();
         try
         {
-            PlanningWorkspaceFileStore store = createStore(testDirectoryPath);
+            PlanningWorkspaceFileStoreSession store = createStore(testDirectoryPath);
             await store.SaveAsync(createWorkspace("정상 시간표"), CancellationToken.None);
             await store.SaveAsync(createWorkspace("손상 시간표"), CancellationToken.None);
             string latestPath = getGenerationPath(testDirectoryPath, 2);
@@ -379,7 +385,7 @@ public sealed class PlanningWorkspaceFileStoreTests
         string testDirectoryPath = createTestDirectoryPath();
         try
         {
-            PlanningWorkspaceFileStore store = createStore(
+            PlanningWorkspaceFileStoreSession store = createStore(
                 testDirectoryPath,
                 new WorkspaceDocumentSizeLimit(2_048));
             await store.SaveAsync(createWorkspace("정상 시간표"), CancellationToken.None);
@@ -405,28 +411,96 @@ public sealed class PlanningWorkspaceFileStoreTests
     }
 
     [TestMethod]
-    public async Task ConcurrentStoreInstancesCommitDistinctValidGenerationsAsync()
+    public async Task StaleStoreInstanceCannotOverwriteANewerWorkspaceAsync()
     {
         string testDirectoryPath = createTestDirectoryPath();
         try
         {
-            PlanningWorkspaceFileStore firstStore = createStore(testDirectoryPath);
-            PlanningWorkspaceFileStore secondStore = createStore(testDirectoryPath);
+            PlanningWorkspaceFileStoreSession firstStore = createStore(testDirectoryPath);
+            PlanningWorkspaceFileStoreSession secondStore = createStore(testDirectoryPath);
+            await firstStore.SaveAsync(
+                createWorkspace("공통 시작 시간표"),
+                CancellationToken.None);
+            await firstStore.LoadAsync(CancellationToken.None);
+            await secondStore.LoadAsync(CancellationToken.None);
 
-            await Task.WhenAll(
-                firstStore.SaveAsync(
-                    createWorkspace("첫 번째 시간표"),
-                    CancellationToken.None),
-                secondStore.SaveAsync(
-                    createWorkspace("두 번째 시간표"),
-                    CancellationToken.None));
+            await firstStore.SaveAsync(
+                createWorkspace("먼저 저장한 시간표"),
+                CancellationToken.None);
+            PlanningWorkspaceConcurrencyException exception =
+                await Assert.ThrowsExactlyAsync<PlanningWorkspaceConcurrencyException>(
+                    () => secondStore.SaveAsync(
+                        createWorkspace("오래된 상태의 시간표"),
+                        CancellationToken.None));
             PlanningWorkspaceLoadResult result = await firstStore.LoadAsync(
                 CancellationToken.None);
 
+            Assert.IsTrue(
+                exception.ExpectedToken == new PlanningWorkspaceConcurrencyToken(1L));
+            Assert.IsTrue(
+                exception.ActualToken == new PlanningWorkspaceConcurrencyToken(2L));
             Assert.AreEqual(
                 EPlanningWorkspaceLoadStatus.LoadedLatestGeneration,
                 result.Status);
+            Assert.AreEqual(
+                "먼저 저장한 시간표",
+                getWorkspace(result).GetActivePlan().Name.Value);
             Assert.HasCount(2, Directory.GetFiles(testDirectoryPath, "*.json"));
+        }
+        finally
+        {
+            deleteTestDirectory(testDirectoryPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task ConcurrentStoresAllowOnlyOneCommitFromTheSameTokenAsync()
+    {
+        string testDirectoryPath = createTestDirectoryPath();
+        try
+        {
+            PlanningWorkspaceFileStoreSession firstStore = createStore(testDirectoryPath);
+            PlanningWorkspaceFileStoreSession secondStore = createStore(testDirectoryPath);
+
+            Task firstSaveTask = firstStore.SaveAsync(
+                createWorkspace("첫 번째 시간표"),
+                CancellationToken.None);
+            Task secondSaveTask = secondStore.SaveAsync(
+                createWorkspace("두 번째 시간표"),
+                CancellationToken.None);
+            PlanningWorkspaceConcurrencyException exception =
+                await Assert.ThrowsExactlyAsync<PlanningWorkspaceConcurrencyException>(
+                    async delegate
+                    {
+                        await Task.WhenAll(firstSaveTask, secondSaveTask);
+                    });
+
+            int successfulSaveCount = 0;
+            if (firstSaveTask.IsCompletedSuccessfully)
+            {
+                ++successfulSaveCount;
+            }
+
+            if (secondSaveTask.IsCompletedSuccessfully)
+            {
+                ++successfulSaveCount;
+            }
+
+            Assert.AreEqual(1, successfulSaveCount);
+            Assert.IsTrue(
+                exception.ExpectedToken
+                == PlanningWorkspaceConcurrencyToken.MissingWorkspace);
+            Assert.IsTrue(
+                exception.ActualToken == new PlanningWorkspaceConcurrencyToken(1L));
+            Assert.HasCount(1, Directory.GetFiles(testDirectoryPath, "*.json"));
+
+            PlanningWorkspaceFileStoreSession verificationStore = createStore(
+                testDirectoryPath);
+            PlanningWorkspaceLoadResult result = await verificationStore.LoadAsync(
+                CancellationToken.None);
+            Assert.AreEqual(
+                new PlanningWorkspaceConcurrencyToken(1L),
+                result.ConcurrencyToken);
         }
         finally
         {
@@ -440,7 +514,7 @@ public sealed class PlanningWorkspaceFileStoreTests
         string testDirectoryPath = createTestDirectoryPath();
         try
         {
-            PlanningWorkspaceFileStore store = createStore(testDirectoryPath);
+            PlanningWorkspaceFileStoreSession store = createStore(testDirectoryPath);
             for (int index = 1; index <= 7; index++)
             {
                 await store.SaveAsync(
@@ -460,18 +534,56 @@ public sealed class PlanningWorkspaceFileStoreTests
     }
 
     [TestMethod]
+    public async Task StoreRemovesOnlyItsOwnStaleTemporaryFilesBeforeAccessAsync()
+    {
+        string testDirectoryPath = createTestDirectoryPath();
+        try
+        {
+            Directory.CreateDirectory(testDirectoryPath);
+            string staleTemporaryPath = Path.Combine(
+                testDirectoryPath,
+                "workspace-v1.g1.json.abandoned.tmp");
+            string unrelatedTemporaryPath = Path.Combine(
+                testDirectoryPath,
+                "unrelated.tmp");
+            await File.WriteAllTextAsync(
+                staleTemporaryPath,
+                "stale",
+                CancellationToken.None);
+            await File.WriteAllTextAsync(
+                unrelatedTemporaryPath,
+                "retain",
+                CancellationToken.None);
+            PlanningWorkspaceFileStoreSession store = createStore(testDirectoryPath);
+
+            PlanningWorkspaceLoadResult result = await store.LoadAsync(
+                CancellationToken.None);
+
+            Assert.AreEqual(EPlanningWorkspaceLoadStatus.NotFound, result.Status);
+            Assert.IsFalse(File.Exists(staleTemporaryPath));
+            Assert.IsTrue(File.Exists(unrelatedTemporaryPath));
+        }
+        finally
+        {
+            deleteTestDirectory(testDirectoryPath);
+        }
+    }
+
+    [TestMethod]
     public async Task ExhaustedGenerationRangeKeepsTheWorkspaceSpecificFailureAsync()
     {
         string testDirectoryPath = createTestDirectoryPath();
         try
         {
-            PlanningWorkspaceFileStore store = createStore(testDirectoryPath);
+            PlanningWorkspaceFileStoreSession store = createStore(testDirectoryPath);
             await store.SaveAsync(
                 createWorkspace("기존 시간표"),
                 CancellationToken.None);
             File.Move(
                 getGenerationPath(testDirectoryPath, 1L),
                 getGenerationPath(testDirectoryPath, long.MaxValue));
+            store.AssumeConcurrencyToken(
+                new PlanningWorkspaceConcurrencyToken(long.MaxValue));
 
             InvalidOperationException exception =
                 await Assert.ThrowsExactlyAsync<InvalidOperationException>(
@@ -489,22 +601,23 @@ public sealed class PlanningWorkspaceFileStoreTests
         }
     }
 
-    private static PlanningWorkspaceFileStore createStore(string testDirectoryPath)
+    private static PlanningWorkspaceFileStoreSession createStore(string testDirectoryPath)
     {
         return createStore(
             testDirectoryPath,
             WorkspaceDocumentSizeLimit.ProductDefault);
     }
 
-    private static PlanningWorkspaceFileStore createStore(
+    private static PlanningWorkspaceFileStoreSession createStore(
         string testDirectoryPath,
         WorkspaceDocumentSizeLimit sizeLimit)
     {
         string workspacePath = Path.Combine(testDirectoryPath, "workspace-v1.json");
-        return new PlanningWorkspaceFileStore(
+        PlanningWorkspaceFileStore store = new PlanningWorkspaceFileStore(
             new WorkspaceFilePath(workspacePath),
             new PlanningWorkspaceJsonCodec(),
             sizeLimit);
+        return new PlanningWorkspaceFileStoreSession(store);
     }
 
     private static PlanningWorkspace createWorkspace(string name)
@@ -575,6 +688,44 @@ public sealed class PlanningWorkspaceFileStoreTests
         }
 
         return contents;
+    }
+
+    private sealed class PlanningWorkspaceFileStoreSession
+    {
+        private readonly PlanningWorkspaceFileStore mStore;
+
+        private PlanningWorkspaceConcurrencyToken mConcurrencyToken;
+
+        public PlanningWorkspaceFileStoreSession(PlanningWorkspaceFileStore store)
+        {
+            mStore = store;
+            mConcurrencyToken = PlanningWorkspaceConcurrencyToken.MissingWorkspace;
+        }
+
+        public async Task<PlanningWorkspaceLoadResult> LoadAsync(
+            CancellationToken cancellationToken)
+        {
+            PlanningWorkspaceLoadResult result = await mStore.LoadAsync(
+                cancellationToken);
+            mConcurrencyToken = result.ConcurrencyToken;
+            return result;
+        }
+
+        public async Task SaveAsync(
+            PlanningWorkspace workspace,
+            CancellationToken cancellationToken)
+        {
+            mConcurrencyToken = await mStore.SaveAsync(
+                workspace,
+                mConcurrencyToken,
+                cancellationToken);
+        }
+
+        public void AssumeConcurrencyToken(
+            PlanningWorkspaceConcurrencyToken concurrencyToken)
+        {
+            mConcurrencyToken = concurrencyToken;
+        }
     }
 
     private static void deleteTestDirectory(string testDirectoryPath)

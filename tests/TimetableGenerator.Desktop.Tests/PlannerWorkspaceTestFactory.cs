@@ -247,7 +247,8 @@ internal static class PlannerWorkspaceTestFactory
             workspace);
         PlanningWorkspaceAutosaveQueue autosaveQueue =
             new PlanningWorkspaceAutosaveQueue(
-                planningWorkspaceStore);
+                planningWorkspaceStore,
+                PlanningWorkspaceConcurrencyToken.MissingWorkspace);
         return new PlannerWorkspaceViewModel(
             CourseCatalogProjector.Project(document),
             session,

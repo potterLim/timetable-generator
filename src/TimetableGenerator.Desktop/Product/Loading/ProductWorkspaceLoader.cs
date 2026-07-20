@@ -55,6 +55,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
         {
             return await createWorkspaceAsync(
                 cacheLoadResult,
+                workspaceLoadResult.ConcurrencyToken,
                 recoveryFlags,
                 cancellationToken).ConfigureAwait(false);
         }
@@ -67,6 +68,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
                 cacheLoadResult,
                 workspace,
                 savedBinding,
+                workspaceLoadResult.ConcurrencyToken,
                 recoveryFlags,
                 cancellationToken).ConfigureAwait(false);
         }
@@ -74,6 +76,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
         return await loadWithDownloadedCatalogAsync(
             workspace,
             savedBinding,
+            workspaceLoadResult.ConcurrencyToken,
             recoveryFlags,
             cancellationToken).ConfigureAwait(false);
     }
@@ -213,6 +216,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
 
     private async Task<ProductWorkspaceLoadResult> createWorkspaceAsync(
         CatalogCacheLoadResult cacheLoadResult,
+        PlanningWorkspaceConcurrencyToken workspaceConcurrencyToken,
         EProductWorkspaceRecoveryFlags recoveryFlags,
         CancellationToken cancellationToken)
     {
@@ -234,12 +238,16 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
         }
 
         PlanningWorkspace workspace = createEmptyWorkspace(catalogPackage);
-        await mWorkspaceStore.SaveAsync(workspace, cancellationToken).ConfigureAwait(false);
+        workspaceConcurrencyToken = await mWorkspaceStore.SaveAsync(
+            workspace,
+            workspaceConcurrencyToken,
+            cancellationToken).ConfigureAwait(false);
         recoveryFlags |= EProductWorkspaceRecoveryFlags.WorkspaceCreated;
         return new ProductWorkspaceLoadResult(
             catalogPackage,
             workspace,
             mWorkspaceStore,
+            workspaceConcurrencyToken,
             catalogOrigin,
             recoveryFlags);
     }
@@ -248,6 +256,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
         CatalogCacheLoadResult latestCacheLoadResult,
         PlanningWorkspace workspace,
         PlanCatalogBinding savedBinding,
+        PlanningWorkspaceConcurrencyToken workspaceConcurrencyToken,
         EProductWorkspaceRecoveryFlags recoveryFlags,
         CancellationToken cancellationToken)
     {
@@ -261,6 +270,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
                 latestCatalogPackage,
                 workspace,
                 mWorkspaceStore,
+                workspaceConcurrencyToken,
                 EProductCatalogOrigin.OfflineCache,
                 recoveryFlags);
         }
@@ -281,8 +291,10 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
             {
                 PlanningWorkspace reboundWorkspace =
                     rebindResultOrNull.ReboundWorkspaceOrNull;
-                await mWorkspaceStore.SaveAsync(reboundWorkspace, cancellationToken)
-                    .ConfigureAwait(false);
+                workspaceConcurrencyToken = await mWorkspaceStore.SaveAsync(
+                    reboundWorkspace,
+                    workspaceConcurrencyToken,
+                    cancellationToken).ConfigureAwait(false);
                 recoveryFlags |= getCatalogRecoveryFlags(latestCacheLoadResult);
                 recoveryFlags |=
                     EProductWorkspaceRecoveryFlags.WorkspaceCatalogRebound;
@@ -290,6 +302,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
                     latestCatalogPackage,
                     reboundWorkspace,
                     mWorkspaceStore,
+                    workspaceConcurrencyToken,
                     EProductCatalogOrigin.OfflineCache,
                     recoveryFlags);
             }
@@ -309,6 +322,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
                 matchingCatalogPackage,
                 workspace,
                 mWorkspaceStore,
+                workspaceConcurrencyToken,
                 EProductCatalogOrigin.OfflineCache,
                 recoveryFlags);
         }
@@ -326,6 +340,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
     private async Task<ProductWorkspaceLoadResult> loadWithDownloadedCatalogAsync(
         PlanningWorkspace workspace,
         PlanCatalogBinding savedBinding,
+        PlanningWorkspaceConcurrencyToken workspaceConcurrencyToken,
         EProductWorkspaceRecoveryFlags recoveryFlags,
         CancellationToken cancellationToken)
     {
@@ -358,8 +373,10 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
             .ConfigureAwait(false);
         if (shouldSaveWorkspace)
         {
-            await mWorkspaceStore.SaveAsync(compatibleWorkspace, cancellationToken)
-                .ConfigureAwait(false);
+            workspaceConcurrencyToken = await mWorkspaceStore.SaveAsync(
+                compatibleWorkspace,
+                workspaceConcurrencyToken,
+                cancellationToken).ConfigureAwait(false);
             recoveryFlags |= EProductWorkspaceRecoveryFlags.WorkspaceCatalogRebound;
         }
 
@@ -367,6 +384,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
             downloadedCatalogPackage,
             compatibleWorkspace,
             mWorkspaceStore,
+            workspaceConcurrencyToken,
             EProductCatalogOrigin.RemoteDownload,
             recoveryFlags);
     }

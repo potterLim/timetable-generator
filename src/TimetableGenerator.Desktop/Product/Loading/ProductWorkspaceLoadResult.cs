@@ -19,6 +19,8 @@ internal sealed class ProductWorkspaceLoadResult
 
     public IPlanningWorkspaceStore WorkspaceStore { get; }
 
+    public PlanningWorkspaceConcurrencyToken WorkspaceConcurrencyToken { get; }
+
     public EProductCatalogOrigin CatalogOrigin { get; }
 
     public EProductWorkspaceRecoveryFlags RecoveryFlags { get; }
@@ -63,6 +65,7 @@ internal sealed class ProductWorkspaceLoadResult
         VerifiedCatalogPackage catalogPackage,
         PlanningWorkspace workspace,
         IPlanningWorkspaceStore workspaceStore,
+        PlanningWorkspaceConcurrencyToken workspaceConcurrencyToken,
         EProductCatalogOrigin catalogOrigin,
         EProductWorkspaceRecoveryFlags recoveryFlags)
     {
@@ -79,6 +82,13 @@ internal sealed class ProductWorkspaceLoadResult
         if (workspaceStore == null)
         {
             throw new ArgumentNullException(nameof(workspaceStore));
+        }
+
+        if (workspaceConcurrencyToken.RepresentsMissingWorkspace)
+        {
+            throw new ArgumentException(
+                "A loaded product workspace requires a persisted concurrency token.",
+                nameof(workspaceConcurrencyToken));
         }
 
         if (Enum.IsDefined(typeof(EProductCatalogOrigin), catalogOrigin) == false)
@@ -123,6 +133,7 @@ internal sealed class ProductWorkspaceLoadResult
         CatalogPackage = catalogPackage;
         Workspace = workspace;
         WorkspaceStore = workspaceStore;
+        WorkspaceConcurrencyToken = workspaceConcurrencyToken;
         CatalogOrigin = catalogOrigin;
         RecoveryFlags = recoveryFlags;
     }

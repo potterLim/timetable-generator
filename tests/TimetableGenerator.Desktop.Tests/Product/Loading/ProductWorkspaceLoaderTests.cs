@@ -21,7 +21,7 @@ public sealed class ProductWorkspaceLoaderTests
         PlanningWorkspace workspace =
             ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(revision);
         PlanningWorkspaceLoadResult workspaceLoadResult =
-            PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(workspace);
+            createLoadedWorkspaceResult(workspace);
         using (ProductWorkspaceLoaderTestContext context = createContext(
             workspaceLoadResult))
         {
@@ -57,7 +57,7 @@ public sealed class ProductWorkspaceLoaderTests
         PlanningWorkspace workspace =
             ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(revision);
         using (ProductWorkspaceLoaderTestContext context = createContext(
-            PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(workspace)))
+            createLoadedWorkspaceResult(workspace)))
         {
             await context.CatalogCacheStore.SaveAsync(
                 changedArtifactPackage,
@@ -94,7 +94,7 @@ public sealed class ProductWorkspaceLoaderTests
                 return Task.FromResult(changedArtifactPackage);
             };
         using (ProductWorkspaceLoaderTestContext context = createContext(
-            PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(workspace),
+            createLoadedWorkspaceResult(workspace),
             download))
         {
             ProductWorkspaceCatalogCompatibilityException exception =
@@ -125,13 +125,14 @@ public sealed class ProductWorkspaceLoaderTests
         PlanningWorkspace workspace =
             ProductWorkspaceLoaderTestData.CreateEmptyWorkspace(revision);
         using (ProductWorkspaceLoaderTestContext context = createContext(
-            PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(workspace)))
+            createLoadedWorkspaceResult(workspace)))
         {
             Assert.Throws<ArgumentException>(
                 () => new ProductWorkspaceLoadResult(
                     changedArtifactPackage,
                     workspace,
                     context.WorkspaceStore,
+                    new PlanningWorkspaceConcurrencyToken(1L),
                     EProductCatalogOrigin.OfflineCache,
                     EProductWorkspaceRecoveryFlags.None));
         }
@@ -155,6 +156,9 @@ public sealed class ProductWorkspaceLoaderTests
             PlanningPlan activePlan = result.Workspace.GetActivePlan();
             Assert.Equal(EProductCatalogOrigin.OfflineCache, result.CatalogOrigin);
             Assert.True(result.WasWorkspaceCreated);
+            Assert.Equal(
+                new PlanningWorkspaceConcurrencyToken(1L),
+                result.WorkspaceConcurrencyToken);
             Assert.Equal("2026-2학기 시간표", activePlan.Name.Value);
             Assert.Empty(activePlan.CourseChoiceGroups);
             Assert.Empty(activePlan.UnscheduledOfferingSelections);
@@ -188,7 +192,7 @@ public sealed class ProductWorkspaceLoaderTests
             ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(
                 savedRevision);
         using (ProductWorkspaceLoaderTestContext context = createContext(
-            PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(workspace)))
+            createLoadedWorkspaceResult(workspace)))
         {
             await context.CatalogCacheStore.SaveAsync(
                 savedCatalogPackage,
@@ -222,7 +226,7 @@ public sealed class ProductWorkspaceLoaderTests
             ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(
                 savedRevision);
         using (ProductWorkspaceLoaderTestContext context = createContext(
-            PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(workspace)))
+            createLoadedWorkspaceResult(workspace)))
         {
             await context.CatalogCacheStore.SaveAsync(
                 savedCatalogPackage,
@@ -242,6 +246,9 @@ public sealed class ProductWorkspaceLoaderTests
                 latestCatalogPackage.CreatePlanCatalogBinding().ArtifactSha256,
                 result.Workspace.GetActivePlan().CatalogBinding.ArtifactSha256);
             Assert.True(result.WasWorkspaceCatalogRebound);
+            Assert.Equal(
+                new PlanningWorkspaceConcurrencyToken(2L),
+                result.WorkspaceConcurrencyToken);
             Assert.Same(
                 result.Workspace,
                 Assert.Single(context.WorkspaceStore.SavedWorkspaces));
@@ -262,7 +269,7 @@ public sealed class ProductWorkspaceLoaderTests
             ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(
                 currentRevision);
         using (ProductWorkspaceLoaderTestContext context = createContext(
-            PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(workspace)))
+            createLoadedWorkspaceResult(workspace)))
         {
             await context.CatalogCacheStore.SaveAsync(
                 currentCatalogPackage,
@@ -296,7 +303,7 @@ public sealed class ProductWorkspaceLoaderTests
             ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(
                 currentRevision);
         using (ProductWorkspaceLoaderTestContext context = createContext(
-            PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(workspace)))
+            createLoadedWorkspaceResult(workspace)))
         {
             await context.CatalogCacheStore.SaveAsync(
                 currentCatalogPackage,
@@ -332,7 +339,7 @@ public sealed class ProductWorkspaceLoaderTests
             ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(
                 currentRevision);
         using (ProductWorkspaceLoaderTestContext context = createContext(
-            PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(workspace)))
+            createLoadedWorkspaceResult(workspace)))
         {
             await context.CatalogCacheStore.SaveAsync(
                 currentCatalogPackage,
@@ -364,7 +371,7 @@ public sealed class ProductWorkspaceLoaderTests
             ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(
                 savedRevision);
         using (ProductWorkspaceLoaderTestContext context = createContext(
-            PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(workspace)))
+            createLoadedWorkspaceResult(workspace)))
         {
             await context.CatalogCacheStore.SaveAsync(
                 latestCatalogPackage,
@@ -395,7 +402,7 @@ public sealed class ProductWorkspaceLoaderTests
         PlanningWorkspace workspace =
             ProductWorkspaceLoaderTestData.CreateWorkspaceWithMissingOffering(revision);
         using (ProductWorkspaceLoaderTestContext context = createContext(
-            PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(workspace)))
+            createLoadedWorkspaceResult(workspace)))
         {
             await context.CatalogCacheStore.SaveAsync(
                 catalogPackage,
@@ -434,7 +441,7 @@ public sealed class ProductWorkspaceLoaderTests
         PlanningWorkspace workspace =
             ProductWorkspaceLoaderTestData.CreateWorkspaceWithoutPlans(savedRevision);
         using (ProductWorkspaceLoaderTestContext context = createContext(
-            PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(workspace)))
+            createLoadedWorkspaceResult(workspace)))
         {
             await context.CatalogCacheStore.SaveAsync(
                 catalogPackage,
@@ -509,7 +516,7 @@ public sealed class ProductWorkspaceLoaderTests
                 return Task.FromResult(downloadedCatalogPackage);
             };
         using (ProductWorkspaceLoaderTestContext context = createContext(
-            PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(workspace),
+            createLoadedWorkspaceResult(workspace),
             download))
         {
             ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(
@@ -550,7 +557,7 @@ public sealed class ProductWorkspaceLoaderTests
                 return Task.FromResult(catalogPackage);
             };
         using (ProductWorkspaceLoaderTestContext context = createContext(
-            PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(workspace),
+            createLoadedWorkspaceResult(workspace),
             download))
         {
             await Assert.ThrowsAsync<ProductWorkspaceCatalogCompatibilityException>(
@@ -600,7 +607,7 @@ public sealed class ProductWorkspaceLoaderTests
         PlanningWorkspace workspace =
             ProductWorkspaceLoaderTestData.CreateEmptyWorkspace(revision);
         using (ProductWorkspaceLoaderTestContext context = createContext(
-            PlanningWorkspaceLoadResult.CreateRecoveredPreviousGeneration(workspace)))
+            createRecoveredWorkspaceResult(workspace)))
         {
             await context.CatalogCacheStore.SaveAsync(
                 catalogPackage,
@@ -614,6 +621,22 @@ public sealed class ProductWorkspaceLoaderTests
             Assert.Same(workspace, result.Workspace);
             Assert.Empty(context.WorkspaceStore.SavedWorkspaces);
         }
+    }
+
+    private static PlanningWorkspaceLoadResult createLoadedWorkspaceResult(
+        PlanningWorkspace workspace)
+    {
+        return PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(
+            workspace,
+            new PlanningWorkspaceConcurrencyToken(1L));
+    }
+
+    private static PlanningWorkspaceLoadResult createRecoveredWorkspaceResult(
+        PlanningWorkspace workspace)
+    {
+        return PlanningWorkspaceLoadResult.CreateRecoveredPreviousGeneration(
+            workspace,
+            new PlanningWorkspaceConcurrencyToken(2L));
     }
 
     private static ProductWorkspaceLoaderTestContext createContext(

@@ -14,6 +14,7 @@ public sealed class PlanningWorkspaceAutosaveQueue
 
     private PlanningWorkspace? mPendingWorkspaceOrNull;
     private PlanningWorkspaceAutosaveState? mCurrentStateOrNull;
+    private PlanningWorkspaceConcurrencyToken mConcurrencyToken;
     private Task mWorkerTask;
     private bool mIsWorkerRunning;
     private bool mIsCompletionInProgress;
@@ -32,7 +33,9 @@ public sealed class PlanningWorkspaceAutosaveQueue
         }
     }
 
-    public PlanningWorkspaceAutosaveQueue(IPlanningWorkspaceStore workspaceStore)
+    public PlanningWorkspaceAutosaveQueue(
+        IPlanningWorkspaceStore workspaceStore,
+        PlanningWorkspaceConcurrencyToken initialConcurrencyToken)
     {
         if (workspaceStore == null)
         {
@@ -41,6 +44,7 @@ public sealed class PlanningWorkspaceAutosaveQueue
 
         mSynchronizationRoot = new object();
         mWorkspaceStore = workspaceStore;
+        mConcurrencyToken = initialConcurrencyToken;
         mWorkerTask = Task.CompletedTask;
     }
 
@@ -145,9 +149,12 @@ public sealed class PlanningWorkspaceAutosaveQueue
 
             try
             {
-                await mWorkspaceStore.SaveAsync(
-                    workspaceOrNull,
-                    CancellationToken.None).ConfigureAwait(false);
+                PlanningWorkspaceConcurrencyToken savedConcurrencyToken =
+                    await mWorkspaceStore.SaveAsync(
+                        workspaceOrNull,
+                        mConcurrencyToken,
+                        CancellationToken.None).ConfigureAwait(false);
+                mConcurrencyToken = savedConcurrencyToken;
                 publishState(new PlanningWorkspaceAutosaveSavedState(workspaceOrNull));
             }
             catch (Exception failure)

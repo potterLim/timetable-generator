@@ -20,6 +20,14 @@ internal sealed record GenerationFileStoragePath
         }
     }
 
+    public string TemporaryFileSearchPattern
+    {
+        get
+        {
+            return BaseFileName + ".*.tmp";
+        }
+    }
+
     public string LockPath
     {
         get

@@ -8,21 +8,41 @@ namespace TimetableGenerator.Desktop.Tests;
 
 internal sealed class ImmediatePlanningWorkspaceStore : IPlanningWorkspaceStore
 {
+    private PlanningWorkspaceConcurrencyToken mConcurrencyToken =
+        PlanningWorkspaceConcurrencyToken.MissingWorkspace;
+
     public PlanningWorkspace? LastSavedWorkspaceOrNull { get; private set; }
 
     public Task<PlanningWorkspaceLoadResult> LoadAsync(
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        return Task.FromResult(PlanningWorkspaceLoadResult.CreateNotFound());
+        if (LastSavedWorkspaceOrNull == null)
+        {
+            return Task.FromResult(PlanningWorkspaceLoadResult.CreateNotFound());
+        }
+
+        return Task.FromResult(
+            PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(
+                LastSavedWorkspaceOrNull,
+                mConcurrencyToken));
     }
 
-    public Task SaveAsync(
+    public Task<PlanningWorkspaceConcurrencyToken> SaveAsync(
         PlanningWorkspace workspace,
+        PlanningWorkspaceConcurrencyToken expectedToken,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        if (expectedToken != mConcurrencyToken)
+        {
+            throw new PlanningWorkspaceConcurrencyException(
+                expectedToken,
+                mConcurrencyToken);
+        }
+
         LastSavedWorkspaceOrNull = workspace;
-        return Task.CompletedTask;
+        mConcurrencyToken = mConcurrencyToken.GetNext();
+        return Task.FromResult(mConcurrencyToken);
     }
 }

@@ -98,8 +98,9 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
         }
     }
 
-    public async Task SaveAsync(
+    public async Task<PlanningWorkspaceConcurrencyToken> SaveAsync(
         PlanningWorkspace workspace,
+        PlanningWorkspaceConcurrencyToken expectedToken,
         CancellationToken cancellationToken)
     {
         if (workspace == null)
@@ -113,8 +114,10 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
                 await mFileStorage.AcquireCreatingDirectoryAsync(
                 cancellationToken).ConfigureAwait(false))
             {
-                await saveWithoutLockAsync(workspace, cancellationToken)
-                    .ConfigureAwait(false);
+                return await saveWithoutLockAsync(
+                    workspace,
+                    expectedToken,
+                    cancellationToken).ConfigureAwait(false);
             }
         }
         catch (OperationCanceledException)
@@ -175,11 +178,13 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
                 if (index == 0)
                 {
                     return PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(
-                        document.Workspace);
+                        document.Workspace,
+                        createConcurrencyToken(generationFiles));
                 }
 
                 return PlanningWorkspaceLoadResult.CreateRecoveredPreviousGeneration(
-                    document.Workspace);
+                    document.Workspace,
+                    createConcurrencyToken(generationFiles));
             }
             catch (UnsupportedWorkspaceSchemaVersionException exception)
             {
@@ -215,12 +220,22 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
         return mCodec.Deserialize(content);
     }
 
-    private async Task saveWithoutLockAsync(
+    private async Task<PlanningWorkspaceConcurrencyToken> saveWithoutLockAsync(
         PlanningWorkspace workspace,
+        PlanningWorkspaceConcurrencyToken expectedToken,
         CancellationToken cancellationToken)
     {
         IReadOnlyList<GenerationFile> generationFiles =
             mFileStorage.GetGenerationFiles();
+        PlanningWorkspaceConcurrencyToken actualToken =
+            createConcurrencyToken(generationFiles);
+        if (actualToken != expectedToken)
+        {
+            throw new PlanningWorkspaceConcurrencyException(
+                expectedToken,
+                actualToken);
+        }
+
         await ensureLatestGenerationAllowsSaveAsync(
             generationFiles,
             cancellationToken).ConfigureAwait(false);
@@ -260,12 +275,14 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
 
         if (verifiedDocument.Generation != nextGeneration)
         {
+            mFileStorage.TryDeleteGeneration(committedGeneration);
             throw new WorkspacePersistenceException(
                 "The committed workspace generation could not be verified.",
                 new InvalidDataException(committedGeneration.Path.Value));
         }
 
         mFileStorage.PruneGenerations();
+        return new PlanningWorkspaceConcurrencyToken(nextGeneration.Value);
     }
 
     private async Task ensureLatestGenerationAllowsSaveAsync(
@@ -319,6 +336,18 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
         WorkspaceGeneration latestGeneration = new WorkspaceGeneration(
             generationFiles[0].Generation.Value);
         return latestGeneration.GetNext();
+    }
+
+    private static PlanningWorkspaceConcurrencyToken createConcurrencyToken(
+        IReadOnlyList<GenerationFile> generationFiles)
+    {
+        if (generationFiles.Count == 0)
+        {
+            return PlanningWorkspaceConcurrencyToken.MissingWorkspace;
+        }
+
+        return new PlanningWorkspaceConcurrencyToken(
+            generationFiles[0].Generation.Value);
     }
 
 }

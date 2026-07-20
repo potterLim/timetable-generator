@@ -197,6 +197,7 @@ internal sealed class GenerationFileStorage
 
             FileStream processLock = await acquireCrossProcessLockAsync(
                 cancellationToken).ConfigureAwait(false);
+            pruneTemporaryFiles();
             return new GenerationFileStorageAccess(processLock, mAccessGate);
         }
         catch
@@ -241,5 +242,25 @@ internal sealed class GenerationFileStorage
         }
 
         throw new GenerationFileStorageLockException(failure);
+    }
+
+    private void pruneTemporaryFiles()
+    {
+        try
+        {
+            IEnumerable<string> temporaryPaths = Directory.EnumerateFiles(
+                mStoragePath.DirectoryPath,
+                mStoragePath.TemporaryFileSearchPattern,
+                SearchOption.TopDirectoryOnly);
+            foreach (string temporaryPath in temporaryPaths)
+            {
+                tryDeleteFile(temporaryPath);
+            }
+        }
+        catch (Exception exception) when (
+            FileSystemExceptionClassifier.IsFileSystemException(exception))
+        {
+            // Stale temporary files must not prevent workspace recovery or a new save.
+        }
     }
 }

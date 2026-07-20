@@ -13,6 +13,7 @@ internal sealed class ControlledPlanningWorkspaceStore : IPlanningWorkspaceStore
     private readonly Queue<ControlledSaveAttempt> mPendingAttempts;
     private readonly List<PlanningWorkspace> mStartedWorkspaces;
     private readonly List<CancellationToken> mSaveCancellationTokens;
+    private readonly List<PlanningWorkspaceConcurrencyToken> mExpectedTokens;
 
     private int mActiveSaveCount;
     private int mMaximumConcurrentSaveCount;
@@ -39,6 +40,17 @@ internal sealed class ControlledPlanningWorkspaceStore : IPlanningWorkspaceStore
         }
     }
 
+    public IReadOnlyList<PlanningWorkspaceConcurrencyToken> ExpectedTokens
+    {
+        get
+        {
+            lock (mSynchronizationRoot)
+            {
+                return mExpectedTokens.ToArray();
+            }
+        }
+    }
+
     public int MaximumConcurrentSaveCount
     {
         get
@@ -56,6 +68,7 @@ internal sealed class ControlledPlanningWorkspaceStore : IPlanningWorkspaceStore
         mPendingAttempts = new Queue<ControlledSaveAttempt>();
         mStartedWorkspaces = new List<PlanningWorkspace>();
         mSaveCancellationTokens = new List<CancellationToken>();
+        mExpectedTokens = new List<PlanningWorkspaceConcurrencyToken>();
     }
 
     public void EnqueueSaveAttempt(ControlledSaveAttempt saveAttempt)
@@ -78,8 +91,9 @@ internal sealed class ControlledPlanningWorkspaceStore : IPlanningWorkspaceStore
         return Task.FromResult(PlanningWorkspaceLoadResult.CreateNotFound());
     }
 
-    public async Task SaveAsync(
+    public async Task<PlanningWorkspaceConcurrencyToken> SaveAsync(
         PlanningWorkspace workspace,
+        PlanningWorkspaceConcurrencyToken expectedToken,
         CancellationToken cancellationToken)
     {
         ControlledSaveAttempt saveAttempt;
@@ -94,6 +108,7 @@ internal sealed class ControlledPlanningWorkspaceStore : IPlanningWorkspaceStore
             saveAttempt = mPendingAttempts.Dequeue();
             mStartedWorkspaces.Add(workspace);
             mSaveCancellationTokens.Add(cancellationToken);
+            mExpectedTokens.Add(expectedToken);
             ++mActiveSaveCount;
             if (mActiveSaveCount > mMaximumConcurrentSaveCount)
             {
@@ -105,6 +120,7 @@ internal sealed class ControlledPlanningWorkspaceStore : IPlanningWorkspaceStore
         try
         {
             await saveAttempt.waitForCompletionAsync().ConfigureAwait(false);
+            return expectedToken.GetNext();
         }
         finally
         {

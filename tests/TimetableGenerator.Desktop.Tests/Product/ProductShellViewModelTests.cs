@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Headless.XUnit;
+using TimetableGenerator.Application.Planning;
 using TimetableGenerator.Desktop.Configuration;
 using TimetableGenerator.Desktop.Presentation;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
@@ -347,6 +348,28 @@ public sealed class ProductShellViewModelTests
             Assert.Null(shell.WorkspaceOrNull);
             Assert.Equal("과목 데이터를 불러오지 못했습니다", shell.StatusTitle);
             Assert.Contains("배포 설정", shell.StatusMessage);
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task ConcurrentWorkspaceChangeProducesARecoveryMessageAsync()
+    {
+        QueueProductWorkspaceLoader loader = createLoader(
+            delegate
+            {
+                PlanningWorkspaceConcurrencyException failure =
+                    new PlanningWorkspaceConcurrencyException(
+                        new PlanningWorkspaceConcurrencyToken(1L),
+                        new PlanningWorkspaceConcurrencyToken(2L));
+                return Task.FromException<ProductWorkspacePresentation>(failure);
+            });
+        using (ProductShellViewModel shell = createShell(loader))
+        {
+            await shell.StartAsync();
+
+            Assert.True(shell.HasError);
+            Assert.Contains("다른 앱 창", shell.StatusMessage);
+            Assert.Contains("다시 열어", shell.StatusMessage);
         }
     }
 

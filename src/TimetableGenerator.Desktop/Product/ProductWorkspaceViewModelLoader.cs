@@ -36,7 +36,9 @@ internal sealed class ProductWorkspaceViewModelLoader : IProductWorkspaceLoader
             loadResult.CatalogPackage.Document.Catalog,
             loadResult.Workspace);
         PlanningWorkspaceAutosaveQueue autosaveQueue =
-            new PlanningWorkspaceAutosaveQueue(loadResult.WorkspaceStore);
+            new PlanningWorkspaceAutosaveQueue(
+                loadResult.WorkspaceStore,
+                loadResult.WorkspaceConcurrencyToken);
         IScheduleRecommendationProvider recommendationProvider =
             new CatalogScheduleRecommendationProvider(
                 loadResult.CatalogPackage.Document.Catalog);
