@@ -145,16 +145,11 @@
                   BorderBrush="{DynamicResource BorderBrush}"
                   BorderThickness="0,0,0,1"
                   Background="{DynamicResource ElevatedSurfaceBrush}">
-                <StackPanel Spacing="3">
-                  <TextBlock
-                      FontSize="17"
-                      FontWeight="SemiBold"
-                      Text="{Binding PlanName.Value}"
-                      TextTrimming="CharacterEllipsis" />
-                  <TextBlock
-                      Classes="caption"
-                      Text="{Binding InstitutionTermDisplayText}" />
-                </StackPanel>
+                <TextBlock
+                    FontSize="17"
+                    FontWeight="SemiBold"
+                    Text="{Binding PlanName.Value}"
+                    TextTrimming="CharacterEllipsis" />
               </Border>
               <Grid
                   x:Name="BoardGrid"

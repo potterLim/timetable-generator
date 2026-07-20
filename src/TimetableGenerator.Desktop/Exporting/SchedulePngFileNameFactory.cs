@@ -14,8 +14,6 @@ internal static class SchedulePngFileNameFactory
 
     private const string FALLBACK_BASE_NAME = "시간표";
 
-    private const string BATCH_FOLDER_SUFFIX = " - 가능한 시간표";
-
     private const string PNG_EXTENSION = ".png";
 
     private const char REPLACEMENT_CHARACTER = '-';
@@ -84,7 +82,7 @@ internal static class SchedulePngFileNameFactory
             : " (" + copyNumber + ")";
         return createFileSystemComponent(
             getBaseName(planNameOrNull),
-            BATCH_FOLDER_SUFFIX + copySuffix);
+            copySuffix);
     }
 
     public static string CreateBatchCandidate(

@@ -28,14 +28,6 @@ internal sealed class ScheduleBoardPresentation
         }
     }
 
-    public string InstitutionTermDisplayText
-    {
-        get
-        {
-            return InstitutionName.Value + " · " + AcademicTerm.Id;
-        }
-    }
-
     public ScheduleBoardPresentation(
         ScheduleRecommendation schedule,
         PlanName planName,

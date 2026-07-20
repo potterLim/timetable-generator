@@ -28,8 +28,8 @@ public sealed class AcademicTermPlanNameFactoryTests
         PlanningPlan[] existingPlans = new PlanningPlan[]
         {
             createPlan(academicTerm, "2027-1학기 시간표"),
-            createPlan(academicTerm, "2027-1학기 시간표(2)"),
-            createPlan(academicTerm, "2027-1학기 시간표(3)"),
+            createPlan(academicTerm, "2027-1학기 시간표 (2)"),
+            createPlan(academicTerm, "2027-1학기 시간표 (3)"),
         };
 
         PlanName planName =
@@ -37,7 +37,7 @@ public sealed class AcademicTermPlanNameFactoryTests
                 academicTerm,
                 existingPlans);
 
-        Assert.Equal("2027-1학기 시간표(4)", planName.Value);
+        Assert.Equal("2027-1학기 시간표 (4)", planName.Value);
     }
 
     [Fact]
@@ -46,7 +46,7 @@ public sealed class AcademicTermPlanNameFactoryTests
         AcademicTerm academicTerm = AcademicTerm.Parse("2027-1");
         PlanningPlan[] existingPlans = new PlanningPlan[]
         {
-            createPlan(academicTerm, "2027-1학기 시간표(2)"),
+            createPlan(academicTerm, "2027-1학기 시간표 (2)"),
         };
 
         PlanName planName = AcademicTermPlanNameFactory.FindAvailablePlanName(
@@ -54,6 +54,23 @@ public sealed class AcademicTermPlanNameFactoryTests
             existingPlans);
 
         Assert.Equal("2027-1학기 시간표", planName.Value);
+    }
+
+    [Fact]
+    public void LegacyUnspacedPlanNameReservesTheSameCopyNumber()
+    {
+        AcademicTerm academicTerm = AcademicTerm.Parse("2027-1");
+        PlanningPlan[] existingPlans = new PlanningPlan[]
+        {
+            createPlan(academicTerm, "2027-1학기 시간표"),
+            createPlan(academicTerm, "2027-1학기 시간표(2)"),
+        };
+
+        PlanName planName = AcademicTermPlanNameFactory.FindAvailablePlanName(
+            academicTerm,
+            existingPlans);
+
+        Assert.Equal("2027-1학기 시간표 (3)", planName.Value);
     }
 
     [Fact]

@@ -52,15 +52,22 @@ internal static class AcademicTermPlanNameFactory
         int planNumber = FIRST_ADDITIONAL_PLAN_NUMBER;
         while (true)
         {
-            PlanName candidateName = new PlanName(
-                academicTerm.Id
-                + PLAN_NAME_SUFFIX
+            string planNumberText = planNumber.ToString(
+                CultureInfo.InvariantCulture);
+            string candidateNameValue =
+                initialPlanName.Value
+                + " ("
+                + planNumberText
+                + ")";
+            string legacyCandidateNameValue =
+                initialPlanName.Value
                 + "("
-                + planNumber.ToString(CultureInfo.InvariantCulture)
-                + ")");
-            if (existingPlanNames.Contains(candidateName.Value) == false)
+                + planNumberText
+                + ")";
+            if (existingPlanNames.Contains(candidateNameValue) == false
+                && existingPlanNames.Contains(legacyCandidateNameValue) == false)
             {
-                return candidateName;
+                return new PlanName(candidateNameValue);
             }
 
             ++planNumber;

@@ -70,7 +70,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         }
 
         return termPlanName
-            + "("
+            + " ("
             + planNumber.ToString(System.Globalization.CultureInfo.InvariantCulture)
             + ")";
     }

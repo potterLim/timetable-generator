@@ -28,7 +28,7 @@ public sealed class PlanInspectorVisualStateTests
     private const double INSPECTOR_HEIGHT = 640.0;
     private const double INSPECTOR_WIDTH = 384.0;
     private const string PRODUCT_FONT_FAMILY_NAME = "Pretendard";
-    private const string TERM_PLAN_NAME = "2026-2학기 시간표(5)";
+    private const string TERM_PLAN_NAME = "2026-2학기 시간표 (5)";
 
     [AvaloniaFact]
     public void PlanTitleRemainsFullyVisibleAsTheManagementActionAtProductWidths()

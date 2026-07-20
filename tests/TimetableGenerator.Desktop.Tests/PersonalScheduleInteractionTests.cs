@@ -1291,7 +1291,7 @@ public sealed class PersonalScheduleInteractionTests
                 .ToArray();
             Assert.DoesNotContain("개인 일정 세부 정보", exportTexts);
             Assert.Contains("테스트 계획", exportTexts);
-            Assert.Contains("한동대학교 · 2026-2", exportTexts);
+            Assert.DoesNotContain("한동대학교 · 2026-2", exportTexts);
             Assert.Equal(
                 2,
                 exportTexts.Count(text => text == "짧은 랩 미팅"));

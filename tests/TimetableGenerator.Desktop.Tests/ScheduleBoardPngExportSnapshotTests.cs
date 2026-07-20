@@ -226,14 +226,9 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                     .OfType<Border>()
                     .Single(border => border.Name == "BoardContextHeader");
                 Assert.True(exportHeader.IsVisible);
-                Assert.Collection(
-                    exportHeader.GetVisualDescendants().OfType<TextBlock>(),
-                    textBlock => Assert.Equal(
-                        "PNG 내보내기 테스트",
-                        textBlock.Text),
-                    textBlock => Assert.Equal(
-                        "한동대학교 · 2026-2",
-                        textBlock.Text));
+                TextBlock title = Assert.Single(
+                    exportHeader.GetVisualDescendants().OfType<TextBlock>());
+                Assert.Equal("PNG 내보내기 테스트", title.Text);
             }
 
             Assert.Empty(exportHost.Children);

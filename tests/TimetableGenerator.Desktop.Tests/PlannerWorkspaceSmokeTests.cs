@@ -590,13 +590,13 @@ public sealed class PlannerWorkspaceSmokeTests
 
             workspace.AddPlanCommand.Execute(null);
 
-            Assert.Equal("2026-2학기 시간표(3)", workspace.PlanNameDraft);
+            Assert.Equal("2026-2학기 시간표 (3)", workspace.PlanNameDraft);
             Assert.Equal(2, workspace.Plans.Count);
             Assert.True(workspace.IsCreatingPlan);
 
             workspace.ConfirmPlanNameCommand.Execute(null);
 
-            Assert.Equal("2026-2학기 시간표(3)", workspace.ActivePlan.DisplayName);
+            Assert.Equal("2026-2학기 시간표 (3)", workspace.ActivePlan.DisplayName);
             Assert.Equal(3, workspace.Plans.Count);
             Assert.False(workspace.IsPlanNameEditorVisible);
         }

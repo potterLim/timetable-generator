@@ -471,7 +471,7 @@ public sealed class PlanningWorkspaceJsonCodecTests
             restoredWorkspace.Plans[0].CatalogBinding,
             restoredWorkspace.CatalogBinding);
         Assert.AreEqual("2026-2학기 시간표", restoredWorkspace.Plans[0].Name.Value);
-        Assert.AreEqual("2026-2학기 시간표(2)", restoredWorkspace.Plans[1].Name.Value);
+        Assert.AreEqual("2026-2학기 시간표 (2)", restoredWorkspace.Plans[1].Name.Value);
         StringAssert.Contains(migratedJson, "\"schemaVersion\": 5");
         StringAssert.Contains(migratedJson, "\"catalog\": {");
         StringAssert.Contains(
