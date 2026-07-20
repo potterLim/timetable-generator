@@ -34,28 +34,20 @@
       <Grid ColumnDefinitions="Auto,*,Auto,Auto" VerticalAlignment="Center">
         <Grid
             Grid.Column="0"
-            ColumnDefinitions="28,Auto"
+            ColumnDefinitions="32,Auto"
             ColumnSpacing="12"
             VerticalAlignment="Center">
-          <Border
+          <Image
+              x:Name="ProductBrandIcon"
               Grid.Column="0"
-              Width="28"
-              Height="28"
-              Background="{DynamicResource BrandMarkBackgroundBrush}"
-              BorderBrush="{DynamicResource BrandMarkBorderBrush}"
-              BorderThickness="1"
-              ClipToBounds="True"
-              CornerRadius="3">
-            <Image
-                Width="68"
-                Height="68"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Source="/Assets/AppIcon.png"
-                Stretch="Uniform"
-                AutomationProperties.AccessibilityView="Raw"
-                IsHitTestVisible="False" />
-          </Border>
+              Width="32"
+              Height="32"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Source="/Assets/AppIcon.png"
+              Stretch="Uniform"
+              AutomationProperties.AccessibilityView="Raw"
+              IsHitTestVisible="False" />
           <StackPanel
               Grid.Column="1"
               VerticalAlignment="Center"
