@@ -50,6 +50,7 @@ public sealed class WorkspaceEmptyStateTests
 
             assertEmptyScheduleState(
                 scheduleWorkspace,
+                false,
                 "과목을 선택해 시간표를 구성해 보세요",
                 "과목을 선택하면 가능한 시간표를 자동으로 만듭니다.");
             workspace.OpenInspectorPaneCommand.Execute(null);
@@ -73,18 +74,24 @@ public sealed class WorkspaceEmptyStateTests
             workspace.SearchText = "세미나";
             CourseSearchItem seminar = Assert.Single(workspace.VisibleCourses);
             workspace.AddCourseCommand.Execute(seminar);
+            Assert.True(workspace.CanSaveCourseChoice);
+            workspace.SaveCourseChoiceCommand.Execute(null);
             await workspace.RecommendationRefreshTask;
             Dispatcher.UIThread.RunJobs();
+
+            Assert.True(workspace.HasRecommendations);
+            Assert.False(workspace.HasScheduleEntries);
 
             workspace.CloseInspectorPaneCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
             assertEmptyScheduleState(
                 scheduleWorkspace,
+                true,
                 "시간이 정해진 과목이 없습니다",
                 "시간 미정 과목은 현재 시간표에 유지됩니다.");
             workspace.OpenInspectorPaneCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
-            assertTimeNotProvidedInspectorState(planInspector);
+            assertTimeNotProvidedChoiceInspectorState(planInspector);
         }
         finally
         {
@@ -95,6 +102,7 @@ public sealed class WorkspaceEmptyStateTests
 
     private static void assertEmptyScheduleState(
         ScheduleWorkspaceView scheduleWorkspace,
+        bool areRecommendationActionsVisible,
         string expectedHeading,
         string expectedDescription)
     {
@@ -120,7 +128,9 @@ public sealed class WorkspaceEmptyStateTests
             scheduleWorkspace,
             "ScheduleEmptyStateDescription");
 
-        Assert.False(recommendationActions.IsVisible);
+        Assert.Equal(
+            areRecommendationActionsVisible,
+            recommendationActions.IsVisible);
         Assert.False(scheduleBoardContainer.IsVisible);
         Assert.True(scheduleEmptyState.IsVisible);
         Assert.False(exportButton.IsEffectivelyVisible);
@@ -251,7 +261,7 @@ public sealed class WorkspaceEmptyStateTests
             ToolTip.GetTip(emptyStateMessage));
     }
 
-    private static void assertTimeNotProvidedInspectorState(
+    private static void assertTimeNotProvidedChoiceInspectorState(
         PlanInspectorView planInspector)
     {
         Border emptyPlanState = findRequiredControl<Border>(
@@ -265,10 +275,10 @@ public sealed class WorkspaceEmptyStateTests
             "TimeNotProvidedCoursesExpander");
 
         Assert.False(emptyPlanState.IsVisible);
-        Assert.False(scheduledCourses.IsVisible);
-        Assert.True(timeNotProvidedCourses.IsVisible);
+        Assert.True(scheduledCourses.IsVisible);
+        Assert.False(timeNotProvidedCourses.IsVisible);
         assertExpectedCreditsSummary(planInspector, "1학점");
-        assertSectionCounts(planInspector, "수강 선택 (0)", "개인 일정 (0)");
+        assertSectionCounts(planInspector, "수강 선택 (1)", "개인 일정 (0)");
     }
 
     private static void assertExpectedCreditsSummary(

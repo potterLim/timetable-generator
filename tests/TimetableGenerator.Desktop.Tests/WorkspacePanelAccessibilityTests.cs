@@ -9,7 +9,6 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Styling;
@@ -41,6 +40,7 @@ public sealed class WorkspacePanelAccessibilityTests
         workspace.SearchText = "세미나";
         CourseSearchItem unscheduledCourse = Assert.Single(workspace.VisibleCourses);
         workspace.AddCourseCommand.Execute(unscheduledCourse);
+        workspace.SaveCourseChoiceCommand.Execute(null);
 
         PlanInspectorView inspector = new PlanInspectorView();
         inspector.DataContext = workspace;
@@ -61,10 +61,11 @@ public sealed class WorkspacePanelAccessibilityTests
                 inspector,
                 "PersonalScheduleEmptyState");
 
-            Assert.True(scrollViewer.Extent.Height > scrollViewer.Viewport.Height);
-
-            scrollViewer.ScrollToEnd();
-            Dispatcher.UIThread.RunJobs();
+            if (scrollViewer.Extent.Height > scrollViewer.Viewport.Height)
+            {
+                scrollViewer.ScrollToEnd();
+                Dispatcher.UIThread.RunJobs();
+            }
 
             Point? emptyStateTopLeftOrNull = personalScheduleEmptyState.TranslatePoint(
                 new Point(0.0, 0.0),
@@ -317,7 +318,7 @@ public sealed class WorkspacePanelAccessibilityTests
     }
 
     [AvaloniaFact]
-    public void MultiTimeNotProvidedCourseUsesAnAccessibleSelectionFlyout()
+    public void MultiTimeNotProvidedCourseUsesTheAccessibleSharedEditorAction()
     {
         using (PlannerWorkspaceViewModel workspace =
             PlannerWorkspaceTestFactory.CreateWorkspace())
@@ -343,44 +344,28 @@ public sealed class WorkspacePanelAccessibilityTests
                     .OfType<Button>()
                     .Single(
                         candidate => candidate.IsVisible
-                            && candidate.Flyout != null);
+                            && ReferenceEquals(
+                                candidate.Command,
+                                workspace.AddCourseCommand)
+                            && ReferenceEquals(
+                                candidate.CommandParameter,
+                                seminar));
                 Assert.Equal(
-                    seminar.SelectionAccessibleName,
+                    seminar.Name + " 수강 선택 설정 열기",
                     AutomationProperties.GetName(selectionButton));
+                Assert.Null(selectionButton.Flyout);
 
-                Flyout selectionFlyout = Assert.IsType<Flyout>(
-                    selectionButton.Flyout);
-                selectionFlyout.ShowAt(selectionButton);
+                selectionButton.Command?.Execute(selectionButton.CommandParameter);
                 Dispatcher.UIThread.RunJobs();
 
-                Control selectionContent = Assert.IsAssignableFrom<Control>(
-                    selectionFlyout.Content);
-                Button[] optionButtons = selectionContent.GetVisualDescendants()
-                    .OfType<Button>()
-                    .Where(
-                        candidate => candidate.Classes.Contains(
-                            "course-selection-option"))
-                    .ToArray();
-                Assert.Equal(2, optionButtons.Length);
-                Assert.True(optionButtons[0].IsFocused);
+                Assert.True(workspace.IsCourseChoiceEditorVisible);
+                CourseChoiceDraftCourseItem draft = Assert.Single(
+                    workspace.CourseChoiceDraftCourses);
+                Assert.Equal(2, draft.Offerings.Count);
                 Assert.All(
-                    optionButtons,
-                    optionButton => Assert.False(string.IsNullOrWhiteSpace(
-                        AutomationProperties.GetName(optionButton))));
-
-                CourseSelectionOption selectedOption =
-                    Assert.IsType<CourseSelectionOption>(
-                        optionButtons[1].DataContext);
-                optionButtons[1].RaiseEvent(
-                    new RoutedEventArgs(Button.ClickEvent));
-                Dispatcher.UIThread.RunJobs();
-
-                Assert.False(selectionFlyout.IsOpen);
-                Assert.Equal(
-                    selectedOption.Selection.GetTimeNotProvidedOfferingId(),
-                    Assert.Single(
-                        workspace.ActivePlan.Plan.UnscheduledOfferingSelections)
-                        .OfferingId);
+                    draft.Offerings,
+                    offering => Assert.False(string.IsNullOrWhiteSpace(
+                        offering.PreferenceAccessibleName)));
             }
             finally
             {
@@ -426,6 +411,7 @@ public sealed class WorkspacePanelAccessibilityTests
                 CourseSearchItem course = workspace.VisibleCourses[0];
 
                 workspace.AddCourseCommand.Execute(course);
+                workspace.SaveCourseChoiceCommand.Execute(null);
                 courseResults.SelectedIndex = 0;
                 Dispatcher.UIThread.RunJobs();
 
