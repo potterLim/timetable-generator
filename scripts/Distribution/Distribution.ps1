@@ -83,7 +83,7 @@ function Publish-TimetableGeneratorDesktop {
                     -NoRestore:$NoRestore
                 $archivePaths.Add((Join-Path `
                     $resolvedOutputRoot `
-                    "TimetableGenerator-$Version-$runtimeIdentifier.zip"))
+                    "TimetableGenerator-$Version-$runtimeIdentifier-unsigned.zip"))
             }
             "osx-x64" {
                 Publish-MacOSTarget `

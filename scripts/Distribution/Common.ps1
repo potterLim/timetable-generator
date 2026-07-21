@@ -203,6 +203,56 @@ function Assert-NonEmptyFile {
     }
 }
 
+function Get-RequiredThirdPartyNoticeFileNames {
+    param(
+        [Parameter(Mandatory)]
+        [string] $ProjectPath
+    )
+
+    $projectDirectory = [System.IO.Path]::GetDirectoryName(
+        [System.IO.Path]::GetFullPath($ProjectPath))
+    $noticeSourcePath = Join-Path $projectDirectory "ThirdPartyNotices"
+    if (-not (Test-Path -LiteralPath $noticeSourcePath -PathType Container)) {
+        throw "third-party notice 원본 디렉토리를 찾을 수 없습니다: $noticeSourcePath"
+    }
+
+    $fileNames = [System.Collections.Generic.HashSet[string]]::new(
+        [System.StringComparer]::Ordinal)
+    foreach ($fileName in @(
+        "FluentUiSystemIcons-LICENSE.txt",
+        "Pretendard-LICENSE.txt")) {
+        $null = $fileNames.Add($fileName)
+    }
+
+    foreach ($noticeFile in @(Get-ChildItem -LiteralPath $noticeSourcePath -Filter "*.txt" -File)) {
+        if (-not $fileNames.Add($noticeFile.Name)) {
+            throw "third-party notice 파일 이름이 중복됩니다: $($noticeFile.Name)"
+        }
+    }
+
+    if (-not $fileNames.Contains("THIRD-PARTY-NOTICES.txt")) {
+        throw "third-party notice 인덱스를 찾을 수 없습니다: $noticeSourcePath"
+    }
+
+    [string[]] $result = @($fileNames)
+    [System.Array]::Sort($result, [System.StringComparer]::Ordinal)
+    return $result
+}
+
+function Assert-RequiredThirdPartyNoticeFiles {
+    param(
+        [Parameter(Mandatory)]
+        [string] $ProjectPath,
+
+        [Parameter(Mandatory)]
+        [string] $PublishedNoticePath
+    )
+
+    foreach ($fileName in @(Get-RequiredThirdPartyNoticeFileNames -ProjectPath $ProjectPath)) {
+        Assert-NonEmptyFile -Path (Join-Path $PublishedNoticePath $fileName)
+    }
+}
+
 function Remove-DebugSymbols {
     param(
         [Parameter(Mandatory)]

@@ -86,7 +86,7 @@ pwsh ./scripts/publish-desktop.ps1
 
 스크립트는 Windows x64 PE와 macOS Intel·Apple Silicon Mach-O 아키텍처, self-contained 런타임, `.app` 구조와 디버그 심볼 제외 여부를 검증합니다. Windows 아이콘과 manifest는 Windows 대상에만 연결되므로 macOS 교차 게시를 오염시키지 않습니다.
 
-만들어진 macOS archive는 인증서가 없는 개발 환경에서도 재현할 수 있는 unsigned 산출물입니다. 공개 전에 Windows 코드 서명과 실제 기기 검사, macOS Developer ID 서명·hardened runtime·notarization·stapling이 별도로 필요합니다. 전체 명령과 검증 경계는 [데스크톱 제품 배포 안내](docs/distribution.md)를 참고하세요.
+만들어진 플랫폼별 archive는 인증서가 없는 개발 환경에서도 검사할 수 있는 unsigned 산출물입니다. 공개 전에 Windows 코드 서명과 실제 기기 검사, macOS Developer ID 서명·hardened runtime·notarization·stapling이 별도로 필요합니다. 서명 후 `finalize-desktop-release.ps1`로 최종 ZIP과 checksum을 다시 만들며, 전체 명령과 검증 경계는 [데스크톱 제품 배포 안내](docs/distribution.md)를 참고하세요.
 
 배포 설정 파일을 포함할 경우 URL이 올바른지, 실제 카탈로그의 SHA-256과 `index.json`이 일치하는지 함께 확인합니다.
 
@@ -108,4 +108,4 @@ tools/TimetableGenerator.HandongCatalogGenerator/
 
 ## 라이선스
 
-이 프로젝트 자체에는 별도의 라이선스를 제공하지 않습니다. 앱에 포함된 Pretendard와 Fluent UI System Icons는 각 자산 디렉터리의 제3자 라이선스를 따르며, 해당 원문은 배포 산출물에도 함께 포함됩니다.
+이 프로젝트 자체에는 별도의 라이선스를 제공하지 않습니다. 앱에 포함된 자산, UI 프레임워크, native 구성 요소와 self-contained .NET runtime의 제3자 라이선스·notice 원문은 `ThirdPartyNotices`에 모아 배포 산출물과 함께 제공합니다.

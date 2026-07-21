@@ -51,7 +51,7 @@
   - `시간표.app/Contents/MacOS/TimetableGenerator`
 - 현재 배포 형식은 `.app`이 들어 있는 ZIP이며 DMG, PKG, App Store 패키지는 없다.
 - 게시 결과는 기본적으로 unsigned 상태다.
-- 기본 bundle identifier는 `io.github.potterlim.timetable`이며 Apple Developer 계정에 동일한 App ID를 등록해 아키텍처와 버전에 관계없이 유지해야 한다.
+- 최종 제품 bundle identifier는 `io.github.potterlim.timetable`이며 아키텍처와 버전에 관계없이 유지해야 한다. 이후 Apple Developer portal 등록이 필요한 capability를 추가할 때도 동일한 식별자를 사용한다.
 - 로컬 설정 파일은 Git에서 제외되어 있다.
   - `src/TimetableGenerator.Desktop/catalog-source.local.json`
   - `src/TimetableGenerator.Desktop/google-calendar.local.json`
@@ -105,6 +105,9 @@ pwsh --version
 - `instruction.md`
 - `docs/`
 - `scripts/publish-desktop.ps1`
+- `scripts/write-release-build-info.ps1`
+- `scripts/finalize-desktop-release.ps1`
+- `scripts/ReleaseFinalization/`
 - `src/TimetableGenerator.Desktop/Platforms/macOS/`
 - 프로젝트 및 테스트 프로젝트 전체
 
@@ -161,7 +164,7 @@ dotnet test TimetableGenerator.sln --configuration Release --no-restore
 - 빠른 연속 변경 시 이전 계산 취소
 - 결과 결정성
 - 현재 보고 있던 offering ID 집합 복원
-- 515개 과목 카탈로그에서 계산 성능과 UI 응답성
+- 검증 시점에 내려받은 실제 카탈로그 전체 데이터에서 계산 성능과 UI 응답성
 
 4단계: macOS 게시 산출물 생성
 
@@ -174,6 +177,7 @@ case "$(uname -m)" in
   *) echo "지원하지 않는 Mac 아키텍처" >&2; exit 1 ;;
 esac
 
+pwsh ./scripts/write-release-build-info.ps1 -Version 1.0.0 -RequireClean
 pwsh ./scripts/publish-desktop.ps1 -Runtime "$RID"
 ```
 
@@ -203,8 +207,7 @@ test -x "$MAIN"
 test -s "$APP/Contents/MacOS/libcoreclr.dylib"
 test -s "$INFO"
 test -s "$APP/Contents/Resources/AppIcon.icns"
-test -s "$APP/Contents/Resources/ThirdPartyNotices/Pretendard-LICENSE.txt"
-test -s "$APP/Contents/Resources/ThirdPartyNotices/FluentUiSystemIcons-LICENSE.txt"
+test -s "$APP/Contents/Resources/ThirdPartyNotices/THIRD-PARTY-NOTICES.txt"
 
 plutil -lint "$INFO"
 plutil -p "$INFO"
@@ -229,11 +232,11 @@ otool -L "$MAIN"
 - self-contained runtime 포함
 - trim되지 않음
 - PDB 미포함
-- Pretendard와 Fluent UI System Icons 라이선스 포함
+- 게시 스크립트가 정의한 모든 필수 third-party notice 파일이 `Contents/Resources/ThirdPartyNotices`에 존재하고 비어 있지 않으며, `THIRD-PARTY-NOTICES.txt`가 참조하는 원문이 모두 포함됨
 - 모든 Mach-O가 요청 RID와 동일한 아키텍처
 - 실행 권한 유지
 - 잘못된 Windows DLL 호출이나 누락된 native library 없음
-- 로컬 설정 파일이 존재할 때만 번들에 복사되고 내용이 손상되지 않았는지
+- 일반 unsigned 개발 게시에서는 설정 파일이 선택 사항일 수 있으나, 최종 Release 후보에는 `catalog-source.local.json`과 `google-calendar.local.json`이 모두 존재하고 최종화 스크립트의 스키마·값 검증을 통과하는지
 - OAuth token, client secret, 사용자 계획은 번들에 포함되지 않았는지
 
 ZIP checksum과 압축 해제 후 실행 권한도 검증한다.
@@ -509,7 +512,7 @@ arch -x86_64 /usr/bin/true
 - 시간 미정 분반은 충돌이 없다고 보장하지 않으며 주간 보드·PNG에 표시되지 않는지
 - 개인 일정만 있는 계획도 정상 표시·내보내기가 가능한지
 
-추천 성능은 실제 515개 과목 카탈로그에서 측정한다. 검색 입력, 분반 변경, 계획 전환, 추천 재계산 도중 UI가 멈추지 않아야 한다.
+추천 성능은 검증 시점에 내려받은 실제 카탈로그의 과목 수를 기록한 뒤 그 전체 데이터에서 측정한다. 검색 입력, 분반 변경, 계획 전환, 추천 재계산 도중 UI가 멈추지 않아야 한다.
 
 12단계: 개인 일정
 
@@ -944,7 +947,7 @@ Mac의 시간대를 다음처럼 서로 다른 IANA 시간대로 바꾸거나 �
 - warm launch 5회
 - 첫 카탈로그 로드
 - 캐시된 카탈로그 로드
-- 515개 과목 검색 타이핑
+- 검증 시점의 실제 전체 카탈로그 검색 타이핑
 - 필터 전환
 - 과목 빠른 추가·제거
 - 분반 상태 빠른 전환
@@ -1007,9 +1010,9 @@ xattr -lr "$APP"
 
 quarantine을 제거해서 실행시킨 뒤 Gatekeeper 검증이 완료됐다고 주장하지 마라.
 
-실제 Developer ID 인증서, 등록 bundle identifier, notary profile이 있을 때만 다음 전체 체인을 검증한다.
+실제 Developer ID 인증서, 최종 제품 bundle identifier, notary profile이 있을 때만 다음 전체 체인을 검증한다.
 
-- 등록 bundle ID로 재게시
+- 최종 제품 bundle ID로 재게시
 - 내부 Mach-O부터 바깥 bundle 순으로 서명
 - hardened runtime
 - 메인 실행 파일의 `com.apple.security.cs.allow-jit=true`
@@ -1029,6 +1032,24 @@ quarantine을 제거해서 실행시킨 뒤 Gatekeeper 검증이 완료됐다고
 - Safari 등으로 다시 다운로드
 - quarantine이 붙은 상태에서 최초 실행
 - 인터넷이 없는 상태에서 stapled ticket 검증
+
+서명·공증·stapling을 마친 각 앱은 저장소의 최종화 스크립트로 다시 검사하고 최종 ZIP을 만든다.
+
+```powershell
+pwsh ./scripts/finalize-desktop-release.ps1 `
+  -Stage MacOS `
+  -Runtime $RID `
+  -Version 1.0.0 `
+  -BundleIdentifier "io.github.potterlim.timetable"
+```
+
+`osx-arm64`와 `osx-x64`를 각각 실행한다. 두 macOS ZIP과 Windows 최종 ZIP을 `artifacts/release/1.0.0`에 모은 뒤 다음 명령까지 통과해야 최종 checksum 검증이 완료된다.
+
+```powershell
+pwsh ./scripts/finalize-desktop-release.ps1 `
+  -Stage Aggregate `
+  -Version 1.0.0
+```
 
 서명할 때 `codesign --deep`을 사용하지 마라. `--deep`은 검증에만 사용한다.
 

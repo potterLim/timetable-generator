@@ -1,6 +1,6 @@
 # Public 저장소 전환 점검표
 
-이 문서는 저장소를 Public으로 전환하고 GitHub Releases로 배포하기 전에 확인할 항목을 기록한다. 프로젝트 자체 라이선스 파일은 만들지 않으며, Pretendard와 Fluent UI System Icons의 기존 제3자 라이선스는 유지한다.
+이 문서는 저장소를 Public으로 전환하고 GitHub Releases로 배포하기 전에 확인할 항목을 기록한다. 프로젝트 자체 라이선스 파일은 만들지 않으며, 배포 의존성과 자산의 제3자 라이선스·notice 원문은 유지한다.
 
 ## 1. 로컬 저장소 정리
 
@@ -32,7 +32,10 @@ git diff --check
 
 - [ ] Windows x64 게시본을 새 디렉터리에 만들고 실제 기기에서 실행한다.
 - [ ] macOS Apple Silicon·Intel 게시본을 각각 실제 기기에서 검사한다.
-- [ ] 앱 archive와 SHA-256만 Release 자산으로 올리고 PDB·테스트 결과·로컬 설정을 제외한다.
+- [ ] Windows와 macOS의 실제 빌드 호스트에서 깨끗한 커밋을 기준으로 `write-release-build-info.ps1 -Version 1.0.0 -RequireClean`을 실행한다.
+- [ ] Windows 서명과 macOS 서명·공증·stapling 뒤 `finalize-desktop-release.ps1`의 플랫폼별 단계와 `Aggregate` 단계를 통과시킨다.
+- [ ] GitHub Release에는 최종화된 플랫폼별 ZIP 3개와 `checksums.sha256`만 첨부한다. PDB·테스트 결과·빌드 증거·설정 원본은 별도 자산으로 올리지 않는다.
+- [ ] 최종 ZIP 내부에는 검증된 `catalog-source.local.json`과 `google-calendar.local.json`을 포함하되, 공개 HTTPS 주소와 Desktop OAuth client ID 외의 비밀 값은 포함하지 않는다.
 - [ ] Google OAuth와 Apple Calendar는 전용 QA 계정·캘린더에서 검증한다.
 
 ## 4. Public 전환 직전 GitHub 설정

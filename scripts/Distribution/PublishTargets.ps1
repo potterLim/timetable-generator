@@ -29,9 +29,7 @@ function Publish-WindowsTarget {
         -NoRestore:$NoRestore
 
     $executablePath = Join-Path $publishPath "$ExecutableName.exe"
-    $pretendardLicensePath = Join-Path `
-        $publishPath `
-        "ThirdPartyNotices/Pretendard-LICENSE.txt"
+    $thirdPartyNoticePath = Join-Path $publishPath "ThirdPartyNotices"
     $nativeBinaryPaths = @(
         $executablePath,
         (Join-Path $publishPath "coreclr.dll"),
@@ -42,11 +40,13 @@ function Publish-WindowsTarget {
         Assert-NonEmptyFile -Path $nativeBinaryPath
         Assert-WindowsX64PeBinary -Path $nativeBinaryPath
     }
-    Assert-NonEmptyFile -Path $pretendardLicensePath
+    Assert-RequiredThirdPartyNoticeFiles `
+        -ProjectPath $ProjectPath `
+        -PublishedNoticePath $thirdPartyNoticePath
 
     Remove-DebugSymbols -Path $publishPath
 
-    $archiveFileName = "TimetableGenerator-$ProductVersion-$runtimeIdentifier.zip"
+    $archiveFileName = "TimetableGenerator-$ProductVersion-$runtimeIdentifier-unsigned.zip"
     New-DistributionArchive `
         -SourcePath $publishPath `
         -OutputRoot $OutputRoot `
@@ -107,10 +107,9 @@ function Publish-MacOSTarget {
 
     $publishedThirdPartyNoticesPath = Join-Path $macOSPath "ThirdPartyNotices"
     $bundledThirdPartyNoticesPath = Join-Path $resourcesPath "ThirdPartyNotices"
-    $publishedPretendardLicensePath = Join-Path `
-        $publishedThirdPartyNoticesPath `
-        "Pretendard-LICENSE.txt"
-    Assert-NonEmptyFile -Path $publishedPretendardLicensePath
+    Assert-RequiredThirdPartyNoticeFiles `
+        -ProjectPath $ProjectPath `
+        -PublishedNoticePath $publishedThirdPartyNoticesPath
     Move-Item `
         -LiteralPath $publishedThirdPartyNoticesPath `
         -Destination $bundledThirdPartyNoticesPath
@@ -127,9 +126,6 @@ function Publish-MacOSTarget {
     $utf8WithoutBom = [System.Text.UTF8Encoding]::new($false)
     [System.IO.File]::WriteAllText($infoPlistPath, $infoPlist, $utf8WithoutBom)
     $macOSIconPath = Join-Path $resourcesPath "AppIcon.icns"
-    $pretendardLicensePath = Join-Path `
-        $bundledThirdPartyNoticesPath `
-        "Pretendard-LICENSE.txt"
     New-MacOSAppIcon -SourcePath $AppIconPath -DestinationPath $macOSIconPath
 
     $executablePath = Join-Path $macOSPath $ExecutableName
@@ -137,7 +133,9 @@ function Publish-MacOSTarget {
     Assert-NonEmptyFile -Path (Join-Path $macOSPath "libcoreclr.dylib")
     Assert-NonEmptyFile -Path $infoPlistPath
     Assert-NonEmptyFile -Path $macOSIconPath
-    Assert-NonEmptyFile -Path $pretendardLicensePath
+    Assert-RequiredThirdPartyNoticeFiles `
+        -ProjectPath $ProjectPath `
+        -PublishedNoticePath $bundledThirdPartyNoticesPath
     Assert-MacOSPublishedBinaryArchitectures `
         -Path $macOSPath `
         -RuntimeIdentifier $RuntimeIdentifier

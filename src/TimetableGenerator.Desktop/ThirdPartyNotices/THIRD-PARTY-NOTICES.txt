@@ -1,0 +1,61 @@
+THIRD-PARTY SOFTWARE NOTICES
+
+This directory indexes the license and notice texts for the third-party
+components distributed with the self-contained Windows and macOS application.
+The original texts are reproduced without changes to their wording.
+
+Avalonia 12.1.0
+  Packages: Avalonia, Avalonia.Desktop, Avalonia.FreeDesktop,
+  Avalonia.FreeDesktop.AtSpi, Avalonia.HarfBuzz, Avalonia.Native,
+  Avalonia.Remote.Protocol, Avalonia.Skia, Avalonia.Themes.Fluent,
+  Avalonia.Win32, and Avalonia.X11.
+  Files: AVALONIA-LICENSE.txt, AVALONIA-THIRD-PARTY-NOTICES.txt
+
+Avalonia.Angle.Windows.Natives 2.1.27548.20260419
+  File: AVALONIA-ANGLE-LICENSE.txt
+
+FluentIcons.Avalonia, FluentIcons.Common, and
+FluentIcons.Resources.Avalonia 2.1.333
+  File: FLUENTICONS-AVALONIA-LICENSE.txt
+
+SkiaSharp 3.119.4 and HarfBuzzSharp 8.3.1.3, including their Windows and
+macOS native-assets packages
+  Files: SKIASHARP-HARFBUZZSHARP-LICENSE.txt,
+  SKIASHARP-HARFBUZZSHARP-NATIVE-THIRD-PARTY-NOTICES.txt
+  The package license files and native notice files are byte-identical across
+  these package and platform variants, so one copy of each is retained.
+
+MicroCom.Runtime 0.11.6
+  File: MICROCOM-RUNTIME-LICENSE.txt
+
+Tmds.DBus.Protocol 0.94.1
+  File: TMDS-DBUS-PROTOCOL-LICENSE.txt
+
+Microsoft.NETCore.App self-contained runtime 10.0.9
+  Files: DOTNET-RUNTIME-LICENSE.txt,
+  DOTNET-RUNTIME-THIRD-PARTY-NOTICES.txt
+  Windows, macOS x64, and macOS arm64 contain identical wording. The Windows
+  package uses CRLF line endings while both macOS packages use LF, so one LF
+  copy is retained.
+
+Application assets whose license files are maintained at their existing source
+locations and copied into this directory during publishing:
+  Pretendard: Pretendard-LICENSE.txt
+    Source: Assets/Fonts/Pretendard/LICENSE.txt
+  Fluent UI System Icons: FluentUiSystemIcons-LICENSE.txt
+    Source: Assets/Export/FluentUiSystemIcons.LICENSE.txt
+
+PROVENANCE
+
+Package files were taken from the NuGet global-packages cache resolved by
+src/TimetableGenerator.Desktop/obj/project.assets.json. Packages that declare
+an MIT license expression but do not contain a license file were matched to the
+repository and exact commit recorded in their NuGet metadata:
+  Avalonia: AvaloniaUI/Avalonia at
+  a21b9f573172f705a944dcc8aad7f036b9986f39
+  FluentIcons: davidxuang/FluentIcons at
+  ce826361c3a6c81f5aa34ddc8787819a82ae4aea
+  MicroCom.Runtime: kekekeks/MicroCom at
+  76785efcafd91b5902fd19dd11145f6dd655b7b4
+  Tmds.DBus.Protocol: tmds/Tmds.DBus at
+  b4a7fed0b878f74cb54f7cca84d2889af4e596ba

@@ -2,3 +2,6 @@
 
 *.ico binary
 *.png binary
+
+# Preserve third-party notices exactly as published by their upstream projects.
+src/TimetableGenerator.Desktop/ThirdPartyNotices/*.txt -whitespace
