@@ -130,7 +130,7 @@ Windows에서 생성된 `bin`, `obj`, `artifacts`를 결과 근거로 사용하�
 다음을 순서대로 실행한다.
 
 ```bash
-dotnet restore TimetableGenerator.sln
+dotnet restore TimetableGenerator.sln --locked-mode
 dotnet format TimetableGenerator.sln --verify-no-changes --no-restore
 dotnet build TimetableGenerator.sln --configuration Release --no-restore
 dotnet test TimetableGenerator.sln --configuration Release --no-restore

@@ -232,6 +232,15 @@ function Invoke-SelfContainedPublish {
         [switch] $NoRestore
     )
 
+    if (-not $NoRestore) {
+        Invoke-DotNetCommand -Arguments @(
+            "restore",
+            $ProjectPath,
+            "--locked-mode",
+            "--nologo"
+        )
+    }
+
     $arguments = @(
         "publish",
         $ProjectPath,
@@ -239,6 +248,7 @@ function Invoke-SelfContainedPublish {
         "--runtime", $RuntimeIdentifier,
         "--self-contained", "true",
         "--output", $DestinationPath,
+        "--no-restore",
         "--nologo",
         "/m:1",
         "/nodeReuse:false",
@@ -249,10 +259,6 @@ function Invoke-SelfContainedPublish {
         "-p:PublishSingleFile=false",
         "-p:PublishTrimmed=false"
     )
-
-    if ($NoRestore) {
-        $arguments += "--no-restore"
-    }
 
     Invoke-DotNetCommand -Arguments $arguments
 }

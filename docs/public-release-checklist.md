@@ -23,7 +23,7 @@
 ## 3. 품질 검증
 
 ```powershell
-dotnet restore TimetableGenerator.sln
+dotnet restore TimetableGenerator.sln --locked-mode
 dotnet build TimetableGenerator.sln --configuration Release --no-restore
 dotnet test TimetableGenerator.sln --configuration Release --no-build --no-restore
 dotnet format TimetableGenerator.sln --no-restore --verify-no-changes

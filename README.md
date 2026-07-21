@@ -60,19 +60,21 @@ TIMETABLE_GENERATOR_CATALOG_INDEX_URI="https://catalog.example.edu/timetable-gen
 
 ### 요구 사항
 
-- .NET 10 SDK (`global.json`은 10.0.100 이상 feature band를 허용합니다.)
+- .NET SDK 10.0.301 (`global.json`이 이 버전을 정확히 고정합니다.)
 - Windows 10/11 x64 또는 macOS 14 이상
 
 저장소 루트에서 다음 명령을 실행합니다.
 
 ```powershell
-dotnet restore TimetableGenerator.sln
+dotnet restore TimetableGenerator.sln --locked-mode
 dotnet build TimetableGenerator.sln --configuration Release --no-restore
 dotnet test TimetableGenerator.sln --configuration Release --no-restore
 dotnet run --project .\src\TimetableGenerator.Desktop\TimetableGenerator.Desktop.csproj
 ```
 
 macOS에서는 경로 구분자만 `/`로 바꾸면 같은 명령을 사용할 수 있습니다.
+
+패키지 버전은 `Directory.Packages.props`에서만 변경합니다. 의도적으로 의존성을 갱신할 때는 `dotnet restore TimetableGenerator.sln --force-evaluate`로 프로젝트별 `packages.lock.json`을 갱신하고, lock 변경과 전이 의존성을 검토합니다.
 
 ## 게시
 
