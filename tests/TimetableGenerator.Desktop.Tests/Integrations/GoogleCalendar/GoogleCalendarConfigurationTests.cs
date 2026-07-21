@@ -16,7 +16,7 @@ public sealed class GoogleCalendarConfigurationTests
             new ProductGoogleCalendarOAuthConfigurationProvider(
                 delegate
                 {
-                    return null;
+                    return new GoogleCalendarOAuthEnvironmentValues(null, null);
                 },
                 path);
 
@@ -40,7 +40,7 @@ public sealed class GoogleCalendarConfigurationTests
             new ProductGoogleCalendarOAuthConfigurationProvider(
                 delegate
                 {
-                    return null;
+                    return new GoogleCalendarOAuthEnvironmentValues(null, null);
                 },
                 path);
 
@@ -53,6 +53,46 @@ public sealed class GoogleCalendarConfigurationTests
             Assert.Equal(
                 "desktop-client.apps.googleusercontent.com",
                 configurationOrNull.ClientId.Value);
+            Assert.Null(configurationOrNull.ClientSecretOrNull);
+        }
+        finally
+        {
+            Directory.Delete(directoryPath, true);
+        }
+    }
+
+    [Fact]
+    public void VersionTwoLocalConfigurationProvidesDesktopClientCredentials()
+    {
+        string path = createTemporaryPath();
+        string directoryPath = getDirectoryPath(path);
+        Directory.CreateDirectory(directoryPath);
+        File.WriteAllText(
+            path,
+            "{\"schemaVersion\":2,\"clientId\":\"desktop-client.apps.googleusercontent.com\","
+                + "\"clientSecret\":\"native-client-secret\"}",
+            Encoding.UTF8);
+        ProductGoogleCalendarOAuthConfigurationProvider provider =
+            new ProductGoogleCalendarOAuthConfigurationProvider(
+                delegate
+                {
+                    return new GoogleCalendarOAuthEnvironmentValues(null, null);
+                },
+                path);
+
+        try
+        {
+            GoogleCalendarOAuthConfiguration? configurationOrNull =
+                provider.GetConfigurationOrNull();
+
+            Assert.NotNull(configurationOrNull);
+            Assert.Equal(
+                "desktop-client.apps.googleusercontent.com",
+                configurationOrNull.ClientId.Value);
+            Assert.Equal(
+                "native-client-secret",
+                configurationOrNull.ClientSecretOrNull?.Value);
+            Assert.Equal("[redacted]", configurationOrNull.ClientSecretOrNull?.ToString());
         }
         finally
         {
@@ -61,8 +101,10 @@ public sealed class GoogleCalendarConfigurationTests
     }
 
     [Theory]
-    [InlineData("{\"schemaVersion\":2,\"clientId\":\"client\"}")]
+    [InlineData("{\"schemaVersion\":2,\"clientId\":\"client.apps.googleusercontent.com\"}")]
+    [InlineData("{\"schemaVersion\":2,\"clientSecret\":\"secret\"}")]
     [InlineData("{\"schemaVersion\":1,\"clientId\":\"client\",\"secret\":\"forbidden\"}")]
+    [InlineData("{\"schemaVersion\":1,\"clientId\":\"client.apps.googleusercontent.com\",\"clientSecret\":\"forbidden\"}")]
     [InlineData("{\"schemaVersion\":1}")]
     [InlineData("{\"schemaVersion\":1,\"clientId\":\"not-a-desktop-client\"}")]
     public void ExpandedOrMalformedLocalConfigurationFailsClosed(string json)
@@ -75,7 +117,7 @@ public sealed class GoogleCalendarConfigurationTests
             new ProductGoogleCalendarOAuthConfigurationProvider(
                 delegate
                 {
-                    return null;
+                    return new GoogleCalendarOAuthEnvironmentValues(null, null);
                 },
                 path);
 
@@ -96,7 +138,50 @@ public sealed class GoogleCalendarConfigurationTests
             new ProductGoogleCalendarOAuthConfigurationProvider(
                 delegate
                 {
-                    return "invalid\r\nclient-id";
+                    return new GoogleCalendarOAuthEnvironmentValues(
+                        "invalid\r\nclient-id",
+                        null);
+                },
+                createTemporaryPath());
+
+        Assert.Null(provider.GetConfigurationOrNull());
+    }
+
+    [Fact]
+    public void EnvironmentCredentialsOverrideLocalConfiguration()
+    {
+        ProductGoogleCalendarOAuthConfigurationProvider provider =
+            new ProductGoogleCalendarOAuthConfigurationProvider(
+                delegate
+                {
+                    return new GoogleCalendarOAuthEnvironmentValues(
+                        "environment-client.apps.googleusercontent.com",
+                        "environment-secret");
+                },
+                createTemporaryPath());
+
+        GoogleCalendarOAuthConfiguration? configurationOrNull =
+            provider.GetConfigurationOrNull();
+
+        Assert.NotNull(configurationOrNull);
+        Assert.Equal(
+            "environment-client.apps.googleusercontent.com",
+            configurationOrNull.ClientId.Value);
+        Assert.Equal(
+            "environment-secret",
+            configurationOrNull.ClientSecretOrNull?.Value);
+    }
+
+    [Fact]
+    public void EnvironmentSecretWithoutClientIdFailsClosed()
+    {
+        ProductGoogleCalendarOAuthConfigurationProvider provider =
+            new ProductGoogleCalendarOAuthConfigurationProvider(
+                delegate
+                {
+                    return new GoogleCalendarOAuthEnvironmentValues(
+                        null,
+                        "orphaned-secret");
                 },
                 createTemporaryPath());
 

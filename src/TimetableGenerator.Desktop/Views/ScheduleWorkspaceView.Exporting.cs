@@ -29,6 +29,8 @@ internal sealed partial class ScheduleWorkspaceView
 
     private readonly IGoogleCalendarExporter mGoogleCalendarExporter;
 
+    private readonly IGoogleCalendarWebNavigator mGoogleCalendarWebNavigator;
+
     private readonly IAppleCalendarExporter mAppleCalendarExporter;
 
     private readonly ICalendarTimeZoneProvider mCalendarTimeZoneProvider;
@@ -101,6 +103,8 @@ internal sealed partial class ScheduleWorkspaceView
 
         mPngExporter = exportServices.PngExporter;
         mGoogleCalendarExporter = exportServices.GoogleCalendarExporter;
+        mGoogleCalendarWebNavigator =
+            exportServices.GoogleCalendarWebNavigator;
         mAppleCalendarExporter = exportServices.AppleCalendarExporter;
         mCalendarTimeZoneProvider = exportServices.CalendarTimeZoneProvider;
         mLifetimeCancellationSource = new CancellationTokenSource();
@@ -154,6 +158,10 @@ internal sealed partial class ScheduleWorkspaceView
                     this,
                     cancellationToken);
             showGoogleCalendarExportResult(result);
+            if (result.Status == EGoogleCalendarExportStatus.Success)
+            {
+                _ = mGoogleCalendarWebNavigator.TryOpen();
+            }
         }
         finally
         {

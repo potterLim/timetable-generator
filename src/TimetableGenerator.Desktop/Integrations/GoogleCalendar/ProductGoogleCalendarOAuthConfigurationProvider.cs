@@ -8,33 +8,39 @@ namespace TimetableGenerator.Desktop.Integrations.GoogleCalendar;
 internal sealed class ProductGoogleCalendarOAuthConfigurationProvider
     : IGoogleCalendarOAuthConfigurationProvider
 {
-    private const int SCHEMA_VERSION = 1;
+    private const int SCHEMA_VERSION_ONE = 1;
+    private const int SCHEMA_VERSION_TWO = 2;
     private const long MAXIMUM_CONFIGURATION_FILE_BYTES = 16_384L;
     private const string LOCAL_CONFIGURATION_FILE_NAME = "google-calendar.local.json";
     private const string CLIENT_ID_ENVIRONMENT_VARIABLE_NAME =
         "TIMETABLE_GENERATOR_GOOGLE_CALENDAR_CLIENT_ID";
+    private const string CLIENT_SECRET_ENVIRONMENT_VARIABLE_NAME =
+        "TIMETABLE_GENERATOR_GOOGLE_CALENDAR_CLIENT_SECRET";
 
-    private readonly Func<string?> mEnvironmentClientIdProvider;
+    private readonly Func<GoogleCalendarOAuthEnvironmentValues> mEnvironmentValuesProvider;
     private readonly string mLocalConfigurationPath;
 
     public ProductGoogleCalendarOAuthConfigurationProvider()
         : this(
             delegate
             {
-                return Environment.GetEnvironmentVariable(
-                    CLIENT_ID_ENVIRONMENT_VARIABLE_NAME);
+                return new GoogleCalendarOAuthEnvironmentValues(
+                    Environment.GetEnvironmentVariable(
+                        CLIENT_ID_ENVIRONMENT_VARIABLE_NAME),
+                    Environment.GetEnvironmentVariable(
+                        CLIENT_SECRET_ENVIRONMENT_VARIABLE_NAME));
             },
             Path.Combine(AppContext.BaseDirectory, LOCAL_CONFIGURATION_FILE_NAME))
     {
     }
 
     internal ProductGoogleCalendarOAuthConfigurationProvider(
-        Func<string?> environmentClientIdProvider,
+        Func<GoogleCalendarOAuthEnvironmentValues> environmentValuesProvider,
         string localConfigurationPath)
     {
-        if (environmentClientIdProvider == null)
+        if (environmentValuesProvider == null)
         {
-            throw new ArgumentNullException(nameof(environmentClientIdProvider));
+            throw new ArgumentNullException(nameof(environmentValuesProvider));
         }
 
         if (localConfigurationPath == null)
@@ -42,19 +48,35 @@ internal sealed class ProductGoogleCalendarOAuthConfigurationProvider
             throw new ArgumentNullException(nameof(localConfigurationPath));
         }
 
-        mEnvironmentClientIdProvider = environmentClientIdProvider;
+        mEnvironmentValuesProvider = environmentValuesProvider;
         mLocalConfigurationPath = Path.GetFullPath(localConfigurationPath);
     }
 
     public GoogleCalendarOAuthConfiguration? GetConfigurationOrNull()
     {
-        string? environmentClientIdOrNull = mEnvironmentClientIdProvider();
-        if (string.IsNullOrWhiteSpace(environmentClientIdOrNull) == false)
+        GoogleCalendarOAuthEnvironmentValues environmentValues =
+            mEnvironmentValuesProvider();
+        bool hasEnvironmentClientId = string.IsNullOrWhiteSpace(
+            environmentValues.ClientIdOrNull) == false;
+        bool hasEnvironmentClientSecret = string.IsNullOrWhiteSpace(
+            environmentValues.ClientSecretOrNull) == false;
+        if (hasEnvironmentClientId || hasEnvironmentClientSecret)
         {
+            if (hasEnvironmentClientId == false)
+            {
+                return null;
+            }
+
             try
             {
+                GoogleOAuthClientSecret? clientSecretOrNull =
+                    hasEnvironmentClientSecret
+                        ? new GoogleOAuthClientSecret(
+                            environmentValues.ClientSecretOrNull!)
+                        : null;
                 return new GoogleCalendarOAuthConfiguration(
-                    new GoogleOAuthClientId(environmentClientIdOrNull));
+                    new GoogleOAuthClientId(environmentValues.ClientIdOrNull!),
+                    clientSecretOrNull);
             }
             catch (ArgumentException)
             {
@@ -87,6 +109,7 @@ internal sealed class ProductGoogleCalendarOAuthConfigurationProvider
                     StringComparer.Ordinal);
                 int? schemaVersionOrNull = null;
                 string? clientIdOrNull = null;
+                string? clientSecretOrNull = null;
                 foreach (JsonProperty property in document.RootElement.EnumerateObject())
                 {
                     if (propertyNames.Add(property.Name) == false)
@@ -111,19 +134,42 @@ internal sealed class ProductGoogleCalendarOAuthConfigurationProvider
                             }
 
                             break;
+                        case "clientSecret":
+                            if (property.Value.ValueKind == JsonValueKind.String)
+                            {
+                                clientSecretOrNull = property.Value.GetString();
+                            }
+
+                            break;
                         default:
                             return null;
                     }
                 }
 
-                if (schemaVersionOrNull != SCHEMA_VERSION
+                bool isSchemaVersionOne = schemaVersionOrNull == SCHEMA_VERSION_ONE
+                    && propertyNames.Count == 2
+                    && propertyNames.Contains("schemaVersion")
+                    && propertyNames.Contains("clientId")
+                    && string.IsNullOrWhiteSpace(clientSecretOrNull);
+                bool isSchemaVersionTwo = schemaVersionOrNull == SCHEMA_VERSION_TWO
+                    && propertyNames.Count == 3
+                    && propertyNames.Contains("schemaVersion")
+                    && propertyNames.Contains("clientId")
+                    && propertyNames.Contains("clientSecret")
+                    && string.IsNullOrWhiteSpace(clientSecretOrNull) == false;
+                if ((isSchemaVersionOne == false && isSchemaVersionTwo == false)
                     || string.IsNullOrWhiteSpace(clientIdOrNull))
                 {
                     return null;
                 }
 
+                GoogleOAuthClientSecret? parsedClientSecretOrNull =
+                    isSchemaVersionTwo
+                        ? new GoogleOAuthClientSecret(clientSecretOrNull!)
+                        : null;
                 return new GoogleCalendarOAuthConfiguration(
-                    new GoogleOAuthClientId(clientIdOrNull));
+                    new GoogleOAuthClientId(clientIdOrNull),
+                    parsedClientSecretOrNull);
             }
         }
         catch (Exception exception) when (

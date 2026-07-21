@@ -64,7 +64,7 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
         try
         {
             return await authorizeInteractivelyAsync(
-                configurationOrNull.ClientId,
+                configurationOrNull,
                 cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException exception) when (
@@ -107,7 +107,7 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
     }
 
     private async Task<GoogleOAuthAuthorizationResult> authorizeInteractivelyAsync(
-        GoogleOAuthClientId clientId,
+        GoogleCalendarOAuthConfiguration configuration,
         CancellationToken cancellationToken)
     {
         GoogleOAuthState state = new GoogleOAuthState(
@@ -120,7 +120,7 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
             encodeBase64Url(challengeDigest));
         GoogleOAuthAuthorizationCodeResult codeResult =
             await mAuthorizationCodeProvider.RequestCodeAsync(
-                clientId,
+                configuration.ClientId,
                 state,
                 codeChallenge,
                 cancellationToken).ConfigureAwait(false);
@@ -141,7 +141,7 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
         }
 
         GoogleTokenExchangeResult exchangeResult = await exchangeAuthorizationCodeAsync(
-            clientId,
+            configuration,
             authorizationCodeOrNull,
             codeVerifier,
             codeResult.RedirectUri,
@@ -159,7 +159,7 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
     }
 
     private async Task<GoogleTokenExchangeResult> exchangeAuthorizationCodeAsync(
-        GoogleOAuthClientId clientId,
+        GoogleCalendarOAuthConfiguration configuration,
         GoogleOAuthAuthorizationCode authorizationCode,
         GooglePkceCodeVerifier codeVerifier,
         GoogleOAuthRedirectUri redirectUri,
@@ -167,12 +167,17 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
     {
         Dictionary<string, string> parameters = new Dictionary<string, string>
         {
-            ["client_id"] = clientId.Value,
+            ["client_id"] = configuration.ClientId.Value,
             ["code"] = authorizationCode.Value,
             ["code_verifier"] = codeVerifier.Value,
             ["grant_type"] = "authorization_code",
             ["redirect_uri"] = redirectUri.Value.AbsoluteUri,
         };
+        if (configuration.ClientSecretOrNull != null)
+        {
+            parameters["client_secret"] = configuration.ClientSecretOrNull.Value;
+        }
+
         return await sendTokenRequestAsync(parameters, cancellationToken).ConfigureAwait(false);
     }
 
@@ -207,14 +212,17 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
 
             if (response.IsSuccessStatusCode == false)
             {
-                string? errorOrNull = getErrorOrNull(responseContent);
-                string diagnosticCode = errorOrNull == null
-                    ? createHttpDiagnosticCode(response.StatusCode)
-                    : errorOrNull;
+                string diagnosticCode = createTokenErrorDiagnosticCode(
+                    responseContent,
+                    response.StatusCode);
                 int numericStatusCode = (int)response.StatusCode;
                 bool isNetworkFailure = response.StatusCode == HttpStatusCode.RequestTimeout
                     || response.StatusCode == HttpStatusCode.TooManyRequests
-                    || numericStatusCode >= 500;
+                    || numericStatusCode >= 500
+                    || string.Equals(
+                        diagnosticCode,
+                        "oauth_service_unavailable",
+                        StringComparison.Ordinal);
                 EGoogleTokenExchangeFailureKind failureKind;
                 if (isNetworkFailure)
                 {
@@ -288,18 +296,57 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
         return property.GetString();
     }
 
-    private static string? getErrorOrNull(byte[] responseContent)
+    private static string createTokenErrorDiagnosticCode(
+        byte[] responseContent,
+        HttpStatusCode statusCode)
     {
         try
         {
             using (JsonDocument document = JsonDocument.Parse(responseContent))
             {
-                return getStringOrNull(document.RootElement, "error");
+                string? errorOrNull = getStringOrNull(
+                    document.RootElement,
+                    "error");
+                string? descriptionOrNull = getStringOrNull(
+                    document.RootElement,
+                    "error_description");
+                switch (errorOrNull)
+                {
+                    case "invalid_request":
+                        if (descriptionOrNull != null
+                            && descriptionOrNull.Contains(
+                                "client_secret",
+                                StringComparison.OrdinalIgnoreCase)
+                            && (descriptionOrNull.Contains(
+                                "missing",
+                                StringComparison.OrdinalIgnoreCase)
+                                || descriptionOrNull.Contains(
+                                    "required",
+                                    StringComparison.OrdinalIgnoreCase)))
+                        {
+                            return "oauth_client_secret_required";
+                        }
+
+                        return "oauth_invalid_request";
+                    case "invalid_client":
+                        return "oauth_invalid_client";
+                    case "invalid_grant":
+                        return "oauth_invalid_grant";
+                    case "unauthorized_client":
+                        return "oauth_unauthorized_client";
+                    case "access_denied":
+                        return "oauth_access_denied";
+                    case "temporarily_unavailable":
+                    case "server_error":
+                        return "oauth_service_unavailable";
+                    default:
+                        return createHttpDiagnosticCode(statusCode);
+                }
             }
         }
         catch (JsonException)
         {
-            return null;
+            return createHttpDiagnosticCode(statusCode);
         }
     }
 

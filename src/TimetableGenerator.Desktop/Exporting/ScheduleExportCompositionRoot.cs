@@ -13,6 +13,7 @@ internal static class ScheduleExportCompositionRoot
         return new ScheduleExportServices(
             new AvaloniaControlPngExporter(PngExportScale.PRODUCT_QUALITY),
             GoogleCalendarIntegrationFactory.Create(dataRootPath),
+            new DefaultGoogleCalendarWebNavigator(),
             new AppleCalendarExportService(
                 new JxaAppleCalendarNativeBridge()),
             new SystemCalendarTimeZoneProvider());

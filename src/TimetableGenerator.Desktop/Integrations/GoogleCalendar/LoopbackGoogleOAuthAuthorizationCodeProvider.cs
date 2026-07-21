@@ -17,10 +17,14 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
 {
     private const int MAXIMUM_REQUEST_HEADER_BYTES = 16_384;
     private const int LISTENER_BACKLOG = 8;
-    private const string CALLBACK_PATH = "/oauth2/callback";
+    private const string CALLBACK_PATH = "/";
     private const string GOOGLE_CALENDAR_SCOPES =
         "https://www.googleapis.com/auth/calendar.app.created "
         + "https://www.googleapis.com/auth/calendar.calendarlist.readonly";
+
+    private const string SUCCESS_PAGE_SCRIPT =
+        "history.replaceState(null,document.title,'/');"
+        + "window.setTimeout(function(){window.close();},800);";
 
     private static readonly Uri AUTHORIZATION_ENDPOINT = new Uri(
         "https://accounts.google.com/o/oauth2/v2/auth",
@@ -373,25 +377,59 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
             throw new ArgumentOutOfRangeException(nameof(responseKind));
         }
 
-        string title = responseKind == EGoogleLoopbackResponseKind.Success
-            ? "연결 완료"
-            : "연결하지 못했습니다";
-        string message = responseKind == EGoogleLoopbackResponseKind.Success
-            ? "Timetable Generator로 돌아가도 됩니다."
+        bool isSuccess = responseKind == EGoogleLoopbackResponseKind.Success;
+        string title = isSuccess
+            ? "Google 승인이 완료되었습니다"
+            : "Google에 연결하지 못했습니다";
+        string message = isSuccess
+            ? "Timetable Generator에서 내보내기를 마무리하고 있습니다."
             : responseKind == EGoogleLoopbackResponseKind.InvalidRequest
                 ? "올바른 Google 로그인 응답을 기다리고 있습니다."
                 : "Timetable Generator로 돌아가 다시 시도해 주세요.";
+        string supportingMessage = isSuccess
+            ? "이 창은 닫아도 됩니다."
+            : "";
+        string scriptElement = isSuccess
+            ? "<script>" + SUCCESS_PAGE_SCRIPT + "</script>"
+            : "";
         string body = "<!doctype html><html lang=\"ko\"><head><meta charset=\"utf-8\">"
-            + "<meta name=\"viewport\" content=\"width=device-width\">"
-            + "<title>" + title + "</title></head><body><main><h1>"
-            + title + "</h1><p>" + message + "</p></main></body></html>";
+            + "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
+            + "<meta name=\"color-scheme\" content=\"light dark\">"
+            + "<title>" + title + "</title><style>"
+            + ":root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"
+            + "'Segoe UI',sans-serif;color:#172033;background:#f6f9ff}"
+            + "body{margin:0;min-height:100vh;display:grid;place-items:center}"
+            + "main{width:min(28rem,calc(100% - 3rem));text-align:center}"
+            + ".mark{width:3rem;height:3rem;margin:0 auto 1.25rem;border-radius:1rem;"
+            + "display:grid;place-items:center;background:#e7f0ff;color:#075fd8;"
+            + "font-size:1.5rem;font-weight:700}"
+            + "h1{margin:0;font-size:1.5rem;line-height:1.35;letter-spacing:-.02em}"
+            + "p{margin:.75rem 0 0;color:#53627a;line-height:1.65}"
+            + ".support{font-size:.875rem;color:#748198}"
+            + "@media(prefers-color-scheme:dark){:root{color:#f3f6fb;background:#10141c}"
+            + ".mark{background:#172a47;color:#76aaff}p{color:#aeb9ca}"
+            + ".support{color:#8793a7}}</style></head><body><main>"
+            + "<div class=\"mark\" aria-hidden=\"true\">✓</div><h1>"
+            + title + "</h1><p>" + message + "</p>"
+            + (supportingMessage.Length > 0
+                ? "<p class=\"support\">" + supportingMessage + "</p>"
+                : "")
+            + "</main>" + scriptElement + "</body></html>";
         byte[] bodyBytes = Encoding.UTF8.GetBytes(body);
         string statusLine = responseKind == EGoogleLoopbackResponseKind.InvalidRequest
             ? "HTTP/1.1 400 Bad Request\r\n"
             : "HTTP/1.1 200 OK\r\n";
+        string scriptPolicy = isSuccess
+            ? " script-src 'sha256-"
+                + Convert.ToBase64String(
+                    SHA256.HashData(Encoding.UTF8.GetBytes(SUCCESS_PAGE_SCRIPT)))
+                + "';"
+            : " script-src 'none';";
         string header = statusLine
             + "Content-Type: text/html; charset=utf-8\r\n"
-            + "Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'\r\n"
+            + "Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline';"
+            + scriptPolicy
+            + " base-uri 'none'; form-action 'none'; frame-ancestors 'none'\r\n"
             + "Cache-Control: no-store\r\n"
             + "Referrer-Policy: no-referrer\r\n"
             + "X-Content-Type-Options: nosniff\r\n"

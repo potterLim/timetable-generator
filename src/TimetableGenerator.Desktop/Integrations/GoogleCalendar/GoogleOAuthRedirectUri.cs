@@ -4,7 +4,7 @@ namespace TimetableGenerator.Desktop.Integrations.GoogleCalendar;
 
 internal sealed record GoogleOAuthRedirectUri
 {
-    private const string CALLBACK_PATH = "/oauth2/callback";
+    private const string CALLBACK_PATH = "/";
 
     public Uri Value { get; }
 

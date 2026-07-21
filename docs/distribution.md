@@ -65,7 +65,9 @@ pwsh ./scripts/publish-desktop.ps1 `
 
 현재 명령에서 생성하고 검증한 archive의 SHA-256만 `artifacts/publish/checksums.sha256`에 기록됩니다. 따라서 세 대상을 한 파일에서 확인하려면 인수 없이 전체 게시를 실행합니다. macOS zip에는 Mach-O 실행 권한도 보존됩니다.
 
-`catalog-source.local.json`이 Desktop 프로젝트에 있으면 게시 산출물에도 포함됩니다. 이 파일은 Git에서 무시되지만 앱이 서버에 접속하려면 최종 사용자에게 보이는 설정입니다. `google-calendar.local.json`에는 외부 사용자용 프로덕션 Desktop OAuth client ID만 넣으며 client secret·access token·refresh token은 절대 넣지 않습니다. 이 ID는 제품을 식별할 뿐이며, 실제 사용자는 Google Calendar 내보내기 때 자신의 계정으로 직접 로그인하고 권한을 승인합니다. 두 설정 파일 중 하나라도 없거나 비어 있거나 스키마 검증에 실패하면 최종화가 중단됩니다.
+`catalog-source.local.json`이 Desktop 프로젝트에 있으면 게시 산출물에도 포함됩니다. 이 파일은 Git에서 무시되지만 앱이 서버에 접속하려면 최종 사용자에게 보이는 설정입니다. `google-calendar.local.json`은 정확히 `schemaVersion`, `clientId`, `clientSecret` 세 속성을 가진 제품 설정 스키마 v2여야 하며, 외부 사용자용 프로덕션 **Desktop OAuth** 클라이언트 ID와 보안 비밀을 넣습니다. 현재 이 Desktop 클라이언트는 승인 코드를 토큰으로 교환할 때 두 값을 모두 요구합니다. 액세스 토큰·새로 고침 토큰과 웹 애플리케이션 OAuth 클라이언트의 보안 비밀은 절대 넣지 않습니다. 실제 사용자는 Google Calendar 내보내기 때 자신의 계정으로 직접 로그인하고 권한을 승인합니다. 두 설정 파일 중 하나라도 없거나 비어 있거나 스키마 검증에 실패하면 최종화가 중단됩니다.
+
+Desktop 앱과 함께 배포되는 클라이언트 보안 비밀은 사용자가 추출할 수 있으므로 서버 비밀 같은 기밀 보안 경계가 아닙니다. 네이티브 앱 흐름의 승인 코드 보호는 요청마다 생성하는 PKCE(S256)가 담당합니다. `google-calendar.local.json` 원본은 자격 증명 교체와 저장소 공개 범위를 분리하기 위해 Git에 추적하지 않고, `scripts/set-google-calendar-local-configuration.ps1`로 v2 설정을 준비한 뒤 게시 전 미추적 sidecar로 주입해 최종 Release에만 포함합니다. 보안 비밀은 명령줄 인수나 빌드 로그에 기록하지 않습니다. 앱은 개발 환경 이전을 위해 v1 설정도 읽지만 Release 최종화는 v2만 허용합니다.
 
 제품에 포함된 Pretendard, Fluent UI System Icons, Avalonia·ANGLE, FluentIcons, SkiaSharp·HarfBuzzSharp, MicroCom, Tmds.DBus.Protocol, self-contained .NET runtime의 원문 라이선스와 third-party notice를 함께 제공합니다. Windows는 `ThirdPartyNotices`, macOS는 `Contents/Resources/ThirdPartyNotices`에 배치하며, 게시·최종화 두 단계가 전체 파일 세트를 검증합니다.
 

@@ -95,6 +95,54 @@ function Assert-SchemaVersionOne {
     }
 }
 
+function Assert-SchemaVersionTwo {
+    param(
+        [Parameter(Mandatory)]
+        [System.Text.Json.JsonElement] $Element,
+
+        [Parameter(Mandatory)]
+        [string] $Path
+    )
+
+    $schemaVersionElement = $Element.GetProperty("schemaVersion")
+    [int] $schemaVersion = 0
+    if ($schemaVersionElement.ValueKind -ne [System.Text.Json.JsonValueKind]::Number -or
+        $schemaVersionElement.TryGetInt32([ref] $schemaVersion) -eq $false -or
+        $schemaVersion -ne 2) {
+        throw "Release Google OAuth 설정 파일의 schemaVersion은 2여야 합니다: $Path"
+    }
+}
+
+function Assert-GoogleOAuthClientSecret {
+    param(
+        [Parameter(Mandatory)]
+        [System.Text.Json.JsonElement] $Element,
+
+        [Parameter(Mandatory)]
+        [string] $Path
+    )
+
+    if ($Element.ValueKind -ne [System.Text.Json.JsonValueKind]::String) {
+        throw "Release Google OAuth clientSecret은 문자열이어야 합니다: $Path"
+    }
+
+    $clientSecret = [string] $Element.GetString()
+    if ([string]::IsNullOrEmpty($clientSecret) -or
+        $clientSecret.Length -gt 1024 -or
+        [string]::Equals(
+            $clientSecret,
+            $clientSecret.Trim(),
+            [System.StringComparison]::Ordinal) -eq $false) {
+        throw "Release Google OAuth clientSecret의 형식이 유효하지 않습니다: $Path"
+    }
+
+    foreach ($character in $clientSecret.ToCharArray()) {
+        if ([char]::IsControl($character)) {
+            throw "Release Google OAuth clientSecret의 형식이 유효하지 않습니다: $Path"
+        }
+    }
+}
+
 function Assert-CatalogConfiguration {
     param(
         [Parameter(Mandatory)]
@@ -138,9 +186,9 @@ function Assert-GoogleCalendarConfiguration {
     $element = Read-ReleaseConfigurationJsonObject -Path $Path
     Assert-ExactJsonProperties `
         -Element $element `
-        -ExpectedPropertyNames @("schemaVersion", "clientId") `
+        -ExpectedPropertyNames @("schemaVersion", "clientId", "clientSecret") `
         -Path $Path
-    Assert-SchemaVersionOne -Element $element -Path $Path
+    Assert-SchemaVersionTwo -Element $element -Path $Path
 
     $clientIdElement = $element.GetProperty("clientId")
     if ($clientIdElement.ValueKind -ne [System.Text.Json.JsonValueKind]::String) {
@@ -152,6 +200,10 @@ function Assert-GoogleCalendarConfiguration {
         $clientId.Contains("example", [System.StringComparison]::OrdinalIgnoreCase)) {
         throw "Release Google OAuth clientId가 유효한 Desktop client ID가 아닙니다: $Path"
     }
+
+    Assert-GoogleOAuthClientSecret `
+        -Element $element.GetProperty("clientSecret") `
+        -Path $Path
 }
 
 function Assert-RequiredNoticeFiles {

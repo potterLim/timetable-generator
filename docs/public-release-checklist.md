@@ -6,7 +6,7 @@
 
 - [ ] 작업 트리가 의도한 변경만 포함하는지 확인한다.
 - [ ] 원본 `.xls`·`.xlsx`, 생성 카탈로그, 사용자 작업 공간, 실제 서비스 설정과 QA 산출물이 추적되지 않는지 확인한다.
-- [ ] `.env*`, OAuth 정보, 토큰, 인증서, 서명 키가 추적되지 않는지 확인한다.
+- [ ] `.env*`, OAuth 설정 원본, 사용자 토큰, 인증서, 서명 키가 추적되지 않는지 확인한다. 제품용 Desktop OAuth sidecar는 미추적 상태로 유지한다.
 - [ ] 테스트 fixture와 문서 이미지가 합성 데이터만 사용하는지 확인한다.
 - [ ] 커밋 author·committer에는 GitHub noreply 주소를 사용한다.
 
@@ -35,7 +35,10 @@ git diff --check
 - [ ] Windows와 macOS의 실제 빌드 호스트에서 깨끗한 커밋을 기준으로 `write-release-build-info.ps1 -Version 1.0.0 -RequireClean`을 실행한다.
 - [ ] Windows 서명과 macOS 서명·공증·stapling 뒤 `finalize-desktop-release.ps1`의 플랫폼별 단계와 `Aggregate` 단계를 통과시킨다.
 - [ ] GitHub Release에는 최종화된 플랫폼별 ZIP 3개와 `checksums.sha256`만 첨부한다. PDB·테스트 결과·빌드 증거·설정 원본은 별도 자산으로 올리지 않는다.
-- [ ] 최종 ZIP 내부에는 검증된 `catalog-source.local.json`과 `google-calendar.local.json`을 포함하되, 공개 HTTPS 주소와 Desktop OAuth client ID 외의 비밀 값은 포함하지 않는다.
+- [ ] 최종 ZIP 내부에는 검증된 `catalog-source.local.json`과 제품 설정 스키마 v2의 `google-calendar.local.json`을 포함한다. Google 설정은 정확히 `schemaVersion`, Desktop OAuth `clientId`, Desktop OAuth `clientSecret` 세 속성만 포함해야 한다.
+- [ ] Desktop OAuth client secret을 클립보드에 복사한 뒤 `scripts/set-google-calendar-local-configuration.ps1`로 미추적 v2 sidecar를 갱신하고, 값이 명령 기록이나 빌드 로그에 남지 않았는지 확인한다.
+- [ ] Desktop OAuth client secret은 네이티브 앱에서 기밀 보안 경계가 아니며 토큰 교환에 필요함을 확인한다. 설정 원본은 Git에 추적하지 않고 미추적 sidecar로만 주입하며, 액세스 토큰·새로 고침 토큰·웹 애플리케이션 OAuth client secret은 포함하지 않는다.
+- [ ] Google OAuth 승인 요청이 PKCE(S256)와 임의의 `127.0.0.1` 루프백 포트를 사용하는지 확인한다.
 - [ ] Google Auth Platform의 사용자 유형은 `외부`, 게시 상태는 `프로덕션`으로 설정하고 지인 계정을 테스트 사용자 목록으로 운영하지 않는다.
 - [ ] 배포물의 Google OAuth client ID는 Release 전용 Desktop 클라이언트이며, 각 사용자가 자신의 Google 계정으로 로그인하는 흐름을 실제 계정으로 확인한다.
 - [ ] Google OAuth 검증 상태와 미검증 앱 경고·누적 사용자 제한을 확인하고, 현재 Release에 허용할 상태를 명시적으로 결정한다.

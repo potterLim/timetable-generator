@@ -153,12 +153,15 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         await workspace.RecommendationRefreshTask;
         RecordingGoogleCalendarExporter googleExporter =
             createSuccessfulGoogleExporter();
+        RecordingGoogleCalendarWebNavigator googleCalendarNavigator =
+            new RecordingGoogleCalendarWebNavigator(true);
         RecordingAppleCalendarExporter appleExporter =
             createUnavailableAppleExporter();
         ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
             createServices(
                 googleExporter,
-                appleExporter));
+                appleExporter,
+                googleCalendarNavigator));
         workspaceView.DataContext = workspace;
         Window window = showInWindow(workspaceView);
 
@@ -191,10 +194,95 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                 workspaceView,
                 "ExportStatusText");
             Assert.Equal("Google 캘린더로 내보냈습니다.", status.Text);
+            Assert.Equal(1, googleCalendarNavigator.OpenAttemptCount);
         }
         finally
         {
             await closeWindowAsync(window, workspaceView);
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task GoogleCalendarOpenFailurePreservesSuccessfulExportResultAsync()
+    {
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+        await workspace.RecommendationRefreshTask;
+        RecordingGoogleCalendarWebNavigator googleCalendarNavigator =
+            new RecordingGoogleCalendarWebNavigator(false);
+        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
+            createServices(
+                createSuccessfulGoogleExporter(),
+                createUnavailableAppleExporter(),
+                googleCalendarNavigator));
+        workspaceView.DataContext = workspace;
+        Window window = showInWindow(workspaceView);
+
+        try
+        {
+            AsyncDelegateCommand command = Assert.IsType<AsyncDelegateCommand>(
+                workspaceView.ExportGoogleCalendarCommand);
+            command.Execute(null);
+            await command.ExecutionTask;
+
+            Assert.Equal(1, googleCalendarNavigator.OpenAttemptCount);
+            TextBlock status = findRequiredTextBlock(
+                workspaceView,
+                "ExportStatusText");
+            Assert.Equal("Google 캘린더로 내보냈습니다.", status.Text);
+        }
+        finally
+        {
+            await closeWindowAsync(window, workspaceView);
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task UnsuccessfulGoogleCalendarExportsDoNotOpenWebCalendarAsync()
+    {
+        EGoogleCalendarExportStatus[] statuses =
+        {
+            EGoogleCalendarExportStatus.NotConfigured,
+            EGoogleCalendarExportStatus.AuthenticationCancelled,
+            EGoogleCalendarExportStatus.AuthenticationFailed,
+            EGoogleCalendarExportStatus.AccessDenied,
+            EGoogleCalendarExportStatus.NetworkFailed,
+            EGoogleCalendarExportStatus.Cancelled,
+            EGoogleCalendarExportStatus.Failed,
+        };
+        foreach (EGoogleCalendarExportStatus exportStatus in statuses)
+        {
+            PlannerWorkspaceViewModel workspace =
+                PlannerWorkspaceTestFactory.CreateWorkspace();
+            await workspace.RecommendationRefreshTask;
+            RecordingGoogleCalendarWebNavigator googleCalendarNavigator =
+                new RecordingGoogleCalendarWebNavigator(true);
+            RecordingGoogleCalendarExporter googleExporter =
+                new RecordingGoogleCalendarExporter(
+                    GoogleCalendarExportResult.Fail(
+                        exportStatus,
+                        "test_export_failure"));
+            ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
+                createServices(
+                    googleExporter,
+                    createUnavailableAppleExporter(),
+                    googleCalendarNavigator));
+            workspaceView.DataContext = workspace;
+            Window window = showInWindow(workspaceView);
+
+            try
+            {
+                AsyncDelegateCommand command = Assert.IsType<AsyncDelegateCommand>(
+                    workspaceView.ExportGoogleCalendarCommand);
+                command.Execute(null);
+                await command.ExecutionTask;
+
+                Assert.Equal(0, googleCalendarNavigator.OpenAttemptCount);
+            }
+            finally
+            {
+                await closeWindowAsync(window, workspaceView);
+            }
         }
     }
 
@@ -312,14 +400,36 @@ public sealed class ScheduleWorkspaceCalendarExportTests
 
     private static ScheduleExportServices createServices(
         RecordingGoogleCalendarExporter googleExporter,
-        RecordingAppleCalendarExporter appleExporter)
+        RecordingAppleCalendarExporter appleExporter,
+        RecordingGoogleCalendarWebNavigator? googleCalendarNavigatorOrNull = null)
     {
         return new ScheduleExportServices(
             new AvaloniaControlPngExporter(PngExportScale.Create(1.0)),
             googleExporter,
+            googleCalendarNavigatorOrNull
+                ?? new RecordingGoogleCalendarWebNavigator(true),
             appleExporter,
             new FixedCalendarTimeZoneProvider(
                 new CalendarTimeZoneId("Asia/Seoul")));
+    }
+
+    private sealed class RecordingGoogleCalendarWebNavigator
+        : IGoogleCalendarWebNavigator
+    {
+        private readonly bool mOpenResult;
+
+        public int OpenAttemptCount { get; private set; }
+
+        public RecordingGoogleCalendarWebNavigator(bool openResult)
+        {
+            mOpenResult = openResult;
+        }
+
+        public bool TryOpen()
+        {
+            OpenAttemptCount++;
+            return mOpenResult;
+        }
     }
 
     private static RecordingAppleCalendarExporter

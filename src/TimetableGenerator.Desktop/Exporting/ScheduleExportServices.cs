@@ -12,6 +12,8 @@ internal sealed class ScheduleExportServices
 
     public IGoogleCalendarExporter GoogleCalendarExporter { get; }
 
+    public IGoogleCalendarWebNavigator GoogleCalendarWebNavigator { get; }
+
     public IAppleCalendarExporter AppleCalendarExporter { get; }
 
     public ICalendarTimeZoneProvider CalendarTimeZoneProvider { get; }
@@ -19,6 +21,7 @@ internal sealed class ScheduleExportServices
     public ScheduleExportServices(
         IControlPngExporter pngExporter,
         IGoogleCalendarExporter googleCalendarExporter,
+        IGoogleCalendarWebNavigator googleCalendarWebNavigator,
         IAppleCalendarExporter appleCalendarExporter,
         ICalendarTimeZoneProvider calendarTimeZoneProvider)
     {
@@ -30,6 +33,11 @@ internal sealed class ScheduleExportServices
         if (googleCalendarExporter == null)
         {
             throw new ArgumentNullException(nameof(googleCalendarExporter));
+        }
+
+        if (googleCalendarWebNavigator == null)
+        {
+            throw new ArgumentNullException(nameof(googleCalendarWebNavigator));
         }
 
         if (appleCalendarExporter == null)
@@ -44,6 +52,7 @@ internal sealed class ScheduleExportServices
 
         PngExporter = pngExporter;
         GoogleCalendarExporter = googleCalendarExporter;
+        GoogleCalendarWebNavigator = googleCalendarWebNavigator;
         AppleCalendarExporter = appleCalendarExporter;
         CalendarTimeZoneProvider = calendarTimeZoneProvider;
     }

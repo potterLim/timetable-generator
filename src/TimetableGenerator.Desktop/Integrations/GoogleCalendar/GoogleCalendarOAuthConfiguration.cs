@@ -6,7 +6,11 @@ internal sealed class GoogleCalendarOAuthConfiguration
 {
     public GoogleOAuthClientId ClientId { get; }
 
-    public GoogleCalendarOAuthConfiguration(GoogleOAuthClientId clientId)
+    public GoogleOAuthClientSecret? ClientSecretOrNull { get; }
+
+    public GoogleCalendarOAuthConfiguration(
+        GoogleOAuthClientId clientId,
+        GoogleOAuthClientSecret? clientSecretOrNull = null)
     {
         if (clientId == null)
         {
@@ -14,5 +18,6 @@ internal sealed class GoogleCalendarOAuthConfiguration
         }
 
         ClientId = clientId;
+        ClientSecretOrNull = clientSecretOrNull;
     }
 }
