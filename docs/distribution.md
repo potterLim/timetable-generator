@@ -6,9 +6,9 @@
 
 | 용도 | 값 |
 | --- | --- |
-| 사용자 표시 제품명 | `시간표` |
+| 사용자 표시 제품명 | `Timetable Generator` |
 | Windows 실행 파일 | `TimetableGenerator.exe` |
-| macOS 앱 번들 | `시간표.app` |
+| macOS 앱 번들 | `Timetable Generator.app` |
 | macOS bundle identifier | `io.github.potterlim.timetable` |
 
 `TimetableGenerator.Desktop` 프로젝트명과 네임스페이스는 소스·관리 어셈블리 구조로 유지하되, 사용자에게 보이는 실행 파일명과 제품 메타데이터에는 노출하지 않습니다.
@@ -60,8 +60,8 @@ pwsh ./scripts/publish-desktop.ps1 `
 | 대상 | 실행·검증용 디렉터리 | 전달용 archive |
 | --- | --- | --- |
 | Windows x64 | `artifacts/publish/win-x64` | `TimetableGenerator-<version>-win-x64-unsigned.zip` |
-| macOS Intel | `artifacts/publish/osx-x64/시간표.app` | `TimetableGenerator-<version>-osx-x64-unsigned.zip` |
-| macOS Apple Silicon | `artifacts/publish/osx-arm64/시간표.app` | `TimetableGenerator-<version>-osx-arm64-unsigned.zip` |
+| macOS Intel | `artifacts/publish/osx-x64/Timetable Generator.app` | `TimetableGenerator-<version>-osx-x64-unsigned.zip` |
+| macOS Apple Silicon | `artifacts/publish/osx-arm64/Timetable Generator.app` | `TimetableGenerator-<version>-osx-arm64-unsigned.zip` |
 
 현재 명령에서 생성하고 검증한 archive의 SHA-256만 `artifacts/publish/checksums.sha256`에 기록됩니다. 따라서 세 대상을 한 파일에서 확인하려면 인수 없이 전체 게시를 실행합니다. macOS zip에는 Mach-O 실행 권한도 보존됩니다.
 
@@ -150,7 +150,7 @@ pwsh ./scripts/finalize-desktop-release.ps1 `
 다음 순서를 배포 담당자의 실제 identity와 keychain profile로 실행합니다. `codesign --deep`으로 서명하지 말고 내부 Mach-O부터 바깥 bundle 순서로 서명합니다.
 
 ```bash
-APP="artifacts/publish/osx-arm64/시간표.app"
+APP="artifacts/publish/osx-arm64/Timetable Generator.app"
 MAIN="$APP/Contents/MacOS/TimetableGenerator"
 ENTITLEMENTS="src/TimetableGenerator.Desktop/Platforms/macOS/TimetableGenerator.entitlements"
 IDENTITY="Developer ID Application: YOUR NAME (TEAMID)"

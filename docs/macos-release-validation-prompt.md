@@ -1,6 +1,6 @@
 # macOS 출시 전 전수 검증 프롬프트
 
-이 문서는 시간표 생성기를 macOS 실제 기기로 옮긴 뒤 Codex에 전달할 최종 QA 요청 전문입니다. 저장소 루트를 Codex 작업 공간으로 연 다음, 아래 프롬프트 전체를 새 작업에 그대로 붙여 넣습니다.
+이 문서는 Timetable Generator를 macOS 실제 기기로 옮긴 뒤 Codex에 전달할 최종 QA 요청 전문입니다. 저장소 루트를 Codex 작업 공간으로 연 다음, 아래 프롬프트 전체를 새 작업에 그대로 붙여 넣습니다.
 
 검증 결과와 스크린샷은 `artifacts/qa/` 아래에 보관하며 Git에는 커밋하지 않습니다. 실제 서비스 주소, OAuth 정보, 사용자 계획, 서명 자격 증명은 프롬프트나 결과 보고서에 기록하지 않습니다.
 
@@ -43,12 +43,12 @@
 - 최소 지원 macOS: 14.0
 - Apple Silicon RID: `osx-arm64`
 - Intel RID: `osx-x64`
-- 앱 이름: `시간표`
+- 앱 이름: `Timetable Generator`
 - 앱 번들:
-  - `artifacts/publish/osx-arm64/시간표.app`
-  - `artifacts/publish/osx-x64/시간표.app`
+  - `artifacts/publish/osx-arm64/Timetable Generator.app`
+  - `artifacts/publish/osx-x64/Timetable Generator.app`
 - 실행 파일:
-  - `시간표.app/Contents/MacOS/TimetableGenerator`
+  - `Timetable Generator.app/Contents/MacOS/TimetableGenerator`
 - 현재 배포 형식은 `.app`이 들어 있는 ZIP이며 DMG, PKG, App Store 패키지는 없다.
 - 게시 결과는 기본적으로 unsigned 상태다.
 - 최종 제품 bundle identifier는 `io.github.potterlim.timetable`이며 아키텍처와 버전에 관계없이 유지해야 한다. 이후 Apple Developer portal 등록이 필요한 capability를 추가할 때도 동일한 식별자를 사용한다.
@@ -197,7 +197,7 @@ pwsh ./scripts/publish-desktop.ps1
 앱 번들에서 다음을 검증하라.
 
 ```bash
-APP="$PWD/artifacts/publish/$RID/시간표.app"
+APP="$PWD/artifacts/publish/$RID/Timetable Generator.app"
 MAIN="$APP/Contents/MacOS/TimetableGenerator"
 INFO="$APP/Contents/Info.plist"
 
@@ -218,7 +218,7 @@ otool -L "$MAIN"
 
 다음을 확인하라.
 
-- `CFBundleDisplayName = 시간표`
+- `CFBundleDisplayName = Timetable Generator`
 - `CFBundleExecutable = TimetableGenerator`
 - `CFBundleIconFile = AppIcon.icns`
 - `CFBundlePackageType = APPL`
@@ -251,10 +251,10 @@ ARCHIVE="$PWD/artifacts/publish/TimetableGenerator-1.0.0-$RID-unsigned.zip"
 QA_UNPACK="$(mktemp -d)"
 ditto -x -k "$ARCHIVE" "$QA_UNPACK"
 
-test -d "$QA_UNPACK/시간표.app"
-test -x "$QA_UNPACK/시간표.app/Contents/MacOS/TimetableGenerator"
-plutil -lint "$QA_UNPACK/시간표.app/Contents/Info.plist"
-file "$QA_UNPACK/시간표.app/Contents/MacOS/TimetableGenerator"
+test -d "$QA_UNPACK/Timetable Generator.app"
+test -x "$QA_UNPACK/Timetable Generator.app/Contents/MacOS/TimetableGenerator"
+plutil -lint "$QA_UNPACK/Timetable Generator.app/Contents/Info.plist"
+file "$QA_UNPACK/Timetable Generator.app/Contents/MacOS/TimetableGenerator"
 ```
 
 게시 디렉터리의 앱과 ZIP에서 새로 풀어낸 앱을 각각 검증하라.
@@ -264,7 +264,7 @@ file "$QA_UNPACK/시간표.app/Contents/MacOS/TimetableGenerator"
 제품 동작 검증은 raw executable이 아니라 `.app` 번들로 실행한다.
 
 ```bash
-/usr/bin/open -n "$QA_UNPACK/시간표.app"
+/usr/bin/open -n "$QA_UNPACK/Timetable Generator.app"
 ```
 
 raw executable 직접 실행은 bundle launch 실패 원인을 진단할 때만 사용한다.

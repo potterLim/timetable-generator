@@ -1,13 +1,13 @@
 # Google Calendar 연동 설정
 
-이 문서는 시간표 앱의 Google Calendar 내보내기를 개발·배포 환경에서 활성화하는 절차를 설명합니다. 배포자는 제품을 식별하는 Desktop OAuth 클라이언트 ID 하나만 앱에 포함하며, 실제 사용자는 내보낼 때 자신의 Google 계정으로 직접 로그인하고 권한을 승인합니다. 사용자 계정, 비밀번호, OAuth 클라이언트 비밀 값이나 사용자 토큰은 저장소와 배포물에 포함하지 않습니다.
+이 문서는 Timetable Generator의 Google Calendar 내보내기를 개발·배포 환경에서 활성화하는 절차를 설명합니다. 배포자는 제품을 식별하는 Desktop OAuth 클라이언트 ID 하나만 앱에 포함하며, 실제 사용자는 내보낼 때 자신의 Google 계정으로 직접 로그인하고 권한을 승인합니다. 사용자 계정, 비밀번호, OAuth 클라이언트 비밀 값이나 사용자 토큰은 저장소와 배포물에 포함하지 않습니다.
 
 ## 1. 배포자가 한 번 준비하는 Google Cloud 설정
 
 1. [Google Cloud Console](https://console.cloud.google.com/)에서 이 제품의 Release 전용 프로젝트를 생성하거나 선택합니다. 개발·테스트용 프로젝트와 Release용 프로젝트를 분리합니다.
 2. **API 및 서비스 > 라이브러리**에서 **Google Calendar API**를 찾아 사용 설정합니다.
 3. **Google Auth Platform > 대상**에서 사용자 유형을 **외부**로 설정합니다.
-4. 앱 이름과 지원 이메일을 실제 제품 정보로 설정합니다.
+4. 앱 이름을 `Timetable Generator`로 설정하고 실제 지원 이메일을 입력합니다.
 5. **데이터 액세스**에 `.../auth/calendar.app.created`와 `.../auth/calendar.calendarlist.readonly` 두 범위를 추가합니다.
 6. **클라이언트 > 클라이언트 만들기**에서 애플리케이션 유형을 **데스크톱 앱**으로 선택합니다.
 7. 생성된 `클라이언트 ID`만 복사합니다. 이 네이티브 앱 흐름에는 클라이언트 보안 비밀이 필요하지 않으며, 보안 비밀을 앱 파일에 넣어서는 안 됩니다.

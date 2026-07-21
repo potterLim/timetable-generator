@@ -102,12 +102,12 @@ function Assert-MacOSInfoPlist {
     $values = $contents.StringValues
     $expectedValues = [ordered]@{
         CFBundleDevelopmentRegion = "ko"
-        CFBundleDisplayName = "시간표"
+        CFBundleDisplayName = "Timetable Generator"
         CFBundleExecutable = $ExecutableName
         CFBundleIconFile = "AppIcon.icns"
         CFBundleIdentifier = $BundleIdentifier
         CFBundleInfoDictionaryVersion = "6.0"
-        CFBundleName = "시간표"
+        CFBundleName = "Timetable Generator"
         CFBundlePackageType = "APPL"
         CFBundleShortVersionString = $ProductVersion
         CFBundleVersion = $ProductVersion

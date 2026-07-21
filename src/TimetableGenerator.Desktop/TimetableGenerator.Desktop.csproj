@@ -5,8 +5,8 @@
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <AssemblyName>TimetableGenerator</AssemblyName>
     <RootNamespace>TimetableGenerator.Desktop</RootNamespace>
-    <AssemblyTitle>시간표</AssemblyTitle>
-    <Product>시간표</Product>
+    <AssemblyTitle>Timetable Generator</AssemblyTitle>
+    <Product>Timetable Generator</Product>
     <Description>과목을 조합하고 가능한 시간표를 비교하는 Windows 및 macOS 데스크톱 앱.</Description>
     <Version>1.0.0</Version>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>

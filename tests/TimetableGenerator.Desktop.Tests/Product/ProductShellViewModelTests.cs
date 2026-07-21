@@ -34,6 +34,9 @@ public sealed class ProductShellViewModelTests
         using (ProductShellViewModel shell = createShell(loader))
         {
             Assert.True(shell.IsLoading);
+            Assert.Equal(
+                "Timetable Generator",
+                shell.AccessibleWindowName);
 
             await shell.StartAsync();
 
@@ -41,6 +44,9 @@ public sealed class ProductShellViewModelTests
             Assert.False(shell.IsLoading);
             Assert.False(shell.HasError);
             Assert.Same(expectedWorkspace, shell.WorkspaceOrNull);
+            Assert.Equal(
+                "Timetable Generator - 한동대학교",
+                shell.AccessibleWindowName);
         }
     }
 
@@ -499,7 +505,9 @@ public sealed class ProductShellViewModelTests
         using (ProductShellViewModel shell = createShell(loader))
         {
             await shell.StartAsync();
-            Assert.Contains("한동대학교", shell.AccessibleWindowName);
+            Assert.Equal(
+                "Timetable Generator - 한동대학교",
+                shell.AccessibleWindowName);
 
             shell.beginShutdown();
 

@@ -86,7 +86,7 @@ function Publish-MacOSTarget {
     )
 
     $runtimeOutputPath = Join-Path $OutputRoot $RuntimeIdentifier
-    $bundlePath = Join-Path $runtimeOutputPath "시간표.app"
+    $bundlePath = Join-Path $runtimeOutputPath "Timetable Generator.app"
     $contentsPath = Join-Path $bundlePath "Contents"
     $macOSPath = Join-Path $contentsPath "MacOS"
     $resourcesPath = Join-Path $contentsPath "Resources"
@@ -158,6 +158,6 @@ function Publish-MacOSTarget {
         -SourcePath $bundlePath `
         -OutputRoot $OutputRoot `
         -ArchiveFileName $archiveFileName `
-        -ArchiveRootName "시간표.app" `
+        -ArchiveRootName "Timetable Generator.app" `
         -ArchivePlatform "MacOS"
 }

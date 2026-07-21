@@ -1,7 +1,7 @@
 $script:PRODUCT_EXECUTABLE_BASE_NAME = "TimetableGenerator"
-$script:PRODUCT_DISPLAY_NAME = "시간표"
+$script:PRODUCT_DISPLAY_NAME = "Timetable Generator"
 $script:PRODUCT_COMPANY_NAME = "potterLim"
-$script:MACOS_APPLICATION_NAME = "시간표.app"
+$script:MACOS_APPLICATION_NAME = "Timetable Generator.app"
 $script:PLACEHOLDER_BUNDLE_IDENTIFIERS = @(
     "com.example.timetable",
     "com.example.timetablegenerator"

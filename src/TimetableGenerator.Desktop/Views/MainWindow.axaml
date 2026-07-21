@@ -10,7 +10,7 @@
     x:DataType="product:ProductShellViewModel"
     MinWidth="900"
     MinHeight="640"
-    Title="시간표"
+    Title="Timetable Generator"
     Icon="/Assets/AppIcon.png"
     CanResize="True"
     ExtendClientAreaToDecorationsHint="True"
@@ -56,7 +56,7 @@
                 FontSize="16"
                 FontWeight="SemiBold"
                 LineHeight="19"
-                Text="시간표" />
+                Text="Timetable Generator" />
             <TextBlock
                 Classes="caption"
                 IsVisible="{Binding IsReady}"

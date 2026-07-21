@@ -377,10 +377,10 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
             ? "연결 완료"
             : "연결하지 못했습니다";
         string message = responseKind == EGoogleLoopbackResponseKind.Success
-            ? "시간표 앱으로 돌아가도 됩니다."
+            ? "Timetable Generator로 돌아가도 됩니다."
             : responseKind == EGoogleLoopbackResponseKind.InvalidRequest
                 ? "올바른 Google 로그인 응답을 기다리고 있습니다."
-                : "시간표 앱으로 돌아가 다시 시도해 주세요.";
+                : "Timetable Generator로 돌아가 다시 시도해 주세요.";
         string body = "<!doctype html><html lang=\"ko\"><head><meta charset=\"utf-8\">"
             + "<meta name=\"viewport\" content=\"width=device-width\">"
             + "<title>" + title + "</title></head><body><main><h1>"

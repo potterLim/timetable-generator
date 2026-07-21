@@ -98,10 +98,11 @@ internal sealed partial class ProductShellViewModel : ObservableObject, IDisposa
         {
             if (mWorkspaceOrNull == null)
             {
-                return "시간표";
+                return "Timetable Generator";
             }
 
-            return mWorkspaceOrNull.InstitutionName + " 시간표";
+            return "Timetable Generator - "
+                + mWorkspaceOrNull.InstitutionName;
         }
     }
 
