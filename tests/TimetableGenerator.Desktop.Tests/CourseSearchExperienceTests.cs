@@ -4,10 +4,10 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
-using Avalonia.Controls.Presenters;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
+using Avalonia.Input.TextInput;
 using Avalonia.Layout;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -193,22 +193,21 @@ public sealed class CourseSearchExperienceTests
             TextBox searchBox = findRequiredControl<TextBox>(
                 courseBrowser,
                 "CourseSearchBox");
-            TextPresenter textPresenter = searchBox.GetVisualDescendants()
-                .OfType<TextPresenter>()
-                .Single();
+            TextInputMethodClient textInputMethodClient =
+                getTextInputMethodClient(searchBox);
             searchBox.Text = "물리";
             searchBox.CaretIndex = searchBox.Text.Length;
             Dispatcher.UIThread.RunJobs();
 
-            textPresenter.PreeditText = "ㅎ";
+            textInputMethodClient.SetPreeditText("ㅎ");
             Dispatcher.UIThread.RunJobs();
             Assert.Equal("물리ㅎ", workspace.SearchText);
 
-            textPresenter.PreeditText = "하";
+            textInputMethodClient.SetPreeditText("하");
             Dispatcher.UIThread.RunJobs();
             Assert.Equal("물리하", workspace.SearchText);
 
-            textPresenter.PreeditText = "학";
+            textInputMethodClient.SetPreeditText("학");
             Dispatcher.UIThread.RunJobs();
             Assert.Equal("물리학", workspace.SearchText);
             CourseSearchItem physics = Assert.Single(workspace.VisibleCourses);
@@ -228,8 +227,8 @@ public sealed class CourseSearchExperienceTests
                 MouseButton.Left,
                 RawInputModifiers.None);
 
+            textInputMethodClient.SetPreeditText(null);
             searchBox.Text = "물리학";
-            textPresenter.PreeditText = null;
             Dispatcher.UIThread.RunJobs();
 
             Assert.Equal(0, collectionChangedCount);
@@ -279,14 +278,13 @@ public sealed class CourseSearchExperienceTests
             TextBox searchBox = findRequiredControl<TextBox>(
                 courseChoiceEditor,
                 "AlternativeCourseSearchBox");
-            TextPresenter textPresenter = searchBox.GetVisualDescendants()
-                .OfType<TextPresenter>()
-                .Single();
+            TextInputMethodClient textInputMethodClient =
+                getTextInputMethodClient(searchBox);
             searchBox.Text = "세미";
             searchBox.CaretIndex = searchBox.Text.Length;
             Dispatcher.UIThread.RunJobs();
 
-            textPresenter.PreeditText = "나";
+            textInputMethodClient.SetPreeditText("나");
             Dispatcher.UIThread.RunJobs();
 
             Assert.Equal("세미나", workspace.AlternativeCourseSearchText);
@@ -295,7 +293,35 @@ public sealed class CourseSearchExperienceTests
             Button addButton = findButtonByAccessibleName(
                 courseChoiceEditor,
                 seminar.AddButtonAccessibleName);
-            addButton.Command?.Execute(addButton.CommandParameter);
+            int collectionChangedCount = 0;
+            workspace.AlternativeCourseSearchResults.CollectionChanged += delegate
+            {
+                ++collectionChangedCount;
+            };
+            Point addButtonCenter = findControlCenter(window, addButton);
+            window.MouseMove(addButtonCenter, RawInputModifiers.None);
+            window.MouseDown(
+                addButtonCenter,
+                MouseButton.Left,
+                RawInputModifiers.None);
+
+            textInputMethodClient.SetPreeditText(null);
+            searchBox.Text = "세미나";
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal(0, collectionChangedCount);
+            Assert.Same(
+                seminar,
+                Assert.Single(workspace.AlternativeCourseSearchResults));
+            Assert.Contains(
+                addButton,
+                courseChoiceEditor.GetVisualDescendants().OfType<Button>());
+
+            window.MouseUp(
+                addButtonCenter,
+                MouseButton.Left,
+                RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
 
             Assert.Equal(2, workspace.CourseChoiceDraftCourses.Count);
             Assert.Single(
@@ -323,18 +349,17 @@ public sealed class CourseSearchExperienceTests
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
-            TextPresenter textPresenter = searchBox.GetVisualDescendants()
-                .OfType<TextPresenter>()
-                .Single();
+            TextInputMethodClient textInputMethodClient =
+                getTextInputMethodClient(searchBox);
             searchBox.Text = "물학";
             searchBox.CaretIndex = 1;
             Dispatcher.UIThread.RunJobs();
 
-            textPresenter.PreeditText = "리";
+            textInputMethodClient.SetPreeditText("리");
             Dispatcher.UIThread.RunJobs();
             Assert.Equal("물리학", searchBox.QueryText);
 
-            textPresenter.PreeditText = null;
+            textInputMethodClient.SetPreeditText(null);
             Dispatcher.UIThread.RunJobs();
             Assert.Equal("물학", searchBox.QueryText);
 
@@ -700,6 +725,24 @@ public sealed class CourseSearchExperienceTests
         }
 
         return controlOrNull;
+    }
+
+    private static TextInputMethodClient getTextInputMethodClient(TextBox textBox)
+    {
+        TextInputMethodClientRequestedEventArgs eventArguments = new()
+        {
+            RoutedEvent = InputElement.TextInputMethodClientRequestedEvent,
+        };
+        textBox.RaiseEvent(eventArguments);
+
+        Assert.NotNull(eventArguments.Client);
+        if (eventArguments.Client == null)
+        {
+            throw new InvalidOperationException(
+                "The text input method client could not be resolved.");
+        }
+
+        return eventArguments.Client;
     }
 
     private static Button findButtonByAccessibleName(

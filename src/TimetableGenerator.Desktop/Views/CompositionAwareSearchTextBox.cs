@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
+using Avalonia.Threading;
 
 namespace TimetableGenerator.Desktop.Views;
 
@@ -30,6 +31,8 @@ internal sealed class CompositionAwareSearchTextBox : TextBox
     private bool mIsPublishingQueryText;
 
     private bool mIsPresenterSubscriptionActive;
+
+    private int mDeferredPublicationGeneration;
 
     protected override Type StyleKeyOverride
     {
@@ -73,6 +76,7 @@ internal sealed class CompositionAwareSearchTextBox : TextBox
     protected override void OnDetachedFromVisualTree(
         VisualTreeAttachmentEventArgs eventArguments)
     {
+        cancelDeferredQueryPublication();
         unsubscribeFromTextPresenter();
         base.OnDetachedFromVisualTree(eventArguments);
     }
@@ -89,7 +93,8 @@ internal sealed class CompositionAwareSearchTextBox : TextBox
 
         if (change.Property == TextProperty)
         {
-            publishCommittedQueryText();
+            cancelDeferredQueryPublication();
+            publishCurrentQueryText();
             return;
         }
 
@@ -107,6 +112,7 @@ internal sealed class CompositionAwareSearchTextBox : TextBox
             return;
         }
 
+        cancelDeferredQueryPublication();
         string queryText = queryTextOrNull ?? string.Empty;
         if (string.Equals(queryText, createVisibleQueryText(), StringComparison.Ordinal))
         {
@@ -151,8 +157,36 @@ internal sealed class CompositionAwareSearchTextBox : TextBox
     {
         if (eventArguments.Property == TextPresenter.PreeditTextProperty)
         {
-            publishVisibleQueryText();
+            if (hasPreeditText())
+            {
+                cancelDeferredQueryPublication();
+                publishVisibleQueryText();
+                return;
+            }
+
+            deferCommittedQueryPublication();
         }
+    }
+
+    private void cancelDeferredQueryPublication()
+    {
+        ++mDeferredPublicationGeneration;
+    }
+
+    private void deferCommittedQueryPublication()
+    {
+        int publicationGeneration = ++mDeferredPublicationGeneration;
+        Dispatcher.UIThread.Post(
+            delegate
+            {
+                if (publicationGeneration != mDeferredPublicationGeneration)
+                {
+                    return;
+                }
+
+                publishCommittedQueryText();
+            },
+            DispatcherPriority.Input);
     }
 
     private void publishCommittedQueryText()
@@ -163,6 +197,17 @@ internal sealed class CompositionAwareSearchTextBox : TextBox
         }
 
         publishQueryText(Text ?? string.Empty);
+    }
+
+    private void publishCurrentQueryText()
+    {
+        if (hasPreeditText())
+        {
+            publishVisibleQueryText();
+            return;
+        }
+
+        publishCommittedQueryText();
     }
 
     private void publishQueryText(string queryText)
