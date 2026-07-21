@@ -7,20 +7,31 @@ namespace TimetableGenerator.Desktop.Presentation.Models;
 
 internal sealed class ScheduleBoardTimeAxis
 {
-    private const int DEFAULT_START_MINUTE = 600;
+    private const int DEFAULT_FIRST_LABEL_MINUTE = 600;
     private const int DEFAULT_END_MINUTE = 1_140;
     private const int PNG_EXPORT_DEFAULT_END_MINUTE = 960;
     private const int LAYOUT_INCREMENT_MINUTES = 5;
-    private const int GUIDE_INCREMENT_MINUTES = 30;
-    private const int LATE_START_CONTEXT_MINUTES = 30;
+    private const int GUIDE_INTERVAL_MINUTES = 30;
+    private const int LABEL_INTERVAL_MINUTES = 60;
+    private const int START_CONTEXT_MINUTES = 30;
     private const int MINUTES_PER_HOUR = 60;
     private const int MINUTES_PER_DAY = 1_440;
+
+    private readonly IReadOnlyList<ScheduleBoardTimeBoundary> mGuideTimes;
 
     private readonly IReadOnlyList<ScheduleBoardTimeBoundary> mLabelTimes;
 
     public ScheduleBoardTimeBoundary Start { get; }
 
     public ScheduleBoardTimeBoundary End { get; }
+
+    public IReadOnlyList<ScheduleBoardTimeBoundary> GuideTimes
+    {
+        get
+        {
+            return mGuideTimes;
+        }
+    }
 
     public IReadOnlyList<ScheduleBoardTimeBoundary> LabelTimes
     {
@@ -39,14 +50,6 @@ internal sealed class ScheduleBoardTimeAxis
         }
     }
 
-    public int GuideIntervalRowCount
-    {
-        get
-        {
-            return GUIDE_INCREMENT_MINUTES / LAYOUT_INCREMENT_MINUTES;
-        }
-    }
-
     private ScheduleBoardTimeAxis(
         ScheduleBoardTimeBoundary start,
         ScheduleBoardTimeBoundary end)
@@ -60,6 +63,7 @@ internal sealed class ScheduleBoardTimeAxis
 
         Start = start;
         End = end;
+        mGuideTimes = createGuideTimes(start, end);
         mLabelTimes = createLabelTimes(start, end);
     }
 
@@ -122,7 +126,7 @@ internal sealed class ScheduleBoardTimeAxis
 
         int endMinute = Math.Min(
             MINUTES_PER_DAY,
-            roundUp(latestMinute, GUIDE_INCREMENT_MINUTES));
+            roundUp(latestMinute, GUIDE_INTERVAL_MINUTES));
         return new ScheduleBoardTimeAxis(
             new ScheduleBoardTimeBoundary(startMinute),
             new ScheduleBoardTimeBoundary(endMinute));
@@ -132,7 +136,7 @@ internal sealed class ScheduleBoardTimeAxis
     {
         if (entries.Count == 0)
         {
-            return DEFAULT_START_MINUTE;
+            return DEFAULT_FIRST_LABEL_MINUTE - START_CONTEXT_MINUTES;
         }
 
         int earliestMinute = entries[0].TimeRange.Start.MinutesFromMidnight;
@@ -143,17 +147,29 @@ internal sealed class ScheduleBoardTimeAxis
                 entry.TimeRange.Start.MinutesFromMidnight);
         }
 
-        if (earliestMinute <= DEFAULT_START_MINUTE)
+        int earliestHourMinute = roundDown(
+            earliestMinute,
+            MINUTES_PER_HOUR);
+        return Math.Max(
+            0,
+            earliestHourMinute - START_CONTEXT_MINUTES);
+    }
+
+    private static IReadOnlyList<ScheduleBoardTimeBoundary> createGuideTimes(
+        ScheduleBoardTimeBoundary start,
+        ScheduleBoardTimeBoundary end)
+    {
+        List<ScheduleBoardTimeBoundary> guideTimes =
+            new List<ScheduleBoardTimeBoundary>();
+        for (int guideMinute =
+                start.MinutesFromMidnight + GUIDE_INTERVAL_MINUTES;
+            guideMinute < end.MinutesFromMidnight;
+            guideMinute += GUIDE_INTERVAL_MINUTES)
         {
-            return Math.Max(
-                0,
-                roundDown(earliestMinute, GUIDE_INCREMENT_MINUTES));
+            guideTimes.Add(new ScheduleBoardTimeBoundary(guideMinute));
         }
 
-        int contextualMinute = earliestMinute - LATE_START_CONTEXT_MINUTES;
-        return Math.Max(
-            DEFAULT_START_MINUTE,
-            roundDown(contextualMinute, MINUTES_PER_HOUR));
+        return guideTimes.AsReadOnly();
     }
 
     private static IReadOnlyList<ScheduleBoardTimeBoundary> createLabelTimes(
@@ -162,9 +178,12 @@ internal sealed class ScheduleBoardTimeAxis
     {
         List<ScheduleBoardTimeBoundary> labelTimes =
             new List<ScheduleBoardTimeBoundary>();
-        for (int labelMinute = start.MinutesFromMidnight;
+        int firstLabelMinute = roundUp(
+            start.MinutesFromMidnight + 1,
+            LABEL_INTERVAL_MINUTES);
+        for (int labelMinute = firstLabelMinute;
             labelMinute < end.MinutesFromMidnight;
-            labelMinute += GUIDE_INCREMENT_MINUTES)
+            labelMinute += LABEL_INTERVAL_MINUTES)
         {
             labelTimes.Add(new ScheduleBoardTimeBoundary(labelMinute));
         }

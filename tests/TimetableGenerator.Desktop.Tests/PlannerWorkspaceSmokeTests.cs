@@ -205,7 +205,7 @@ public sealed class PlannerWorkspaceSmokeTests
             firstRecommendation,
             workspace.PngExportCandidates[0].Schedule);
         Assert.Equal(
-            new ScheduleBoardTimeBoundary(540),
+            new ScheduleBoardTimeBoundary(510),
             workspace.DisplayedScheduleBoard!.Layout.TimeAxis.Start);
 
         workspace.NextRecommendationCommand.Execute(null);
@@ -217,7 +217,7 @@ public sealed class PlannerWorkspaceSmokeTests
             entry => Assert.True(
                 entry.TimeRange.Start.MinutesFromMidnight >= 600));
         Assert.Equal(
-            new ScheduleBoardTimeBoundary(540),
+            new ScheduleBoardTimeBoundary(510),
             workspace.DisplayedScheduleBoard!.Layout.TimeAxis.Start);
 
         workspace.PreviousRecommendationCommand.Execute(null);

@@ -57,34 +57,40 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             new ScheduleEntry[] { entry });
 
         Assert.Equal(
-            new ScheduleBoardTimeBoundary(540),
+            new ScheduleBoardTimeBoundary(510),
             layout.TimeAxis.Start);
         Assert.Equal(
             new ScheduleBoardTimeBoundary(960),
             layout.TimeAxis.End);
-        Assert.Equal(84, layout.TimeAxis.IncrementCount);
-        Assert.Equal("15:30", layout.TimeAxis.LabelTimes[^1].ToString());
+        Assert.Equal(90, layout.TimeAxis.IncrementCount);
+        Assert.Equal(14, layout.TimeAxis.GuideTimes.Count);
+        Assert.Equal("15:30", layout.TimeAxis.GuideTimes[^1].ToString());
+        Assert.Equal(7, layout.TimeAxis.LabelTimes.Count);
+        Assert.Equal("15:00", layout.TimeAxis.LabelTimes[^1].ToString());
         Assert.DoesNotContain(
             layout.TimeAxis.LabelTimes,
             boundary => boundary.ToString() == "16:00");
     }
 
     [Fact]
-    public void EmptyPngExportLayoutRunsFromTenAmThroughFourPm()
+    public void EmptyPngExportLayoutKeepsContextBeforeTenAmThroughFourPm()
     {
         ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForPngExport(
             Array.Empty<ScheduleEntry>());
 
         Assert.Equal(
-            new ScheduleBoardTimeBoundary(600),
+            new ScheduleBoardTimeBoundary(570),
             layout.TimeAxis.Start);
         Assert.Equal(
             new ScheduleBoardTimeBoundary(960),
             layout.TimeAxis.End);
+        Assert.Equal(78, layout.TimeAxis.IncrementCount);
+        Assert.Equal(12, layout.TimeAxis.GuideTimes.Count);
+        Assert.Equal(6, layout.TimeAxis.LabelTimes.Count);
     }
 
     [Fact]
-    public void PngExportLayoutStartsAtContextHourWhenEntriesBeginLater()
+    public void PngExportLayoutKeepsHalfHourContextWhenEntriesBeginLater()
     {
         ScheduleEntry entry = createScheduleEntry(
             EDay.Monday,
@@ -94,14 +100,15 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             new ScheduleEntry[] { entry });
 
         Assert.Equal(
-            new ScheduleBoardTimeBoundary(840),
+            new ScheduleBoardTimeBoundary(870),
             layout.TimeAxis.Start);
         Assert.Equal(
             new ScheduleBoardTimeBoundary(990),
             layout.TimeAxis.End);
-        Assert.Equal(30, layout.TimeAxis.IncrementCount);
-        Assert.Equal(5, layout.TimeAxis.LabelTimes.Count);
-        Assert.Equal("14:00", layout.TimeAxis.LabelTimes[0].ToString());
+        Assert.Equal(24, layout.TimeAxis.IncrementCount);
+        Assert.Equal(3, layout.TimeAxis.GuideTimes.Count);
+        Assert.Equal(2, layout.TimeAxis.LabelTimes.Count);
+        Assert.Equal("15:00", layout.TimeAxis.LabelTimes[0].ToString());
         Assert.Equal("16:00", layout.TimeAxis.LabelTimes[^1].ToString());
     }
 
@@ -118,7 +125,8 @@ public sealed class ScheduleBoardPngExportSnapshotTests
         Assert.Equal(
             new ScheduleBoardTimeBoundary(1_080),
             layout.TimeAxis.End);
-        Assert.Equal("17:30", layout.TimeAxis.LabelTimes[^1].ToString());
+        Assert.Equal("17:30", layout.TimeAxis.GuideTimes[^1].ToString());
+        Assert.Equal("17:00", layout.TimeAxis.LabelTimes[^1].ToString());
         Assert.Equal(
             3,
             layout.TimeAxis.IncrementCount
@@ -141,12 +149,13 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 new ScheduleTime(23, 45)),
             entry.TimeRange);
         Assert.Equal(
-            new ScheduleBoardTimeBoundary(1_320),
+            new ScheduleBoardTimeBoundary(1_290),
             layout.TimeAxis.Start);
         Assert.Equal(
             new ScheduleBoardTimeBoundary(1_440),
             layout.TimeAxis.End);
-        Assert.Equal("23:30", layout.TimeAxis.LabelTimes[^1].ToString());
+        Assert.Equal("23:30", layout.TimeAxis.GuideTimes[^1].ToString());
+        Assert.Equal("23:00", layout.TimeAxis.LabelTimes[^1].ToString());
         Assert.Equal(
             3,
             layout.TimeAxis.IncrementCount
@@ -205,7 +214,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             Dispatcher.UIThread.RunJobs();
 
             Assert.Equal(
-                new ScheduleBoardTimeBoundary(540),
+                new ScheduleBoardTimeBoundary(510),
                 sourceBoard.RenderedLayout.TimeAxis.Start);
             using (ScheduleBoardPngExportSnapshot snapshot =
                 ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
@@ -213,13 +222,14 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 Dispatcher.UIThread.RunJobs();
 
                 Assert.Equal(
-                    new ScheduleBoardTimeBoundary(660),
+                    new ScheduleBoardTimeBoundary(690),
                     snapshot.Layout.TimeAxis.Start);
                 Assert.Equal(
                     new ScheduleBoardTimeBoundary(960),
                     snapshot.Layout.TimeAxis.End);
-                Assert.Equal(60, snapshot.Layout.TimeAxis.IncrementCount);
-                Assert.Equal(10, snapshot.Layout.TimeAxis.LabelTimes.Count);
+                Assert.Equal(54, snapshot.Layout.TimeAxis.IncrementCount);
+                Assert.Equal(8, snapshot.Layout.TimeAxis.GuideTimes.Count);
+                Assert.Equal(4, snapshot.Layout.TimeAxis.LabelTimes.Count);
                 Assert.Single(findBoardGrid(snapshot.Surface).Children.OfType<Button>());
 
                 Border exportHeader = snapshot.Surface.GetVisualDescendants()
@@ -281,7 +291,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
 
                 Assert.Equal(7, snapshot.Layout.DayRange.DayCount);
                 Assert.Equal(
-                    new ScheduleBoardTimeBoundary(600),
+                    new ScheduleBoardTimeBoundary(570),
                     snapshot.Layout.TimeAxis.Start);
                 Assert.Same(
                     displayedEntry,
@@ -326,7 +336,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 Dispatcher.UIThread.RunJobs();
 
                 Assert.Equal(
-                    new ScheduleBoardTimeBoundary(510),
+                    new ScheduleBoardTimeBoundary(450),
                     snapshot.Layout.TimeAxis.Start);
                 Button exportCard = Assert.Single(
                     findBoardGrid(snapshot.Surface).Children.OfType<Button>());

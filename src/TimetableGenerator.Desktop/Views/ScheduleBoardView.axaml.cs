@@ -18,6 +18,10 @@ internal sealed partial class ScheduleBoardView : UserControl
     private const double TIME_COLUMN_WIDTH = 72.0;
     private const double HEADER_ROW_HEIGHT = 42.0;
     private const double TIME_INCREMENT_ROW_HEIGHT = 8.0;
+    private const double HOUR_GUIDE_EXTENSION_WIDTH = 8.0;
+    private const double TIME_LABEL_WIDTH = 48.0;
+    private const double TIME_LABEL_HEIGHT = 16.0;
+    private const double TIME_LABEL_GUIDE_GAP = 10.0;
 
     [SuppressMessage(
         "Style",
@@ -274,19 +278,37 @@ internal sealed partial class ScheduleBoardView : UserControl
         Grid.SetColumnSpan(headerGuide, totalColumnCount);
         mBoardGrid.Children.Add(headerGuide);
 
-        foreach (ScheduleBoardTimeBoundary labelTime
-            in mRenderedLayout.TimeAxis.LabelTimes)
+        foreach (ScheduleBoardTimeBoundary guideTime
+            in mRenderedLayout.TimeAxis.GuideTimes)
         {
             int rowIndex = 1
-                + mRenderedLayout.TimeAxis.FindBoundaryRowOffset(labelTime);
+                + mRenderedLayout.TimeAxis.FindBoundaryRowOffset(guideTime);
             Border timeGuide = new Border();
-            string gridLineBrushKey = labelTime.IsFullHour
+            string gridLineBrushKey = guideTime.IsFullHour
                 ? "ScheduleHourGridLineBrush"
                 : "ScheduleHalfHourGridLineBrush";
             timeGuide.BorderBrush = findBrush(gridLineBrushKey);
             timeGuide.BorderThickness = new Thickness(0.0, 1.0, 0.0, 0.0);
+            timeGuide.IsHitTestVisible = false;
+            if (guideTime.IsFullHour)
+            {
+                timeGuide.Classes.Add("schedule-hour-guide");
+                timeGuide.Margin = new Thickness(
+                    TIME_COLUMN_WIDTH - HOUR_GUIDE_EXTENSION_WIDTH,
+                    0.0,
+                    0.0,
+                    0.0);
+                Grid.SetColumn(timeGuide, 0);
+                Grid.SetColumnSpan(timeGuide, totalColumnCount);
+            }
+            else
+            {
+                timeGuide.Classes.Add("schedule-half-hour-guide");
+                Grid.SetColumn(timeGuide, 1);
+                Grid.SetColumnSpan(timeGuide, totalColumnCount - 1);
+            }
+
             Grid.SetRow(timeGuide, rowIndex);
-            Grid.SetColumnSpan(timeGuide, totalColumnCount);
             mBoardGrid.Children.Add(timeGuide);
         }
     }
@@ -363,26 +385,27 @@ internal sealed partial class ScheduleBoardView : UserControl
             in mRenderedLayout.TimeAxis.LabelTimes)
         {
             TextBlock timeHeader = new TextBlock();
+            timeHeader.Classes.Add("schedule-time-label");
             timeHeader.Text = labelTime.ToString();
-            timeHeader.FontSize = labelTime.IsFullHour ? 11.0 : 10.5;
-            timeHeader.FontWeight = labelTime.IsFullHour
-                ? FontWeight.SemiBold
-                : FontWeight.Normal;
+            timeHeader.Width = TIME_LABEL_WIDTH;
+            timeHeader.Height = TIME_LABEL_HEIGHT;
+            timeHeader.FontSize = 11.0;
+            timeHeader.FontWeight = FontWeight.SemiBold;
+            timeHeader.LineHeight = TIME_LABEL_HEIGHT;
             timeHeader.Foreground = findBrush("TextSecondaryBrush");
-            timeHeader.TextAlignment = TextAlignment.Center;
-            timeHeader.HorizontalAlignment = HorizontalAlignment.Center;
+            timeHeader.TextAlignment = TextAlignment.Right;
+            timeHeader.HorizontalAlignment = HorizontalAlignment.Right;
             timeHeader.VerticalAlignment = VerticalAlignment.Center;
-            timeHeader.Margin = new Thickness(0.0);
-            int rowOffset =
-                mRenderedLayout.TimeAxis.FindBoundaryRowOffset(labelTime);
-            Grid.SetRow(timeHeader, 1 + rowOffset);
-            Grid.SetRowSpan(
-                timeHeader,
-                Math.Max(
-                    1,
-                    Math.Min(
-                        mRenderedLayout.TimeAxis.GuideIntervalRowCount,
-                        mRenderedLayout.TimeAxis.IncrementCount - rowOffset)));
+            timeHeader.Margin = new Thickness(
+                0.0,
+                0.0,
+                HOUR_GUIDE_EXTENSION_WIDTH + TIME_LABEL_GUIDE_GAP,
+                0.0);
+            timeHeader.IsHitTestVisible = false;
+            int boundaryRowIndex = 1
+                + mRenderedLayout.TimeAxis.FindBoundaryRowOffset(labelTime);
+            Grid.SetRow(timeHeader, boundaryRowIndex - 1);
+            Grid.SetRowSpan(timeHeader, 2);
             Grid.SetColumn(timeHeader, 0);
             mBoardGrid.Children.Add(timeHeader);
         }

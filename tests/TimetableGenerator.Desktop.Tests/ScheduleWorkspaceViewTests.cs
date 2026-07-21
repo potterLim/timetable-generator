@@ -106,16 +106,16 @@ public sealed class ScheduleWorkspaceViewTests
             }
 
             Assert.Equal(
-                new ScheduleBoardTimeBoundary(1_020),
+                new ScheduleBoardTimeBoundary(1_050),
                 scheduleBoard.RenderedLayout.TimeAxis.Start);
             Assert.Equal(
                 new ScheduleBoardTimeBoundary(1_440),
                 scheduleBoard.RenderedLayout.TimeAxis.End);
-            Assert.Equal(85, boardGrid.RowDefinitions.Count);
-            Assert.Contains(13, scheduleRows);
-            Assert.Contains(31, scheduleRows);
-            Assert.Contains(49, scheduleRows);
-            Assert.Contains(67, scheduleRows);
+            Assert.Equal(79, boardGrid.RowDefinitions.Count);
+            Assert.Contains(7, scheduleRows);
+            Assert.Contains(25, scheduleRows);
+            Assert.Contains(43, scheduleRows);
+            Assert.Contains(61, scheduleRows);
             Assert.Contains(
                 "목요일 22:30–23:45",
                 latestScheduleAccessibleNameOrNull);
@@ -235,7 +235,7 @@ public sealed class ScheduleWorkspaceViewTests
     }
 
     [AvaloniaFact]
-    public void ScheduleBoardLabelsEveryHalfHourWithActualTimes()
+    public void ScheduleBoardLabelsWholeHoursAlongThirtyMinuteGuides()
     {
         ScheduleEntry entry = createScheduleEntry(
             EDay.Monday,
@@ -264,20 +264,38 @@ public sealed class ScheduleWorkspaceViewTests
 
             List<TextBlock> timeLabels = boardGridOrNull.Children
                 .OfType<TextBlock>()
-                .Where(textBlock => Grid.GetColumn(textBlock) == 0
-                    && Grid.GetRow(textBlock) > 0)
+                .Where(textBlock =>
+                    textBlock.Classes.Contains("schedule-time-label"))
+                .ToList();
+            List<Border> hourGuides = boardGridOrNull.Children
+                .OfType<Border>()
+                .Where(border =>
+                    border.Classes.Contains("schedule-hour-guide"))
+                .ToList();
+            List<Border> halfHourGuides = boardGridOrNull.Children
+                .OfType<Border>()
+                .Where(border =>
+                    border.Classes.Contains("schedule-half-hour-guide"))
                 .ToList();
 
-            Assert.Equal(20, timeLabels.Count);
+            Assert.Equal(10, timeLabels.Count);
+            Assert.Equal(10, hourGuides.Count);
+            Assert.Equal(10, halfHourGuides.Count);
             Assert.Contains(timeLabels, textBlock => textBlock.Text == "09:00");
-            Assert.Contains(timeLabels, textBlock => textBlock.Text == "18:30");
+            Assert.Contains(timeLabels, textBlock => textBlock.Text == "18:00");
+            Assert.DoesNotContain(
+                timeLabels,
+                textBlock => textBlock.Text?.EndsWith(
+                    ":30",
+                    StringComparison.Ordinal) == true);
             Assert.Equal(
-                new ScheduleBoardTimeBoundary(540),
+                new ScheduleBoardTimeBoundary(510),
                 scheduleBoard.RenderedLayout.TimeAxis.Start);
             Assert.Equal(
                 new ScheduleBoardTimeBoundary(1_140),
                 scheduleBoard.RenderedLayout.TimeAxis.End);
-            Assert.Equal(120, scheduleBoard.RenderedLayout.TimeAxis.IncrementCount);
+            Assert.Equal(126, scheduleBoard.RenderedLayout.TimeAxis.IncrementCount);
+            Assert.Equal(20, scheduleBoard.RenderedLayout.TimeAxis.GuideTimes.Count);
             Assert.DoesNotContain(
                 timeLabels,
                 textBlock => textBlock.Text?.Contains(
@@ -285,18 +303,32 @@ public sealed class ScheduleWorkspaceViewTests
                     StringComparison.Ordinal) == true);
             Assert.All(
                 timeLabels,
-                timeLabel => Assert.Equal(
-                    VerticalAlignment.Center,
-                    timeLabel.VerticalAlignment));
+                timeLabel =>
+                {
+                    Border matchingGuide = Assert.Single(
+                        hourGuides,
+                        guide => Grid.GetRow(guide)
+                            == Grid.GetRow(timeLabel) + 1);
+                    assertTimeLabelIsCenteredOnGuide(
+                        boardGridOrNull,
+                        timeLabel,
+                        matchingGuide);
+                });
             Assert.All(
-                timeLabels,
-                timeLabel => Assert.Equal(new Thickness(0.0), timeLabel.Margin));
+                hourGuides,
+                hourGuide =>
+                {
+                    Assert.Equal(0, Grid.GetColumn(hourGuide));
+                    Assert.Equal(64.0, hourGuide.Margin.Left);
+                });
             Assert.All(
-                timeLabels,
-                timeLabel => assertTimeLabelIsCenteredInItsRows(
-                    boardGridOrNull,
-                    timeLabel));
-            Assert.Equal(121, boardGridOrNull.RowDefinitions.Count);
+                halfHourGuides,
+                halfHourGuide =>
+                {
+                    Assert.Equal(1, Grid.GetColumn(halfHourGuide));
+                    Assert.Equal(new Thickness(0.0), halfHourGuide.Margin);
+                });
+            Assert.Equal(127, boardGridOrNull.RowDefinitions.Count);
         }
         finally
         {
@@ -337,10 +369,10 @@ public sealed class ScheduleWorkspaceViewTests
                 button => Grid.GetColumn(button) == 3);
 
             Assert.Equal(
-                new ScheduleBoardTimeBoundary(510),
+                new ScheduleBoardTimeBoundary(450),
                 scheduleBoard.RenderedLayout.TimeAxis.Start);
-            Assert.Equal(7, Grid.GetRow(mondayCard));
-            Assert.Equal(1, Grid.GetRow(wednesdayCard));
+            Assert.Equal(19, Grid.GetRow(mondayCard));
+            Assert.Equal(13, Grid.GetRow(wednesdayCard));
             Assert.Contains(
                 "월요일 09:00–10:15",
                 AutomationProperties.GetName(mondayCard));
@@ -1432,29 +1464,41 @@ public sealed class ScheduleWorkspaceViewTests
         }
     }
 
-    private static void assertTimeLabelIsCenteredInItsRows(
+    private static void assertTimeLabelIsCenteredOnGuide(
         Grid boardGrid,
-        TextBlock timeLabel)
+        TextBlock timeLabel,
+        Border hourGuide)
     {
-        int firstRowIndex = Grid.GetRow(timeLabel);
-        int rowSpan = Grid.GetRowSpan(timeLabel);
-        double rowTop = 0.0;
-        for (int rowIndex = 0; rowIndex < firstRowIndex; ++rowIndex)
+        Assert.Equal(48.0, timeLabel.Width);
+        Assert.Equal(16.0, timeLabel.Height);
+        Assert.Equal(2, Grid.GetRowSpan(timeLabel));
+        Assert.Equal(TextAlignment.Right, timeLabel.TextAlignment);
+        Assert.Equal(HorizontalAlignment.Right, timeLabel.HorizontalAlignment);
+        Assert.Equal(VerticalAlignment.Center, timeLabel.VerticalAlignment);
+        Assert.Equal(18.0, timeLabel.Margin.Right);
+
+        Point? labelOriginOrNull = timeLabel.TranslatePoint(
+            new Point(0.0, 0.0),
+            boardGrid);
+        Point? guideOriginOrNull = hourGuide.TranslatePoint(
+            new Point(0.0, 0.0),
+            boardGrid);
+        Assert.NotNull(labelOriginOrNull);
+        Assert.NotNull(guideOriginOrNull);
+        if (labelOriginOrNull == null || guideOriginOrNull == null)
         {
-            rowTop += boardGrid.RowDefinitions[rowIndex].ActualHeight;
+            throw new InvalidOperationException(
+                "The time label geometry could not be resolved.");
         }
 
-        double occupiedHeight = 0.0;
-        for (int rowIndex = firstRowIndex;
-            rowIndex < firstRowIndex + rowSpan;
-            ++rowIndex)
-        {
-            occupiedHeight += boardGrid.RowDefinitions[rowIndex].ActualHeight;
-        }
+        double labelCenterY = labelOriginOrNull.Value.Y
+            + (timeLabel.Bounds.Height / 2.0);
+        double guideTopY = guideOriginOrNull.Value.Y;
+        Assert.InRange(Math.Abs(labelCenterY - guideTopY), 0.0, 0.5);
 
-        double expectedCenterY = rowTop + (occupiedHeight / 2.0);
-        double labelCenterY = timeLabel.Bounds.Top + (timeLabel.Bounds.Height / 2.0);
-        Assert.InRange(Math.Abs(expectedCenterY - labelCenterY), 0.0, 0.5);
+        double labelRight = labelOriginOrNull.Value.X + timeLabel.Bounds.Width;
+        double guideLeft = guideOriginOrNull.Value.X;
+        Assert.Equal(10.0, guideLeft - labelRight, 3);
     }
 
     private static SolidColorBrush findRequiredThemeBrush(

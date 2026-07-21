@@ -922,7 +922,7 @@ public sealed class PersonalScheduleInteractionTests
                 .OfType<Button>()
                 .Single();
 
-            Assert.Equal(17, Grid.GetRow(scheduleCard));
+            Assert.Equal(11, Grid.GetRow(scheduleCard));
             Assert.Equal(12, Grid.GetRowSpan(scheduleCard));
             Assert.Contains("personal", scheduleCard.Classes);
             Assert.Contains(
@@ -1205,15 +1205,19 @@ public sealed class PersonalScheduleInteractionTests
                 .ToArray();
 
             Assert.True(scheduleCard.Bounds.Height >= 24.0);
-            Assert.Contains("07:30", labels);
+            Assert.Contains("07:00", labels);
+            Assert.Contains(
+                "월요일 07:40–07:55",
+                AutomationProperties.GetName(scheduleCard));
             Assert.Equal(
-                new ScheduleBoardTimeBoundary(450),
+                new ScheduleBoardTimeBoundary(390),
                 scheduleBoard.RenderedLayout.TimeAxis.Start);
             Assert.Equal(
                 new ScheduleBoardTimeBoundary(1_140),
                 scheduleBoard.RenderedLayout.TimeAxis.End);
-            Assert.Equal(138, scheduleBoard.RenderedLayout.TimeAxis.IncrementCount);
-            Assert.Equal(23, scheduleBoard.RenderedLayout.TimeAxis.LabelTimes.Count);
+            Assert.Equal(150, scheduleBoard.RenderedLayout.TimeAxis.IncrementCount);
+            Assert.Equal(24, scheduleBoard.RenderedLayout.TimeAxis.GuideTimes.Count);
+            Assert.Equal(12, scheduleBoard.RenderedLayout.TimeAxis.LabelTimes.Count);
         }
         finally
         {
