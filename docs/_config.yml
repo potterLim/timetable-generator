@@ -1,0 +1,14 @@
+title: Timetable Generator
+description: 과목을 조합하고 가능한 시간표를 비교하는 데스크톱 앱
+lang: ko-KR
+url: https://potterlim.github.io
+baseurl: /timetable-generator
+permalink: pretty
+exclude:
+  - design
+  - distribution.md
+  - export-icon-assets.md
+  - google-calendar-integration-setup.md
+  - local
+  - macos-release-validation-prompt.md
+  - public-release-checklist.md

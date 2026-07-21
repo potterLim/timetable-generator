@@ -6,7 +6,7 @@
 
 자세한 제품 사용 방법은 [사용 설명서](instruction.md), 학교 원본 `.xls`를 배포 카탈로그로 만드는 절차는 [카탈로그 생성기 안내](tools/TimetableGenerator.HandongCatalogGenerator/README.md)를 참고하세요.
 
-개인정보와 로컬 데이터 처리는 [개인정보 안내](PRIVACY.md), 보안 문제 제보는 [보안 정책](SECURITY.md), 일반적인 사용·설치 문제는 [지원 안내](SUPPORT.md)를 참고하세요.
+개인정보와 로컬 데이터 처리는 [개인정보처리방침](PRIVACY.md), 제품 이용 조건은 [서비스 이용약관](TERMS.md), 보안 문제 제보는 [보안 정책](SECURITY.md), 일반적인 사용·설치 문제는 [지원 안내](SUPPORT.md)를 참고하세요.
 
 ## 제품 경험
 
