@@ -3,10 +3,19 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    <AssemblyTitle>Timetable Generator</AssemblyTitle>
-    <Product>Timetable Generator</Product>
-    <Description>Cross-platform course planning and timetable generation.</Description>
+    <AssemblyName>TimetableGenerator</AssemblyName>
+    <RootNamespace>TimetableGenerator.Desktop</RootNamespace>
+    <AssemblyTitle>시간표</AssemblyTitle>
+    <Product>시간표</Product>
+    <Description>과목을 조합하고 가능한 시간표를 비교하는 Windows 및 macOS 데스크톱 앱.</Description>
     <Version>1.0.0</Version>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <Authors>potterLim</Authors>
+    <Company>potterLim</Company>
+    <Copyright>Copyright © 2026 potterLim</Copyright>
+    <RepositoryUrl>https://github.com/potterLim/timetable-generator</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <NeutralLanguage>ko-KR</NeutralLanguage>
   </PropertyGroup>
 
   <PropertyGroup Condition="('$(RuntimeIdentifier)' == '' And '$(OS)' == 'Windows_NT') Or $([System.Text.RegularExpressions.Regex]::IsMatch('$(RuntimeIdentifier)', '^win(-|$)'))">

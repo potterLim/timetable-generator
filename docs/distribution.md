@@ -18,12 +18,12 @@ pwsh ./scripts/publish-desktop.ps1 -Runtime osx-x64
 pwsh ./scripts/publish-desktop.ps1 -Runtime osx-arm64
 ```
 
-앱 버전은 프로젝트의 `Version`을 사용하며 필요할 때 `-Version 1.0.1`처럼 명시할 수 있습니다. macOS bundle identifier 기본값인 `com.example.timetablegenerator`는 로컬 unsigned 검증 전용 placeholder입니다. 서명하거나 배포할 산출물은 Apple Developer 계정에 등록한 App ID를 반드시 명시해 새로 만듭니다.
+앱 버전은 프로젝트의 `Version`을 사용하며 필요할 때 `-Version 1.0.1`처럼 명시할 수 있습니다. macOS bundle identifier 기본값은 GitHub 사용자 네임스페이스를 기준으로 한 `io.github.potterlim.timetable`입니다. 첫 공개 배포 전에 Apple Developer 계정에 동일한 App ID를 등록하고, 이후 버전과 CPU 아키텍처에서도 변경하지 않습니다.
 
 ```powershell
 pwsh ./scripts/publish-desktop.ps1 `
   -Runtime osx-arm64 `
-  -BundleIdentifier "<registered-reverse-dns-app-id>"
+  -BundleIdentifier "io.github.potterlim.timetable"
 ```
 
 생성 위치는 다음과 같습니다.
@@ -78,7 +78,7 @@ pwsh ./scripts/publish-desktop.ps1 `
 
 ```bash
 APP="artifacts/publish/osx-arm64/시간표.app"
-MAIN="$APP/Contents/MacOS/TimetableGenerator.Desktop"
+MAIN="$APP/Contents/MacOS/TimetableGenerator"
 ENTITLEMENTS="src/TimetableGenerator.Desktop/Platforms/macOS/TimetableGenerator.entitlements"
 IDENTITY="Developer ID Application: YOUR NAME (TEAMID)"
 

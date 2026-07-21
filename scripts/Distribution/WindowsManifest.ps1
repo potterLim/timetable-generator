@@ -25,7 +25,7 @@ function Assert-WindowsApplicationManifest {
 
     $identity = $document.SelectSingleNode("/asm:assembly/asm:assemblyIdentity", $namespaces)
     if ($null -eq $identity -or
-        $identity.GetAttribute("name") -ne "TimetableGenerator.Desktop" -or
+        $identity.GetAttribute("name") -ne "io.github.potterlim.timetable" -or
         $identity.GetAttribute("version") -ne "1.0.0.0") {
         throw "Windows manifest assembly identity가 유효하지 않습니다: $Path"
     }

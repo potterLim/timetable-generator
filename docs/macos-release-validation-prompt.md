@@ -48,10 +48,10 @@
   - `artifacts/publish/osx-arm64/시간표.app`
   - `artifacts/publish/osx-x64/시간표.app`
 - 실행 파일:
-  - `시간표.app/Contents/MacOS/TimetableGenerator.Desktop`
+  - `시간표.app/Contents/MacOS/TimetableGenerator`
 - 현재 배포 형식은 `.app`이 들어 있는 ZIP이며 DMG, PKG, App Store 패키지는 없다.
 - 게시 결과는 기본적으로 unsigned 상태다.
-- 현재 기본 bundle identifier인 `com.example.timetablegenerator`는 로컬 검증용 placeholder이며 실제 공개 배포용으로 인정할 수 없다.
+- 기본 bundle identifier는 `io.github.potterlim.timetable`이며 Apple Developer 계정에 동일한 App ID를 등록해 아키텍처와 버전에 관계없이 유지해야 한다.
 - 로컬 설정 파일은 Git에서 제외되어 있다.
   - `src/TimetableGenerator.Desktop/catalog-source.local.json`
   - `src/TimetableGenerator.Desktop/google-calendar.local.json`
@@ -194,7 +194,7 @@ pwsh ./scripts/publish-desktop.ps1
 
 ```bash
 APP="$PWD/artifacts/publish/$RID/시간표.app"
-MAIN="$APP/Contents/MacOS/TimetableGenerator.Desktop"
+MAIN="$APP/Contents/MacOS/TimetableGenerator"
 INFO="$APP/Contents/Info.plist"
 
 test -d "$APP/Contents/MacOS"
@@ -216,7 +216,7 @@ otool -L "$MAIN"
 다음을 확인하라.
 
 - `CFBundleDisplayName = 시간표`
-- `CFBundleExecutable = TimetableGenerator.Desktop`
+- `CFBundleExecutable = TimetableGenerator`
 - `CFBundleIconFile = AppIcon.icns`
 - `CFBundlePackageType = APPL`
 - `CFBundleSupportedPlatforms = MacOSX`
@@ -249,9 +249,9 @@ QA_UNPACK="$(mktemp -d)"
 ditto -x -k "$ARCHIVE" "$QA_UNPACK"
 
 test -d "$QA_UNPACK/시간표.app"
-test -x "$QA_UNPACK/시간표.app/Contents/MacOS/TimetableGenerator.Desktop"
+test -x "$QA_UNPACK/시간표.app/Contents/MacOS/TimetableGenerator"
 plutil -lint "$QA_UNPACK/시간표.app/Contents/Info.plist"
-file "$QA_UNPACK/시간표.app/Contents/MacOS/TimetableGenerator.Desktop"
+file "$QA_UNPACK/시간표.app/Contents/MacOS/TimetableGenerator"
 ```
 
 게시 디렉터리의 앱과 ZIP에서 새로 풀어낸 앱을 각각 검증하라.
@@ -272,7 +272,7 @@ raw executable 직접 실행은 bundle launch 실패 원인을 진단할 때만 
 /usr/bin/log show \
   --last 10m \
   --style compact \
-  --predicate 'process == "TimetableGenerator.Desktop"'
+  --predicate 'process == "TimetableGenerator"'
 ```
 
 확인할 내용:

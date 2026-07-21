@@ -11,7 +11,7 @@ function Publish-TimetableGeneratorDesktop {
         [string] $Version,
 
         [ValidatePattern("^[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$")]
-        [string] $BundleIdentifier = "com.example.timetablegenerator",
+        [string] $BundleIdentifier = "io.github.potterlim.timetable",
 
         [string] $OutputRoot,
 
