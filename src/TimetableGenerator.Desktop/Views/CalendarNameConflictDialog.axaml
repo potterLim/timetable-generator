@@ -4,64 +4,60 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:icons="using:FluentIcons.Avalonia"
-    Width="520"
+    Width="460"
     SizeToContent="Height"
-    MinHeight="250"
     Title="캘린더 내보내기"
     Icon="/Assets/AppIcon.png"
     CanResize="False"
     ShowInTaskbar="False"
     WindowStartupLocation="CenterOwner"
     AutomationProperties.Name="같은 이름의 캘린더 확인">
-  <Border Padding="28">
-    <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="22">
-      <Grid Grid.Row="0" ColumnDefinitions="44,*" ColumnSpacing="14">
-        <Border
-            Width="44"
-            Height="44"
+  <Border
+      Padding="24"
+      Background="{DynamicResource ElevatedSurfaceBrush}">
+    <StackPanel Spacing="12">
+      <Border
+          Width="44"
+          Height="44"
+          HorizontalAlignment="Center"
+          Background="{DynamicResource AccentTintBrush}"
+          CornerRadius="22">
+        <icons:FluentIcon
+            Width="22"
+            Height="22"
             HorizontalAlignment="Center"
-            VerticalAlignment="Top"
-            Background="{DynamicResource AccentTintBrush}"
-            CornerRadius="22">
-          <icons:FluentIcon
-              Width="22"
-              Height="22"
-              HorizontalAlignment="Center"
-              VerticalAlignment="Center"
-              Icon="CalendarArrowRight"
-              IconVariant="Regular"
-              Foreground="{DynamicResource AccentBrush}"
-              AutomationProperties.AccessibilityView="Raw" />
-        </Border>
-
-        <StackPanel Grid.Column="1" Spacing="7">
-          <TextBlock
-              AutomationProperties.HeadingLevel="1"
-              FontSize="21"
-              FontWeight="SemiBold"
-              Text="같은 이름의 캘린더가 있습니다"
-              TextWrapping="Wrap" />
-          <TextBlock
-              x:Name="AvailableNameDescription"
-              Classes="secondary"
-              LineHeight="21"
-              TextWrapping="Wrap" />
-        </StackPanel>
-      </Grid>
+            VerticalAlignment="Center"
+            Icon="CalendarArrowRight"
+            IconVariant="Regular"
+            Foreground="{DynamicResource AccentBrush}"
+            AutomationProperties.AccessibilityView="Raw" />
+      </Border>
 
       <TextBlock
-          x:Name="ReplacementUnavailableDescription"
-          Grid.Row="1"
+          AutomationProperties.HeadingLevel="1"
+          FontSize="21"
+          FontWeight="SemiBold"
+          Text="같은 이름의 캘린더가 있습니다"
+          TextAlignment="Center"
+          TextWrapping="Wrap" />
+      <TextBlock
+          x:Name="AvailableNameDescription"
           Classes="secondary"
-          Margin="58,0,0,0"
+          LineHeight="21"
+          TextAlignment="Center"
+          TextWrapping="Wrap" />
+      <TextBlock
+          x:Name="ReplacementUnavailableDescription"
+          Classes="secondary"
           LineHeight="20"
           IsVisible="False"
           Text="이 캘린더는 안전하게 대체할 수 없습니다."
+          TextAlignment="Center"
           TextWrapping="Wrap" />
 
       <StackPanel
-          Grid.Row="2"
-          HorizontalAlignment="Right"
+          Margin="0,4,0,0"
+          HorizontalAlignment="Center"
           Orientation="Horizontal"
           Spacing="8">
         <Button
@@ -73,19 +69,20 @@
             AutomationProperties.Name="캘린더 내보내기 취소" />
         <Button
             x:Name="ReplaceButton"
-            Classes="danger"
+            Classes="outline"
             Content="기존 캘린더 대체"
             Click="onReplaceButtonClick"
+            Foreground="{DynamicResource ErrorBrush}"
             AutomationProperties.AutomationId="ReplaceExistingCalendar"
             AutomationProperties.Name="기존 캘린더 대체" />
         <Button
             x:Name="CreateButton"
             Classes="accent"
-            Content="새로 만들기"
+            Content="새 캘린더 만들기"
             Click="onCreateButtonClick"
             AutomationProperties.AutomationId="CreateNumberedCalendar"
             AutomationProperties.Name="번호를 붙여 새 캘린더 만들기" />
       </StackPanel>
-    </Grid>
+    </StackPanel>
   </Border>
 </Window>
