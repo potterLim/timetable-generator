@@ -1,14 +1,15 @@
 ---
 layout: default
 title: Timetable Generator
-description: 과목을 찾고, 충돌 없는 분반 조합을 비교해 나에게 맞는 학기 시간표를 만드는 데스크톱 앱입니다.
+description: Timetable Generator는 대학 수강 과목과 분반을 조합해 충돌 없는 시간표를 만들고 Google Calendar로 내보내는 Windows·macOS 데스크톱 앱입니다.
 permalink: /
 ---
 
 <section class="hero">
-  <p class="eyebrow">Windows · macOS</p>
-  <h1>복잡한 수강 계획을<br>명확한 시간표로.</h1>
-  <p class="hero__summary">과목을 찾고 분반 선호를 정하면 Timetable Generator가 충돌 없는 조합을 계산합니다. 개인 일정까지 함께 배치하고, 완성한 시간표를 이미지와 캘린더로 내보낼 수 있습니다.</p>
+  <p class="eyebrow">Windows · macOS 데스크톱 앱</p>
+  <h1>Timetable Generator</h1>
+  <p class="hero__tagline">복잡한 수강 계획을 명확한 시간표로.</p>
+  <p class="hero__summary">Timetable Generator는 Windows와 macOS에서 과목과 분반을 선택해 충돌 없는 학기 시간표를 만드는 데스크톱 앱입니다. 개인 일정을 함께 배치하고, 완성한 시간표를 이미지와 Google Calendar로 내보낼 수 있습니다.</p>
   <div class="actions">
     <a class="button button--primary" href="https://github.com/potterLim/timetable-generator/releases">GitHub Releases</a>
     <a class="button" href="https://github.com/potterLim/timetable-generator">소스와 사용 안내</a>
