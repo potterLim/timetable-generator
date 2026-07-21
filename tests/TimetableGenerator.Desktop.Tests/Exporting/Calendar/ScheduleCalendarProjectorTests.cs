@@ -54,10 +54,10 @@ public sealed class ScheduleCalendarProjectorTests
 
         RecurringCalendarEvent calendarEvent = Assert.Single(document.Events);
         Assert.Equal(new EDay[] { EDay.Monday, EDay.Thursday }, calendarEvent.Days);
-        Assert.Equal("전자기학(01)", calendarEvent.Content.Summary);
+        Assert.Equal("전자기학", calendarEvent.Content.Summary);
         Assert.Equal("NTH 311", calendarEvent.Content.Location);
         Assert.Equal(
-            "과목 코드: ECE20061\n교수: 김민수",
+            "과목 코드: ECE20061\n분반: 01\n교수: 김민수",
             calendarEvent.Content.Description);
         Assert.Equal(64, calendarEvent.Uid.Value.Length);
         foreach (char character in calendarEvent.Uid.Value)

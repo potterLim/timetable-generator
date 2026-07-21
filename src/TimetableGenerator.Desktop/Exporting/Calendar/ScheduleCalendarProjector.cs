@@ -136,13 +136,14 @@ internal static class ScheduleCalendarProjector
     private static CalendarEventContent createCourseEventContent(
         CourseScheduleEntry entry)
     {
-        string summary = entry.Name + "(" + entry.SectionCode.Value + ")";
+        string summary = entry.Name;
         string location = entry.HasAssignedLocation
             ? entry.LocationDisplayText
             : string.Empty;
         List<string> descriptionLines = new List<string>
         {
             "과목 코드: " + entry.Code,
+            "분반: " + entry.SectionCode.Value,
         };
         if (entry.HasConfirmedInstructor)
         {
