@@ -146,7 +146,7 @@ internal static class ScheduleCalendarProjector
         };
         if (entry.HasConfirmedInstructor)
         {
-            descriptionLines.Add("담당: " + entry.InstructorDisplayText);
+            descriptionLines.Add("교수: " + entry.InstructorDisplayText);
         }
 
         return new CalendarEventContent(

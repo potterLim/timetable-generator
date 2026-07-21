@@ -57,7 +57,7 @@ public sealed class ScheduleCalendarProjectorTests
         Assert.Equal("전자기학(01)", calendarEvent.Content.Summary);
         Assert.Equal("NTH 311", calendarEvent.Content.Location);
         Assert.Equal(
-            "과목 코드: ECE20061\n담당: 김민수",
+            "과목 코드: ECE20061\n교수: 김민수",
             calendarEvent.Content.Description);
         Assert.Equal(64, calendarEvent.Uid.Value.Length);
         foreach (char character in calendarEvent.Uid.Value)
