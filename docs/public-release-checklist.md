@@ -36,6 +36,9 @@ git diff --check
 - [ ] Windows 서명과 macOS 서명·공증·stapling 뒤 `finalize-desktop-release.ps1`의 플랫폼별 단계와 `Aggregate` 단계를 통과시킨다.
 - [ ] GitHub Release에는 최종화된 플랫폼별 ZIP 3개와 `checksums.sha256`만 첨부한다. PDB·테스트 결과·빌드 증거·설정 원본은 별도 자산으로 올리지 않는다.
 - [ ] 최종 ZIP 내부에는 검증된 `catalog-source.local.json`과 `google-calendar.local.json`을 포함하되, 공개 HTTPS 주소와 Desktop OAuth client ID 외의 비밀 값은 포함하지 않는다.
+- [ ] Google Auth Platform의 사용자 유형은 `외부`, 게시 상태는 `프로덕션`으로 설정하고 지인 계정을 테스트 사용자 목록으로 운영하지 않는다.
+- [ ] 배포물의 Google OAuth client ID는 Release 전용 Desktop 클라이언트이며, 각 사용자가 자신의 Google 계정으로 로그인하는 흐름을 실제 계정으로 확인한다.
+- [ ] Google OAuth 검증 상태와 미검증 앱 경고·누적 사용자 제한을 확인하고, 현재 Release에 허용할 상태를 명시적으로 결정한다.
 - [ ] Google OAuth와 Apple Calendar는 전용 QA 계정·캘린더에서 검증한다.
 
 ## 4. Public 전환 직전 GitHub 설정

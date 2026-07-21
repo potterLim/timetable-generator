@@ -65,7 +65,7 @@ pwsh ./scripts/publish-desktop.ps1 `
 
 현재 명령에서 생성하고 검증한 archive의 SHA-256만 `artifacts/publish/checksums.sha256`에 기록됩니다. 따라서 세 대상을 한 파일에서 확인하려면 인수 없이 전체 게시를 실행합니다. macOS zip에는 Mach-O 실행 권한도 보존됩니다.
 
-`catalog-source.local.json`이 Desktop 프로젝트에 있으면 게시 산출물에도 포함됩니다. 이 파일은 Git에서 무시되지만 앱이 서버에 접속하려면 최종 사용자에게 보이는 설정입니다. `google-calendar.local.json`에는 배포용 Desktop OAuth client ID만 넣으며 client secret·access token·refresh token은 절대 넣지 않습니다. 두 설정 파일 중 하나라도 없거나 비어 있거나 스키마 검증에 실패하면 최종화가 중단됩니다.
+`catalog-source.local.json`이 Desktop 프로젝트에 있으면 게시 산출물에도 포함됩니다. 이 파일은 Git에서 무시되지만 앱이 서버에 접속하려면 최종 사용자에게 보이는 설정입니다. `google-calendar.local.json`에는 외부 사용자용 프로덕션 Desktop OAuth client ID만 넣으며 client secret·access token·refresh token은 절대 넣지 않습니다. 이 ID는 제품을 식별할 뿐이며, 실제 사용자는 Google Calendar 내보내기 때 자신의 계정으로 직접 로그인하고 권한을 승인합니다. 두 설정 파일 중 하나라도 없거나 비어 있거나 스키마 검증에 실패하면 최종화가 중단됩니다.
 
 제품에 포함된 Pretendard, Fluent UI System Icons, Avalonia·ANGLE, FluentIcons, SkiaSharp·HarfBuzzSharp, MicroCom, Tmds.DBus.Protocol, self-contained .NET runtime의 원문 라이선스와 third-party notice를 함께 제공합니다. Windows는 `ThirdPartyNotices`, macOS는 `Contents/Resources/ThirdPartyNotices`에 배치하며, 게시·최종화 두 단계가 전체 파일 세트를 검증합니다.
 
