@@ -51,7 +51,7 @@ public sealed class CatalogGenerationServiceTests
     {
         string sourceHtml = HandongExportTestHtml.Create()
             .Replace(
-                "<td>GLS&nbsp;주간<br><font color=\"blue\">이상훈</font></td>",
+                "<td>GLS&nbsp;주간<br><font color=\"blue\">테스트 담당자</font></td>",
                 "<td>GLS&nbsp;주간<br><font color=\"blue\">Unconfirmed</font></td>",
                 StringComparison.Ordinal)
             .Replace(
@@ -89,7 +89,10 @@ public sealed class CatalogGenerationServiceTests
     {
         string sourceHtml = HandongExportTestHtml.Create()
             .Replace("Tue5,Fri5", "Tue5,Fr", StringComparison.Ordinal)
-            .Replace("이상훈</font>", "이상훈 외 2명</font>", StringComparison.Ordinal)
+            .Replace(
+                "테스트 담당자</font>",
+                "테스트 담당자 외 2명</font>",
+                StringComparison.Ordinal)
             .Replace("<td>2</td>", "<td>.5</td>", StringComparison.Ordinal);
         using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(sourceHtml))
         using (TemporaryCatalogOutputRoot outputRoot = new TemporaryCatalogOutputRoot())
@@ -111,7 +114,9 @@ public sealed class CatalogGenerationServiceTests
                 Assert.AreEqual(0.5m, course.GetProperty("credits").GetDecimal());
                 Assert.AreEqual("화5,금5", schedule.GetProperty("sourceTextKo").GetString());
                 Assert.HasCount(2, schedule.GetProperty("slots").EnumerateArray());
-                Assert.AreEqual("이상훈 외 2명", instructor.GetProperty("displayText").GetString());
+                Assert.AreEqual(
+                    "테스트 담당자 외 2명",
+                    instructor.GetProperty("displayText").GetString());
                 Assert.AreEqual(2, instructor.GetProperty("additionalInstructorCount").GetInt32());
             }
 
@@ -168,7 +173,7 @@ public sealed class CatalogGenerationServiceTests
             Assert.AreEqual("01", offering.GetProperty("sectionCode").GetString());
             Assert.AreEqual("scheduled", offering.GetProperty("schedule").GetProperty("status").GetString());
             Assert.AreEqual(
-                "이상훈",
+                "테스트 담당자",
                 offering.GetProperty("instructorAssignment").GetProperty("displayText").GetString());
         }
     }

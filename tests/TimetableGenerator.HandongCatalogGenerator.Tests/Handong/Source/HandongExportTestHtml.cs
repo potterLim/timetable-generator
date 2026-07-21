@@ -33,7 +33,7 @@ internal static class HandongExportTestHtml
         "<td>01</td>",
         "<td>소프트웨어 입문<br>(Introduction to Programming)</td>",
         "<td>2</td>",
-        "<td>GLS&nbsp;주간<br><font color=\"blue\">이상훈</font></td>",
+        "<td>GLS&nbsp;주간<br><font color=\"blue\">테스트 담당자</font></td>",
         "<td>화5,금5<br>Tue5,Fri5<br><br><br></td>",
         "<td>HDH 403&nbsp;</td>",
         "<td>45</td>",
@@ -43,7 +43,7 @@ internal static class HandongExportTestHtml
         "<td>A+&nbsp;</td>",
         "<td>Y&nbsp;</td>",
         "<td>&nbsp;</td>",
-        "<td><a href=\"javascript:senditpop('PLES330M_POP.php?" +
+        "<td><a href=\"javascript:senditpop('course-popup.php?" +
             "kang_gwamok_code=GCS10001&amp;kang_bunban=01&amp;" +
             "kang_yy=2026&amp;kang_hakgi=2')\">조회</a></td>",
     };
@@ -98,7 +98,7 @@ internal static class HandongExportTestHtml
         documentBuilder.AppendLine("<body>");
         documentBuilder.AppendLine(
             "Warning: ociexecute(): ORA-00923 in " +
-            "/home/export/var_www/html/config/config.php on line 409");
+            "/srv/example/app/config.php on line 409");
         documentBuilder.AppendLine("<table>");
         appendRow(documentBuilder, headerCells);
         appendRow(documentBuilder, offeringCells);

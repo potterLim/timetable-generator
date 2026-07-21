@@ -58,7 +58,7 @@ public sealed class CatalogPublishingContractTests
                 package.Document.Catalog.Offerings);
             Assert.HasCount(2, package.Document.Catalog.Offerings[0].MeetingSchedule.Slots);
             Assert.AreEqual(
-                "이상훈",
+                "테스트 담당자",
                 package.Document.OfferingMetadata[0]
                     .Instruction
                     .InstructorAssignment

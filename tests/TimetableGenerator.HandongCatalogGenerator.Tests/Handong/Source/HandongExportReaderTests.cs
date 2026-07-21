@@ -55,7 +55,7 @@ public sealed class HandongExportReaderTests
                 new string[] { "소프트웨어 입문", "(Introduction to Programming)" },
                 toArray(row.GetCellLines(EHandongColumn.CourseName)));
             CollectionAssert.AreEqual(
-                new string[] { "GLS 주간", "이상훈" },
+                new string[] { "GLS 주간", "테스트 담당자" },
                 toArray(row.GetCellLines(EHandongColumn.OfferingInformation)));
             CollectionAssert.AreEqual(
                 new string[] { "화5,금5", "Tue5,Fri5" },
@@ -83,7 +83,7 @@ public sealed class HandongExportReaderTests
 
             string catalogText = catalogTextBuilder.ToString();
             Assert.IsFalse(catalogText.Contains("ORA-00923", StringComparison.Ordinal));
-            Assert.IsFalse(catalogText.Contains("/home/export/", StringComparison.Ordinal));
+            Assert.IsFalse(catalogText.Contains("/srv/example/", StringComparison.Ordinal));
             Assert.HasCount(1, document.Rows);
         }
     }

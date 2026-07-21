@@ -65,7 +65,8 @@ App_Data/
 /src/TimetableGenerator.Desktop/catalog-source.local.json
 /src/TimetableGenerator.Desktop/google-calendar.local.json
 /artifacts/
-/tests/TimetableGenerator.Desktop.Tests/TestResults/
+/docs/local/
+**/TestResults/
 
 # macOS metadata
 .DS_Store
@@ -82,23 +83,58 @@ ScaffoldingReadMe.txt
 # StyleCop
 StyleCop.Cache
 
-# Python environments & Source files
+# Local environment and secret files
+.env
+.env.*
+!.env.example
+!.env.*.example
 *.env
+secrets*.json
+appsettings.*.local.json
+
+# Python environments & source files
 *.venv
 ENV/
 env/
 venv/
-*.py
+__pycache__/
+*.py[cod]
 
-# Text documents
-*.txt
+# Test and coverage reports
+*.trx
+*.coverage
+*.coveragexml
+/coverage/
+
+# Logs and local reports
+*.log
 
 # Java class files
 *.class
 
-# Certificates
+# Certificates and signing credentials
+*.pem
+*.key
+*.cer
+*.crt
 *.pfx
 *.p12
+AuthKey_*.p8
+*.snk
+*.jks
+*.keystore
+*.mobileprovision
+
+# School source workbooks and generated catalogs
+*.xls
+*.xlsx
+*.xlsm
+catalog-r*.json
+/index.json
+
+# Local planning workspaces
+workspace-v*.json
+workspace-v*.g*.json
 
 # Visual Studio Code workspace
 *.code-workspace
@@ -121,9 +157,5 @@ venv/
 *.orig
 *.tmp
 
-# Lock files
+# Temporary lock files
 ~$*
-*.lock
-
-# PDF documents
-*.pdf

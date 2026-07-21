@@ -1,22 +1,8 @@
 # 제품 디자인 QA
 
-## 비교 자료
+## 검증 자료 정책
 
-- 레이아웃 기준: `docs/design/planning-workspace-target.png`
-- 라이트 색상 기준: `docs/design/theme-target-light-blue-mist.png`
-- 다크 색상 기준: `docs/design/theme-target-dark-obsidian.png`
-- 라이트 기준·실행본 병렬 비교: `tests/TimetableGenerator.Desktop.Tests/TestResults/theme-polish-2026-07-17/comparison-light-target-vs-app.png`
-- 다크 기준·실행본 병렬 비교: `tests/TimetableGenerator.Desktop.Tests/TestResults/theme-polish-2026-07-17/comparison-dark-target-vs-app.png`
-- 최종 라이트 화면 모드 메뉴: `tests/TimetableGenerator.Desktop.Tests/TestResults/theme-polish-2026-07-17/06-light-appearance-final.png`
-- 최종 다크 화면 모드 메뉴: `tests/TimetableGenerator.Desktop.Tests/TestResults/theme-polish-2026-07-17/06-dark-appearance-final.png`
-- 최종 라이트 과목 선택 상태: `tests/TimetableGenerator.Desktop.Tests/TestResults/theme-polish-2026-07-17/07-light-selected-final.png`
-- 최종 다크 과목 선택 상태: `tests/TimetableGenerator.Desktop.Tests/TestResults/theme-polish-2026-07-17/05-dark-selected-product-button.png`
-- 최종 중앙 우선 Windows 화면: `tests/TimetableGenerator.Desktop.Tests/TestResults/layout-polish-2026-07-17/01-windows-selected-final.png`
-- 최종 반응형 인스펙터와 닫기 동작: `tests/TimetableGenerator.Desktop.Tests/TestResults/layout-polish-2026-07-17/03-inspector-dismiss-final.png`
-- 최종 다크 상단 작업 영역: `tests/TimetableGenerator.Desktop.Tests/TestResults/action-polish-2026-07-17/05-dark-actions-printwindow.png`
-- 최종 내 계획 진입·닫기 흐름: `tests/TimetableGenerator.Desktop.Tests/TestResults/action-polish-2026-07-17/06-dark-inspector-printwindow.png`
-- 검증 창 크기: 1718 × 916 px, DWM 가시 프레임 캡처: 1702 × 908 px
-- 최종 레이아웃 검증 Windows 프레임: 1818 × 969 px
+화면 캡처와 렌더링 비교 결과는 Git에서 무시되는 `artifacts/qa` 또는 테스트 결과 디렉터리에 생성한다. 공개 저장소에는 실제 카탈로그의 과목·담당자 정보나 사용자 계획이 보이는 이미지를 커밋하지 않는다.
 
 ## 최종 판정
 

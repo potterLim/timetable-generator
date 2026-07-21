@@ -1,9 +1,6 @@
 # 제품 UI 구현 기준
 
-레이아웃은 [`planning-workspace-target.png`](planning-workspace-target.png), 최종 색상과 표면 계층은 아래 두 시안을 기준으로 사용한다.
-
-- 라이트: [`theme-target-light-blue-mist.png`](theme-target-light-blue-mist.png)
-- 다크: [`theme-target-dark-obsidian.png`](theme-target-dark-obsidian.png)
+이 문서는 제품 레이아웃, 상호작용, 색상과 타이포그래피의 구현 기준을 기록한다. 특정 학기 카탈로그나 사용자 계획이 포함된 화면 캡처는 저장소에 보관하지 않는다.
 
 ## 핵심 작업
 
