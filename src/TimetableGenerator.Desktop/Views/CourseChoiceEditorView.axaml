@@ -3,6 +3,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:icons="using:FluentIcons.Avalonia"
+    xmlns:local="using:TimetableGenerator.Desktop.Views"
     xmlns:models="using:TimetableGenerator.Desktop.Presentation.Models"
     xmlns:viewModels="using:TimetableGenerator.Desktop.Presentation.ViewModels"
     x:DataType="viewModels:PlannerWorkspaceViewModel"
@@ -250,10 +251,10 @@
                   ToolTip.Tip="여러 과목 중 하나만 들으면 될 때 같은 선택으로 묶으세요." />
             </StackPanel>
             <Grid>
-              <TextBox
+              <local:CompositionAwareSearchTextBox
                   x:Name="AlternativeCourseSearchBox"
                   Padding="36,0,12,0"
-                  Text="{Binding AlternativeCourseSearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                  QueryText="{Binding AlternativeCourseSearchText, Mode=TwoWay}"
                   PlaceholderText="과목명 또는 코드 검색"
                   AutomationProperties.AutomationId="AlternativeCourseSearchBox"
                   AutomationProperties.Name="대안 과목 검색" />

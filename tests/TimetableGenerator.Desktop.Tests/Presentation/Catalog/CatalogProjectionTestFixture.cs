@@ -67,6 +67,97 @@ internal static class CatalogProjectionTestFixture
             false);
     }
 
+    public static CourseCatalogDocument CreateKoreanImeSearchDocument()
+    {
+        CourseCatalogDocument template = CreateDocument();
+        CatalogCourse physicalChemistryCourse = new CatalogCourse(
+            new CourseId("course-physical-chemistry"),
+            new CourseCode("CHE20001"),
+            new KoreanCourseName("물리 화학"),
+            new EnglishCourseName("Physical Chemistry"),
+            new CourseCredits(3m));
+        CatalogCourse physicsCourse = new CatalogCourse(
+            new CourseId("course-physics"),
+            new CourseCode("PHY10001"),
+            new KoreanCourseName("물리학"),
+            new EnglishCourseName("Physics"),
+            new CourseCredits(3m));
+        CatalogOffering physicalChemistryOffering = new CatalogOffering(
+            new OfferingId("offering-physical-chemistry"),
+            physicalChemistryCourse.Id,
+            new CourseSectionCode("01"),
+            MeetingSchedule.CreateScheduled(
+                new MeetingSlot[]
+                {
+                    new MeetingSlot(EDay.Monday, new AcademicPeriod(1)),
+                }));
+        CatalogOffering physicsOffering = new CatalogOffering(
+            new OfferingId("offering-physics"),
+            physicsCourse.Id,
+            new CourseSectionCode("01"),
+            MeetingSchedule.CreateScheduled(
+                new MeetingSlot[]
+                {
+                    new MeetingSlot(EDay.Tuesday, new AcademicPeriod(2)),
+                }));
+        CourseCatalog catalog = new CourseCatalog(
+            new CatalogId("handong-global-university:2026-2:r0001"),
+            template.Catalog.InstitutionId,
+            template.Catalog.InstitutionName,
+            template.Catalog.Term,
+            template.Catalog.Revision,
+            new CatalogCourse[] { physicalChemistryCourse, physicsCourse },
+            new CatalogOffering[]
+            {
+                physicalChemistryOffering,
+                physicsOffering,
+            });
+        CatalogOfferingMetadata physicalChemistryMetadata =
+            createScheduledMetadata(
+                physicalChemistryOffering.Id,
+                ERequirementType.MajorElective,
+                new OfferingUnitName("자연과학부"),
+                InstructorAssignmentMetadata.NotProvided,
+                LocationAssignmentMetadata.NotProvided,
+                new KoreanScheduleSourceText("월1"),
+                new SourceRecordNumber(1));
+        CatalogOfferingMetadata physicsMetadata = createScheduledMetadata(
+            physicsOffering.Id,
+            ERequirementType.MajorElective,
+            new OfferingUnitName("자연과학부"),
+            InstructorAssignmentMetadata.NotProvided,
+            LocationAssignmentMetadata.NotProvided,
+            new KoreanScheduleSourceText("화2"),
+            new SourceRecordNumber(2));
+        CatalogDocumentCounts counts = new CatalogDocumentCounts(
+            new CatalogCourseCount(2),
+            new CatalogOfferingCount(2),
+            new CatalogScheduledOfferingCount(2),
+            new CatalogMeetingNotProvidedCount(0));
+        CatalogDataQualityMetadata dataQuality = new CatalogDataQualityMetadata(
+            EScheduleNormalizationSource.KoreanPeriodText,
+            new CatalogSourceEnglishScheduleMismatchCount(0),
+            new CatalogRoomNotProvidedCount(2),
+            new CatalogEnrollmentNotProvidedCount(2),
+            new CatalogInstructorUnconfirmedCount(0),
+            new CatalogMultiInstructorDisplayCount(0),
+            new CatalogSourceRemarkLookupOnlyCount(0),
+            Array.Empty<CatalogManualReview>());
+
+        return new CourseCatalogDocument(
+            catalog,
+            template.Institution,
+            template.Source,
+            template.Converter,
+            counts,
+            dataQuality,
+            new CatalogOfferingMetadata[]
+            {
+                physicalChemistryMetadata,
+                physicsMetadata,
+            });
+    }
+
     public static ScheduleRecommendation CreateRecommendation(CourseCatalogDocument document)
     {
         if (document == null)

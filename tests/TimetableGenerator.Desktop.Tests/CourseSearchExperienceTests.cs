@@ -4,6 +4,7 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
@@ -169,6 +170,182 @@ public sealed class CourseSearchExperienceTests
             Assert.Same(
                 initialResult,
                 Assert.Single(workspace.AlternativeCourseSearchResults));
+        }
+    }
+
+    [AvaloniaFact]
+    public void MainSearchTracksKoreanImeCompositionBeforeCommitAndAcceptsFirstClick()
+    {
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspaceWithEmptyPlan(
+                CatalogProjectionTestFixture.CreateKoreanImeSearchDocument());
+        CourseBrowserView courseBrowser = new CourseBrowserView();
+        courseBrowser.DataContext = workspace;
+        Window window = new Window();
+        window.Width = 390.0;
+        window.Height = 820.0;
+        window.Content = courseBrowser;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            TextBox searchBox = findRequiredControl<TextBox>(
+                courseBrowser,
+                "CourseSearchBox");
+            TextPresenter textPresenter = searchBox.GetVisualDescendants()
+                .OfType<TextPresenter>()
+                .Single();
+            searchBox.Text = "물리";
+            searchBox.CaretIndex = searchBox.Text.Length;
+            Dispatcher.UIThread.RunJobs();
+
+            textPresenter.PreeditText = "ㅎ";
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal("물리ㅎ", workspace.SearchText);
+
+            textPresenter.PreeditText = "하";
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal("물리하", workspace.SearchText);
+
+            textPresenter.PreeditText = "학";
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal("물리학", workspace.SearchText);
+            CourseSearchItem physics = Assert.Single(workspace.VisibleCourses);
+            Assert.Equal("PHY10001", physics.Code);
+            Button addButton = findButtonByAccessibleName(
+                courseBrowser,
+                physics.AddButtonAccessibleName);
+            int collectionChangedCount = 0;
+            workspace.VisibleCourses.CollectionChanged += delegate
+            {
+                ++collectionChangedCount;
+            };
+            Point addButtonCenter = findControlCenter(window, addButton);
+            window.MouseMove(addButtonCenter, RawInputModifiers.None);
+            window.MouseDown(
+                addButtonCenter,
+                MouseButton.Left,
+                RawInputModifiers.None);
+
+            searchBox.Text = "물리학";
+            textPresenter.PreeditText = null;
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal(0, collectionChangedCount);
+            Assert.Same(physics, Assert.Single(workspace.VisibleCourses));
+            Assert.Contains(
+                addButton,
+                courseBrowser.GetVisualDescendants().OfType<Button>());
+
+            window.MouseUp(
+                addButtonCenter,
+                MouseButton.Left,
+                RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(physics.IsAdded);
+            Assert.Equal(1, workspace.ActivePlan.SelectedCourseCount);
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
+    public void AlternativeSearchTracksKoreanImeCompositionBeforeCommit()
+    {
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace(
+                CatalogProjectionTestFixture
+                    .CreateDocumentWithScheduledAlternativeCourse());
+        workspace.ActivePlan = workspace.Plans[1];
+        workspace.SearchText = "프로그래밍";
+        CourseSearchItem programming = Assert.Single(workspace.VisibleCourses);
+        workspace.AddCourseCommand.Execute(programming);
+        CourseChoiceEditorView courseChoiceEditor = new CourseChoiceEditorView();
+        courseChoiceEditor.DataContext = workspace;
+        Window window = new Window();
+        window.Width = 940.0;
+        window.Height = 820.0;
+        window.Content = courseChoiceEditor;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            TextBox searchBox = findRequiredControl<TextBox>(
+                courseChoiceEditor,
+                "AlternativeCourseSearchBox");
+            TextPresenter textPresenter = searchBox.GetVisualDescendants()
+                .OfType<TextPresenter>()
+                .Single();
+            searchBox.Text = "세미";
+            searchBox.CaretIndex = searchBox.Text.Length;
+            Dispatcher.UIThread.RunJobs();
+
+            textPresenter.PreeditText = "나";
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal("세미나", workspace.AlternativeCourseSearchText);
+            CourseChoiceAlternativeSearchItem seminar = Assert.Single(
+                workspace.AlternativeCourseSearchResults);
+            Button addButton = findButtonByAccessibleName(
+                courseChoiceEditor,
+                seminar.AddButtonAccessibleName);
+            addButton.Command?.Execute(addButton.CommandParameter);
+
+            Assert.Equal(2, workspace.CourseChoiceDraftCourses.Count);
+            Assert.Single(
+                workspace.CourseChoiceDraftCourses,
+                candidate => candidate.CourseId == seminar.CourseId);
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
+    public void CompositionAwareSearchInsertsAndCancelsPreeditAtTheCaret()
+    {
+        CompositionAwareSearchTextBox searchBox =
+            new CompositionAwareSearchTextBox();
+        Window window = new Window();
+        window.Width = 390.0;
+        window.Height = 160.0;
+        window.Content = searchBox;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            TextPresenter textPresenter = searchBox.GetVisualDescendants()
+                .OfType<TextPresenter>()
+                .Single();
+            searchBox.Text = "물학";
+            searchBox.CaretIndex = 1;
+            Dispatcher.UIThread.RunJobs();
+
+            textPresenter.PreeditText = "리";
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal("물리학", searchBox.QueryText);
+
+            textPresenter.PreeditText = null;
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal("물학", searchBox.QueryText);
+
+            searchBox.QueryText = "물리학";
+            Dispatcher.UIThread.RunJobs();
+            Assert.Equal("물리학", searchBox.Text);
+            Assert.Equal(searchBox.Text.Length, searchBox.CaretIndex);
+        }
+        finally
+        {
+            window.Close();
         }
     }
 

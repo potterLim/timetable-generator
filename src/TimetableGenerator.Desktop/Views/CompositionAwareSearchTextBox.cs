@@ -1,0 +1,217 @@
+using System;
+using System.Diagnostics.CodeAnalysis;
+
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
+using Avalonia.Data;
+
+namespace TimetableGenerator.Desktop.Views;
+
+internal sealed class CompositionAwareSearchTextBox : TextBox
+{
+    [SuppressMessage(
+        "Style",
+        "IDE1006:Naming Styles",
+        Justification = "Avalonia requires the {PropertyName}Property field convention.")]
+    public static readonly StyledProperty<string>
+        QueryTextProperty = AvaloniaProperty.Register<
+            CompositionAwareSearchTextBox,
+            string>(
+                nameof(QueryText),
+                string.Empty,
+                defaultBindingMode: BindingMode.TwoWay);
+
+    private TextPresenter? mTextPresenterOrNull;
+
+    private bool mIsApplyingQueryText;
+
+    private bool mIsPublishingQueryText;
+
+    private bool mIsPresenterSubscriptionActive;
+
+    protected override Type StyleKeyOverride
+    {
+        get
+        {
+            return typeof(TextBox);
+        }
+    }
+
+    public string QueryText
+    {
+        get
+        {
+            return GetValue(QueryTextProperty);
+        }
+        set
+        {
+            SetValue(QueryTextProperty, value ?? string.Empty);
+        }
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs eventArguments)
+    {
+        unsubscribeFromTextPresenter();
+        base.OnApplyTemplate(eventArguments);
+
+        mTextPresenterOrNull = eventArguments.NameScope.Get<TextPresenter>(
+            "PART_TextPresenter");
+        subscribeToTextPresenter();
+        publishVisibleQueryText();
+    }
+
+    protected override void OnAttachedToVisualTree(
+        VisualTreeAttachmentEventArgs eventArguments)
+    {
+        base.OnAttachedToVisualTree(eventArguments);
+        subscribeToTextPresenter();
+        publishVisibleQueryText();
+    }
+
+    protected override void OnDetachedFromVisualTree(
+        VisualTreeAttachmentEventArgs eventArguments)
+    {
+        unsubscribeFromTextPresenter();
+        base.OnDetachedFromVisualTree(eventArguments);
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+
+        if (change.Property == QueryTextProperty)
+        {
+            applyQueryText(change.GetNewValue<string>());
+            return;
+        }
+
+        if (change.Property == TextProperty)
+        {
+            publishCommittedQueryText();
+            return;
+        }
+
+        if (change.Property == CaretIndexProperty
+            && hasPreeditText())
+        {
+            publishVisibleQueryText();
+        }
+    }
+
+    private void applyQueryText(string? queryTextOrNull)
+    {
+        if (mIsPublishingQueryText)
+        {
+            return;
+        }
+
+        string queryText = queryTextOrNull ?? string.Empty;
+        if (string.Equals(queryText, createVisibleQueryText(), StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        mIsApplyingQueryText = true;
+        try
+        {
+            SetCurrentValue(TextProperty, queryText);
+            SetCurrentValue(CaretIndexProperty, queryText.Length);
+            SetCurrentValue(SelectionStartProperty, queryText.Length);
+            SetCurrentValue(SelectionEndProperty, queryText.Length);
+        }
+        finally
+        {
+            mIsApplyingQueryText = false;
+        }
+    }
+
+    private string createVisibleQueryText()
+    {
+        string committedText = Text ?? string.Empty;
+        string preeditText = mTextPresenterOrNull?.PreeditText ?? string.Empty;
+        if (preeditText.Length == 0)
+        {
+            return committedText;
+        }
+
+        int insertionIndex = Math.Clamp(CaretIndex, 0, committedText.Length);
+        return committedText.Insert(insertionIndex, preeditText);
+    }
+
+    private bool hasPreeditText()
+    {
+        return string.IsNullOrEmpty(mTextPresenterOrNull?.PreeditText) == false;
+    }
+
+    private void onTextPresenterPropertyChanged(
+        object? senderOrNull,
+        AvaloniaPropertyChangedEventArgs eventArguments)
+    {
+        if (eventArguments.Property == TextPresenter.PreeditTextProperty)
+        {
+            publishVisibleQueryText();
+        }
+    }
+
+    private void publishCommittedQueryText()
+    {
+        if (mIsApplyingQueryText)
+        {
+            return;
+        }
+
+        publishQueryText(Text ?? string.Empty);
+    }
+
+    private void publishQueryText(string queryText)
+    {
+        if (string.Equals(QueryText, queryText, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        mIsPublishingQueryText = true;
+        try
+        {
+            SetCurrentValue(QueryTextProperty, queryText);
+        }
+        finally
+        {
+            mIsPublishingQueryText = false;
+        }
+    }
+
+    private void publishVisibleQueryText()
+    {
+        if (mIsApplyingQueryText)
+        {
+            return;
+        }
+
+        publishQueryText(createVisibleQueryText());
+    }
+
+    private void subscribeToTextPresenter()
+    {
+        if (mTextPresenterOrNull == null || mIsPresenterSubscriptionActive)
+        {
+            return;
+        }
+
+        mTextPresenterOrNull.PropertyChanged += onTextPresenterPropertyChanged;
+        mIsPresenterSubscriptionActive = true;
+    }
+
+    private void unsubscribeFromTextPresenter()
+    {
+        if (mTextPresenterOrNull == null || mIsPresenterSubscriptionActive == false)
+        {
+            return;
+        }
+
+        mTextPresenterOrNull.PropertyChanged -= onTextPresenterPropertyChanged;
+        mIsPresenterSubscriptionActive = false;
+    }
+}

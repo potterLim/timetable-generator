@@ -109,6 +109,37 @@ internal static class PlannerWorkspaceTestFactory
             new ImmediatePlanningWorkspaceStore());
     }
 
+    public static PlannerWorkspaceViewModel CreateWorkspaceWithEmptyPlan(
+        CourseCatalogDocument document)
+    {
+        if (document == null)
+        {
+            throw new ArgumentNullException(nameof(document));
+        }
+
+        IScheduleRecommendationProvider recommendationProvider =
+            new CatalogScheduleRecommendationProvider(document.Catalog);
+        PlanCatalogBinding binding = createCatalogBinding(document);
+        PlanId planId = PlanId.CreateNew();
+        PlanningPlan plan = new PlanningPlan(
+            planId,
+            new PlanName("검색 테스트"),
+            binding,
+            new PlanningPlanContent(
+                Array.Empty<CourseChoiceGroup>(),
+                Array.Empty<UnscheduledOfferingSelection>(),
+                Array.Empty<PersonalSchedule>()));
+        PlanningWorkspace workspace = new PlanningWorkspace(
+            binding,
+            planId,
+            new PlanningPlan[] { plan });
+        return createWorkspaceFromSnapshot(
+            document,
+            recommendationProvider,
+            workspace,
+            new ImmediatePlanningWorkspaceStore());
+    }
+
     public static PlannerWorkspaceViewModel CreateWorkspaceWithoutPlans()
     {
         return CreateWorkspaceWithoutPlans(new ImmediatePlanningWorkspaceStore());
