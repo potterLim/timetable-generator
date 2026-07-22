@@ -235,6 +235,38 @@ public sealed class ScheduleWorkspaceCalendarExportTests
     }
 
     [AvaloniaFact]
+    public async Task ExpiredGoogleAuthorizationExplainsThatTheUserCanRetryAsync()
+    {
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+        await workspace.RecommendationRefreshTask;
+        RecordingGoogleCalendarExporter googleExporter =
+            new RecordingGoogleCalendarExporter(
+                GoogleCalendarExportResult.Fail(
+                    EGoogleCalendarExportStatus.AuthenticationFailed,
+                    "authorization_timeout"));
+        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
+            createServices(
+                googleExporter,
+                createUnavailableAppleExporter()));
+        workspaceView.DataContext = workspace;
+        Window window = showInWindow(workspaceView);
+
+        try
+        {
+            AsyncDelegateCommand command = Assert.IsType<AsyncDelegateCommand>(workspaceView.ExportGoogleCalendarCommand);
+            command.Execute(null);
+            await command.ExecutionTask;
+
+            TextBlock status = findRequiredTextBlock(workspaceView, "ExportStatusText");
+            Assert.Equal("Google 로그인 시간이 만료되었습니다. 다시 시도해 주세요.", status.Text);
+        }
+        finally
+        {
+            await closeWindowAsync(window, workspaceView);
+        }
+    }
+
+    [AvaloniaFact]
     public async Task MacExportMenuAndExportUseTheCurrentPlanCalendarAsync()
     {
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();

@@ -272,7 +272,15 @@ internal sealed partial class ScheduleWorkspaceView
                 clearExportStatus();
                 break;
             case EGoogleCalendarExportStatus.AuthenticationFailed:
-                showTransientExportStatus("Google 캘린더 연결을 완료하지 못했습니다.", EExportStatus.Failure);
+                if (string.Equals(result.DiagnosticCodeOrNull, "authorization_timeout", StringComparison.Ordinal))
+                {
+                    showTransientExportStatus("Google 로그인 시간이 만료되었습니다. 다시 시도해 주세요.", EExportStatus.Failure);
+                }
+                else
+                {
+                    showTransientExportStatus("Google 캘린더 연결을 완료하지 못했습니다.", EExportStatus.Failure);
+                }
+
                 break;
             case EGoogleCalendarExportStatus.AccessDenied:
                 showTransientExportStatus("Google 캘린더 권한을 확인해 주세요.", EExportStatus.Failure);

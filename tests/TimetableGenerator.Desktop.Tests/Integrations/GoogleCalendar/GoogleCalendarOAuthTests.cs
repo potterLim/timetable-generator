@@ -249,6 +249,14 @@ public sealed class GoogleCalendarOAuthTests
     }
 
     [Fact]
+    public void InteractiveAuthorizationAllowsTenMinutesForAccountSelectionAndConsent()
+    {
+        Assert.Equal(
+            TimeSpan.FromMinutes(10.0),
+            LoopbackGoogleOAuthAuthorizationCodeProvider.DEFAULT_AUTHORIZATION_TIMEOUT);
+    }
+
+    [Fact]
     public async Task TokenEndpointTimeoutIsReportedAsNetworkFailureAsync()
     {
         GoogleCalendarOAuthClient client = createInteractiveClient(new TimeoutHttpMessageHandler());

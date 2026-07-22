@@ -22,6 +22,8 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
 
     private const string SUCCESS_PAGE_SCRIPT = "history.replaceState(null,document.title,'/');" + "window.setTimeout(function(){window.close();},800);";
 
+    internal static readonly TimeSpan DEFAULT_AUTHORIZATION_TIMEOUT = TimeSpan.FromMinutes(10.0);
+
     private static readonly Uri AUTHORIZATION_ENDPOINT = new Uri("https://accounts.google.com/o/oauth2/v2/auth", UriKind.Absolute);
 
     private static readonly TimeSpan CONNECTION_TIMEOUT = TimeSpan.FromSeconds(5.0);
@@ -30,7 +32,7 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
     private readonly TimeSpan mAuthorizationTimeout;
 
     public LoopbackGoogleOAuthAuthorizationCodeProvider(IExternalBrowserLauncher browserLauncher)
-        : this(browserLauncher, TimeSpan.FromMinutes(5.0))
+        : this(browserLauncher, DEFAULT_AUTHORIZATION_TIMEOUT)
     {
     }
 
