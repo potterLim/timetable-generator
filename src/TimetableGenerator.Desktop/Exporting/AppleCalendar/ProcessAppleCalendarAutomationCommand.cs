@@ -105,58 +105,55 @@ internal sealed class ProcessAppleCalendarAutomationCommand
         string requestPath,
         CancellationToken cancellationToken)
     {
-        using Process process = new Process
+        using (Process process = new Process())
         {
-            StartInfo = createStartInfo(operation, requestPath),
-        };
-        try
-        {
-            if (process.Start() == false)
+            process.StartInfo = createStartInfo(operation, requestPath);
+            try
             {
-                throw createUnavailableException(null);
+                if (process.Start() == false)
+                {
+                    throw createUnavailableException(null);
+                }
             }
-        }
-        catch (Win32Exception exception)
-        {
-            throw createUnavailableException(exception);
-        }
-        catch (InvalidOperationException exception)
-        {
-            throw createUnavailableException(exception);
-        }
+            catch (Win32Exception exception)
+            {
+                throw createUnavailableException(exception);
+            }
+            catch (InvalidOperationException exception)
+            {
+                throw createUnavailableException(exception);
+            }
 
-        Task<string> standardOutputTask =
-            process.StandardOutput.ReadToEndAsync(cancellationToken);
-        Task<string> standardErrorTask =
-            process.StandardError.ReadToEndAsync(cancellationToken);
-        try
-        {
-            await process.WaitForExitAsync(cancellationToken)
-                .ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            terminateProcess(process);
-            await waitForTerminatedProcessAsync(process).ConfigureAwait(false);
-            throw;
-        }
+            Task<string> standardOutputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+            Task<string> standardErrorTask = process.StandardError.ReadToEndAsync(cancellationToken);
+            try
+            {
+                await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                terminateProcess(process);
+                await waitForTerminatedProcessAsync(process).ConfigureAwait(false);
+                throw;
+            }
 
-        string standardOutput = await standardOutputTask.ConfigureAwait(false);
-        string standardError = await standardErrorTask.ConfigureAwait(false);
-        if (process.ExitCode != 0)
-        {
-            throw createProcessFailure(standardError);
-        }
+            string standardOutput = await standardOutputTask.ConfigureAwait(false);
+            string standardError = await standardErrorTask.ConfigureAwait(false);
+            if (process.ExitCode != 0)
+            {
+                throw createProcessFailure(standardError);
+            }
 
-        string normalizedOutput = standardOutput.Trim();
-        if (normalizedOutput.Length == 0)
-        {
-            throw new AppleCalendarNativeBridgeException(
-                EAppleCalendarNativeFailureKind.OperationFailed,
-                "apple_calendar_automation_empty_response");
-        }
+            string normalizedOutput = standardOutput.Trim();
+            if (normalizedOutput.Length == 0)
+            {
+                throw new AppleCalendarNativeBridgeException(
+                    EAppleCalendarNativeFailureKind.OperationFailed,
+                    "apple_calendar_automation_empty_response");
+            }
 
-        return normalizedOutput;
+            return normalizedOutput;
+        }
     }
 
     private static async Task writePrivateRequestAsync(
@@ -165,22 +162,24 @@ internal sealed class ProcessAppleCalendarAutomationCommand
         CancellationToken cancellationToken)
     {
         byte[] requestBytes = new UTF8Encoding(false).GetBytes(requestJson);
-        await using FileStream requestStream = new FileStream(
-            requestPath,
-            FileMode.CreateNew,
-            FileAccess.Write,
-            FileShare.None,
-            BUFFER_SIZE,
-            FileOptions.Asynchronous | FileOptions.WriteThrough);
-        if (OperatingSystem.IsMacOS())
-        {
-            File.SetUnixFileMode(
+        await using (FileStream requestStream = new FileStream(
                 requestPath,
-                UnixFileMode.UserRead | UnixFileMode.UserWrite);
+                FileMode.CreateNew,
+                FileAccess.Write,
+                FileShare.None,
+                BUFFER_SIZE,
+                FileOptions.Asynchronous | FileOptions.WriteThrough))
+        {
+            if (OperatingSystem.IsMacOS())
+            {
+                File.SetUnixFileMode(
+                    requestPath,
+                    UnixFileMode.UserRead | UnixFileMode.UserWrite);
+            }
+
+            await requestStream.WriteAsync(requestBytes, cancellationToken).ConfigureAwait(false);
+            await requestStream.FlushAsync(cancellationToken).ConfigureAwait(false);
         }
-        await requestStream.WriteAsync(requestBytes, cancellationToken)
-            .ConfigureAwait(false);
-        await requestStream.FlushAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private static void securelyDeleteRequest(string requestPath)
@@ -192,30 +191,32 @@ internal sealed class ProcessAppleCalendarAutomationCommand
 
         try
         {
-            using FileStream requestStream = new FileStream(
-                requestPath,
-                FileMode.Open,
-                FileAccess.Write,
-                FileShare.None);
-            byte[] zeroBuffer = new byte[BUFFER_SIZE];
-            long remainingLength = requestStream.Length;
-            requestStream.Position = 0;
-            while (remainingLength > 0)
+            using (FileStream requestStream = new FileStream(
+                    requestPath,
+                    FileMode.Open,
+                    FileAccess.Write,
+                    FileShare.None))
             {
-                int writeLength = (int)Math.Min(
-                    zeroBuffer.Length,
-                    remainingLength);
-                requestStream.Write(zeroBuffer, 0, writeLength);
-                remainingLength -= writeLength;
-            }
+                byte[] zeroBuffer = new byte[BUFFER_SIZE];
+                long remainingLength = requestStream.Length;
+                requestStream.Position = 0;
+                while (remainingLength > 0)
+                {
+                    int writeLength = (int)Math.Min(zeroBuffer.Length, remainingLength);
+                    requestStream.Write(zeroBuffer, 0, writeLength);
+                    remainingLength -= writeLength;
+                }
 
-            requestStream.Flush(true);
+                requestStream.Flush(true);
+            }
         }
         catch (IOException)
         {
+            // Continue to deletion when the best-effort overwrite is unavailable.
         }
         catch (UnauthorizedAccessException)
         {
+            // Continue to deletion when the best-effort overwrite is unavailable.
         }
 
         try
@@ -224,9 +225,11 @@ internal sealed class ProcessAppleCalendarAutomationCommand
         }
         catch (IOException)
         {
+            // Temporary-file cleanup must not mask the original export result.
         }
         catch (UnauthorizedAccessException)
         {
+            // Temporary-file cleanup must not mask the original export result.
         }
     }
 
@@ -272,9 +275,11 @@ internal sealed class ProcessAppleCalendarAutomationCommand
         }
         catch (InvalidOperationException)
         {
+            // Cancellation cleanup is best effort; the original cancellation remains authoritative.
         }
         catch (NotSupportedException)
         {
+            // Cancellation cleanup is best effort; the original cancellation remains authoritative.
         }
     }
 
@@ -287,6 +292,7 @@ internal sealed class ProcessAppleCalendarAutomationCommand
         }
         catch (InvalidOperationException)
         {
+            // Cancellation cleanup is best effort; the original cancellation remains authoritative.
         }
     }
 

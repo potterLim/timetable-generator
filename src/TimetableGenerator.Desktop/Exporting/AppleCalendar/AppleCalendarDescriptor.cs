@@ -8,23 +8,24 @@ internal sealed class AppleCalendarDescriptor
 
     public string DisplayName { get; }
 
-    public bool IsApplicationManaged { get; }
+    public EAppleCalendarOwnership Ownership { get; }
 
-    public bool AllowsContentModification { get; }
+    public EAppleCalendarContentAccess ContentAccess { get; }
 
     public bool CanReplace
     {
         get
         {
-            return IsApplicationManaged && AllowsContentModification;
+            return Ownership == EAppleCalendarOwnership.ApplicationManaged
+                && ContentAccess == EAppleCalendarContentAccess.Writable;
         }
     }
 
     public AppleCalendarDescriptor(
         AppleCalendarId id,
         string displayName,
-        bool isApplicationManaged,
-        bool allowsContentModification)
+        EAppleCalendarOwnership ownership,
+        EAppleCalendarContentAccess contentAccess)
     {
         if (id == null)
         {
@@ -39,14 +40,12 @@ internal sealed class AppleCalendarDescriptor
         string normalizedDisplayName = displayName.Trim();
         if (normalizedDisplayName.Length == 0)
         {
-            throw new ArgumentException(
-                "Apple calendars require a display name.",
-                nameof(displayName));
+            throw new ArgumentException("Apple calendars require a display name.", nameof(displayName));
         }
 
         CalendarId = id;
         DisplayName = normalizedDisplayName;
-        IsApplicationManaged = isApplicationManaged;
-        AllowsContentModification = allowsContentModification;
+        Ownership = ownership;
+        ContentAccess = contentAccess;
     }
 }

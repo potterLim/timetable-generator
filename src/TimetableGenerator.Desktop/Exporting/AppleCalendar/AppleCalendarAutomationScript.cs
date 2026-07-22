@@ -106,6 +106,7 @@ internal static class AppleCalendarAutomationScript
                 try {
                     deleteItems(createdEvents);
                 } catch (_) {
+                    // Rollback is best effort; preserve the original automation failure.
                 }
 
                 throw error;
@@ -158,6 +159,7 @@ internal static class AppleCalendarAutomationScript
                 try {
                     calendar.delete();
                 } catch (_) {
+                    // Rollback is best effort; preserve the original automation failure.
                 }
 
                 throw error;
@@ -205,6 +207,7 @@ internal static class AppleCalendarAutomationScript
                 try {
                     deleteItems(createdEvents);
                 } catch (_) {
+                    // Rollback is best effort; preserve the original automation failure.
                 }
 
                 throw error;

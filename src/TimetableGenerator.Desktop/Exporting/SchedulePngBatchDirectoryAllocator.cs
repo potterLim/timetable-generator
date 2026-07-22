@@ -26,8 +26,7 @@ internal static class SchedulePngBatchDirectoryAllocator
         string fullParentPath = Path.GetFullPath(parentDirectoryPath);
         if (Directory.Exists(fullParentPath) == false)
         {
-            throw new DirectoryNotFoundException(
-                "The selected PNG export directory does not exist.");
+            throw new DirectoryNotFoundException("The selected PNG export directory does not exist.");
         }
 
         for (int attempt = 1;
@@ -35,13 +34,9 @@ internal static class SchedulePngBatchDirectoryAllocator
             ++attempt)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            string folderName =
-                SchedulePngFileNameFactory.CreateBatchFolderName(
-                    planName,
-                    attempt);
+            string folderName = SchedulePngFileNameFactory.CreateBatchFolderName(planName, attempt);
             string directoryPath = Path.Combine(fullParentPath, folderName);
-            if (Directory.Exists(directoryPath)
-                || File.Exists(directoryPath))
+            if (Directory.Exists(directoryPath) || File.Exists(directoryPath))
             {
                 continue;
             }
@@ -57,8 +52,7 @@ internal static class SchedulePngBatchDirectoryAllocator
             }
         }
 
-        throw new IOException(
-            "A unique PNG export directory could not be reserved.");
+        throw new IOException("A unique PNG export directory could not be reserved.");
     }
 
     private static void tryDeleteEmptyDirectory(string directoryPath)
@@ -69,9 +63,11 @@ internal static class SchedulePngBatchDirectoryAllocator
         }
         catch (IOException)
         {
+            // A competing export may have removed or claimed the directory first.
         }
         catch (UnauthorizedAccessException)
         {
+            // Cleanup is best effort and must not replace the allocation failure.
         }
     }
 }

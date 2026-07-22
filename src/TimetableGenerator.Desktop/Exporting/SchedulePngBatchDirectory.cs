@@ -6,8 +6,7 @@ namespace TimetableGenerator.Desktop.Exporting;
 
 internal sealed class SchedulePngBatchDirectory : IDisposable
 {
-    private const string OWNERSHIP_MARKER_FILE_NAME =
-        ".timetable-generator-exporting";
+    private const string OWNERSHIP_MARKER_FILE_NAME = ".timetable-generator-exporting";
 
     private readonly List<string> mCreatedFilePaths;
 
@@ -23,21 +22,16 @@ internal sealed class SchedulePngBatchDirectory : IDisposable
     {
         if (string.IsNullOrWhiteSpace(directoryPath))
         {
-            throw new ArgumentException(
-                "A PNG export directory path is required.",
-                nameof(directoryPath));
+            throw new ArgumentException("A PNG export directory path is required.", nameof(directoryPath));
         }
 
         DirectoryPath = Path.GetFullPath(directoryPath);
         if (Directory.Exists(DirectoryPath) == false)
         {
-            throw new DirectoryNotFoundException(
-                "The owned PNG export directory does not exist.");
+            throw new DirectoryNotFoundException("The owned PNG export directory does not exist.");
         }
 
-        mOwnershipMarkerPath = Path.Combine(
-            DirectoryPath,
-            OWNERSHIP_MARKER_FILE_NAME);
+        mOwnershipMarkerPath = Path.Combine(DirectoryPath, OWNERSHIP_MARKER_FILE_NAME);
         using (FileStream markerStream = new FileStream(
             mOwnershipMarkerPath,
             FileMode.CreateNew,
@@ -51,23 +45,38 @@ internal sealed class SchedulePngBatchDirectory : IDisposable
         mIsDisposed = false;
     }
 
+    public void Dispose()
+    {
+        if (mIsDisposed)
+        {
+            return;
+        }
+
+        if (mIsCommitted == false)
+        {
+            deleteCreatedFiles();
+        }
+
+        deleteOwnershipMarker();
+        if (mIsCommitted == false)
+        {
+            tryDeleteEmptyDirectory();
+        }
+
+        mIsDisposed = true;
+    }
+
     internal Stream createFile(string fileName)
     {
         throwIfUnavailable();
         if (string.IsNullOrWhiteSpace(fileName))
         {
-            throw new ArgumentException(
-                "A PNG export file name is required.",
-                nameof(fileName));
+            throw new ArgumentException("A PNG export file name is required.", nameof(fileName));
         }
 
-        string filePath = Path.GetFullPath(
-            Path.Combine(DirectoryPath, fileName));
+        string filePath = Path.GetFullPath(Path.Combine(DirectoryPath, fileName));
         string? parentPathOrNull = Path.GetDirectoryName(filePath);
-        if (string.Equals(
-            parentPathOrNull,
-            DirectoryPath,
-            StringComparison.OrdinalIgnoreCase) == false)
+        if (string.Equals(parentPathOrNull, DirectoryPath, StringComparison.OrdinalIgnoreCase) == false)
         {
             throw new ArgumentException(
                 "PNG export files must remain inside the owned directory.",
@@ -92,27 +101,6 @@ internal sealed class SchedulePngBatchDirectory : IDisposable
         mIsCommitted = true;
     }
 
-    public void Dispose()
-    {
-        if (mIsDisposed)
-        {
-            return;
-        }
-
-        if (mIsCommitted == false)
-        {
-            deleteCreatedFiles();
-        }
-
-        deleteOwnershipMarker();
-        if (mIsCommitted == false)
-        {
-            tryDeleteEmptyDirectory();
-        }
-
-        mIsDisposed = true;
-    }
-
     private void throwIfUnavailable()
     {
         if (mIsDisposed)
@@ -122,8 +110,7 @@ internal sealed class SchedulePngBatchDirectory : IDisposable
 
         if (mIsCommitted)
         {
-            throw new InvalidOperationException(
-                "A committed PNG export directory cannot be modified.");
+            throw new InvalidOperationException("A committed PNG export directory cannot be modified.");
         }
     }
 
@@ -137,9 +124,11 @@ internal sealed class SchedulePngBatchDirectory : IDisposable
             }
             catch (IOException)
             {
+                // Rollback is best effort and must not mask the original export failure.
             }
             catch (UnauthorizedAccessException)
             {
+                // Rollback is best effort and must not mask the original export failure.
             }
         }
     }
@@ -152,9 +141,11 @@ internal sealed class SchedulePngBatchDirectory : IDisposable
         }
         catch (IOException)
         {
+            // Rollback is best effort and must not mask the original export failure.
         }
         catch (UnauthorizedAccessException)
         {
+            // Rollback is best effort and must not mask the original export failure.
         }
     }
 
@@ -166,9 +157,11 @@ internal sealed class SchedulePngBatchDirectory : IDisposable
         }
         catch (IOException)
         {
+            // Rollback is best effort and must not mask the original export failure.
         }
         catch (UnauthorizedAccessException)
         {
+            // Rollback is best effort and must not mask the original export failure.
         }
     }
 }

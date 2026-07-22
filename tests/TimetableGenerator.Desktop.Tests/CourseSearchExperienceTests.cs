@@ -26,40 +26,19 @@ public sealed class CourseSearchExperienceTests
     [AvaloniaFact]
     public void SearchClassifiesEverySupportedMatchKind()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace())
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
         {
             CourseSearchItem programming = workspace.VisibleCourses.Single(
                 course => course.Code == "CSE10001");
 
-            assertMatchKind(
-                programming,
-                "CSE10001",
-                ECourseSearchMatchKind.ExactCourseCode);
-            assertMatchKind(
-                programming,
-                "CSE10",
-                ECourseSearchMatchKind.CourseCodePrefix);
-            assertMatchKind(
-                programming,
-                "프로그래밍 I",
-                ECourseSearchMatchKind.ExactCourseTitle);
-            assertMatchKind(
-                programming,
-                "프로그래밍",
-                ECourseSearchMatchKind.CourseTitlePrefix);
-            assertMatchKind(
-                programming,
-                "그래밍",
-                ECourseSearchMatchKind.CourseTitleContains);
-            assertMatchKind(
-                programming,
-                "홍길동",
-                ECourseSearchMatchKind.InstructorContains);
+            assertMatchKind(programming, "CSE10001", ECourseSearchMatchKind.ExactCourseCode);
+            assertMatchKind(programming, "CSE10", ECourseSearchMatchKind.CourseCodePrefix);
+            assertMatchKind(programming, "프로그래밍 I", ECourseSearchMatchKind.ExactCourseTitle);
+            assertMatchKind(programming, "프로그래밍", ECourseSearchMatchKind.CourseTitlePrefix);
+            assertMatchKind(programming, "그래밍", ECourseSearchMatchKind.CourseTitleContains);
+            assertMatchKind(programming, "홍길동", ECourseSearchMatchKind.InstructorContains);
 
-            CourseSearchMatch? missingMatchOrNull =
-                programming.FindSearchMatchOrNull(
-                    CourseSearchQuery.Create("존재하지 않는 검색어"));
+            CourseSearchMatch? missingMatchOrNull = programming.FindSearchMatchOrNull(CourseSearchQuery.Create("존재하지 않는 검색어"));
             Assert.Null(missingMatchOrNull);
         }
     }
@@ -67,35 +46,18 @@ public sealed class CourseSearchExperienceTests
     [AvaloniaFact]
     public void SearchIgnoresCaseAndUnicodeWhitespaceWithoutFuzzyMatching()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace())
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
         {
             CourseSearchItem programming = workspace.VisibleCourses.Single(
                 course => course.Code == "CSE10001");
 
-            assertMatchKind(
-                programming,
-                " c s e\u00A01 0 0 0 1 ",
-                ECourseSearchMatchKind.ExactCourseCode);
-            assertMatchKind(
-                programming,
-                "프 로\u2003그 래 밍 I",
-                ECourseSearchMatchKind.ExactCourseTitle);
-            assertMatchKind(
-                programming,
-                " pRoGrAmMiNg\u202FI ",
-                ECourseSearchMatchKind.ExactCourseTitle);
-            assertMatchKind(
-                programming,
-                "그 래 밍",
-                ECourseSearchMatchKind.CourseTitleContains);
+            assertMatchKind(programming, " c s e\u00A01 0 0 0 1 ", ECourseSearchMatchKind.ExactCourseCode);
+            assertMatchKind(programming, "프 로\u2003그 래 밍 I", ECourseSearchMatchKind.ExactCourseTitle);
+            assertMatchKind(programming, " pRoGrAmMiNg\u202FI ", ECourseSearchMatchKind.ExactCourseTitle);
+            assertMatchKind(programming, "그 래 밍", ECourseSearchMatchKind.CourseTitleContains);
 
-            CourseSearchMatch? typoMatchOrNull =
-                programming.FindSearchMatchOrNull(
-                    CourseSearchQuery.Create("Programing I"));
-            CourseSearchMatch? reorderedMatchOrNull =
-                programming.FindSearchMatchOrNull(
-                    CourseSearchQuery.Create("I Programming"));
+            CourseSearchMatch? typoMatchOrNull = programming.FindSearchMatchOrNull(CourseSearchQuery.Create("Programing I"));
+            CourseSearchMatch? reorderedMatchOrNull = programming.FindSearchMatchOrNull(CourseSearchQuery.Create("I Programming"));
             Assert.Null(typoMatchOrNull);
             Assert.Null(reorderedMatchOrNull);
 
@@ -107,9 +69,7 @@ public sealed class CourseSearchExperienceTests
     [AvaloniaFact]
     public void SearchResultsUseStableCodeAndTitleOrderForEqualMatches()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace(
-                CatalogProjectionTestFixture.CreateReorderedDocument()))
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace(CatalogProjectionTestFixture.CreateReorderedDocument()))
         {
             workspace.SearchText = "i";
 
@@ -123,12 +83,10 @@ public sealed class CourseSearchExperienceTests
     [AvaloniaFact]
     public void MainSearchPreservesResultWhenRefinementKeepsTheSameCourse()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace())
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
         {
             workspace.SearchText = "프로그래";
-            CourseSearchItem initialResult = Assert.Single(
-                workspace.VisibleCourses);
+            CourseSearchItem initialResult = Assert.Single(workspace.VisibleCourses);
             int collectionChangedCount = 0;
             workspace.VisibleCourses.CollectionChanged += delegate
             {
@@ -145,19 +103,14 @@ public sealed class CourseSearchExperienceTests
     [AvaloniaFact]
     public void AlternativeSearchPreservesResultWhenRefinementKeepsTheSameCourse()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace(
-                CatalogProjectionTestFixture
-                    .CreateDocumentWithScheduledAlternativeCourse()))
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace(CatalogProjectionTestFixture.CreateDocumentWithScheduledAlternativeCourse()))
         {
             workspace.ActivePlan = workspace.Plans[1];
             workspace.SearchText = "프로그래밍";
-            CourseSearchItem programming = Assert.Single(
-                workspace.VisibleCourses);
+            CourseSearchItem programming = Assert.Single(workspace.VisibleCourses);
             workspace.AddCourseCommand.Execute(programming);
             workspace.AlternativeCourseSearchText = "세미";
-            CourseChoiceAlternativeSearchItem initialResult = Assert.Single(
-                workspace.AlternativeCourseSearchResults);
+            CourseChoiceAlternativeSearchItem initialResult = Assert.Single(workspace.AlternativeCourseSearchResults);
             int collectionChangedCount = 0;
             workspace.AlternativeCourseSearchResults.CollectionChanged += delegate
             {
@@ -167,18 +120,14 @@ public sealed class CourseSearchExperienceTests
             workspace.AlternativeCourseSearchText = "세미나";
 
             Assert.Equal(0, collectionChangedCount);
-            Assert.Same(
-                initialResult,
-                Assert.Single(workspace.AlternativeCourseSearchResults));
+            Assert.Same(initialResult, Assert.Single(workspace.AlternativeCourseSearchResults));
         }
     }
 
     [AvaloniaFact]
     public void MainSearchTracksKoreanImeCompositionBeforeCommitAndAcceptsFirstClick()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspaceWithEmptyPlan(
-                CatalogProjectionTestFixture.CreateKoreanImeSearchDocument());
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspaceWithEmptyPlan(CatalogProjectionTestFixture.CreateKoreanImeSearchDocument());
         CourseBrowserView courseBrowser = new CourseBrowserView();
         courseBrowser.DataContext = workspace;
         Window window = new Window();
@@ -190,11 +139,8 @@ public sealed class CourseSearchExperienceTests
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
-            TextBox searchBox = findRequiredControl<TextBox>(
-                courseBrowser,
-                "CourseSearchBox");
-            TextInputMethodClient textInputMethodClient =
-                getTextInputMethodClient(searchBox);
+            TextBox searchBox = findRequiredControl<TextBox>(courseBrowser, "CourseSearchBox");
+            TextInputMethodClient textInputMethodClient = getTextInputMethodClient(searchBox);
             searchBox.Text = "물리";
             searchBox.CaretIndex = searchBox.Text.Length;
             Dispatcher.UIThread.RunJobs();
@@ -212,9 +158,7 @@ public sealed class CourseSearchExperienceTests
             Assert.Equal("물리학", workspace.SearchText);
             CourseSearchItem physics = Assert.Single(workspace.VisibleCourses);
             Assert.Equal("PHY10001", physics.Code);
-            Button addButton = findButtonByAccessibleName(
-                courseBrowser,
-                physics.AddButtonAccessibleName);
+            Button addButton = findButtonByAccessibleName(courseBrowser, physics.AddButtonAccessibleName);
             int collectionChangedCount = 0;
             workspace.VisibleCourses.CollectionChanged += delegate
             {
@@ -222,10 +166,7 @@ public sealed class CourseSearchExperienceTests
             };
             Point addButtonCenter = findControlCenter(window, addButton);
             window.MouseMove(addButtonCenter, RawInputModifiers.None);
-            window.MouseDown(
-                addButtonCenter,
-                MouseButton.Left,
-                RawInputModifiers.None);
+            window.MouseDown(addButtonCenter, MouseButton.Left, RawInputModifiers.None);
 
             textInputMethodClient.SetPreeditText(null);
             searchBox.Text = "물리학";
@@ -233,14 +174,9 @@ public sealed class CourseSearchExperienceTests
 
             Assert.Equal(0, collectionChangedCount);
             Assert.Same(physics, Assert.Single(workspace.VisibleCourses));
-            Assert.Contains(
-                addButton,
-                courseBrowser.GetVisualDescendants().OfType<Button>());
+            Assert.Contains(addButton, courseBrowser.GetVisualDescendants().OfType<Button>());
 
-            window.MouseUp(
-                addButtonCenter,
-                MouseButton.Left,
-                RawInputModifiers.None);
+            window.MouseUp(addButtonCenter, MouseButton.Left, RawInputModifiers.None);
             Dispatcher.UIThread.RunJobs();
 
             Assert.True(physics.IsAdded);
@@ -256,10 +192,7 @@ public sealed class CourseSearchExperienceTests
     [AvaloniaFact]
     public void AlternativeSearchTracksKoreanImeCompositionBeforeCommit()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace(
-                CatalogProjectionTestFixture
-                    .CreateDocumentWithScheduledAlternativeCourse());
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace(CatalogProjectionTestFixture.CreateDocumentWithScheduledAlternativeCourse());
         workspace.ActivePlan = workspace.Plans[1];
         workspace.SearchText = "프로그래밍";
         CourseSearchItem programming = Assert.Single(workspace.VisibleCourses);
@@ -275,11 +208,8 @@ public sealed class CourseSearchExperienceTests
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
-            TextBox searchBox = findRequiredControl<TextBox>(
-                courseChoiceEditor,
-                "AlternativeCourseSearchBox");
-            TextInputMethodClient textInputMethodClient =
-                getTextInputMethodClient(searchBox);
+            TextBox searchBox = findRequiredControl<TextBox>(courseChoiceEditor, "AlternativeCourseSearchBox");
+            TextInputMethodClient textInputMethodClient = getTextInputMethodClient(searchBox);
             searchBox.Text = "세미";
             searchBox.CaretIndex = searchBox.Text.Length;
             Dispatcher.UIThread.RunJobs();
@@ -288,11 +218,8 @@ public sealed class CourseSearchExperienceTests
             Dispatcher.UIThread.RunJobs();
 
             Assert.Equal("세미나", workspace.AlternativeCourseSearchText);
-            CourseChoiceAlternativeSearchItem seminar = Assert.Single(
-                workspace.AlternativeCourseSearchResults);
-            Button addButton = findButtonByAccessibleName(
-                courseChoiceEditor,
-                seminar.AddButtonAccessibleName);
+            CourseChoiceAlternativeSearchItem seminar = Assert.Single(workspace.AlternativeCourseSearchResults);
+            Button addButton = findButtonByAccessibleName(courseChoiceEditor, seminar.AddButtonAccessibleName);
             int collectionChangedCount = 0;
             workspace.AlternativeCourseSearchResults.CollectionChanged += delegate
             {
@@ -300,27 +227,17 @@ public sealed class CourseSearchExperienceTests
             };
             Point addButtonCenter = findControlCenter(window, addButton);
             window.MouseMove(addButtonCenter, RawInputModifiers.None);
-            window.MouseDown(
-                addButtonCenter,
-                MouseButton.Left,
-                RawInputModifiers.None);
+            window.MouseDown(addButtonCenter, MouseButton.Left, RawInputModifiers.None);
 
             textInputMethodClient.SetPreeditText(null);
             searchBox.Text = "세미나";
             Dispatcher.UIThread.RunJobs();
 
             Assert.Equal(0, collectionChangedCount);
-            Assert.Same(
-                seminar,
-                Assert.Single(workspace.AlternativeCourseSearchResults));
-            Assert.Contains(
-                addButton,
-                courseChoiceEditor.GetVisualDescendants().OfType<Button>());
+            Assert.Same(seminar, Assert.Single(workspace.AlternativeCourseSearchResults));
+            Assert.Contains(addButton, courseChoiceEditor.GetVisualDescendants().OfType<Button>());
 
-            window.MouseUp(
-                addButtonCenter,
-                MouseButton.Left,
-                RawInputModifiers.None);
+            window.MouseUp(addButtonCenter, MouseButton.Left, RawInputModifiers.None);
             Dispatcher.UIThread.RunJobs();
 
             Assert.Equal(2, workspace.CourseChoiceDraftCourses.Count);
@@ -338,8 +255,7 @@ public sealed class CourseSearchExperienceTests
     [AvaloniaFact]
     public void CompositionAwareSearchInsertsAndCancelsPreeditAtTheCaret()
     {
-        CompositionAwareSearchTextBox searchBox =
-            new CompositionAwareSearchTextBox();
+        CompositionAwareSearchTextBox searchBox = new CompositionAwareSearchTextBox();
         Window window = new Window();
         window.Width = 390.0;
         window.Height = 160.0;
@@ -349,8 +265,7 @@ public sealed class CourseSearchExperienceTests
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
-            TextInputMethodClient textInputMethodClient =
-                getTextInputMethodClient(searchBox);
+            TextInputMethodClient textInputMethodClient = getTextInputMethodClient(searchBox);
             searchBox.Text = "물학";
             searchBox.CaretIndex = 1;
             Dispatcher.UIThread.RunJobs();
@@ -377,10 +292,7 @@ public sealed class CourseSearchExperienceTests
     [AvaloniaFact]
     public void MainAddButtonSurvivesQueryCommitBetweenPointerPressAndRelease()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace(
-                CatalogProjectionTestFixture
-                    .CreateDocumentWithScheduledAlternativeCourse());
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace(CatalogProjectionTestFixture.CreateDocumentWithScheduledAlternativeCourse());
         workspace.ActivePlan = workspace.Plans[1];
         workspace.SearchText = "프로그래";
         CourseSearchItem programming = Assert.Single(workspace.VisibleCourses);
@@ -395,20 +307,13 @@ public sealed class CourseSearchExperienceTests
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
-            TextBox searchBox = findRequiredControl<TextBox>(
-                courseBrowser,
-                "CourseSearchBox");
-            Button addButton = findButtonByAccessibleName(
-                courseBrowser,
-                programming.AddButtonAccessibleName);
+            TextBox searchBox = findRequiredControl<TextBox>(courseBrowser, "CourseSearchBox");
+            Button addButton = findButtonByAccessibleName(courseBrowser, programming.AddButtonAccessibleName);
             Assert.True(searchBox.Focus());
             Dispatcher.UIThread.RunJobs();
             Point addButtonCenter = findControlCenter(window, addButton);
             window.MouseMove(addButtonCenter, RawInputModifiers.None);
-            window.MouseDown(
-                addButtonCenter,
-                MouseButton.Left,
-                RawInputModifiers.None);
+            window.MouseDown(addButtonCenter, MouseButton.Left, RawInputModifiers.None);
             Dispatcher.UIThread.RunJobs();
 
             searchBox.Text = "프로그래밍";
@@ -416,14 +321,9 @@ public sealed class CourseSearchExperienceTests
 
             Assert.Equal("프로그래밍", workspace.SearchText);
             Assert.Same(programming, Assert.Single(workspace.VisibleCourses));
-            Assert.Contains(
-                addButton,
-                courseBrowser.GetVisualDescendants().OfType<Button>());
+            Assert.Contains(addButton, courseBrowser.GetVisualDescendants().OfType<Button>());
 
-            window.MouseUp(
-                addButtonCenter,
-                MouseButton.Left,
-                RawInputModifiers.None);
+            window.MouseUp(addButtonCenter, MouseButton.Left, RawInputModifiers.None);
             Dispatcher.UIThread.RunJobs();
 
             Assert.True(workspace.IsCourseChoiceEditorVisible);
@@ -439,17 +339,13 @@ public sealed class CourseSearchExperienceTests
     [AvaloniaFact]
     public void AlternativeAddButtonSurvivesQueryCommitBetweenPointerPressAndRelease()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace(
-                CatalogProjectionTestFixture
-                    .CreateDocumentWithScheduledAlternativeCourse());
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace(CatalogProjectionTestFixture.CreateDocumentWithScheduledAlternativeCourse());
         workspace.ActivePlan = workspace.Plans[1];
         workspace.SearchText = "프로그래밍";
         CourseSearchItem programming = Assert.Single(workspace.VisibleCourses);
         workspace.AddCourseCommand.Execute(programming);
         workspace.AlternativeCourseSearchText = "세미";
-        CourseChoiceAlternativeSearchItem seminar = Assert.Single(
-            workspace.AlternativeCourseSearchResults);
+        CourseChoiceAlternativeSearchItem seminar = Assert.Single(workspace.AlternativeCourseSearchResults);
         CourseChoiceEditorView courseChoiceEditor = new CourseChoiceEditorView();
         courseChoiceEditor.DataContext = workspace;
         Window window = new Window();
@@ -461,37 +357,23 @@ public sealed class CourseSearchExperienceTests
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
-            TextBox searchBox = findRequiredControl<TextBox>(
-                courseChoiceEditor,
-                "AlternativeCourseSearchBox");
-            Button addButton = findButtonByAccessibleName(
-                courseChoiceEditor,
-                seminar.AddButtonAccessibleName);
+            TextBox searchBox = findRequiredControl<TextBox>(courseChoiceEditor, "AlternativeCourseSearchBox");
+            Button addButton = findButtonByAccessibleName(courseChoiceEditor, seminar.AddButtonAccessibleName);
             Assert.True(searchBox.Focus());
             Dispatcher.UIThread.RunJobs();
             Point addButtonCenter = findControlCenter(window, addButton);
             window.MouseMove(addButtonCenter, RawInputModifiers.None);
-            window.MouseDown(
-                addButtonCenter,
-                MouseButton.Left,
-                RawInputModifiers.None);
+            window.MouseDown(addButtonCenter, MouseButton.Left, RawInputModifiers.None);
             Dispatcher.UIThread.RunJobs();
 
             searchBox.Text = "세미나";
             Dispatcher.UIThread.RunJobs();
 
             Assert.Equal("세미나", workspace.AlternativeCourseSearchText);
-            Assert.Same(
-                seminar,
-                Assert.Single(workspace.AlternativeCourseSearchResults));
-            Assert.Contains(
-                addButton,
-                courseChoiceEditor.GetVisualDescendants().OfType<Button>());
+            Assert.Same(seminar, Assert.Single(workspace.AlternativeCourseSearchResults));
+            Assert.Contains(addButton, courseChoiceEditor.GetVisualDescendants().OfType<Button>());
 
-            window.MouseUp(
-                addButtonCenter,
-                MouseButton.Left,
-                RawInputModifiers.None);
+            window.MouseUp(addButtonCenter, MouseButton.Left, RawInputModifiers.None);
             Dispatcher.UIThread.RunJobs();
 
             Assert.Equal(2, workspace.CourseChoiceDraftCourses.Count);
@@ -509,16 +391,13 @@ public sealed class CourseSearchExperienceTests
     [AvaloniaFact]
     public void EmptySearchStateResetsQueryAndFiltersTogether()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace())
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
         {
             workspace.SelectedUnitFilter = workspace.UnitFilters[1];
             workspace.SelectedRequirementFilter = workspace.RequirementFilters[1];
             workspace.SearchText = "존재하지 않는 검색어";
 
-            Assert.Equal(
-                ECourseSearchResultState.Empty,
-                workspace.CourseSearchResultState);
+            Assert.Equal(ECourseSearchResultState.Empty, workspace.CourseSearchResultState);
             Assert.False(workspace.HasVisibleCourses);
             Assert.True(workspace.HasNoVisibleCourses);
             Assert.Equal("검색 결과 (0개)", workspace.VisibleCourseHeading);
@@ -527,12 +406,8 @@ public sealed class CourseSearchExperienceTests
 
             Assert.Empty(workspace.SearchText);
             Assert.Same(workspace.UnitFilters[0], workspace.SelectedUnitFilter);
-            Assert.Same(
-                workspace.RequirementFilters[0],
-                workspace.SelectedRequirementFilter);
-            Assert.Equal(
-                ECourseSearchResultState.Populated,
-                workspace.CourseSearchResultState);
+            Assert.Same(workspace.RequirementFilters[0], workspace.SelectedRequirementFilter);
+            Assert.Equal(ECourseSearchResultState.Populated, workspace.CourseSearchResultState);
             Assert.True(workspace.HasVisibleCourses);
             Assert.False(workspace.HasNoVisibleCourses);
             Assert.Equal(2, workspace.VisibleCourses.Count);
@@ -542,8 +417,7 @@ public sealed class CourseSearchExperienceTests
     [AvaloniaFact]
     public void SelectedMultiOfferingCourseOpensItsPreferenceEditor()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace())
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
         {
             CourseSearchItem programming = workspace.VisibleCourses.Single(
                 course => course.Code == "CSE10001");
@@ -561,8 +435,7 @@ public sealed class CourseSearchExperienceTests
     [AvaloniaFact]
     public void MultiTimeNotProvidedCourseOpensTheSharedPreferenceEditor()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace())
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
         {
             workspace.ActivePlan = workspace.Plans[1];
             CourseSearchItem seminar = workspace.VisibleCourses.Single(
@@ -574,8 +447,7 @@ public sealed class CourseSearchExperienceTests
             workspace.AddCourseCommand.Execute(seminar);
 
             Assert.True(workspace.IsCourseChoiceEditorVisible);
-            CourseChoiceDraftCourseItem draft = Assert.Single(
-                workspace.CourseChoiceDraftCourses);
+            CourseChoiceDraftCourseItem draft = Assert.Single(workspace.CourseChoiceDraftCourses);
             Assert.Equal(2, draft.Offerings.Count);
             Assert.All(draft.Offerings, offering => Assert.True(offering.IsAcceptable));
             Assert.False(seminar.IsSelectionButtonVisible);
@@ -585,10 +457,7 @@ public sealed class CourseSearchExperienceTests
     [AvaloniaFact]
     public void AlternativeCourseSelectionOpensEditingInsteadOfRemovingTheGroup()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace(
-                CatalogProjectionTestFixture
-                    .CreateDocumentWithScheduledAlternativeCourse()))
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace(CatalogProjectionTestFixture.CreateDocumentWithScheduledAlternativeCourse()))
         {
             workspace.ActivePlan = workspace.Plans[1];
             CourseSearchItem programming = workspace.VisibleCourses.Single(
@@ -597,12 +466,10 @@ public sealed class CourseSearchExperienceTests
                 course => course.Code == "BFT30009");
 
             workspace.AddCourseCommand.Execute(programming);
-            CourseChoiceDraftCourseItem programmingDraft = Assert.Single(
-                workspace.CourseChoiceDraftCourses);
+            CourseChoiceDraftCourseItem programmingDraft = Assert.Single(workspace.CourseChoiceDraftCourses);
             programmingDraft.Offerings[0].SelectPreferredCommand.Execute(null);
             workspace.AlternativeCourseSearchText = "세미나";
-            CourseChoiceAlternativeSearchItem alternative = Assert.Single(
-                workspace.AlternativeCourseSearchResults);
+            CourseChoiceAlternativeSearchItem alternative = Assert.Single(workspace.AlternativeCourseSearchResults);
             workspace.AddAlternativeCourseCommand.Execute(alternative);
             CourseChoiceDraftCourseItem seminarDraft = workspace
                 .CourseChoiceDraftCourses
@@ -613,10 +480,7 @@ public sealed class CourseSearchExperienceTests
             Assert.True(programming.IsAdded);
             Assert.True(seminar.IsAdded);
             Assert.Single(workspace.ActivePlan.Plan.CourseChoiceGroups);
-            Assert.Contains(
-                "수강 선택 수정",
-                seminar.SelectedCourseActionAccessibleName,
-                StringComparison.Ordinal);
+            Assert.Contains("수강 선택 수정", seminar.SelectedCourseActionAccessibleName, StringComparison.Ordinal);
 
             workspace.EditOrRemoveSelectedCourseCommand.Execute(seminar);
 
@@ -629,8 +493,7 @@ public sealed class CourseSearchExperienceTests
     [AvaloniaFact]
     public void EmptyStateAndSelectedActionRemainAccessibleAndAligned()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace())
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
         {
             CourseBrowserView courseBrowser = new CourseBrowserView();
             courseBrowser.DataContext = workspace;
@@ -651,38 +514,21 @@ public sealed class CourseSearchExperienceTests
                             candidate.Command,
                             workspace.EditOrRemoveSelectedCourseCommand)
                         && candidate.IsVisible);
-                Assert.Equal(
-                    VerticalAlignment.Center,
-                    selectedAction.VerticalContentAlignment);
-                Assert.Contains(
-                    "수강 선택 수정",
-                    AutomationProperties.GetName(selectedAction),
-                    StringComparison.Ordinal);
+                Assert.Equal(VerticalAlignment.Center, selectedAction.VerticalContentAlignment);
+                Assert.Contains("수강 선택 수정", AutomationProperties.GetName(selectedAction), StringComparison.Ordinal);
 
                 workspace.SearchText = "존재하지 않는 검색어";
                 Dispatcher.UIThread.RunJobs();
 
-                ListBox results = findRequiredControl<ListBox>(
-                    courseBrowser,
-                    "CourseResultsList");
-                StackPanel emptyState = findRequiredControl<StackPanel>(
-                    courseBrowser,
-                    "NoCourseResultsState");
-                Button resetButton = findRequiredControl<Button>(
-                    courseBrowser,
-                    "ResetCourseSearchButton");
+                ListBox results = findRequiredControl<ListBox>(courseBrowser, "CourseResultsList");
+                StackPanel emptyState = findRequiredControl<StackPanel>(courseBrowser, "NoCourseResultsState");
+                Button resetButton = findRequiredControl<Button>(courseBrowser, "ResetCourseSearchButton");
 
                 Assert.False(results.IsVisible);
                 Assert.True(emptyState.IsVisible);
-                Assert.Equal(
-                    "검색 결과 없음",
-                    AutomationProperties.GetName(emptyState));
-                Assert.Equal(
-                    VerticalAlignment.Center,
-                    resetButton.VerticalContentAlignment);
-                Assert.Equal(
-                    "검색 및 필터 초기화",
-                    AutomationProperties.GetName(resetButton));
+                Assert.Equal("검색 결과 없음", AutomationProperties.GetName(emptyState));
+                Assert.Equal(VerticalAlignment.Center, resetButton.VerticalContentAlignment);
+                Assert.Equal("검색 및 필터 초기화", AutomationProperties.GetName(resetButton));
                 Assert.Contains(
                     courseBrowser.GetVisualDescendants().OfType<TextBlock>(),
                     candidate => candidate.IsVisible
@@ -700,21 +546,17 @@ public sealed class CourseSearchExperienceTests
         string queryText,
         ECourseSearchMatchKind expectedKind)
     {
-        CourseSearchMatch? matchOrNull = course.FindSearchMatchOrNull(
-            CourseSearchQuery.Create(queryText));
+        CourseSearchMatch? matchOrNull = course.FindSearchMatchOrNull(CourseSearchQuery.Create(queryText));
         Assert.NotNull(matchOrNull);
         if (matchOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The expected course search match was not created.");
+            throw new InvalidOperationException("The expected course search match was not created.");
         }
 
         Assert.Equal(expectedKind, matchOrNull.Kind);
     }
 
-    private static TControl findRequiredControl<TControl>(
-        Control root,
-        string name)
+    private static TControl findRequiredControl<TControl>(Control root, string name)
         where TControl : Control
     {
         TControl? controlOrNull = root.FindControl<TControl>(name);
@@ -729,7 +571,7 @@ public sealed class CourseSearchExperienceTests
 
     private static TextInputMethodClient getTextInputMethodClient(TextBox textBox)
     {
-        TextInputMethodClientRequestedEventArgs eventArguments = new()
+        TextInputMethodClientRequestedEventArgs eventArguments = new TextInputMethodClientRequestedEventArgs()
         {
             RoutedEvent = InputElement.TextInputMethodClientRequestedEvent,
         };
@@ -738,16 +580,13 @@ public sealed class CourseSearchExperienceTests
         Assert.NotNull(eventArguments.Client);
         if (eventArguments.Client == null)
         {
-            throw new InvalidOperationException(
-                "The text input method client could not be resolved.");
+            throw new InvalidOperationException("The text input method client could not be resolved.");
         }
 
         return eventArguments.Client;
     }
 
-    private static Button findButtonByAccessibleName(
-        Control root,
-        string accessibleName)
+    private static Button findButtonByAccessibleName(Control root, string accessibleName)
     {
         return root.GetVisualDescendants()
             .OfType<Button>()
@@ -760,14 +599,11 @@ public sealed class CourseSearchExperienceTests
 
     private static Point findControlCenter(Window window, Control control)
     {
-        Point? controlOriginOrNull = control.TranslatePoint(
-            new Point(0.0, 0.0),
-            window);
+        Point? controlOriginOrNull = control.TranslatePoint(new Point(0.0, 0.0), window);
         Assert.NotNull(controlOriginOrNull);
         if (controlOriginOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The control position could not be resolved.");
+            throw new InvalidOperationException("The control position could not be resolved.");
         }
 
         return controlOriginOrNull.Value

@@ -213,8 +213,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         prepareCourseChoiceDraft(group.Id);
         foreach (CourseCandidate courseCandidate in group.CourseCandidates)
         {
-            CatalogCourseProjection projection = mCatalogProjection.FindCourseById(
-                courseCandidate.CourseId);
+            CatalogCourseProjection projection = mCatalogProjection.FindCourseById(courseCandidate.CourseId);
             restoreDraftCourse(projection, courseCandidate.OfferingCandidates);
         }
 
@@ -350,8 +349,7 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private void addNewDraftCourse(CatalogCourseProjection projection)
     {
-        CourseChoiceDraftCourseItem draftCourse =
-            CourseChoiceDraftCourseItem.CreateNew(projection);
+        CourseChoiceDraftCourseItem draftCourse = CourseChoiceDraftCourseItem.CreateNew(projection);
         addDraftCourse(draftCourse);
     }
 
@@ -359,8 +357,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         CatalogCourseProjection projection,
         IEnumerable<OfferingCandidate> savedCandidates)
     {
-        CourseChoiceDraftCourseItem draftCourse =
-            CourseChoiceDraftCourseItem.Restore(projection, savedCandidates);
+        CourseChoiceDraftCourseItem draftCourse = CourseChoiceDraftCourseItem.Restore(projection, savedCandidates);
         addDraftCourse(draftCourse);
     }
 
@@ -420,8 +417,7 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private void refreshAlternativeCourseSearchResults()
     {
-        IReadOnlyList<CourseChoiceAlternativeSearchItem> searchResults =
-            findAlternativeCourseSearchResults();
+        IReadOnlyList<CourseChoiceAlternativeSearchItem> searchResults = findAlternativeCourseSearchResults();
         KeyedObservableCollectionSynchronizer.Synchronize(
             AlternativeCourseSearchResults,
             searchResults,
@@ -432,19 +428,19 @@ internal sealed partial class PlannerWorkspaceViewModel
     private IReadOnlyList<CourseChoiceAlternativeSearchItem>
         findAlternativeCourseSearchResults()
     {
-        List<CourseChoiceAlternativeSearchItem> searchResults =
-            new List<CourseChoiceAlternativeSearchItem>();
+        List<CourseChoiceAlternativeSearchItem> searchResults = new List<CourseChoiceAlternativeSearchItem>();
         if (string.IsNullOrWhiteSpace(AlternativeCourseSearchText))
         {
             return searchResults;
         }
 
+        CourseSearchQuery searchQuery = CourseSearchQuery.Create(AlternativeCourseSearchText);
         foreach (CourseSearchItem course in mAllCourses)
         {
             if (course.Projection.Offerings.Count == 0
                 || containsDraftCourse(course.CourseId)
                 || isCourseSelectedOutsideEditedGroup(course.CourseId)
-                || course.MatchesSearchText(AlternativeCourseSearchText) == false)
+                || course.FindSearchMatchOrNull(searchQuery) == null)
             {
                 continue;
             }
@@ -464,9 +460,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         createAlternativeCourseSearchItemsByCourseId(
             IReadOnlyList<CourseSearchItem> courses)
     {
-        Dictionary<CourseId, CourseChoiceAlternativeSearchItem>
-            searchItemsByCourseId =
-                new Dictionary<CourseId, CourseChoiceAlternativeSearchItem>();
+        Dictionary<CourseId, CourseChoiceAlternativeSearchItem> searchItemsByCourseId = new Dictionary<CourseId, CourseChoiceAlternativeSearchItem>();
         foreach (CourseSearchItem course in courses)
         {
             if (course.Projection.Offerings.Count == 0)
@@ -474,8 +468,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                 continue;
             }
 
-            CourseChoiceAlternativeSearchItem searchItem =
-                new CourseChoiceAlternativeSearchItem(course.Projection);
+            CourseChoiceAlternativeSearchItem searchItem = new CourseChoiceAlternativeSearchItem(course.Projection);
             searchItemsByCourseId.Add(course.CourseId, searchItem);
         }
 

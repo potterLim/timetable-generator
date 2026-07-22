@@ -11,8 +11,7 @@ namespace TimetableGenerator.Desktop.Exporting.AppleCalendar;
 internal sealed class JxaAppleCalendarNativeBridge
     : IAppleCalendarNativeBridge
 {
-    private static readonly JsonSerializerOptions sJsonOptions =
-        createJsonOptions();
+    private static readonly JsonSerializerOptions sJsonOptions = createJsonOptions();
 
     private readonly IAppleCalendarAutomationCommand mAutomationCommand;
 
@@ -32,16 +31,19 @@ internal sealed class JxaAppleCalendarNativeBridge
     internal JxaAppleCalendarNativeBridge(
         IAppleCalendarAutomationCommand automationCommand)
     {
-        mAutomationCommand = automationCommand
-            ?? throw new ArgumentNullException(nameof(automationCommand));
+        if (automationCommand == null)
+        {
+            throw new ArgumentNullException(nameof(automationCommand));
+        }
+
+        mAutomationCommand = automationCommand;
     }
 
     public async Task<IReadOnlyList<AppleCalendarDescriptor>> GetCalendarsAsync(
         CancellationToken cancellationToken)
     {
         ensureAvailable();
-        AppleCalendarAutomationRequest request =
-            AppleCalendarAutomationRequest.CreateListRequest();
+        AppleCalendarAutomationRequest request = AppleCalendarAutomationRequest.CreateListRequest();
         AppleCalendarAutomationResponse response = await executeAsync(
                 EAppleCalendarAutomationOperation.ListCalendars,
                 request,
@@ -55,8 +57,7 @@ internal sealed class JxaAppleCalendarNativeBridge
                 null);
         }
 
-        List<AppleCalendarDescriptor> calendars =
-            new List<AppleCalendarDescriptor>(response.Calendars.Count);
+        List<AppleCalendarDescriptor> calendars = new List<AppleCalendarDescriptor>(response.Calendars.Count);
         foreach (AppleCalendarAutomationCalendarResponse calendarResponse
             in response.Calendars)
         {
@@ -76,8 +77,7 @@ internal sealed class JxaAppleCalendarNativeBridge
         }
 
         ensureAvailable();
-        AppleCalendarAutomationRequest request =
-            AppleCalendarAutomationRequest.CreateMutationRequest(mutation);
+        AppleCalendarAutomationRequest request = AppleCalendarAutomationRequest.CreateMutationRequest(mutation);
         AppleCalendarAutomationResponse response = await executeAsync(
                 EAppleCalendarAutomationOperation.ApplyExport,
                 request,
@@ -131,10 +131,7 @@ internal sealed class JxaAppleCalendarNativeBridge
             .ConfigureAwait(false);
         try
         {
-            AppleCalendarAutomationResponse? responseOrNull =
-                JsonSerializer.Deserialize<AppleCalendarAutomationResponse>(
-                    responseJson,
-                    sJsonOptions);
+            AppleCalendarAutomationResponse? responseOrNull = JsonSerializer.Deserialize<AppleCalendarAutomationResponse>(responseJson, sJsonOptions);
             if (responseOrNull == null)
             {
                 throw new JsonException(
@@ -173,12 +170,19 @@ internal sealed class JxaAppleCalendarNativeBridge
 
         try
         {
+            string calendarId = calendarResponse.Id == null ? string.Empty : calendarResponse.Id;
+            string calendarName = calendarResponse.Name == null ? string.Empty : calendarResponse.Name;
+            EAppleCalendarOwnership ownership = AppleCalendarOwnershipMarker.IsApplicationManaged(calendarResponse.Description)
+                ? EAppleCalendarOwnership.ApplicationManaged
+                : EAppleCalendarOwnership.External;
+            EAppleCalendarContentAccess contentAccess = calendarResponse.Writable
+                ? EAppleCalendarContentAccess.Writable
+                : EAppleCalendarContentAccess.ReadOnly;
             return new AppleCalendarDescriptor(
-                new AppleCalendarId(calendarResponse.Id ?? string.Empty),
-                calendarResponse.Name ?? string.Empty,
-                AppleCalendarOwnershipMarker.IsApplicationManaged(
-                    calendarResponse.Description),
-                calendarResponse.Writable);
+                new AppleCalendarId(calendarId),
+                calendarName,
+                ownership,
+                contentAccess);
         }
         catch (ArgumentException exception)
         {

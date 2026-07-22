@@ -301,8 +301,7 @@ internal sealed class CourseSearchItem : ObservableObject
 
             if (SelectedSelectionOption.IsDirectAdd)
             {
-                return "선택한 분반: "
-                    + SelectedSelectionOption.AccessibleName;
+                return "선택한 분반: " + SelectedSelectionOption.AccessibleName;
             }
 
             return "분반별 선호를 설정합니다.";
@@ -374,28 +373,11 @@ internal sealed class CourseSearchItem : ObservableObject
                 nameof(projection));
         }
 
-        mSelectionOptions = new ObservableCollection<CourseSelectionOption>(
-            selectionOptions);
+        mSelectionOptions = new ObservableCollection<CourseSelectionOption>(selectionOptions);
         mSelectedSelectionOption = mSelectionOptions[0];
         mCourseSelectionAction = ECourseSelectionAction.None;
         InstructorDisplayText = createInstructorSummary(projection);
         SingleOfferingDetailsDisplayText = createSingleOfferingDetails(projection);
-    }
-
-    public bool MatchesSearchText(string searchText)
-    {
-        if (searchText == null)
-        {
-            throw new ArgumentNullException(nameof(searchText));
-        }
-
-        CourseSearchQuery query = CourseSearchQuery.Create(searchText);
-        if (query.IsEmpty)
-        {
-            return true;
-        }
-
-        return FindSearchMatchOrNull(query) != null;
     }
 
     public CourseSearchMatch? FindSearchMatchOrNull(CourseSearchQuery query)
@@ -412,49 +394,34 @@ internal sealed class CourseSearchItem : ObservableObject
 
         if (query.IsExactMatch(Code))
         {
-            return new CourseSearchMatch(
-                this,
-                ECourseSearchMatchKind.ExactCourseCode);
+            return new CourseSearchMatch(this, ECourseSearchMatchKind.ExactCourseCode);
         }
 
         if (query.IsPrefixMatch(Code))
         {
-            return new CourseSearchMatch(
-                this,
-                ECourseSearchMatchKind.CourseCodePrefix);
+            return new CourseSearchMatch(this, ECourseSearchMatchKind.CourseCodePrefix);
         }
 
-        if (query.IsExactMatch(Name)
-            || query.IsExactMatch(EnglishName))
+        if (query.IsExactMatch(Name) || query.IsExactMatch(EnglishName))
         {
-            return new CourseSearchMatch(
-                this,
-                ECourseSearchMatchKind.ExactCourseTitle);
+            return new CourseSearchMatch(this, ECourseSearchMatchKind.ExactCourseTitle);
         }
 
-        if (query.IsPrefixMatch(Name)
-            || query.IsPrefixMatch(EnglishName))
+        if (query.IsPrefixMatch(Name) || query.IsPrefixMatch(EnglishName))
         {
-            return new CourseSearchMatch(
-                this,
-                ECourseSearchMatchKind.CourseTitlePrefix);
+            return new CourseSearchMatch(this, ECourseSearchMatchKind.CourseTitlePrefix);
         }
 
-        if (query.IsContainedIn(Name)
-            || query.IsContainedIn(EnglishName))
+        if (query.IsContainedIn(Name) || query.IsContainedIn(EnglishName))
         {
-            return new CourseSearchMatch(
-                this,
-                ECourseSearchMatchKind.CourseTitleContains);
+            return new CourseSearchMatch(this, ECourseSearchMatchKind.CourseTitleContains);
         }
 
         foreach (CatalogOfferingProjection offering in Projection.Offerings)
         {
             if (query.IsContainedIn(offering.InstructorSummary))
             {
-                return new CourseSearchMatch(
-                    this,
-                    ECourseSearchMatchKind.InstructorContains);
+                return new CourseSearchMatch(this, ECourseSearchMatchKind.InstructorContains);
             }
         }
 
@@ -481,8 +448,7 @@ internal sealed class CourseSearchItem : ObservableObject
                 nameof(selectionOrNull));
         }
 
-        CourseSelectionOption? matchingOptionOrNull = findSelectionOptionOrNull(
-            selectionOrNull);
+        CourseSelectionOption? matchingOptionOrNull = findSelectionOptionOrNull(selectionOrNull);
         if (matchingOptionOrNull == null)
         {
             matchingOptionOrNull = createPersistedSelectionOption(selectionOrNull);
@@ -568,9 +534,7 @@ internal sealed class CourseSearchItem : ObservableObject
                 string scheduledDisplayName = "시간이 정해진 "
                     + projection.ScheduledOfferingIds.Count
                     + "개 분반의 선호 설정";
-                options.Add(CourseSelectionOption.CreatePreferenceEditor(
-                    scheduledSelection,
-                    scheduledDisplayName));
+                options.Add(CourseSelectionOption.CreatePreferenceEditor(scheduledSelection, scheduledDisplayName));
             }
         }
 
@@ -620,8 +584,7 @@ internal sealed class CourseSearchItem : ObservableObject
         return projection.Offerings.Count + "개 분반";
     }
 
-    private static string createSingleOfferingDetails(
-        CatalogCourseProjection projection)
+    private static string createSingleOfferingDetails(CatalogCourseProjection projection)
     {
         if (projection.Offerings.Count != 1)
         {
@@ -645,8 +608,7 @@ internal sealed class CourseSearchItem : ObservableObject
         return false;
     }
 
-    private CourseSelectionOption? findSelectionOptionOrNull(
-        PlanningCourseSelection selection)
+    private CourseSelectionOption? findSelectionOptionOrNull(PlanningCourseSelection selection)
     {
         foreach (CourseSelectionOption option in SelectionOptions)
         {
@@ -659,18 +621,14 @@ internal sealed class CourseSearchItem : ObservableObject
         return null;
     }
 
-    private CourseSelectionOption createPersistedSelectionOption(
-        PlanningCourseSelection selection)
+    private CourseSelectionOption createPersistedSelectionOption(PlanningCourseSelection selection)
     {
         if (selection.Kind == EPlanningCourseSelectionKind.ScheduledAlternatives)
         {
-            IReadOnlyList<OfferingId> offeringIds =
-                selection.GetScheduledOfferingIds();
+            IReadOnlyList<OfferingId> offeringIds = selection.GetScheduledOfferingIds();
             if (offeringIds.Count == 1)
             {
-                CatalogOfferingProjection offering = findOffering(
-                    Projection,
-                    offeringIds[0]);
+                CatalogOfferingProjection offering = findOffering(Projection, offeringIds[0]);
                 return CourseSelectionOption.CreateDirectAdd(
                     selection,
                     EMeetingScheduleStatus.Scheduled,

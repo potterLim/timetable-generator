@@ -76,14 +76,8 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
         AppleCalendarNativeBridgeException? latestConflictExceptionOrNull = null;
         for (int attempt = 0; attempt < MAXIMUM_DESTINATION_ATTEMPTS; ++attempt)
         {
-            IReadOnlyList<AppleCalendarDescriptor> calendars =
-                await getValidatedCalendarsAsync(cancellationToken);
-            AppleCalendarExportMutation? mutationOrNull =
-                await createMutationOrNullAsync(
-                    document,
-                    calendars,
-                    conflictResolver,
-                    cancellationToken);
+            IReadOnlyList<AppleCalendarDescriptor> calendars = await getValidatedCalendarsAsync(cancellationToken);
+            AppleCalendarExportMutation? mutationOrNull = await createMutationOrNullAsync(document, calendars, conflictResolver, cancellationToken);
             if (mutationOrNull == null)
             {
                 return AppleCalendarExportResult.Fail(
@@ -93,10 +87,7 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
 
             try
             {
-                AppleCalendarNativeExportResult nativeResult =
-                    await mNativeBridge.ApplyExportAsync(
-                        mutationOrNull,
-                        cancellationToken);
+                AppleCalendarNativeExportResult nativeResult = await mNativeBridge.ApplyExportAsync(mutationOrNull, cancellationToken);
                 ensureNativeResultMatchesMutation(nativeResult, mutationOrNull);
                 return AppleCalendarExportResult.Complete(nativeResult);
             }
@@ -108,10 +99,14 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
             }
         }
 
-        throw latestConflictExceptionOrNull
-            ?? new AppleCalendarNativeBridgeException(
+        if (latestConflictExceptionOrNull == null)
+        {
+            throw new AppleCalendarNativeBridgeException(
                 EAppleCalendarNativeFailureKind.CalendarChanged,
                 "apple_calendar_destination_changed");
+        }
+
+        throw latestConflictExceptionOrNull;
     }
 
     private async Task<AppleCalendarExportMutation?> createMutationOrNullAsync(
@@ -120,8 +115,7 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
         ICalendarNameConflictResolver conflictResolver,
         CancellationToken cancellationToken)
     {
-        IReadOnlyList<AppleCalendarDescriptor> matchingCalendars =
-            findMatchingCalendars(document.CalendarName, calendars);
+        IReadOnlyList<AppleCalendarDescriptor> matchingCalendars = findMatchingCalendars(document.CalendarName, calendars);
         if (matchingCalendars.Count == 0)
         {
             return AppleCalendarExportMutation.CreateNew(
@@ -129,8 +123,7 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
                 document.CalendarName);
         }
 
-        AppleCalendarDescriptor? replaceableCalendarOrNull =
-            findSoleReplaceableCalendarOrNull(matchingCalendars);
+        AppleCalendarDescriptor? replaceableCalendarOrNull = findSoleReplaceableCalendarOrNull(matchingCalendars);
         ECalendarReplacementAvailability replacementAvailability =
             replaceableCalendarOrNull == null
                 ? ECalendarReplacementAvailability.Unavailable
@@ -143,8 +136,7 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
             document.CalendarName,
             nextAvailableName,
             replacementAvailability);
-        ECalendarNameConflictResolution resolution =
-            await conflictResolver.ResolveAsync(conflict, cancellationToken);
+        ECalendarNameConflictResolution resolution = await conflictResolver.ResolveAsync(conflict, cancellationToken);
         CalendarNameConflictPolicy.EnsureResolutionIsSupported(
             conflict,
             resolution);
@@ -174,8 +166,7 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
     private async Task<IReadOnlyList<AppleCalendarDescriptor>>
         getValidatedCalendarsAsync(CancellationToken cancellationToken)
     {
-        IReadOnlyList<AppleCalendarDescriptor>? calendarsOrNull =
-            await mNativeBridge.GetCalendarsAsync(cancellationToken);
+        IReadOnlyList<AppleCalendarDescriptor>? calendarsOrNull = await mNativeBridge.GetCalendarsAsync(cancellationToken);
         if (calendarsOrNull == null)
         {
             throw new AppleCalendarNativeBridgeException(
@@ -183,8 +174,7 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
                 "apple_calendar_invalid_snapshot");
         }
 
-        List<AppleCalendarDescriptor> calendars =
-            new List<AppleCalendarDescriptor>(calendarsOrNull.Count);
+        List<AppleCalendarDescriptor> calendars = new List<AppleCalendarDescriptor>(calendarsOrNull.Count);
         HashSet<AppleCalendarId> calendarIds = new HashSet<AppleCalendarId>();
         foreach (AppleCalendarDescriptor? calendarOrNull in calendarsOrNull)
         {
@@ -206,12 +196,10 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
         PlanName requestedName,
         IReadOnlyList<AppleCalendarDescriptor> calendars)
     {
-        List<AppleCalendarDescriptor> matchingCalendars =
-            new List<AppleCalendarDescriptor>();
+        List<AppleCalendarDescriptor> matchingCalendars = new List<AppleCalendarDescriptor>();
         foreach (AppleCalendarDescriptor calendar in calendars)
         {
-            PlanName? displayNameOrNull = tryCreatePlanNameOrNull(
-                calendar.DisplayName);
+            PlanName? displayNameOrNull = tryCreatePlanNameOrNull(calendar.DisplayName);
             if (displayNameOrNull != null
                 && CalendarNameConflictPolicy.IsSameName(
                     requestedName,
@@ -242,8 +230,7 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
         List<PlanName> calendarNames = new List<PlanName>(calendars.Count);
         foreach (AppleCalendarDescriptor calendar in calendars)
         {
-            PlanName? displayNameOrNull = tryCreatePlanNameOrNull(
-                calendar.DisplayName);
+            PlanName? displayNameOrNull = tryCreatePlanNameOrNull(calendar.DisplayName);
             if (displayNameOrNull != null)
             {
                 calendarNames.Add(displayNameOrNull);

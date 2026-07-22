@@ -11,7 +11,7 @@ public sealed class GoogleCalendarConfigurationTests
     [Fact]
     public void MissingConfigurationReturnsNullWithoutFailure()
     {
-        string path = createTemporaryPath();
+        GoogleCalendarOAuthConfigurationPath path = createTemporaryPath();
         ProductGoogleCalendarOAuthConfigurationProvider provider =
             new ProductGoogleCalendarOAuthConfigurationProvider(
                 delegate
@@ -20,8 +20,7 @@ public sealed class GoogleCalendarConfigurationTests
                 },
                 path);
 
-        GoogleCalendarOAuthConfiguration? configurationOrNull =
-            provider.GetConfigurationOrNull();
+        GoogleCalendarOAuthConfiguration? configurationOrNull = provider.GetConfigurationOrNull();
 
         Assert.Null(configurationOrNull);
     }
@@ -29,11 +28,11 @@ public sealed class GoogleCalendarConfigurationTests
     [Fact]
     public void LocalUntrackedConfigurationProvidesDesktopClientId()
     {
-        string path = createTemporaryPath();
+        GoogleCalendarOAuthConfigurationPath path = createTemporaryPath();
         string directoryPath = getDirectoryPath(path);
         Directory.CreateDirectory(directoryPath);
         File.WriteAllText(
-            path,
+            path.Value,
             "{\"schemaVersion\":1,\"clientId\":\"desktop-client.apps.googleusercontent.com\"}",
             Encoding.UTF8);
         ProductGoogleCalendarOAuthConfigurationProvider provider =
@@ -46,13 +45,10 @@ public sealed class GoogleCalendarConfigurationTests
 
         try
         {
-            GoogleCalendarOAuthConfiguration? configurationOrNull =
-                provider.GetConfigurationOrNull();
+            GoogleCalendarOAuthConfiguration? configurationOrNull = provider.GetConfigurationOrNull();
 
             Assert.NotNull(configurationOrNull);
-            Assert.Equal(
-                "desktop-client.apps.googleusercontent.com",
-                configurationOrNull.ClientId.Value);
+            Assert.Equal("desktop-client.apps.googleusercontent.com", configurationOrNull.ClientId.Value);
             Assert.Null(configurationOrNull.ClientSecretOrNull);
         }
         finally
@@ -64,11 +60,11 @@ public sealed class GoogleCalendarConfigurationTests
     [Fact]
     public void VersionTwoLocalConfigurationProvidesDesktopClientCredentials()
     {
-        string path = createTemporaryPath();
+        GoogleCalendarOAuthConfigurationPath path = createTemporaryPath();
         string directoryPath = getDirectoryPath(path);
         Directory.CreateDirectory(directoryPath);
         File.WriteAllText(
-            path,
+            path.Value,
             "{\"schemaVersion\":2,\"clientId\":\"desktop-client.apps.googleusercontent.com\","
                 + "\"clientSecret\":\"native-client-secret\"}",
             Encoding.UTF8);
@@ -82,16 +78,11 @@ public sealed class GoogleCalendarConfigurationTests
 
         try
         {
-            GoogleCalendarOAuthConfiguration? configurationOrNull =
-                provider.GetConfigurationOrNull();
+            GoogleCalendarOAuthConfiguration? configurationOrNull = provider.GetConfigurationOrNull();
 
             Assert.NotNull(configurationOrNull);
-            Assert.Equal(
-                "desktop-client.apps.googleusercontent.com",
-                configurationOrNull.ClientId.Value);
-            Assert.Equal(
-                "native-client-secret",
-                configurationOrNull.ClientSecretOrNull?.Value);
+            Assert.Equal("desktop-client.apps.googleusercontent.com", configurationOrNull.ClientId.Value);
+            Assert.Equal("native-client-secret", configurationOrNull.ClientSecretOrNull?.Value);
             Assert.Equal("[redacted]", configurationOrNull.ClientSecretOrNull?.ToString());
         }
         finally
@@ -109,10 +100,10 @@ public sealed class GoogleCalendarConfigurationTests
     [InlineData("{\"schemaVersion\":1,\"clientId\":\"not-a-desktop-client\"}")]
     public void ExpandedOrMalformedLocalConfigurationFailsClosed(string json)
     {
-        string path = createTemporaryPath();
+        GoogleCalendarOAuthConfigurationPath path = createTemporaryPath();
         string directoryPath = getDirectoryPath(path);
         Directory.CreateDirectory(directoryPath);
-        File.WriteAllText(path, json, Encoding.UTF8);
+        File.WriteAllText(path.Value, json, Encoding.UTF8);
         ProductGoogleCalendarOAuthConfigurationProvider provider =
             new ProductGoogleCalendarOAuthConfigurationProvider(
                 delegate
@@ -138,9 +129,7 @@ public sealed class GoogleCalendarConfigurationTests
             new ProductGoogleCalendarOAuthConfigurationProvider(
                 delegate
                 {
-                    return new GoogleCalendarOAuthEnvironmentValues(
-                        "invalid\r\nclient-id",
-                        null);
+                    return new GoogleCalendarOAuthEnvironmentValues("invalid\r\nclient-id", null);
                 },
                 createTemporaryPath());
 
@@ -160,16 +149,11 @@ public sealed class GoogleCalendarConfigurationTests
                 },
                 createTemporaryPath());
 
-        GoogleCalendarOAuthConfiguration? configurationOrNull =
-            provider.GetConfigurationOrNull();
+        GoogleCalendarOAuthConfiguration? configurationOrNull = provider.GetConfigurationOrNull();
 
         Assert.NotNull(configurationOrNull);
-        Assert.Equal(
-            "environment-client.apps.googleusercontent.com",
-            configurationOrNull.ClientId.Value);
-        Assert.Equal(
-            "environment-secret",
-            configurationOrNull.ClientSecretOrNull?.Value);
+        Assert.Equal("environment-client.apps.googleusercontent.com", configurationOrNull.ClientId.Value);
+        Assert.Equal("environment-secret", configurationOrNull.ClientSecretOrNull?.Value);
     }
 
     [Fact]
@@ -179,31 +163,25 @@ public sealed class GoogleCalendarConfigurationTests
             new ProductGoogleCalendarOAuthConfigurationProvider(
                 delegate
                 {
-                    return new GoogleCalendarOAuthEnvironmentValues(
-                        null,
-                        "orphaned-secret");
+                    return new GoogleCalendarOAuthEnvironmentValues(null, "orphaned-secret");
                 },
                 createTemporaryPath());
 
         Assert.Null(provider.GetConfigurationOrNull());
     }
 
-    private static string createTemporaryPath()
+    private static GoogleCalendarOAuthConfigurationPath createTemporaryPath()
     {
-        return Path.Combine(
-            Path.GetTempPath(),
-            "TimetableGenerator.Desktop.Tests",
-            Guid.NewGuid().ToString("N"),
-            "google-calendar.local.json");
+        string path = Path.Combine(Path.GetTempPath(), "TimetableGenerator.Desktop.Tests", Guid.NewGuid().ToString("N"), "google-calendar.local.json");
+        return new GoogleCalendarOAuthConfigurationPath(path);
     }
 
-    private static string getDirectoryPath(string path)
+    private static string getDirectoryPath(GoogleCalendarOAuthConfigurationPath path)
     {
-        string? directoryPathOrNull = Path.GetDirectoryName(path);
+        string? directoryPathOrNull = Path.GetDirectoryName(path.Value);
         if (directoryPathOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The test configuration path does not contain a directory.");
+            throw new InvalidOperationException("The test configuration path does not contain a directory.");
         }
 
         return directoryPathOrNull;

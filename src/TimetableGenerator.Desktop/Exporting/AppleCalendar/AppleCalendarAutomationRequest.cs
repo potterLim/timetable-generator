@@ -80,15 +80,15 @@ internal sealed class AppleCalendarAutomationRequest
                     "Apple Calendar automation requires a supported mutation.");
         }
 
-        IReadOnlyList<AppleCalendarAutomationEvent> events =
-            AppleCalendarEventOccurrenceProjector.Project(mutation.Document);
+        IReadOnlyList<AppleCalendarAutomationEvent> events = AppleCalendarEventOccurrenceProjector.Project(mutation.Document);
+        string existingCalendarId = mutation.ExistingCalendarIdOrNull == null ? string.Empty : mutation.ExistingCalendarIdOrNull.Value;
         return new AppleCalendarAutomationRequest(
             AppleCalendarOwnershipMarker.CreateForPlan(
                 mutation.Document.PlanId),
             mutationKind,
             mutation.DestinationName.Value,
             normalizeName(mutation.DestinationName.Value),
-            mutation.ExistingCalendarIdOrNull?.Value ?? string.Empty,
+            existingCalendarId,
             events);
     }
 

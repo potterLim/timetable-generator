@@ -18,13 +18,9 @@ public sealed class AppleCalendarExportServiceTests
     [Fact]
     public async Task AvailableNameCreatesCalendarWithoutPromptAsync()
     {
-        RecordingAppleCalendarNativeBridge nativeBridge =
-            new RecordingAppleCalendarNativeBridge();
-        RecordingCalendarNameConflictResolver conflictResolver =
-            new RecordingCalendarNameConflictResolver(
-                ECalendarNameConflictResolution.Cancel);
-        AppleCalendarExportService exporter =
-            new AppleCalendarExportService(nativeBridge);
+        RecordingAppleCalendarNativeBridge nativeBridge = new RecordingAppleCalendarNativeBridge();
+        RecordingCalendarNameConflictResolver conflictResolver = new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.Cancel);
+        AppleCalendarExportService exporter = new AppleCalendarExportService(nativeBridge);
 
         AppleCalendarExportResult result = await exporter.ExportAsync(
             createDocument(),
@@ -36,8 +32,7 @@ public sealed class AppleCalendarExportServiceTests
         Assert.Equal(1, result.CreatedEventCount);
         Assert.Equal(0, result.DeletedEventCount);
         Assert.Empty(conflictResolver.Conflicts);
-        AppleCalendarExportMutation mutation =
-            Assert.Single(nativeBridge.AppliedMutations);
+        AppleCalendarExportMutation mutation = Assert.Single(nativeBridge.AppliedMutations);
         Assert.Equal(EAppleCalendarExportMutationKind.CreateNew, mutation.Kind);
         Assert.Equal("2026-2학기 시간표", mutation.DestinationName.Value);
         Assert.Null(mutation.ExistingCalendarIdOrNull);
@@ -46,18 +41,15 @@ public sealed class AppleCalendarExportServiceTests
     [Fact]
     public async Task ManagedWritableNameCollisionCanReplaceExistingCalendarAsync()
     {
-        AppleCalendarId existingCalendarId =
-            new AppleCalendarId("existing-calendar");
+        AppleCalendarId existingCalendarId = new AppleCalendarId("existing-calendar");
         RecordingAppleCalendarNativeBridge nativeBridge =
             new RecordingAppleCalendarNativeBridge(
                 createCalendar(
                     existingCalendarId,
                     "2026-2학기 시간표",
-                    true,
-                    true));
-        RecordingCalendarNameConflictResolver conflictResolver =
-            new RecordingCalendarNameConflictResolver(
-                ECalendarNameConflictResolution.ReplaceExisting);
+                    EAppleCalendarOwnership.ApplicationManaged,
+                    EAppleCalendarContentAccess.Writable));
+        RecordingCalendarNameConflictResolver conflictResolver = new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.ReplaceExisting);
 
         AppleCalendarExportResult result =
             await new AppleCalendarExportService(nativeBridge).ExportAsync(
@@ -68,15 +60,11 @@ public sealed class AppleCalendarExportServiceTests
         Assert.Equal(EAppleCalendarExportStatus.Success, result.Status);
         Assert.Equal(existingCalendarId, result.CalendarIdOrNull);
         Assert.Equal(1, result.DeletedEventCount);
-        CalendarNameConflict conflict =
-            Assert.Single(conflictResolver.Conflicts);
+        CalendarNameConflict conflict = Assert.Single(conflictResolver.Conflicts);
         Assert.True(conflict.CanReplace);
         Assert.Equal("2026-2학기 시간표 (2)", conflict.NextAvailableName.Value);
-        AppleCalendarExportMutation mutation =
-            Assert.Single(nativeBridge.AppliedMutations);
-        Assert.Equal(
-            EAppleCalendarExportMutationKind.ReplaceExisting,
-            mutation.Kind);
+        AppleCalendarExportMutation mutation = Assert.Single(nativeBridge.AppliedMutations);
+        Assert.Equal(EAppleCalendarExportMutationKind.ReplaceExisting, mutation.Kind);
         Assert.Equal(existingCalendarId, mutation.ExistingCalendarIdOrNull);
     }
 
@@ -88,16 +76,14 @@ public sealed class AppleCalendarExportServiceTests
                 createCalendar(
                     new AppleCalendarId("personal-calendar"),
                     "2026-2학기 시간표",
-                    false,
-                    true),
+                    EAppleCalendarOwnership.External,
+                    EAppleCalendarContentAccess.Writable),
                 createCalendar(
                     new AppleCalendarId("existing-copy"),
                     "2026-2학기 시간표 (2)",
-                    true,
-                    true));
-        RecordingCalendarNameConflictResolver conflictResolver =
-            new RecordingCalendarNameConflictResolver(
-                ECalendarNameConflictResolution.CreateWithAvailableName);
+                    EAppleCalendarOwnership.ApplicationManaged,
+                    EAppleCalendarContentAccess.Writable));
+        RecordingCalendarNameConflictResolver conflictResolver = new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.CreateWithAvailableName);
 
         AppleCalendarExportResult result =
             await new AppleCalendarExportService(nativeBridge).ExportAsync(
@@ -107,12 +93,10 @@ public sealed class AppleCalendarExportServiceTests
 
         Assert.Equal(EAppleCalendarExportStatus.Success, result.Status);
         Assert.Equal("2026-2학기 시간표 (3)", result.CalendarNameOrNull?.Value);
-        CalendarNameConflict conflict =
-            Assert.Single(conflictResolver.Conflicts);
+        CalendarNameConflict conflict = Assert.Single(conflictResolver.Conflicts);
         Assert.False(conflict.CanReplace);
         Assert.Equal("2026-2학기 시간표 (3)", conflict.NextAvailableName.Value);
-        AppleCalendarExportMutation mutation =
-            Assert.Single(nativeBridge.AppliedMutations);
+        AppleCalendarExportMutation mutation = Assert.Single(nativeBridge.AppliedMutations);
         Assert.Equal(EAppleCalendarExportMutationKind.CreateNew, mutation.Kind);
         Assert.Equal("2026-2학기 시간표 (3)", mutation.DestinationName.Value);
     }
@@ -125,11 +109,9 @@ public sealed class AppleCalendarExportServiceTests
                 createCalendar(
                     new AppleCalendarId("existing-calendar"),
                     "2026-2학기 시간표",
-                    true,
-                    true));
-        RecordingCalendarNameConflictResolver conflictResolver =
-            new RecordingCalendarNameConflictResolver(
-                ECalendarNameConflictResolution.Cancel);
+                    EAppleCalendarOwnership.ApplicationManaged,
+                    EAppleCalendarContentAccess.Writable));
+        RecordingCalendarNameConflictResolver conflictResolver = new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.Cancel);
 
         AppleCalendarExportResult result =
             await new AppleCalendarExportService(nativeBridge).ExportAsync(
@@ -150,17 +132,15 @@ public sealed class AppleCalendarExportServiceTests
                 createCalendar(
                     new AppleCalendarId("existing-calendar"),
                     "2026-2학기 시간표",
-                    true,
-                    true));
+                    EAppleCalendarOwnership.ApplicationManaged,
+                    EAppleCalendarContentAccess.Writable));
         nativeBridge.FailNextMutationForDestinationChange = true;
         nativeBridge.CalendarAddedAfterDestinationChange = createCalendar(
             new AppleCalendarId("racing-copy"),
             "2026-2학기 시간표 (2)",
-            false,
-            true);
-        RecordingCalendarNameConflictResolver conflictResolver =
-            new RecordingCalendarNameConflictResolver(
-                ECalendarNameConflictResolution.CreateWithAvailableName);
+            EAppleCalendarOwnership.External,
+            EAppleCalendarContentAccess.Writable);
+        RecordingCalendarNameConflictResolver conflictResolver = new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.CreateWithAvailableName);
 
         AppleCalendarExportResult result =
             await new AppleCalendarExportService(nativeBridge).ExportAsync(
@@ -172,23 +152,16 @@ public sealed class AppleCalendarExportServiceTests
         Assert.Equal("2026-2학기 시간표 (3)", result.CalendarNameOrNull?.Value);
         Assert.Equal(2, conflictResolver.Conflicts.Count);
         Assert.Equal(2, nativeBridge.AppliedMutations.Count);
-        Assert.Equal(
-            "2026-2학기 시간표 (2)",
-            nativeBridge.AppliedMutations[0].DestinationName.Value);
-        Assert.Equal(
-            "2026-2학기 시간표 (3)",
-            nativeBridge.AppliedMutations[1].DestinationName.Value);
+        Assert.Equal("2026-2학기 시간표 (2)", nativeBridge.AppliedMutations[0].DestinationName.Value);
+        Assert.Equal("2026-2학기 시간표 (3)", nativeBridge.AppliedMutations[1].DestinationName.Value);
     }
 
     [Fact]
     public async Task UnsupportedNativeBridgeReturnsUnavailableWithoutPromptAsync()
     {
-        RecordingAppleCalendarNativeBridge nativeBridge =
-            new RecordingAppleCalendarNativeBridge();
+        RecordingAppleCalendarNativeBridge nativeBridge = new RecordingAppleCalendarNativeBridge();
         nativeBridge.IsAvailable = false;
-        RecordingCalendarNameConflictResolver conflictResolver =
-            new RecordingCalendarNameConflictResolver(
-                ECalendarNameConflictResolution.Cancel);
+        RecordingCalendarNameConflictResolver conflictResolver = new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.Cancel);
 
         AppleCalendarExportResult result =
             await new AppleCalendarExportService(nativeBridge).ExportAsync(
@@ -197,9 +170,7 @@ public sealed class AppleCalendarExportServiceTests
                 TestContext.Current.CancellationToken);
 
         Assert.Equal(EAppleCalendarExportStatus.Unavailable, result.Status);
-        Assert.Equal(
-            "apple_calendar_native_bridge_unavailable",
-            result.DiagnosticCodeOrNull);
+        Assert.Equal("apple_calendar_native_bridge_unavailable", result.DiagnosticCodeOrNull);
         Assert.Equal(0, nativeBridge.CalendarSnapshotRequestCount);
         Assert.Empty(conflictResolver.Conflicts);
     }
@@ -207,8 +178,7 @@ public sealed class AppleCalendarExportServiceTests
     [Fact]
     public async Task NativeAccessDenialReturnsTypedFailureAsync()
     {
-        RecordingAppleCalendarNativeBridge nativeBridge =
-            new RecordingAppleCalendarNativeBridge();
+        RecordingAppleCalendarNativeBridge nativeBridge = new RecordingAppleCalendarNativeBridge();
         nativeBridge.FailureOnNextMutationOrNull =
             new AppleCalendarNativeBridgeException(
                 EAppleCalendarNativeFailureKind.AccessDenied,
@@ -233,8 +203,8 @@ public sealed class AppleCalendarExportServiceTests
                 createCalendar(
                     new AppleCalendarId("personal-calendar"),
                     "2026-2학기 시간표",
-                    false,
-                    true));
+                    EAppleCalendarOwnership.External,
+                    EAppleCalendarContentAccess.Writable));
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => new AppleCalendarExportService(nativeBridge).ExportAsync(
@@ -249,14 +219,14 @@ public sealed class AppleCalendarExportServiceTests
     private static AppleCalendarDescriptor createCalendar(
         AppleCalendarId calendarId,
         string name,
-        bool isManagedByApplication,
-        bool allowsContentModification)
+        EAppleCalendarOwnership ownership,
+        EAppleCalendarContentAccess contentAccess)
     {
         return new AppleCalendarDescriptor(
             calendarId,
             name,
-            isManagedByApplication,
-            allowsContentModification);
+            ownership,
+            contentAccess);
     }
 
     private static CalendarExportDocument createDocument()
@@ -287,8 +257,7 @@ public sealed class AppleCalendarExportServiceTests
         : ICalendarNameConflictResolver
     {
         private readonly ECalendarNameConflictResolution mResolution;
-        private readonly List<CalendarNameConflict> mConflicts =
-            new List<CalendarNameConflict>();
+        private readonly List<CalendarNameConflict> mConflicts = new List<CalendarNameConflict>();
 
         public IReadOnlyList<CalendarNameConflict> Conflicts
         {
@@ -298,8 +267,7 @@ public sealed class AppleCalendarExportServiceTests
             }
         }
 
-        public RecordingCalendarNameConflictResolver(
-            ECalendarNameConflictResolution resolution)
+        public RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution resolution)
         {
             mResolution = resolution;
         }
@@ -318,8 +286,7 @@ public sealed class AppleCalendarExportServiceTests
         : IAppleCalendarNativeBridge
     {
         private readonly List<AppleCalendarDescriptor> mCalendars;
-        private readonly List<AppleCalendarExportMutation> mAppliedMutations =
-            new List<AppleCalendarExportMutation>();
+        private readonly List<AppleCalendarExportMutation> mAppliedMutations = new List<AppleCalendarExportMutation>();
 
         public bool IsAvailable { get; set; } = true;
 
@@ -347,8 +314,7 @@ public sealed class AppleCalendarExportServiceTests
             }
         }
 
-        public RecordingAppleCalendarNativeBridge(
-            params AppleCalendarDescriptor[] calendars)
+        public RecordingAppleCalendarNativeBridge(params AppleCalendarDescriptor[] calendars)
         {
             mCalendars = new List<AppleCalendarDescriptor>(calendars);
         }
@@ -358,8 +324,7 @@ public sealed class AppleCalendarExportServiceTests
         {
             cancellationToken.ThrowIfCancellationRequested();
             CalendarSnapshotRequestCount++;
-            IReadOnlyList<AppleCalendarDescriptor> snapshot =
-                new List<AppleCalendarDescriptor>(mCalendars).AsReadOnly();
+            IReadOnlyList<AppleCalendarDescriptor> snapshot = new List<AppleCalendarDescriptor>(mCalendars).AsReadOnly();
             return Task.FromResult(snapshot);
         }
 
@@ -372,11 +337,9 @@ public sealed class AppleCalendarExportServiceTests
 
             if (FailureOnNextMutationOrNull != null)
             {
-                AppleCalendarNativeBridgeException exception =
-                    FailureOnNextMutationOrNull;
+                AppleCalendarNativeBridgeException exception = FailureOnNextMutationOrNull;
                 FailureOnNextMutationOrNull = null;
-                return Task.FromException<AppleCalendarNativeExportResult>(
-                    exception);
+                return Task.FromException<AppleCalendarNativeExportResult>(exception);
             }
 
             if (FailNextMutationForDestinationChange)
@@ -393,14 +356,18 @@ public sealed class AppleCalendarExportServiceTests
                         "apple_calendar_destination_changed"));
             }
 
-            AppleCalendarId calendarId =
-                mutation.ExistingCalendarIdOrNull
-                ?? new AppleCalendarId(
-                    "created-calendar-" + mAppliedMutations.Count);
-            int deletedEventCount =
-                mutation.Kind == EAppleCalendarExportMutationKind.ReplaceExisting
-                    ? 1
-                    : 0;
+            AppleCalendarId? existingCalendarIdOrNull = mutation.ExistingCalendarIdOrNull;
+            AppleCalendarId calendarId;
+            if (existingCalendarIdOrNull == null)
+            {
+                calendarId = new AppleCalendarId("created-calendar-" + mAppliedMutations.Count);
+            }
+            else
+            {
+                calendarId = existingCalendarIdOrNull;
+            }
+
+            int deletedEventCount = mutation.Kind == EAppleCalendarExportMutationKind.ReplaceExisting ? 1 : 0;
             return Task.FromResult(
                 new AppleCalendarNativeExportResult(
                     calendarId,

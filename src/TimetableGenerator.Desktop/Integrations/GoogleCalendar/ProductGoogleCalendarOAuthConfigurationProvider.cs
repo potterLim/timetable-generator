@@ -12,13 +12,11 @@ internal sealed class ProductGoogleCalendarOAuthConfigurationProvider
     private const int SCHEMA_VERSION_TWO = 2;
     private const long MAXIMUM_CONFIGURATION_FILE_BYTES = 16_384L;
     private const string LOCAL_CONFIGURATION_FILE_NAME = "google-calendar.local.json";
-    private const string CLIENT_ID_ENVIRONMENT_VARIABLE_NAME =
-        "TIMETABLE_GENERATOR_GOOGLE_CALENDAR_CLIENT_ID";
-    private const string CLIENT_SECRET_ENVIRONMENT_VARIABLE_NAME =
-        "TIMETABLE_GENERATOR_GOOGLE_CALENDAR_CLIENT_SECRET";
+    private const string CLIENT_ID_ENVIRONMENT_VARIABLE_NAME = "TIMETABLE_GENERATOR_GOOGLE_CALENDAR_CLIENT_ID";
+    private const string CLIENT_SECRET_ENVIRONMENT_VARIABLE_NAME = "TIMETABLE_GENERATOR_GOOGLE_CALENDAR_CLIENT_SECRET";
 
     private readonly Func<GoogleCalendarOAuthEnvironmentValues> mEnvironmentValuesProvider;
-    private readonly string mLocalConfigurationPath;
+    private readonly GoogleCalendarOAuthConfigurationPath mLocalConfigurationPath;
 
     public ProductGoogleCalendarOAuthConfigurationProvider()
         : this(
@@ -30,13 +28,14 @@ internal sealed class ProductGoogleCalendarOAuthConfigurationProvider
                     Environment.GetEnvironmentVariable(
                         CLIENT_SECRET_ENVIRONMENT_VARIABLE_NAME));
             },
-            Path.Combine(AppContext.BaseDirectory, LOCAL_CONFIGURATION_FILE_NAME))
+            new GoogleCalendarOAuthConfigurationPath(
+                Path.Combine(AppContext.BaseDirectory, LOCAL_CONFIGURATION_FILE_NAME)))
     {
     }
 
     internal ProductGoogleCalendarOAuthConfigurationProvider(
         Func<GoogleCalendarOAuthEnvironmentValues> environmentValuesProvider,
-        string localConfigurationPath)
+        GoogleCalendarOAuthConfigurationPath localConfigurationPath)
     {
         if (environmentValuesProvider == null)
         {
@@ -49,17 +48,14 @@ internal sealed class ProductGoogleCalendarOAuthConfigurationProvider
         }
 
         mEnvironmentValuesProvider = environmentValuesProvider;
-        mLocalConfigurationPath = Path.GetFullPath(localConfigurationPath);
+        mLocalConfigurationPath = localConfigurationPath;
     }
 
     public GoogleCalendarOAuthConfiguration? GetConfigurationOrNull()
     {
-        GoogleCalendarOAuthEnvironmentValues environmentValues =
-            mEnvironmentValuesProvider();
-        bool hasEnvironmentClientId = string.IsNullOrWhiteSpace(
-            environmentValues.ClientIdOrNull) == false;
-        bool hasEnvironmentClientSecret = string.IsNullOrWhiteSpace(
-            environmentValues.ClientSecretOrNull) == false;
+        GoogleCalendarOAuthEnvironmentValues environmentValues = mEnvironmentValuesProvider();
+        bool hasEnvironmentClientId = string.IsNullOrWhiteSpace(environmentValues.ClientIdOrNull) == false;
+        bool hasEnvironmentClientSecret = string.IsNullOrWhiteSpace(environmentValues.ClientSecretOrNull) == false;
         if (hasEnvironmentClientId || hasEnvironmentClientSecret)
         {
             if (hasEnvironmentClientId == false)
@@ -84,20 +80,20 @@ internal sealed class ProductGoogleCalendarOAuthConfigurationProvider
             }
         }
 
-        if (File.Exists(mLocalConfigurationPath) == false)
+        if (File.Exists(mLocalConfigurationPath.Value) == false)
         {
             return null;
         }
 
         try
         {
-            FileInfo fileInfo = new FileInfo(mLocalConfigurationPath);
+            FileInfo fileInfo = new FileInfo(mLocalConfigurationPath.Value);
             if (fileInfo.Length > MAXIMUM_CONFIGURATION_FILE_BYTES)
             {
                 return null;
             }
 
-            using (FileStream stream = File.OpenRead(mLocalConfigurationPath))
+            using (FileStream stream = File.OpenRead(mLocalConfigurationPath.Value))
             using (JsonDocument document = JsonDocument.Parse(stream))
             {
                 if (document.RootElement.ValueKind != JsonValueKind.Object)
@@ -105,8 +101,7 @@ internal sealed class ProductGoogleCalendarOAuthConfigurationProvider
                     return null;
                 }
 
-                HashSet<string> propertyNames = new HashSet<string>(
-                    StringComparer.Ordinal);
+                HashSet<string> propertyNames = new HashSet<string>(StringComparer.Ordinal);
                 int? schemaVersionOrNull = null;
                 string? clientIdOrNull = null;
                 string? clientSecretOrNull = null;

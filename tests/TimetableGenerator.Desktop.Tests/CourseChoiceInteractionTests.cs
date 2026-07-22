@@ -41,8 +41,7 @@ public sealed class CourseChoiceInteractionTests
             workspace.AddCourseCommand.Execute(seminar);
 
             Assert.True(workspace.IsCourseChoiceEditorVisible);
-            CourseChoiceDraftCourseItem draft = Assert.Single(
-                workspace.CourseChoiceDraftCourses);
+            CourseChoiceDraftCourseItem draft = Assert.Single(workspace.CourseChoiceDraftCourses);
             Assert.Equal(2, draft.Offerings.Count);
             Assert.Single(
                 draft.Offerings,
@@ -72,8 +71,7 @@ public sealed class CourseChoiceInteractionTests
             Assert.True(workspace.IsCourseChoiceEditorVisible);
             Assert.False(workspace.HasAlternativeCourseChoices);
             Assert.Equal(string.Empty, workspace.CourseChoiceEditorDescription);
-            CourseChoiceDraftCourseItem draft = Assert.Single(
-                workspace.CourseChoiceDraftCourses);
+            CourseChoiceDraftCourseItem draft = Assert.Single(workspace.CourseChoiceDraftCourses);
             Assert.Equal(2, draft.Offerings.Count);
             Assert.All(draft.Offerings, offering => Assert.True(offering.IsAcceptable));
             Assert.True(workspace.CanSaveCourseChoice);
@@ -83,9 +81,7 @@ public sealed class CourseChoiceInteractionTests
             CourseOfferingPreferenceItem alternativeOffering = draft.Offerings[1];
             Assert.Equal("교수 정보 없음", alternativeOffering.InstructorDisplayText);
             Assert.Equal("강의실 미정", alternativeOffering.LocationDisplayText);
-            Assert.Equal(
-                "교수 정보 없음 · 강의실 미정",
-                alternativeOffering.LogisticsDisplayText);
+            Assert.Equal("교수 정보 없음 · 강의실 미정", alternativeOffering.LogisticsDisplayText);
             preferredOffering.SelectPreferredCommand.Execute(null);
             preferredOffering.SelectPreferredCommand.Execute(null);
 
@@ -98,8 +94,7 @@ public sealed class CourseChoiceInteractionTests
             Assert.True(workspace.SaveCourseChoiceCommand.CanExecute(null));
             workspace.SaveCourseChoiceCommand.Execute(null);
 
-            CourseChoiceGroup group = Assert.Single(
-                workspace.ActivePlan.Plan.CourseChoiceGroups);
+            CourseChoiceGroup group = Assert.Single(workspace.ActivePlan.Plan.CourseChoiceGroups);
             CourseCandidate candidate = Assert.Single(group.CourseCandidates);
             Assert.Collection(
                 candidate.OfferingCandidates,
@@ -125,21 +120,17 @@ public sealed class CourseChoiceInteractionTests
         {
             CourseSearchItem programming = findCourse(workspace, "프로그래밍");
             workspace.AddCourseCommand.Execute(programming);
-            CourseChoiceDraftCourseItem programmingDraft = Assert.Single(
-                workspace.CourseChoiceDraftCourses);
+            CourseChoiceDraftCourseItem programmingDraft = Assert.Single(workspace.CourseChoiceDraftCourses);
             programmingDraft.Offerings[0].SelectPreferredCommand.Execute(null);
             programmingDraft.Offerings[1].SelectExcludedCommand.Execute(null);
 
             workspace.AlternativeCourseSearchText = "세미나";
-            CourseChoiceAlternativeSearchItem seminarSearchResult = Assert.Single(
-                workspace.AlternativeCourseSearchResults);
+            CourseChoiceAlternativeSearchItem seminarSearchResult = Assert.Single(workspace.AlternativeCourseSearchResults);
             workspace.AddAlternativeCourseCommand.Execute(seminarSearchResult);
 
             Assert.Equal(2, workspace.CourseChoiceDraftCourses.Count);
             Assert.True(workspace.HasAlternativeCourseChoices);
-            Assert.Equal(
-                "각 시간표에는 한 과목만 포함됩니다.",
-                workspace.CourseChoiceEditorDescription);
+            Assert.Equal("각 시간표에는 한 과목만 포함됩니다.", workspace.CourseChoiceEditorDescription);
             Assert.Empty(workspace.AlternativeCourseSearchResults);
             CourseChoiceDraftCourseItem seminarDraft = workspace
                 .CourseChoiceDraftCourses
@@ -161,23 +152,16 @@ public sealed class CourseChoiceInteractionTests
             Assert.True(workspace.CanSaveCourseChoice);
             workspace.SaveCourseChoiceCommand.Execute(null);
 
-            CourseChoiceGroup savedGroup = Assert.Single(
-                workspace.ActivePlan.Plan.CourseChoiceGroups);
+            CourseChoiceGroup savedGroup = Assert.Single(workspace.ActivePlan.Plan.CourseChoiceGroups);
             CourseChoiceGroupId savedGroupId = savedGroup.Id;
             Assert.Equal(ECourseChoiceCardinality.ExactlyOne, savedGroup.Cardinality);
             Assert.Equal(2, savedGroup.CourseCandidates.Count);
-            Assert.Equal(2, Assert.Single(
-                workspace.ActivePlan.CourseChoiceGroups).Courses.Count);
+            Assert.Equal(2, Assert.Single(workspace.ActivePlan.CourseChoiceGroups).Courses.Count);
 
-            PlanCourseChoiceGroupItem savedItem = Assert.Single(
-                workspace.ActivePlan.CourseChoiceGroups);
+            PlanCourseChoiceGroupItem savedItem = Assert.Single(workspace.ActivePlan.CourseChoiceGroups);
             Assert.Equal("2개 과목 중 1개 선택", savedItem.Heading);
-            Assert.Equal(
-                "2개 과목 중 1개를 선택하는 수강 선택",
-                savedItem.AccessibleName);
-            Assert.Equal(
-                "대안 과목 수강 선택 수정",
-                savedItem.EditButtonAccessibleName);
+            Assert.Equal("2개 과목 중 1개를 선택하는 수강 선택", savedItem.AccessibleName);
+            Assert.Equal("대안 과목 수강 선택 수정", savedItem.EditButtonAccessibleName);
             workspace.BeginEditCourseChoiceGroupCommand.Execute(savedItem);
 
             Assert.True(workspace.IsCourseChoiceEditorVisible);
@@ -195,17 +179,13 @@ public sealed class CourseChoiceInteractionTests
             restoredProgramming.Offerings[0].SelectAcceptableCommand.Execute(null);
             workspace.SaveCourseChoiceCommand.Execute(null);
 
-            CourseChoiceGroup updatedGroup = Assert.Single(
-                workspace.ActivePlan.Plan.CourseChoiceGroups);
+            CourseChoiceGroup updatedGroup = Assert.Single(workspace.ActivePlan.Plan.CourseChoiceGroups);
             Assert.Equal(savedGroupId, updatedGroup.Id);
             CourseCandidate updatedProgramming = updatedGroup.CourseCandidates
                 .Single(candidate => candidate.CourseId == programming.CourseId);
-            Assert.Equal(
-                EOfferingPreference.Acceptable,
-                updatedProgramming.OfferingCandidates[0].Preference);
+            Assert.Equal(EOfferingPreference.Acceptable, updatedProgramming.OfferingCandidates[0].Preference);
 
-            PlanCourseChoiceGroupItem updatedItem = Assert.Single(
-                workspace.ActivePlan.CourseChoiceGroups);
+            PlanCourseChoiceGroupItem updatedItem = Assert.Single(workspace.ActivePlan.CourseChoiceGroups);
             workspace.RemoveCourseChoiceGroupCommand.Execute(updatedItem);
 
             Assert.Empty(workspace.ActivePlan.Plan.CourseChoiceGroups);
@@ -220,8 +200,7 @@ public sealed class CourseChoiceInteractionTests
     [AvaloniaFact]
     public async Task TimeNotProvidedOfferingsUseTheSamePreferenceEditorAsync()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
 
         try
         {
@@ -230,8 +209,7 @@ public sealed class CourseChoiceInteractionTests
             workspace.AddCourseCommand.Execute(seminar);
 
             Assert.True(workspace.IsCourseChoiceEditorVisible);
-            CourseChoiceDraftCourseItem draft = Assert.Single(
-                workspace.CourseChoiceDraftCourses);
+            CourseChoiceDraftCourseItem draft = Assert.Single(workspace.CourseChoiceDraftCourses);
             Assert.Equal(2, draft.Offerings.Count);
             Assert.All(
                 draft.Offerings,
@@ -242,22 +220,18 @@ public sealed class CourseChoiceInteractionTests
             await workspace.RecommendationRefreshTask;
 
             Assert.True(seminar.IsAdded);
-            Assert.Empty(
-                workspace.ActivePlan.Plan.UnscheduledOfferingSelections);
+            Assert.Empty(workspace.ActivePlan.Plan.UnscheduledOfferingSelections);
             CourseChoiceGroup seminarGroup = workspace.ActivePlan.Plan
                 .CourseChoiceGroups
                 .Single(group => group.CourseCandidates.Any(
                     candidate => candidate.CourseId == seminar.CourseId));
-            CourseCandidate candidate = Assert.Single(
-                seminarGroup.CourseCandidates);
+            CourseCandidate candidate = Assert.Single(seminarGroup.CourseCandidates);
             PlanCourseChoiceCandidateItem displayedCandidate = Assert.Single(
                 workspace.ActivePlan.CourseChoiceGroups
                     .Single(group => group.GroupId == seminarGroup.Id)
                     .Courses);
             Assert.True(displayedCandidate.HasSelectedTimeNotProvidedOffering);
-            Assert.Equal(
-                "01분반: 시간 미정",
-                displayedCandidate.SelectedTimeNotProvidedOfferingDisplayText);
+            Assert.Equal("01분반: 시간 미정", displayedCandidate.SelectedTimeNotProvidedOfferingDisplayText);
             Assert.Collection(
                 candidate.OfferingCandidates,
                 offering => Assert.Equal(
@@ -281,8 +255,7 @@ public sealed class CourseChoiceInteractionTests
     [AvaloniaFact]
     public async Task TimeNotProvidedRecommendationsExposeTheSelectedSectionAsync()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
 
         try
         {
@@ -292,22 +265,17 @@ public sealed class CourseChoiceInteractionTests
             workspace.SaveCourseChoiceCommand.Execute(null);
             await workspace.RecommendationRefreshTask;
 
-            PlanCourseChoiceCandidateItem displayedCandidate = Assert.Single(
-                Assert.Single(workspace.ActivePlan.CourseChoiceGroups).Courses);
+            PlanCourseChoiceCandidateItem displayedCandidate = Assert.Single(Assert.Single(workspace.ActivePlan.CourseChoiceGroups).Courses);
             Assert.True(workspace.HasMultipleRecommendations);
             Assert.False(workspace.CanExportAllPngCandidates);
             Assert.Single(workspace.PngExportCandidates);
             Assert.Equal("1 / 2", workspace.RecommendationSummary);
-            Assert.Equal(
-                "01분반: 시간 미정",
-                displayedCandidate.SelectedTimeNotProvidedOfferingDisplayText);
+            Assert.Equal("01분반: 시간 미정", displayedCandidate.SelectedTimeNotProvidedOfferingDisplayText);
 
             workspace.NextRecommendationCommand.Execute(null);
 
             Assert.Equal("2 / 2", workspace.RecommendationSummary);
-            Assert.Equal(
-                "02분반: 시간 미정",
-                displayedCandidate.SelectedTimeNotProvidedOfferingDisplayText);
+            Assert.Equal("02분반: 시간 미정", displayedCandidate.SelectedTimeNotProvidedOfferingDisplayText);
         }
         finally
         {
@@ -344,15 +312,9 @@ public sealed class CourseChoiceInteractionTests
             addButton.Command?.Execute(addButton.CommandParameter);
             Dispatcher.UIThread.RunJobs();
 
-            Border overlay = findRequiredControl<Border>(
-                host,
-                "CourseChoiceEditorOverlay");
-            Border dialog = findRequiredControl<Border>(
-                host,
-                "CourseChoiceEditorDialog");
-            Grid workspaceSurface = findRequiredControl<Grid>(
-                host,
-                "WorkspaceSurface");
+            Border overlay = findRequiredControl<Border>(host, "CourseChoiceEditorOverlay");
+            Border dialog = findRequiredControl<Border>(host, "CourseChoiceEditorDialog");
+            Grid workspaceSurface = findRequiredControl<Grid>(host, "WorkspaceSurface");
             RadioButton[] preferenceButtons = host.GetVisualDescendants()
                 .OfType<RadioButton>()
                 .Where(
@@ -365,12 +327,8 @@ public sealed class CourseChoiceInteractionTests
             Assert.True(overlay.IsVisible);
             Assert.False(workspaceSurface.IsEnabled);
             Assert.True(selectedPreferenceButton.IsKeyboardFocusWithin);
-            Assert.Equal(
-                KeyboardNavigationMode.Cycle,
-                KeyboardNavigation.GetTabNavigation(dialog));
-            Assert.Equal(
-                "수강 선택 대화상자",
-                AutomationProperties.GetName(dialog));
+            Assert.Equal(KeyboardNavigationMode.Cycle, KeyboardNavigation.GetTabNavigation(dialog));
+            Assert.Equal("수강 선택 대화상자", AutomationProperties.GetName(dialog));
             Assert.Equal(6, preferenceButtons.Length);
             Assert.Equal("선호", preferenceButtons[0].Content);
             Assert.Equal(false, preferenceButtons[0].IsChecked);
@@ -383,27 +341,13 @@ public sealed class CourseChoiceInteractionTests
                 assertPreferenceOutlineEnclosesControl(preferenceButton);
             }
 
-            Assert.Equal(
-                "프로그래밍 I, 01분반, 선호",
-                AutomationProperties.GetName(preferenceButtons[0]));
-            Assert.Equal(
-                "조합에서 우선 사용",
-                AutomationProperties.GetHelpText(preferenceButtons[0]));
-            Assert.Equal(
-                "조합 후보로 사용",
-                AutomationProperties.GetHelpText(preferenceButtons[1]));
-            Assert.Equal(
-                "조합에서 사용하지 않음",
-                AutomationProperties.GetHelpText(preferenceButtons[2]));
-            Assert.Equal(
-                "조합에서 우선 사용",
-                ToolTip.GetTip(preferenceButtons[0]));
-            Assert.Equal(
-                "조합 후보로 사용",
-                ToolTip.GetTip(preferenceButtons[1]));
-            Assert.Equal(
-                "조합에서 사용하지 않음",
-                ToolTip.GetTip(preferenceButtons[2]));
+            Assert.Equal("프로그래밍 I, 01분반, 선호", AutomationProperties.GetName(preferenceButtons[0]));
+            Assert.Equal("조합에서 우선 사용", AutomationProperties.GetHelpText(preferenceButtons[0]));
+            Assert.Equal("조합 후보로 사용", AutomationProperties.GetHelpText(preferenceButtons[1]));
+            Assert.Equal("조합에서 사용하지 않음", AutomationProperties.GetHelpText(preferenceButtons[2]));
+            Assert.Equal("조합에서 우선 사용", ToolTip.GetTip(preferenceButtons[0]));
+            Assert.Equal("조합 후보로 사용", ToolTip.GetTip(preferenceButtons[1]));
+            Assert.Equal("조합에서 사용하지 않음", ToolTip.GetTip(preferenceButtons[2]));
             assertBrushUsesResource(
                 preferenceButtons[2].BorderBrush,
                 "ControlBorderBrush",
@@ -417,9 +361,7 @@ public sealed class CourseChoiceInteractionTests
                 selectedPreferenceButton.BorderBrush,
                 "SelectionIndicatorBrush",
                 window.ActualThemeVariant);
-            Assert.Equal(
-                new Thickness(1.0),
-                selectedPreferenceButton.BorderThickness);
+            Assert.Equal(new Thickness(1.0), selectedPreferenceButton.BorderThickness);
             Assert.True(firstPreferenceButton.Focus());
             Assert.True(selectedPreferenceButton.Focus(NavigationMethod.Tab));
             Dispatcher.UIThread.RunJobs();
@@ -427,18 +369,14 @@ public sealed class CourseChoiceInteractionTests
                 selectedPreferenceButton.BorderBrush,
                 "ProductFocusStrokeBrush",
                 window.ActualThemeVariant);
-            Assert.Equal(
-                new Thickness(2.0),
-                selectedPreferenceButton.BorderThickness);
+            Assert.Equal(new Thickness(2.0), selectedPreferenceButton.BorderThickness);
 
             ThemeVariant[] themeVariants =
             {
                 ThemeVariant.Light,
                 ThemeVariant.Dark,
             };
-            RadioButton[] firstOfferingPreferenceButtons = preferenceButtons
-                .Take(3)
-                .ToArray();
+            RadioButton[] firstOfferingPreferenceButtons = preferenceButtons.Take(3).ToArray();
             Button closeEditorButton = host.GetVisualDescendants()
                 .OfType<Button>()
                 .Single(
@@ -459,79 +397,44 @@ public sealed class CourseChoiceInteractionTests
                     Assert.Single(
                         firstOfferingPreferenceButtons,
                         candidate => candidate.IsChecked == true);
-                    assertSelectedPreferenceVisuals(
-                        preferenceButton,
-                        themeVariant,
-                        "SelectionSurfaceBrush");
+                    assertSelectedPreferenceVisuals(preferenceButton, themeVariant, "SelectionSurfaceBrush");
                     assertPreferenceOutlineEnclosesControl(preferenceButton);
                     Assert.True(preferenceButton.Focus(NavigationMethod.Tab));
                     Dispatcher.UIThread.RunJobs();
-                    assertSelectedPreferenceFocusVisuals(
-                        preferenceButton,
-                        themeVariant);
+                    assertSelectedPreferenceFocusVisuals(preferenceButton, themeVariant);
                     assertPreferenceOutlineEnclosesControl(preferenceButton);
                 }
 
                 Assert.True(closeEditorButton.Focus(NavigationMethod.Tab));
-                RadioButton selectedExcludedPreferenceButton =
-                    firstOfferingPreferenceButtons[2];
-                Point selectedPreferenceCenter = findControlCenter(
-                    window,
-                    selectedExcludedPreferenceButton);
-                window.MouseMove(
-                    selectedPreferenceCenter,
-                    RawInputModifiers.None);
+                RadioButton selectedExcludedPreferenceButton = firstOfferingPreferenceButtons[2];
+                Point selectedPreferenceCenter = findControlCenter(window, selectedExcludedPreferenceButton);
+                window.MouseMove(selectedPreferenceCenter, RawInputModifiers.None);
                 Dispatcher.UIThread.RunJobs();
                 assertSelectedPreferenceVisuals(
                     selectedExcludedPreferenceButton,
                     themeVariant,
                     "SelectionHoverSurfaceBrush");
-                assertPreferenceOutlineEnclosesControl(
-                    selectedExcludedPreferenceButton);
+                assertPreferenceOutlineEnclosesControl(selectedExcludedPreferenceButton);
 
-                window.MouseDown(
-                    selectedPreferenceCenter,
-                    MouseButton.Left,
-                    RawInputModifiers.None);
+                window.MouseDown(selectedPreferenceCenter, MouseButton.Left, RawInputModifiers.None);
                 Dispatcher.UIThread.RunJobs();
                 assertSelectedPreferenceVisuals(
                     selectedExcludedPreferenceButton,
                     themeVariant,
                     "SelectionPressedSurfaceBrush");
-                window.MouseUp(
-                    selectedPreferenceCenter,
-                    MouseButton.Left,
-                    RawInputModifiers.None);
+                window.MouseUp(selectedPreferenceCenter, MouseButton.Left, RawInputModifiers.None);
                 Dispatcher.UIThread.RunJobs();
 
-                RadioButton unselectedPreferenceButton =
-                    firstOfferingPreferenceButtons[0];
-                Point unselectedPreferenceCenter = findControlCenter(
-                    window,
-                    unselectedPreferenceButton);
-                window.MouseMove(
-                    unselectedPreferenceCenter,
-                    RawInputModifiers.None);
+                RadioButton unselectedPreferenceButton = firstOfferingPreferenceButtons[0];
+                Point unselectedPreferenceCenter = findControlCenter(window, unselectedPreferenceButton);
+                window.MouseMove(unselectedPreferenceCenter, RawInputModifiers.None);
                 Dispatcher.UIThread.RunJobs();
-                assertUnselectedPreferenceVisuals(
-                    unselectedPreferenceButton,
-                    themeVariant,
-                    "HoverSurfaceBrush");
-                assertPreferenceOutlineEnclosesControl(
-                    unselectedPreferenceButton);
-                window.MouseDown(
-                    unselectedPreferenceCenter,
-                    MouseButton.Left,
-                    RawInputModifiers.None);
+                assertUnselectedPreferenceVisuals(unselectedPreferenceButton, themeVariant, "HoverSurfaceBrush");
+                assertPreferenceOutlineEnclosesControl(unselectedPreferenceButton);
+                window.MouseDown(unselectedPreferenceCenter, MouseButton.Left, RawInputModifiers.None);
                 Dispatcher.UIThread.RunJobs();
-                assertUnselectedPreferenceVisuals(
-                    unselectedPreferenceButton,
-                    themeVariant,
-                    "PressedSurfaceBrush");
-                window.MouseUp(
-                    unselectedPreferenceCenter,
-                    MouseButton.Left,
-                    RawInputModifiers.None);
+                assertUnselectedPreferenceVisuals(unselectedPreferenceButton, themeVariant, "PressedSurfaceBrush");
+                window.MouseUp(unselectedPreferenceCenter, MouseButton.Left, RawInputModifiers.None);
                 Dispatcher.UIThread.RunJobs();
             }
 
@@ -540,15 +443,9 @@ public sealed class CourseChoiceInteractionTests
             Assert.True(closeEditorButton.Focus(NavigationMethod.Tab));
             Assert.True(preferenceButtons[0].Focus(NavigationMethod.Tab));
             Dispatcher.UIThread.RunJobs();
-            assertSelectedPreferenceFocusVisuals(
-                preferenceButtons[0],
-                window.ActualThemeVariant);
+            assertSelectedPreferenceFocusVisuals(preferenceButtons[0], window.ActualThemeVariant);
 
-            window.KeyPress(
-                Key.Escape,
-                RawInputModifiers.None,
-                PhysicalKey.Escape,
-                string.Empty);
+            window.KeyPress(Key.Escape, RawInputModifiers.None, PhysicalKey.Escape, string.Empty);
             Dispatcher.UIThread.RunJobs();
 
             Assert.False(overlay.IsVisible);
@@ -564,17 +461,13 @@ public sealed class CourseChoiceInteractionTests
 
     private static PlannerWorkspaceViewModel createChoiceWorkspace()
     {
-        CourseCatalogDocument document = CatalogProjectionTestFixture
-            .CreateDocumentWithScheduledAlternativeCourse();
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace(document);
+        CourseCatalogDocument document = CatalogProjectionTestFixture.CreateDocumentWithScheduledAlternativeCourse();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace(document);
         workspace.ActivePlan = workspace.Plans[1];
         return workspace;
     }
 
-    private static CourseSearchItem findCourse(
-        PlannerWorkspaceViewModel workspace,
-        string searchText)
+    private static CourseSearchItem findCourse(PlannerWorkspaceViewModel workspace, string searchText)
     {
         workspace.SearchText = searchText;
         return Assert.Single(workspace.VisibleCourses);
@@ -589,20 +482,14 @@ public sealed class CourseChoiceInteractionTests
         Assert.NotNull(applicationOrNull);
         if (applicationOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The Avalonia test application was not initialized.");
+            throw new InvalidOperationException("The Avalonia test application was not initialized.");
         }
 
         object? resourceOrNull;
-        bool hasResource = applicationOrNull.TryGetResource(
-            resourceKey,
-            themeVariant,
-            out resourceOrNull);
+        bool hasResource = applicationOrNull.TryGetResource(resourceKey, themeVariant, out resourceOrNull);
         Assert.True(hasResource, "Missing brush resource: " + resourceKey);
-        SolidColorBrush actualBrush = Assert.IsType<SolidColorBrush>(
-            actualBrushOrNull);
-        SolidColorBrush expectedBrush = Assert.IsType<SolidColorBrush>(
-            resourceOrNull);
+        SolidColorBrush actualBrush = Assert.IsType<SolidColorBrush>(actualBrushOrNull);
+        SolidColorBrush expectedBrush = Assert.IsType<SolidColorBrush>(resourceOrNull);
         Assert.Equal(expectedBrush.Color, actualBrush.Color);
     }
 
@@ -611,18 +498,9 @@ public sealed class CourseChoiceInteractionTests
         ThemeVariant themeVariant,
         string backgroundResourceKey)
     {
-        assertBrushUsesResource(
-            preferenceButton.Background,
-            backgroundResourceKey,
-            themeVariant);
-        assertBrushUsesResource(
-            preferenceButton.BorderBrush,
-            "SelectionIndicatorBrush",
-            themeVariant);
-        assertBrushUsesResource(
-            preferenceButton.Foreground,
-            "TextPrimaryBrush",
-            themeVariant);
+        assertBrushUsesResource(preferenceButton.Background, backgroundResourceKey, themeVariant);
+        assertBrushUsesResource(preferenceButton.BorderBrush, "SelectionIndicatorBrush", themeVariant);
+        assertBrushUsesResource(preferenceButton.Foreground, "TextPrimaryBrush", themeVariant);
         Assert.Equal(FontWeight.SemiBold, preferenceButton.FontWeight);
     }
 
@@ -630,18 +508,9 @@ public sealed class CourseChoiceInteractionTests
         RadioButton preferenceButton,
         ThemeVariant themeVariant)
     {
-        assertBrushUsesResource(
-            preferenceButton.Background,
-            "SelectionSurfaceBrush",
-            themeVariant);
-        assertBrushUsesResource(
-            preferenceButton.BorderBrush,
-            "ProductFocusStrokeBrush",
-            themeVariant);
-        assertBrushUsesResource(
-            preferenceButton.Foreground,
-            "TextPrimaryBrush",
-            themeVariant);
+        assertBrushUsesResource(preferenceButton.Background, "SelectionSurfaceBrush", themeVariant);
+        assertBrushUsesResource(preferenceButton.BorderBrush, "ProductFocusStrokeBrush", themeVariant);
+        assertBrushUsesResource(preferenceButton.Foreground, "TextPrimaryBrush", themeVariant);
         Assert.Equal(new Thickness(2.0), preferenceButton.BorderThickness);
         Assert.Equal(FontWeight.SemiBold, preferenceButton.FontWeight);
     }
@@ -652,23 +521,13 @@ public sealed class CourseChoiceInteractionTests
         string backgroundResourceKey)
     {
         Assert.Equal(false, preferenceButton.IsChecked);
-        assertBrushUsesResource(
-            preferenceButton.Background,
-            backgroundResourceKey,
-            themeVariant);
-        assertBrushUsesResource(
-            preferenceButton.BorderBrush,
-            "ControlBorderBrush",
-            themeVariant);
-        assertBrushUsesResource(
-            preferenceButton.Foreground,
-            "TextPrimaryBrush",
-            themeVariant);
+        assertBrushUsesResource(preferenceButton.Background, backgroundResourceKey, themeVariant);
+        assertBrushUsesResource(preferenceButton.BorderBrush, "ControlBorderBrush", themeVariant);
+        assertBrushUsesResource(preferenceButton.Foreground, "TextPrimaryBrush", themeVariant);
         Assert.Equal(FontWeight.Normal, preferenceButton.FontWeight);
     }
 
-    private static void assertPreferenceOutlineEnclosesControl(
-        RadioButton preferenceButton)
+    private static void assertPreferenceOutlineEnclosesControl(RadioButton preferenceButton)
     {
         Assert.True(preferenceButton.UseLayoutRounding);
         Border outline = preferenceButton.GetVisualDescendants()
@@ -691,27 +550,20 @@ public sealed class CourseChoiceInteractionTests
         Dispatcher.UIThread.RunJobs();
     }
 
-    private static Point findControlCenter(
-        Window window,
-        Control control)
+    private static Point findControlCenter(Window window, Control control)
     {
-        Point? controlOriginOrNull = control.TranslatePoint(
-            new Point(0.0, 0.0),
-            window);
+        Point? controlOriginOrNull = control.TranslatePoint(new Point(0.0, 0.0), window);
         Assert.NotNull(controlOriginOrNull);
         if (controlOriginOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The preference control position could not be resolved.");
+            throw new InvalidOperationException("The preference control position could not be resolved.");
         }
 
         return controlOriginOrNull.Value
             + new Vector(control.Bounds.Width / 2.0, control.Bounds.Height / 2.0);
     }
 
-    private static TControl findRequiredControl<TControl>(
-        Control root,
-        string name)
+    private static TControl findRequiredControl<TControl>(Control root, string name)
         where TControl : Control
     {
         TControl? controlOrNull = root.FindControl<TControl>(name);

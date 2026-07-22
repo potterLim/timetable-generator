@@ -41,30 +41,26 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                   ]
                 }
                 """);
-        JxaAppleCalendarNativeBridge bridge =
-            new JxaAppleCalendarNativeBridge(command);
+        JxaAppleCalendarNativeBridge bridge = new JxaAppleCalendarNativeBridge(command);
 
-        IReadOnlyList<AppleCalendarDescriptor> calendars =
-            await bridge.GetCalendarsAsync(
-                TestContext.Current.CancellationToken);
+        IReadOnlyList<AppleCalendarDescriptor> calendars = await bridge.GetCalendarsAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(2, calendars.Count);
         Assert.Equal("managed", calendars[0].CalendarId.Value);
-        Assert.True(calendars[0].IsApplicationManaged);
+        Assert.Equal(EAppleCalendarOwnership.ApplicationManaged, calendars[0].Ownership);
         Assert.True(calendars[0].CanReplace);
-        Assert.False(calendars[1].IsApplicationManaged);
-        Assert.False(calendars[1].AllowsContentModification);
-        AppleCalendarAutomationInvocation invocation =
-            Assert.Single(command.Invocations);
-        Assert.Equal(
-            EAppleCalendarAutomationOperation.ListCalendars,
-            invocation.Operation);
-        using JsonDocument request = JsonDocument.Parse(invocation.RequestJson);
-        Assert.Equal(
-            AppleCalendarOwnershipMarker.PREFIX,
-            request.RootElement
-                .GetProperty("ownershipMarkerPrefix")
-                .GetString());
+        Assert.Equal(EAppleCalendarOwnership.External, calendars[1].Ownership);
+        Assert.Equal(EAppleCalendarContentAccess.ReadOnly, calendars[1].ContentAccess);
+        AppleCalendarAutomationInvocation invocation = Assert.Single(command.Invocations);
+        Assert.Equal(EAppleCalendarAutomationOperation.ListCalendars, invocation.Operation);
+        using (JsonDocument request = JsonDocument.Parse(invocation.RequestJson))
+        {
+            Assert.Equal(
+                AppleCalendarOwnershipMarker.PREFIX,
+                request.RootElement
+                    .GetProperty("ownershipMarkerPrefix")
+                    .GetString());
+        }
     }
 
     [Fact]
@@ -81,8 +77,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                   "deletedEventCount": 0
                 }
                 """);
-        JxaAppleCalendarNativeBridge bridge =
-            new JxaAppleCalendarNativeBridge(command);
+        JxaAppleCalendarNativeBridge bridge = new JxaAppleCalendarNativeBridge(command);
         CalendarExportDocument document = createDocumentAcrossDstChange();
 
         AppleCalendarNativeExportResult result = await bridge.ApplyExportAsync(
@@ -93,35 +88,25 @@ public sealed class JxaAppleCalendarNativeBridgeTests
 
         Assert.Equal("created", result.CalendarId.Value);
         Assert.Equal(3, result.CreatedEventCount);
-        AppleCalendarAutomationInvocation invocation =
-            Assert.Single(command.Invocations);
-        Assert.Equal(
-            EAppleCalendarAutomationOperation.ApplyExport,
-            invocation.Operation);
-        using JsonDocument request = JsonDocument.Parse(invocation.RequestJson);
-        JsonElement root = request.RootElement;
-        Assert.Equal("create", root.GetProperty("mutationKind").GetString());
-        Assert.Equal(
-            "2026-2학기 시간표",
-            root.GetProperty("destinationName").GetString());
-        Assert.Equal(
-            "timetable-generator://managed-calendar/v1/71f3be04-d4c6-41d4-a269-792321e71423",
-            root.GetProperty("ownershipDescription").GetString());
-        JsonElement.ArrayEnumerator events =
-            root.GetProperty("events").EnumerateArray();
-        Assert.True(events.MoveNext());
-        Assert.Equal(
-            "2026-03-01T10:00:00-05:00",
-            events.Current.GetProperty("startsAt").GetString());
-        Assert.True(events.MoveNext());
-        Assert.Equal(
-            "2026-03-08T10:00:00-04:00",
-            events.Current.GetProperty("startsAt").GetString());
-        Assert.True(events.MoveNext());
-        Assert.Equal(
-            "2026-03-15T10:00:00-04:00",
-            events.Current.GetProperty("startsAt").GetString());
-        Assert.False(events.MoveNext());
+        AppleCalendarAutomationInvocation invocation = Assert.Single(command.Invocations);
+        Assert.Equal(EAppleCalendarAutomationOperation.ApplyExport, invocation.Operation);
+        using (JsonDocument request = JsonDocument.Parse(invocation.RequestJson))
+        {
+            JsonElement root = request.RootElement;
+            Assert.Equal("create", root.GetProperty("mutationKind").GetString());
+            Assert.Equal("2026-2학기 시간표", root.GetProperty("destinationName").GetString());
+            Assert.Equal(
+                "timetable-generator://managed-calendar/v1/71f3be04-d4c6-41d4-a269-792321e71423",
+                root.GetProperty("ownershipDescription").GetString());
+            JsonElement.ArrayEnumerator events = root.GetProperty("events").EnumerateArray();
+            Assert.True(events.MoveNext());
+            Assert.Equal("2026-03-01T10:00:00-05:00", events.Current.GetProperty("startsAt").GetString());
+            Assert.True(events.MoveNext());
+            Assert.Equal("2026-03-08T10:00:00-04:00", events.Current.GetProperty("startsAt").GetString());
+            Assert.True(events.MoveNext());
+            Assert.Equal("2026-03-15T10:00:00-04:00", events.Current.GetProperty("startsAt").GetString());
+            Assert.False(events.MoveNext());
+        }
     }
 
     [Fact]
@@ -138,8 +123,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                   "deletedEventCount": 12
                 }
                 """);
-        JxaAppleCalendarNativeBridge bridge =
-            new JxaAppleCalendarNativeBridge(command);
+        JxaAppleCalendarNativeBridge bridge = new JxaAppleCalendarNativeBridge(command);
         CalendarExportDocument document = createDocumentAcrossDstChange();
 
         AppleCalendarNativeExportResult result = await bridge.ApplyExportAsync(
@@ -150,24 +134,21 @@ public sealed class JxaAppleCalendarNativeBridgeTests
             TestContext.Current.CancellationToken);
 
         Assert.Equal(12, result.DeletedEventCount);
-        using JsonDocument request = JsonDocument.Parse(
-            Assert.Single(command.Invocations).RequestJson);
-        Assert.Equal(
-            "replace",
-            request.RootElement.GetProperty("mutationKind").GetString());
-        Assert.Equal(
-            "existing",
-            request.RootElement.GetProperty("existingCalendarId").GetString());
-        Assert.Equal(
-            "2026-2학기 시간표".Normalize().ToUpperInvariant(),
-            request.RootElement
-                .GetProperty("normalizedDestinationName")
-                .GetString());
-        Assert.Equal(
-            AppleCalendarOwnershipMarker.PREFIX,
-            request.RootElement
-                .GetProperty("ownershipMarkerPrefix")
-                .GetString());
+        using (JsonDocument request = JsonDocument.Parse(Assert.Single(command.Invocations).RequestJson))
+        {
+            Assert.Equal("replace", request.RootElement.GetProperty("mutationKind").GetString());
+            Assert.Equal("existing", request.RootElement.GetProperty("existingCalendarId").GetString());
+            Assert.Equal(
+                "2026-2학기 시간표".Normalize().ToUpperInvariant(),
+                request.RootElement
+                    .GetProperty("normalizedDestinationName")
+                    .GetString());
+            Assert.Equal(
+                AppleCalendarOwnershipMarker.PREFIX,
+                request.RootElement
+                    .GetProperty("ownershipMarkerPrefix")
+                    .GetString());
+        }
     }
 
     [Fact]
@@ -175,35 +156,17 @@ public sealed class JxaAppleCalendarNativeBridgeTests
     {
         string script = AppleCalendarAutomationScript.SOURCE;
 
-        Assert.Contains(
-            "matchingCalendars.length !== 1",
-            script,
-            StringComparison.Ordinal);
+        Assert.Contains("matchingCalendars.length !== 1", script, StringComparison.Ordinal);
         Assert.Contains(
             "calendarId(matchingCalendars[0]) !== request.existingCalendarId",
             script,
             StringComparison.Ordinal);
-        Assert.Contains(
-            "calendarIsManaged(",
-            script,
-            StringComparison.Ordinal);
-        Assert.Contains(
-            "request.ownershipMarkerPrefix",
-            script,
-            StringComparison.Ordinal);
-        Assert.Contains(
-            "calendarIsWritable(target) === false",
-            script,
-            StringComparison.Ordinal);
-        Assert.Contains(
-            "calendarApplication.Calendar({",
-            script,
-            StringComparison.Ordinal);
+        Assert.Contains("calendarIsManaged(", script, StringComparison.Ordinal);
+        Assert.Contains("request.ownershipMarkerPrefix", script, StringComparison.Ordinal);
+        Assert.Contains("calendarIsWritable(target) === false", script, StringComparison.Ordinal);
+        Assert.Contains("calendarApplication.Calendar({", script, StringComparison.Ordinal);
         Assert.Contains(").make();", script, StringComparison.Ordinal);
-        Assert.Contains(
-            "calendar.events.push(event)",
-            script,
-            StringComparison.Ordinal);
+        Assert.Contains("calendar.events.push(event)", script, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -217,17 +180,14 @@ public sealed class JxaAppleCalendarNativeBridgeTests
         RecordingAppleCalendarAutomationCommand command =
             new RecordingAppleCalendarAutomationCommand(
                 "{\"status\":\"" + responseStatus + "\"}");
-        JxaAppleCalendarNativeBridge bridge =
-            new JxaAppleCalendarNativeBridge(command);
+        JxaAppleCalendarNativeBridge bridge = new JxaAppleCalendarNativeBridge(command);
 
         AppleCalendarNativeBridgeException exception =
             await Assert.ThrowsAsync<AppleCalendarNativeBridgeException>(
                 () => bridge.GetCalendarsAsync(
                     TestContext.Current.CancellationToken));
 
-        Assert.Equal(
-            (EAppleCalendarNativeFailureKind)expectedFailureKindValue,
-            exception.FailureKind);
+        Assert.Equal((EAppleCalendarNativeFailureKind)expectedFailureKindValue, exception.FailureKind);
     }
 
     [Fact]
@@ -239,17 +199,14 @@ public sealed class JxaAppleCalendarNativeBridgeTests
             {
                 IsAvailable = false,
             };
-        JxaAppleCalendarNativeBridge bridge =
-            new JxaAppleCalendarNativeBridge(command);
+        JxaAppleCalendarNativeBridge bridge = new JxaAppleCalendarNativeBridge(command);
 
         AppleCalendarNativeBridgeException exception =
             await Assert.ThrowsAsync<AppleCalendarNativeBridgeException>(
                 () => bridge.GetCalendarsAsync(
                     TestContext.Current.CancellationToken));
 
-        Assert.Equal(
-            EAppleCalendarNativeFailureKind.Unavailable,
-            exception.FailureKind);
+        Assert.Equal(EAppleCalendarNativeFailureKind.Unavailable, exception.FailureKind);
         Assert.Empty(command.Invocations);
     }
 
@@ -311,8 +268,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
         : IAppleCalendarAutomationCommand
     {
         private readonly string mResponseJson;
-        private readonly List<AppleCalendarAutomationInvocation> mInvocations =
-            new List<AppleCalendarAutomationInvocation>();
+        private readonly List<AppleCalendarAutomationInvocation> mInvocations = new List<AppleCalendarAutomationInvocation>();
 
         public bool IsAvailable { get; set; } = true;
 
@@ -335,10 +291,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
             CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            mInvocations.Add(
-                new AppleCalendarAutomationInvocation(
-                    operation,
-                    requestJson));
+            mInvocations.Add(new AppleCalendarAutomationInvocation(operation, requestJson));
             return Task.FromResult(mResponseJson);
         }
     }

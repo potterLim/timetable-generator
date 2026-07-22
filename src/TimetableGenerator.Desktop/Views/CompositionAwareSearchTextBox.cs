@@ -50,7 +50,7 @@ internal sealed class CompositionAwareSearchTextBox : TextBox
         }
         set
         {
-            SetValue(QueryTextProperty, value ?? string.Empty);
+            SetValue(QueryTextProperty, normalizeNullableText(value));
         }
     }
 
@@ -59,8 +59,7 @@ internal sealed class CompositionAwareSearchTextBox : TextBox
         unsubscribeFromTextPresenter();
         base.OnApplyTemplate(eventArguments);
 
-        mTextPresenterOrNull = eventArguments.NameScope.Get<TextPresenter>(
-            "PART_TextPresenter");
+        mTextPresenterOrNull = eventArguments.NameScope.Get<TextPresenter>("PART_TextPresenter");
         subscribeToTextPresenter();
         publishVisibleQueryText();
     }
@@ -113,7 +112,7 @@ internal sealed class CompositionAwareSearchTextBox : TextBox
         }
 
         cancelDeferredQueryPublication();
-        string queryText = queryTextOrNull ?? string.Empty;
+        string queryText = normalizeNullableText(queryTextOrNull);
         if (string.Equals(queryText, createVisibleQueryText(), StringComparison.Ordinal))
         {
             return;
@@ -135,8 +134,8 @@ internal sealed class CompositionAwareSearchTextBox : TextBox
 
     private string createVisibleQueryText()
     {
-        string committedText = Text ?? string.Empty;
-        string preeditText = mTextPresenterOrNull?.PreeditText ?? string.Empty;
+        string committedText = normalizeNullableText(Text);
+        string preeditText = normalizeNullableText(mTextPresenterOrNull?.PreeditText);
         if (preeditText.Length == 0)
         {
             return committedText;
@@ -196,7 +195,7 @@ internal sealed class CompositionAwareSearchTextBox : TextBox
             return;
         }
 
-        publishQueryText(Text ?? string.Empty);
+        publishQueryText(normalizeNullableText(Text));
     }
 
     private void publishCurrentQueryText()
@@ -247,6 +246,11 @@ internal sealed class CompositionAwareSearchTextBox : TextBox
 
         mTextPresenterOrNull.PropertyChanged += onTextPresenterPropertyChanged;
         mIsPresenterSubscriptionActive = true;
+    }
+
+    private static string normalizeNullableText(string? valueOrNull)
+    {
+        return valueOrNull == null ? string.Empty : valueOrNull;
     }
 
     private void unsubscribeFromTextPresenter()
