@@ -6,6 +6,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 
 using TimetableGenerator.Desktop.Exporting.Calendar;
+using TimetableGenerator.Desktop.Presentation.Windowing;
 
 namespace TimetableGenerator.Desktop.Views;
 
@@ -13,8 +14,20 @@ internal sealed partial class CalendarNameConflictDialog : Window
 {
     private ECalendarNameConflictResolution mResolution;
 
+    public bool UsesProductCaptionControls { get; }
+
     public CalendarNameConflictDialog()
     {
+        EWindowChromePlatform windowChromePlatform =
+            WindowChromeLayoutPolicy.FindCurrentPlatform();
+        WindowDecorations = WindowChromeLayoutPolicy.FindWindowDecorations(
+            windowChromePlatform);
+        UsesProductCaptionControls =
+            WindowDecorations == Avalonia.Controls.WindowDecorations.None;
+        ExtendClientAreaToDecorationsHint = UsesProductCaptionControls;
+        ExtendClientAreaTitleBarHeightHint = UsesProductCaptionControls
+            ? 42.0
+            : -1.0;
         AvaloniaXamlLoader.Load(this);
         KeyDown += onKeyDown;
         Opened += onOpened;
@@ -59,11 +72,12 @@ internal sealed partial class CalendarNameConflictDialog : Window
             providerName + "의 같은 이름 캘린더 확인");
     }
 
-    private void onCancelButtonClick(
+    private void onWindowCloseButtonClick(
         object? senderOrNull,
         Avalonia.Interactivity.RoutedEventArgs eventArgs)
     {
         closeWithResolution(ECalendarNameConflictResolution.Cancel);
+        eventArgs.Handled = true;
     }
 
     private void onReplaceButtonClick(

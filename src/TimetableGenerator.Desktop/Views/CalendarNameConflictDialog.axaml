@@ -10,79 +10,118 @@
     Icon="/Assets/AppIcon.png"
     CanResize="False"
     ShowInTaskbar="False"
+    WindowDecorationsTheme="{StaticResource ProductWindowDecorationsTheme}"
     WindowStartupLocation="CenterOwner"
     AutomationProperties.Name="같은 이름의 캘린더 확인">
-  <Border
-      Padding="24"
+  <Grid
+      RowDefinitions="Auto,*"
       Background="{DynamicResource ElevatedSurfaceBrush}">
-    <StackPanel Spacing="12">
-      <Border
-          Width="44"
-          Height="44"
-          HorizontalAlignment="Center"
-          Background="{DynamicResource AccentTintBrush}"
-          CornerRadius="22">
-        <icons:FluentIcon
-            Width="22"
-            Height="22"
-            HorizontalAlignment="Center"
+    <Border
+        Grid.Row="0"
+        Height="42"
+        Padding="14,0,0,0"
+        Background="{DynamicResource SubtleSurfaceBrush}"
+        BorderBrush="{DynamicResource PaneDividerBrush}"
+        BorderThickness="0,0,0,1"
+        IsVisible="{Binding #CalendarConflictWindow.UsesProductCaptionControls}"
+        WindowDecorationProperties.ElementRole="TitleBar">
+      <Grid ColumnDefinitions="18,10,*,Auto" VerticalAlignment="Center">
+        <Image
+            Grid.Column="0"
+            Width="18"
+            Height="18"
+            Source="/Assets/AppIcon.png"
+            Stretch="Uniform"
+            AutomationProperties.AccessibilityView="Raw"
+            IsHitTestVisible="False" />
+        <TextBlock
+            Grid.Column="2"
             VerticalAlignment="Center"
-            Icon="CalendarArrowRight"
-            IconVariant="Regular"
-            Foreground="{DynamicResource AccentBrush}"
-            AutomationProperties.AccessibilityView="Raw" />
-      </Border>
+            FontSize="13"
+            FontWeight="SemiBold"
+            Text="캘린더 내보내기" />
+        <Button
+            Grid.Column="3"
+            Classes="caption-button caption-close-button"
+            Theme="{StaticResource ProductCaptionButtonTheme}"
+            Click="onWindowCloseButtonClick"
+            AutomationProperties.AutomationId="CalendarConflictWindowCloseButton"
+            AutomationProperties.Name="닫기"
+            ToolTip.Tip="닫기"
+            WindowDecorationProperties.ElementRole="CloseButton">
+          <icons:FluentIcon
+              Icon="Dismiss"
+              IconVariant="Regular"
+              FontSize="12"
+              AutomationProperties.AccessibilityView="Raw" />
+        </Button>
+      </Grid>
+    </Border>
 
-      <TextBlock
-          AutomationProperties.HeadingLevel="1"
-          FontSize="21"
-          FontWeight="SemiBold"
-          Text="같은 이름의 캘린더가 있습니다"
-          TextAlignment="Center"
-          TextWrapping="Wrap" />
-      <TextBlock
-          x:Name="AvailableNameDescription"
-          Classes="secondary"
-          LineHeight="21"
-          TextAlignment="Center"
-          TextWrapping="Wrap" />
-      <TextBlock
-          x:Name="ReplacementUnavailableDescription"
-          Classes="secondary"
-          LineHeight="20"
-          IsVisible="False"
-          Text="이 캘린더는 안전하게 대체할 수 없습니다."
-          TextAlignment="Center"
-          TextWrapping="Wrap" />
+    <Border Grid.Row="1" Padding="24">
+      <StackPanel Spacing="12">
+        <Border
+            Width="44"
+            Height="44"
+            HorizontalAlignment="Center"
+            Background="{DynamicResource AccentTintBrush}"
+            CornerRadius="22">
+          <icons:FluentIcon
+              Width="22"
+              Height="22"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Icon="CalendarArrowRight"
+              IconVariant="Regular"
+              Foreground="{DynamicResource AccentBrush}"
+              AutomationProperties.AccessibilityView="Raw" />
+        </Border>
 
-      <StackPanel
-          Margin="0,4,0,0"
-          HorizontalAlignment="Center"
-          Orientation="Horizontal"
-          Spacing="8">
-        <Button
-            x:Name="CancelButton"
-            Classes="outline"
-            Content="취소"
-            Click="onCancelButtonClick"
-            AutomationProperties.AutomationId="CancelCalendarNameConflict"
-            AutomationProperties.Name="캘린더 내보내기 취소" />
-        <Button
-            x:Name="ReplaceButton"
-            Classes="outline"
-            Content="기존 캘린더 대체"
-            Click="onReplaceButtonClick"
-            Foreground="{DynamicResource ErrorBrush}"
-            AutomationProperties.AutomationId="ReplaceExistingCalendar"
-            AutomationProperties.Name="기존 캘린더 대체" />
-        <Button
-            x:Name="CreateButton"
-            Classes="accent"
-            Content="새 캘린더 만들기"
-            Click="onCreateButtonClick"
-            AutomationProperties.AutomationId="CreateNumberedCalendar"
-            AutomationProperties.Name="번호를 붙여 새 캘린더 만들기" />
+        <TextBlock
+            AutomationProperties.HeadingLevel="1"
+            FontSize="21"
+            FontWeight="SemiBold"
+            Text="같은 이름의 캘린더가 있습니다"
+            TextAlignment="Center"
+            TextWrapping="Wrap" />
+        <TextBlock
+            x:Name="AvailableNameDescription"
+            Classes="secondary"
+            LineHeight="21"
+            TextAlignment="Center"
+            TextWrapping="Wrap" />
+        <TextBlock
+            x:Name="ReplacementUnavailableDescription"
+            Classes="secondary"
+            LineHeight="20"
+            IsVisible="False"
+            Text="이 캘린더는 안전하게 대체할 수 없습니다."
+            TextAlignment="Center"
+            TextWrapping="Wrap" />
+
+        <StackPanel
+            Margin="0,4,0,0"
+            HorizontalAlignment="Center"
+            Orientation="Horizontal"
+            Spacing="8">
+          <Button
+              x:Name="ReplaceButton"
+              Classes="subtle"
+              MinHeight="40"
+              Content="기존 캘린더 대체"
+              Click="onReplaceButtonClick"
+              Foreground="{DynamicResource ErrorBrush}"
+              AutomationProperties.AutomationId="ReplaceExistingCalendar"
+              AutomationProperties.Name="기존 캘린더 대체" />
+          <Button
+              x:Name="CreateButton"
+              Classes="accent"
+              Content="새 캘린더 만들기"
+              Click="onCreateButtonClick"
+              AutomationProperties.AutomationId="CreateNumberedCalendar"
+              AutomationProperties.Name="번호를 붙여 새 캘린더 만들기" />
+        </StackPanel>
       </StackPanel>
-    </StackPanel>
-  </Border>
+    </Border>
+  </Grid>
 </Window>
