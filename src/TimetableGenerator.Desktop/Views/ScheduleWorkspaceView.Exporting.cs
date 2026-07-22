@@ -1,10 +1,12 @@
 using System;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 
@@ -46,7 +48,13 @@ internal sealed partial class ScheduleWorkspaceView
 
     private Exception? mExportResourceReleaseExceptionOrNull;
 
+    private PlannerWorkspaceViewModel? mObservedWorkspaceOrNull;
+
+    private EExportStatus? mActiveExportStatusOrNull;
+
     private bool mIsExportInProgress;
+
+    private bool mIsExportStatusTransient;
 
     public ICommand ExportGoogleCalendarCommand
     {
@@ -94,10 +102,22 @@ internal sealed partial class ScheduleWorkspaceView
     }
 
     internal ScheduleWorkspaceView(ScheduleExportServices exportServices)
+        : this(exportServices, EXPORT_STATUS_DURATION)
+    {
+    }
+
+    internal ScheduleWorkspaceView(
+        ScheduleExportServices exportServices,
+        TimeSpan exportStatusDuration)
     {
         if (exportServices == null)
         {
             throw new ArgumentNullException(nameof(exportServices));
+        }
+
+        if (exportStatusDuration <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(exportStatusDuration));
         }
 
         mPngExporter = exportServices.PngExporter;
@@ -107,7 +127,7 @@ internal sealed partial class ScheduleWorkspaceView
         mCalendarTimeZoneProvider = exportServices.CalendarTimeZoneProvider;
         mLifetimeCancellationSource = new CancellationTokenSource();
         mExportStatusTimer = new DispatcherTimer();
-        mExportStatusTimer.Interval = EXPORT_STATUS_DURATION;
+        mExportStatusTimer.Interval = exportStatusDuration;
         mExportStatusTimer.Tick += onExportStatusTimerTick;
         mExportResourceReleaseTask = Task.CompletedTask;
         mPresentationMode = EScheduleWorkspacePresentationMode.Board;
@@ -122,6 +142,8 @@ internal sealed partial class ScheduleWorkspaceView
         mToggleSchedulePresentationCommand = new DelegateCommand(toggleSchedulePresentation);
         mEditPersonalScheduleCommand = new ParameterizedCommand<PersonalScheduleId>(beginEditPersonalSchedule);
         AvaloniaXamlLoader.Load(this);
+        DataContextChanged += onDataContextChanged;
+        observeWorkspace(DataContext as PlannerWorkspaceViewModel);
         DetachedFromVisualTree += onDetachedFromVisualTree;
     }
 
@@ -274,22 +296,22 @@ internal sealed partial class ScheduleWorkspaceView
             case EGoogleCalendarExportStatus.AuthenticationFailed:
                 if (string.Equals(result.DiagnosticCodeOrNull, "authorization_timeout", StringComparison.Ordinal))
                 {
-                    showTransientExportStatus("Google 로그인 시간이 만료되었습니다. 다시 시도해 주세요.", EExportStatus.Failure);
+                    showPersistentExportStatus("Google 로그인 시간이 만료되었습니다. 다시 시도해 주세요.", EExportStatus.Failure);
                 }
                 else
                 {
-                    showTransientExportStatus("Google 캘린더 연결을 완료하지 못했습니다.", EExportStatus.Failure);
+                    showPersistentExportStatus("Google 캘린더 연결을 완료하지 못했습니다.", EExportStatus.Failure);
                 }
 
                 break;
             case EGoogleCalendarExportStatus.AccessDenied:
-                showTransientExportStatus("Google 캘린더 권한을 확인해 주세요.", EExportStatus.Failure);
+                showPersistentExportStatus("Google 캘린더 권한을 확인해 주세요.", EExportStatus.Failure);
                 break;
             case EGoogleCalendarExportStatus.NetworkFailed:
-                showTransientExportStatus("Google 캘린더에 연결하지 못했습니다. 네트워크를 확인해 주세요.", EExportStatus.Failure);
+                showPersistentExportStatus("Google 캘린더에 연결하지 못했습니다. 네트워크를 확인해 주세요.", EExportStatus.Failure);
                 break;
             case EGoogleCalendarExportStatus.Failed:
-                showTransientExportStatus("Google 캘린더에 반영하지 못했습니다. 다시 시도해 주세요.", EExportStatus.Failure);
+                showPersistentExportStatus("Google 캘린더에 반영하지 못했습니다. 다시 시도해 주세요.", EExportStatus.Failure);
                 break;
             case EGoogleCalendarExportStatus.None:
             default:
@@ -324,10 +346,10 @@ internal sealed partial class ScheduleWorkspaceView
                 showTransientExportStatus("Apple 캘린더를 사용할 수 없습니다.", EExportStatus.Information);
                 break;
             case EAppleCalendarExportStatus.AccessDenied:
-                showTransientExportStatus("Apple 캘린더 접근 권한을 확인해 주세요.", EExportStatus.Failure);
+                showPersistentExportStatus("Apple 캘린더 접근 권한을 확인해 주세요.", EExportStatus.Failure);
                 break;
             case EAppleCalendarExportStatus.Failed:
-                showTransientExportStatus("Apple 캘린더로 내보내지 못했습니다. 다시 시도해 주세요.", EExportStatus.Failure);
+                showPersistentExportStatus("Apple 캘린더로 내보내지 못했습니다. 다시 시도해 주세요.", EExportStatus.Failure);
                 break;
             case EAppleCalendarExportStatus.None:
             default:
@@ -347,7 +369,7 @@ internal sealed partial class ScheduleWorkspaceView
     {
         if (exception is NotSupportedException)
         {
-            showTransientExportStatus("이 학기는 캘린더 내보내기를 아직 지원하지 않습니다.", EExportStatus.Failure);
+            showPersistentExportStatus("이 학기는 캘린더 내보내기를 아직 지원하지 않습니다.", EExportStatus.Failure);
             return;
         }
 
@@ -362,17 +384,23 @@ internal sealed partial class ScheduleWorkspaceView
             return;
         }
 
-        showTransientExportStatus(message, EExportStatus.Failure);
+        showPersistentExportStatus(message, EExportStatus.Failure);
     }
 
     private void clearExportStatus()
     {
         mExportStatusTimer.Stop();
+        mActiveExportStatusOrNull = null;
+        mIsExportStatusTransient = false;
 
         Border? statusToastOrNull = this.FindControl<Border>("ExportStatusToast");
         TextBlock? statusTextOrNull = this.FindControl<TextBlock>("ExportStatusText");
         FluentIcon? statusIconOrNull = this.FindControl<FluentIcon>("ExportStatusIcon");
-        if (statusToastOrNull == null || statusTextOrNull == null || statusIconOrNull == null)
+        Button? dismissButtonOrNull = this.FindControl<Button>("DismissExportStatusButton");
+        if (statusToastOrNull == null
+            || statusTextOrNull == null
+            || statusIconOrNull == null
+            || dismissButtonOrNull == null)
         {
             return;
         }
@@ -381,18 +409,27 @@ internal sealed partial class ScheduleWorkspaceView
         setExportStatusClasses(statusTextOrNull, null);
         setExportStatusClasses(statusToastOrNull, null);
         setExportStatusClasses(statusIconOrNull, null);
+        dismissButtonOrNull.IsVisible = false;
+        statusToastOrNull.IsHitTestVisible = false;
         statusToastOrNull.IsVisible = false;
     }
 
     private void showPersistentExportStatus(string message, EExportStatus status)
     {
         mExportStatusTimer.Stop();
+        mIsExportStatusTransient = false;
         showExportStatusCore(message, status);
     }
 
     private void showTransientExportStatus(string message, EExportStatus status)
     {
+        if (status == EExportStatus.Failure)
+        {
+            throw new InvalidOperationException("Failure export statuses must remain visible until dismissed.");
+        }
+
         mExportStatusTimer.Stop();
+        mIsExportStatusTransient = true;
         showExportStatusCore(message, status);
         mExportStatusTimer.Start();
     }
@@ -402,7 +439,11 @@ internal sealed partial class ScheduleWorkspaceView
         Border? statusToastOrNull = this.FindControl<Border>("ExportStatusToast");
         TextBlock? statusTextOrNull = this.FindControl<TextBlock>("ExportStatusText");
         FluentIcon? statusIconOrNull = this.FindControl<FluentIcon>("ExportStatusIcon");
-        if (statusToastOrNull == null || statusTextOrNull == null || statusIconOrNull == null)
+        Button? dismissButtonOrNull = this.FindControl<Button>("DismissExportStatusButton");
+        if (statusToastOrNull == null
+            || statusTextOrNull == null
+            || statusIconOrNull == null
+            || dismissButtonOrNull == null)
         {
             return;
         }
@@ -426,7 +467,10 @@ internal sealed partial class ScheduleWorkspaceView
         setExportStatusClasses(statusTextOrNull, status);
         setExportStatusClasses(statusToastOrNull, status);
         setExportStatusClasses(statusIconOrNull, status);
+        mActiveExportStatusOrNull = status;
         statusIconOrNull.Icon = statusIcon;
+        dismissButtonOrNull.IsVisible = status == EExportStatus.Failure;
+        statusToastOrNull.IsHitTestVisible = status == EExportStatus.Failure;
         statusToastOrNull.IsVisible = true;
         statusTextOrNull.Text = message;
     }
@@ -440,12 +484,70 @@ internal sealed partial class ScheduleWorkspaceView
 
     private void onExportStatusTimerTick(object? senderOrNull, EventArgs eventArgs)
     {
-        clearExportStatus();
+        if (mIsExportStatusTransient)
+        {
+            clearExportStatus();
+        }
+    }
+
+    private void onDismissExportStatusButtonClick(object? senderOrNull, RoutedEventArgs eventArgs)
+    {
+        clearExportFailureStatus();
+    }
+
+    private void onDataContextChanged(object? senderOrNull, EventArgs eventArgs)
+    {
+        PlannerWorkspaceViewModel? workspaceOrNull = DataContext as PlannerWorkspaceViewModel;
+        if (ReferenceEquals(mObservedWorkspaceOrNull, workspaceOrNull))
+        {
+            return;
+        }
+
+        observeWorkspace(workspaceOrNull);
+        clearExportFailureStatus();
+    }
+
+    private void observeWorkspace(PlannerWorkspaceViewModel? workspaceOrNull)
+    {
+        if (mObservedWorkspaceOrNull != null)
+        {
+            mObservedWorkspaceOrNull.PropertyChanged -= onWorkspacePropertyChanged;
+        }
+
+        mObservedWorkspaceOrNull = workspaceOrNull;
+        if (mObservedWorkspaceOrNull != null)
+        {
+            mObservedWorkspaceOrNull.PropertyChanged += onWorkspacePropertyChanged;
+        }
+    }
+
+    private void onWorkspacePropertyChanged(object? senderOrNull, PropertyChangedEventArgs eventArgs)
+    {
+        if (ReferenceEquals(senderOrNull, mObservedWorkspaceOrNull) == false
+            || string.Equals(
+                eventArgs.PropertyName,
+                nameof(PlannerWorkspaceViewModel.DisplayedScheduleBoard),
+                StringComparison.Ordinal) == false)
+        {
+            return;
+        }
+
+        clearExportFailureStatus();
+    }
+
+    private void clearExportFailureStatus()
+    {
+        if (mActiveExportStatusOrNull == EExportStatus.Failure)
+        {
+            clearExportStatus();
+        }
     }
 
     private void onDetachedFromVisualTree(object? senderOrNull, VisualTreeAttachmentEventArgs eventArgs)
     {
         DetachedFromVisualTree -= onDetachedFromVisualTree;
+        DataContextChanged -= onDataContextChanged;
+        observeWorkspace(null);
         mExportStatusTimer.Stop();
         mExportStatusTimer.Tick -= onExportStatusTimerTick;
         mLifetimeCancellationSource.Cancel();

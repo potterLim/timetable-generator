@@ -637,6 +637,22 @@
             Classes="caption export-status"
             VerticalAlignment="Center"
             AutomationProperties.LiveSetting="Polite" />
+        <Button
+            x:Name="DismissExportStatusButton"
+            Classes="subtle icon"
+            Width="28"
+            Height="28"
+            MinWidth="28"
+            MinHeight="28"
+            Margin="1,-4,-4,-4"
+            Padding="0"
+            VerticalAlignment="Center"
+            IsVisible="False"
+            Click="onDismissExportStatusButtonClick"
+            AutomationProperties.Name="내보내기 오류 닫기"
+            ToolTip.Tip="오류 안내 닫기">
+          <icons:FluentIcon Icon="Dismiss" IconVariant="Regular" FontSize="15" />
+        </Button>
       </StackPanel>
     </Border>
 

@@ -1,11 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Styling;
@@ -32,6 +37,10 @@ namespace TimetableGenerator.Desktop.Tests;
 public sealed class ScheduleWorkspaceCalendarExportTests
 {
     private const double MAXIMUM_CENTER_DELTA_DIP = 0.05;
+
+    private static readonly TimeSpan TEST_EXPORT_STATUS_DURATION = TimeSpan.FromMilliseconds(30.0);
+
+    private static readonly TimeSpan TEST_EXPORT_STATUS_WAIT = TimeSpan.FromMilliseconds(150.0);
 
     [AvaloniaFact]
     public async Task WindowsExportMenuOffersPngAndGoogleCalendarAsync()
@@ -267,6 +276,246 @@ public sealed class ScheduleWorkspaceCalendarExportTests
     }
 
     [AvaloniaFact]
+    public async Task GoogleCalendarProgressPersistsAndSuccessfulCompletionExpiresAsync()
+    {
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+        await workspace.RecommendationRefreshTask;
+        ControlledGoogleCalendarExporter googleExporter = new ControlledGoogleCalendarExporter();
+        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
+            createServices(
+                googleExporter,
+                createUnavailableAppleExporter()),
+            TEST_EXPORT_STATUS_DURATION);
+        workspaceView.DataContext = workspace;
+        Window window = showInWindow(workspaceView);
+
+        try
+        {
+            AsyncDelegateCommand command = Assert.IsType<AsyncDelegateCommand>(workspaceView.ExportGoogleCalendarCommand);
+            command.Execute(null);
+            await googleExporter.ExportStartedTask;
+
+            Border statusToast = findRequiredControl<Border>(workspaceView, "ExportStatusToast");
+            TextBlock statusText = findRequiredTextBlock(workspaceView, "ExportStatusText");
+            Button dismissButton = findRequiredButton(workspaceView, "DismissExportStatusButton");
+            Assert.True(statusToast.IsVisible);
+            Assert.False(statusToast.IsHitTestVisible);
+            Assert.Equal("Google 캘린더로 내보내는 중입니다.", statusText.Text);
+            Assert.Contains("information", statusToast.Classes);
+            Assert.False(dismissButton.IsVisible);
+
+            await Task.Delay(TEST_EXPORT_STATUS_WAIT);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(statusToast.IsVisible);
+            Assert.Equal("Google 캘린더로 내보내는 중입니다.", statusText.Text);
+
+            googleExporter.Complete(createSuccessfulGoogleResult());
+            await command.ExecutionTask;
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(statusToast.IsVisible);
+            Assert.False(statusToast.IsHitTestVisible);
+            Assert.Equal("Google 캘린더로 내보냈습니다.", statusText.Text);
+            Assert.Contains("success", statusToast.Classes);
+            Assert.False(dismissButton.IsVisible);
+
+            await Task.Delay(TEST_EXPORT_STATUS_WAIT);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(statusToast.IsVisible);
+            Assert.Equal(string.Empty, statusText.Text);
+        }
+        finally
+        {
+            googleExporter.CancelPendingExport();
+            await closeWindowAsync(window, workspaceView);
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task InformationalCalendarCompletionExpiresAsync()
+    {
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+        await workspace.RecommendationRefreshTask;
+        GoogleCalendarExportResult result = GoogleCalendarExportResult.Fail(
+            EGoogleCalendarExportStatus.NotConfigured,
+            "test_not_configured");
+        RecordingGoogleCalendarExporter googleExporter = new RecordingGoogleCalendarExporter(result);
+        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
+            createServices(
+                googleExporter,
+                createUnavailableAppleExporter()),
+            TEST_EXPORT_STATUS_DURATION);
+        workspaceView.DataContext = workspace;
+        Window window = showInWindow(workspaceView);
+
+        try
+        {
+            AsyncDelegateCommand command = Assert.IsType<AsyncDelegateCommand>(workspaceView.ExportGoogleCalendarCommand);
+            command.Execute(null);
+            await command.ExecutionTask;
+
+            Border statusToast = findRequiredControl<Border>(workspaceView, "ExportStatusToast");
+            TextBlock statusText = findRequiredTextBlock(workspaceView, "ExportStatusText");
+            Button dismissButton = findRequiredButton(workspaceView, "DismissExportStatusButton");
+            Assert.True(statusToast.IsVisible);
+            Assert.False(statusToast.IsHitTestVisible);
+            Assert.Equal("Google 캘린더 연결을 아직 사용할 수 없습니다.", statusText.Text);
+            Assert.Contains("information", statusToast.Classes);
+            Assert.False(dismissButton.IsVisible);
+
+            await Task.Delay(TEST_EXPORT_STATUS_WAIT);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(statusToast.IsVisible);
+            Assert.Equal(string.Empty, statusText.Text);
+        }
+        finally
+        {
+            await closeWindowAsync(window, workspaceView);
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task CalendarFailureSurvivesAStaleTimerAndSupportsExplicitDismissalAsync()
+    {
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+        await workspace.RecommendationRefreshTask;
+        QueueGoogleCalendarExporter googleExporter = new QueueGoogleCalendarExporter(
+            createSuccessfulGoogleResult(),
+            GoogleCalendarExportResult.Fail(
+                EGoogleCalendarExportStatus.NetworkFailed,
+                "test_network_failure"));
+        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
+            createServices(
+                googleExporter,
+                createUnavailableAppleExporter()),
+            TEST_EXPORT_STATUS_DURATION);
+        workspaceView.DataContext = workspace;
+        Window window = showInWindow(workspaceView);
+
+        try
+        {
+            AsyncDelegateCommand command = Assert.IsType<AsyncDelegateCommand>(workspaceView.ExportGoogleCalendarCommand);
+            command.Execute(null);
+            await command.ExecutionTask;
+            Assert.Equal(
+                "Google 캘린더로 내보냈습니다.",
+                findRequiredTextBlock(workspaceView, "ExportStatusText").Text);
+
+            command.Execute(null);
+            await command.ExecutionTask;
+
+            Border statusToast = findRequiredControl<Border>(workspaceView, "ExportStatusToast");
+            TextBlock statusText = findRequiredTextBlock(workspaceView, "ExportStatusText");
+            Button dismissButton = findRequiredButton(workspaceView, "DismissExportStatusButton");
+            Assert.True(statusToast.IsVisible);
+            Assert.True(statusToast.IsHitTestVisible);
+            Assert.Equal(
+                "Google 캘린더에 연결하지 못했습니다. 네트워크를 확인해 주세요.",
+                statusText.Text);
+            Assert.Contains("error", statusToast.Classes);
+            Assert.True(dismissButton.IsVisible);
+            Assert.Equal("내보내기 오류 닫기", AutomationProperties.GetName(dismissButton));
+
+            await Task.Delay(TEST_EXPORT_STATUS_WAIT);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(statusToast.IsVisible);
+            Assert.Equal(
+                "Google 캘린더에 연결하지 못했습니다. 네트워크를 확인해 주세요.",
+                statusText.Text);
+
+            dismissButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(statusToast.IsVisible);
+            Assert.False(statusToast.IsHitTestVisible);
+            Assert.Equal(string.Empty, statusText.Text);
+            Assert.False(dismissButton.IsVisible);
+            Assert.DoesNotContain("error", statusToast.Classes);
+        }
+        finally
+        {
+            await closeWindowAsync(window, workspaceView);
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task CalendarFailureIgnoresUnrelatedActionsAndClearsAfterContextChangesAsync()
+    {
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+        await workspace.RecommendationRefreshTask;
+        GoogleCalendarExportResult result = GoogleCalendarExportResult.Fail(
+            EGoogleCalendarExportStatus.Failed,
+            "test_export_failure");
+        RecordingGoogleCalendarExporter googleExporter = new RecordingGoogleCalendarExporter(result);
+        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
+            createServices(
+                googleExporter,
+                createUnavailableAppleExporter()),
+            TEST_EXPORT_STATUS_DURATION);
+        workspaceView.DataContext = workspace;
+        Window window = showInWindow(workspaceView);
+
+        try
+        {
+            AsyncDelegateCommand command = Assert.IsType<AsyncDelegateCommand>(workspaceView.ExportGoogleCalendarCommand);
+            command.Execute(null);
+            await command.ExecutionTask;
+
+            Border statusToast = findRequiredControl<Border>(workspaceView, "ExportStatusToast");
+            TextBlock statusText = findRequiredTextBlock(workspaceView, "ExportStatusText");
+            Assert.True(statusToast.IsVisible);
+
+            window.RequestedThemeVariant = ThemeVariant.Dark;
+            workspaceView.ToggleSchedulePresentationCommand.Execute(null);
+            ScheduleBoardView scheduleBoard = findRequiredControl<ScheduleBoardView>(workspaceView, "ScheduleBoard");
+            ScrollViewer scrollViewer = findRequiredControl<ScrollViewer>(scheduleBoard, "ScheduleScrollViewer");
+            scrollViewer.Offset = new Vector(0.0, 40.0);
+            Grid scheduleSurface = findRequiredControl<Grid>(workspaceView, "ScheduleContentSurface");
+            Point? scheduleSurfaceOriginOrNull = scheduleSurface.TranslatePoint(new Point(0.0, 0.0), window);
+            Assert.NotNull(scheduleSurfaceOriginOrNull);
+            Point scheduleSurfaceOrigin = scheduleSurfaceOriginOrNull ?? default;
+            Point emptyClickPosition = new Point(
+                scheduleSurfaceOrigin.X + 8.0,
+                scheduleSurfaceOrigin.Y + scheduleSurface.Bounds.Height - 8.0);
+            window.MouseMove(emptyClickPosition, RawInputModifiers.None);
+            window.MouseDown(emptyClickPosition, MouseButton.Left, RawInputModifiers.None);
+            window.MouseUp(emptyClickPosition, MouseButton.Left, RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(statusToast.IsVisible);
+            Assert.Equal(
+                "Google 캘린더에 반영하지 못했습니다. 다시 시도해 주세요.",
+                statusText.Text);
+
+            workspace.ActivePlan = workspace.Plans[1];
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(statusToast.IsVisible);
+            Assert.Equal(string.Empty, statusText.Text);
+
+            workspace.ActivePlan = workspace.Plans[0];
+            await workspace.RecommendationRefreshTask;
+            command.Execute(null);
+            await command.ExecutionTask;
+            Assert.True(statusToast.IsVisible);
+
+            workspace.RemoveCourseChoiceGroupCommand.Execute(workspace.ActivePlan.CourseChoiceGroups[0]);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(statusToast.IsVisible);
+            Assert.Equal(string.Empty, statusText.Text);
+        }
+        finally
+        {
+            await closeWindowAsync(window, workspaceView);
+        }
+    }
+
+    [AvaloniaFact]
     public async Task MacExportMenuAndExportUseTheCurrentPlanCalendarAsync()
     {
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
@@ -355,8 +604,8 @@ public sealed class ScheduleWorkspaceCalendarExportTests
     }
 
     private static ScheduleExportServices createServices(
-        RecordingGoogleCalendarExporter googleExporter,
-        RecordingAppleCalendarExporter appleExporter,
+        IGoogleCalendarExporter googleExporter,
+        IAppleCalendarExporter appleExporter,
         RecordingGoogleCalendarWebNavigator? googleCalendarNavigatorOrNull = null)
     {
         RecordingGoogleCalendarWebNavigator googleCalendarNavigator;
@@ -419,12 +668,15 @@ public sealed class ScheduleWorkspaceCalendarExportTests
 
     private static RecordingGoogleCalendarExporter createSuccessfulGoogleExporter()
     {
-        GoogleCalendarExportResult result =
-            GoogleCalendarExportResult.Complete(
-                new GoogleCalendarId("test-calendar@group.calendar.google.com"),
-                new PlanName("2026-2학기 시간표"),
-                new GoogleCalendarReconciliationResult(1, 0, 0));
-        return new RecordingGoogleCalendarExporter(result);
+        return new RecordingGoogleCalendarExporter(createSuccessfulGoogleResult());
+    }
+
+    private static GoogleCalendarExportResult createSuccessfulGoogleResult()
+    {
+        return GoogleCalendarExportResult.Complete(
+            new GoogleCalendarId("test-calendar@group.calendar.google.com"),
+            new PlanName("2026-2학기 시간표"),
+            new GoogleCalendarReconciliationResult(1, 0, 0));
     }
 
     private static Window showInWindow(ScheduleWorkspaceView workspaceView)
@@ -447,6 +699,18 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         }
 
         return buttonOrNull;
+    }
+
+    private static TControl findRequiredControl<TControl>(Control root, string controlName)
+        where TControl : Control
+    {
+        TControl? controlOrNull = root.FindControl<TControl>(controlName);
+        if (controlOrNull == null)
+        {
+            throw new InvalidOperationException("The required control was not found: " + controlName);
+        }
+
+        return controlOrNull;
     }
 
     private static TextBlock findRequiredTextBlock(Control root, string controlName)
@@ -619,6 +883,81 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             ThemeVariant.Light,
             ThemeVariant.Dark,
         };
+    }
+
+    private sealed class ControlledGoogleCalendarExporter : IGoogleCalendarExporter
+    {
+        private readonly TaskCompletionSource mExportStartedSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        private readonly TaskCompletionSource<GoogleCalendarExportResult> mCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task ExportStartedTask
+        {
+            get
+            {
+                return mExportStartedSource.Task;
+            }
+        }
+
+        public async Task<GoogleCalendarExportResult> ExportAsync(
+            GoogleCalendarExportPlan plan,
+            ICalendarNameConflictResolver conflictResolver,
+            CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(plan);
+            ArgumentNullException.ThrowIfNull(conflictResolver);
+            cancellationToken.ThrowIfCancellationRequested();
+            mExportStartedSource.TrySetResult();
+            return await mCompletionSource.Task.WaitAsync(cancellationToken);
+        }
+
+        public void Complete(GoogleCalendarExportResult result)
+        {
+            ArgumentNullException.ThrowIfNull(result);
+            if (mCompletionSource.TrySetResult(result) == false)
+            {
+                throw new InvalidOperationException("The controlled export already completed.");
+            }
+        }
+
+        public void CancelPendingExport()
+        {
+            mCompletionSource.TrySetCanceled();
+        }
+
+        public void Dispose()
+        {
+        }
+    }
+
+    private sealed class QueueGoogleCalendarExporter : IGoogleCalendarExporter
+    {
+        private readonly Queue<GoogleCalendarExportResult> mResults;
+
+        public QueueGoogleCalendarExporter(params GoogleCalendarExportResult[] results)
+        {
+            mResults = new Queue<GoogleCalendarExportResult>(results);
+        }
+
+        public Task<GoogleCalendarExportResult> ExportAsync(
+            GoogleCalendarExportPlan plan,
+            ICalendarNameConflictResolver conflictResolver,
+            CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(plan);
+            ArgumentNullException.ThrowIfNull(conflictResolver);
+            cancellationToken.ThrowIfCancellationRequested();
+            if (mResults.Count == 0)
+            {
+                throw new InvalidOperationException("No queued Google Calendar export result remains.");
+            }
+
+            return Task.FromResult(mResults.Dequeue());
+        }
+
+        public void Dispose()
+        {
+        }
     }
 
     private static async Task closeWindowAsync(Window window, ScheduleWorkspaceView workspaceView)
