@@ -73,20 +73,20 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     }
 
     [Fact]
-    public void EmptyPngExportLayoutKeepsContextBeforeTenAmThroughFourPm()
+    public void EmptyPngExportLayoutKeepsContextBeforeElevenAmThroughFourPm()
     {
         ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForPngExport(
             Array.Empty<ScheduleEntry>());
 
         Assert.Equal(
-            new ScheduleBoardTimeBoundary(570),
+            new ScheduleBoardTimeBoundary(630),
             layout.TimeAxis.Start);
         Assert.Equal(
             new ScheduleBoardTimeBoundary(960),
             layout.TimeAxis.End);
-        Assert.Equal(78, layout.TimeAxis.IncrementCount);
-        Assert.Equal(12, layout.TimeAxis.GuideTimes.Count);
-        Assert.Equal(6, layout.TimeAxis.LabelTimes.Count);
+        Assert.Equal(66, layout.TimeAxis.IncrementCount);
+        Assert.Equal(10, layout.TimeAxis.GuideTimes.Count);
+        Assert.Equal(5, layout.TimeAxis.LabelTimes.Count);
     }
 
     [Fact]

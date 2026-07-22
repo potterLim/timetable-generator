@@ -11,21 +11,21 @@ namespace TimetableGenerator.Desktop.Tests;
 public sealed class ScheduleBoardLayoutTests
 {
     [Fact]
-    public void DefaultLayoutShowsWeekdaysWithContextBeforeTenAm()
+    public void DefaultLayoutShowsWeekdaysWithContextBeforeElevenAm()
     {
         ScheduleBoardLayout layout = ScheduleBoardLayout.Default;
 
         Assert.Equal(5, layout.DayRange.DayCount);
         Assert.Equal(EDay.Monday, layout.DayRange.Days[0].Day);
         Assert.Equal(EDay.Friday, layout.DayRange.Days[4].Day);
-        Assert.Equal(new ScheduleBoardTimeBoundary(570), layout.TimeAxis.Start);
+        Assert.Equal(new ScheduleBoardTimeBoundary(630), layout.TimeAxis.Start);
         Assert.Equal(new ScheduleBoardTimeBoundary(1_140), layout.TimeAxis.End);
-        Assert.Equal(114, layout.TimeAxis.IncrementCount);
-        Assert.Equal(18, layout.TimeAxis.GuideTimes.Count);
-        Assert.Equal("10:00", layout.TimeAxis.GuideTimes[0].ToString());
+        Assert.Equal(102, layout.TimeAxis.IncrementCount);
+        Assert.Equal(16, layout.TimeAxis.GuideTimes.Count);
+        Assert.Equal("11:00", layout.TimeAxis.GuideTimes[0].ToString());
         Assert.Equal("18:30", layout.TimeAxis.GuideTimes[^1].ToString());
-        Assert.Equal(9, layout.TimeAxis.LabelTimes.Count);
-        Assert.Equal("10:00", layout.TimeAxis.LabelTimes[0].ToString());
+        Assert.Equal(8, layout.TimeAxis.LabelTimes.Count);
+        Assert.Equal("11:00", layout.TimeAxis.LabelTimes[0].ToString());
         Assert.Equal("18:00", layout.TimeAxis.LabelTimes[^1].ToString());
         Assert.All(
             layout.TimeAxis.LabelTimes,

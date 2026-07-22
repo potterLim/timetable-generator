@@ -1412,14 +1412,21 @@ public sealed class ScheduleWorkspaceViewTests
         }
 
         Assert.Equal(
-            new Thickness(0.0, 0.0, 0.0, 1.0),
+            new Thickness(0.0),
             stickyHeaderContainerOrNull.BorderThickness);
-        Assert.Equal(new Thickness(0.0), stickyHeaderSurfaceOrNull.BorderThickness);
+        Assert.Equal(
+            new Thickness(0.0, 0.0, 0.0, 1.0),
+            stickyHeaderSurfaceOrNull.BorderThickness);
         Assert.Equal(new Thickness(0.0), exportSurfaceOrNull.BorderThickness);
         Assert.Equal(
             exportSurfaceOrNull.Bounds.Width,
             stickyHeaderSurfaceOrNull.Bounds.Width,
             3);
+        Assert.InRange(
+            stickyHeaderContainerOrNull.Bounds.Width
+                - stickyHeaderSurfaceOrNull.Bounds.Width,
+            SCROLLBAR_GUTTER_WIDTH - 0.5,
+            SCROLLBAR_GUTTER_WIDTH + 0.5);
 
         Point? headerOriginOrNull = stickyHeaderSurfaceOrNull.TranslatePoint(
             new Point(0.0, 0.0),

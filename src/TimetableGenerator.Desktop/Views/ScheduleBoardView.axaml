@@ -111,14 +111,14 @@
           Height="42"
           Background="{DynamicResource ElevatedSurfaceBrush}"
           BorderBrush="{DynamicResource BorderBrush}"
-          BorderThickness="0,0,0,1">
+          BorderThickness="0">
         <Grid ColumnDefinitions="*,16">
           <Border
               x:Name="BoardStickyDayHeaderSurface"
               Grid.Column="0"
               Background="{DynamicResource ElevatedSurfaceBrush}"
               BorderBrush="{DynamicResource BorderBrush}"
-              BorderThickness="0">
+              BorderThickness="0,0,0,1">
             <Grid x:Name="BoardStickyDayHeaderGrid" />
           </Border>
         </Grid>
