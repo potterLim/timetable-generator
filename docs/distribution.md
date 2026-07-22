@@ -1,6 +1,6 @@
 # 데스크톱 제품 배포
 
-이 문서는 Windows x64와 macOS 14 이상 Intel·Apple Silicon 제품 산출물을 만드는 절차와, 현재 저장소에서 자동 검증할 수 있는 범위를 정의합니다.
+이 문서는 v1에서 실제 검증하고 공개 배포하는 Windows 11 x64와 macOS 14 이상 Apple Silicon 제품 산출물을 만드는 절차와, 현재 저장소에서 자동 검증할 수 있는 범위를 정의합니다. `osx-x64` 개별 게시는 호환성 개발을 위해 유지하지만 Intel Mac 실기기 검증 전에는 공식 Release 자산으로 취급하지 않습니다.
 
 배포 식별자는 첫 공개 버전부터 다음 값을 유지합니다.
 
@@ -43,8 +43,10 @@ pwsh ./scripts/publish-desktop.ps1
 
 ```powershell
 pwsh ./scripts/publish-desktop.ps1 -Runtime win-x64
-pwsh ./scripts/publish-desktop.ps1 -Runtime osx-x64
 pwsh ./scripts/publish-desktop.ps1 -Runtime osx-arm64
+
+# 공식 Release에는 포함하지 않는 선택적 Intel 호환성 게시
+pwsh ./scripts/publish-desktop.ps1 -Runtime osx-x64
 ```
 
 앱 버전은 프로젝트의 `Version`을 사용하며 필요할 때 `-Version 1.0.1`처럼 명시할 수 있습니다. macOS bundle identifier 기본값은 GitHub 사용자 네임스페이스를 기준으로 한 `io.github.potterlim.timetable`입니다. 첫 공개 버전부터 모든 버전과 CPU 아키텍처에서 이 값을 유지하며, 이후 Apple Developer portal 등록이 필요한 capability를 추가할 때도 동일한 식별자를 사용합니다.
@@ -60,10 +62,13 @@ pwsh ./scripts/publish-desktop.ps1 `
 | 대상 | 실행·검증용 디렉터리 | 전달용 archive |
 | --- | --- | --- |
 | Windows x64 | `artifacts/publish/win-x64` | `TimetableGenerator-<version>-win-x64-unsigned.zip` |
-| macOS Intel | `artifacts/publish/osx-x64/Timetable Generator.app` | `TimetableGenerator-<version>-osx-x64-unsigned.zip` |
 | macOS Apple Silicon | `artifacts/publish/osx-arm64/Timetable Generator.app` | `TimetableGenerator-<version>-osx-arm64-unsigned.zip` |
 
-현재 명령에서 생성하고 검증한 archive의 SHA-256만 `artifacts/publish/checksums.sha256`에 기록됩니다. 따라서 세 대상을 한 파일에서 확인하려면 인수 없이 전체 게시를 실행합니다. macOS zip에는 Mach-O 실행 권한도 보존됩니다.
+현재 명령에서 생성하고 검증한 archive의 SHA-256만 `artifacts/publish/checksums.sha256`에 기록됩니다. 인수 없는 전체 게시는 공식 대상 두 개만 만들고 두 archive의 checksum을 기록합니다. `-Runtime osx-x64`를 명시한 선택적 게시는 해당 Intel archive만 만들며 공식 v1 checksum 집계에는 포함하지 않습니다. macOS zip에는 Mach-O 실행 권한도 보존됩니다.
+
+하나의 게시 출력 디렉터리는 한 번의 게시 명령만 소유합니다. 같은 명령을 다시 실행해 기존 결과를 교체할 수 있지만, 다른 버전·RID 또는 수동으로 만든 파일이 있으면 스크립트는 아무것도 자동 삭제하지 않고 중단합니다. 이 경우 기존 파일을 직접 확인한 뒤 별도의 빈 `-OutputRoot`를 사용하세요. 출력·원본 경로에 symbolic link나 junction도 허용하지 않습니다.
+
+Release 최종화에서도 서명된 원본과 최종 ZIP 출력 위치는 서로 같거나 포함 관계일 수 없습니다. 원본 앱 안에 ZIP을 만들거나 출력 폴더를 다시 원본에 포함하는 잘못된 경로는 파일을 만들기 전에 거부합니다.
 
 `catalog-source.local.json`이 Desktop 프로젝트에 있으면 게시 산출물에도 포함됩니다. 이 파일은 Git에서 무시되지만 앱이 서버에 접속하려면 최종 사용자에게 보이는 설정입니다. `google-calendar.local.json`은 정확히 `schemaVersion`, `clientId`, `clientSecret` 세 속성을 가진 제품 설정 스키마 v2여야 하며, 외부 사용자용 프로덕션 **Desktop OAuth** 클라이언트 ID와 보안 비밀을 넣습니다. 현재 이 Desktop 클라이언트는 승인 코드를 토큰으로 교환할 때 두 값을 모두 요구합니다. 액세스 토큰·새로 고침 토큰과 웹 애플리케이션 OAuth 클라이언트의 보안 비밀은 절대 넣지 않습니다. 실제 사용자는 Google Calendar 내보내기 때 자신의 계정으로 직접 로그인하고 권한을 승인합니다. 두 설정 파일 중 하나라도 없거나 비어 있거나 스키마 검증에 실패하면 최종화가 중단됩니다.
 
@@ -106,19 +111,12 @@ pwsh ./scripts/finalize-desktop-release.ps1 `
   -Runtime osx-arm64 `
   -Version 1.0.0 `
   -BundleIdentifier "io.github.potterlim.timetable"
-
-pwsh ./scripts/finalize-desktop-release.ps1 `
-  -Stage MacOS `
-  -Runtime osx-x64 `
-  -Version 1.0.0 `
-  -BundleIdentifier "io.github.potterlim.timetable"
 ```
 
-동일한 `artifacts/release/1.0.0`에 다음 세 ZIP을 모은 후 최종 checksum을 생성합니다.
+동일한 `artifacts/release/1.0.0`에 다음 두 ZIP을 모은 후 최종 checksum을 생성합니다.
 
 ```text
 TimetableGenerator-1.0.0-win-x64.zip
-TimetableGenerator-1.0.0-osx-x64.zip
 TimetableGenerator-1.0.0-osx-arm64.zip
 ```
 
@@ -134,7 +132,7 @@ pwsh ./scripts/finalize-desktop-release.ps1 `
 
 1. 조직의 코드 서명 인증서로 `win-x64`의 실행 파일을 서명합니다. 추후 MSI·MSIX 설치 패키지를 만들면 그 패키지도 별도로 서명합니다. ZIP 자체는 SHA-256으로 무결성을 확인합니다.
 2. `Get-AuthenticodeSignature` 또는 `signtool verify /pa`로 서명을 검증합니다.
-3. 악성 코드 검사 후 깨끗한 Windows 10·11 x64 기기에서 첫 실행, 카탈로그 로딩, 자동 저장, PNG 저장을 확인합니다.
+3. 악성 코드 검사 후 실제 Windows 11 x64 기기에서 기존 앱 데이터 폴더를 안전하게 격리하고 첫 실행, 카탈로그 로딩, 자동 저장, PNG 저장을 확인합니다.
 4. 최종 archive의 SHA-256을 다시 계산해 배포 페이지에 함께 게시합니다.
 
 ## macOS 서명·notarization 경계
@@ -177,4 +175,4 @@ xcrun stapler validate "$APP"
 spctl --assess --type execute --verbose=4 "$APP"
 ```
 
-Intel archive도 같은 절차를 별도로 수행합니다. 마지막으로 실제 Intel Mac과 Apple Silicon Mac에서 내려받은 파일에 quarantine이 적용된 상태로 첫 실행, 카탈로그 로딩, 자동 저장, PNG 저장을 검증해야 공개 배포가 완료됩니다.
+마지막으로 실제 Apple Silicon Mac에서 내려받은 파일에 quarantine이 적용된 상태로 첫 실행, 카탈로그 로딩, 자동 저장, PNG 저장을 검증해야 공개 배포가 완료됩니다. `osx-x64`를 향후 공식 지원하려면 별도의 Intel Mac에서 같은 서명·공증·다운로드 검증을 끝낸 뒤 해당 버전의 Release 범위에 추가합니다.

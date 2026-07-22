@@ -119,6 +119,7 @@ function Invoke-MacOSFinalization {
     if ((Test-Path -LiteralPath $applicationPath -PathType Container) -eq $false) {
         throw "macOS 앱 번들을 찾을 수 없습니다: $applicationPath"
     }
+    Assert-TreeHasNoReparsePoint -Path $applicationPath
 
     $contentsPath = Join-Path $applicationPath "Contents"
     $macOSPath = Join-Path $contentsPath "MacOS"
@@ -198,7 +199,10 @@ function Invoke-MacOSFinalization {
         -RepositoryRoot $RepositoryRoot `
         -Version $Version `
         -RequestedOutputRoot $OutputRoot `
+        -SourcePath $applicationPath `
         -AllowUnsigned:$AllowUnsigned
+    $allowedFileNames = @(Get-AllowedReleaseOutputFileNames -Version $Version -AllowUnsigned:$AllowUnsigned)
+    Assert-ReleaseOutputRootContents -OutputRoot $releaseRoot -AllowedFileNames $allowedFileNames
     $archiveFileName = if ($AllowUnsigned) {
         "TimetableGenerator-$Version-$Runtime-unsigned-smoke.zip"
     }

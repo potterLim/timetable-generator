@@ -31,10 +31,10 @@ git diff --check
 ```
 
 - [ ] Windows x64 게시본을 새 디렉터리에 만들고 실제 기기에서 실행한다.
-- [ ] macOS Apple Silicon·Intel 게시본을 각각 실제 기기에서 검사한다.
+- [ ] macOS Apple Silicon 게시본을 M4 MacBook 실제 기기에서 검사한다. Intel 게시본은 v1 공식 Release 범위에 포함하지 않는다.
 - [ ] Windows와 macOS의 실제 빌드 호스트에서 깨끗한 커밋을 기준으로 `write-release-build-info.ps1 -Version 1.0.0 -RequireClean`을 실행한다.
 - [ ] Windows 서명과 macOS 서명·공증·stapling 뒤 `finalize-desktop-release.ps1`의 플랫폼별 단계와 `Aggregate` 단계를 통과시킨다.
-- [ ] GitHub Release에는 최종화된 플랫폼별 ZIP 3개와 `checksums.sha256`만 첨부한다. PDB·테스트 결과·빌드 증거·설정 원본은 별도 자산으로 올리지 않는다.
+- [ ] GitHub Release에는 최종화된 `win-x64`, `osx-arm64` ZIP 2개와 `checksums.sha256`만 첨부한다. PDB·테스트 결과·빌드 증거·설정 원본은 별도 자산으로 올리지 않는다.
 - [ ] 최종 ZIP 내부에는 검증된 `catalog-source.local.json`과 제품 설정 스키마 v2의 `google-calendar.local.json`을 포함한다. Google 설정은 정확히 `schemaVersion`, Desktop OAuth `clientId`, Desktop OAuth `clientSecret` 세 속성만 포함해야 한다.
 - [ ] Desktop OAuth client secret을 클립보드에 복사한 뒤 `scripts/set-google-calendar-local-configuration.ps1`로 미추적 v2 sidecar를 갱신하고, 값이 명령 기록이나 빌드 로그에 남지 않았는지 확인한다.
 - [ ] Desktop OAuth client secret은 네이티브 앱에서 기밀 보안 경계가 아니며 토큰 교환에 필요함을 확인한다. 설정 원본은 Git에 추적하지 않고 미추적 sidecar로만 주입하며, 액세스 토큰·새로 고침 토큰·웹 애플리케이션 OAuth client secret은 포함하지 않는다.

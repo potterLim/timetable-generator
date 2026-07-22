@@ -42,11 +42,11 @@
 - 제품 버전: 1.0.0
 - 최소 지원 macOS: 14.0
 - Apple Silicon RID: `osx-arm64`
-- Intel RID: `osx-x64`
+- v1 공식 macOS 배포 대상: Apple Silicon
+- `osx-x64` 개별 게시는 호환성 개발용으로만 유지하며 이번 출시 판정 범위에 포함하지 않는다.
 - 앱 이름: `Timetable Generator`
 - 앱 번들:
   - `artifacts/publish/osx-arm64/Timetable Generator.app`
-  - `artifacts/publish/osx-x64/Timetable Generator.app`
 - 실행 파일:
   - `Timetable Generator.app/Contents/MacOS/TimetableGenerator`
 - 현재 배포 형식은 `.app`이 들어 있는 ZIP이며 DMG, PKG, App Store 패키지는 없다.
@@ -81,12 +81,11 @@ pwsh --version
 다음도 기록하라.
 
 - Mac 모델
-- Apple Silicon 또는 Intel
+- Apple Silicon 모델과 칩 세대
 - macOS 정확한 버전
 - 주 디스플레이와 외부 디스플레이 정보
 - 각 디스플레이의 해상도와 배율
 - 현재 시스템 언어·지역·시간대
-- Rosetta 사용 가능 여부
 - Developer ID 인증서 및 notarization 자격 증명 유무. 구체적인 인증서 이름과 계정 정보는 마스킹한다.
 
 `artifacts/qa/macos-validation-YYYYMMDD-HHMM/` 디렉터리에 로그, 스크린샷, 내보낸 테스트 파일과 최종 보고서를 모아라. 이 디렉터리와 결과물을 Git에 stage하거나 commit하지 마라.
@@ -168,20 +167,20 @@ dotnet test TimetableGenerator.sln --configuration Release --no-restore
 
 4단계: macOS 게시 산출물 생성
 
-현재 Mac의 네이티브 RID를 결정해 먼저 게시한다.
+이번 v1 공식 대상인 Apple Silicon을 확인하고 arm64 앱을 게시한다.
 
 ```bash
-case "$(uname -m)" in
-  arm64)  RID="osx-arm64" ;;
-  x86_64) RID="osx-x64" ;;
-  *) echo "지원하지 않는 Mac 아키텍처" >&2; exit 1 ;;
-esac
+test "$(uname -m)" = "arm64" || {
+  echo "v1 macOS 검증에는 Apple Silicon Mac이 필요합니다." >&2
+  exit 1
+}
+RID="osx-arm64"
 
 pwsh ./scripts/write-release-build-info.ps1 -Version 1.0.0 -RequireClean
 pwsh ./scripts/publish-desktop.ps1 -Runtime "$RID"
 ```
 
-전체 플랫폼 산출물과 완전한 checksum 목록도 검증할 수 있으면 다음을 별도로 실행하라.
+공식 Windows·macOS 산출물과 두 checksum 목록도 검증할 수 있으면 다음을 별도로 실행하라.
 
 ```bash
 pwsh ./scripts/publish-desktop.ps1
@@ -190,7 +189,7 @@ pwsh ./scripts/publish-desktop.ps1
 주의:
 
 - `-Runtime`을 각각 따로 실행하면 `checksums.sha256`은 마지막 실행 대상만 포함할 수 있다.
-- 전체 대상 checksum이 필요하면 인수 없는 전체 게시를 사용하라.
+- 공식 대상 두 개의 checksum이 필요하면 인수 없는 전체 게시를 사용하라.
 - Mac에서 만든 AppIcon.icns와 Windows 교차 게시에서 만든 ICNS의 생성 경로가 다르므로 서로의 ZIP SHA-256이 같다고 요구하지 마라.
 - 같은 게시 실행에서 생성된 파일과 `checksums.sha256`의 일치만 요구한다.
 
@@ -330,13 +329,7 @@ macOS에서는 Windows식 최소화·최대화·닫기 커스텀 버튼이 나�
 
 traffic lights가 제품 제목·로고와 겹치지 않는지, 좌측 예약 공간이 충분한지, 창 드래그 영역이 버튼·탭과 충돌하지 않는지도 확인하라. macOS에서는 `WindowDecorations.Full`과 client-area 확장형 제목 표시줄이 네이티브 traffic lights를 유지해야 하며 Windows 전용 커스텀 caption button이나 resize grip이 보이면 결함이다.
 
-Apple Silicon에서는 arm64 앱을 네이티브로 실행한다. x64 앱을 Rosetta에서 실행할 수 있더라도 실제 Intel Mac 검증을 대체했다고 판단하지 마라. Rosetta를 임의로 설치하지 말고 먼저 다음으로 사용 가능 여부만 확인한다.
-
-```bash
-arch -x86_64 /usr/bin/true
-```
-
-실제 Intel Mac과 Apple Silicon Mac 양쪽을 사용할 수 없다면 누락된 실제 하드웨어 검증을 `BLOCKED`로 남겨라.
+Apple Silicon에서는 arm64 앱을 네이티브로 실행한다. `osx-x64` 또는 Rosetta 결과는 이번 v1 출시 판정에 사용하지 않는다.
 
 7단계: 첫 실행·카탈로그·오프라인·복구
 
@@ -1045,7 +1038,7 @@ pwsh ./scripts/finalize-desktop-release.ps1 `
   -BundleIdentifier "io.github.potterlim.timetable"
 ```
 
-`osx-arm64`와 `osx-x64`를 각각 실행한다. 두 macOS ZIP과 Windows 최종 ZIP을 `artifacts/release/1.0.0`에 모은 뒤 다음 명령까지 통과해야 최종 checksum 검증이 완료된다.
+`osx-arm64` 최종 ZIP과 Windows 최종 ZIP을 `artifacts/release/1.0.0`에 모은 뒤 다음 명령까지 통과해야 최종 checksum 검증이 완료된다.
 
 ```powershell
 pwsh ./scripts/finalize-desktop-release.ps1 `
@@ -1057,7 +1050,7 @@ pwsh ./scripts/finalize-desktop-release.ps1 `
 
 인증서나 notary profile이 없다면 임시 ad-hoc 서명을 공개 배포 검증으로 포장하지 말고 해당 단계를 `BLOCKED: 실제 배포 자격 증명 부재`로 판정한다.
 
-실제 Apple Silicon과 Intel Mac 각각에서 다운로드 후 최초 실행이 완료되지 않았다면 두 아키텍처 모두 공개 배포 준비 완료라고 판정하지 마라.
+실제 Apple Silicon Mac에서 다운로드 후 최초 실행이 완료되지 않았다면 macOS 공개 배포 준비 완료라고 판정하지 마라.
 
 25단계: 최종 보고서
 
@@ -1081,7 +1074,7 @@ pwsh ./scripts/finalize-desktop-release.ps1 `
 16. 성능 측정
 17. 보안·개인정보 결과
 18. 서명·공증·Gatekeeper 결과
-19. Intel·Apple Silicon 실기기 커버리지
+19. Apple Silicon 실기기 커버리지
 20. 문서와 실제 동작의 차이
 21. 발견된 결함
 22. BLOCKED 및 미검증 항목
@@ -1122,8 +1115,6 @@ pwsh ./scripts/finalize-desktop-release.ps1 `
 - 자동 테스트 총 개수, 실패, skip
 - 실제로 검증한 Mac 모델과 macOS 버전
 - Apple Silicon native 검증 여부
-- Intel native 검증 여부
-- Rosetta 검증 여부
 - Light/Dark/System 검증 여부
 - VoiceOver 검증 여부
 - Retina와 외부 모니터 검증 여부

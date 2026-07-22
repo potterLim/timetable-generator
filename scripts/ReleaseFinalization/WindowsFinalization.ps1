@@ -76,6 +76,7 @@ function Invoke-WindowsFinalization {
     if ((Test-Path -LiteralPath $source -PathType Container) -eq $false) {
         throw "Windows 게시 디렉터리를 찾을 수 없습니다: $source"
     }
+    Assert-TreeHasNoReparsePoint -Path $source
 
     $executablePath = Join-Path $source "$($script:PRODUCT_EXECUTABLE_BASE_NAME).exe"
     $managedAssemblyPath = Join-Path $source "$($script:PRODUCT_EXECUTABLE_BASE_NAME).dll"
@@ -101,7 +102,10 @@ function Invoke-WindowsFinalization {
         -RepositoryRoot $RepositoryRoot `
         -Version $Version `
         -RequestedOutputRoot $OutputRoot `
+        -SourcePath $source `
         -AllowUnsigned:$AllowUnsigned
+    $allowedFileNames = @(Get-AllowedReleaseOutputFileNames -Version $Version -AllowUnsigned:$AllowUnsigned)
+    Assert-ReleaseOutputRootContents -OutputRoot $releaseRoot -AllowedFileNames $allowedFileNames
     $archiveFileName = if ($AllowUnsigned) {
         "TimetableGenerator-$Version-win-x64-unsigned-smoke.zip"
     }

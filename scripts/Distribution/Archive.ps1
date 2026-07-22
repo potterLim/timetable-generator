@@ -236,6 +236,7 @@ function New-DistributionArchive {
     if (-not (Test-Path -LiteralPath $SourcePath -PathType Container)) {
         throw "게시 archive 원본 디렉터리를 찾을 수 없습니다: $SourcePath"
     }
+    Assert-TreeHasNoReparsePoint -Path $SourcePath
 
     if ([System.IO.Path]::GetFileName($ArchiveFileName) -ne $ArchiveFileName) {
         throw "게시 archive 이름에는 디렉터리 구분자를 사용할 수 없습니다: $ArchiveFileName"

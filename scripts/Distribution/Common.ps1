@@ -24,6 +24,66 @@ function Get-NormalizedFullPath {
         [System.IO.Path]::AltDirectorySeparatorChar)
 }
 
+function Assert-PathHasNoReparsePoint {
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path
+    )
+
+    $currentPath = Get-NormalizedFullPath -Path $Path
+    while (-not [string]::IsNullOrWhiteSpace($currentPath)) {
+        if (Test-Path -LiteralPath $currentPath) {
+            $item = Get-Item -LiteralPath $currentPath -Force
+            if (($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
+                throw "게시 경로에는 symbolic link 또는 reparse point를 사용할 수 없습니다: $currentPath"
+            }
+        }
+
+        $parent = [System.IO.DirectoryInfo]::new($currentPath).Parent
+        if ($null -eq $parent) {
+            break
+        }
+
+        $currentPath = $parent.FullName
+    }
+}
+
+function Assert-TreeHasNoReparsePoint {
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path
+    )
+
+    Assert-PathHasNoReparsePoint -Path $Path
+    foreach ($item in @(Get-ChildItem -LiteralPath $Path -Force -Recurse)) {
+        if (($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw "게시 원본에는 symbolic link 또는 reparse point를 포함할 수 없습니다: $($item.FullName)"
+        }
+    }
+}
+
+function Test-PathIsSameOrDescendant {
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path,
+
+        [Parameter(Mandatory)]
+        [string] $ParentPath
+    )
+
+    $relativePath = [System.IO.Path]::GetRelativePath(
+        (Get-NormalizedFullPath -Path $ParentPath),
+        (Get-NormalizedFullPath -Path $Path))
+    if ([System.IO.Path]::IsPathRooted($relativePath)) {
+        return $false
+    }
+
+    return $relativePath -ne ".." -and
+        -not $relativePath.StartsWith(
+            "..$([System.IO.Path]::DirectorySeparatorChar)",
+            (Get-PathComparison))
+}
+
 function Invoke-DotNetCommand {
     param(
         [Parameter(Mandatory)]
@@ -97,7 +157,48 @@ function Resolve-DistributionOutputRoot {
         throw "저장소 루트는 게시 출력 위치로 사용할 수 없습니다: $resolvedOutputRoot"
     }
 
+    $repositoryArtifactsRoot = Get-NormalizedFullPath -Path (Join-Path $resolvedRepositoryRoot "artifacts")
+    if ((Test-PathIsSameOrDescendant -Path $resolvedOutputRoot -ParentPath $resolvedRepositoryRoot) -and
+        -not (Test-PathIsSameOrDescendant -Path $resolvedOutputRoot -ParentPath $repositoryArtifactsRoot)) {
+        throw "저장소 내부의 게시 출력 위치는 artifacts 아래에 있어야 합니다: $resolvedOutputRoot"
+    }
+
+    Assert-PathHasNoReparsePoint -Path $resolvedOutputRoot
+
     return $resolvedOutputRoot
+}
+
+function Initialize-DistributionOutputRoot {
+    param(
+        [Parameter(Mandatory)]
+        [string] $OutputRoot,
+
+        [Parameter(Mandatory)]
+        [string[]] $ReplaceableEntryNames
+    )
+
+    Assert-PathHasNoReparsePoint -Path $OutputRoot
+    $null = New-Item -ItemType Directory -Path $OutputRoot -Force
+    Assert-PathHasNoReparsePoint -Path $OutputRoot
+
+    $comparison = Get-PathComparison
+    foreach ($entry in @(Get-ChildItem -LiteralPath $OutputRoot -Force)) {
+        $isReplaceable = $false
+        foreach ($replaceableEntryName in $ReplaceableEntryNames) {
+            if ($entry.Name.Equals($replaceableEntryName, $comparison)) {
+                $isReplaceable = $true
+                break
+            }
+        }
+
+        if (-not $isReplaceable) {
+            throw "게시 출력 위치에 이번 실행이 소유하지 않는 항목이 있습니다. 별도의 빈 출력 위치를 사용하거나 항목을 직접 확인하세요: $($entry.FullName)"
+        }
+
+        if (($entry.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw "게시 출력 항목에는 symbolic link 또는 reparse point를 사용할 수 없습니다: $($entry.FullName)"
+        }
+    }
 }
 
 function Assert-DirectChildPath {
@@ -150,13 +251,12 @@ function Reset-DistributionDirectory {
             throw "게시 디렉터리 위치에 파일이 있습니다: $Path"
         }
 
-        $isReparsePoint = ($existingItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0
-        if ($isReparsePoint) {
-            Remove-Item -LiteralPath $Path -Force
+        if (($existingItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw "게시 디렉터리에는 symbolic link 또는 reparse point를 사용할 수 없습니다: $Path"
         }
-        else {
-            Remove-Item -LiteralPath $Path -Recurse -Force
-        }
+
+        Assert-TreeHasNoReparsePoint -Path $Path
+        Remove-Item -LiteralPath $Path -Recurse -Force
     }
 
     $null = New-Item -ItemType Directory -Path $Path -Force
@@ -186,6 +286,10 @@ function Remove-ExistingDistributionArchive {
     $existingItem = Get-Item -LiteralPath $ArchivePath -Force
     if ($existingItem.PSIsContainer) {
         throw "게시 archive 위치에 디렉터리가 있습니다: $ArchivePath"
+    }
+
+    if (($existingItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
+        throw "게시 archive에는 symbolic link 또는 reparse point를 사용할 수 없습니다: $ArchivePath"
     }
 
     Remove-Item -LiteralPath $ArchivePath -Force

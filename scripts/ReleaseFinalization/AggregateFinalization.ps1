@@ -32,16 +32,18 @@ function Invoke-AggregateFinalization {
 
     $expectedArchiveFileNames = @(
         "TimetableGenerator-$Version-osx-arm64.zip",
-        "TimetableGenerator-$Version-osx-x64.zip",
         "TimetableGenerator-$Version-win-x64.zip"
     )
+    Assert-ReleaseOutputRootContents `
+        -OutputRoot $releaseRoot `
+        -AllowedFileNames @($expectedArchiveFileNames + "checksums.sha256")
     $actualArchiveFileNames = @(
         Get-ChildItem -LiteralPath $releaseRoot -Filter "*.zip" -File |
             ForEach-Object Name |
             Sort-Object -CaseSensitive
     )
     if ($actualArchiveFileNames.Count -ne $expectedArchiveFileNames.Count) {
-        throw "Aggregate에는 정확히 세 개의 최종 ZIP만 있어야 합니다: $releaseRoot"
+        throw "Aggregate에는 정확히 두 개의 최종 ZIP만 있어야 합니다: $releaseRoot"
     }
 
     for ($index = 0; $index -lt $expectedArchiveFileNames.Count; $index++) {

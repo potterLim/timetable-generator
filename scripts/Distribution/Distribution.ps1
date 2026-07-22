@@ -52,7 +52,6 @@ function Publish-TimetableGeneratorDesktop {
     $resolvedOutputRoot = Resolve-DistributionOutputRoot `
         -RepositoryRoot $resolvedRepositoryRoot `
         -RequestedOutputRoot $OutputRoot
-    $null = New-Item -ItemType Directory -Path $resolvedOutputRoot -Force
 
     $metadata = Get-DesktopProjectMetadata -ProjectPath $projectPath
     $executableName = [string] $metadata.AssemblyName
@@ -65,11 +64,21 @@ function Publish-TimetableGeneratorDesktop {
     }
 
     $selectedRuntimes = if ($Runtime -eq "all") {
-        @("win-x64", "osx-x64", "osx-arm64")
+        @("win-x64", "osx-arm64")
     }
     else {
         @($Runtime)
     }
+    $replaceableEntryNames = [System.Collections.Generic.List[string]]::new()
+    foreach ($runtimeIdentifier in $selectedRuntimes) {
+        $replaceableEntryNames.Add($runtimeIdentifier)
+        $replaceableEntryNames.Add("TimetableGenerator-$Version-$runtimeIdentifier-unsigned.zip")
+    }
+    $replaceableEntryNames.Add("checksums.sha256")
+    Initialize-DistributionOutputRoot `
+        -OutputRoot $resolvedOutputRoot `
+        -ReplaceableEntryNames $replaceableEntryNames.ToArray()
+
     $archivePaths = [System.Collections.Generic.List[string]]::new()
 
     foreach ($runtimeIdentifier in $selectedRuntimes) {

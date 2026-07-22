@@ -40,4 +40,4 @@ jobs:
         run: dotnet build TimetableGenerator.sln --configuration Release --no-restore
 
       - name: Run tests
-        run: dotnet test TimetableGenerator.sln --configuration Release --no-build
+        run: dotnet test TimetableGenerator.sln --configuration Release --no-build --no-restore
