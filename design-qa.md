@@ -64,4 +64,4 @@
 - `dotnet format --verify-no-changes`, `git diff --check`, Windows x64 self-contained 게시 검증을 통과했다.
 - 게시할 때마다 새 산출물의 실행 파일과 archive SHA-256을 다시 계산하고 배포 기록과 대조한다.
 
-화면 캡처만으로 스크린리더 전체 동작이나 모든 WCAG 조건을 확정하지는 않는다. 운영체제 고대비 모드, 실제 Windows 10 기기, macOS Intel·Apple Silicon의 창 장식·내장 Pretendard 렌더링과 이모지 폴백·스크린리더 읽기 순서는 출시 전 실기 검증 대상으로 남긴다.
+화면 캡처만으로 스크린리더 전체 동작이나 모든 WCAG 조건을 확정하지는 않는다. 운영체제 고대비 모드, 실제 Windows 11 x64 기기와 macOS Apple Silicon 기기의 창 장식·내장 Pretendard 렌더링과 이모지 폴백·스크린리더 읽기 순서는 출시 전 실기 검증 대상으로 남긴다.
