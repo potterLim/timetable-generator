@@ -84,7 +84,7 @@ Desktop 앱과 함께 배포되는 클라이언트 보안 비밀은 사용자가
 - Windows apphost가 x64 PE이고 `coreclr.dll`을 포함함
 - macOS apphost가 대상 CPU의 64비트 Mach-O이고 `libcoreclr.dylib`을 포함함
 - `.app/Contents/MacOS`, `Resources`, `Info.plist`의 번들 구조가 완전함
-- `AppIcon.icns`에 16px부터 1024px까지 필요한 PNG 해상도가 모두 포함됨
+- `AppIcon.icns`에 16px부터 1024px까지 필요한 각 해상도의 PNG 또는 macOS `iconutil` ARGB 이미지 표현이 포함됨
 - 현재 잠금 파일과 배포 구성에 맞춰 저장소가 필수로 정의한 third-party 라이선스·notice 파일 세트가 운영체제별 고지 위치에 포함됨
 - 제품 archive에 PDB 디버그 심볼이 없음
 - macOS에서 실행할 때 `Info.plist`가 `plutil` 검사를 통과함

@@ -222,6 +222,8 @@ function Assert-IcnsFile {
     }
 
     $knownChunkSizes = @{
+        ic04 = 16
+        ic05 = 32
         icp4 = 16
         icp5 = 32
         icp6 = 64
@@ -234,10 +236,15 @@ function Assert-IcnsFile {
         ic13 = 256
         ic14 = 512
     }
+    $legacyArgbChunkTypes = [System.Collections.Generic.HashSet[string]]::new(
+        [System.StringComparer]::Ordinal)
+    $null = $legacyArgbChunkTypes.Add("ic04")
+    $null = $legacyArgbChunkTypes.Add("ic05")
     $requiredSizes = [System.Collections.Generic.HashSet[uint32]]::new(
         [uint32[]] @(16, 32, 64, 128, 256, 512, 1024))
     $foundSizes = [System.Collections.Generic.HashSet[uint32]]::new()
     $pngSignature = [byte[]] @(0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A)
+    $argbSignature = [System.Text.Encoding]::ASCII.GetBytes("ARGB")
     $offset = 8
     while ($offset -lt $bytes.Length) {
         if ($offset + 8 -gt $bytes.Length) {
@@ -261,6 +268,18 @@ function Assert-IcnsFile {
             }
         }
 
+        $hasLegacyArgbPayload = $legacyArgbChunkTypes.Contains($type) -and
+            $chunkLength -gt (8 + $argbSignature.Length)
+        if ($hasLegacyArgbPayload) {
+            $argbOffset = $offset + 8
+            for ($index = 0; $index -lt $argbSignature.Length; $index++) {
+                if ($bytes[$argbOffset + $index] -ne $argbSignature[$index]) {
+                    $hasLegacyArgbPayload = $false
+                    break
+                }
+            }
+        }
+
         if ($hasPngPayload) {
             $width = Read-BigEndianUInt32 -Buffer $bytes -Offset ($pngOffset + 16)
             $height = Read-BigEndianUInt32 -Buffer $bytes -Offset ($pngOffset + 20)
@@ -275,6 +294,12 @@ function Assert-IcnsFile {
             if ($requiredSizes.Contains($width)) {
                 $null = $foundSizes.Add($width)
             }
+        }
+        elseif ($hasLegacyArgbPayload) {
+            $null = $foundSizes.Add([uint32] $knownChunkSizes[$type])
+        }
+        elseif ($legacyArgbChunkTypes.Contains($type)) {
+            throw "legacy ICNS ARGB chunk payload가 유효하지 않습니다: $type"
         }
         elseif ($knownChunkSizes.ContainsKey($type)) {
             throw "필수 ICNS chunk가 PNG payload를 포함하지 않습니다: $type"
