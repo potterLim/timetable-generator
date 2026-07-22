@@ -36,9 +36,7 @@ internal sealed class PersonalScheduleItem
             }
 
             DailyTimeRange firstTimeRange = Schedule.TimeRanges[0].TimeRange;
-            return ScheduleBoardDayRange.CreateShortDayTimeDisplayText(
-                days,
-                firstTimeRange);
+            return ScheduleBoardDayRange.CreateShortDayTimeDisplayText(days, firstTimeRange);
         }
     }
 

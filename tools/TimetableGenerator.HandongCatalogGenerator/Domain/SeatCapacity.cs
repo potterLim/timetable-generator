@@ -11,10 +11,7 @@ internal readonly record struct SeatCapacity
     {
         if (value < 0)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "Seat capacity cannot be negative.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Seat capacity cannot be negative.");
         }
 
         Value = value;

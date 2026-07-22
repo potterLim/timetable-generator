@@ -32,8 +32,7 @@ internal sealed class ControlledProductAppearanceSettingsStore
         }
     }
 
-    public ControlledProductAppearanceSettingsStore(
-        ProductAppearanceSettings loadedSettings)
+    public ControlledProductAppearanceSettingsStore(ProductAppearanceSettings loadedSettings)
     {
         if (loadedSettings == null)
         {

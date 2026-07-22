@@ -17,8 +17,7 @@ internal sealed class FileGoogleCalendarExportLeaseProvider
 
     private readonly GoogleCalendarExportLockFilePath mPath;
 
-    public FileGoogleCalendarExportLeaseProvider(
-        GoogleCalendarExportLockFilePath path)
+    public FileGoogleCalendarExportLeaseProvider(GoogleCalendarExportLockFilePath path)
     {
         if (path == null)
         {
@@ -28,8 +27,7 @@ internal sealed class FileGoogleCalendarExportLeaseProvider
         mPath = path;
     }
 
-    public async Task<IGoogleCalendarExportLease> AcquireAsync(
-        CancellationToken cancellationToken)
+    public async Task<IGoogleCalendarExportLease> AcquireAsync(CancellationToken cancellationToken)
     {
         string? directoryPathOrNull = Path.GetDirectoryName(mPath.Value);
         if (directoryPathOrNull == null)

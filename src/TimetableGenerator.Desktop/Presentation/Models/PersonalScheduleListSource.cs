@@ -21,8 +21,7 @@ internal sealed class PersonalScheduleListSource : ScheduleListSource
 
     internal override bool hasSameIdentityAs(ScheduleListSource other)
     {
-        PersonalScheduleListSource? personalSourceOrNull =
-            other as PersonalScheduleListSource;
+        PersonalScheduleListSource? personalSourceOrNull = other as PersonalScheduleListSource;
         return personalSourceOrNull != null
             && personalSourceOrNull.ScheduleId == ScheduleId;
     }

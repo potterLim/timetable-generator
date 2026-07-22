@@ -36,9 +36,7 @@ internal sealed record GoogleOAuthClientId
                 || character == '-';
             if (isValid == false)
             {
-                throw new ArgumentException(
-                    "Google OAuth client IDs contain an invalid character.",
-                    nameof(value));
+                throw new ArgumentException("Google OAuth client IDs contain an invalid character.", nameof(value));
             }
         }
 

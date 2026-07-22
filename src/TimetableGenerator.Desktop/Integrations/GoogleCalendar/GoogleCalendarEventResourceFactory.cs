@@ -23,9 +23,7 @@ internal static class GoogleCalendarEventResourceFactory
     {
         if (planId.IsValid == false)
         {
-            throw new ArgumentException(
-                "Google Calendar resources require a valid plan ID.",
-                nameof(planId));
+            throw new ArgumentException("Google Calendar resources require a valid plan ID.", nameof(planId));
         }
 
         if (timeZoneId.IsValid == false)
@@ -55,9 +53,7 @@ internal static class GoogleCalendarEventResourceFactory
             + recurrenceCutoff
                 .ToUniversalTime()
                 .ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture);
-        GoogleCalendarEventId eventId = GoogleCalendarEventId.Create(
-            planId,
-            exportEvent.SourceId);
+        GoogleCalendarEventId eventId = GoogleCalendarEventId.Create(planId, exportEvent.SourceId);
 
         JsonObject resource = new JsonObject
         {
@@ -98,9 +94,7 @@ internal static class GoogleCalendarEventResourceFactory
     {
         if (planId.IsValid == false)
         {
-            throw new ArgumentException(
-                "Google Calendar filters require a valid plan ID.",
-                nameof(planId));
+            throw new ArgumentException("Google Calendar filters require a valid plan ID.", nameof(planId));
         }
 
         return PLAN_ID_PROPERTY_NAME + "=" + planId.Value.ToString("N");
@@ -111,9 +105,7 @@ internal static class GoogleCalendarEventResourceFactory
         return MANAGED_PROPERTY_NAME + "=true";
     }
 
-    internal static bool isManagedByPlan(
-        JsonElement eventResource,
-        PlanId planId)
+    internal static bool isManagedByPlan(JsonElement eventResource, PlanId planId)
     {
         if (planId.IsValid == false)
         {
@@ -137,12 +129,8 @@ internal static class GoogleCalendarEventResourceFactory
             return false;
         }
 
-        string? managedValueOrNull = getStringOrNull(
-            privateProperties,
-            MANAGED_PROPERTY_NAME);
-        string? planIdValueOrNull = getStringOrNull(
-            privateProperties,
-            PLAN_ID_PROPERTY_NAME);
+        string? managedValueOrNull = getStringOrNull(privateProperties, MANAGED_PROPERTY_NAME);
+        string? planIdValueOrNull = getStringOrNull(privateProperties, PLAN_ID_PROPERTY_NAME);
         return string.Equals(
             managedValueOrNull,
             "true",
@@ -218,9 +206,7 @@ internal static class GoogleCalendarEventResourceFactory
         };
     }
 
-    private static string? getStringOrNull(
-        JsonElement element,
-        string propertyName)
+    private static string? getStringOrNull(JsonElement element, string propertyName)
     {
         JsonElement property;
         if (element.TryGetProperty(propertyName, out property) == false

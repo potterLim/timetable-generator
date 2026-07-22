@@ -19,9 +19,7 @@ internal readonly record struct WindowChromeInsets
 
     private static void validateInset(double inset, string parameterName)
     {
-        if (double.IsNaN(inset)
-            || double.IsInfinity(inset)
-            || inset < 0.0)
+        if (double.IsNaN(inset) || double.IsInfinity(inset) || inset < 0.0)
         {
             throw new ArgumentOutOfRangeException(
                 parameterName,

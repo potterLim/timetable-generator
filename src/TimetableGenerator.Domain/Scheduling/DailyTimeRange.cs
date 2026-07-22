@@ -28,23 +28,17 @@ public readonly record struct DailyTimeRange
     {
         if (start.IsValid == false)
         {
-            throw new ArgumentException(
-                "Daily time ranges require a valid start time.",
-                nameof(start));
+            throw new ArgumentException("Daily time ranges require a valid start time.", nameof(start));
         }
 
         if (end.IsValid == false)
         {
-            throw new ArgumentException(
-                "Daily time ranges require a valid end time.",
-                nameof(end));
+            throw new ArgumentException("Daily time ranges require a valid end time.", nameof(end));
         }
 
         if (start.CompareTo(end) >= 0)
         {
-            throw new ArgumentException(
-                "Daily time ranges must end after they start.",
-                nameof(end));
+            throw new ArgumentException("Daily time ranges must end after they start.", nameof(end));
         }
 
         Start = start;

@@ -116,12 +116,8 @@ public sealed class PlanningCatalogTransitionPolicyTests
                 binding,
                 createBinding(lowerRevisionCatalog));
 
-        Assert.AreEqual(
-            EPlanningCatalogTransitionStatus.RevisionNotNewer,
-            sameRevisionStatus);
-        Assert.AreEqual(
-            EPlanningCatalogTransitionStatus.RevisionNotNewer,
-            lowerRevisionStatus);
+        Assert.AreEqual(EPlanningCatalogTransitionStatus.RevisionNotNewer, sameRevisionStatus);
+        Assert.AreEqual(EPlanningCatalogTransitionStatus.RevisionNotNewer, lowerRevisionStatus);
     }
 
     [TestMethod]
@@ -141,9 +137,7 @@ public sealed class PlanningCatalogTransitionPolicyTests
                 currentBinding,
                 changedArtifactBinding);
 
-        Assert.AreEqual(
-            EPlanningCatalogTransitionStatus.ArtifactSha256Mismatch,
-            status);
+        Assert.AreEqual(EPlanningCatalogTransitionStatus.ArtifactSha256Mismatch, status);
     }
 
     [TestMethod]
@@ -175,8 +169,7 @@ public sealed class PlanningCatalogTransitionPolicyTests
         AcademicTerm term,
         CatalogRevision revision)
     {
-        CatalogCourse course =
-            ScheduleRecommendationTestData.CreateCourse("AAA10001");
+        CatalogCourse course = ScheduleRecommendationTestData.CreateCourse("AAA10001");
         CatalogOffering offering =
             ScheduleRecommendationTestData.CreateScheduledOffering(
                 "AAA10001",

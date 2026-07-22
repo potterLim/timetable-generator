@@ -25,8 +25,7 @@ public sealed class ScheduleRecommendationBookmark
         }
     }
 
-    public ScheduleRecommendationBookmark(
-        IEnumerable<OfferingId> selectedOfferingIds)
+    public ScheduleRecommendationBookmark(IEnumerable<OfferingId> selectedOfferingIds)
     {
         if (selectedOfferingIds == null)
         {
@@ -70,12 +69,9 @@ public sealed class ScheduleRecommendationBookmark
         return hasSameOfferingIds(offeringIds, nameof(offeringIds));
     }
 
-    public bool HasSameScheduledOfferingIds(
-        IEnumerable<OfferingId> scheduledOfferingIds)
+    public bool HasSameScheduledOfferingIds(IEnumerable<OfferingId> scheduledOfferingIds)
     {
-        return hasSameOfferingIds(
-            scheduledOfferingIds,
-            nameof(scheduledOfferingIds));
+        return hasSameOfferingIds(scheduledOfferingIds, nameof(scheduledOfferingIds));
     }
 
     public bool ContainsOffering(OfferingId offeringId)
@@ -101,9 +97,7 @@ public sealed class ScheduleRecommendationBookmark
         return ContainsOffering(offeringId);
     }
 
-    private bool hasSameOfferingIds(
-        IEnumerable<OfferingId> offeringIds,
-        string parameterName)
+    private bool hasSameOfferingIds(IEnumerable<OfferingId> offeringIds, string parameterName)
     {
         if (offeringIds == null)
         {

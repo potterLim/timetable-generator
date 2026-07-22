@@ -8,8 +8,7 @@ namespace TimetableGenerator.Desktop.Tests.Product;
 
 internal sealed class QueueProductWorkspaceLoader : IProductWorkspaceLoader
 {
-    private readonly Queue<Func<CancellationToken, Task<ProductWorkspacePresentation>>>
-        mLoads;
+    private readonly Queue<Func<CancellationToken, Task<ProductWorkspacePresentation>>> mLoads;
 
     public int LoadCount { get; private set; }
 
@@ -21,12 +20,10 @@ internal sealed class QueueProductWorkspaceLoader : IProductWorkspaceLoader
             throw new ArgumentNullException(nameof(loads));
         }
 
-        mLoads = new Queue<
-            Func<CancellationToken, Task<ProductWorkspacePresentation>>>(loads);
+        mLoads = new Queue<Func<CancellationToken, Task<ProductWorkspacePresentation>>>(loads);
     }
 
-    public Task<ProductWorkspacePresentation> LoadAsync(
-        CancellationToken cancellationToken)
+    public Task<ProductWorkspacePresentation> LoadAsync(CancellationToken cancellationToken)
     {
         ++LoadCount;
         if (mLoads.Count == 0)
@@ -34,8 +31,7 @@ internal sealed class QueueProductWorkspaceLoader : IProductWorkspaceLoader
             throw new InvalidOperationException("No queued workspace load remains.");
         }
 
-        Func<CancellationToken, Task<ProductWorkspacePresentation>> load =
-            mLoads.Dequeue();
+        Func<CancellationToken, Task<ProductWorkspacePresentation>> load = mLoads.Dequeue();
         return load(cancellationToken);
     }
 }

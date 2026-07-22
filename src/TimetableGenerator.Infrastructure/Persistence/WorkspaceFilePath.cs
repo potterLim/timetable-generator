@@ -16,9 +16,7 @@ public sealed record WorkspaceFilePath
 
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException(
-                "Workspace file paths cannot be empty.",
-                nameof(value));
+            throw new ArgumentException("Workspace file paths cannot be empty.", nameof(value));
         }
 
         Value = Path.GetFullPath(value);

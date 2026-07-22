@@ -21,8 +21,7 @@ public sealed class ScheduleRecommendationBookmarkTests
             firstOfferingId,
         };
 
-        ScheduleRecommendationBookmark bookmark =
-            new ScheduleRecommendationBookmark(mutableOfferingIds);
+        ScheduleRecommendationBookmark bookmark = new ScheduleRecommendationBookmark(mutableOfferingIds);
         mutableOfferingIds[0] = new OfferingId("offering-03");
 
         Assert.AreEqual(firstOfferingId, bookmark.SelectedOfferingIds[0]);

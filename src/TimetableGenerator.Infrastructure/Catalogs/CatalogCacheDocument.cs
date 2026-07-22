@@ -8,9 +8,7 @@ internal sealed class CatalogCacheDocument
 
     public VerifiedCatalogPackage Package { get; }
 
-    public CatalogCacheDocument(
-        CatalogCacheGeneration generation,
-        VerifiedCatalogPackage package)
+    public CatalogCacheDocument(CatalogCacheGeneration generation, VerifiedCatalogPackage package)
     {
         if (package == null)
         {

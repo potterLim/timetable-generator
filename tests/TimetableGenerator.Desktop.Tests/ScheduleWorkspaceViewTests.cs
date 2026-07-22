@@ -32,8 +32,7 @@ using TimetableGenerator.Domain.Planning;
 using TimetableGenerator.Domain.Scheduling;
 
 using Xunit;
-using ApplicationScheduleRecommendation =
-    TimetableGenerator.Application.Scheduling.ScheduleRecommendation;
+using ApplicationScheduleRecommendation = TimetableGenerator.Application.Scheduling.ScheduleRecommendation;
 
 namespace TimetableGenerator.Desktop.Tests;
 
@@ -41,16 +40,11 @@ public sealed class ScheduleWorkspaceViewTests
 {
     private const double SCROLLBAR_GUTTER_WIDTH = 16.0;
 
-    private static readonly ColorToken BORDER =
-        new ColorToken("BorderBrush");
-    private static readonly ColorToken STRONG_BORDER =
-        new ColorToken("StrongBorderBrush");
-    private static readonly ColorToken TEXT_SECONDARY =
-        new ColorToken("TextSecondaryBrush");
-    private static readonly ColorToken ACCENT =
-        new ColorToken("AccentBrush");
-    private static readonly ColorToken FOCUS =
-        new ColorToken("ProductFocusStrokeBrush");
+    private static readonly ColorToken BORDER = new ColorToken("BorderBrush");
+    private static readonly ColorToken STRONG_BORDER = new ColorToken("StrongBorderBrush");
+    private static readonly ColorToken TEXT_SECONDARY = new ColorToken("TextSecondaryBrush");
+    private static readonly ColorToken ACCENT = new ColorToken("AccentBrush");
+    private static readonly ColorToken FOCUS = new ColorToken("ProductFocusStrokeBrush");
 
     [AvaloniaFact]
     public void ScheduleBoardRendersLateEntriesInsideContinuousTimeAxis()
@@ -62,8 +56,7 @@ public sealed class ScheduleWorkspaceViewTests
         entries.Add(createScheduleEntry(EDay.Thursday, new AcademicPeriod(10)));
 
         ScheduleBoardView scheduleBoard = new ScheduleBoardView();
-        scheduleBoard.DataContext = createScheduleBoardPresentation(
-            new ScheduleRecommendation(entries));
+        scheduleBoard.DataContext = createScheduleBoardPresentation(new ScheduleRecommendation(entries));
 
         Window window = new Window();
         window.Width = 800.0;
@@ -76,8 +69,7 @@ public sealed class ScheduleWorkspaceViewTests
             Dispatcher.UIThread.RunJobs();
 
             Grid? boardGridOrNull = scheduleBoard.FindControl<Grid>("BoardGrid");
-            ScrollViewer? scrollViewerOrNull =
-                scheduleBoard.FindControl<ScrollViewer>("ScheduleScrollViewer");
+            ScrollViewer? scrollViewerOrNull = scheduleBoard.FindControl<ScrollViewer>("ScheduleScrollViewer");
             Assert.NotNull(boardGridOrNull);
             Assert.NotNull(scrollViewerOrNull);
             if (boardGridOrNull == null || scrollViewerOrNull == null)
@@ -99,32 +91,22 @@ public sealed class ScheduleWorkspaceViewTests
                         "목요일 22:30–23:45",
                         StringComparison.Ordinal) == true)
                     {
-                        latestScheduleAccessibleNameOrNull =
-                            AutomationProperties.GetName(scheduleCard);
+                        latestScheduleAccessibleNameOrNull = AutomationProperties.GetName(scheduleCard);
                     }
                 }
             }
 
-            Assert.Equal(
-                new ScheduleBoardTimeBoundary(1_050),
-                scheduleBoard.RenderedLayout.TimeAxis.Start);
-            Assert.Equal(
-                new ScheduleBoardTimeBoundary(1_440),
-                scheduleBoard.RenderedLayout.TimeAxis.End);
+            Assert.Equal(new ScheduleBoardTimeBoundary(1_050), scheduleBoard.RenderedLayout.TimeAxis.Start);
+            Assert.Equal(new ScheduleBoardTimeBoundary(1_440), scheduleBoard.RenderedLayout.TimeAxis.End);
             Assert.Equal(79, boardGrid.RowDefinitions.Count);
             Assert.Contains(7, scheduleRows);
             Assert.Contains(25, scheduleRows);
             Assert.Contains(43, scheduleRows);
             Assert.Contains(61, scheduleRows);
-            Assert.Contains(
-                "목요일 22:30–23:45",
-                latestScheduleAccessibleNameOrNull);
+            Assert.Contains("목요일 22:30–23:45", latestScheduleAccessibleNameOrNull);
             Assert.DoesNotContain("교시", latestScheduleAccessibleNameOrNull);
             Assert.True(scrollViewer.Extent.Height > scrollViewer.Viewport.Height);
-            assertBoardReservesScrollbarGutter(
-                scheduleBoard,
-                boardGrid,
-                scrollViewer);
+            assertBoardReservesScrollbarGutter(scheduleBoard, boardGrid, scrollViewer);
             assertStickyHeaderMatchesBoardSurface(scheduleBoard);
             assertDayColumnsAreEqual(boardGrid);
         }
@@ -137,9 +119,7 @@ public sealed class ScheduleWorkspaceViewTests
     [AvaloniaFact]
     public void ScheduleBoardExtendsThroughSundayWhenSundayIsTheOnlyWeekendDay()
     {
-        ScheduleEntry sundayEntry = createScheduleEntry(
-            EDay.Sunday,
-            new AcademicPeriod(2));
+        ScheduleEntry sundayEntry = createScheduleEntry(EDay.Sunday, new AcademicPeriod(2));
         ScheduleBoardPresentation presentation = createScheduleBoardPresentation(
             new ScheduleRecommendation(new ScheduleEntry[] { sundayEntry }));
         ScheduleBoardView scheduleBoard = new ScheduleBoardView();
@@ -159,44 +139,31 @@ public sealed class ScheduleWorkspaceViewTests
             Assert.NotNull(boardGridOrNull);
             if (boardGridOrNull == null)
             {
-                throw new InvalidOperationException(
-                    "The rendered schedule grid was not found.");
+                throw new InvalidOperationException("The rendered schedule grid was not found.");
             }
 
-            Grid? stickyDayHeaderGridOrNull = scheduleBoard.FindControl<Grid>(
-                "BoardStickyDayHeaderGrid");
+            Grid? stickyDayHeaderGridOrNull = scheduleBoard.FindControl<Grid>("BoardStickyDayHeaderGrid");
             Assert.NotNull(stickyDayHeaderGridOrNull);
             if (stickyDayHeaderGridOrNull == null)
             {
-                throw new InvalidOperationException(
-                    "The sticky schedule day header was not found.");
+                throw new InvalidOperationException("The sticky schedule day header was not found.");
             }
 
-            List<TextBlock> dayHeaders = stickyDayHeaderGridOrNull.Children
-                .OfType<TextBlock>()
-                .ToList();
-            Button scheduleCard = Assert.Single(
-                boardGridOrNull.Children.OfType<Button>());
-            Border? contextHeaderOrNull = scheduleBoard.FindControl<Border>(
-                "BoardContextHeader");
+            List<TextBlock> dayHeaders = stickyDayHeaderGridOrNull.Children.OfType<TextBlock>().ToList();
+            Button scheduleCard = Assert.Single(boardGridOrNull.Children.OfType<Button>());
+            Border? contextHeaderOrNull = scheduleBoard.FindControl<Border>("BoardContextHeader");
 
             Assert.Same(presentation.Layout, scheduleBoard.RenderedLayout);
             Assert.NotNull(contextHeaderOrNull);
             Assert.False(contextHeaderOrNull.IsVisible);
-            Assert.Equal(
-                "주간 시간표",
-                AutomationProperties.GetName(scheduleBoard));
+            Assert.Equal("주간 시간표", AutomationProperties.GetName(scheduleBoard));
             Assert.Equal(8, boardGridOrNull.ColumnDefinitions.Count);
             assertDayColumnsAreEqual(boardGridOrNull);
             Assert.Contains(dayHeaders, textBlock => textBlock.Text == "토");
             Assert.Contains(dayHeaders, textBlock => textBlock.Text == "일");
             Assert.Equal(7, Grid.GetColumn(scheduleCard));
-            Assert.Contains(
-                "일요일 10:30–11:45",
-                AutomationProperties.GetName(scheduleCard));
-            Assert.Contains(
-                boardGridOrNull,
-                scheduleBoard.PngExportSurface.GetVisualDescendants());
+            Assert.Contains("일요일 10:30–11:45", AutomationProperties.GetName(scheduleCard));
+            Assert.Contains(boardGridOrNull, scheduleBoard.PngExportSurface.GetVisualDescendants());
             assertStickyHeaderMatchesBoardSurface(scheduleBoard);
         }
         finally
@@ -208,9 +175,7 @@ public sealed class ScheduleWorkspaceViewTests
     [AvaloniaFact]
     public void ScheduleBoardHeaderBoundaryMatchesSixDayLayout()
     {
-        ScheduleEntry saturdayEntry = createScheduleEntry(
-            EDay.Saturday,
-            new AcademicPeriod(2));
+        ScheduleEntry saturdayEntry = createScheduleEntry(EDay.Saturday, new AcademicPeriod(2));
         ScheduleBoardView scheduleBoard = new ScheduleBoardView();
         scheduleBoard.DataContext = createScheduleBoardPresentation(
             new ScheduleRecommendation(new ScheduleEntry[] { saturdayEntry }));
@@ -237,9 +202,7 @@ public sealed class ScheduleWorkspaceViewTests
     [AvaloniaFact]
     public void ScheduleBoardLabelsWholeHoursAlongThirtyMinuteGuides()
     {
-        ScheduleEntry entry = createScheduleEntry(
-            EDay.Monday,
-            new AcademicPeriod(1));
+        ScheduleEntry entry = createScheduleEntry(EDay.Monday, new AcademicPeriod(1));
         ScheduleBoardView scheduleBoard = new ScheduleBoardView();
         scheduleBoard.DataContext = createScheduleBoardPresentation(
             new ScheduleRecommendation(new ScheduleEntry[] { entry }));
@@ -258,8 +221,7 @@ public sealed class ScheduleWorkspaceViewTests
             Assert.NotNull(boardGridOrNull);
             if (boardGridOrNull == null)
             {
-                throw new InvalidOperationException(
-                    "The rendered schedule grid was not found.");
+                throw new InvalidOperationException("The rendered schedule grid was not found.");
             }
 
             List<TextBlock> timeLabels = boardGridOrNull.Children
@@ -291,12 +253,8 @@ public sealed class ScheduleWorkspaceViewTests
                 textBlock => textBlock.Text?.EndsWith(
                     ":30",
                     StringComparison.Ordinal) == true);
-            Assert.Equal(
-                new ScheduleBoardTimeBoundary(510),
-                scheduleBoard.RenderedLayout.TimeAxis.Start);
-            Assert.Equal(
-                new ScheduleBoardTimeBoundary(660),
-                scheduleBoard.RenderedLayout.TimeAxis.End);
+            Assert.Equal(new ScheduleBoardTimeBoundary(510), scheduleBoard.RenderedLayout.TimeAxis.Start);
+            Assert.Equal(new ScheduleBoardTimeBoundary(660), scheduleBoard.RenderedLayout.TimeAxis.End);
             Assert.Equal(30, scheduleBoard.RenderedLayout.TimeAxis.IncrementCount);
             Assert.Equal(4, scheduleBoard.RenderedLayout.TimeAxis.GuideTimes.Count);
             Assert.DoesNotContain(
@@ -312,10 +270,7 @@ public sealed class ScheduleWorkspaceViewTests
                         hourGuides,
                         guide => Grid.GetRow(guide)
                             == Grid.GetRow(timeLabel) + 1);
-                    assertTimeLabelIsCenteredOnGuide(
-                        boardGridOrNull,
-                        timeLabel,
-                        matchingGuide);
+                    assertTimeLabelIsCenteredOnGuide(boardGridOrNull, timeLabel, matchingGuide);
                 });
             Assert.All(
                 hourGuides,
@@ -342,12 +297,8 @@ public sealed class ScheduleWorkspaceViewTests
     [AvaloniaFact]
     public void ScheduleBoardPositionsTheSamePeriodAtDaySpecificTimes()
     {
-        ScheduleEntry mondayEntry = createScheduleEntry(
-            EDay.Monday,
-            new AcademicPeriod(1));
-        ScheduleEntry wednesdayEntry = createScheduleEntry(
-            EDay.Wednesday,
-            new AcademicPeriod(1));
+        ScheduleEntry mondayEntry = createScheduleEntry(EDay.Monday, new AcademicPeriod(1));
+        ScheduleEntry wednesdayEntry = createScheduleEntry(EDay.Wednesday, new AcademicPeriod(1));
         ScheduleBoardView scheduleBoard = new ScheduleBoardView();
         scheduleBoard.DataContext = createScheduleBoardPresentation(
             new ScheduleRecommendation(
@@ -362,8 +313,7 @@ public sealed class ScheduleWorkspaceViewTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            Grid boardGrid = Assert.IsType<Grid>(
-                scheduleBoard.FindControl<Grid>("BoardGrid"));
+            Grid boardGrid = Assert.IsType<Grid>(scheduleBoard.FindControl<Grid>("BoardGrid"));
             Button mondayCard = Assert.Single(
                 boardGrid.Children.OfType<Button>(),
                 button => Grid.GetColumn(button) == 1);
@@ -371,17 +321,11 @@ public sealed class ScheduleWorkspaceViewTests
                 boardGrid.Children.OfType<Button>(),
                 button => Grid.GetColumn(button) == 3);
 
-            Assert.Equal(
-                new ScheduleBoardTimeBoundary(450),
-                scheduleBoard.RenderedLayout.TimeAxis.Start);
+            Assert.Equal(new ScheduleBoardTimeBoundary(450), scheduleBoard.RenderedLayout.TimeAxis.Start);
             Assert.Equal(19, Grid.GetRow(mondayCard));
             Assert.Equal(13, Grid.GetRow(wednesdayCard));
-            Assert.Contains(
-                "월요일 09:00–10:15",
-                AutomationProperties.GetName(mondayCard));
-            Assert.Contains(
-                "수요일 08:30–09:45",
-                AutomationProperties.GetName(wednesdayCard));
+            Assert.Contains("월요일 09:00–10:15", AutomationProperties.GetName(mondayCard));
+            Assert.Contains("수요일 08:30–09:45", AutomationProperties.GetName(wednesdayCard));
         }
         finally
         {
@@ -396,9 +340,7 @@ public sealed class ScheduleWorkspaceViewTests
         const string LONG_INSTRUCTOR = "김테스트, 박테스트 외 3명";
         const string LONG_LOCATION = "느헤미야홀 401호 공동 프로젝트 스튜디오";
 
-        ScheduleEntry entry = createLongScheduleEntry(
-            EDay.Monday,
-            new AcademicPeriod(1));
+        ScheduleEntry entry = createLongScheduleEntry(EDay.Monday, new AcademicPeriod(1));
         ScheduleBoardView scheduleBoard = new ScheduleBoardView();
         scheduleBoard.DataContext = createScheduleBoardPresentation(
             new ScheduleRecommendation(new ScheduleEntry[] { entry }));
@@ -440,9 +382,7 @@ public sealed class ScheduleWorkspaceViewTests
             Assert.Contains(LONG_NAME, AutomationProperties.GetName(scheduleCard));
             Assert.Contains("01분반", AutomationProperties.GetName(scheduleCard));
             Assert.Contains("3학점", AutomationProperties.GetName(scheduleCard));
-            Assert.Equal(
-                "선택하면 과목의 전체 시간, 교수, 강의실 정보를 엽니다.",
-                AutomationProperties.GetHelpText(scheduleCard));
+            Assert.Equal("선택하면 과목의 전체 시간, 교수, 강의실 정보를 엽니다.", AutomationProperties.GetHelpText(scheduleCard));
 
             Grid cardContent = Assert.IsType<Grid>(scheduleCard.Content);
             Assert.Equal(VerticalAlignment.Center, cardContent.VerticalAlignment);
@@ -451,9 +391,7 @@ public sealed class ScheduleWorkspaceViewTests
                 cardContent.RowDefinitions,
                 rowDefinition => Assert.True(rowDefinition.Height.IsAuto));
 
-            List<TextBlock> cardTexts = scheduleCard.GetVisualDescendants()
-                .OfType<TextBlock>()
-                .ToList();
+            List<TextBlock> cardTexts = scheduleCard.GetVisualDescendants().OfType<TextBlock>().ToList();
             Assert.Equal(3, cardTexts.Count);
             Assert.DoesNotContain(
                 cardTexts,
@@ -517,22 +455,11 @@ public sealed class ScheduleWorkspaceViewTests
                     candidate => candidate.Name
                         == "PART_ScheduleCardSurface");
             Assert.Equal(new Thickness(2.0), focusedCardSurface.BorderThickness);
-            SolidColorBrush expectedFocusBrush = findRequiredThemeBrush(
-                FOCUS,
-                scheduleCard.ActualThemeVariant);
-            SolidColorBrush actualFocusBrush = Assert.IsType<SolidColorBrush>(
-                focusedCardSurface.BorderBrush);
+            SolidColorBrush expectedFocusBrush = findRequiredThemeBrush(FOCUS, scheduleCard.ActualThemeVariant);
+            SolidColorBrush actualFocusBrush = Assert.IsType<SolidColorBrush>(focusedCardSurface.BorderBrush);
             Assert.Equal(expectedFocusBrush.Color, actualFocusBrush.Color);
-            window.KeyPress(
-                Key.Enter,
-                RawInputModifiers.None,
-                PhysicalKey.Enter,
-                null);
-            window.KeyRelease(
-                Key.Enter,
-                RawInputModifiers.None,
-                PhysicalKey.Enter,
-                null);
+            window.KeyPress(Key.Enter, RawInputModifiers.None, PhysicalKey.Enter, null);
+            window.KeyRelease(Key.Enter, RawInputModifiers.None, PhysicalKey.Enter, null);
             Dispatcher.UIThread.RunJobs();
             Assert.True(detailsFlyoutOrNull.IsOpen);
             detailsFlyoutOrNull.Hide();
@@ -597,44 +524,30 @@ public sealed class ScheduleWorkspaceViewTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            Button locationOnlyCard = findCourseCardByName(
-                scheduleBoard,
-                LOCATION_ONLY_NAME);
+            Button locationOnlyCard = findCourseCardByName(scheduleBoard, LOCATION_ONLY_NAME);
             assertVisualCourseCardTexts(
                 locationOnlyCard,
                 new string[] { LOCATION_ONLY_NAME, "오석관 301" });
-            Grid locationOnlyContent = Assert.IsType<Grid>(
-                locationOnlyCard.Content);
-            TextBlock locationOnlyLocation = Assert.IsType<TextBlock>(
-                locationOnlyContent.Children[1]);
+            Grid locationOnlyContent = Assert.IsType<Grid>(locationOnlyCard.Content);
+            TextBlock locationOnlyLocation = Assert.IsType<TextBlock>(locationOnlyContent.Children[1]);
             Assert.Equal(7.0, locationOnlyLocation.Margin.Top);
             Assert.Equal(14.0, locationOnlyLocation.LineHeight);
 
-            Button instructorOnlyCard = findCourseCardByName(
-                scheduleBoard,
-                INSTRUCTOR_ONLY_NAME);
+            Button instructorOnlyCard = findCourseCardByName(scheduleBoard, INSTRUCTOR_ONLY_NAME);
             assertVisualCourseCardTexts(
                 instructorOnlyCard,
                 new string[] { INSTRUCTOR_ONLY_NAME, "김테스트" });
-            Grid instructorOnlyContent = Assert.IsType<Grid>(
-                instructorOnlyCard.Content);
-            TextBlock instructorOnlyInstructor = Assert.IsType<TextBlock>(
-                instructorOnlyContent.Children[1]);
+            Grid instructorOnlyContent = Assert.IsType<Grid>(instructorOnlyCard.Content);
+            TextBlock instructorOnlyInstructor = Assert.IsType<TextBlock>(instructorOnlyContent.Children[1]);
             Assert.Equal(7.0, instructorOnlyInstructor.Margin.Top);
             Assert.Equal(12.0, instructorOnlyInstructor.LineHeight);
 
-            Button titleOnlyCard = findCourseCardByName(
-                scheduleBoard,
-                TITLE_ONLY_NAME);
+            Button titleOnlyCard = findCourseCardByName(scheduleBoard, TITLE_ONLY_NAME);
             assertVisualCourseCardTexts(
                 titleOnlyCard,
                 new string[] { TITLE_ONLY_NAME });
-            Assert.Contains(
-                "교수 미정",
-                AutomationProperties.GetName(titleOnlyCard));
-            Assert.Contains(
-                "강의실 미정",
-                AutomationProperties.GetName(titleOnlyCard));
+            Assert.Contains("교수 미정", AutomationProperties.GetName(titleOnlyCard));
+            Assert.Contains("강의실 미정", AutomationProperties.GetName(titleOnlyCard));
         }
         finally
         {
@@ -657,8 +570,7 @@ public sealed class ScheduleWorkspaceViewTests
                 recommendation,
                 catalogProjection);
         ScheduleBoardView scheduleBoard = new ScheduleBoardView();
-        scheduleBoard.DataContext = createScheduleBoardPresentation(
-            projectedRecommendation);
+        scheduleBoard.DataContext = createScheduleBoardPresentation(projectedRecommendation);
         Window window = new Window();
         window.Width = 900.0;
         window.Height = 420.0;
@@ -669,18 +581,12 @@ public sealed class ScheduleWorkspaceViewTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            Button projectedCard = findCourseCardByName(
-                scheduleBoard,
-                "프로그래밍 I");
+            Button projectedCard = findCourseCardByName(scheduleBoard, "프로그래밍 I");
             assertVisualCourseCardTexts(
                 projectedCard,
                 new string[] { "프로그래밍 I" });
-            Assert.Contains(
-                "교수 정보 없음",
-                AutomationProperties.GetName(projectedCard));
-            Assert.Contains(
-                "강의실 미정",
-                AutomationProperties.GetName(projectedCard));
+            Assert.Contains("교수 정보 없음", AutomationProperties.GetName(projectedCard));
+            Assert.Contains("강의실 미정", AutomationProperties.GetName(projectedCard));
         }
         finally
         {
@@ -691,9 +597,7 @@ public sealed class ScheduleWorkspaceViewTests
     [AvaloniaFact]
     public void ScheduleBoardRebuildsCodeGeneratedBrushesWhenThemeChanges()
     {
-        ScheduleEntry entry = createScheduleEntry(
-            EDay.Monday,
-            new AcademicPeriod(1));
+        ScheduleEntry entry = createScheduleEntry(EDay.Monday, new AcademicPeriod(1));
         ScheduleBoardView scheduleBoard = new ScheduleBoardView();
         scheduleBoard.DataContext = createScheduleBoardPresentation(
             new ScheduleRecommendation(new ScheduleEntry[] { entry }));
@@ -709,34 +613,20 @@ public sealed class ScheduleWorkspaceViewTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            RenderedScheduleBrushes lightBrushes = findRenderedScheduleBrushes(
-                scheduleBoard);
+            RenderedScheduleBrushes lightBrushes = findRenderedScheduleBrushes(scheduleBoard);
 
             window.RequestedThemeVariant = ThemeVariant.Dark;
             Dispatcher.UIThread.RunJobs();
 
-            RenderedScheduleBrushes darkBrushes = findRenderedScheduleBrushes(
-                scheduleBoard);
-            SolidColorBrush expectedDarkBorder = findRequiredThemeBrush(
-                BORDER,
-                ThemeVariant.Dark);
-            SolidColorBrush expectedDarkSecondary = findRequiredThemeBrush(
-                TEXT_SECONDARY,
-                ThemeVariant.Dark);
-            SolidColorBrush expectedDarkAccent = findRequiredThemeBrush(
-                ACCENT,
-                ThemeVariant.Dark);
+            RenderedScheduleBrushes darkBrushes = findRenderedScheduleBrushes(scheduleBoard);
+            SolidColorBrush expectedDarkBorder = findRequiredThemeBrush(BORDER, ThemeVariant.Dark);
+            SolidColorBrush expectedDarkSecondary = findRequiredThemeBrush(TEXT_SECONDARY, ThemeVariant.Dark);
+            SolidColorBrush expectedDarkAccent = findRequiredThemeBrush(ACCENT, ThemeVariant.Dark);
 
             Assert.NotSame(lightBrushes.ScheduleCard, darkBrushes.ScheduleCard);
-            Assert.NotEqual(
-                lightBrushes.CellBorder.Color,
-                darkBrushes.CellBorder.Color);
-            Assert.NotEqual(
-                lightBrushes.TimeLabel.Color,
-                darkBrushes.TimeLabel.Color);
-            Assert.NotEqual(
-                lightBrushes.DetailAccent.Color,
-                darkBrushes.DetailAccent.Color);
+            Assert.NotEqual(lightBrushes.CellBorder.Color, darkBrushes.CellBorder.Color);
+            Assert.NotEqual(lightBrushes.TimeLabel.Color, darkBrushes.TimeLabel.Color);
+            Assert.NotEqual(lightBrushes.DetailAccent.Color, darkBrushes.DetailAccent.Color);
             Assert.Equal(expectedDarkBorder.Color, darkBrushes.CellBorder.Color);
             Assert.Equal(expectedDarkSecondary.Color, darkBrushes.TimeLabel.Color);
             Assert.Equal(expectedDarkAccent.Color, darkBrushes.DetailAccent.Color);
@@ -761,16 +651,13 @@ public sealed class ScheduleWorkspaceViewTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            Border? boardFrameOrNull = scheduleBoard.FindControl<Border>(
-                "BoardFrame");
-            Border? rightBoundaryOrNull = scheduleBoard.FindControl<Border>(
-                "BoardContentRightBoundary");
+            Border? boardFrameOrNull = scheduleBoard.FindControl<Border>("BoardFrame");
+            Border? rightBoundaryOrNull = scheduleBoard.FindControl<Border>("BoardContentRightBoundary");
             Assert.NotNull(boardFrameOrNull);
             Assert.NotNull(rightBoundaryOrNull);
             if (boardFrameOrNull == null || rightBoundaryOrNull == null)
             {
-                throw new InvalidOperationException(
-                    "The timetable outer frame was not available.");
+                throw new InvalidOperationException("The timetable outer frame was not available.");
             }
 
             Assert.True(boardFrameOrNull.UseLayoutRounding);
@@ -787,14 +674,9 @@ public sealed class ScheduleWorkspaceViewTests
                 window.RequestedThemeVariant = themeVariant;
                 Dispatcher.UIThread.RunJobs();
 
-                SolidColorBrush expectedBrush = findRequiredThemeBrush(
-                    STRONG_BORDER,
-                    themeVariant);
-                SolidColorBrush frameBrush = Assert.IsType<SolidColorBrush>(
-                    boardFrameOrNull.BorderBrush);
-                SolidColorBrush rightBoundaryBrush =
-                    Assert.IsType<SolidColorBrush>(
-                        rightBoundaryOrNull.Background);
+                SolidColorBrush expectedBrush = findRequiredThemeBrush(STRONG_BORDER, themeVariant);
+                SolidColorBrush frameBrush = Assert.IsType<SolidColorBrush>(boardFrameOrNull.BorderBrush);
+                SolidColorBrush rightBoundaryBrush = Assert.IsType<SolidColorBrush>(rightBoundaryOrNull.Background);
                 Assert.Equal(expectedBrush.Color, frameBrush.Color);
                 Assert.Equal(expectedBrush.Color, rightBoundaryBrush.Color);
             }
@@ -809,8 +691,7 @@ public sealed class ScheduleWorkspaceViewTests
     public void PngExportSurfaceRetainsACompleteOuterFrame()
     {
         ScheduleBoardView scheduleBoard = ScheduleBoardView.createForPngExport();
-        Border exportSurface = Assert.IsType<Border>(
-            scheduleBoard.PngExportSurface);
+        Border exportSurface = Assert.IsType<Border>(scheduleBoard.PngExportSurface);
 
         Assert.Equal(new Thickness(1.0), exportSurface.BorderThickness);
     }
@@ -822,8 +703,7 @@ public sealed class ScheduleWorkspaceViewTests
         entries.Add(createScheduleEntry(EDay.Monday, new AcademicPeriod(1)));
         entries.Add(createLongScheduleEntry(EDay.Thursday, new AcademicPeriod(10)));
         ScheduleBoardView scheduleBoard = new ScheduleBoardView();
-        scheduleBoard.DataContext = createScheduleBoardPresentation(
-            new ScheduleRecommendation(entries));
+        scheduleBoard.DataContext = createScheduleBoardPresentation(new ScheduleRecommendation(entries));
 
         Window window = new Window();
         window.Width = 800.0;
@@ -834,22 +714,17 @@ public sealed class ScheduleWorkspaceViewTests
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
-            ScrollViewer? scrollViewerOrNull = scheduleBoard.FindControl<ScrollViewer>(
-                "ScheduleScrollViewer");
+            ScrollViewer? scrollViewerOrNull = scheduleBoard.FindControl<ScrollViewer>("ScheduleScrollViewer");
             Assert.NotNull(scrollViewerOrNull);
             if (scrollViewerOrNull == null)
             {
-                throw new InvalidOperationException(
-                    "The rendered schedule scroll viewer was not found.");
+                throw new InvalidOperationException("The rendered schedule scroll viewer was not found.");
             }
 
-            Assert.True(
-                scheduleBoard.PngExportSurface.Bounds.Height
-                    > scrollViewerOrNull.Viewport.Height);
+            Assert.True(scheduleBoard.PngExportSurface.Bounds.Height > scrollViewerOrNull.Viewport.Height);
             Assert.True(scheduleBoard.PngExportSurface.Bounds.Height > 1_002.0);
 
-            AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(
-                PngExportScale.PRODUCT_QUALITY);
+            AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(PngExportScale.PRODUCT_QUALITY);
             using (MemoryStream destinationStream = new MemoryStream())
             {
                 await exporter.ExportControlAsync(
@@ -887,10 +762,8 @@ public sealed class ScheduleWorkspaceViewTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            TextBlock? exportStatusOrNull =
-                workspaceView.FindControl<TextBlock>("ExportStatusText");
-            Border? exportStatusToastOrNull =
-                workspaceView.FindControl<Border>("ExportStatusToast");
+            TextBlock? exportStatusOrNull = workspaceView.FindControl<TextBlock>("ExportStatusText");
+            Border? exportStatusToastOrNull = workspaceView.FindControl<Border>("ExportStatusToast");
             Assert.NotNull(exportStatusOrNull);
             Assert.NotNull(exportStatusToastOrNull);
             if (exportStatusOrNull == null || exportStatusToastOrNull == null)
@@ -905,8 +778,7 @@ public sealed class ScheduleWorkspaceViewTests
             exportStatusToast.IsVisible = true;
             exportStatusToast.Classes.Set("success", true);
 
-            AsyncDelegateCommand exportCommand = Assert.IsType<AsyncDelegateCommand>(
-                workspaceView.ExportPngCommand);
+            AsyncDelegateCommand exportCommand = Assert.IsType<AsyncDelegateCommand>(workspaceView.ExportPngCommand);
             exportCommand.Execute(null);
             await exportCommand.ExecutionTask;
             Dispatcher.UIThread.RunJobs();
@@ -942,8 +814,7 @@ public sealed class ScheduleWorkspaceViewTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            Button? exportButtonOrNull =
-                workspaceView.FindControl<Button>("ExportScheduleButton");
+            Button? exportButtonOrNull = workspaceView.FindControl<Button>("ExportScheduleButton");
             Assert.NotNull(exportButtonOrNull);
             if (exportButtonOrNull == null)
             {
@@ -952,9 +823,7 @@ public sealed class ScheduleWorkspaceViewTests
 
             Button exportButton = exportButtonOrNull;
             Assert.True(exportButton.IsEnabled);
-            Assert.Equal(
-                "시간표 내보내기",
-                AutomationProperties.GetName(exportButton));
+            Assert.Equal("시간표 내보내기", AutomationProperties.GetName(exportButton));
             Assert.Equal(
                 "현재 시간표를 내보내거나 가능한 시간표를 모두 PNG 이미지로 저장합니다.",
                 AutomationProperties.GetHelpText(exportButton));
@@ -984,16 +853,11 @@ public sealed class ScheduleWorkspaceViewTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            ScheduleBoardView? boardOrNull =
-                workspaceView.FindControl<ScheduleBoardView>("ScheduleBoard");
-            Border? listOrNull =
-                workspaceView.FindControl<Border>("ScheduleListContainer");
-            Button? modeButtonOrNull =
-                workspaceView.FindControl<Button>("ScheduleViewModeButton");
-            TextBlock? modeTextOrNull =
-                workspaceView.FindControl<TextBlock>("ScheduleViewModeText");
-            ListBox? listItemsOrNull =
-                workspaceView.FindControl<ListBox>("ScheduleListItems");
+            ScheduleBoardView? boardOrNull = workspaceView.FindControl<ScheduleBoardView>("ScheduleBoard");
+            Border? listOrNull = workspaceView.FindControl<Border>("ScheduleListContainer");
+            Button? modeButtonOrNull = workspaceView.FindControl<Button>("ScheduleViewModeButton");
+            TextBlock? modeTextOrNull = workspaceView.FindControl<TextBlock>("ScheduleViewModeText");
+            ListBox? listItemsOrNull = workspaceView.FindControl<ListBox>("ScheduleListItems");
             Assert.NotNull(boardOrNull);
             Assert.NotNull(listOrNull);
             Assert.NotNull(modeButtonOrNull);
@@ -1005,8 +869,7 @@ public sealed class ScheduleWorkspaceViewTests
                 || modeTextOrNull == null
                 || listItemsOrNull == null)
             {
-                throw new InvalidOperationException(
-                    "The schedule presentation controls were not found.");
+                throw new InvalidOperationException("The schedule presentation controls were not found.");
             }
 
             Assert.True(boardOrNull.IsVisible);
@@ -1018,18 +881,10 @@ public sealed class ScheduleWorkspaceViewTests
             Assert.False(boardOrNull.IsVisible);
             Assert.True(listOrNull.IsVisible);
             Assert.Equal("시간표 보기", modeTextOrNull.Text);
-            Assert.Equal(
-                "시간표를 주간 표로 보기",
-                AutomationProperties.GetName(modeButtonOrNull));
-            Assert.Equal(
-                workspace.DisplayedScheduleBoard!.ListGroups.Count,
-                listItemsOrNull.ItemCount);
-            ListBoxItem semanticListEntry = listItemsOrNull
-                .GetVisualDescendants()
-                .OfType<ListBoxItem>()
-                .First();
-            Assert.False(string.IsNullOrWhiteSpace(
-                AutomationProperties.GetName(semanticListEntry)));
+            Assert.Equal("시간표를 주간 표로 보기", AutomationProperties.GetName(modeButtonOrNull));
+            Assert.Equal(workspace.DisplayedScheduleBoard!.ListGroups.Count, listItemsOrNull.ItemCount);
+            ListBoxItem semanticListEntry = listItemsOrNull.GetVisualDescendants().OfType<ListBoxItem>().First();
+            Assert.False(string.IsNullOrWhiteSpace(AutomationProperties.GetName(semanticListEntry)));
             IReadOnlyList<string> visibleListText = listOrNull
                 .GetVisualDescendants()
                 .OfType<TextBlock>()
@@ -1056,10 +911,7 @@ public sealed class ScheduleWorkspaceViewTests
                 .First(
                     candidate => candidate.Text
                         == occurrenceWithMetadata.MetadataDisplayText);
-            ItemsControl occurrenceList = occurrenceSchedule
-                .GetVisualAncestors()
-                .OfType<ItemsControl>()
-                .First();
+            ItemsControl occurrenceList = occurrenceSchedule.GetVisualAncestors().OfType<ItemsControl>().First();
             Assert.Equal(VerticalAlignment.Center, occurrenceList.VerticalAlignment);
             Assert.Equal(20.0, occurrenceSchedule.LineHeight);
             Assert.Equal(20.0, occurrenceMetadata.LineHeight);
@@ -1080,9 +932,7 @@ public sealed class ScheduleWorkspaceViewTests
     [Fact]
     public void ScheduleListGroupsAreSortedAndOmitUnavailableMetadata()
     {
-        ScheduleEntry fridayEntry = createScheduleEntry(
-            EDay.Friday,
-            new AcademicPeriod(3));
+        ScheduleEntry fridayEntry = createScheduleEntry(EDay.Friday, new AcademicPeriod(3));
         ScheduleEntry mondayEntry = createMetadataAvailabilityEntry(
             new CourseCode("TST00101"),
             new KoreanCourseName("정보 없는 수업"),
@@ -1097,8 +947,7 @@ public sealed class ScheduleWorkspaceViewTests
 
         Assert.Equal(2, presentation.ListGroups.Count);
         ScheduleListGroup firstGroup = presentation.ListGroups[0];
-        ScheduleListOccurrence firstOccurrence = Assert.Single(
-            firstGroup.Occurrences);
+        ScheduleListOccurrence firstOccurrence = Assert.Single(firstGroup.Occurrences);
         Assert.Equal(EDay.Monday, firstGroup.EarliestDay);
         Assert.Equal("정보 없는 수업(01)", firstGroup.TitleDisplayText);
         Assert.False(firstOccurrence.HasLocation);
@@ -1133,9 +982,7 @@ public sealed class ScheduleWorkspaceViewTests
             AcademicTerm.Parse("2026-2"));
     }
 
-    private static ScheduleEntry createScheduleEntry(
-        EDay day,
-        AcademicPeriod period)
+    private static ScheduleEntry createScheduleEntry(EDay day, AcademicPeriod period)
     {
         return new CourseScheduleEntry(
             new CourseId("course-tst00100"),
@@ -1156,9 +1003,7 @@ public sealed class ScheduleWorkspaceViewTests
             ECourseAccent.Blue);
     }
 
-    private static ScheduleEntry createLongScheduleEntry(
-        EDay day,
-        AcademicPeriod period)
+    private static ScheduleEntry createLongScheduleEntry(EDay day, AcademicPeriod period)
     {
         return new CourseScheduleEntry(
             new CourseId("course-uxd00100"),
@@ -1202,16 +1047,13 @@ public sealed class ScheduleWorkspaceViewTests
             ECourseAccent.Blue);
     }
 
-    private static Button findCourseCardByName(
-        ScheduleBoardView scheduleBoard,
-        string courseName)
+    private static Button findCourseCardByName(ScheduleBoardView scheduleBoard, string courseName)
     {
         Grid? boardGridOrNull = scheduleBoard.FindControl<Grid>("BoardGrid");
         Assert.NotNull(boardGridOrNull);
         if (boardGridOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The rendered schedule grid was not found.");
+            throw new InvalidOperationException("The rendered schedule grid was not found.");
         }
 
         Button? matchingCardOrNull = null;
@@ -1231,8 +1073,7 @@ public sealed class ScheduleWorkspaceViewTests
         Assert.NotNull(matchingCardOrNull);
         if (matchingCardOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The requested course schedule card was not found.");
+            throw new InvalidOperationException("The requested course schedule card was not found.");
         }
 
         return matchingCardOrNull;
@@ -1269,15 +1110,13 @@ public sealed class ScheduleWorkspaceViewTests
         }
     }
 
-    private static RenderedScheduleBrushes findRenderedScheduleBrushes(
-        ScheduleBoardView scheduleBoard)
+    private static RenderedScheduleBrushes findRenderedScheduleBrushes(ScheduleBoardView scheduleBoard)
     {
         Grid? boardGridOrNull = scheduleBoard.FindControl<Grid>("BoardGrid");
         Assert.NotNull(boardGridOrNull);
         if (boardGridOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The rendered schedule grid was not found.");
+            throw new InvalidOperationException("The rendered schedule grid was not found.");
         }
 
         Border? cellOrNull = null;
@@ -1306,30 +1145,20 @@ public sealed class ScheduleWorkspaceViewTests
         Assert.NotNull(cellOrNull);
         Assert.NotNull(timeLabelOrNull);
         Assert.NotNull(scheduleCardOrNull);
-        if (cellOrNull == null ||
-            timeLabelOrNull == null ||
-            scheduleCardOrNull == null)
+        if (cellOrNull == null || timeLabelOrNull == null || scheduleCardOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The generated schedule visuals were incomplete.");
+            throw new InvalidOperationException("The generated schedule visuals were incomplete.");
         }
 
-        SolidColorBrush cellBorder = Assert.IsType<SolidColorBrush>(
-            cellOrNull.BorderBrush);
-        SolidColorBrush timeLabel = Assert.IsType<SolidColorBrush>(
-            timeLabelOrNull.Foreground);
+        SolidColorBrush cellBorder = Assert.IsType<SolidColorBrush>(cellOrNull.BorderBrush);
+        SolidColorBrush timeLabel = Assert.IsType<SolidColorBrush>(timeLabelOrNull.Foreground);
         Flyout detailsFlyout = Assert.IsType<Flyout>(scheduleCardOrNull.Flyout);
         Border detailsSurface = Assert.IsType<Border>(detailsFlyout.Content);
         StackPanel details = Assert.IsType<StackPanel>(detailsSurface.Child);
         TextBlock identity = Assert.IsType<TextBlock>(details.Children[0]);
-        SolidColorBrush detailAccent = Assert.IsType<SolidColorBrush>(
-            identity.Foreground);
+        SolidColorBrush detailAccent = Assert.IsType<SolidColorBrush>(identity.Foreground);
 
-        return new RenderedScheduleBrushes(
-            scheduleCardOrNull,
-            cellBorder,
-            timeLabel,
-            detailAccent);
+        return new RenderedScheduleBrushes(scheduleCardOrNull, cellBorder, timeLabel, detailAccent);
     }
 
     private static void assertBoardReservesScrollbarGutter(
@@ -1337,22 +1166,17 @@ public sealed class ScheduleWorkspaceViewTests
         Grid boardGrid,
         ScrollViewer scrollViewer)
     {
-        Border? exportSurfaceOrNull = scheduleBoard.FindControl<Border>(
-            "BoardExportSurface");
-        Border? rightBoundaryOrNull = scheduleBoard.FindControl<Border>(
-            "BoardContentRightBoundary");
+        Border? exportSurfaceOrNull = scheduleBoard.FindControl<Border>("BoardExportSurface");
+        Border? rightBoundaryOrNull = scheduleBoard.FindControl<Border>("BoardContentRightBoundary");
         ScrollBar? verticalScrollBarOrNull = scrollViewer.GetVisualDescendants()
             .OfType<ScrollBar>()
             .SingleOrDefault(scrollBar => scrollBar.Orientation == Orientation.Vertical);
         Assert.NotNull(exportSurfaceOrNull);
         Assert.NotNull(rightBoundaryOrNull);
         Assert.NotNull(verticalScrollBarOrNull);
-        if (exportSurfaceOrNull == null
-            || rightBoundaryOrNull == null
-            || verticalScrollBarOrNull == null)
+        if (exportSurfaceOrNull == null || rightBoundaryOrNull == null || verticalScrollBarOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The timetable scrollbar geometry was not available.");
+            throw new InvalidOperationException("The timetable scrollbar geometry was not available.");
         }
 
         Border exportSurface = exportSurfaceOrNull;
@@ -1360,47 +1184,32 @@ public sealed class ScheduleWorkspaceViewTests
         Assert.True(verticalScrollBar.IsEffectivelyVisible);
         Assert.Equal(new Thickness(0.0), exportSurface.BorderThickness);
         Assert.Equal(1.0, rightBoundaryOrNull.Width);
-        Assert.Equal(
-            new Thickness(0.0, 0.0, SCROLLBAR_GUTTER_WIDTH, 0.0),
-            rightBoundaryOrNull.Margin);
+        Assert.Equal(new Thickness(0.0, 0.0, SCROLLBAR_GUTTER_WIDTH, 0.0), rightBoundaryOrNull.Margin);
         Assert.InRange(
             scrollViewer.Viewport.Width - exportSurface.Bounds.Width,
             SCROLLBAR_GUTTER_WIDTH - 0.5,
             SCROLLBAR_GUTTER_WIDTH + 0.5);
 
-        Point? exportOriginOrNull = exportSurface.TranslatePoint(
-            new Point(0.0, 0.0),
-            scheduleBoard);
-        Point? scrollBarOriginOrNull = verticalScrollBar.TranslatePoint(
-            new Point(0.0, 0.0),
-            scheduleBoard);
+        Point? exportOriginOrNull = exportSurface.TranslatePoint(new Point(0.0, 0.0), scheduleBoard);
+        Point? scrollBarOriginOrNull = verticalScrollBar.TranslatePoint(new Point(0.0, 0.0), scheduleBoard);
         Assert.NotNull(exportOriginOrNull);
         Assert.NotNull(scrollBarOriginOrNull);
         if (exportOriginOrNull == null || scrollBarOriginOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The timetable surface position was not available.");
+            throw new InvalidOperationException("The timetable surface position was not available.");
         }
 
         double exportRight = exportOriginOrNull.Value.X + exportSurface.Bounds.Width;
         Assert.True(exportRight <= scrollBarOriginOrNull.Value.X + 0.5);
-        Assert.Equal(
-            exportSurface.Bounds.Width,
-            boardGrid.Bounds.Width,
-            3);
+        Assert.Equal(exportSurface.Bounds.Width, boardGrid.Bounds.Width, 3);
     }
 
-    private static void assertStickyHeaderMatchesBoardSurface(
-        ScheduleBoardView scheduleBoard)
+    private static void assertStickyHeaderMatchesBoardSurface(ScheduleBoardView scheduleBoard)
     {
-        Border? stickyHeaderContainerOrNull = scheduleBoard.FindControl<Border>(
-            "BoardStickyHeaderContainer");
-        Border? stickyHeaderSurfaceOrNull = scheduleBoard.FindControl<Border>(
-            "BoardStickyDayHeaderSurface");
-        Border? exportSurfaceOrNull = scheduleBoard.FindControl<Border>(
-            "BoardExportSurface");
-        Border? rightBoundaryOrNull = scheduleBoard.FindControl<Border>(
-            "BoardContentRightBoundary");
+        Border? stickyHeaderContainerOrNull = scheduleBoard.FindControl<Border>("BoardStickyHeaderContainer");
+        Border? stickyHeaderSurfaceOrNull = scheduleBoard.FindControl<Border>("BoardStickyDayHeaderSurface");
+        Border? exportSurfaceOrNull = scheduleBoard.FindControl<Border>("BoardExportSurface");
+        Border? rightBoundaryOrNull = scheduleBoard.FindControl<Border>("BoardContentRightBoundary");
         Assert.NotNull(stickyHeaderContainerOrNull);
         Assert.NotNull(stickyHeaderSurfaceOrNull);
         Assert.NotNull(exportSurfaceOrNull);
@@ -1410,21 +1219,13 @@ public sealed class ScheduleWorkspaceViewTests
             || exportSurfaceOrNull == null
             || rightBoundaryOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The timetable header and board surfaces were not available.");
+            throw new InvalidOperationException("The timetable header and board surfaces were not available.");
         }
 
-        Assert.Equal(
-            new Thickness(0.0),
-            stickyHeaderContainerOrNull.BorderThickness);
-        Assert.Equal(
-            new Thickness(0.0, 0.0, 0.0, 1.0),
-            stickyHeaderSurfaceOrNull.BorderThickness);
+        Assert.Equal(new Thickness(0.0), stickyHeaderContainerOrNull.BorderThickness);
+        Assert.Equal(new Thickness(0.0, 0.0, 0.0, 1.0), stickyHeaderSurfaceOrNull.BorderThickness);
         Assert.Equal(new Thickness(0.0), exportSurfaceOrNull.BorderThickness);
-        Assert.Equal(
-            exportSurfaceOrNull.Bounds.Width,
-            stickyHeaderSurfaceOrNull.Bounds.Width,
-            3);
+        Assert.Equal(exportSurfaceOrNull.Bounds.Width, stickyHeaderSurfaceOrNull.Bounds.Width, 3);
         Assert.InRange(
             stickyHeaderContainerOrNull.Bounds.Width
                 - stickyHeaderSurfaceOrNull.Bounds.Width,
@@ -1434,29 +1235,21 @@ public sealed class ScheduleWorkspaceViewTests
         Point? headerOriginOrNull = stickyHeaderSurfaceOrNull.TranslatePoint(
             new Point(0.0, 0.0),
             scheduleBoard);
-        Point? exportOriginOrNull = exportSurfaceOrNull.TranslatePoint(
-            new Point(0.0, 0.0),
-            scheduleBoard);
+        Point? exportOriginOrNull = exportSurfaceOrNull.TranslatePoint(new Point(0.0, 0.0), scheduleBoard);
         Point? rightBoundaryOriginOrNull = rightBoundaryOrNull.TranslatePoint(
             new Point(0.0, 0.0),
             scheduleBoard);
         Assert.NotNull(headerOriginOrNull);
         Assert.NotNull(exportOriginOrNull);
         Assert.NotNull(rightBoundaryOriginOrNull);
-        if (headerOriginOrNull == null
-            || exportOriginOrNull == null
-            || rightBoundaryOriginOrNull == null)
+        if (headerOriginOrNull == null || exportOriginOrNull == null || rightBoundaryOriginOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The timetable header and board positions were not available.");
+            throw new InvalidOperationException("The timetable header and board positions were not available.");
         }
 
-        double headerRight = headerOriginOrNull.Value.X
-            + stickyHeaderSurfaceOrNull.Bounds.Width;
-        double exportRight = exportOriginOrNull.Value.X
-            + exportSurfaceOrNull.Bounds.Width;
-        double rightBoundaryRight = rightBoundaryOriginOrNull.Value.X
-            + rightBoundaryOrNull.Bounds.Width;
+        double headerRight = headerOriginOrNull.Value.X + stickyHeaderSurfaceOrNull.Bounds.Width;
+        double exportRight = exportOriginOrNull.Value.X + exportSurfaceOrNull.Bounds.Width;
+        double rightBoundaryRight = rightBoundaryOriginOrNull.Value.X + rightBoundaryOrNull.Bounds.Width;
         Assert.Equal(exportRight, headerRight, 3);
         Assert.Equal(exportRight, rightBoundaryRight, 3);
     }
@@ -1487,18 +1280,13 @@ public sealed class ScheduleWorkspaceViewTests
         Assert.Equal(VerticalAlignment.Center, timeLabel.VerticalAlignment);
         Assert.Equal(18.0, timeLabel.Margin.Right);
 
-        Point? labelOriginOrNull = timeLabel.TranslatePoint(
-            new Point(0.0, 0.0),
-            boardGrid);
-        Point? guideOriginOrNull = hourGuide.TranslatePoint(
-            new Point(0.0, 0.0),
-            boardGrid);
+        Point? labelOriginOrNull = timeLabel.TranslatePoint(new Point(0.0, 0.0), boardGrid);
+        Point? guideOriginOrNull = hourGuide.TranslatePoint(new Point(0.0, 0.0), boardGrid);
         Assert.NotNull(labelOriginOrNull);
         Assert.NotNull(guideOriginOrNull);
         if (labelOriginOrNull == null || guideOriginOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The time label geometry could not be resolved.");
+            throw new InvalidOperationException("The time label geometry could not be resolved.");
         }
 
         double labelCenterY = labelOriginOrNull.Value.Y
@@ -1519,8 +1307,7 @@ public sealed class ScheduleWorkspaceViewTests
         Assert.NotNull(applicationOrNull);
         if (applicationOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The Avalonia test application was not initialized.");
+            throw new InvalidOperationException("The Avalonia test application was not initialized.");
         }
 
         object? resourceOrNull;
@@ -1528,9 +1315,7 @@ public sealed class ScheduleWorkspaceViewTests
             colorToken.Value,
             themeVariant,
             out resourceOrNull);
-        Assert.True(
-            hasResource,
-            "Missing brush resource: " + colorToken.Value);
+        Assert.True(hasResource, "Missing brush resource: " + colorToken.Value);
         return Assert.IsType<SolidColorBrush>(resourceOrNull);
     }
 

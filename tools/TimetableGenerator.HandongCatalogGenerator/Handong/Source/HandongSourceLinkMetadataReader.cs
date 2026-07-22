@@ -28,12 +28,9 @@ internal static class HandongSourceLinkMetadataReader
                 continue;
             }
 
-            HandongSourceLinkMetadata currentMetadata = readMetadata(
-                linkTargetOrNull!,
-                sourceRecordNumber);
+            HandongSourceLinkMetadata currentMetadata = readMetadata(linkTargetOrNull!, sourceRecordNumber);
 
-            if (sourceLinkMetadataOrNull != null
-                && sourceLinkMetadataOrNull != currentMetadata)
+            if (sourceLinkMetadataOrNull != null && sourceLinkMetadataOrNull != currentMetadata)
             {
                 throw new HandongSourceFormatException(
                     "Source record " + sourceRecordNumber
@@ -120,9 +117,7 @@ internal static class HandongSourceLinkMetadataReader
         string queryMarker = "?" + parameterName + "=";
         string additionalMarker = "&" + parameterName + "=";
 
-        int parameterMarkerIndex = linkTarget.IndexOf(
-            queryMarker,
-            StringComparison.OrdinalIgnoreCase);
+        int parameterMarkerIndex = linkTarget.IndexOf(queryMarker, StringComparison.OrdinalIgnoreCase);
         int parameterValueIndex;
         if (parameterMarkerIndex >= 0)
         {
@@ -130,9 +125,7 @@ internal static class HandongSourceLinkMetadataReader
         }
         else
         {
-            parameterMarkerIndex = linkTarget.IndexOf(
-                additionalMarker,
-                StringComparison.OrdinalIgnoreCase);
+            parameterMarkerIndex = linkTarget.IndexOf(additionalMarker, StringComparison.OrdinalIgnoreCase);
             if (parameterMarkerIndex < 0)
             {
                 throw new HandongSourceFormatException(
@@ -143,9 +136,7 @@ internal static class HandongSourceLinkMetadataReader
             parameterValueIndex = parameterMarkerIndex + additionalMarker.Length;
         }
 
-        int parameterValueEndIndex = findParameterValueEndIndex(
-            linkTarget,
-            parameterValueIndex);
+        int parameterValueEndIndex = findParameterValueEndIndex(linkTarget, parameterValueIndex);
         string encodedParameterValue = linkTarget.Substring(
             parameterValueIndex,
             parameterValueEndIndex - parameterValueIndex);
@@ -160,19 +151,14 @@ internal static class HandongSourceLinkMetadataReader
         return decodedParameterValue;
     }
 
-    private static int findParameterValueEndIndex(
-        string linkTarget,
-        int parameterValueIndex)
+    private static int findParameterValueEndIndex(string linkTarget, int parameterValueIndex)
     {
         for (int characterIndex = parameterValueIndex;
             characterIndex < linkTarget.Length;
             ++characterIndex)
         {
             char character = linkTarget[characterIndex];
-            if (character == '&'
-                || character == '\''
-                || character == '"'
-                || character == ')')
+            if (character == '&' || character == '\'' || character == '"' || character == ')')
             {
                 return characterIndex;
             }

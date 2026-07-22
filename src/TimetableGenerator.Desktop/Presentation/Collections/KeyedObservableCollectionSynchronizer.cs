@@ -23,8 +23,7 @@ internal static class KeyedObservableCollectionSynchronizer
             TKey desiredKey = findKey(desiredItem);
             if (desiredKeys.Add(desiredKey) == false)
             {
-                throw new InvalidOperationException(
-                    "The desired collection contains duplicate keys.");
+                throw new InvalidOperationException("The desired collection contains duplicate keys.");
             }
         }
 
@@ -34,15 +33,11 @@ internal static class KeyedObservableCollectionSynchronizer
             TKey currentKey = findKey(currentItem);
             if (currentKeys.Add(currentKey) == false)
             {
-                throw new InvalidOperationException(
-                    "The current collection contains duplicate keys.");
+                throw new InvalidOperationException("The current collection contains duplicate keys.");
             }
         }
 
-        removeItemsNotInDesiredCollection(
-            currentItems,
-            desiredKeys,
-            findKey);
+        removeItemsNotInDesiredCollection(currentItems, desiredKeys, findKey);
 
         EqualityComparer<TKey> keyComparer = EqualityComparer<TKey>.Default;
         for (int desiredIndex = 0;
@@ -51,12 +46,7 @@ internal static class KeyedObservableCollectionSynchronizer
         {
             TItem desiredItem = desiredItems[desiredIndex];
             TKey desiredKey = findKey(desiredItem);
-            if (hasKeyAtIndex(
-                currentItems,
-                desiredIndex,
-                desiredKey,
-                findKey,
-                keyComparer))
+            if (hasKeyAtIndex(currentItems, desiredIndex, desiredKey, findKey, keyComparer))
             {
                 continue;
             }

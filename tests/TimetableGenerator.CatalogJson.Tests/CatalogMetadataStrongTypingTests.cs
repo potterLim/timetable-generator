@@ -202,8 +202,7 @@ public sealed class CatalogMetadataStrongTypingTests
     {
         Version parsedVersion = new Version(1, 2, 3);
         CatalogConverterVersion converterVersion = new CatalogConverterVersion(parsedVersion);
-        CatalogManualReviewSourceValue sourceValue = new CatalogManualReviewSourceValue(
-            "  source text  ");
+        CatalogManualReviewSourceValue sourceValue = new CatalogManualReviewSourceValue("  source text  ");
 
         Assert.AreEqual(parsedVersion, converterVersion.Value);
         Assert.AreEqual("  source text  ", sourceValue.Value);
@@ -222,10 +221,7 @@ public sealed class CatalogMetadataStrongTypingTests
         }
     }
 
-    private static void assertPropertyType(
-        Type modelType,
-        string propertyName,
-        Type expectedType)
+    private static void assertPropertyType(Type modelType, string propertyName, Type expectedType)
     {
         PropertyInfo? propertyOrNull = modelType.GetProperty(propertyName);
         if (propertyOrNull == null)

@@ -31,9 +31,7 @@ internal sealed class RecurringCalendarEvent
     {
         if (uid.IsValid == false)
         {
-            throw new ArgumentException(
-                "Recurring calendar events require a valid UID.",
-                nameof(uid));
+            throw new ArgumentException("Recurring calendar events require a valid UID.", nameof(uid));
         }
 
         if (content == null)
@@ -59,8 +57,7 @@ internal sealed class RecurringCalendarEvent
         mDays = copyAndValidateDays(days);
     }
 
-    private static IReadOnlyList<EDay> copyAndValidateDays(
-        IEnumerable<EDay> days)
+    private static IReadOnlyList<EDay> copyAndValidateDays(IEnumerable<EDay> days)
     {
         List<EDay> copiedDays = new List<EDay>();
         HashSet<EDay> uniqueDays = new HashSet<EDay>();

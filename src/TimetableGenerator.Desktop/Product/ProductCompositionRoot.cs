@@ -25,8 +25,7 @@ internal static class ProductCompositionRoot
             throw new ArgumentNullException(nameof(configurationPath));
         }
 
-        CatalogSynchronizationLimits synchronizationLimits =
-            ProductCatalogSynchronizationDefaults.CreateLimits();
+        CatalogSynchronizationLimits synchronizationLimits = ProductCatalogSynchronizationDefaults.CreateLimits();
         CatalogCacheFileStore catalogCacheStore = new CatalogCacheFileStore(
             dataPaths.CatalogCache,
             synchronizationLimits);
@@ -34,8 +33,7 @@ internal static class ProductCompositionRoot
             dataPaths.Workspace,
             new PlanningWorkspaceJsonCodec(),
             WorkspaceDocumentSizeLimit.ProductDefault);
-        CatalogSourceConfigurationLoader configurationLoader =
-            new CatalogSourceConfigurationLoader(configurationPath);
+        CatalogSourceConfigurationLoader configurationLoader = new CatalogSourceConfigurationLoader(configurationPath);
         ConfiguredProductCatalogDownloader catalogDownloader =
             new ConfiguredProductCatalogDownloader(
                 configurationLoader,
@@ -45,14 +43,11 @@ internal static class ProductCompositionRoot
             catalogCacheStore,
             workspaceStore,
             catalogDownloader);
-        ProductWorkspaceViewModelLoader viewModelLoader =
-            new ProductWorkspaceViewModelLoader(dataLoader);
+        ProductWorkspaceViewModelLoader viewModelLoader = new ProductWorkspaceViewModelLoader(dataLoader);
         ProductCatalogUpdateService catalogUpdateService =
             new ProductCatalogUpdateService(
                 catalogDownloader,
                 catalogCacheStore);
-        return new ProductShellViewModel(
-            viewModelLoader,
-            catalogUpdateService);
+        return new ProductShellViewModel(viewModelLoader, catalogUpdateService);
     }
 }

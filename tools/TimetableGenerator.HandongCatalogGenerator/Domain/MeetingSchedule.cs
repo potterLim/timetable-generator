@@ -66,8 +66,7 @@ internal sealed class MeetingSchedule
         bool hasScheduledValues = sourceTextOrNull != null && copiedSlots.Count > 0;
         if ((status == EMeetingScheduleStatus.Scheduled) != hasScheduledValues)
         {
-            throw new ArgumentException(
-                "Scheduled meetings require source text and at least one slot.");
+            throw new ArgumentException("Scheduled meetings require source text and at least one slot.");
         }
 
         Status = status;

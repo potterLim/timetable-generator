@@ -79,11 +79,9 @@ internal sealed partial class ProductAppearanceViewModel
         schedulePersistence(mThemePreference);
     }
 
-    private void schedulePersistence(
-        EProductThemePreference themePreference)
+    private void schedulePersistence(EProductThemePreference themePreference)
     {
-        ProductAppearanceSettings pendingSettings =
-            new ProductAppearanceSettings(themePreference);
+        ProductAppearanceSettings pendingSettings = new ProductAppearanceSettings(themePreference);
         lock (mPersistenceSync)
         {
             mPendingSettingsOrNull = pendingSettings;
@@ -121,14 +119,11 @@ internal sealed partial class ProductAppearanceViewModel
             catch (ProductAppearanceSettingsException exception)
             {
                 failureOrNull = exception;
-                Trace.TraceWarning(
-                    "The selected appearance preference could not be persisted: {0}",
-                    exception);
+                Trace.TraceWarning("The selected appearance preference could not be persisted: {0}", exception);
             }
 
             ProductAppearanceSettings completedSettings = pendingSettingsOrNull;
-            ProductAppearanceSettingsException? completedFailureOrNull =
-                failureOrNull;
+            ProductAppearanceSettingsException? completedFailureOrNull = failureOrNull;
             Dispatcher.UIThread.Post(
                 () => applyPersistenceResult(
                     completedSettings,
@@ -152,8 +147,7 @@ internal sealed partial class ProductAppearanceViewModel
             return;
         }
 
-        mPersistenceFailureMessage =
-            "화면 모드는 적용했지만 다음 실행을 위해 저장하지 못했습니다.";
+        mPersistenceFailureMessage = "화면 모드는 적용했지만 다음 실행을 위해 저장하지 못했습니다.";
         raisePropertyChanged(nameof(HasPersistenceFailure));
         raisePropertyChanged(nameof(PersistenceFailureMessage));
     }

@@ -16,9 +16,7 @@ public sealed record InstructorDisplayText
         string normalizedValue = value.Trim();
         if (normalizedValue.Length == 0)
         {
-            throw new ArgumentException(
-                "Instructor display text cannot be empty.",
-                nameof(value));
+            throw new ArgumentException("Instructor display text cannot be empty.", nameof(value));
         }
 
         Value = normalizedValue;

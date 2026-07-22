@@ -7,14 +7,11 @@ namespace TimetableGenerator.Desktop.Presentation.Windowing;
 
 internal static class WindowChromeLayoutPolicy
 {
-    private static readonly WindowChromeInsets WINDOWS_INSETS =
-        new WindowChromeInsets(28.0, 0.0);
+    private static readonly WindowChromeInsets WINDOWS_INSETS = new WindowChromeInsets(28.0, 0.0);
 
-    private static readonly WindowChromeInsets MAC_OS_INSETS =
-        new WindowChromeInsets(96.0, 22.0);
+    private static readonly WindowChromeInsets MAC_OS_INSETS = new WindowChromeInsets(96.0, 22.0);
 
-    private static readonly WindowChromeInsets OTHER_INSETS =
-        new WindowChromeInsets(28.0, 22.0);
+    private static readonly WindowChromeInsets OTHER_INSETS = new WindowChromeInsets(28.0, 22.0);
 
     public static EWindowChromePlatform FindCurrentPlatform()
     {
@@ -31,8 +28,7 @@ internal static class WindowChromeLayoutPolicy
         return EWindowChromePlatform.Other;
     }
 
-    public static WindowChromeInsets FindTitleBarInsets(
-        EWindowChromePlatform platform)
+    public static WindowChromeInsets FindTitleBarInsets(EWindowChromePlatform platform)
     {
         switch (platform)
         {
@@ -48,8 +44,7 @@ internal static class WindowChromeLayoutPolicy
         }
     }
 
-    public static WindowDecorations FindWindowDecorations(
-        EWindowChromePlatform platform)
+    public static WindowDecorations FindWindowDecorations(EWindowChromePlatform platform)
     {
         switch (platform)
         {

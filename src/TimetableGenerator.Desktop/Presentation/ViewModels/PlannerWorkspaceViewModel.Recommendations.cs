@@ -13,10 +13,8 @@ using TimetableGenerator.Desktop.Presentation.Recommendations;
 using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Planning;
 using TimetableGenerator.Domain.Scheduling;
-using ApplicationScheduleRecommendation =
-    TimetableGenerator.Application.Scheduling.ScheduleRecommendation;
-using PresentationScheduleRecommendation =
-    TimetableGenerator.Desktop.Presentation.Models.ScheduleRecommendation;
+using ApplicationScheduleRecommendation = TimetableGenerator.Application.Scheduling.ScheduleRecommendation;
+using PresentationScheduleRecommendation = TimetableGenerator.Desktop.Presentation.Models.ScheduleRecommendation;
 
 namespace TimetableGenerator.Desktop.Presentation.ViewModels;
 
@@ -24,8 +22,7 @@ internal sealed partial class PlannerWorkspaceViewModel
 {
     private const int DISPLAYED_RECOMMENDATION_COUNT = 24;
 
-    private static readonly PresentationScheduleRecommendation EMPTY_RECOMMENDATION =
-        new PresentationScheduleRecommendation(Array.Empty<ScheduleEntry>());
+    private static readonly PresentationScheduleRecommendation EMPTY_RECOMMENDATION = new PresentationScheduleRecommendation(Array.Empty<ScheduleEntry>());
 
     private readonly IScheduleRecommendationProvider mRecommendationProvider;
 
@@ -68,9 +65,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return mRecommendations.Count == 0
-                ? mPersonalSchedulePreview
-                : ActiveRecommendation;
+            return mRecommendations.Count == 0 ? mPersonalSchedulePreview : ActiveRecommendation;
         }
     }
 
@@ -105,14 +100,11 @@ internal sealed partial class PlannerWorkspaceViewModel
             }
 
             CourseCatalog catalog = mCatalogProjection.Document.Catalog;
-            List<ScheduleBoardPresentation> candidates =
-                new List<ScheduleBoardPresentation>(mRecommendations.Count);
+            List<ScheduleBoardPresentation> candidates = new List<ScheduleBoardPresentation>(mRecommendations.Count);
             foreach (ScheduleRecommendationViewItem recommendation
                 in mRecommendations)
             {
-                if (containsSameScheduledOfferings(
-                    candidates,
-                    recommendation.Schedule))
+                if (containsSameScheduledOfferings(candidates, recommendation.Schedule))
                 {
                     continue;
                 }
@@ -224,8 +216,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return mRecommendationCalculationState
-                == ERecommendationCalculationState.Calculating;
+            return mRecommendationCalculationState == ERecommendationCalculationState.Calculating;
         }
     }
 
@@ -233,8 +224,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return mRecommendationCalculationState
-                == ERecommendationCalculationState.Failed;
+            return mRecommendationCalculationState == ERecommendationCalculationState.Failed;
         }
     }
 
@@ -394,9 +384,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         PlanningPlan planSnapshot = activePlanOrNull.Plan;
         mRecommendationCalculationState = ERecommendationCalculationState.Calculating;
         notifyRecommendationCalculationStateChanged();
-        mRecommendationRefreshTask = calculateRecommendationsAsync(
-            planSnapshot,
-            cancellationSource);
+        mRecommendationRefreshTask = calculateRecommendationsAsync(planSnapshot, cancellationSource);
     }
 
     private async Task calculateRecommendationsAsync(
@@ -405,8 +393,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         try
         {
-            ScheduleRecommendationLimit recommendationLimit =
-                new ScheduleRecommendationLimit(DISPLAYED_RECOMMENDATION_COUNT);
+            ScheduleRecommendationLimit recommendationLimit = new ScheduleRecommendationLimit(DISPLAYED_RECOMMENDATION_COUNT);
             ScheduleRecommendationResult result = await Task.Run(
                 delegate
                 {
@@ -448,8 +435,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
-    private bool canApplyRecommendationResult(
-        CancellationTokenSource cancellationSource)
+    private bool canApplyRecommendationResult(CancellationTokenSource cancellationSource)
     {
         return mIsDisposed == false
             && cancellationSource.IsCancellationRequested == false
@@ -476,8 +462,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                 "Recommendation calculation ended without an active cancellation request.");
         }
 
-        List<ScheduleRecommendationViewItem> recommendations =
-            new List<ScheduleRecommendationViewItem>();
+        List<ScheduleRecommendationViewItem> recommendations = new List<ScheduleRecommendationViewItem>();
         foreach (ApplicationScheduleRecommendation recommendation
             in result.Recommendations)
         {
@@ -489,21 +474,15 @@ internal sealed partial class PlannerWorkspaceViewModel
                 createRecommendationBookmarkOrNull(
                     recommendation,
                     planSnapshot);
-            recommendations.Add(new ScheduleRecommendationViewItem(
-                schedule,
-                bookmarkOrNull));
+            recommendations.Add(new ScheduleRecommendationViewItem(schedule, bookmarkOrNull));
         }
 
-        bool hasSelectedScheduledCourses =
-            planSnapshot.CourseChoiceGroups.Count > 0;
+        bool hasSelectedScheduledCourses = planSnapshot.CourseChoiceGroups.Count > 0;
         mHasUnsatisfiedScheduleConstraints = recommendations.Count == 0
             && hasSelectedScheduledCourses;
-        if (recommendations.Count == 0
-            && planSnapshot.PersonalSchedules.Count > 0)
+        if (recommendations.Count == 0 && planSnapshot.PersonalSchedules.Count > 0)
         {
-            mPersonalSchedulePreview =
-                ScheduleRecommendationProjector.ProjectPersonalSchedules(
-                planSnapshot.PersonalSchedules);
+            mPersonalSchedulePreview = ScheduleRecommendationProjector.ProjectPersonalSchedules(planSnapshot.PersonalSchedules);
         }
         else
         {
@@ -527,8 +506,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         mPersonalSchedulePreview = EMPTY_RECOMMENDATION;
         mRecommendationIndex = 0;
         mRecommendationCalculationState = ERecommendationCalculationState.Failed;
-        mRecommendationCalculationError =
-            "과목 선택은 유지됩니다. 다시 계산해 보세요.";
+        mRecommendationCalculationError = "과목 선택은 유지됩니다. 다시 계산해 보세요.";
         System.Diagnostics.Debug.WriteLine(exception);
         mHasUnsatisfiedScheduleConstraints = false;
         notifyRecommendationChanged();
@@ -539,8 +517,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         if (mRecommendations.Count == 0)
         {
-            return ScheduleBoardLayout.CreateForEntries(
-                mPersonalSchedulePreview.Entries);
+            return ScheduleBoardLayout.CreateForEntries(mPersonalSchedulePreview.Entries);
         }
 
         List<ScheduleEntry> layoutEntries = new List<ScheduleEntry>();
@@ -550,11 +527,8 @@ internal sealed partial class PlannerWorkspaceViewModel
             layoutEntries.AddRange(recommendation.Schedule.Entries);
         }
 
-        ScheduleBoardDayRange sharedDayRange =
-            ScheduleBoardDayRange.CreateForEntries(layoutEntries);
-        return ScheduleBoardLayout.CreateForEntries(
-            DisplayedSchedule.Entries,
-            sharedDayRange);
+        ScheduleBoardDayRange sharedDayRange = ScheduleBoardDayRange.CreateForEntries(layoutEntries);
+        return ScheduleBoardLayout.CreateForEntries(DisplayedSchedule.Entries, sharedDayRange);
     }
 
     private static ScheduleRecommendationBookmark? createRecommendationBookmarkOrNull(
@@ -566,8 +540,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             return null;
         }
 
-        List<OfferingId> selectedOfferingIds = new List<OfferingId>(
-            plan.CourseChoiceGroups.Count);
+        List<OfferingId> selectedOfferingIds = new List<OfferingId>(plan.CourseChoiceGroups.Count);
         foreach (ScheduledOffering scheduledOffering
             in recommendation.ScheduledOfferings)
         {
@@ -577,9 +550,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         foreach (UnscheduledOfferingSelection selection
             in recommendation.UnscheduledSelections)
         {
-            if (containsUnscheduledSelection(
-                plan.UnscheduledOfferingSelections,
-                selection.OfferingId) == false)
+            if (containsUnscheduledSelection(plan.UnscheduledOfferingSelections, selection.OfferingId) == false)
             {
                 selectedOfferingIds.Add(selection.OfferingId);
             }
@@ -601,8 +572,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             recommendationIndex < recommendations.Count;
             ++recommendationIndex)
         {
-            ScheduleRecommendationBookmark? candidateBookmarkOrNull =
-                recommendations[recommendationIndex].BookmarkOrNull;
+            ScheduleRecommendationBookmark? candidateBookmarkOrNull = recommendations[recommendationIndex].BookmarkOrNull;
             if (candidateBookmarkOrNull != null
                 && bookmarkOrNull.HasSameOfferingIds(
                     candidateBookmarkOrNull.SelectedOfferingIds))
@@ -633,12 +603,10 @@ internal sealed partial class PlannerWorkspaceViewModel
         IReadOnlyList<ScheduleBoardPresentation> candidates,
         PresentationScheduleRecommendation recommendation)
     {
-        HashSet<OfferingId> scheduledOfferingIds =
-            createScheduledOfferingIds(recommendation);
+        HashSet<OfferingId> scheduledOfferingIds = createScheduledOfferingIds(recommendation);
         foreach (ScheduleBoardPresentation candidate in candidates)
         {
-            HashSet<OfferingId> candidateOfferingIds =
-                createScheduledOfferingIds(candidate.Schedule);
+            HashSet<OfferingId> candidateOfferingIds = createScheduledOfferingIds(candidate.Schedule);
             if (candidateOfferingIds.SetEquals(scheduledOfferingIds))
             {
                 return true;
@@ -654,8 +622,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         HashSet<OfferingId> scheduledOfferingIds = new HashSet<OfferingId>();
         foreach (ScheduleEntry entry in recommendation.Entries)
         {
-            CourseScheduleEntry? courseEntryOrNull =
-                entry as CourseScheduleEntry;
+            CourseScheduleEntry? courseEntryOrNull = entry as CourseScheduleEntry;
             if (courseEntryOrNull != null)
             {
                 scheduledOfferingIds.Add(courseEntryOrNull.OfferingId);
@@ -667,16 +634,14 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private void rememberActiveRecommendation()
     {
-        ScheduleRecommendationBookmark? bookmarkOrNull =
-            mRecommendations[mRecommendationIndex].BookmarkOrNull;
+        ScheduleRecommendationBookmark? bookmarkOrNull = mRecommendations[mRecommendationIndex].BookmarkOrNull;
         updateLastViewedRecommendation(bookmarkOrNull);
     }
 
     private void synchronizeLastViewedRecommendation(PlanId calculatedPlanId)
     {
         PlanId? activePlanIdOrNull = mSession.Workspace.ActivePlanIdOrNull;
-        if (activePlanIdOrNull.HasValue == false
-            || activePlanIdOrNull.Value != calculatedPlanId)
+        if (activePlanIdOrNull.HasValue == false || activePlanIdOrNull.Value != calculatedPlanId)
         {
             return;
         }
@@ -690,8 +655,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         updateLastViewedRecommendation(bookmarkOrNull);
     }
 
-    private void updateLastViewedRecommendation(
-        ScheduleRecommendationBookmark? bookmarkOrNull)
+    private void updateLastViewedRecommendation(ScheduleRecommendationBookmark? bookmarkOrNull)
     {
         if (mSession.Workspace.ActivePlanIdOrNull.HasValue == false)
         {
@@ -699,11 +663,8 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
 
         PlanningPlan activePlan = mSession.Workspace.GetActivePlan();
-        ScheduleRecommendationBookmark? existingBookmarkOrNull =
-            activePlan.LastViewedRecommendationOrNull;
-        if (haveSameRecommendationBookmarks(
-            existingBookmarkOrNull,
-            bookmarkOrNull))
+        ScheduleRecommendationBookmark? existingBookmarkOrNull = activePlan.LastViewedRecommendationOrNull;
+        if (haveSameRecommendationBookmarks(existingBookmarkOrNull, bookmarkOrNull))
         {
             return;
         }
@@ -729,8 +690,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             return leftOrNull == null && rightOrNull == null;
         }
 
-        return leftOrNull.HasSameOfferingIds(
-            rightOrNull.SelectedOfferingIds);
+        return leftOrNull.HasSameOfferingIds(rightOrNull.SelectedOfferingIds);
     }
 
     private void notifyRecommendationCalculationStateChanged()
@@ -772,8 +732,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         ScheduleRecommendationBookmark? recommendationBookmarkOrNull = null;
         if (mRecommendations.Count > 0)
         {
-            recommendationBookmarkOrNull =
-                mRecommendations[mRecommendationIndex].BookmarkOrNull;
+            recommendationBookmarkOrNull = mRecommendations[mRecommendationIndex].BookmarkOrNull;
         }
 
         PlanTabItem? activePlanOrNull = mActivePlanOrNull;
@@ -785,8 +744,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         foreach (PlanCourseChoiceGroupItem group
             in activePlanOrNull.CourseChoiceGroups)
         {
-            group.SynchronizeSelectedOfferings(
-                recommendationBookmarkOrNull);
+            group.SynchronizeSelectedOfferings(recommendationBookmarkOrNull);
         }
     }
 }

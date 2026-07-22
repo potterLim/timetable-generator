@@ -13,8 +13,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
 {
     private const int GUID_BYTE_COUNT = 16;
 
-    private const string LEGACY_COURSE_CHOICE_GROUP_ID_NAMESPACE =
-        "timetable-generator:legacy-course-choice-group";
+    private const string LEGACY_COURSE_CHOICE_GROUP_ID_NAMESPACE = "timetable-generator:legacy-course-choice-group";
 
     private static void writeCourseChoiceGroup(
         Utf8JsonWriter writer,
@@ -22,9 +21,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
     {
         writer.WriteStartObject();
         writer.WriteString("id", courseChoiceGroup.Id.ToString());
-        writer.WriteString(
-            "cardinality",
-            getCardinalityJsonValue(courseChoiceGroup.Cardinality));
+        writer.WriteString("cardinality", getCardinalityJsonValue(courseChoiceGroup.Cardinality));
         writer.WriteStartArray("courseCandidates");
         foreach (CourseCandidate courseCandidate
             in courseChoiceGroup.CourseCandidates)
@@ -36,12 +33,8 @@ public sealed partial class PlanningWorkspaceJsonCodec
                 in courseCandidate.OfferingCandidates)
             {
                 writer.WriteStartObject();
-                writer.WriteString(
-                    "offeringId",
-                    offeringCandidate.OfferingId.Value);
-                writer.WriteString(
-                    "preference",
-                    getOfferingPreferenceJsonValue(offeringCandidate.Preference));
+                writer.WriteString("offeringId", offeringCandidate.OfferingId.Value);
+                writer.WriteString("preference", getOfferingPreferenceJsonValue(offeringCandidate.Preference));
                 writer.WriteEndObject();
             }
 
@@ -53,8 +46,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         writer.WriteEndObject();
     }
 
-    private static IReadOnlyList<CourseChoiceGroup> readCourseChoiceGroups(
-        JsonElement element)
+    private static IReadOnlyList<CourseChoiceGroup> readCourseChoiceGroups(JsonElement element)
     {
         requireValueKind(element, JsonValueKind.Array, "plan.courseChoiceGroups");
         List<CourseChoiceGroup> courseChoiceGroups = new List<CourseChoiceGroup>();
@@ -64,29 +56,18 @@ public sealed partial class PlanningWorkspaceJsonCodec
                 groupElement,
                 "course choice group",
                 new string[] { "id", "cardinality", "courseCandidates" });
-            CourseChoiceGroupId groupId = readCourseChoiceGroupId(
-                properties["id"],
-                "courseChoiceGroup.id");
-            ECourseChoiceCardinality cardinality = readCourseChoiceCardinality(
-                properties["cardinality"]);
-            IReadOnlyList<CourseCandidate> courseCandidates = readCourseCandidates(
-                properties["courseCandidates"]);
-            courseChoiceGroups.Add(new CourseChoiceGroup(
-                groupId,
-                cardinality,
-                courseCandidates));
+            CourseChoiceGroupId groupId = readCourseChoiceGroupId(properties["id"], "courseChoiceGroup.id");
+            ECourseChoiceCardinality cardinality = readCourseChoiceCardinality(properties["cardinality"]);
+            IReadOnlyList<CourseCandidate> courseCandidates = readCourseCandidates(properties["courseCandidates"]);
+            courseChoiceGroups.Add(new CourseChoiceGroup(groupId, cardinality, courseCandidates));
         }
 
         return courseChoiceGroups.AsReadOnly();
     }
 
-    private static IReadOnlyList<CourseCandidate> readCourseCandidates(
-        JsonElement element)
+    private static IReadOnlyList<CourseCandidate> readCourseCandidates(JsonElement element)
     {
-        requireValueKind(
-            element,
-            JsonValueKind.Array,
-            "courseChoiceGroup.courseCandidates");
+        requireValueKind(element, JsonValueKind.Array, "courseChoiceGroup.courseCandidates");
         List<CourseCandidate> courseCandidates = new List<CourseCandidate>();
         foreach (JsonElement courseElement in element.EnumerateArray())
         {
@@ -94,25 +75,18 @@ public sealed partial class PlanningWorkspaceJsonCodec
                 courseElement,
                 "course candidate",
                 new string[] { "courseId", "offeringCandidates" });
-            CourseId courseId = new CourseId(
-                readString(properties["courseId"], "courseCandidate.courseId"));
-            IReadOnlyList<OfferingCandidate> offeringCandidates =
-                readOfferingCandidates(properties["offeringCandidates"]);
+            CourseId courseId = new CourseId(readString(properties["courseId"], "courseCandidate.courseId"));
+            IReadOnlyList<OfferingCandidate> offeringCandidates = readOfferingCandidates(properties["offeringCandidates"]);
             courseCandidates.Add(new CourseCandidate(courseId, offeringCandidates));
         }
 
         return courseCandidates.AsReadOnly();
     }
 
-    private static IReadOnlyList<OfferingCandidate> readOfferingCandidates(
-        JsonElement element)
+    private static IReadOnlyList<OfferingCandidate> readOfferingCandidates(JsonElement element)
     {
-        requireValueKind(
-            element,
-            JsonValueKind.Array,
-            "courseCandidate.offeringCandidates");
-        List<OfferingCandidate> offeringCandidates =
-            new List<OfferingCandidate>();
+        requireValueKind(element, JsonValueKind.Array, "courseCandidate.offeringCandidates");
+        List<OfferingCandidate> offeringCandidates = new List<OfferingCandidate>();
         foreach (JsonElement offeringElement in element.EnumerateArray())
         {
             Dictionary<string, JsonElement> properties = readExactObject(
@@ -123,66 +97,50 @@ public sealed partial class PlanningWorkspaceJsonCodec
                 readString(
                     properties["offeringId"],
                     "offeringCandidate.offeringId"));
-            EOfferingPreference preference = readOfferingPreference(
-                properties["preference"]);
+            EOfferingPreference preference = readOfferingPreference(properties["preference"]);
             offeringCandidates.Add(new OfferingCandidate(offeringId, preference));
         }
 
         return offeringCandidates.AsReadOnly();
     }
 
-    private static IReadOnlyList<LegacyScheduledCourseChoiceDocument>
-        readLegacyScheduledChoiceDocuments(
+    private static IReadOnlyList<LegacyScheduledCourseChoiceDocument> readLegacyScheduledChoiceDocuments(
         JsonElement element)
     {
         requireValueKind(element, JsonValueKind.Array, "plan.scheduledChoices");
-        List<LegacyScheduledCourseChoiceDocument> choices =
-            new List<LegacyScheduledCourseChoiceDocument>();
+        List<LegacyScheduledCourseChoiceDocument> choices = new List<LegacyScheduledCourseChoiceDocument>();
         foreach (JsonElement choiceElement in element.EnumerateArray())
         {
             Dictionary<string, JsonElement> properties = readExactObject(
                 choiceElement,
                 "scheduled choice",
                 new string[] { "courseId", "offeringIds" });
-            CourseId courseId = new CourseId(
-                readString(properties["courseId"], "scheduledChoice.courseId"));
+            CourseId courseId = new CourseId(readString(properties["courseId"], "scheduledChoice.courseId"));
             JsonElement offeringIdsElement = properties["offeringIds"];
-            requireValueKind(
-                offeringIdsElement,
-                JsonValueKind.Array,
-                "scheduledChoice.offeringIds");
+            requireValueKind(offeringIdsElement, JsonValueKind.Array, "scheduledChoice.offeringIds");
             List<OfferingId> offeringIds = new List<OfferingId>();
             foreach (JsonElement offeringIdElement
                 in offeringIdsElement.EnumerateArray())
             {
-                offeringIds.Add(
-                    new OfferingId(
-                        readString(
-                            offeringIdElement,
-                            "scheduledChoice.offeringIds[]")));
+                offeringIds.Add(new OfferingId(readString(offeringIdElement, "scheduledChoice.offeringIds[]")));
             }
 
-            choices.Add(new LegacyScheduledCourseChoiceDocument(
-                courseId,
-                offeringIds));
+            choices.Add(new LegacyScheduledCourseChoiceDocument(courseId, offeringIds));
         }
 
         return choices.AsReadOnly();
     }
 
-    private static IReadOnlyList<CourseChoiceGroup>
-        migrateLegacyScheduledChoiceDocuments(
+    private static IReadOnlyList<CourseChoiceGroup> migrateLegacyScheduledChoiceDocuments(
             PlanId planId,
             IReadOnlyList<LegacyScheduledCourseChoiceDocument> legacyChoiceDocuments)
     {
-        List<CourseChoiceGroup> courseChoiceGroups =
-            new List<CourseChoiceGroup>(legacyChoiceDocuments.Count);
+        List<CourseChoiceGroup> courseChoiceGroups = new List<CourseChoiceGroup>(legacyChoiceDocuments.Count);
         for (int choiceIndex = 0;
             choiceIndex < legacyChoiceDocuments.Count;
             ++choiceIndex)
         {
-            LegacyScheduledCourseChoiceDocument legacyChoiceDocument =
-                legacyChoiceDocuments[choiceIndex];
+            LegacyScheduledCourseChoiceDocument legacyChoiceDocument = legacyChoiceDocuments[choiceIndex];
             CourseChoiceGroupId groupId = createLegacyCourseChoiceGroupId(
                 planId,
                 legacyChoiceDocument.CourseId,
@@ -217,23 +175,19 @@ public sealed partial class PlanningWorkspaceJsonCodec
         return new CourseChoiceGroupId(new Guid(guidBytes));
     }
 
-    private static CourseChoiceGroupId readCourseChoiceGroupId(
-        JsonElement element,
-        string context)
+    private static CourseChoiceGroupId readCourseChoiceGroupId(JsonElement element, string context)
     {
         string value = readString(element, context);
         Guid parsedValue;
         if (Guid.TryParseExact(value, "D", out parsedValue) == false)
         {
-            throw new WorkspaceDocumentException(
-                context + " must be a GUID in D format.");
+            throw new WorkspaceDocumentException(context + " must be a GUID in D format.");
         }
 
         return new CourseChoiceGroupId(parsedValue);
     }
 
-    private static ECourseChoiceCardinality readCourseChoiceCardinality(
-        JsonElement element)
+    private static ECourseChoiceCardinality readCourseChoiceCardinality(JsonElement element)
     {
         string value = readString(element, "courseChoiceGroup.cardinality");
         switch (value)
@@ -241,8 +195,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
             case "exactlyOne":
                 return ECourseChoiceCardinality.ExactlyOne;
             default:
-                throw new WorkspaceDocumentException(
-                    "courseChoiceGroup.cardinality is not supported.");
+                throw new WorkspaceDocumentException("courseChoiceGroup.cardinality is not supported.");
         }
     }
 
@@ -258,13 +211,11 @@ public sealed partial class PlanningWorkspaceJsonCodec
             case "excluded":
                 return EOfferingPreference.Excluded;
             default:
-                throw new WorkspaceDocumentException(
-                    "offeringCandidate.preference is not supported.");
+                throw new WorkspaceDocumentException("offeringCandidate.preference is not supported.");
         }
     }
 
-    private static string getCardinalityJsonValue(
-        ECourseChoiceCardinality cardinality)
+    private static string getCardinalityJsonValue(ECourseChoiceCardinality cardinality)
     {
         switch (cardinality)
         {
@@ -278,8 +229,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         }
     }
 
-    private static string getOfferingPreferenceJsonValue(
-        EOfferingPreference preference)
+    private static string getOfferingPreferenceJsonValue(EOfferingPreference preference)
     {
         switch (preference)
         {

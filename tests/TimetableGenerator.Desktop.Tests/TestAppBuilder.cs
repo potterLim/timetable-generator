@@ -10,8 +10,6 @@ internal static class TestAppBuilder
         AvaloniaHeadlessPlatformOptions platformOptions = new AvaloniaHeadlessPlatformOptions();
         platformOptions.UseHeadlessDrawing = false;
 
-        return AppBuilder.Configure<App>()
-            .UseSkia()
-            .UseHeadless(platformOptions);
+        return AppBuilder.Configure<App>().UseSkia().UseHeadless(platformOptions);
     }
 }

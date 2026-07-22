@@ -14,8 +14,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         HashSet<string> expectedNames = new HashSet<string>(
             expectedPropertyNames,
             System.StringComparer.Ordinal);
-        Dictionary<string, JsonElement> properties =
-            new Dictionary<string, JsonElement>(System.StringComparer.Ordinal);
+        Dictionary<string, JsonElement> properties = new Dictionary<string, JsonElement>(System.StringComparer.Ordinal);
         foreach (JsonProperty property in element.EnumerateObject())
         {
             if (expectedNames.Contains(property.Name) == false)
@@ -70,8 +69,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         int value;
         if (element.TryGetInt32(out value) == false)
         {
-            throw new WorkspaceDocumentException(
-                context + " must be a 32-bit integer.");
+            throw new WorkspaceDocumentException(context + " must be a 32-bit integer.");
         }
 
         return value;
@@ -83,8 +81,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         long value;
         if (element.TryGetInt64(out value) == false)
         {
-            throw new WorkspaceDocumentException(
-                context + " must be a 64-bit integer.");
+            throw new WorkspaceDocumentException(context + " must be a 64-bit integer.");
         }
 
         return value;

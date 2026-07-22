@@ -9,9 +9,7 @@ internal sealed class ProductAppearanceSettingsException : Exception
     {
     }
 
-    public ProductAppearanceSettingsException(
-        string message,
-        Exception innerException)
+    public ProductAppearanceSettingsException(string message, Exception innerException)
         : base(message, innerException)
     {
     }

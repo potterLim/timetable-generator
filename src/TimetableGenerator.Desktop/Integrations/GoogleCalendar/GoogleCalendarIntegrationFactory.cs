@@ -20,11 +20,8 @@ internal static class GoogleCalendarIntegrationFactory
         {
             Timeout = TimeSpan.FromSeconds(30.0),
         };
-        ProductGoogleCalendarOAuthConfigurationProvider configurationProvider =
-            new ProductGoogleCalendarOAuthConfigurationProvider();
-        LoopbackGoogleOAuthAuthorizationCodeProvider codeProvider =
-            new LoopbackGoogleOAuthAuthorizationCodeProvider(
-                new DefaultExternalBrowserLauncher());
+        ProductGoogleCalendarOAuthConfigurationProvider configurationProvider = new ProductGoogleCalendarOAuthConfigurationProvider();
+        LoopbackGoogleOAuthAuthorizationCodeProvider codeProvider = new LoopbackGoogleOAuthAuthorizationCodeProvider(new DefaultExternalBrowserLauncher());
         GoogleCalendarOAuthClient oauthClient = new GoogleCalendarOAuthClient(
             httpClient,
             configurationProvider,
@@ -37,13 +34,8 @@ internal static class GoogleCalendarIntegrationFactory
                         dataRootPath.Value,
                         "Integrations",
                         EXPORT_LOCK_FILE_NAME)));
-        GoogleCalendarIntegrationResources resources =
-            new GoogleCalendarIntegrationResources(httpClient);
-        return new GoogleCalendarExportService(
-            oauthClient,
-            apiClient,
-            exportLeaseProvider,
-            resources);
+        GoogleCalendarIntegrationResources resources = new GoogleCalendarIntegrationResources(httpClient);
+        return new GoogleCalendarExportService(oauthClient, apiClient, exportLeaseProvider, resources);
     }
 
     private sealed class GoogleCalendarIntegrationResources : IDisposable

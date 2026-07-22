@@ -39,9 +39,7 @@ public sealed class CatalogDataQualityMetadata
         CatalogSourceRemarkLookupOnlyCount sourceRemarkLookupOnlyCount,
         IEnumerable<CatalogManualReview> manualReviews)
     {
-        if (Enum.IsDefined(
-            typeof(EScheduleNormalizationSource),
-            scheduleNormalizationSource) == false)
+        if (Enum.IsDefined(typeof(EScheduleNormalizationSource), scheduleNormalizationSource) == false)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(scheduleNormalizationSource),

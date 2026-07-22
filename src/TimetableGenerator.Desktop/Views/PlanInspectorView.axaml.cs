@@ -12,19 +12,14 @@ internal sealed partial class PlanInspectorView : UserControl
         AvaloniaXamlLoader.Load(this);
     }
 
-    private void onPlanManagementActionClick(
-        object? senderOrNull,
-        RoutedEventArgs eventArgs)
+    private void onPlanManagementActionClick(object? senderOrNull, RoutedEventArgs eventArgs)
     {
-        Dispatcher.UIThread.Post(
-            closePlanManagementFlyout,
-            DispatcherPriority.Input);
+        Dispatcher.UIThread.Post(closePlanManagementFlyout, DispatcherPriority.Input);
     }
 
     private void closePlanManagementFlyout()
     {
-        Button? managementButtonOrNull = this.FindControl<Button>(
-            "PlanManagementButton");
+        Button? managementButtonOrNull = this.FindControl<Button>("PlanManagementButton");
         managementButtonOrNull?.Flyout?.Hide();
         managementButtonOrNull?.Focus();
     }

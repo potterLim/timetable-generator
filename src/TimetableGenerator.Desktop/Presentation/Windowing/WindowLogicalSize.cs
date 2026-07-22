@@ -19,9 +19,7 @@ internal readonly record struct WindowLogicalSize
 
     private static void validateLength(double length, string parameterName)
     {
-        if (double.IsNaN(length)
-            || double.IsInfinity(length)
-            || length <= 0.0)
+        if (double.IsNaN(length) || double.IsInfinity(length) || length <= 0.0)
         {
             throw new ArgumentOutOfRangeException(
                 parameterName,

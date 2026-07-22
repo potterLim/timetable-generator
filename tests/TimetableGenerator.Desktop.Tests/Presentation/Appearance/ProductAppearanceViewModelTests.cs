@@ -16,11 +16,8 @@ public sealed class ProductAppearanceViewModelTests
     [Fact]
     public void LoadedPreferenceIsAppliedBeforeInteraction()
     {
-        ControlledProductAppearanceSettingsStore settingsStore =
-            new ControlledProductAppearanceSettingsStore(
-                new ProductAppearanceSettings(EProductThemePreference.Dark));
-        RecordingProductThemeVariantService themeVariantService =
-            new RecordingProductThemeVariantService();
+        ControlledProductAppearanceSettingsStore settingsStore = new ControlledProductAppearanceSettingsStore(new ProductAppearanceSettings(EProductThemePreference.Dark));
+        RecordingProductThemeVariantService themeVariantService = new RecordingProductThemeVariantService();
 
         ProductAppearanceViewModel viewModel = new ProductAppearanceViewModel(
             settingsStore,
@@ -38,11 +35,8 @@ public sealed class ProductAppearanceViewModelTests
     [AvaloniaFact]
     public async Task SelectionAppliesImmediatelyAndPersistsOffTheUiThreadAsync()
     {
-        ControlledProductAppearanceSettingsStore settingsStore =
-            new ControlledProductAppearanceSettingsStore(
-                ProductAppearanceSettings.CreateDefault());
-        RecordingProductThemeVariantService themeVariantService =
-            new RecordingProductThemeVariantService();
+        ControlledProductAppearanceSettingsStore settingsStore = new ControlledProductAppearanceSettingsStore(ProductAppearanceSettings.CreateDefault());
+        RecordingProductThemeVariantService themeVariantService = new RecordingProductThemeVariantService();
         ProductAppearanceViewModel viewModel = new ProductAppearanceViewModel(
             settingsStore,
             themeVariantService);
@@ -55,9 +49,7 @@ public sealed class ProductAppearanceViewModelTests
         await viewModel.CompletePersistenceAsync();
         Dispatcher.UIThread.RunJobs();
 
-        Assert.Equal(
-            EProductThemePreference.Light,
-            settingsStore.SavedSettings[0].ThemePreference);
+        Assert.Equal(EProductThemePreference.Light, settingsStore.SavedSettings[0].ThemePreference);
         Assert.NotEqual(inputThreadId, settingsStore.SaveThreadIds[0]);
         Assert.Equal(
             new EProductThemePreference[]
@@ -71,13 +63,9 @@ public sealed class ProductAppearanceViewModelTests
     [AvaloniaFact]
     public async Task SaveFailureKeepsAppliedSelectionAndCanBeRetriedAsync()
     {
-        ControlledProductAppearanceSettingsStore settingsStore =
-            new ControlledProductAppearanceSettingsStore(
-                ProductAppearanceSettings.CreateDefault());
-        settingsStore.FailSaves(
-            new ProductAppearanceSettingsException("Controlled failure."));
-        RecordingProductThemeVariantService themeVariantService =
-            new RecordingProductThemeVariantService();
+        ControlledProductAppearanceSettingsStore settingsStore = new ControlledProductAppearanceSettingsStore(ProductAppearanceSettings.CreateDefault());
+        settingsStore.FailSaves(new ProductAppearanceSettingsException("Controlled failure."));
+        RecordingProductThemeVariantService themeVariantService = new RecordingProductThemeVariantService();
         ProductAppearanceViewModel viewModel = new ProductAppearanceViewModel(
             settingsStore,
             themeVariantService);
@@ -96,9 +84,7 @@ public sealed class ProductAppearanceViewModelTests
         Dispatcher.UIThread.RunJobs();
 
         Assert.False(viewModel.HasPersistenceFailure);
-        Assert.Equal(
-            EProductThemePreference.Dark,
-            settingsStore.SavedSettings[0].ThemePreference);
+        Assert.Equal(EProductThemePreference.Dark, settingsStore.SavedSettings[0].ThemePreference);
         Assert.Equal(2, themeVariantService.AppliedPreferences.Count);
     }
 }

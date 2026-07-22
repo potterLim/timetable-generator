@@ -20,9 +20,7 @@ internal sealed class AcademicTermCalendarMetadata
     {
         if (term.IsValid == false)
         {
-            throw new ArgumentException(
-                "Academic calendar metadata requires a valid term.",
-                nameof(term));
+            throw new ArgumentException("Academic calendar metadata requires a valid term.", nameof(term));
         }
 
         if (dateRange.IsValid == false)
@@ -47,10 +45,8 @@ internal sealed class AcademicTermCalendarMetadata
     public DateOnly FindFirstOccurrenceDate(EDay day)
     {
         DayOfWeek targetDay = convertToDayOfWeek(day);
-        int daysUntilTarget =
-            ((int)targetDay - (int)DateRange.StartDate.DayOfWeek + 7) % 7;
-        DateOnly firstOccurrenceDate =
-            DateRange.StartDate.AddDays(daysUntilTarget);
+        int daysUntilTarget = ((int)targetDay - (int)DateRange.StartDate.DayOfWeek + 7) % 7;
+        DateOnly firstOccurrenceDate = DateRange.StartDate.AddDays(daysUntilTarget);
         if (firstOccurrenceDate > DateRange.EndDate)
         {
             throw new InvalidOperationException(
@@ -63,8 +59,7 @@ internal sealed class AcademicTermCalendarMetadata
     public DateTimeOffset GetLastIncludedInstantUtc()
     {
         TimeOnly finalTime = new TimeOnly(23, 59, 59);
-        DateTimeOffset finalZonedDateTime =
-            TimeZoneId.ResolveLocalDateTime(DateRange.EndDate, finalTime);
+        DateTimeOffset finalZonedDateTime = TimeZoneId.ResolveLocalDateTime(DateRange.EndDate, finalTime);
         return finalZonedDateTime.ToUniversalTime();
     }
 

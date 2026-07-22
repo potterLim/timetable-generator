@@ -95,13 +95,7 @@ internal static class CatalogIndexReader
         CatalogItemCount courseCount = new CatalogItemCount(getRequiredInt32(countsElement, "courses"));
         CatalogItemCount offeringCount = new CatalogItemCount(getRequiredInt32(countsElement, "offerings"));
 
-        return new CatalogIndexEntry(
-            term,
-            revision,
-            fileSize,
-            sha256,
-            courseCount,
-            offeringCount);
+        return new CatalogIndexEntry(term, revision, fileSize, sha256, courseCount, offeringCount);
     }
 
     private static int getRequiredInt32(JsonElement element, string propertyName)

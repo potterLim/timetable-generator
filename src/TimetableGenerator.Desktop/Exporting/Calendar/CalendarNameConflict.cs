@@ -18,8 +18,7 @@ internal sealed class CalendarNameConflict
     {
         get
         {
-            return ReplacementAvailability
-                == ECalendarReplacementAvailability.Available;
+            return ReplacementAvailability == ECalendarReplacementAvailability.Available;
         }
     }
 
@@ -41,9 +40,7 @@ internal sealed class CalendarNameConflict
         }
 
         validateReplacementAvailability(replacementAvailability);
-        if (CalendarNameConflictPolicy.IsSameName(
-                requestedName,
-                nextAvailableName))
+        if (CalendarNameConflictPolicy.IsSameName(requestedName, nextAvailableName))
         {
             throw new ArgumentException(
                 "The next available calendar name must differ from the requested name.",

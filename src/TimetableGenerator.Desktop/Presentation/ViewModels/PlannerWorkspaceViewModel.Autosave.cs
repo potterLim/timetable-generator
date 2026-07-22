@@ -76,8 +76,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     public async Task CompleteAutosaveAsync(CancellationToken cancellationToken)
     {
         throwIfDisposed();
-        bool shouldRestartRecommendationOnFailure =
-            mRecommendationRefreshTask.IsCompleted == false;
+        bool shouldRestartRecommendationOnFailure = mRecommendationRefreshTask.IsCompleted == false;
         mRecommendationCancellationSource.Cancel();
         try
         {
@@ -135,10 +134,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                 mAutosaveStatusText = "저장하지 못함";
                 break;
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(state),
-                    state.Status,
-                    "Unknown autosave state.");
+                throw new ArgumentOutOfRangeException(nameof(state), state.Status, "Unknown autosave state.");
         }
 
         raisePropertyChanged(nameof(AutosaveStatus));

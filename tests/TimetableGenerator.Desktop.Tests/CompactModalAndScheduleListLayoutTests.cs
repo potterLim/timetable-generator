@@ -31,10 +31,7 @@ public sealed class CompactModalAndScheduleListLayoutTests
     [AvaloniaFact]
     public void CourseChoiceEditorKeepsActionsAndFocusReachableAtCompactSize()
     {
-        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory
-            .CreateWorkspace(
-                CatalogProjectionTestFixture
-                    .CreateDocumentWithScheduledAlternativeCourse());
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace(CatalogProjectionTestFixture.CreateDocumentWithScheduledAlternativeCourse());
         workspace.ActivePlan = workspace.Plans[1];
         workspace.SearchText = "프로그래밍";
         ProductWorkspaceHostView host = new ProductWorkspaceHostView();
@@ -58,9 +55,7 @@ public sealed class CompactModalAndScheduleListLayoutTests
             invokingAction.Command?.Execute(invokingAction.CommandParameter);
             Dispatcher.UIThread.RunJobs();
 
-            Border dialog = findRequiredControl<Border>(
-                host,
-                "CourseChoiceEditorDialog");
+            Border dialog = findRequiredControl<Border>(host, "CourseChoiceEditorDialog");
             CourseChoiceEditorView editor = findRequiredControl<CourseChoiceEditorView>(
                 host,
                 "CourseChoiceEditor");
@@ -70,9 +65,7 @@ public sealed class CompactModalAndScheduleListLayoutTests
             Button cancelButton = editor.GetVisualDescendants()
                 .OfType<Button>()
                 .Single(candidate => candidate.Content as string == "취소");
-            Button saveButton = findRequiredControl<Button>(
-                editor,
-                "SaveCourseChoiceButton");
+            Button saveButton = findRequiredControl<Button>(editor, "SaveCourseChoiceButton");
             Border[] offeringRows = editor.GetVisualDescendants()
                 .OfType<Border>()
                 .Where(
@@ -105,14 +98,8 @@ public sealed class CompactModalAndScheduleListLayoutTests
 
                 Assert.True(
                     offeringRow.Bounds.Height >= 56.0 - GEOMETRY_TOLERANCE);
-                Assert.InRange(
-                    Math.Abs(information.Bounds.Height - 36.0),
-                    0.0,
-                    GEOMETRY_TOLERANCE);
-                Assert.InRange(
-                    Math.Abs(actions.Bounds.Height - 36.0),
-                    0.0,
-                    GEOMETRY_TOLERANCE);
+                Assert.InRange(Math.Abs(information.Bounds.Height - 36.0), 0.0, GEOMETRY_TOLERANCE);
+                Assert.InRange(Math.Abs(actions.Bounds.Height - 36.0), 0.0, GEOMETRY_TOLERANCE);
                 assertVerticallyCentered(information, offeringRow, offeringRow);
                 assertVerticallyCentered(actions, offeringRow, offeringRow);
             }
@@ -121,11 +108,7 @@ public sealed class CompactModalAndScheduleListLayoutTests
                 editorScrollViewer.Extent.Width
                 <= editorScrollViewer.Viewport.Width + GEOMETRY_TOLERANCE);
 
-            window.KeyPress(
-                Key.Escape,
-                RawInputModifiers.None,
-                PhysicalKey.Escape,
-                string.Empty);
+            window.KeyPress(Key.Escape, RawInputModifiers.None, PhysicalKey.Escape, string.Empty);
             Dispatcher.UIThread.RunJobs();
 
             Assert.False(workspace.IsCourseChoiceEditorVisible);
@@ -141,8 +124,7 @@ public sealed class CompactModalAndScheduleListLayoutTests
     [AvaloniaFact]
     public void PersonalScheduleEditorKeepsScrollableFieldsAndActionsReachableAtCompactSize()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         MainWindow window = new MainWindow(
             PlannerWorkspaceTestFactory.CreateShell(workspace),
             ProductAppearanceTestFactory.CreateViewModel());
@@ -153,9 +135,7 @@ public sealed class CompactModalAndScheduleListLayoutTests
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
-            ProductWorkspaceHostView host = window.GetVisualDescendants()
-                .OfType<ProductWorkspaceHostView>()
-                .Single();
+            ProductWorkspaceHostView host = window.GetVisualDescendants().OfType<ProductWorkspaceHostView>().Single();
 
             Button invokingAction = host.GetVisualDescendants()
                 .OfType<Button>()
@@ -166,9 +146,7 @@ public sealed class CompactModalAndScheduleListLayoutTests
             invokingAction.Command?.Execute(null);
             Dispatcher.UIThread.RunJobs();
 
-            Border dialog = findRequiredControl<Border>(
-                host,
-                "PersonalScheduleEditorDialog");
+            Border dialog = findRequiredControl<Border>(host, "PersonalScheduleEditorDialog");
             PersonalScheduleEditorView editor =
                 findRequiredControl<PersonalScheduleEditorView>(
                     host,
@@ -176,18 +154,10 @@ public sealed class CompactModalAndScheduleListLayoutTests
             ScrollViewer editorScrollViewer = editor.GetVisualDescendants()
                 .OfType<ScrollViewer>()
                 .Single(candidate => Grid.GetRow(candidate) == 2);
-            TextBox nameInput = findRequiredControl<TextBox>(
-                editor,
-                "PersonalScheduleNameInput");
-            TextBox locationInput = findRequiredControl<TextBox>(
-                editor,
-                "PersonalScheduleLocationInput");
-            Button cancelButton = findRequiredControl<Button>(
-                editor,
-                "CancelPersonalScheduleEditButton");
-            Button saveButton = findRequiredControl<Button>(
-                editor,
-                "SavePersonalScheduleButton");
+            TextBox nameInput = findRequiredControl<TextBox>(editor, "PersonalScheduleNameInput");
+            TextBox locationInput = findRequiredControl<TextBox>(editor, "PersonalScheduleLocationInput");
+            Button cancelButton = findRequiredControl<Button>(editor, "CancelPersonalScheduleEditButton");
+            Button saveButton = findRequiredControl<Button>(editor, "SavePersonalScheduleButton");
 
             assertDialogFitsWindow(dialog, window);
             assertControlFitsDialog(cancelButton, dialog);
@@ -204,11 +174,7 @@ public sealed class CompactModalAndScheduleListLayoutTests
             Dispatcher.UIThread.RunJobs();
             assertControlFitsViewport(locationInput, editorScrollViewer);
 
-            window.KeyPress(
-                Key.Escape,
-                RawInputModifiers.None,
-                PhysicalKey.Escape,
-                string.Empty);
+            window.KeyPress(Key.Escape, RawInputModifiers.None, PhysicalKey.Escape, string.Empty);
             Dispatcher.UIThread.RunJobs();
 
             Assert.False(workspace.IsPersonalScheduleOverlayVisible);
@@ -224,8 +190,7 @@ public sealed class CompactModalAndScheduleListLayoutTests
     [AvaloniaFact]
     public async Task SingleOccurrenceListRowsKeepTitleScheduleAndMetadataCenteredAsync()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         workspace.ActivePlan = workspace.Plans[1];
         addPersonalSchedule(
             workspace,
@@ -256,18 +221,13 @@ public sealed class CompactModalAndScheduleListLayoutTests
             workspaceView.ToggleSchedulePresentationCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
 
-            ListBox list = findRequiredControl<ListBox>(
-                workspaceView,
-                "ScheduleListItems");
-            ListBoxItem[] renderedGroups = list.GetVisualDescendants()
-                .OfType<ListBoxItem>()
-                .ToArray();
+            ListBox list = findRequiredControl<ListBox>(workspaceView, "ScheduleListItems");
+            ListBoxItem[] renderedGroups = list.GetVisualDescendants().OfType<ListBoxItem>().ToArray();
             Assert.Equal(2, renderedGroups.Length);
 
             foreach (ListBoxItem renderedGroup in renderedGroups)
             {
-                ScheduleListGroup group = Assert.IsType<ScheduleListGroup>(
-                    renderedGroup.DataContext);
+                ScheduleListGroup group = Assert.IsType<ScheduleListGroup>(renderedGroup.DataContext);
                 ScheduleListOccurrence occurrence = Assert.Single(group.Occurrences);
                 TextBlock title = renderedGroup.GetVisualDescendants()
                     .OfType<TextBlock>()
@@ -312,9 +272,7 @@ public sealed class CompactModalAndScheduleListLayoutTests
     {
         workspace.BeginAddPersonalScheduleCommand.Execute(null);
         workspace.PersonalScheduleTitleDraft = title;
-        workspace.PersonalScheduleDayOptions
-            .Single(candidate => candidate.Day == day)
-            .IsSelected = true;
+        workspace.PersonalScheduleDayOptions.Single(candidate => candidate.Day == day).IsSelected = true;
         workspace.PersonalScheduleStartTimeOrNull = start;
         workspace.PersonalScheduleEndTimeOrNull = end;
         if (locationOrNull == null)
@@ -329,16 +287,13 @@ public sealed class CompactModalAndScheduleListLayoutTests
         workspace.SavePersonalScheduleCommand.Execute(null);
     }
 
-    private static void assertControlFitsDialog(
-        Control control,
-        Border dialog)
+    private static void assertControlFitsDialog(Control control, Border dialog)
     {
         Point? positionOrNull = control.TranslatePoint(new Point(0.0, 0.0), dialog);
         Assert.NotNull(positionOrNull);
         if (positionOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The modal action was not attached to its dialog.");
+            throw new InvalidOperationException("The modal action was not attached to its dialog.");
         }
 
         Point position = positionOrNull.Value;
@@ -352,18 +307,13 @@ public sealed class CompactModalAndScheduleListLayoutTests
             <= dialog.Bounds.Height + GEOMETRY_TOLERANCE);
     }
 
-    private static void assertControlFitsViewport(
-        Control control,
-        ScrollViewer scrollViewer)
+    private static void assertControlFitsViewport(Control control, ScrollViewer scrollViewer)
     {
-        Point? positionOrNull = control.TranslatePoint(
-            new Point(0.0, 0.0),
-            scrollViewer);
+        Point? positionOrNull = control.TranslatePoint(new Point(0.0, 0.0), scrollViewer);
         Assert.NotNull(positionOrNull);
         if (positionOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The editor field was not attached to its scroll viewport.");
+            throw new InvalidOperationException("The editor field was not attached to its scroll viewport.");
         }
 
         Point position = positionOrNull.Value;
@@ -379,8 +329,7 @@ public sealed class CompactModalAndScheduleListLayoutTests
         Assert.NotNull(positionOrNull);
         if (positionOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The modal dialog was not attached to its window.");
+            throw new InvalidOperationException("The modal dialog was not attached to its window.");
         }
 
         Point position = positionOrNull.Value;
@@ -394,32 +343,21 @@ public sealed class CompactModalAndScheduleListLayoutTests
             <= window.ClientSize.Height + GEOMETRY_TOLERANCE);
     }
 
-    private static void assertVerticallyCentered(
-        Control content,
-        Control row,
-        Control coordinateSpace)
+    private static void assertVerticallyCentered(Control content, Control row, Control coordinateSpace)
     {
-        Point? contentPositionOrNull = content.TranslatePoint(
-            new Point(0.0, 0.0),
-            coordinateSpace);
-        Point? rowPositionOrNull = row.TranslatePoint(
-            new Point(0.0, 0.0),
-            coordinateSpace);
+        Point? contentPositionOrNull = content.TranslatePoint(new Point(0.0, 0.0), coordinateSpace);
+        Point? rowPositionOrNull = row.TranslatePoint(new Point(0.0, 0.0), coordinateSpace);
         Assert.NotNull(contentPositionOrNull);
         Assert.NotNull(rowPositionOrNull);
         if (contentPositionOrNull == null || rowPositionOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The schedule list row geometry was not available.");
+            throw new InvalidOperationException("The schedule list row geometry was not available.");
         }
 
         double contentCenter = contentPositionOrNull.Value.Y
             + (content.Bounds.Height / 2.0);
         double rowCenter = rowPositionOrNull.Value.Y + (row.Bounds.Height / 2.0);
-        Assert.InRange(
-            Math.Abs(contentCenter - rowCenter),
-            0.0,
-            GEOMETRY_TOLERANCE);
+        Assert.InRange(Math.Abs(contentCenter - rowCenter), 0.0, GEOMETRY_TOLERANCE);
     }
 
     private static Window createCompactWindow(Control content)
@@ -431,9 +369,7 @@ public sealed class CompactModalAndScheduleListLayoutTests
         return window;
     }
 
-    private static TControl findRequiredControl<TControl>(
-        Control root,
-        string name)
+    private static TControl findRequiredControl<TControl>(Control root, string name)
         where TControl : Control
     {
         TControl? controlOrNull = root.FindControl<TControl>(name);

@@ -10,9 +10,7 @@ internal sealed record GoogleOAuthAuthorizationCode
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException(
-                "Google OAuth authorization codes cannot be empty.",
-                nameof(value));
+            throw new ArgumentException("Google OAuth authorization codes cannot be empty.", nameof(value));
         }
 
         Value = value;

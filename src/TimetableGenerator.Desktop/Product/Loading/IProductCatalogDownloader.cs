@@ -6,6 +6,5 @@ namespace TimetableGenerator.Desktop.Product.Loading;
 
 internal interface IProductCatalogDownloader
 {
-    Task<VerifiedCatalogPackage> DownloadDefaultCatalogAsync(
-        CancellationToken cancellationToken);
+    Task<VerifiedCatalogPackage> DownloadDefaultCatalogAsync(CancellationToken cancellationToken);
 }

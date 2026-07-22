@@ -11,9 +11,7 @@ internal sealed class GoogleCalendarApiException : Exception
 
     public EGoogleCalendarApiFailureKind FailureKind { get; }
 
-    public GoogleCalendarApiException(
-        HttpStatusCode statusCode,
-        string diagnosticCode)
+    public GoogleCalendarApiException(HttpStatusCode statusCode, string diagnosticCode)
         : this(statusCode, diagnosticCode, EGoogleCalendarApiFailureKind.Permanent)
     {
     }

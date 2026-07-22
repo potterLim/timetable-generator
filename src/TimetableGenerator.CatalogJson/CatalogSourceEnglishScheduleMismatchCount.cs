@@ -9,9 +9,7 @@ public readonly record struct CatalogSourceEnglishScheduleMismatchCount
 
     public CatalogSourceEnglishScheduleMismatchCount(int value)
     {
-        CatalogCountValidation.requireNonNegative(
-            value,
-            "Source English schedule mismatch counts");
+        CatalogCountValidation.requireNonNegative(value, "Source English schedule mismatch counts");
         Value = value;
     }
 

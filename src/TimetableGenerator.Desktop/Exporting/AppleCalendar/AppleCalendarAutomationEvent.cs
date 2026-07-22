@@ -36,9 +36,7 @@ internal sealed class AppleCalendarAutomationEvent
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException(
-                "Apple Calendar event values cannot be empty.",
-                parameterName);
+            throw new ArgumentException("Apple Calendar event values cannot be empty.", parameterName);
         }
 
         return value.Trim();

@@ -23,13 +23,9 @@ public sealed partial class PlanningWorkspaceEditor
         }
 
         PlanningPlan existingPlan = findPlan(workspace, planId);
-        List<CourseChoiceGroup> courseChoiceGroups =
-            new List<CourseChoiceGroup>(existingPlan.CourseChoiceGroups);
+        List<CourseChoiceGroup> courseChoiceGroups = new List<CourseChoiceGroup>(existingPlan.CourseChoiceGroups);
         courseChoiceGroups.Add(courseChoiceGroup);
-        return replaceCourseChoiceGroups(
-            workspace,
-            existingPlan,
-            courseChoiceGroups);
+        return replaceCourseChoiceGroups(workspace, existingPlan, courseChoiceGroups);
     }
 
     public PlanningWorkspace UpdateCourseChoiceGroup(
@@ -48,8 +44,7 @@ public sealed partial class PlanningWorkspaceEditor
         }
 
         PlanningPlan existingPlan = findPlan(workspace, planId);
-        List<CourseChoiceGroup> courseChoiceGroups = new List<CourseChoiceGroup>(
-            existingPlan.CourseChoiceGroups.Count);
+        List<CourseChoiceGroup> courseChoiceGroups = new List<CourseChoiceGroup>(existingPlan.CourseChoiceGroups.Count);
         bool hasReplacement = false;
         foreach (CourseChoiceGroup existingGroup in existingPlan.CourseChoiceGroups)
         {
@@ -66,14 +61,10 @@ public sealed partial class PlanningWorkspaceEditor
 
         if (hasReplacement == false)
         {
-            throw new KeyNotFoundException(
-                "The planning plan does not contain the course choice group.");
+            throw new KeyNotFoundException("The planning plan does not contain the course choice group.");
         }
 
-        return replaceCourseChoiceGroups(
-            workspace,
-            existingPlan,
-            courseChoiceGroups);
+        return replaceCourseChoiceGroups(workspace, existingPlan, courseChoiceGroups);
     }
 
     public PlanningWorkspace RemoveCourseChoiceGroup(
@@ -111,14 +102,10 @@ public sealed partial class PlanningWorkspaceEditor
 
         if (hasRemovedGroup == false)
         {
-            throw new KeyNotFoundException(
-                "The planning plan does not contain the course choice group.");
+            throw new KeyNotFoundException("The planning plan does not contain the course choice group.");
         }
 
-        return replaceCourseChoiceGroups(
-            workspace,
-            existingPlan,
-            courseChoiceGroups);
+        return replaceCourseChoiceGroups(workspace, existingPlan, courseChoiceGroups);
     }
 
     private static PlanningWorkspace replaceCourseChoiceGroups(

@@ -5,6 +5,5 @@ namespace TimetableGenerator.Desktop.Integrations.GoogleCalendar;
 
 internal interface IGoogleAccessTokenProvider
 {
-    Task<GoogleOAuthAuthorizationResult> AuthorizeAsync(
-        CancellationToken cancellationToken);
+    Task<GoogleOAuthAuthorizationResult> AuthorizeAsync(CancellationToken cancellationToken);
 }

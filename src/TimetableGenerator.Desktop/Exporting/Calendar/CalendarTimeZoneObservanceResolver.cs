@@ -7,8 +7,7 @@ internal static class CalendarTimeZoneObservanceResolver
 {
     private const int TIME_ZONE_CONTEXT_YEARS = 1;
 
-    private static readonly TimeSpan TRANSITION_SCAN_INTERVAL =
-        TimeSpan.FromHours(1.0);
+    private static readonly TimeSpan TRANSITION_SCAN_INTERVAL = TimeSpan.FromHours(1.0);
 
     public static IReadOnlyList<CalendarTimeZoneObservance> FindForDateRange(
         CalendarTimeZoneId timeZoneId,
@@ -31,44 +30,22 @@ internal static class CalendarTimeZoneObservanceResolver
         TimeZoneInfo timeZone = timeZoneId.findSystemTimeZone();
         int contextStartYear = dateRange.StartDate.Year - TIME_ZONE_CONTEXT_YEARS;
         int contextEndYear = dateRange.EndDate.Year + TIME_ZONE_CONTEXT_YEARS + 1;
-        DateTimeOffset scanStartUtc = new DateTimeOffset(
-            contextStartYear,
-            1,
-            1,
-            0,
-            0,
-            0,
-            TimeSpan.Zero);
-        DateTimeOffset scanEndUtc = new DateTimeOffset(
-            contextEndYear,
-            1,
-            1,
-            0,
-            0,
-            0,
-            TimeSpan.Zero);
-        CalendarUtcOffset precedingOffset = new CalendarUtcOffset(
-            timeZone.GetUtcOffset(scanStartUtc));
-        List<CalendarTimeZoneObservance> observances =
-            new List<CalendarTimeZoneObservance>();
-        observances.Add(
-            createBaselineObservance(
-                timeZone,
-                scanStartUtc,
-                precedingOffset));
+        DateTimeOffset scanStartUtc = new DateTimeOffset(contextStartYear, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        DateTimeOffset scanEndUtc = new DateTimeOffset(contextEndYear, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        CalendarUtcOffset precedingOffset = new CalendarUtcOffset(timeZone.GetUtcOffset(scanStartUtc));
+        List<CalendarTimeZoneObservance> observances = new List<CalendarTimeZoneObservance>();
+        observances.Add(createBaselineObservance(timeZone, scanStartUtc, precedingOffset));
 
         DateTimeOffset precedingSampleUtc = scanStartUtc;
         while (precedingSampleUtc < scanEndUtc)
         {
-            DateTimeOffset currentSampleUtc =
-                precedingSampleUtc.Add(TRANSITION_SCAN_INTERVAL);
+            DateTimeOffset currentSampleUtc = precedingSampleUtc.Add(TRANSITION_SCAN_INTERVAL);
             if (currentSampleUtc > scanEndUtc)
             {
                 currentSampleUtc = scanEndUtc;
             }
 
-            CalendarUtcOffset currentOffset = new CalendarUtcOffset(
-                timeZone.GetUtcOffset(currentSampleUtc));
+            CalendarUtcOffset currentOffset = new CalendarUtcOffset(timeZone.GetUtcOffset(currentSampleUtc));
             if (currentOffset != precedingOffset)
             {
                 DateTimeOffset transitionUtc = findTransitionUtc(
@@ -100,14 +77,8 @@ internal static class CalendarTimeZoneObservanceResolver
             timeZone.IsDaylightSavingTime(baselineUtc)
                 ? ECalendarTimeZoneObservanceKind.Daylight
                 : ECalendarTimeZoneObservanceKind.Standard;
-        DateTime localStart = convertToUnspecifiedLocalDateTime(
-            baselineUtc,
-            utcOffset);
-        return new CalendarTimeZoneObservance(
-            kind,
-            localStart,
-            utcOffset,
-            utcOffset);
+        DateTime localStart = convertToUnspecifiedLocalDateTime(baselineUtc, utcOffset);
+        return new CalendarTimeZoneObservance(kind, localStart, utcOffset, utcOffset);
     }
 
     private static CalendarTimeZoneObservance createTransitionObservance(
@@ -120,14 +91,8 @@ internal static class CalendarTimeZoneObservanceResolver
             timeZone.IsDaylightSavingTime(transitionUtc)
                 ? ECalendarTimeZoneObservanceKind.Daylight
                 : ECalendarTimeZoneObservanceKind.Standard;
-        DateTime localStart = convertToUnspecifiedLocalDateTime(
-            transitionUtc,
-            offsetFrom);
-        return new CalendarTimeZoneObservance(
-            kind,
-            localStart,
-            offsetFrom,
-            offsetTo);
+        DateTime localStart = convertToUnspecifiedLocalDateTime(transitionUtc, offsetFrom);
+        return new CalendarTimeZoneObservance(kind, localStart, offsetFrom, offsetTo);
     }
 
     private static DateTimeOffset findTransitionUtc(
@@ -142,10 +107,8 @@ internal static class CalendarTimeZoneObservanceResolver
         {
             long candidateUnixSecond = precedingUnixSecond
                 + ((currentUnixSecond - precedingUnixSecond) / 2L);
-            DateTimeOffset candidateUtc =
-                DateTimeOffset.FromUnixTimeSeconds(candidateUnixSecond);
-            CalendarUtcOffset candidateOffset = new CalendarUtcOffset(
-                timeZone.GetUtcOffset(candidateUtc));
+            DateTimeOffset candidateUtc = DateTimeOffset.FromUnixTimeSeconds(candidateUnixSecond);
+            CalendarUtcOffset candidateOffset = new CalendarUtcOffset(timeZone.GetUtcOffset(candidateUtc));
             if (candidateOffset == precedingOffset)
             {
                 precedingUnixSecond = candidateUnixSecond;
@@ -163,10 +126,7 @@ internal static class CalendarTimeZoneObservanceResolver
         DateTimeOffset utcDateTime,
         CalendarUtcOffset utcOffset)
     {
-        DateTime offsetLocalDateTime =
-            utcDateTime.UtcDateTime.Add(utcOffset.Value);
-        return DateTime.SpecifyKind(
-            offsetLocalDateTime,
-            DateTimeKind.Unspecified);
+        DateTime offsetLocalDateTime = utcDateTime.UtcDateTime.Add(utcOffset.Value);
+        return DateTime.SpecifyKind(offsetLocalDateTime, DateTimeKind.Unspecified);
     }
 }

@@ -31,50 +31,27 @@ public static class AcademicPeriodTimeTable
         switch (period.Value)
         {
             case 1:
-                return createTimeRange(
-                    new ScheduleTime(9, 0),
-                    new ScheduleTime(10, 15));
+                return createTimeRange(new ScheduleTime(9, 0), new ScheduleTime(10, 15));
             case 2:
-                return createTimeRange(
-                    new ScheduleTime(10, 30),
-                    new ScheduleTime(11, 45));
+                return createTimeRange(new ScheduleTime(10, 30), new ScheduleTime(11, 45));
             case 3:
-                return createTimeRange(
-                    new ScheduleTime(12, 0),
-                    new ScheduleTime(13, 15));
+                return createTimeRange(new ScheduleTime(12, 0), new ScheduleTime(13, 15));
             case 4:
-                return createTimeRange(
-                    new ScheduleTime(13, 30),
-                    new ScheduleTime(14, 45));
+                return createTimeRange(new ScheduleTime(13, 30), new ScheduleTime(14, 45));
             case 5:
-                return createTimeRange(
-                    new ScheduleTime(15, 0),
-                    new ScheduleTime(16, 15));
+                return createTimeRange(new ScheduleTime(15, 0), new ScheduleTime(16, 15));
             case 6:
-                return createTimeRange(
-                    new ScheduleTime(16, 30),
-                    new ScheduleTime(17, 45));
+                return createTimeRange(new ScheduleTime(16, 30), new ScheduleTime(17, 45));
             case 7:
-                return createTimeRange(
-                    new ScheduleTime(18, 0),
-                    new ScheduleTime(19, 15));
+                return createTimeRange(new ScheduleTime(18, 0), new ScheduleTime(19, 15));
             case 8:
-                return createTimeRange(
-                    new ScheduleTime(19, 30),
-                    new ScheduleTime(20, 45));
+                return createTimeRange(new ScheduleTime(19, 30), new ScheduleTime(20, 45));
             case 9:
-                return createTimeRange(
-                    new ScheduleTime(21, 0),
-                    new ScheduleTime(22, 15));
+                return createTimeRange(new ScheduleTime(21, 0), new ScheduleTime(22, 15));
             case 10:
-                return createTimeRange(
-                    new ScheduleTime(22, 30),
-                    new ScheduleTime(23, 45));
+                return createTimeRange(new ScheduleTime(22, 30), new ScheduleTime(23, 45));
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(period),
-                    period,
-                    "Unknown academic period.");
+                throw new ArgumentOutOfRangeException(nameof(period), period, "Unknown academic period.");
         }
     }
 
@@ -83,17 +60,11 @@ public static class AcademicPeriodTimeTable
         switch (period.Value)
         {
             case 1:
-                return createTimeRange(
-                    new ScheduleTime(8, 30),
-                    new ScheduleTime(9, 45));
+                return createTimeRange(new ScheduleTime(8, 30), new ScheduleTime(9, 45));
             case 2:
-                return createTimeRange(
-                    new ScheduleTime(10, 0),
-                    new ScheduleTime(11, 15));
+                return createTimeRange(new ScheduleTime(10, 0), new ScheduleTime(11, 15));
             case 3:
-                return createTimeRange(
-                    new ScheduleTime(11, 30),
-                    new ScheduleTime(12, 45));
+                return createTimeRange(new ScheduleTime(11, 30), new ScheduleTime(12, 45));
             case 4:
             case 5:
             case 6:
@@ -103,16 +74,11 @@ public static class AcademicPeriodTimeTable
             case 10:
                 return getRegularDayTimeRange(period);
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(period),
-                    period,
-                    "Unknown academic period.");
+                throw new ArgumentOutOfRangeException(nameof(period), period, "Unknown academic period.");
         }
     }
 
-    private static DailyTimeRange createTimeRange(
-        ScheduleTime start,
-        ScheduleTime end)
+    private static DailyTimeRange createTimeRange(ScheduleTime start, ScheduleTime end)
     {
         return new DailyTimeRange(start, end);
     }

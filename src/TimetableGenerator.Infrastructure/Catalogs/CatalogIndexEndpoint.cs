@@ -47,8 +47,7 @@ public sealed record CatalogIndexEndpoint
         Uri resolvedUri = new Uri(Value, relativePath.Value);
         if (IsSameOrigin(resolvedUri) == false)
         {
-            throw new InvalidOperationException(
-                "Catalog paths must resolve to the configured index origin.");
+            throw new InvalidOperationException("Catalog paths must resolve to the configured index origin.");
         }
 
         return resolvedUri;

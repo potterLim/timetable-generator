@@ -18,9 +18,7 @@ public readonly record struct PersonalScheduleId
     {
         if (value == Guid.Empty)
         {
-            throw new ArgumentException(
-                "Personal schedule IDs cannot be empty.",
-                nameof(value));
+            throw new ArgumentException("Personal schedule IDs cannot be empty.", nameof(value));
         }
 
         Value = value;

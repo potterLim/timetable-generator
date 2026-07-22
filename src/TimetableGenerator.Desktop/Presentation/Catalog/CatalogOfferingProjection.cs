@@ -19,9 +19,7 @@ internal sealed class CatalogOfferingProjection
 
     public string ScheduleSummary { get; }
 
-    public CatalogOfferingProjection(
-        CatalogOffering offering,
-        CatalogOfferingMetadata metadata)
+    public CatalogOfferingProjection(CatalogOffering offering, CatalogOfferingMetadata metadata)
     {
         if (offering == null)
         {
@@ -50,13 +48,9 @@ internal sealed class CatalogOfferingProjection
 
         Offering = offering;
         Metadata = metadata;
-        EnglishInstructionPercentage =
-            metadata.Instruction.EnglishInstructionPercentage;
-        InstructorSummary = CatalogSummaryFormatter.FormatInstructorSummary(
-            metadata.Instruction.InstructorAssignment);
-        LocationSummary = CatalogSummaryFormatter.FormatLocationSummary(
-            metadata.Logistics.Location);
-        ScheduleSummary = CatalogSummaryFormatter.FormatScheduleSummary(
-            offering.MeetingSchedule);
+        EnglishInstructionPercentage = metadata.Instruction.EnglishInstructionPercentage;
+        InstructorSummary = CatalogSummaryFormatter.FormatInstructorSummary(metadata.Instruction.InstructorAssignment);
+        LocationSummary = CatalogSummaryFormatter.FormatLocationSummary(metadata.Logistics.Location);
+        ScheduleSummary = CatalogSummaryFormatter.FormatScheduleSummary(offering.MeetingSchedule);
     }
 }

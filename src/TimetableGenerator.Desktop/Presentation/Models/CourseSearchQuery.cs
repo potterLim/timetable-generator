@@ -33,25 +33,19 @@ internal sealed class CourseSearchQuery
     public bool IsExactMatch(string candidateText)
     {
         string normalizedCandidateText = normalizeCandidateText(candidateText);
-        return normalizedCandidateText.Equals(
-            mNormalizedText,
-            StringComparison.OrdinalIgnoreCase);
+        return normalizedCandidateText.Equals(mNormalizedText, StringComparison.OrdinalIgnoreCase);
     }
 
     public bool IsPrefixMatch(string candidateText)
     {
         string normalizedCandidateText = normalizeCandidateText(candidateText);
-        return normalizedCandidateText.StartsWith(
-            mNormalizedText,
-            StringComparison.OrdinalIgnoreCase);
+        return normalizedCandidateText.StartsWith(mNormalizedText, StringComparison.OrdinalIgnoreCase);
     }
 
     public bool IsContainedIn(string candidateText)
     {
         string normalizedCandidateText = normalizeCandidateText(candidateText);
-        return normalizedCandidateText.Contains(
-            mNormalizedText,
-            StringComparison.OrdinalIgnoreCase);
+        return normalizedCandidateText.Contains(mNormalizedText, StringComparison.OrdinalIgnoreCase);
     }
 
     private static string normalizeCandidateText(string candidateText)

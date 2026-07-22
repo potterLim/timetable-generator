@@ -25,14 +25,10 @@ internal sealed class CourseUnitFilterOption
 
     public static CourseUnitFilterOption CreateAll()
     {
-        return new CourseUnitFilterOption(
-            ECourseFilterScope.All,
-            null,
-            "개설 단위 전체");
+        return new CourseUnitFilterOption(ECourseFilterScope.All, null, "개설 단위 전체");
     }
 
-    public static CourseUnitFilterOption CreateSpecific(
-        OfferingUnitName offeringUnitName)
+    public static CourseUnitFilterOption CreateSpecific(OfferingUnitName offeringUnitName)
     {
         if (offeringUnitName == null)
         {
@@ -59,8 +55,7 @@ internal sealed class CourseUnitFilterOption
 
         if (mOfferingUnitNameOrNull == null)
         {
-            throw new InvalidOperationException(
-                "Specific course filters require an offering unit name.");
+            throw new InvalidOperationException("Specific course filters require an offering unit name.");
         }
 
         foreach (OfferingUnitName offeringUnitName in course.OfferingUnitNames)

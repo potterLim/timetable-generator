@@ -25,9 +25,7 @@ internal sealed class GradingPolicy
             throw new ArgumentOutOfRangeException(nameof(gradingType));
         }
 
-        if (Enum.IsDefined(
-            typeof(EPassFailOptionAvailability),
-            passFailOptionAvailability) == false)
+        if (Enum.IsDefined(typeof(EPassFailOptionAvailability), passFailOptionAvailability) == false)
         {
             throw new ArgumentOutOfRangeException(nameof(passFailOptionAvailability));
         }

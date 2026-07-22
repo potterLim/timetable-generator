@@ -21,14 +21,11 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
     public void GenerateRecommendationsMatchesDeterministicBruteForceOracle()
     {
         OracleFixture fixture = createFixture();
-        IReadOnlyList<OracleSolution> expectedSolutions =
-            enumerateFeasibleSolutions(fixture.Groups);
+        IReadOnlyList<OracleSolution> expectedSolutions = enumerateFeasibleSolutions(fixture.Groups);
         ScheduleRecommendationResult firstResult = generate(fixture);
         ScheduleRecommendationResult secondResult = generate(fixture);
 
-        Assert.AreEqual(
-            EScheduleRecommendationCompletion.Completed,
-            firstResult.Completion);
+        Assert.AreEqual(EScheduleRecommendationCompletion.Completed, firstResult.Completion);
         Assert.HasCount(expectedSolutions.Count, firstResult.Recommendations);
         assertMatchesOracle(firstResult, expectedSolutions, fixture.Groups.Count);
         CollectionAssert.AreEqual(
@@ -49,8 +46,7 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
         IReadOnlyList<OracleSolution> expectedSolutions,
         int expectedOfferingCount)
     {
-        Dictionary<string, int> expectedScoresByKey =
-            createExpectedScoresByKey(expectedSolutions);
+        Dictionary<string, int> expectedScoresByKey = createExpectedScoresByKey(expectedSolutions);
         HashSet<string> actualKeys = new HashSet<string>(StringComparer.Ordinal);
         int previousScore = -1;
 
@@ -59,16 +55,10 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
         {
             string key = createOfferingKey(recommendation.ScheduledOfferings);
             int expectedScore;
-            bool isExpected = expectedScoresByKey.TryGetValue(
-                key,
-                out expectedScore);
+            bool isExpected = expectedScoresByKey.TryGetValue(key, out expectedScore);
 
-            Assert.IsTrue(
-                isExpected,
-                "Generator returned a combination rejected by the oracle: " + key);
-            Assert.IsTrue(
-                actualKeys.Add(key),
-                "Generator returned a duplicate combination: " + key);
+            Assert.IsTrue(isExpected, "Generator returned a combination rejected by the oracle: " + key);
+            Assert.IsTrue(actualKeys.Add(key), "Generator returned a duplicate combination: " + key);
             Assert.AreEqual(expectedScore, recommendation.Score.Value, key);
             Assert.IsGreaterThanOrEqualTo(
                 previousScore,
@@ -91,8 +81,7 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
         }
     }
 
-    private static void assertConflictFree(
-        IReadOnlyList<ScheduledOffering> offerings)
+    private static void assertConflictFree(IReadOnlyList<ScheduledOffering> offerings)
     {
         for (int firstIndex = 0; firstIndex < offerings.Count; ++firstIndex)
         {
@@ -113,12 +102,7 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
         IReadOnlyList<OracleGroup> groups)
     {
         List<OracleSolution> solutions = new List<OracleSolution>();
-        enumerateGroup(
-            groups,
-            0,
-            new List<OracleCandidate>(),
-            0,
-            solutions);
+        enumerateGroup(groups, 0, new List<OracleCandidate>(), 0, solutions);
         return solutions.AsReadOnly();
     }
 
@@ -165,9 +149,7 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
     {
         foreach (OracleCandidate selectedCandidate in selectedCandidates)
         {
-            if (ScheduleConflictDetector.HasConflict(
-                selectedCandidate.Offering,
-                candidate.Offering))
+            if (ScheduleConflictDetector.HasConflict(selectedCandidate.Offering, candidate.Offering))
             {
                 return true;
             }
@@ -210,10 +192,8 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
                 ++courseIndex)
             {
                 string courseCodeValue = createCourseCode(groupIndex, courseIndex);
-                CatalogCourse course =
-                    ScheduleRecommendationTestData.CreateCourse(courseCodeValue);
-                List<OfferingCandidate> candidateOfferings =
-                    new List<OfferingCandidate>();
+                CatalogCourse course = ScheduleRecommendationTestData.CreateCourse(courseCodeValue);
+                List<OfferingCandidate> candidateOfferings = new List<OfferingCandidate>();
                 courses.Add(course);
                 addOffering(
                     random,
@@ -242,9 +222,7 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
                     offerings,
                     candidateOfferings,
                     oracleCandidates);
-                courseCandidates.Add(new CourseCandidate(
-                    course.Id,
-                    candidateOfferings));
+                courseCandidates.Add(new CourseCandidate(course.Id, candidateOfferings));
             }
 
             choiceGroups.Add(new CourseChoiceGroup(
@@ -254,9 +232,7 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
             oracleGroups.Add(new OracleGroup(oracleCandidates));
         }
 
-        CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(
-            courses,
-            offerings);
+        CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(courses, offerings);
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
             catalog,
             choiceGroups,
@@ -280,14 +256,10 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
                 sectionCodeValue,
                 createMeetingSlots(random, groupIndex, sectionCodeValue));
         catalogOfferings.Add(catalogOffering);
-        candidateOfferings.Add(new OfferingCandidate(
-            catalogOffering.Id,
-            preference));
+        candidateOfferings.Add(new OfferingCandidate(catalogOffering.Id, preference));
         if (preference != EOfferingPreference.Excluded)
         {
-            oracleCandidates.Add(new OracleCandidate(
-                new ScheduledOffering(catalogOffering),
-                preference));
+            oracleCandidates.Add(new OracleCandidate(new ScheduledOffering(catalogOffering), preference));
         }
     }
 
@@ -298,11 +270,8 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
     {
         if (sectionCodeValue == "01")
         {
-            MeetingSlot sharedConflict =
-                ScheduleRecommendationTestData.CreateMeetingSlot(EDay.Monday, 1);
-            EDay supplementaryDay = (EDay)random.Next(
-                (int)EDay.Tuesday,
-                (int)EDay.Friday + 1);
+            MeetingSlot sharedConflict = ScheduleRecommendationTestData.CreateMeetingSlot(EDay.Monday, 1);
+            EDay supplementaryDay = (EDay)random.Next((int)EDay.Tuesday, (int)EDay.Friday + 1);
             MeetingSlot supplementarySlot =
                 ScheduleRecommendationTestData.CreateMeetingSlot(
                     supplementaryDay,
@@ -321,9 +290,7 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
             };
         }
 
-        EDay excludedDay = (EDay)random.Next(
-            (int)EDay.Monday,
-            (int)EDay.Friday + 1);
+        EDay excludedDay = (EDay)random.Next((int)EDay.Monday, (int)EDay.Friday + 1);
         return new MeetingSlot[]
         {
             ScheduleRecommendationTestData.CreateMeetingSlot(
@@ -344,16 +311,14 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
             fixture.Catalog,
             fixture.Plan,
             new ScheduleRecommendationLimit(MAXIMUM_RECOMMENDATION_COUNT));
-        ScheduleRecommendationGenerator generator =
-            new ScheduleRecommendationGenerator();
+        ScheduleRecommendationGenerator generator = new ScheduleRecommendationGenerator();
         return generator.GenerateRecommendations(request, CancellationToken.None);
     }
 
     private static Dictionary<string, int> createExpectedScoresByKey(
         IEnumerable<OracleSolution> solutions)
     {
-        Dictionary<string, int> scoresByKey =
-            new Dictionary<string, int>(StringComparer.Ordinal);
+        Dictionary<string, int> scoresByKey = new Dictionary<string, int>(StringComparer.Ordinal);
         foreach (OracleSolution solution in solutions)
         {
             scoresByKey.Add(solution.Key, solution.Score);
@@ -362,8 +327,7 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
         return scoresByKey;
     }
 
-    private static string createOfferingKey(
-        IEnumerable<ScheduledOffering> offerings)
+    private static string createOfferingKey(IEnumerable<ScheduledOffering> offerings)
     {
         List<string> offeringIds = new List<string>();
         foreach (ScheduledOffering offering in offerings)
@@ -389,8 +353,7 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
         return serializedRecommendations.ToArray();
     }
 
-    private static int getCartesianCombinationCount(
-        IEnumerable<OracleGroup> groups)
+    private static int getCartesianCombinationCount(IEnumerable<OracleGroup> groups)
     {
         int combinationCount = 1;
         foreach (OracleGroup group in groups)
@@ -401,8 +364,7 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
         return combinationCount;
     }
 
-    private static bool containsDifferentScores(
-        IReadOnlyList<OracleSolution> solutions)
+    private static bool containsDifferentScores(IReadOnlyList<OracleSolution> solutions)
     {
         int firstScore = solutions[0].Score;
         foreach (OracleSolution solution in solutions)
@@ -424,10 +386,7 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
 
         public IReadOnlyList<OracleGroup> Groups { get; }
 
-        public OracleFixture(
-            CourseCatalog catalog,
-            PlanningPlan plan,
-            IReadOnlyList<OracleGroup> groups)
+        public OracleFixture(CourseCatalog catalog, PlanningPlan plan, IReadOnlyList<OracleGroup> groups)
         {
             Catalog = catalog;
             Plan = plan;
@@ -441,8 +400,7 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
 
         public OracleGroup(IEnumerable<OracleCandidate> candidates)
         {
-            List<OracleCandidate> copiedCandidates =
-                new List<OracleCandidate>(candidates);
+            List<OracleCandidate> copiedCandidates = new List<OracleCandidate>(candidates);
             Candidates = copiedCandidates.AsReadOnly();
         }
     }
@@ -453,9 +411,7 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
 
         public EOfferingPreference Preference { get; }
 
-        public OracleCandidate(
-            ScheduledOffering offering,
-            EOfferingPreference preference)
+        public OracleCandidate(ScheduledOffering offering, EOfferingPreference preference)
         {
             Offering = offering;
             Preference = preference;

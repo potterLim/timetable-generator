@@ -14,9 +14,7 @@ public sealed class GradingMetadata
         }
     }
 
-    public GradingMetadata(
-        EGradingType type,
-        EPassFailOptionAvailability passFailOptionAvailability)
+    public GradingMetadata(EGradingType type, EPassFailOptionAvailability passFailOptionAvailability)
     {
         Type = type;
         PassFailOptionAvailability = passFailOptionAvailability;

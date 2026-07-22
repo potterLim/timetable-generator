@@ -7,9 +7,7 @@ namespace TimetableGenerator.Application.Planning;
 
 public sealed partial class PlanningWorkspaceEditor
 {
-    public PlanningWorkspace ActivatePlan(
-        PlanningWorkspace workspace,
-        PlanId planId)
+    public PlanningWorkspace ActivatePlan(PlanningWorkspace workspace, PlanId planId)
     {
         if (workspace == null)
         {
@@ -17,15 +15,10 @@ public sealed partial class PlanningWorkspaceEditor
         }
 
         findPlanIndex(workspace, planId);
-        return new PlanningWorkspace(
-            workspace.CatalogBinding,
-            planId,
-            workspace.Plans);
+        return new PlanningWorkspace(workspace.CatalogBinding, planId, workspace.Plans);
     }
 
-    public PlanningWorkspace AddPlan(
-        PlanningWorkspace workspace,
-        PlanningPlan plan)
+    public PlanningWorkspace AddPlan(PlanningWorkspace workspace, PlanningPlan plan)
     {
         if (workspace == null)
         {
@@ -39,16 +32,10 @@ public sealed partial class PlanningWorkspaceEditor
 
         List<PlanningPlan> plans = new List<PlanningPlan>(workspace.Plans);
         plans.Add(plan);
-        return new PlanningWorkspace(
-            workspace.CatalogBinding,
-            plan.Id,
-            plans);
+        return new PlanningWorkspace(workspace.CatalogBinding, plan.Id, plans);
     }
 
-    public PlanningWorkspace RenamePlan(
-        PlanningWorkspace workspace,
-        PlanId planId,
-        PlanName name)
+    public PlanningWorkspace RenamePlan(PlanningWorkspace workspace, PlanId planId, PlanName name)
     {
         if (workspace == null)
         {
@@ -70,9 +57,7 @@ public sealed partial class PlanningWorkspaceEditor
         return replacePlan(workspace, renamedPlan);
     }
 
-    public PlanningWorkspace RemovePlan(
-        PlanningWorkspace workspace,
-        PlanId planId)
+    public PlanningWorkspace RemovePlan(PlanningWorkspace workspace, PlanId planId)
     {
         if (workspace == null)
         {
@@ -84,8 +69,7 @@ public sealed partial class PlanningWorkspaceEditor
         remainingPlans.RemoveAt(removedPlanIndex);
 
         PlanId? activePlanIdOrNull = workspace.ActivePlanIdOrNull;
-        if (activePlanIdOrNull.HasValue
-            && activePlanIdOrNull.Value == planId)
+        if (activePlanIdOrNull.HasValue && activePlanIdOrNull.Value == planId)
         {
             if (remainingPlans.Count == 0)
             {
@@ -103,15 +87,10 @@ public sealed partial class PlanningWorkspaceEditor
             }
         }
 
-        return new PlanningWorkspace(
-            workspace.CatalogBinding,
-            activePlanIdOrNull,
-            remainingPlans);
+        return new PlanningWorkspace(workspace.CatalogBinding, activePlanIdOrNull, remainingPlans);
     }
 
-    public PlanningWorkspace ClearPlanContent(
-        PlanningWorkspace workspace,
-        PlanId planId)
+    public PlanningWorkspace ClearPlanContent(PlanningWorkspace workspace, PlanId planId)
     {
         if (workspace == null)
         {
@@ -147,9 +126,7 @@ public sealed partial class PlanningWorkspaceEditor
         }
 
         PlanningPlan existingPlan = findPlan(workspace, planId);
-        List<UnscheduledOfferingSelection> selections =
-            new List<UnscheduledOfferingSelection>(
-                existingPlan.UnscheduledOfferingSelections);
+        List<UnscheduledOfferingSelection> selections = new List<UnscheduledOfferingSelection>(existingPlan.UnscheduledOfferingSelections);
         selections.Add(selection);
         PlanningPlan updatedPlan = new PlanningPlan(
             existingPlan.Id,
@@ -162,10 +139,7 @@ public sealed partial class PlanningWorkspaceEditor
         return replacePlan(workspace, updatedPlan);
     }
 
-    public PlanningWorkspace RemoveCourse(
-        PlanningWorkspace workspace,
-        PlanId planId,
-        CourseId courseId)
+    public PlanningWorkspace RemoveCourse(PlanningWorkspace workspace, PlanId planId, CourseId courseId)
     {
         if (workspace == null)
         {
@@ -178,10 +152,8 @@ public sealed partial class PlanningWorkspaceEditor
         }
 
         PlanningPlan existingPlan = findPlan(workspace, planId);
-        List<CourseChoiceGroup> courseChoiceGroups =
-            copyCourseChoiceGroupsExceptCourse(existingPlan, courseId);
-        List<UnscheduledOfferingSelection> unscheduledSelections =
-            copyUnscheduledSelectionsExceptCourse(existingPlan, courseId);
+        List<CourseChoiceGroup> courseChoiceGroups = copyCourseChoiceGroupsExceptCourse(existingPlan, courseId);
+        List<UnscheduledOfferingSelection> unscheduledSelections = copyUnscheduledSelectionsExceptCourse(existingPlan, courseId);
         PlanningPlan updatedPlan = new PlanningPlan(
             existingPlan.Id,
             existingPlan.Name,
@@ -209,8 +181,7 @@ public sealed partial class PlanningWorkspaceEditor
         }
 
         PlanningPlan existingPlan = findPlan(workspace, planId);
-        List<PersonalSchedule> personalSchedules =
-            new List<PersonalSchedule>(existingPlan.PersonalSchedules);
+        List<PersonalSchedule> personalSchedules = new List<PersonalSchedule>(existingPlan.PersonalSchedules);
         personalSchedules.Add(personalSchedule);
         return replacePersonalSchedules(workspace, existingPlan, personalSchedules);
     }
@@ -231,8 +202,7 @@ public sealed partial class PlanningWorkspaceEditor
         }
 
         PlanningPlan existingPlan = findPlan(workspace, planId);
-        List<PersonalSchedule> personalSchedules =
-            new List<PersonalSchedule>(existingPlan.PersonalSchedules.Count);
+        List<PersonalSchedule> personalSchedules = new List<PersonalSchedule>(existingPlan.PersonalSchedules.Count);
         bool hasReplacement = false;
         foreach (PersonalSchedule existingSchedule in existingPlan.PersonalSchedules)
         {
@@ -249,8 +219,7 @@ public sealed partial class PlanningWorkspaceEditor
 
         if (hasReplacement == false)
         {
-            throw new KeyNotFoundException(
-                "The planning plan does not contain the personal schedule.");
+            throw new KeyNotFoundException("The planning plan does not contain the personal schedule.");
         }
 
         return replacePersonalSchedules(workspace, existingPlan, personalSchedules);
@@ -290,30 +259,23 @@ public sealed partial class PlanningWorkspaceEditor
 
         if (hasRemovedSchedule == false)
         {
-            throw new KeyNotFoundException(
-                "The planning plan does not contain the personal schedule.");
+            throw new KeyNotFoundException("The planning plan does not contain the personal schedule.");
         }
 
         return replacePersonalSchedules(workspace, existingPlan, personalSchedules);
     }
 
-    private static PlanningPlan findPlan(
-        PlanningWorkspace workspace,
-        PlanId planId)
+    private static PlanningPlan findPlan(PlanningWorkspace workspace, PlanId planId)
     {
         int planIndex = findPlanIndex(workspace, planId);
         return workspace.Plans[planIndex];
     }
 
-    private static int findPlanIndex(
-        PlanningWorkspace workspace,
-        PlanId planId)
+    private static int findPlanIndex(PlanningWorkspace workspace, PlanId planId)
     {
         if (planId.IsValid == false)
         {
-            throw new ArgumentException(
-                "Planning workspace edits require a valid plan ID.",
-                nameof(planId));
+            throw new ArgumentException("Planning workspace edits require a valid plan ID.", nameof(planId));
         }
 
         for (int index = 0; index < workspace.Plans.Count; ++index)
@@ -344,10 +306,7 @@ public sealed partial class PlanningWorkspaceEditor
             }
         }
 
-        return new PlanningWorkspace(
-            workspace.CatalogBinding,
-            workspace.ActivePlanIdOrNull,
-            plans);
+        return new PlanningWorkspace(workspace.CatalogBinding, workspace.ActivePlanIdOrNull, plans);
     }
 
     private static PlanningWorkspace replacePersonalSchedules(
@@ -367,13 +326,11 @@ public sealed partial class PlanningWorkspaceEditor
         return replacePlan(workspace, updatedPlan);
     }
 
-    private static List<UnscheduledOfferingSelection>
-        copyUnscheduledSelectionsExceptCourse(
+    private static List<UnscheduledOfferingSelection> copyUnscheduledSelectionsExceptCourse(
             PlanningPlan plan,
             CourseId courseId)
     {
-        List<UnscheduledOfferingSelection> selections =
-            new List<UnscheduledOfferingSelection>();
+        List<UnscheduledOfferingSelection> selections = new List<UnscheduledOfferingSelection>();
         foreach (UnscheduledOfferingSelection selection
             in plan.UnscheduledOfferingSelections)
         {

@@ -7,11 +7,7 @@ internal static class ProductAppearanceTestFactory
 {
     public static ProductAppearanceViewModel CreateViewModel()
     {
-        ControlledProductAppearanceSettingsStore settingsStore =
-            new ControlledProductAppearanceSettingsStore(
-                ProductAppearanceSettings.CreateDefault());
-        return new ProductAppearanceViewModel(
-            settingsStore,
-            new RecordingProductThemeVariantService());
+        ControlledProductAppearanceSettingsStore settingsStore = new ControlledProductAppearanceSettingsStore(ProductAppearanceSettings.CreateDefault());
+        return new ProductAppearanceViewModel(settingsStore, new RecordingProductThemeVariantService());
     }
 }

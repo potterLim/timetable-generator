@@ -13,22 +13,17 @@ namespace TimetableGenerator.Desktop.Tests.Exporting.Calendar;
 
 public sealed class ScheduleCalendarProjectorTests
 {
-    private static readonly ScheduleInstructorSummary CONFIRMED_INSTRUCTOR =
-        new ScheduleInstructorSummary(
-            InstructorAssignmentMetadata.CreateConfirmed(
-                new InstructorDisplayText("김민수"),
-                new AdditionalInstructorCount(0)));
+    private static readonly ScheduleInstructorSummary CONFIRMED_INSTRUCTOR = new ScheduleInstructorSummary(
+        InstructorAssignmentMetadata.CreateConfirmed(
+            new InstructorDisplayText("김민수"),
+            new AdditionalInstructorCount(0)));
 
-    private static readonly ScheduleLocationSummary ASSIGNED_LOCATION =
-        new ScheduleLocationSummary(
-            LocationAssignmentMetadata.CreateAssigned(
-                new ClassroomDisplayText("NTH 311")));
+    private static readonly ScheduleLocationSummary ASSIGNED_LOCATION = new ScheduleLocationSummary(LocationAssignmentMetadata.CreateAssigned(new ClassroomDisplayText("NTH 311")));
 
     [Fact]
     public void CourseEntriesAtTheSameTimeAreGroupedAcrossDays()
     {
-        PlanId planId = new PlanId(
-            new Guid("11111111-1111-1111-1111-111111111111"));
+        PlanId planId = new PlanId(new Guid("11111111-1111-1111-1111-111111111111"));
         CourseId courseId = new CourseId("course-1");
         OfferingId offeringId = new OfferingId("offering-1");
         ScheduleRecommendation displayedSchedule = new ScheduleRecommendation(
@@ -56,9 +51,7 @@ public sealed class ScheduleCalendarProjectorTests
         Assert.Equal(new EDay[] { EDay.Monday, EDay.Thursday }, calendarEvent.Days);
         Assert.Equal("전자기학", calendarEvent.Content.Summary);
         Assert.Equal("NTH 311", calendarEvent.Content.Location);
-        Assert.Equal(
-            "과목 코드: ECE20061\n분반: 01\n교수: 김민수",
-            calendarEvent.Content.Description);
+        Assert.Equal("과목 코드: ECE20061\n분반: 01\n교수: 김민수", calendarEvent.Content.Description);
         Assert.Equal(64, calendarEvent.Uid.Value.Length);
         foreach (char character in calendarEvent.Uid.Value)
         {
@@ -151,17 +144,10 @@ public sealed class ScheduleCalendarProjectorTests
     [Fact]
     public void PersonalScheduleMapsOptionalDetailsWithoutCourseMetadata()
     {
-        PersonalScheduleId scheduleId = new PersonalScheduleId(
-            new Guid("22222222-2222-2222-2222-222222222222"));
-        DailyTimeRange timeRange = new DailyTimeRange(
-            new ScheduleTime(12, 0),
-            new ScheduleTime(13, 0));
-        WeeklyTimeRange mondayRange = new WeeklyTimeRange(
-            EDay.Monday,
-            timeRange);
-        WeeklyTimeRange fridayRange = new WeeklyTimeRange(
-            EDay.Friday,
-            timeRange);
+        PersonalScheduleId scheduleId = new PersonalScheduleId(new Guid("22222222-2222-2222-2222-222222222222"));
+        DailyTimeRange timeRange = new DailyTimeRange(new ScheduleTime(12, 0), new ScheduleTime(13, 0));
+        WeeklyTimeRange mondayRange = new WeeklyTimeRange(EDay.Monday, timeRange);
+        WeeklyTimeRange fridayRange = new WeeklyTimeRange(EDay.Friday, timeRange);
         PersonalSchedule personalSchedule = new PersonalSchedule(
             scheduleId,
             new PersonalScheduleTitle("랩 미팅"),
@@ -186,17 +172,14 @@ public sealed class ScheduleCalendarProjectorTests
         RecurringCalendarEvent calendarEvent = Assert.Single(document.Events);
         Assert.Equal("랩 미팅", calendarEvent.Content.Summary);
         Assert.Equal("OH 401", calendarEvent.Content.Location);
-        Assert.Equal(
-            "분반: A\n담당: 박교수",
-            calendarEvent.Content.Description);
+        Assert.Equal("분반: A\n담당: 박교수", calendarEvent.Content.Description);
         Assert.Equal(new EDay[] { EDay.Monday, EDay.Friday }, calendarEvent.Days);
     }
 
     [Fact]
     public void StableUidDependsOnPlanItemAndTimeInsteadOfInputOrder()
     {
-        PlanId planId = new PlanId(
-            new Guid("33333333-3333-3333-3333-333333333333"));
+        PlanId planId = new PlanId(new Guid("33333333-3333-3333-3333-333333333333"));
         CourseId courseId = new CourseId("course-1");
         OfferingId offeringId = new OfferingId("offering-1");
         CourseScheduleEntry mondayEntry = createCourseEntry(
@@ -223,16 +206,13 @@ public sealed class ScheduleCalendarProjectorTests
                 new ScheduleEntry[] { thursdayEntry, mondayEntry }),
             getAcademicCalendar());
 
-        Assert.Equal(
-            Assert.Single(firstDocument.Events).Uid,
-            Assert.Single(secondDocument.Events).Uid);
+        Assert.Equal(Assert.Single(firstDocument.Events).Uid, Assert.Single(secondDocument.Events).Uid);
     }
 
     [Fact]
     public void StableUidChangesWhenTheMeetingTimeChanges()
     {
-        PlanId planId = new PlanId(
-            new Guid("44444444-4444-4444-4444-444444444444"));
+        PlanId planId = new PlanId(new Guid("44444444-4444-4444-4444-444444444444"));
         CourseId courseId = new CourseId("course-1");
         OfferingId offeringId = new OfferingId("offering-1");
 

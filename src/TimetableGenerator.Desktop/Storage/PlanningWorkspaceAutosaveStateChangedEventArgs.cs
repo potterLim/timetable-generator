@@ -6,8 +6,7 @@ public sealed class PlanningWorkspaceAutosaveStateChangedEventArgs : EventArgs
 {
     public PlanningWorkspaceAutosaveState State { get; }
 
-    public PlanningWorkspaceAutosaveStateChangedEventArgs(
-        PlanningWorkspaceAutosaveState state)
+    public PlanningWorkspaceAutosaveStateChangedEventArgs(PlanningWorkspaceAutosaveState state)
     {
         if (state == null)
         {

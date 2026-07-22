@@ -27,8 +27,7 @@ public sealed class PlanningWorkspaceAutosaveQueueTests
                 store,
                 PlanningWorkspaceConcurrencyToken.MissingWorkspace);
         PlanningWorkspace firstWorkspace = createWorkspace(new PlanName("첫 상태"));
-        PlanningWorkspace supersededWorkspace = createWorkspace(
-            new PlanName("대체된 상태"));
+        PlanningWorkspace supersededWorkspace = createWorkspace(new PlanName("대체된 상태"));
         PlanningWorkspace latestWorkspace = createWorkspace(new PlanName("최신 상태"));
 
         autosaveQueue.RequestSave(firstWorkspace);
@@ -69,18 +68,15 @@ public sealed class PlanningWorkspaceAutosaveQueueTests
         secondSaveAttempt.CompleteSuccessfully();
         store.EnqueueSaveAttempt(firstSaveAttempt);
         store.EnqueueSaveAttempt(secondSaveAttempt);
-        PlanningWorkspaceConcurrencyToken initialToken =
-            new PlanningWorkspaceConcurrencyToken(7L);
-        PlanningWorkspaceAutosaveQueue autosaveQueue =
-            new PlanningWorkspaceAutosaveQueue(store, initialToken);
+        PlanningWorkspaceConcurrencyToken initialToken = new PlanningWorkspaceConcurrencyToken(7L);
+        PlanningWorkspaceAutosaveQueue autosaveQueue = new PlanningWorkspaceAutosaveQueue(store, initialToken);
 
         autosaveQueue.RequestSave(createWorkspace(new PlanName("첫 저장")));
         await autosaveQueue.FlushAsync(TestContext.Current.CancellationToken);
         autosaveQueue.RequestSave(createWorkspace(new PlanName("두 번째 저장")));
         await autosaveQueue.FlushAsync(TestContext.Current.CancellationToken);
 
-        IReadOnlyList<PlanningWorkspaceConcurrencyToken> expectedTokens =
-            store.ExpectedTokens;
+        IReadOnlyList<PlanningWorkspaceConcurrencyToken> expectedTokens = store.ExpectedTokens;
         Assert.Equal(2, expectedTokens.Count);
         Assert.Equal(initialToken, expectedTokens[0]);
         Assert.Equal(initialToken.GetNext(), expectedTokens[1]);
@@ -98,8 +94,7 @@ public sealed class PlanningWorkspaceAutosaveQueueTests
             new PlanningWorkspaceAutosaveQueue(
                 store,
                 PlanningWorkspaceConcurrencyToken.MissingWorkspace);
-        ConcurrentQueue<PlanningWorkspaceAutosaveState> observedStates =
-            new ConcurrentQueue<PlanningWorkspaceAutosaveState>();
+        ConcurrentQueue<PlanningWorkspaceAutosaveState> observedStates = new ConcurrentQueue<PlanningWorkspaceAutosaveState>();
         autosaveQueue.StateChanged += delegate (
             object? senderOrNull,
             PlanningWorkspaceAutosaveStateChangedEventArgs eventArguments)
@@ -107,10 +102,8 @@ public sealed class PlanningWorkspaceAutosaveQueueTests
             observedStates.Enqueue(eventArguments.State);
         };
         PlanningWorkspace failedWorkspace = createWorkspace(new PlanName("실패 상태"));
-        PlanningWorkspace successfulWorkspace = createWorkspace(
-            new PlanName("복구 상태"));
-        InvalidOperationException saveFailure =
-            new InvalidOperationException("Expected test save failure.");
+        PlanningWorkspace successfulWorkspace = createWorkspace(new PlanName("복구 상태"));
+        InvalidOperationException saveFailure = new InvalidOperationException("Expected test save failure.");
 
         autosaveQueue.RequestSave(failedWorkspace);
         await failedSaveAttempt
@@ -132,23 +125,19 @@ public sealed class PlanningWorkspaceAutosaveQueueTests
         PlanningWorkspaceAutosaveState[] states = observedStates.ToArray();
         Assert.Equal(4, states.Length);
 
-        PlanningWorkspaceAutosaveSavingState firstSavingState =
-            Assert.IsType<PlanningWorkspaceAutosaveSavingState>(states[0]);
+        PlanningWorkspaceAutosaveSavingState firstSavingState = Assert.IsType<PlanningWorkspaceAutosaveSavingState>(states[0]);
         Assert.Same(failedWorkspace, firstSavingState.Workspace);
         Assert.Equal(EPlanningWorkspaceAutosaveStatus.Saving, firstSavingState.Status);
 
-        PlanningWorkspaceAutosaveFailedState failedState =
-            Assert.IsType<PlanningWorkspaceAutosaveFailedState>(states[1]);
+        PlanningWorkspaceAutosaveFailedState failedState = Assert.IsType<PlanningWorkspaceAutosaveFailedState>(states[1]);
         Assert.Same(failedWorkspace, failedState.Workspace);
         Assert.Same(saveFailure, failedState.Failure);
         Assert.Equal(EPlanningWorkspaceAutosaveStatus.Failed, failedState.Status);
 
-        PlanningWorkspaceAutosaveSavingState secondSavingState =
-            Assert.IsType<PlanningWorkspaceAutosaveSavingState>(states[2]);
+        PlanningWorkspaceAutosaveSavingState secondSavingState = Assert.IsType<PlanningWorkspaceAutosaveSavingState>(states[2]);
         Assert.Same(successfulWorkspace, secondSavingState.Workspace);
 
-        PlanningWorkspaceAutosaveSavedState savedState =
-            Assert.IsType<PlanningWorkspaceAutosaveSavedState>(states[3]);
+        PlanningWorkspaceAutosaveSavedState savedState = Assert.IsType<PlanningWorkspaceAutosaveSavedState>(states[3]);
         Assert.Same(successfulWorkspace, savedState.Workspace);
         Assert.Equal(EPlanningWorkspaceAutosaveStatus.Saved, savedState.Status);
         Assert.Same(savedState, autosaveQueue.CurrentStateOrNull);
@@ -178,11 +167,9 @@ public sealed class PlanningWorkspaceAutosaveQueueTests
             .WaitForStartAsync()
             .WaitAsync(TEST_OPERATION_TIMEOUT, TestContext.Current.CancellationToken);
 
-        using (CancellationTokenSource flushCancellationSource =
-            new CancellationTokenSource())
+        using (CancellationTokenSource flushCancellationSource = new CancellationTokenSource())
         {
-            Task canceledFlushTask = autosaveQueue.FlushAsync(
-                flushCancellationSource.Token);
+            Task canceledFlushTask = autosaveQueue.FlushAsync(flushCancellationSource.Token);
             flushCancellationSource.Cancel();
 
             await Assert.ThrowsAnyAsync<OperationCanceledException>(
@@ -192,8 +179,7 @@ public sealed class PlanningWorkspaceAutosaveQueueTests
                 });
         }
 
-        CancellationToken saveCancellationToken =
-            Assert.Single(store.SaveCancellationTokens);
+        CancellationToken saveCancellationToken = Assert.Single(store.SaveCancellationTokens);
         Assert.False(saveCancellationToken.CanBeCanceled);
 
         saveAttempt.CompleteSuccessfully();
@@ -201,9 +187,7 @@ public sealed class PlanningWorkspaceAutosaveQueueTests
             .FlushAsync(TestContext.Current.CancellationToken)
             .WaitAsync(TEST_OPERATION_TIMEOUT, TestContext.Current.CancellationToken);
 
-        PlanningWorkspaceAutosaveSavedState savedState =
-            Assert.IsType<PlanningWorkspaceAutosaveSavedState>(
-                autosaveQueue.CurrentStateOrNull);
+        PlanningWorkspaceAutosaveSavedState savedState = Assert.IsType<PlanningWorkspaceAutosaveSavedState>(autosaveQueue.CurrentStateOrNull);
         Assert.Same(workspace, savedState.Workspace);
     }
 
@@ -218,8 +202,7 @@ public sealed class PlanningWorkspaceAutosaveQueueTests
             new PlanningWorkspaceAutosaveQueue(
                 store,
                 PlanningWorkspaceConcurrencyToken.MissingWorkspace);
-        ConcurrentQueue<PlanningWorkspaceAutosaveState> observedStates =
-            new ConcurrentQueue<PlanningWorkspaceAutosaveState>();
+        ConcurrentQueue<PlanningWorkspaceAutosaveState> observedStates = new ConcurrentQueue<PlanningWorkspaceAutosaveState>();
         autosaveQueue.StateChanged += throwStateSubscriberFailure;
         autosaveQueue.StateChanged += delegate (
             object? senderOrNull,
@@ -228,8 +211,7 @@ public sealed class PlanningWorkspaceAutosaveQueueTests
             observedStates.Enqueue(eventArguments.State);
         };
 
-        autosaveQueue.RequestSave(
-            createWorkspace(new PlanName("구독자 실패 상태")));
+        autosaveQueue.RequestSave(createWorkspace(new PlanName("구독자 실패 상태")));
         await autosaveQueue
             .FlushAsync(TestContext.Current.CancellationToken)
             .WaitAsync(TEST_OPERATION_TIMEOUT, TestContext.Current.CancellationToken);
@@ -249,12 +231,10 @@ public sealed class PlanningWorkspaceAutosaveQueueTests
                 store,
                 PlanningWorkspaceConcurrencyToken.MissingWorkspace);
 
-        using (CancellationTokenSource flushCancellationSource =
-            new CancellationTokenSource())
+        using (CancellationTokenSource flushCancellationSource = new CancellationTokenSource())
         {
             flushCancellationSource.Cancel();
-            Task canceledFlushTask = autosaveQueue.FlushAsync(
-                flushCancellationSource.Token);
+            Task canceledFlushTask = autosaveQueue.FlushAsync(flushCancellationSource.Token);
 
             Assert.True(canceledFlushTask.IsCanceled);
             await Assert.ThrowsAnyAsync<OperationCanceledException>(
@@ -270,8 +250,7 @@ public sealed class PlanningWorkspaceAutosaveQueueTests
     {
         ControlledPlanningWorkspaceStore store = new ControlledPlanningWorkspaceStore();
         ControlledSaveAttempt saveAttempt = new ControlledSaveAttempt();
-        InvalidOperationException saveFailure =
-            new InvalidOperationException("Expected completion failure.");
+        InvalidOperationException saveFailure = new InvalidOperationException("Expected completion failure.");
         saveAttempt.CompleteWithFailure(saveFailure);
         store.EnqueueSaveAttempt(saveAttempt);
         PlanningWorkspaceAutosaveQueue autosaveQueue =
@@ -284,8 +263,7 @@ public sealed class PlanningWorkspaceAutosaveQueueTests
             await Assert.ThrowsAsync<PlanningWorkspaceAutosaveException>(
                 async delegate
                 {
-                    await autosaveQueue.CompleteAsync(
-                        TestContext.Current.CancellationToken);
+                    await autosaveQueue.CompleteAsync(TestContext.Current.CancellationToken);
                 });
 
         Assert.Same(saveFailure, exception.InnerException);
@@ -306,8 +284,7 @@ public sealed class PlanningWorkspaceAutosaveQueueTests
 
         await autosaveQueue.CompleteAsync(TestContext.Current.CancellationToken);
 
-        Assert.IsType<PlanningWorkspaceAutosaveSavedState>(
-            autosaveQueue.CurrentStateOrNull);
+        Assert.IsType<PlanningWorkspaceAutosaveSavedState>(autosaveQueue.CurrentStateOrNull);
     }
 
     [Fact]
@@ -320,17 +297,14 @@ public sealed class PlanningWorkspaceAutosaveQueueTests
             new PlanningWorkspaceAutosaveQueue(
                 store,
                 PlanningWorkspaceConcurrencyToken.MissingWorkspace);
-        PlanningWorkspace persistedWorkspace = createWorkspace(
-            new PlanName("종료 전 상태"));
-        PlanningWorkspace lateWorkspace = createWorkspace(
-            new PlanName("종료 중 늦은 상태"));
+        PlanningWorkspace persistedWorkspace = createWorkspace(new PlanName("종료 전 상태"));
+        PlanningWorkspace lateWorkspace = createWorkspace(new PlanName("종료 중 늦은 상태"));
         autosaveQueue.RequestSave(persistedWorkspace);
         await saveAttempt
             .WaitForStartAsync()
             .WaitAsync(TEST_OPERATION_TIMEOUT, TestContext.Current.CancellationToken);
 
-        Task completionTask = autosaveQueue.CompleteAsync(
-            TestContext.Current.CancellationToken);
+        Task completionTask = autosaveQueue.CompleteAsync(TestContext.Current.CancellationToken);
 
         Assert.Throws<InvalidOperationException>(
             delegate
@@ -344,9 +318,7 @@ public sealed class PlanningWorkspaceAutosaveQueueTests
             {
                 autosaveQueue.RequestSave(lateWorkspace);
             });
-        Assert.Same(
-            persistedWorkspace,
-            Assert.Single(store.StartedWorkspaces));
+        Assert.Same(persistedWorkspace, Assert.Single(store.StartedWorkspaces));
     }
 
     [Fact]
@@ -355,8 +327,7 @@ public sealed class PlanningWorkspaceAutosaveQueueTests
         ControlledPlanningWorkspaceStore store = new ControlledPlanningWorkspaceStore();
         ControlledSaveAttempt failedAttempt = new ControlledSaveAttempt();
         ControlledSaveAttempt retryAttempt = new ControlledSaveAttempt();
-        failedAttempt.CompleteWithFailure(
-            new InvalidOperationException("Expected completion failure."));
+        failedAttempt.CompleteWithFailure(new InvalidOperationException("Expected completion failure."));
         retryAttempt.CompleteSuccessfully();
         store.EnqueueSaveAttempt(failedAttempt);
         store.EnqueueSaveAttempt(retryAttempt);
@@ -368,15 +339,13 @@ public sealed class PlanningWorkspaceAutosaveQueueTests
         await Assert.ThrowsAsync<PlanningWorkspaceAutosaveException>(
             async delegate
             {
-                await autosaveQueue.CompleteAsync(
-                    TestContext.Current.CancellationToken);
+                await autosaveQueue.CompleteAsync(TestContext.Current.CancellationToken);
             });
 
         autosaveQueue.RequestSave(createWorkspace(new PlanName("재시도 상태")));
         await autosaveQueue.CompleteAsync(TestContext.Current.CancellationToken);
 
-        Assert.IsType<PlanningWorkspaceAutosaveSavedState>(
-            autosaveQueue.CurrentStateOrNull);
+        Assert.IsType<PlanningWorkspaceAutosaveSavedState>(autosaveQueue.CurrentStateOrNull);
     }
 
     private static PlanningWorkspace createWorkspace(PlanName planName)

@@ -10,9 +10,7 @@ internal sealed record GoogleOAuthState
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException(
-                "Google OAuth state cannot be empty.",
-                nameof(value));
+            throw new ArgumentException("Google OAuth state cannot be empty.", nameof(value));
         }
 
         Value = value;

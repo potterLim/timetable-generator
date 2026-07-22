@@ -9,9 +9,7 @@ namespace TimetableGenerator.Application.Scheduling;
 
 internal static class ScheduleRecommendationBookmarkRestorer
 {
-    public static void IncludeIfValid(
-        ScheduleRecommendationGenerationState state,
-        PlanningPlan plan)
+    public static void IncludeIfValid(ScheduleRecommendationGenerationState state, PlanningPlan plan)
     {
         if (state == null)
         {
@@ -23,8 +21,7 @@ internal static class ScheduleRecommendationBookmarkRestorer
             throw new ArgumentNullException(nameof(plan));
         }
 
-        ScheduleRecommendationBookmark? bookmarkOrNull =
-            plan.LastViewedRecommendationOrNull;
+        ScheduleRecommendationBookmark? bookmarkOrNull = plan.LastViewedRecommendationOrNull;
         if (bookmarkOrNull == null)
         {
             return;
@@ -32,17 +29,13 @@ internal static class ScheduleRecommendationBookmarkRestorer
 
         foreach (ScheduleRecommendation recommendation in state.Recommendations)
         {
-            if (bookmarkMatchesRecommendation(
-                bookmarkOrNull,
-                recommendation,
-                state.UnscheduledSelections))
+            if (bookmarkMatchesRecommendation(bookmarkOrNull, recommendation, state.UnscheduledSelections))
             {
                 return;
             }
         }
 
-        ScheduleRecommendation? bookmarkedRecommendationOrNull =
-            createBookmarkedRecommendationOrNull(state, plan, bookmarkOrNull);
+        ScheduleRecommendation? bookmarkedRecommendationOrNull = createBookmarkedRecommendationOrNull(state, plan, bookmarkOrNull);
         if (bookmarkedRecommendationOrNull == null)
         {
             return;
@@ -67,8 +60,7 @@ internal static class ScheduleRecommendationBookmarkRestorer
         foreach (ValidatedCourseChoiceGroup courseChoiceGroup
             in state.CourseChoiceGroups)
         {
-            ValidatedOfferingCandidate? matchingCandidateOrNull =
-                findBookmarkedCandidateOrNull(courseChoiceGroup, bookmark);
+            ValidatedOfferingCandidate? matchingCandidateOrNull = findBookmarkedCandidateOrNull(courseChoiceGroup, bookmark);
             if (matchingCandidateOrNull == null)
             {
                 return null;
@@ -126,9 +118,7 @@ internal static class ScheduleRecommendationBookmarkRestorer
         foreach (UnscheduledOfferingSelection selection
             in recommendation.UnscheduledSelections)
         {
-            if (containsOfferingId(
-                fixedUnscheduledSelections,
-                selection.OfferingId) == false)
+            if (containsOfferingId(fixedUnscheduledSelections, selection.OfferingId) == false)
             {
                 offeringIds.Add(selection.OfferingId);
             }

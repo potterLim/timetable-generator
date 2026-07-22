@@ -37,14 +37,11 @@ public sealed class PlannerWorkspaceRenderTests
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         await workspace.RecommendationRefreshTask;
         ProductShellViewModel shell = PlannerWorkspaceTestFactory.CreateShell(workspace);
-        MainWindow window = new MainWindow(
-            shell,
-            ProductAppearanceTestFactory.CreateViewModel());
+        MainWindow window = new MainWindow(shell, ProductAppearanceTestFactory.CreateViewModel());
         window.Width = REFERENCE_WIDTH;
         window.Height = REFERENCE_HEIGHT;
         Assert.True(window.CanResize);
-        EWindowChromePlatform windowChromePlatform =
-            WindowChromeLayoutPolicy.FindCurrentPlatform();
+        EWindowChromePlatform windowChromePlatform = WindowChromeLayoutPolicy.FindCurrentPlatform();
         Assert.Equal(
             WindowChromeLayoutPolicy.FindWindowDecorations(
                 windowChromePlatform),
@@ -52,13 +49,11 @@ public sealed class PlannerWorkspaceRenderTests
         Assert.True(window.ExtendClientAreaToDecorationsHint);
         Assert.Equal(56.0, window.ExtendClientAreaTitleBarHeightHint);
         Assert.True(window.ShowInTaskbar);
-        Border? productTitleBarOrNull =
-            window.FindControl<Border>("ProductTitleBar");
+        Border? productTitleBarOrNull = window.FindControl<Border>("ProductTitleBar");
         Assert.NotNull(productTitleBarOrNull);
         if (productTitleBarOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The product title bar could not be resolved.");
+            throw new InvalidOperationException("The product title bar could not be resolved.");
         }
 
         Assert.Equal(
@@ -83,9 +78,7 @@ public sealed class PlannerWorkspaceRenderTests
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         await workspace.RecommendationRefreshTask;
         ProductShellViewModel shell = PlannerWorkspaceTestFactory.CreateShell(workspace);
-        MainWindow window = new MainWindow(
-            shell,
-            ProductAppearanceTestFactory.CreateViewModel());
+        MainWindow window = new MainWindow(shell, ProductAppearanceTestFactory.CreateViewModel());
         window.Width = REFERENCE_WIDTH;
         window.Height = REFERENCE_HEIGHT;
 
@@ -96,15 +89,11 @@ public sealed class PlannerWorkspaceRenderTests
             workspace.Plans[1].CloseCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
 
-            saveRenderedFrame(
-                window,
-                "plan-delete-confirmation-light-1487x1058.png");
+            saveRenderedFrame(window, "plan-delete-confirmation-light-1487x1058.png");
 
             window.RequestedThemeVariant = ThemeVariant.Dark;
             Dispatcher.UIThread.RunJobs();
-            saveRenderedFrame(
-                window,
-                "plan-delete-confirmation-dark-1487x1058.png");
+            saveRenderedFrame(window, "plan-delete-confirmation-dark-1487x1058.png");
         }
         finally
         {
@@ -119,9 +108,7 @@ public sealed class PlannerWorkspaceRenderTests
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         await workspace.RecommendationRefreshTask;
         ProductShellViewModel shell = PlannerWorkspaceTestFactory.CreateShell(workspace);
-        MainWindow window = new MainWindow(
-            shell,
-            ProductAppearanceTestFactory.CreateViewModel());
+        MainWindow window = new MainWindow(shell, ProductAppearanceTestFactory.CreateViewModel());
         window.Width = REFERENCE_WIDTH;
         window.Height = REFERENCE_HEIGHT;
 
@@ -133,15 +120,11 @@ public sealed class PlannerWorkspaceRenderTests
             workspace.BeginClearActivePlanCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
 
-            saveRenderedFrame(
-                window,
-                "plan-clear-confirmation-light-1487x1058.png");
+            saveRenderedFrame(window, "plan-clear-confirmation-light-1487x1058.png");
 
             window.RequestedThemeVariant = ThemeVariant.Dark;
             Dispatcher.UIThread.RunJobs();
-            saveRenderedFrame(
-                window,
-                "plan-clear-confirmation-dark-1487x1058.png");
+            saveRenderedFrame(window, "plan-clear-confirmation-dark-1487x1058.png");
         }
         finally
         {
@@ -156,9 +139,7 @@ public sealed class PlannerWorkspaceRenderTests
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         await workspace.RecommendationRefreshTask;
         ProductShellViewModel shell = PlannerWorkspaceTestFactory.CreateShell(workspace);
-        MainWindow window = new MainWindow(
-            shell,
-            ProductAppearanceTestFactory.CreateViewModel());
+        MainWindow window = new MainWindow(shell, ProductAppearanceTestFactory.CreateViewModel());
         window.Width = REFERENCE_WIDTH;
         window.Height = REFERENCE_HEIGHT;
 
@@ -174,15 +155,11 @@ public sealed class PlannerWorkspaceRenderTests
 
             Dispatcher.UIThread.RunJobs();
             Assert.True(workspace.IsWorkspaceEmpty);
-            saveRenderedFrame(
-                window,
-                "empty-workspace-light-1487x1058.png");
+            saveRenderedFrame(window, "empty-workspace-light-1487x1058.png");
 
             window.RequestedThemeVariant = ThemeVariant.Dark;
             Dispatcher.UIThread.RunJobs();
-            saveRenderedFrame(
-                window,
-                "empty-workspace-dark-1487x1058.png");
+            saveRenderedFrame(window, "empty-workspace-dark-1487x1058.png");
         }
         finally
         {
@@ -194,16 +171,11 @@ public sealed class PlannerWorkspaceRenderTests
     [AvaloniaFact]
     public void CourseChoiceEditorRendersInLightAndDarkThemes()
     {
-        CourseCatalogDocument document = CatalogProjectionTestFixture
-            .CreateDocumentWithScheduledAlternativeCourse();
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace(document);
+        CourseCatalogDocument document = CatalogProjectionTestFixture.CreateDocumentWithScheduledAlternativeCourse();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace(document);
         workspace.ActivePlan = workspace.Plans[1];
-        ProductShellViewModel shell = PlannerWorkspaceTestFactory.CreateShell(
-            workspace);
-        MainWindow window = new MainWindow(
-            shell,
-            ProductAppearanceTestFactory.CreateViewModel());
+        ProductShellViewModel shell = PlannerWorkspaceTestFactory.CreateShell(workspace);
+        MainWindow window = new MainWindow(shell, ProductAppearanceTestFactory.CreateViewModel());
         window.Width = REFERENCE_WIDTH;
         window.Height = REFERENCE_HEIGHT;
 
@@ -214,15 +186,12 @@ public sealed class PlannerWorkspaceRenderTests
             Dispatcher.UIThread.RunJobs();
 
             workspace.SearchText = "프로그래밍";
-            CourseSearchItem programming = Assert.Single(
-                workspace.VisibleCourses);
+            CourseSearchItem programming = Assert.Single(workspace.VisibleCourses);
             workspace.AddCourseCommand.Execute(programming);
-            CourseChoiceDraftCourseItem programmingDraft = Assert.Single(
-                workspace.CourseChoiceDraftCourses);
+            CourseChoiceDraftCourseItem programmingDraft = Assert.Single(workspace.CourseChoiceDraftCourses);
             programmingDraft.Offerings[0].SelectPreferredCommand.Execute(null);
             workspace.AlternativeCourseSearchText = "세미나";
-            CourseChoiceAlternativeSearchItem seminar = Assert.Single(
-                workspace.AlternativeCourseSearchResults);
+            CourseChoiceAlternativeSearchItem seminar = Assert.Single(workspace.AlternativeCourseSearchResults);
             workspace.AddAlternativeCourseCommand.Execute(seminar);
             CourseChoiceDraftCourseItem seminarDraft = workspace
                 .CourseChoiceDraftCourses
@@ -232,15 +201,11 @@ public sealed class PlannerWorkspaceRenderTests
 
             Assert.True(workspace.IsCourseChoiceEditorVisible);
             Assert.Equal("수강 선택 설정", workspace.CourseChoiceEditorTitle);
-            saveRenderedFrame(
-                window,
-                "course-choice-editor-light-1487x1058.png");
+            saveRenderedFrame(window, "course-choice-editor-light-1487x1058.png");
 
             window.RequestedThemeVariant = ThemeVariant.Dark;
             Dispatcher.UIThread.RunJobs();
-            saveRenderedFrame(
-                window,
-                "course-choice-editor-dark-1487x1058.png");
+            saveRenderedFrame(window, "course-choice-editor-dark-1487x1058.png");
         }
         finally
         {
@@ -252,13 +217,9 @@ public sealed class PlannerWorkspaceRenderTests
     [AvaloniaFact]
     public void PersonalScheduleEditorRendersInLightAndDarkThemes()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
-        ProductShellViewModel shell = PlannerWorkspaceTestFactory.CreateShell(
-            workspace);
-        MainWindow window = new MainWindow(
-            shell,
-            ProductAppearanceTestFactory.CreateViewModel());
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+        ProductShellViewModel shell = PlannerWorkspaceTestFactory.CreateShell(workspace);
+        MainWindow window = new MainWindow(shell, ProductAppearanceTestFactory.CreateViewModel());
         window.Width = REFERENCE_WIDTH;
         window.Height = REFERENCE_HEIGHT;
 
@@ -270,12 +231,8 @@ public sealed class PlannerWorkspaceRenderTests
 
             workspace.BeginAddPersonalScheduleCommand.Execute(null);
             workspace.PersonalScheduleTitleDraft = "연구실 정기 미팅";
-            workspace.PersonalScheduleDayOptions
-                .Single(option => option.Day == EDay.Tuesday)
-                .IsSelected = true;
-            workspace.PersonalScheduleDayOptions
-                .Single(option => option.Day == EDay.Thursday)
-                .IsSelected = true;
+            workspace.PersonalScheduleDayOptions.Single(option => option.Day == EDay.Tuesday).IsSelected = true;
+            workspace.PersonalScheduleDayOptions.Single(option => option.Day == EDay.Thursday).IsSelected = true;
             workspace.PersonalScheduleStartTimeOrNull = new ScheduleTime(18, 0);
             workspace.PersonalScheduleEndTimeOrNull = new ScheduleTime(19, 30);
             workspace.PersonalScheduleSectionDraft = "A";
@@ -283,15 +240,11 @@ public sealed class PlannerWorkspaceRenderTests
             workspace.PersonalScheduleLocationDraft = "느헤미야홀 101호";
             Dispatcher.UIThread.RunJobs();
 
-            saveRenderedFrame(
-                window,
-                "personal-schedule-editor-light-1487x1058.png");
+            saveRenderedFrame(window, "personal-schedule-editor-light-1487x1058.png");
 
             window.RequestedThemeVariant = ThemeVariant.Dark;
             Dispatcher.UIThread.RunJobs();
-            saveRenderedFrame(
-                window,
-                "personal-schedule-editor-dark-1487x1058.png");
+            saveRenderedFrame(window, "personal-schedule-editor-dark-1487x1058.png");
         }
         finally
         {
@@ -303,24 +256,17 @@ public sealed class PlannerWorkspaceRenderTests
     [AvaloniaFact]
     public void PersonalScheduleDeleteConfirmationRendersInLightAndDarkThemes()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         workspace.BeginAddPersonalScheduleCommand.Execute(null);
         workspace.PersonalScheduleTitleDraft = "연구실 정기 미팅";
-        workspace.PersonalScheduleDayOptions
-            .Single(option => option.Day == EDay.Tuesday)
-            .IsSelected = true;
+        workspace.PersonalScheduleDayOptions.Single(option => option.Day == EDay.Tuesday).IsSelected = true;
         workspace.PersonalScheduleStartTimeOrNull = new ScheduleTime(18, 0);
         workspace.PersonalScheduleEndTimeOrNull = new ScheduleTime(19, 0);
         workspace.SavePersonalScheduleCommand.Execute(null);
-        PersonalScheduleItem personalSchedule = Assert.Single(
-            workspace.ActivePlan.PersonalSchedules);
+        PersonalScheduleItem personalSchedule = Assert.Single(workspace.ActivePlan.PersonalSchedules);
         workspace.BeginDeletePersonalScheduleCommand.Execute(personalSchedule);
-        ProductShellViewModel shell = PlannerWorkspaceTestFactory.CreateShell(
-            workspace);
-        MainWindow window = new MainWindow(
-            shell,
-            ProductAppearanceTestFactory.CreateViewModel());
+        ProductShellViewModel shell = PlannerWorkspaceTestFactory.CreateShell(workspace);
+        MainWindow window = new MainWindow(shell, ProductAppearanceTestFactory.CreateViewModel());
         window.Width = REFERENCE_WIDTH;
         window.Height = REFERENCE_HEIGHT;
 
@@ -329,15 +275,11 @@ public sealed class PlannerWorkspaceRenderTests
             window.RequestedThemeVariant = ThemeVariant.Light;
             window.Show();
             Dispatcher.UIThread.RunJobs();
-            saveRenderedFrame(
-                window,
-                "personal-schedule-delete-light-1487x1058.png");
+            saveRenderedFrame(window, "personal-schedule-delete-light-1487x1058.png");
 
             window.RequestedThemeVariant = ThemeVariant.Dark;
             Dispatcher.UIThread.RunJobs();
-            saveRenderedFrame(
-                window,
-                "personal-schedule-delete-dark-1487x1058.png");
+            saveRenderedFrame(window, "personal-schedule-delete-dark-1487x1058.png");
         }
         finally
         {
@@ -352,8 +294,7 @@ public sealed class PlannerWorkspaceRenderTests
         Assert.NotNull(renderedFrameOrNull);
         if (renderedFrameOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The headless renderer did not produce a frame.");
+            throw new InvalidOperationException("The headless renderer did not produce a frame.");
         }
 
         WriteableBitmap renderedFrame = renderedFrameOrNull;

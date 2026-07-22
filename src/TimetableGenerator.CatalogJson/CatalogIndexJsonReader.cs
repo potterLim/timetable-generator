@@ -32,10 +32,7 @@ public static class CatalogIndexJsonReader
         }
         catch (JsonException exception)
         {
-            throw new CatalogJsonFormatException(
-                "$",
-                "the input is not valid UTF-8 JSON.",
-                exception);
+            throw new CatalogJsonFormatException("$", "the input is not valid UTF-8 JSON.", exception);
         }
         catch (ArgumentException exception)
         {
@@ -79,9 +76,7 @@ public static class CatalogIndexJsonReader
 
         if (entries.Count == 0)
         {
-            throw new CatalogJsonFormatException(
-                "$.catalogs",
-                "at least one catalog entry is required.");
+            throw new CatalogJsonFormatException("$.catalogs", "at least one catalog entry is required.");
         }
 
         return new CatalogIndexDocument(defaultCatalogId, entries);
@@ -120,10 +115,7 @@ public static class CatalogIndexJsonReader
             entryObject.GetElement("counts"),
             entryObject.GetPropertyPath("counts"));
 
-        string expectedCatalogId = CatalogJsonValueParser.BuildCatalogId(
-            institution.Id,
-            term,
-            revision);
+        string expectedCatalogId = CatalogJsonValueParser.BuildCatalogId(institution.Id, term, revision);
         CatalogJsonValueParser.RequireExactString(
             catalogId.Value,
             expectedCatalogId,
@@ -137,13 +129,7 @@ public static class CatalogIndexJsonReader
             expectedRelativePath,
             entryObject.GetPropertyPath("file") + ".relativePath");
 
-        return new CatalogIndexEntry(
-            catalogId,
-            institution,
-            term,
-            revision,
-            file,
-            counts);
+        return new CatalogIndexEntry(catalogId, institution, term, revision, file, counts);
     }
 
     private static CatalogFileDescriptor parseFile(JsonElement element, string path)
@@ -160,8 +146,7 @@ public static class CatalogIndexJsonReader
                 "sizeBytes",
                 "sha256",
             });
-        CatalogRelativePath relativePath = new CatalogRelativePath(
-            fileObject.GetString("relativePath"));
+        CatalogRelativePath relativePath = new CatalogRelativePath(fileObject.GetString("relativePath"));
         string mediaTypeText = fileObject.GetString("mediaType");
         string charsetText = fileObject.GetString("charset");
         string contentEncodingText = fileObject.GetString("contentEncoding");
@@ -179,8 +164,7 @@ public static class CatalogIndexJsonReader
             fileObject.GetPropertyPath("contentEncoding"));
         CatalogMediaType mediaType = new CatalogMediaType(mediaTypeText);
         CatalogCharset charset = new CatalogCharset(charsetText);
-        CatalogContentEncoding contentEncoding = new CatalogContentEncoding(
-            contentEncodingText);
+        CatalogContentEncoding contentEncoding = new CatalogContentEncoding(contentEncodingText);
         CatalogFileSize fileSize = new CatalogFileSize(fileObject.GetInt64("sizeBytes"));
         Sha256Digest sha256 = new Sha256Digest(fileObject.GetString("sha256"));
         return new CatalogFileDescriptor(

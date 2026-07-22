@@ -102,8 +102,7 @@ public sealed class PlanningWorkspaceAutosaveQueue
 
             if (mIsCompletionInProgress)
             {
-                throw new InvalidOperationException(
-                    "Autosave completion is already in progress.");
+                throw new InvalidOperationException("Autosave completion is already in progress.");
             }
 
             mIsCompletionInProgress = true;
@@ -115,12 +114,10 @@ public sealed class PlanningWorkspaceAutosaveQueue
         {
             await workerTask.WaitAsync(cancellationToken).ConfigureAwait(false);
             PlanningWorkspaceAutosaveState? stateOrNull = CurrentStateOrNull;
-            PlanningWorkspaceAutosaveFailedState? failedStateOrNull =
-                stateOrNull as PlanningWorkspaceAutosaveFailedState;
+            PlanningWorkspaceAutosaveFailedState? failedStateOrNull = stateOrNull as PlanningWorkspaceAutosaveFailedState;
             if (failedStateOrNull != null)
             {
-                throw new PlanningWorkspaceAutosaveException(
-                    failedStateOrNull.Failure);
+                throw new PlanningWorkspaceAutosaveException(failedStateOrNull.Failure);
             }
 
             isCompleted = true;
@@ -159,8 +156,7 @@ public sealed class PlanningWorkspaceAutosaveQueue
             }
             catch (Exception failure)
             {
-                publishState(
-                    new PlanningWorkspaceAutosaveFailedState(workspaceOrNull, failure));
+                publishState(new PlanningWorkspaceAutosaveFailedState(workspaceOrNull, failure));
             }
         }
     }
@@ -196,23 +192,18 @@ public sealed class PlanningWorkspaceAutosaveQueue
             return;
         }
 
-        PlanningWorkspaceAutosaveStateChangedEventArgs eventArguments =
-            new PlanningWorkspaceAutosaveStateChangedEventArgs(state);
+        PlanningWorkspaceAutosaveStateChangedEventArgs eventArguments = new PlanningWorkspaceAutosaveStateChangedEventArgs(state);
         Delegate[] stateChangedHandlers = stateChangedHandlerOrNull.GetInvocationList();
         foreach (Delegate stateChangedHandler in stateChangedHandlers)
         {
             try
             {
-                EventHandler<PlanningWorkspaceAutosaveStateChangedEventArgs> typedHandler =
-                    (EventHandler<PlanningWorkspaceAutosaveStateChangedEventArgs>)
-                    stateChangedHandler;
+                EventHandler<PlanningWorkspaceAutosaveStateChangedEventArgs> typedHandler = (EventHandler<PlanningWorkspaceAutosaveStateChangedEventArgs>)stateChangedHandler;
                 typedHandler(this, eventArguments);
             }
             catch (Exception notificationFailure)
             {
-                Trace.TraceError(
-                    "A planning workspace autosave state subscriber failed: {0}",
-                    notificationFailure);
+                Trace.TraceError("A planning workspace autosave state subscriber failed: {0}", notificationFailure);
             }
         }
     }

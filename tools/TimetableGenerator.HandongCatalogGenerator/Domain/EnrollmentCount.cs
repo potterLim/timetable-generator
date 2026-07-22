@@ -11,10 +11,7 @@ internal readonly record struct EnrollmentCount
     {
         if (value < 0)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "Enrollment count cannot be negative.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Enrollment count cannot be negative.");
         }
 
         Value = value;

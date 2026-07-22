@@ -24,8 +24,7 @@ namespace TimetableGenerator.Desktop.Views;
 
 internal sealed partial class ScheduleWorkspaceView
 {
-    private static readonly TimeSpan EXPORT_STATUS_DURATION =
-        TimeSpan.FromSeconds(3.5);
+    private static readonly TimeSpan EXPORT_STATUS_DURATION = TimeSpan.FromSeconds(3.5);
 
     private readonly IGoogleCalendarExporter mGoogleCalendarExporter;
 
@@ -103,8 +102,7 @@ internal sealed partial class ScheduleWorkspaceView
 
         mPngExporter = exportServices.PngExporter;
         mGoogleCalendarExporter = exportServices.GoogleCalendarExporter;
-        mGoogleCalendarWebNavigator =
-            exportServices.GoogleCalendarWebNavigator;
+        mGoogleCalendarWebNavigator = exportServices.GoogleCalendarWebNavigator;
         mAppleCalendarExporter = exportServices.AppleCalendarExporter;
         mCalendarTimeZoneProvider = exportServices.CalendarTimeZoneProvider;
         mLifetimeCancellationSource = new CancellationTokenSource();
@@ -113,23 +111,16 @@ internal sealed partial class ScheduleWorkspaceView
         mExportStatusTimer.Tick += onExportStatusTimerTick;
         mExportResourceReleaseTask = Task.CompletedTask;
         mPresentationMode = EScheduleWorkspacePresentationMode.Board;
-        mExportPngCommand = new AsyncDelegateCommand(
-            exportPngAsync,
-            showPngExportFailure);
-        mExportAllPngCommand = new AsyncDelegateCommand(
-            exportAllPngAsync,
-            showPngExportFailure);
+        mExportPngCommand = new AsyncDelegateCommand(exportPngAsync, showPngExportFailure);
+        mExportAllPngCommand = new AsyncDelegateCommand(exportAllPngAsync, showPngExportFailure);
         mExportGoogleCalendarCommand = new AsyncDelegateCommand(
             exportGoogleCalendarAsync,
             showGoogleCalendarExportFailure);
         mExportAppleCalendarCommand = new AsyncDelegateCommand(
             exportAppleCalendarAsync,
             showAppleCalendarExportFailure);
-        mToggleSchedulePresentationCommand = new DelegateCommand(
-            toggleSchedulePresentation);
-        mEditPersonalScheduleCommand =
-            new ParameterizedCommand<PersonalScheduleId>(
-                beginEditPersonalSchedule);
+        mToggleSchedulePresentationCommand = new DelegateCommand(toggleSchedulePresentation);
+        mEditPersonalScheduleCommand = new ParameterizedCommand<PersonalScheduleId>(beginEditPersonalSchedule);
         AvaloniaXamlLoader.Load(this);
         DetachedFromVisualTree += onDetachedFromVisualTree;
     }
@@ -143,15 +134,11 @@ internal sealed partial class ScheduleWorkspaceView
 
         try
         {
-            CancellationToken cancellationToken =
-                mLifetimeCancellationSource.Token;
+            CancellationToken cancellationToken = mLifetimeCancellationSource.Token;
             cancellationToken.ThrowIfCancellationRequested();
             CalendarExportDocument document = createCalendarExportDocument();
-            GoogleCalendarExportPlan exportPlan =
-                GoogleCalendarExportPlan.CreateFromDocument(document);
-            showPersistentExportStatus(
-                "Google 캘린더로 내보내는 중입니다.",
-                EExportStatus.Information);
+            GoogleCalendarExportPlan exportPlan = GoogleCalendarExportPlan.CreateFromDocument(document);
+            showPersistentExportStatus("Google 캘린더로 내보내는 중입니다.", EExportStatus.Information);
             GoogleCalendarExportResult result =
                 await mGoogleCalendarExporter.ExportAsync(
                     exportPlan,
@@ -178,13 +165,10 @@ internal sealed partial class ScheduleWorkspaceView
 
         try
         {
-            CancellationToken cancellationToken =
-                mLifetimeCancellationSource.Token;
+            CancellationToken cancellationToken = mLifetimeCancellationSource.Token;
             cancellationToken.ThrowIfCancellationRequested();
             CalendarExportDocument document = createCalendarExportDocument();
-            showPersistentExportStatus(
-                "Apple 캘린더로 내보내는 중입니다.",
-                EExportStatus.Information);
+            showPersistentExportStatus("Apple 캘린더로 내보내는 중입니다.", EExportStatus.Information);
             AppleCalendarExportResult result =
                 await mAppleCalendarExporter.ExportAsync(
                 document,
@@ -202,12 +186,10 @@ internal sealed partial class ScheduleWorkspaceView
     {
         PlannerWorkspaceViewModel workspace = getRequiredWorkspace();
         PlanTabItem? activePlanOrNull = workspace.ActivePlanOrNull;
-        ScheduleBoardPresentation? scheduleBoardOrNull =
-            workspace.DisplayedScheduleBoard;
+        ScheduleBoardPresentation? scheduleBoardOrNull = workspace.DisplayedScheduleBoard;
         if (activePlanOrNull == null || scheduleBoardOrNull == null)
         {
-            throw new InvalidOperationException(
-                "Schedule export requires an active plan.");
+            throw new InvalidOperationException("Schedule export requires an active plan.");
         }
 
         AcademicTermCalendarMetadata academicCalendar =
@@ -223,12 +205,10 @@ internal sealed partial class ScheduleWorkspaceView
 
     private PlannerWorkspaceViewModel getRequiredWorkspace()
     {
-        PlannerWorkspaceViewModel? workspaceOrNull =
-            DataContext as PlannerWorkspaceViewModel;
+        PlannerWorkspaceViewModel? workspaceOrNull = DataContext as PlannerWorkspaceViewModel;
         if (workspaceOrNull == null)
         {
-            throw new InvalidOperationException(
-                "Schedule export requires a planning workspace.");
+            throw new InvalidOperationException("Schedule export requires a planning workspace.");
         }
 
         return workspaceOrNull;
@@ -236,11 +216,8 @@ internal sealed partial class ScheduleWorkspaceView
 
     private bool tryBeginExportOperation()
     {
-        PlannerWorkspaceViewModel? workspaceOrNull =
-            DataContext as PlannerWorkspaceViewModel;
-        if (mIsExportInProgress
-            || workspaceOrNull == null
-            || workspaceOrNull.CanExportSchedule == false)
+        PlannerWorkspaceViewModel? workspaceOrNull = DataContext as PlannerWorkspaceViewModel;
+        if (mIsExportInProgress || workspaceOrNull == null || workspaceOrNull.CanExportSchedule == false)
         {
             return false;
         }
@@ -259,30 +236,23 @@ internal sealed partial class ScheduleWorkspaceView
 
     private void disableExportButton()
     {
-        Button? exportButtonOrNull =
-            this.FindControl<Button>("ExportScheduleButton");
+        Button? exportButtonOrNull = this.FindControl<Button>("ExportScheduleButton");
         if (exportButtonOrNull != null)
         {
-            exportButtonOrNull.SetCurrentValue(
-                IsEnabledProperty,
-                false);
+            exportButtonOrNull.SetCurrentValue(IsEnabledProperty, false);
         }
     }
 
     private void enableExportButton()
     {
-        Button? exportButtonOrNull =
-            this.FindControl<Button>("ExportScheduleButton");
+        Button? exportButtonOrNull = this.FindControl<Button>("ExportScheduleButton");
         if (exportButtonOrNull != null)
         {
-            exportButtonOrNull.SetCurrentValue(
-                IsEnabledProperty,
-                true);
+            exportButtonOrNull.SetCurrentValue(IsEnabledProperty, true);
         }
     }
 
-    private void showGoogleCalendarExportResult(
-        GoogleCalendarExportResult result)
+    private void showGoogleCalendarExportResult(GoogleCalendarExportResult result)
     {
         if (result == null)
         {
@@ -292,38 +262,26 @@ internal sealed partial class ScheduleWorkspaceView
         switch (result.Status)
         {
             case EGoogleCalendarExportStatus.Success:
-                showTransientExportStatus(
-                    "Google 캘린더로 내보냈습니다.",
-                    EExportStatus.Success);
+                showTransientExportStatus("Google 캘린더로 내보냈습니다.", EExportStatus.Success);
                 break;
             case EGoogleCalendarExportStatus.NotConfigured:
-                showTransientExportStatus(
-                    "Google 캘린더 연결을 아직 사용할 수 없습니다.",
-                    EExportStatus.Information);
+                showTransientExportStatus("Google 캘린더 연결을 아직 사용할 수 없습니다.", EExportStatus.Information);
                 break;
             case EGoogleCalendarExportStatus.AuthenticationCancelled:
             case EGoogleCalendarExportStatus.Cancelled:
                 clearExportStatus();
                 break;
             case EGoogleCalendarExportStatus.AuthenticationFailed:
-                showTransientExportStatus(
-                    "Google 캘린더 연결을 완료하지 못했습니다.",
-                    EExportStatus.Failure);
+                showTransientExportStatus("Google 캘린더 연결을 완료하지 못했습니다.", EExportStatus.Failure);
                 break;
             case EGoogleCalendarExportStatus.AccessDenied:
-                showTransientExportStatus(
-                    "Google 캘린더 권한을 확인해 주세요.",
-                    EExportStatus.Failure);
+                showTransientExportStatus("Google 캘린더 권한을 확인해 주세요.", EExportStatus.Failure);
                 break;
             case EGoogleCalendarExportStatus.NetworkFailed:
-                showTransientExportStatus(
-                    "Google 캘린더에 연결하지 못했습니다. 네트워크를 확인해 주세요.",
-                    EExportStatus.Failure);
+                showTransientExportStatus("Google 캘린더에 연결하지 못했습니다. 네트워크를 확인해 주세요.", EExportStatus.Failure);
                 break;
             case EGoogleCalendarExportStatus.Failed:
-                showTransientExportStatus(
-                    "Google 캘린더에 반영하지 못했습니다. 다시 시도해 주세요.",
-                    EExportStatus.Failure);
+                showTransientExportStatus("Google 캘린더에 반영하지 못했습니다. 다시 시도해 주세요.", EExportStatus.Failure);
                 break;
             case EGoogleCalendarExportStatus.None:
             default:
@@ -336,13 +294,10 @@ internal sealed partial class ScheduleWorkspaceView
 
     private void showGoogleCalendarExportFailure(Exception exception)
     {
-        showCalendarExportFailure(
-            exception,
-            "Google 캘린더에 반영하지 못했습니다. 다시 시도해 주세요.");
+        showCalendarExportFailure(exception, "Google 캘린더에 반영하지 못했습니다. 다시 시도해 주세요.");
     }
 
-    private void showAppleCalendarExportResult(
-        AppleCalendarExportResult result)
+    private void showAppleCalendarExportResult(AppleCalendarExportResult result)
     {
         if (result == null)
         {
@@ -352,27 +307,19 @@ internal sealed partial class ScheduleWorkspaceView
         switch (result.Status)
         {
             case EAppleCalendarExportStatus.Success:
-                showTransientExportStatus(
-                    "Apple 캘린더로 내보냈습니다.",
-                    EExportStatus.Success);
+                showTransientExportStatus("Apple 캘린더로 내보냈습니다.", EExportStatus.Success);
                 break;
             case EAppleCalendarExportStatus.Cancelled:
                 clearExportStatus();
                 break;
             case EAppleCalendarExportStatus.Unavailable:
-                showTransientExportStatus(
-                    "Apple 캘린더를 사용할 수 없습니다.",
-                    EExportStatus.Information);
+                showTransientExportStatus("Apple 캘린더를 사용할 수 없습니다.", EExportStatus.Information);
                 break;
             case EAppleCalendarExportStatus.AccessDenied:
-                showTransientExportStatus(
-                    "Apple 캘린더 접근 권한을 확인해 주세요.",
-                    EExportStatus.Failure);
+                showTransientExportStatus("Apple 캘린더 접근 권한을 확인해 주세요.", EExportStatus.Failure);
                 break;
             case EAppleCalendarExportStatus.Failed:
-                showTransientExportStatus(
-                    "Apple 캘린더로 내보내지 못했습니다. 다시 시도해 주세요.",
-                    EExportStatus.Failure);
+                showTransientExportStatus("Apple 캘린더로 내보내지 못했습니다. 다시 시도해 주세요.", EExportStatus.Failure);
                 break;
             case EAppleCalendarExportStatus.None:
             default:
@@ -385,20 +332,14 @@ internal sealed partial class ScheduleWorkspaceView
 
     private void showAppleCalendarExportFailure(Exception exception)
     {
-        showCalendarExportFailure(
-            exception,
-            "Apple 캘린더로 내보내지 못했습니다. 다시 시도해 주세요.");
+        showCalendarExportFailure(exception, "Apple 캘린더로 내보내지 못했습니다. 다시 시도해 주세요.");
     }
 
-    private void showCalendarExportFailure(
-        Exception exception,
-        string fallbackMessage)
+    private void showCalendarExportFailure(Exception exception, string fallbackMessage)
     {
         if (exception is NotSupportedException)
         {
-            showTransientExportStatus(
-                "이 학기는 캘린더 내보내기를 아직 지원하지 않습니다.",
-                EExportStatus.Failure);
+            showTransientExportStatus("이 학기는 캘린더 내보내기를 아직 지원하지 않습니다.", EExportStatus.Failure);
             return;
         }
 
@@ -420,15 +361,10 @@ internal sealed partial class ScheduleWorkspaceView
     {
         mExportStatusTimer.Stop();
 
-        Border? statusToastOrNull =
-            this.FindControl<Border>("ExportStatusToast");
-        TextBlock? statusTextOrNull =
-            this.FindControl<TextBlock>("ExportStatusText");
-        FluentIcon? statusIconOrNull =
-            this.FindControl<FluentIcon>("ExportStatusIcon");
-        if (statusToastOrNull == null
-            || statusTextOrNull == null
-            || statusIconOrNull == null)
+        Border? statusToastOrNull = this.FindControl<Border>("ExportStatusToast");
+        TextBlock? statusTextOrNull = this.FindControl<TextBlock>("ExportStatusText");
+        FluentIcon? statusIconOrNull = this.FindControl<FluentIcon>("ExportStatusIcon");
+        if (statusToastOrNull == null || statusTextOrNull == null || statusIconOrNull == null)
         {
             return;
         }
@@ -440,17 +376,13 @@ internal sealed partial class ScheduleWorkspaceView
         statusToastOrNull.IsVisible = false;
     }
 
-    private void showPersistentExportStatus(
-        string message,
-        EExportStatus status)
+    private void showPersistentExportStatus(string message, EExportStatus status)
     {
         mExportStatusTimer.Stop();
         showExportStatusCore(message, status);
     }
 
-    private void showTransientExportStatus(
-        string message,
-        EExportStatus status)
+    private void showTransientExportStatus(string message, EExportStatus status)
     {
         mExportStatusTimer.Stop();
         showExportStatusCore(message, status);
@@ -459,15 +391,10 @@ internal sealed partial class ScheduleWorkspaceView
 
     private void showExportStatusCore(string message, EExportStatus status)
     {
-        Border? statusToastOrNull =
-            this.FindControl<Border>("ExportStatusToast");
-        TextBlock? statusTextOrNull =
-            this.FindControl<TextBlock>("ExportStatusText");
-        FluentIcon? statusIconOrNull =
-            this.FindControl<FluentIcon>("ExportStatusIcon");
-        if (statusToastOrNull == null
-            || statusTextOrNull == null
-            || statusIconOrNull == null)
+        Border? statusToastOrNull = this.FindControl<Border>("ExportStatusToast");
+        TextBlock? statusTextOrNull = this.FindControl<TextBlock>("ExportStatusText");
+        FluentIcon? statusIconOrNull = this.FindControl<FluentIcon>("ExportStatusIcon");
+        if (statusToastOrNull == null || statusTextOrNull == null || statusIconOrNull == null)
         {
             return;
         }
@@ -485,10 +412,7 @@ internal sealed partial class ScheduleWorkspaceView
                 statusIcon = Icon.Warning;
                 break;
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(status),
-                    status,
-                    "Unknown export status.");
+                throw new ArgumentOutOfRangeException(nameof(status), status, "Unknown export status.");
         }
 
         setExportStatusClasses(statusTextOrNull, status);
@@ -499,31 +423,19 @@ internal sealed partial class ScheduleWorkspaceView
         statusTextOrNull.Text = message;
     }
 
-    private static void setExportStatusClasses(
-        StyledElement element,
-        EExportStatus? activeStatusOrNull)
+    private static void setExportStatusClasses(StyledElement element, EExportStatus? activeStatusOrNull)
     {
-        element.Classes.Set(
-            "success",
-            activeStatusOrNull == EExportStatus.Success);
-        element.Classes.Set(
-            "information",
-            activeStatusOrNull == EExportStatus.Information);
-        element.Classes.Set(
-            "error",
-            activeStatusOrNull == EExportStatus.Failure);
+        element.Classes.Set("success", activeStatusOrNull == EExportStatus.Success);
+        element.Classes.Set("information", activeStatusOrNull == EExportStatus.Information);
+        element.Classes.Set("error", activeStatusOrNull == EExportStatus.Failure);
     }
 
-    private void onExportStatusTimerTick(
-        object? senderOrNull,
-        EventArgs eventArgs)
+    private void onExportStatusTimerTick(object? senderOrNull, EventArgs eventArgs)
     {
         clearExportStatus();
     }
 
-    private void onDetachedFromVisualTree(
-        object? senderOrNull,
-        VisualTreeAttachmentEventArgs eventArgs)
+    private void onDetachedFromVisualTree(object? senderOrNull, VisualTreeAttachmentEventArgs eventArgs)
     {
         DetachedFromVisualTree -= onDetachedFromVisualTree;
         mExportStatusTimer.Stop();

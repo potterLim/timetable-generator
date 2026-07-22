@@ -16,9 +16,7 @@ internal sealed record CatalogSourceConfigurationPath
 
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException(
-                "Catalog source configuration paths cannot be empty.",
-                nameof(value));
+            throw new ArgumentException("Catalog source configuration paths cannot be empty.", nameof(value));
         }
 
         string fullPath = Path.GetFullPath(value);

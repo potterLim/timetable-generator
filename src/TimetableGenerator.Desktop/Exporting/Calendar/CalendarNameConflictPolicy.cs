@@ -25,22 +25,17 @@ internal static class CalendarNameConflictPolicy
 
         string canonicalFirstName = createCanonicalName(firstName);
         string canonicalSecondName = createCanonicalName(secondName);
-        return StringComparer.OrdinalIgnoreCase.Equals(
-            canonicalFirstName,
-            canonicalSecondName);
+        return StringComparer.OrdinalIgnoreCase.Equals(canonicalFirstName, canonicalSecondName);
     }
 
-    public static bool IsNameInUse(
-        PlanName calendarName,
-        IEnumerable<PlanName> existingNames)
+    public static bool IsNameInUse(PlanName calendarName, IEnumerable<PlanName> existingNames)
     {
         if (calendarName == null)
         {
             throw new ArgumentNullException(nameof(calendarName));
         }
 
-        HashSet<string> canonicalExistingNames =
-            createCanonicalExistingNames(existingNames);
+        HashSet<string> canonicalExistingNames = createCanonicalExistingNames(existingNames);
         string canonicalCalendarName = createCanonicalName(calendarName);
         return canonicalExistingNames.Contains(canonicalCalendarName);
     }
@@ -54,8 +49,7 @@ internal static class CalendarNameConflictPolicy
             throw new ArgumentNullException(nameof(requestedName));
         }
 
-        HashSet<string> canonicalExistingNames =
-            createCanonicalExistingNames(existingNames);
+        HashSet<string> canonicalExistingNames = createCanonicalExistingNames(existingNames);
         string normalizedRequestedName = normalizeName(requestedName.Value);
 
         int copyNumber = FIRST_COPY_NUMBER;
@@ -74,8 +68,7 @@ internal static class CalendarNameConflictPolicy
 
             if (copyNumber == int.MaxValue)
             {
-                throw new InvalidOperationException(
-                    "No available numbered calendar name could be allocated.");
+                throw new InvalidOperationException("No available numbered calendar name could be allocated.");
             }
 
             ++copyNumber;
@@ -96,8 +89,7 @@ internal static class CalendarNameConflictPolicy
             case ECalendarNameConflictResolution.ReplaceExisting:
                 if (conflict.CanReplace == false)
                 {
-                    throw new InvalidOperationException(
-                        "The existing calendar cannot be replaced safely.");
+                    throw new InvalidOperationException("The existing calendar cannot be replaced safely.");
                 }
 
                 return;
@@ -113,16 +105,14 @@ internal static class CalendarNameConflictPolicy
         }
     }
 
-    private static HashSet<string> createCanonicalExistingNames(
-        IEnumerable<PlanName> existingNames)
+    private static HashSet<string> createCanonicalExistingNames(IEnumerable<PlanName> existingNames)
     {
         if (existingNames == null)
         {
             throw new ArgumentNullException(nameof(existingNames));
         }
 
-        HashSet<string> canonicalExistingNames = new HashSet<string>(
-            StringComparer.OrdinalIgnoreCase);
+        HashSet<string> canonicalExistingNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (PlanName existingName in existingNames)
         {
             if (existingName == null)
@@ -154,17 +144,14 @@ internal static class CalendarNameConflictPolicy
         return " (" + copyNumberText + ")";
     }
 
-    private static string truncateWithoutSplittingTextElement(
-        string value,
-        int maximumLength)
+    private static string truncateWithoutSplittingTextElement(string value, int maximumLength)
     {
         if (value.Length <= maximumLength)
         {
             return value;
         }
 
-        TextElementEnumerator textElements =
-            StringInfo.GetTextElementEnumerator(value);
+        TextElementEnumerator textElements = StringInfo.GetTextElementEnumerator(value);
         int truncatedLength = 0;
         while (textElements.MoveNext())
         {

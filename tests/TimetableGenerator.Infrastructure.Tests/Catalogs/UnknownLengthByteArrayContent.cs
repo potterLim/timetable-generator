@@ -21,9 +21,7 @@ internal sealed class UnknownLengthByteArrayContent : HttpContent
         mContent = content;
     }
 
-    protected override Task SerializeToStreamAsync(
-        Stream stream,
-        TransportContext? context)
+    protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
     {
         return stream.WriteAsync(mContent, 0, mContent.Length);
     }
@@ -42,8 +40,7 @@ internal sealed class UnknownLengthByteArrayContent : HttpContent
         return Task.FromResult(stream);
     }
 
-    protected override Task<Stream> CreateContentReadStreamAsync(
-        CancellationToken cancellationToken)
+    protected override Task<Stream> CreateContentReadStreamAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         Stream stream = new MemoryStream(mContent, false);

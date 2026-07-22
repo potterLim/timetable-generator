@@ -76,10 +76,7 @@ public sealed class PlanningWorkspaceTests
     {
         PlanCatalogBinding catalogBinding = createCatalogBinding();
         PlanCatalogBinding otherCatalogBinding = createOtherCatalogBinding();
-        PlanningPlan plan = createPlan(
-            PlanId.CreateNew(),
-            "기본 시간표",
-            otherCatalogBinding);
+        PlanningPlan plan = createPlan(PlanId.CreateNew(), "기본 시간표", otherCatalogBinding);
 
         Assert.ThrowsExactly<ArgumentException>(
             () => new PlanningWorkspace(
@@ -119,13 +116,9 @@ public sealed class PlanningWorkspaceTests
     public void WorkspaceDefensivelyCopiesItsPlans()
     {
         PlanningPlan plan = createPlan(PlanId.CreateNew(), "기본 시간표");
-        System.Collections.Generic.List<PlanningPlan> mutablePlans =
-            new System.Collections.Generic.List<PlanningPlan>() { plan };
+        System.Collections.Generic.List<PlanningPlan> mutablePlans = new System.Collections.Generic.List<PlanningPlan>() { plan };
 
-        PlanningWorkspace workspace = new PlanningWorkspace(
-            plan.CatalogBinding,
-            plan.Id,
-            mutablePlans);
+        PlanningWorkspace workspace = new PlanningWorkspace(plan.CatalogBinding, plan.Id, mutablePlans);
 
         mutablePlans.Clear();
 

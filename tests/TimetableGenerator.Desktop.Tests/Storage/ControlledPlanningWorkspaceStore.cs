@@ -84,8 +84,7 @@ internal sealed class ControlledPlanningWorkspaceStore : IPlanningWorkspaceStore
         }
     }
 
-    public Task<PlanningWorkspaceLoadResult> LoadAsync(
-        CancellationToken cancellationToken)
+    public Task<PlanningWorkspaceLoadResult> LoadAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         return Task.FromResult(PlanningWorkspaceLoadResult.CreateNotFound());
@@ -101,8 +100,7 @@ internal sealed class ControlledPlanningWorkspaceStore : IPlanningWorkspaceStore
         {
             if (mPendingAttempts.Count == 0)
             {
-                throw new InvalidOperationException(
-                    "The test store received an unconfigured save attempt.");
+                throw new InvalidOperationException("The test store received an unconfigured save attempt.");
             }
 
             saveAttempt = mPendingAttempts.Dequeue();

@@ -29,9 +29,7 @@ public sealed class MeetingSchedule
         }
     }
 
-    private MeetingSchedule(
-        EMeetingScheduleStatus status,
-        IEnumerable<MeetingSlot> slots)
+    private MeetingSchedule(EMeetingScheduleStatus status, IEnumerable<MeetingSlot> slots)
     {
         if (Enum.IsDefined(typeof(EMeetingScheduleStatus), status) == false)
         {
@@ -49,16 +47,12 @@ public sealed class MeetingSchedule
         {
             if (slot.IsValid == false)
             {
-                throw new ArgumentException(
-                    "Meeting schedules cannot contain invalid slots.",
-                    nameof(slots));
+                throw new ArgumentException("Meeting schedules cannot contain invalid slots.", nameof(slots));
             }
 
             if (uniqueSlots.Add(slot) == false)
             {
-                throw new ArgumentException(
-                    "Meeting schedules cannot contain duplicate slots.",
-                    nameof(slots));
+                throw new ArgumentException("Meeting schedules cannot contain duplicate slots.", nameof(slots));
             }
 
             copiedSlots.Add(slot);

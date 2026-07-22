@@ -8,9 +8,7 @@ internal sealed class CourseSearchMatch
 
     public ECourseSearchMatchKind Kind { get; }
 
-    public CourseSearchMatch(
-        CourseSearchItem course,
-        ECourseSearchMatchKind kind)
+    public CourseSearchMatch(CourseSearchItem course, ECourseSearchMatchKind kind)
     {
         if (course == null)
         {

@@ -50,10 +50,7 @@ internal sealed class ProductWorkspaceLoaderTestContext : IDisposable
         CatalogCacheStore = new CatalogCacheFileStore(cachePath, limits);
         WorkspaceStore = new RecordingPlanningWorkspaceStore(workspaceLoadResult);
         CatalogDownloader = new QueueProductCatalogDownloader(downloads);
-        Loader = new ProductWorkspaceLoader(
-            CatalogCacheStore,
-            WorkspaceStore,
-            CatalogDownloader);
+        Loader = new ProductWorkspaceLoader(CatalogCacheStore, WorkspaceStore, CatalogDownloader);
     }
 
     public void Dispose()
@@ -66,9 +63,7 @@ internal sealed class ProductWorkspaceLoaderTestContext : IDisposable
 
     public async Task CorruptOnlyCatalogGenerationAsync()
     {
-        string generationPath = Path.Combine(
-            mDirectoryPath,
-            "catalog-cache.g00000000000000000001.bin");
+        string generationPath = Path.Combine(mDirectoryPath, "catalog-cache.g00000000000000000001.bin");
         await File.WriteAllBytesAsync(
             generationPath,
             new byte[] { 0x01, 0x02, 0x03 },

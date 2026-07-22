@@ -22,17 +22,12 @@ public readonly record struct MeetingSlot
         bool isDefinedDay = Enum.IsDefined(typeof(EDay), day);
         if (isDefinedDay == false || day == EDay.None)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(day),
-                day,
-                "Meeting slots require a defined day.");
+            throw new ArgumentOutOfRangeException(nameof(day), day, "Meeting slots require a defined day.");
         }
 
         if (period.IsValid == false)
         {
-            throw new ArgumentException(
-                "Meeting slots require a valid academic period.",
-                nameof(period));
+            throw new ArgumentException("Meeting slots require a valid academic period.", nameof(period));
         }
 
         Day = day;

@@ -24,8 +24,7 @@ public sealed class PersonalSchedulePaneStateTests
     [AvaloniaFact]
     public void TopScheduleCommandKeepsTheInspectorClosedAfterSaveAndCancel()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
 
         try
         {
@@ -40,8 +39,7 @@ public sealed class PersonalSchedulePaneStateTests
 
             Assert.False(workspace.IsInspectorPaneOpen);
 
-            PersonalScheduleItem schedule = Assert.Single(
-                workspace.ActivePlan.PersonalSchedules);
+            PersonalScheduleItem schedule = Assert.Single(workspace.ActivePlan.PersonalSchedules);
             workspace.BeginEditPersonalScheduleCommand.Execute(schedule.Id);
             workspace.PersonalScheduleTitleDraft = "연구실 정기 미팅";
             workspace.IsInspectorPaneOpen = true;
@@ -71,8 +69,7 @@ public sealed class PersonalSchedulePaneStateTests
     [AvaloniaFact]
     public void InspectorScheduleCommandsRestoreTheOpenPaneAfterSaveAndCancel()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
 
         try
         {
@@ -91,8 +88,7 @@ public sealed class PersonalSchedulePaneStateTests
 
             Assert.True(workspace.IsInspectorPaneOpen);
 
-            PersonalScheduleItem schedule = Assert.Single(
-                workspace.ActivePlan.PersonalSchedules);
+            PersonalScheduleItem schedule = Assert.Single(workspace.ActivePlan.PersonalSchedules);
             workspace.BeginEditPersonalScheduleCommand.Execute(schedule.Id);
             workspace.PersonalScheduleTitleDraft = "연구실 정기 미팅";
             workspace.IsInspectorPaneOpen = false;
@@ -124,10 +120,8 @@ public sealed class PersonalSchedulePaneStateTests
     {
         const double MEDIUM_WORKSPACE_WIDTH = 1_080.0;
 
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
-        workspace.applyWorkspaceWidth(new WorkspaceWidth(
-            MEDIUM_WORKSPACE_WIDTH));
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+        workspace.applyWorkspaceWidth(new WorkspaceWidth(MEDIUM_WORKSPACE_WIDTH));
         ProductWorkspaceHostView host = new ProductWorkspaceHostView();
         host.DataContext = workspace;
         Window window = new Window();
@@ -196,9 +190,7 @@ public sealed class PersonalSchedulePaneStateTests
         }
     }
 
-    private static void selectPersonalScheduleDay(
-        PlannerWorkspaceViewModel workspace,
-        EDay day)
+    private static void selectPersonalScheduleDay(PlannerWorkspaceViewModel workspace, EDay day)
     {
         PersonalScheduleDayOption? matchingOptionOrNull =
             workspace.PersonalScheduleDayOptions.FirstOrDefault(
@@ -226,13 +218,10 @@ public sealed class PersonalSchedulePaneStateTests
 
     private static void clickButton(Window window, Button button)
     {
-        Point? buttonPositionOrNull = button.TranslatePoint(
-            new Point(0.0, 0.0),
-            window);
+        Point? buttonPositionOrNull = button.TranslatePoint(new Point(0.0, 0.0), window);
         if (buttonPositionOrNull.HasValue == false)
         {
-            throw new InvalidOperationException(
-                "The button could not be translated to the test window.");
+            throw new InvalidOperationException("The button could not be translated to the test window.");
         }
 
         Point buttonPosition = buttonPositionOrNull.Value;
@@ -240,13 +229,7 @@ public sealed class PersonalSchedulePaneStateTests
             buttonPosition.X + (button.Bounds.Width / 2.0),
             buttonPosition.Y + (button.Bounds.Height / 2.0));
         window.MouseMove(clickPosition, RawInputModifiers.None);
-        window.MouseDown(
-            clickPosition,
-            MouseButton.Left,
-            RawInputModifiers.None);
-        window.MouseUp(
-            clickPosition,
-            MouseButton.Left,
-            RawInputModifiers.None);
+        window.MouseDown(clickPosition, MouseButton.Left, RawInputModifiers.None);
+        window.MouseUp(clickPosition, MouseButton.Left, RawInputModifiers.None);
     }
 }

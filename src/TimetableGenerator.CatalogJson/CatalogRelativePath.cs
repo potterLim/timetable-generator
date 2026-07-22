@@ -57,9 +57,7 @@ public sealed record CatalogRelativePath
     {
         if (segment.Length == 0)
         {
-            throw new ArgumentException(
-                "Catalog paths cannot contain empty path segments.",
-                nameof(value));
+            throw new ArgumentException("Catalog paths cannot contain empty path segments.", nameof(value));
         }
 
         string decodedSegment;
@@ -77,8 +75,7 @@ public sealed record CatalogRelativePath
 
         bool isDotSegment = string.Equals(decodedSegment, ".", StringComparison.Ordinal)
             || string.Equals(decodedSegment, "..", StringComparison.Ordinal);
-        bool escapesSegment = decodedSegment.Contains(PATH_SEPARATOR)
-            || decodedSegment.Contains('\\');
+        bool escapesSegment = decodedSegment.Contains(PATH_SEPARATOR) || decodedSegment.Contains('\\');
         if (isDotSegment || escapesSegment)
         {
             throw new ArgumentException(

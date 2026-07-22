@@ -26,8 +26,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         PersonalScheduleId scheduleId = mEditingPersonalScheduleIdOrNull.HasValue
             ? mEditingPersonalScheduleIdOrNull.Value
             : PersonalScheduleId.CreateNew();
-        PersonalScheduleTitle title = new PersonalScheduleTitle(
-            PersonalScheduleTitleDraft);
+        PersonalScheduleTitle title = new PersonalScheduleTitle(PersonalScheduleTitleDraft);
         ScheduleTime startTime = getRequiredTime(
             PersonalScheduleStartTimeOrNull,
             nameof(PersonalScheduleStartTimeOrNull));
@@ -43,8 +42,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         return new PersonalSchedule(scheduleId, title, timeRanges, details);
     }
 
-    private IReadOnlyList<WeeklyTimeRange> createSelectedTimeRanges(
-        DailyTimeRange timeRange)
+    private IReadOnlyList<WeeklyTimeRange> createSelectedTimeRanges(DailyTimeRange timeRange)
     {
         List<WeeklyTimeRange> timeRanges = new List<WeeklyTimeRange>();
         foreach (PersonalScheduleDayOption dayOption in PersonalScheduleDayOptions)
@@ -80,21 +78,17 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         foreach (WeeklyTimeRange timeRange in timeRanges)
         {
-            PersonalScheduleDayOption dayOption =
-                findPersonalScheduleDayOption(timeRange.Day);
+            PersonalScheduleDayOption dayOption = findPersonalScheduleDayOption(timeRange.Day);
             dayOption.IsSelected = true;
         }
     }
 
-    private IReadOnlyList<PersonalScheduleDayOption>
-        createPersonalScheduleDayOptions()
+    private IReadOnlyList<PersonalScheduleDayOption> createPersonalScheduleDayOptions()
     {
-        List<PersonalScheduleDayOption> dayOptions =
-            new List<PersonalScheduleDayOption>();
+        List<PersonalScheduleDayOption> dayOptions = new List<PersonalScheduleDayOption>();
         foreach (EDay day in PERSONAL_SCHEDULE_DAYS)
         {
-            PersonalScheduleDayOption dayOption =
-                new PersonalScheduleDayOption(day);
+            PersonalScheduleDayOption dayOption = new PersonalScheduleDayOption(day);
             dayOption.SelectionChanged += onPersonalScheduleDaySelectionChanged;
             dayOptions.Add(dayOption);
         }
@@ -131,17 +125,12 @@ internal sealed partial class PlannerWorkspaceViewModel
         return false;
     }
 
-    private void onPersonalScheduleDaySelectionChanged(
-        object? senderOrNull,
-        EventArgs eventArguments)
+    private void onPersonalScheduleDaySelectionChanged(object? senderOrNull, EventArgs eventArguments)
     {
         clearPersonalScheduleValidationError();
     }
 
-    private void setDraftString(
-        ref string field,
-        string? valueOrNull,
-        string propertyName)
+    private void setDraftString(ref string field, string? valueOrNull, string propertyName)
     {
         string normalizedValue;
         if (valueOrNull == null)
@@ -161,8 +150,7 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private void clearPersonalScheduleValidationError()
     {
-        if (mPersonalScheduleValidationError
-            == EPersonalScheduleDraftValidationError.None)
+        if (mPersonalScheduleValidationError == EPersonalScheduleDraftValidationError.None)
         {
             return;
         }
@@ -189,9 +177,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         raisePropertyChanged(nameof(PersonalScheduleSaveButtonText));
     }
 
-    private static ScheduleTime getRequiredTime(
-        ScheduleTime? valueOrNull,
-        string propertyName)
+    private static ScheduleTime getRequiredTime(ScheduleTime? valueOrNull, string propertyName)
     {
         if (valueOrNull.HasValue == false)
         {
@@ -234,22 +220,16 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private static string getSectionValue(PersonalScheduleDetails details)
     {
-        return details.SectionOrNull == null
-            ? string.Empty
-            : details.SectionOrNull.Value;
+        return details.SectionOrNull == null ? string.Empty : details.SectionOrNull.Value;
     }
 
     private static string getInstructorValue(PersonalScheduleDetails details)
     {
-        return details.InstructorOrNull == null
-            ? string.Empty
-            : details.InstructorOrNull.Value;
+        return details.InstructorOrNull == null ? string.Empty : details.InstructorOrNull.Value;
     }
 
     private static string getLocationValue(PersonalScheduleDetails details)
     {
-        return details.LocationOrNull == null
-            ? string.Empty
-            : details.LocationOrNull.Value;
+        return details.LocationOrNull == null ? string.Empty : details.LocationOrNull.Value;
     }
 }

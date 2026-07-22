@@ -14,11 +14,7 @@ internal readonly record struct ScheduleBoardDay
 
     public string FullDisplayName { get; }
 
-    public ScheduleBoardDay(
-        EDay day,
-        int columnIndex,
-        string shortDisplayName,
-        string fullDisplayName)
+    public ScheduleBoardDay(EDay day, int columnIndex, string shortDisplayName, string fullDisplayName)
     {
         ensureDefinedDay(day);
         if (columnIndex < 1)
@@ -38,9 +34,7 @@ internal readonly record struct ScheduleBoardDay
 
         if (string.IsNullOrWhiteSpace(fullDisplayName))
         {
-            throw new ArgumentException(
-                "Schedule days require a full display name.",
-                nameof(fullDisplayName));
+            throw new ArgumentException("Schedule days require a full display name.", nameof(fullDisplayName));
         }
 
         Day = day;

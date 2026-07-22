@@ -42,20 +42,16 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
         string? directoryPathOrNull = Path.GetDirectoryName(basePath.Value);
         if (directoryPathOrNull == null)
         {
-            throw new ArgumentException(
-                "Workspace file paths must include a directory.",
-                nameof(basePath));
+            throw new ArgumentException("Workspace file paths must include a directory.", nameof(basePath));
         }
 
-        GenerationFileStoragePath storagePath = new GenerationFileStoragePath(
-            basePath.Value);
+        GenerationFileStoragePath storagePath = new GenerationFileStoragePath(basePath.Value);
         mFileStorage = new GenerationFileStorage(storagePath);
         mCodec = codec;
         mDocumentSizeLimit = documentSizeLimit;
     }
 
-    public async Task<PlanningWorkspaceLoadResult> LoadAsync(
-        CancellationToken cancellationToken)
+    public async Task<PlanningWorkspaceLoadResult> LoadAsync(CancellationToken cancellationToken)
     {
         if (mFileStorage.HasDirectory() == false)
         {
@@ -64,9 +60,7 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
 
         try
         {
-            using (GenerationFileStorageAccess storageAccess =
-                await mFileStorage.AcquireExistingDirectoryAsync(
-                cancellationToken).ConfigureAwait(false))
+            using (GenerationFileStorageAccess storageAccess = await mFileStorage.AcquireExistingDirectoryAsync(cancellationToken).ConfigureAwait(false))
             {
                 return await loadWithoutLockAsync(cancellationToken).ConfigureAwait(false);
             }
@@ -110,9 +104,7 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
 
         try
         {
-            using (GenerationFileStorageAccess storageAccess =
-                await mFileStorage.AcquireCreatingDirectoryAsync(
-                cancellationToken).ConfigureAwait(false))
+            using (GenerationFileStorageAccess storageAccess = await mFileStorage.AcquireCreatingDirectoryAsync(cancellationToken).ConfigureAwait(false))
             {
                 return await saveWithoutLockAsync(
                     workspace,
@@ -153,8 +145,7 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
     private async Task<PlanningWorkspaceLoadResult> loadWithoutLockAsync(
         CancellationToken cancellationToken)
     {
-        IReadOnlyList<GenerationFile> generationFiles =
-            mFileStorage.GetGenerationFiles();
+        IReadOnlyList<GenerationFile> generationFiles = mFileStorage.GetGenerationFiles();
         if (generationFiles.Count == 0)
         {
             return PlanningWorkspaceLoadResult.CreateNotFound();
@@ -188,9 +179,7 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
             }
             catch (UnsupportedWorkspaceSchemaVersionException exception)
             {
-                throw new PlanningWorkspaceUpgradeRequiredException(
-                    exception.SchemaVersion,
-                    exception);
+                throw new PlanningWorkspaceUpgradeRequiredException(exception.SchemaVersion, exception);
             }
             catch (Exception exception) when (isRecoverableGenerationException(exception))
             {
@@ -215,8 +204,7 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
                 "The planning workspace document exceeds the product size limit.");
         }
 
-        byte[] content = await File.ReadAllBytesAsync(path.Value, cancellationToken)
-            .ConfigureAwait(false);
+        byte[] content = await File.ReadAllBytesAsync(path.Value, cancellationToken).ConfigureAwait(false);
         return mCodec.Deserialize(content);
     }
 
@@ -225,15 +213,11 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
         PlanningWorkspaceConcurrencyToken expectedToken,
         CancellationToken cancellationToken)
     {
-        IReadOnlyList<GenerationFile> generationFiles =
-            mFileStorage.GetGenerationFiles();
-        PlanningWorkspaceConcurrencyToken actualToken =
-            createConcurrencyToken(generationFiles);
+        IReadOnlyList<GenerationFile> generationFiles = mFileStorage.GetGenerationFiles();
+        PlanningWorkspaceConcurrencyToken actualToken = createConcurrencyToken(generationFiles);
         if (actualToken != expectedToken)
         {
-            throw new PlanningWorkspaceConcurrencyException(
-                expectedToken,
-                actualToken);
+            throw new PlanningWorkspaceConcurrencyException(expectedToken, actualToken);
         }
 
         await ensureLatestGenerationAllowsSaveAsync(
@@ -242,9 +226,7 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
         WorkspaceGeneration nextGeneration = getNextGeneration(generationFiles);
         FileGeneration nextFileGeneration = new FileGeneration(nextGeneration.Value);
 
-        PlanningWorkspaceDocument document = new PlanningWorkspaceDocument(
-            nextGeneration,
-            workspace);
+        PlanningWorkspaceDocument document = new PlanningWorkspaceDocument(nextGeneration, workspace);
         byte[] content = mCodec.Serialize(document);
         if (content.LongLength > mDocumentSizeLimit.Bytes)
         {
@@ -308,9 +290,7 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
             }
             catch (UnsupportedWorkspaceSchemaVersionException exception)
             {
-                throw new PlanningWorkspaceUpgradeRequiredException(
-                    exception.SchemaVersion,
-                    exception);
+                throw new PlanningWorkspaceUpgradeRequiredException(exception.SchemaVersion, exception);
             }
             catch (WorkspaceDocumentSizeException exception)
             {
@@ -325,16 +305,14 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
         }
     }
 
-    private static WorkspaceGeneration getNextGeneration(
-        IReadOnlyList<GenerationFile> generationFiles)
+    private static WorkspaceGeneration getNextGeneration(IReadOnlyList<GenerationFile> generationFiles)
     {
         if (generationFiles.Count == 0)
         {
             return new WorkspaceGeneration(1L);
         }
 
-        WorkspaceGeneration latestGeneration = new WorkspaceGeneration(
-            generationFiles[0].Generation.Value);
+        WorkspaceGeneration latestGeneration = new WorkspaceGeneration(generationFiles[0].Generation.Value);
         return latestGeneration.GetNext();
     }
 
@@ -346,8 +324,7 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
             return PlanningWorkspaceConcurrencyToken.MissingWorkspace;
         }
 
-        return new PlanningWorkspaceConcurrencyToken(
-            generationFiles[0].Generation.Value);
+        return new PlanningWorkspaceConcurrencyToken(generationFiles[0].Generation.Value);
     }
 
 }

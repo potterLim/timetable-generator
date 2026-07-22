@@ -103,9 +103,7 @@ public sealed class CatalogCommandLineParserTests
         CatalogGenerationException exception = Assert.ThrowsExactly<CatalogGenerationException>(
             () => CatalogCommandLineParser.Parse(arguments));
 
-        assertInvalidArgumentsError(
-            exception,
-            ECatalogGenerationErrorCode.MissingRequiredOption);
+        assertInvalidArgumentsError(exception, ECatalogGenerationErrorCode.MissingRequiredOption);
         StringAssert.Contains(exception.Message, "--term");
         StringAssert.Contains(exception.Message, "--revision");
         StringAssert.Contains(exception.Message, "--output-root");
@@ -125,9 +123,7 @@ public sealed class CatalogCommandLineParserTests
         CatalogGenerationException exception = Assert.ThrowsExactly<CatalogGenerationException>(
             () => CatalogCommandLineParser.Parse(arguments));
 
-        assertInvalidArgumentsError(
-            exception,
-            ECatalogGenerationErrorCode.MissingOptionValue);
+        assertInvalidArgumentsError(exception, ECatalogGenerationErrorCode.MissingOptionValue);
         StringAssert.Contains(exception.Message, "--source");
     }
 
@@ -150,9 +146,7 @@ public sealed class CatalogCommandLineParserTests
         StringAssert.Contains(exception.Message, optionName);
     }
 
-    private static string[] createValidArguments(
-        string sourcePath,
-        string outputRootPath)
+    private static string[] createValidArguments(string sourcePath, string outputRootPath)
     {
         return new string[]
         {

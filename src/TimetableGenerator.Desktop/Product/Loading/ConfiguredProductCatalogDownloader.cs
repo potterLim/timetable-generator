@@ -42,15 +42,13 @@ internal sealed class ConfiguredProductCatalogDownloader : IProductCatalogDownlo
     public async Task<VerifiedCatalogPackage> DownloadDefaultCatalogAsync(
         CancellationToken cancellationToken)
     {
-        CatalogSourceConfiguration configuration =
-            await mConfigurationLoader.LoadAsync(cancellationToken).ConfigureAwait(false);
+        CatalogSourceConfiguration configuration = await mConfigurationLoader.LoadAsync(cancellationToken).ConfigureAwait(false);
         using (RemoteCatalogSynchronizer synchronizer = RemoteCatalogSynchronizer.Create(
             configuration.Endpoint,
             mSynchronizationLimits,
             mCacheStore))
         {
-            return await synchronizer.DownloadDefaultCatalogAsync(cancellationToken)
-                .ConfigureAwait(false);
+            return await synchronizer.DownloadDefaultCatalogAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 }

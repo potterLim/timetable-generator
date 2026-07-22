@@ -24,9 +24,7 @@ internal sealed record ProductDataRootPath
         string fullPath = Path.GetFullPath(value);
         if (Path.IsPathFullyQualified(fullPath) == false)
         {
-            throw new ArgumentException(
-                "Product data paths must be fully qualified.",
-                nameof(value));
+            throw new ArgumentException("Product data paths must be fully qualified.", nameof(value));
         }
 
         Value = fullPath;
@@ -34,16 +32,14 @@ internal sealed record ProductDataRootPath
 
     public static ProductDataRootPath CreateDefault()
     {
-        string localApplicationDataPath = Environment.GetFolderPath(
-            Environment.SpecialFolder.LocalApplicationData);
+        string localApplicationDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         if (string.IsNullOrWhiteSpace(localApplicationDataPath))
         {
             throw new InvalidOperationException(
                 "The operating system did not provide a local application data path.");
         }
 
-        return new ProductDataRootPath(
-            Path.Combine(localApplicationDataPath, PRODUCT_DIRECTORY_NAME));
+        return new ProductDataRootPath(Path.Combine(localApplicationDataPath, PRODUCT_DIRECTORY_NAME));
     }
 
     public override string ToString()

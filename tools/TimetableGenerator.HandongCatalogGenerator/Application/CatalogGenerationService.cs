@@ -23,11 +23,7 @@ internal sealed class CatalogGenerationService
             cancellationToken).ConfigureAwait(false);
         validateAcademicTerm(sourceDocument, request.Term);
         CourseCatalog catalog = normalizeCatalog(sourceDocument);
-        byte[] catalogContent = serializeCatalog(
-            catalog,
-            request.Term,
-            request.Revision,
-            sourceDocument);
+        byte[] catalogContent = serializeCatalog(catalog, request.Term, request.Revision, sourceDocument);
         CatalogPackageWriteResult package = await publishCatalogAsync(
             request,
             catalog,
@@ -58,9 +54,7 @@ internal sealed class CatalogGenerationService
 
         try
         {
-            return await HandongExportReader.ReadAsync(
-                sourceFilePath,
-                cancellationToken).ConfigureAwait(false);
+            return await HandongExportReader.ReadAsync(sourceFilePath, cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {

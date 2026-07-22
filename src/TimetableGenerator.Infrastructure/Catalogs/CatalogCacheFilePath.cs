@@ -24,9 +24,7 @@ public sealed record CatalogCacheFilePath
         string baseFileName = Path.GetFileNameWithoutExtension(fullPath);
         if (string.IsNullOrWhiteSpace(fileName) || string.IsNullOrWhiteSpace(baseFileName))
         {
-            throw new ArgumentException(
-                "Catalog cache paths must identify a named file.",
-                nameof(value));
+            throw new ArgumentException("Catalog cache paths must identify a named file.", nameof(value));
         }
 
         Value = fullPath;

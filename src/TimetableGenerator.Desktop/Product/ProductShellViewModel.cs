@@ -101,8 +101,7 @@ internal sealed partial class ProductShellViewModel : ObservableObject, IDisposa
                 return "Timetable Generator";
             }
 
-            return "Timetable Generator - "
-                + mWorkspaceOrNull.InstitutionName;
+            return "Timetable Generator - " + mWorkspaceOrNull.InstitutionName;
         }
     }
 
@@ -151,20 +150,17 @@ internal sealed partial class ProductShellViewModel : ObservableObject, IDisposa
         throwIfDisposed();
         mLoadCancellationSource.Cancel();
         mLoadCancellationSource.Dispose();
-        CancellationTokenSource loadCancellationSource =
-            new CancellationTokenSource();
+        CancellationTokenSource loadCancellationSource = new CancellationTokenSource();
         mLoadCancellationSource = loadCancellationSource;
         mCatalogUpdateCancellationSource.Cancel();
         mCatalogUpdateCancellationSource.Dispose();
-        CancellationTokenSource catalogUpdateCancellationSource =
-            new CancellationTokenSource();
+        CancellationTokenSource catalogUpdateCancellationSource = new CancellationTokenSource();
         mCatalogUpdateCancellationSource = catalogUpdateCancellationSource;
         setLoadingState();
 
         try
         {
-            ProductWorkspacePresentation presentation =
-                await mWorkspaceLoader.LoadAsync(loadCancellationSource.Token);
+            ProductWorkspacePresentation presentation = await mWorkspaceLoader.LoadAsync(loadCancellationSource.Token);
             PlannerWorkspaceViewModel workspace = presentation.Workspace;
             if (loadCancellationSource.IsCancellationRequested
                 || ReferenceEquals(mLoadCancellationSource, loadCancellationSource) == false)
@@ -180,9 +176,7 @@ internal sealed partial class ProductShellViewModel : ObservableObject, IDisposa
             raisePropertyChanged(nameof(WorkspaceOrNull));
             raisePropertyChanged(nameof(AccessibleWindowName));
             raiseProductNoticePropertiesChanged();
-            startCatalogUpdateCheck(
-                presentation,
-                catalogUpdateCancellationSource);
+            startCatalogUpdateCheck(presentation, catalogUpdateCancellationSource);
         }
         catch (OperationCanceledException)
             when (loadCancellationSource.IsCancellationRequested)

@@ -14,8 +14,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
 
     private static void migrateLegacyPlanNames(List<PlanningPlan> plans)
     {
-        HashSet<string> existingPlanNames = new HashSet<string>(
-            StringComparer.OrdinalIgnoreCase);
+        HashSet<string> existingPlanNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (PlanningPlan plan in plans)
         {
             existingPlanNames.Add(plan.Name.Value);
@@ -25,8 +24,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         {
             PlanningPlan plan = plans[planIndex];
             string? migratedNameOrNull = findMigratedPlanNameOrNull(plan);
-            if (migratedNameOrNull == null
-                || existingPlanNames.Contains(migratedNameOrNull))
+            if (migratedNameOrNull == null || existingPlanNames.Contains(migratedNameOrNull))
             {
                 continue;
             }
@@ -50,9 +48,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         }
 
         string numberedNamePrefix = termPlanName + " ";
-        if (plan.Name.Value.StartsWith(
-            numberedNamePrefix,
-            StringComparison.Ordinal) == false)
+        if (plan.Name.Value.StartsWith(numberedNamePrefix, StringComparison.Ordinal) == false)
         {
             return null;
         }

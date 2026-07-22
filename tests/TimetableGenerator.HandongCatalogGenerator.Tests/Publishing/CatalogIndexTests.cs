@@ -68,16 +68,13 @@ public sealed class CatalogIndexTests
                 "      \"revision\": 1,\n      \"publishedAt\": \"2026-07-16T00:00:00Z\",\n",
                 StringComparison.Ordinal);
 
-        CatalogIndexDocument parsed = CatalogIndexReader.Read(
-            Encoding.UTF8.GetBytes(preReleaseContent));
+        CatalogIndexDocument parsed = CatalogIndexReader.Read(Encoding.UTF8.GetBytes(preReleaseContent));
         string rewrittenContent = Encoding.UTF8.GetString(CatalogIndexJsonWriter.Write(parsed));
 
         Assert.HasCount(1, parsed.Entries);
         using (JsonDocument rewrittenDocument = JsonDocument.Parse(rewrittenContent))
         {
-            Assert.AreEqual(
-                1,
-                rewrittenDocument.RootElement.GetProperty("schemaVersion").GetInt32());
+            Assert.AreEqual(1, rewrittenDocument.RootElement.GetProperty("schemaVersion").GetInt32());
             Assert.AreEqual(
                 1,
                 rewrittenDocument.RootElement
@@ -106,10 +103,7 @@ public sealed class CatalogIndexTests
             () => CatalogIndexReader.Read(Encoding.UTF8.GetBytes(unsupportedContent)));
     }
 
-    private static CatalogIndexEntry createEntry(
-        string term,
-        int revision,
-        char digestCharacter)
+    private static CatalogIndexEntry createEntry(string term, int revision, char digestCharacter)
     {
         return new CatalogIndexEntry(
             AcademicTerm.Parse(term),

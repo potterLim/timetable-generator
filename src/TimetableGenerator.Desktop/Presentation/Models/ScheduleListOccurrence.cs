@@ -143,9 +143,7 @@ internal sealed class ScheduleListOccurrence
 
         if (days.Count == 0)
         {
-            throw new ArgumentException(
-                "Schedule list occurrences require at least one day.",
-                nameof(days));
+            throw new ArgumentException("Schedule list occurrences require at least one day.", nameof(days));
         }
 
         if (timeRange.IsValid == false)
@@ -179,8 +177,7 @@ internal sealed class ScheduleListOccurrence
         ScheduleDisplayText = createScheduleDisplayText(mDays, timeRange);
     }
 
-    private static IReadOnlyList<EDay> copyAndValidateDays(
-        IReadOnlyList<EDay> days)
+    private static IReadOnlyList<EDay> copyAndValidateDays(IReadOnlyList<EDay> days)
     {
         List<EDay> copiedDays = new List<EDay>(days.Count);
         foreach (EDay day in days)
@@ -196,13 +193,9 @@ internal sealed class ScheduleListOccurrence
         return copiedDays.AsReadOnly();
     }
 
-    private static string createScheduleDisplayText(
-        IReadOnlyList<EDay> days,
-        DailyTimeRange timeRange)
+    private static string createScheduleDisplayText(IReadOnlyList<EDay> days, DailyTimeRange timeRange)
     {
-        return ScheduleBoardDayRange.CreateShortDayTimeDisplayText(
-            days,
-            timeRange);
+        return ScheduleBoardDayRange.CreateShortDayTimeDisplayText(days, timeRange);
     }
 
     private static string createAccessibleScheduleText(

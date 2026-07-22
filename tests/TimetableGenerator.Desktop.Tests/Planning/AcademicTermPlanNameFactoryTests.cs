@@ -15,8 +15,7 @@ public sealed class AcademicTermPlanNameFactoryTests
     {
         AcademicTerm academicTerm = AcademicTerm.Parse("2027-1");
 
-        PlanName planName =
-            AcademicTermPlanNameFactory.CreateInitialPlanName(academicTerm);
+        PlanName planName = AcademicTermPlanNameFactory.CreateInitialPlanName(academicTerm);
 
         Assert.Equal("2027-1학기 시간표", planName.Value);
     }
@@ -32,10 +31,7 @@ public sealed class AcademicTermPlanNameFactoryTests
             createPlan(academicTerm, "2027-1학기 시간표 (3)"),
         };
 
-        PlanName planName =
-            AcademicTermPlanNameFactory.FindAvailablePlanName(
-                academicTerm,
-                existingPlans);
+        PlanName planName = AcademicTermPlanNameFactory.FindAvailablePlanName(academicTerm, existingPlans);
 
         Assert.Equal("2027-1학기 시간표 (4)", planName.Value);
     }
@@ -49,9 +45,7 @@ public sealed class AcademicTermPlanNameFactoryTests
             createPlan(academicTerm, "2027-1학기 시간표 (2)"),
         };
 
-        PlanName planName = AcademicTermPlanNameFactory.FindAvailablePlanName(
-            academicTerm,
-            existingPlans);
+        PlanName planName = AcademicTermPlanNameFactory.FindAvailablePlanName(academicTerm, existingPlans);
 
         Assert.Equal("2027-1학기 시간표", planName.Value);
     }
@@ -66,9 +60,7 @@ public sealed class AcademicTermPlanNameFactoryTests
             createPlan(academicTerm, "2027-1학기 시간표(2)"),
         };
 
-        PlanName planName = AcademicTermPlanNameFactory.FindAvailablePlanName(
-            academicTerm,
-            existingPlans);
+        PlanName planName = AcademicTermPlanNameFactory.FindAvailablePlanName(academicTerm, existingPlans);
 
         Assert.Equal("2027-1학기 시간표 (3)", planName.Value);
     }
@@ -88,9 +80,7 @@ public sealed class AcademicTermPlanNameFactoryTests
                 null!));
     }
 
-    private static PlanningPlan createPlan(
-        AcademicTerm academicTerm,
-        string planName)
+    private static PlanningPlan createPlan(AcademicTerm academicTerm, string planName)
     {
         PlanCatalogBinding catalogBinding = new PlanCatalogBinding(
             new CatalogId("catalog-test"),

@@ -31,10 +31,7 @@ public sealed class ScheduleRecommendationValidationTests
             },
             Array.Empty<UnscheduledOfferingSelection>());
 
-        assertValidationError(
-            catalog,
-            plan,
-            EPlanCatalogValidationError.CatalogBindingMismatch);
+        assertValidationError(catalog, plan, EPlanCatalogValidationError.CatalogBindingMismatch);
     }
 
     [TestMethod]
@@ -51,18 +48,13 @@ public sealed class ScheduleRecommendationValidationTests
                         "01"),
                     EOfferingPreference.Acceptable),
             });
-        CourseChoiceGroup missingCourseGroup =
-            ScheduleRecommendationTestData.CreateCourseChoiceGroupFromCandidates(
-                missingCourseCandidate);
+        CourseChoiceGroup missingCourseGroup = ScheduleRecommendationTestData.CreateCourseChoiceGroupFromCandidates(missingCourseCandidate);
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
             catalog,
             new CourseChoiceGroup[] { missingCourseGroup },
             Array.Empty<UnscheduledOfferingSelection>());
 
-        assertValidationError(
-            catalog,
-            plan,
-            EPlanCatalogValidationError.CourseNotFound);
+        assertValidationError(catalog, plan, EPlanCatalogValidationError.CourseNotFound);
     }
 
     [TestMethod]
@@ -79,10 +71,7 @@ public sealed class ScheduleRecommendationValidationTests
             },
             Array.Empty<UnscheduledOfferingSelection>());
 
-        assertValidationError(
-            catalog,
-            plan,
-            EPlanCatalogValidationError.OfferingNotFound);
+        assertValidationError(catalog, plan, EPlanCatalogValidationError.OfferingNotFound);
     }
 
     [TestMethod]
@@ -104,18 +93,13 @@ public sealed class ScheduleRecommendationValidationTests
                         "09"),
                     EOfferingPreference.Excluded),
             });
-        CourseChoiceGroup group =
-            ScheduleRecommendationTestData.CreateCourseChoiceGroupFromCandidates(
-                courseCandidate);
+        CourseChoiceGroup group = ScheduleRecommendationTestData.CreateCourseChoiceGroupFromCandidates(courseCandidate);
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
             catalog,
             new CourseChoiceGroup[] { group },
             Array.Empty<UnscheduledOfferingSelection>());
 
-        assertValidationError(
-            catalog,
-            plan,
-            EPlanCatalogValidationError.OfferingNotFound);
+        assertValidationError(catalog, plan, EPlanCatalogValidationError.OfferingNotFound);
     }
 
     [TestMethod]
@@ -132,18 +116,13 @@ public sealed class ScheduleRecommendationValidationTests
                         "01"),
                     EOfferingPreference.Acceptable),
             });
-        CourseChoiceGroup mismatchedCourseGroup =
-            ScheduleRecommendationTestData.CreateCourseChoiceGroupFromCandidates(
-                mismatchedCourseCandidate);
+        CourseChoiceGroup mismatchedCourseGroup = ScheduleRecommendationTestData.CreateCourseChoiceGroupFromCandidates(mismatchedCourseCandidate);
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
             catalog,
             new CourseChoiceGroup[] { mismatchedCourseGroup },
             Array.Empty<UnscheduledOfferingSelection>());
 
-        assertValidationError(
-            catalog,
-            plan,
-            EPlanCatalogValidationError.OfferingCourseMismatch);
+        assertValidationError(catalog, plan, EPlanCatalogValidationError.OfferingCourseMismatch);
     }
 
     [TestMethod]
@@ -166,8 +145,7 @@ public sealed class ScheduleRecommendationValidationTests
             },
             Array.Empty<UnscheduledOfferingSelection>());
 
-        ScheduleRecommendationGenerator generator =
-            new ScheduleRecommendationGenerator();
+        ScheduleRecommendationGenerator generator = new ScheduleRecommendationGenerator();
         ScheduleRecommendationResult result = generator.GenerateRecommendations(
             new ScheduleRecommendationRequest(
                 catalog,
@@ -175,9 +153,7 @@ public sealed class ScheduleRecommendationValidationTests
                 new ScheduleRecommendationLimit(10)),
             System.Threading.CancellationToken.None);
 
-        Assert.AreEqual(
-            EScheduleRecommendationCompletion.Completed,
-            result.Completion);
+        Assert.AreEqual(EScheduleRecommendationCompletion.Completed, result.Completion);
         Assert.HasCount(1, result.Recommendations);
         Assert.IsEmpty(result.Recommendations[0].ScheduledOfferings);
         Assert.HasCount(1, result.Recommendations[0].UnscheduledSelections);

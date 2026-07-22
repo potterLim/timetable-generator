@@ -84,8 +84,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return mPlanNameEditorPurposeOrNull
-                == EPlanNameEditorPurpose.Create;
+            return mPlanNameEditorPurposeOrNull == EPlanNameEditorPurpose.Create;
         }
     }
 
@@ -93,8 +92,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return mPlanNameEditorPurposeOrNull
-                == EPlanNameEditorPurpose.Rename;
+            return mPlanNameEditorPurposeOrNull == EPlanNameEditorPurpose.Rename;
         }
     }
 
@@ -420,8 +418,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                 confirmRenamePlan(newName);
                 break;
             default:
-                throw new InvalidOperationException(
-                    "The plan name editor purpose is not supported.");
+                throw new InvalidOperationException("The plan name editor purpose is not supported.");
         }
     }
 
@@ -434,9 +431,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
 
         hidePlanNameEditor();
-        mSession.AddPlan(
-            PlanId.CreateNew(),
-            newName);
+        mSession.AddPlan(PlanId.CreateNew(), newName);
         rebuildPlanItemsAndNotify();
         afterWorkspaceMutation();
     }
@@ -446,8 +441,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         PlanTabItem? planBeingRenamedOrNull = mPlanBeingRenamedOrNull;
         if (planBeingRenamedOrNull == null)
         {
-            throw new InvalidOperationException(
-                "A rename operation requires a target plan.");
+            throw new InvalidOperationException("A rename operation requires a target plan.");
         }
 
         if (hasOtherPlanWithName(planBeingRenamedOrNull.PlanId, newName))
@@ -586,8 +580,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         bool previouslyHadActivePlan = mActivePlanOrNull != null;
         rebuildPlanItems();
-        mActivePlanOrNull = findPlanItemOrNull(
-            mSession.Workspace.ActivePlanIdOrNull);
+        mActivePlanOrNull = findPlanItemOrNull(mSession.Workspace.ActivePlanIdOrNull);
         mPlanNameDraft = string.Empty;
         if (mActivePlanOrNull != null)
         {
@@ -613,11 +606,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             Plans.Clear();
             foreach (PlanningPlan plan in mSession.Workspace.Plans)
             {
-                Plans.Add(new PlanTabItem(
-                    plan,
-                    mCatalogProjection,
-                    beginRenamePlan,
-                    requestClosePlan));
+                Plans.Add(new PlanTabItem(plan, mCatalogProjection, beginRenamePlan, requestClosePlan));
             }
         }
         finally
@@ -649,8 +638,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         if (mActivePlanOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The workspace does not currently contain an active plan.");
+            throw new InvalidOperationException("The workspace does not currently contain an active plan.");
         }
 
         return mActivePlanOrNull;
@@ -666,9 +654,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             }
         }
 
-        throw new ArgumentException(
-            "The active plan must belong to this workspace.",
-            nameof(plan));
+        throw new ArgumentException("The active plan must belong to this workspace.", nameof(plan));
     }
 
     private bool hasOtherPlanWithName(PlanId excludedPlanId, PlanName name)
@@ -691,9 +677,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         foreach (PlanningPlan plan in mSession.Workspace.Plans)
         {
-            if (StringComparer.OrdinalIgnoreCase.Equals(
-                plan.Name.Value,
-                name.Value))
+            if (StringComparer.OrdinalIgnoreCase.Equals(plan.Name.Value, name.Value))
             {
                 return true;
             }

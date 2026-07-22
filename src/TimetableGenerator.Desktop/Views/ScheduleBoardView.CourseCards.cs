@@ -9,13 +9,10 @@ namespace TimetableGenerator.Desktop.Views;
 
 internal sealed partial class ScheduleBoardView
 {
-    private void configureCourseCard(
-        Button scheduleCard,
-        CourseScheduleEntry entry)
+    private void configureCourseCard(Button scheduleCard, CourseScheduleEntry entry)
     {
         scheduleCard.Classes.Add(findAccentClass(entry.Accent));
-        scheduleCard.Content = createScheduleCardContent(
-            new ScheduleCardContent(entry));
+        scheduleCard.Content = createScheduleCardContent(new ScheduleCardContent(entry));
         scheduleCard.Flyout = createCourseEntryFlyout(entry);
 
         string accessibleName = entry.Code + ", "
@@ -27,9 +24,7 @@ internal sealed partial class ScheduleBoardView
             + entry.InstructorDisplayText + ", "
             + entry.LocationDisplayText;
         AutomationProperties.SetName(scheduleCard, accessibleName);
-        AutomationProperties.SetHelpText(
-            scheduleCard,
-            "선택하면 과목의 전체 시간, 교수, 강의실 정보를 엽니다.");
+        AutomationProperties.SetHelpText(scheduleCard, "선택하면 과목의 전체 시간, 교수, 강의실 정보를 엽니다.");
         ToolTip.SetTip(
             scheduleCard,
             entry.Name

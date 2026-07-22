@@ -30,9 +30,7 @@ internal sealed class ProductAppearanceSettingsJsonCodec
         {
             writer.WriteStartObject();
             writer.WriteNumber("schemaVersion", SCHEMA_VERSION);
-            writer.WriteString(
-                "themePreference",
-                findSerializedThemePreference(settings.ThemePreference));
+            writer.WriteString("themePreference", findSerializedThemePreference(settings.ThemePreference));
             writer.WriteEndObject();
             writer.Flush();
         }
@@ -44,8 +42,7 @@ internal sealed class ProductAppearanceSettingsJsonCodec
     {
         if (content.IsEmpty)
         {
-            throw new ProductAppearanceSettingsException(
-                "The appearance settings document is empty.");
+            throw new ProductAppearanceSettingsException("The appearance settings document is empty.");
         }
 
         try
@@ -74,8 +71,7 @@ internal sealed class ProductAppearanceSettingsJsonCodec
         bool hasSchemaVersion = false;
         bool hasThemePreference = false;
         int schemaVersion = 0;
-        EProductThemePreference themePreference =
-            EProductThemePreference.System;
+        EProductThemePreference themePreference = EProductThemePreference.System;
         foreach (JsonProperty property in element.EnumerateObject())
         {
             switch (property.Name)
@@ -131,27 +127,23 @@ internal sealed class ProductAppearanceSettingsJsonCodec
     {
         if (element.ValueKind != JsonValueKind.Number)
         {
-            throw new ProductAppearanceSettingsException(
-                "schemaVersion must be a JSON number.");
+            throw new ProductAppearanceSettingsException("schemaVersion must be a JSON number.");
         }
 
         int schemaVersion;
         if (element.TryGetInt32(out schemaVersion) == false)
         {
-            throw new ProductAppearanceSettingsException(
-                "schemaVersion must be a 32-bit integer.");
+            throw new ProductAppearanceSettingsException("schemaVersion must be a 32-bit integer.");
         }
 
         return schemaVersion;
     }
 
-    private static EProductThemePreference readThemePreference(
-        JsonElement element)
+    private static EProductThemePreference readThemePreference(JsonElement element)
     {
         if (element.ValueKind != JsonValueKind.String)
         {
-            throw new ProductAppearanceSettingsException(
-                "themePreference must be a JSON string.");
+            throw new ProductAppearanceSettingsException("themePreference must be a JSON string.");
         }
 
         string? serializedPreferenceOrNull = element.GetString();
@@ -169,8 +161,7 @@ internal sealed class ProductAppearanceSettingsJsonCodec
         }
     }
 
-    private static string findSerializedThemePreference(
-        EProductThemePreference themePreference)
+    private static string findSerializedThemePreference(EProductThemePreference themePreference)
     {
         switch (themePreference)
         {
@@ -188,8 +179,7 @@ internal sealed class ProductAppearanceSettingsJsonCodec
         }
     }
 
-    private static ProductAppearanceSettingsException
-        createDuplicatePropertyException(string propertyName)
+    private static ProductAppearanceSettingsException createDuplicatePropertyException(string propertyName)
     {
         return new ProductAppearanceSettingsException(
             "The appearance settings document contains the duplicate property '"
@@ -197,8 +187,7 @@ internal sealed class ProductAppearanceSettingsJsonCodec
             + "'.");
     }
 
-    private static ProductAppearanceSettingsException
-        createMissingPropertyException(string propertyName)
+    private static ProductAppearanceSettingsException createMissingPropertyException(string propertyName)
     {
         return new ProductAppearanceSettingsException(
             "The appearance settings document is missing the required property '"

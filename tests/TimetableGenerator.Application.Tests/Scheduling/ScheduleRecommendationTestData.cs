@@ -109,8 +109,7 @@ internal static class ScheduleRecommendationTestData
         EOfferingPreference preference,
         params string[] sectionCodeValues)
     {
-        List<OfferingCandidate> offeringCandidates =
-            new List<OfferingCandidate>();
+        List<OfferingCandidate> offeringCandidates = new List<OfferingCandidate>();
         foreach (string sectionCodeValue in sectionCodeValues)
         {
             offeringCandidates.Add(new OfferingCandidate(
@@ -118,9 +117,7 @@ internal static class ScheduleRecommendationTestData
                 preference));
         }
 
-        return new CourseCandidate(
-            CreateCourseId(courseCodeValue),
-            offeringCandidates);
+        return new CourseCandidate(CreateCourseId(courseCodeValue), offeringCandidates);
     }
 
     public static CourseChoiceGroup CreateCourseChoiceGroup(
@@ -130,9 +127,7 @@ internal static class ScheduleRecommendationTestData
         List<OfferingId> offeringIds = new List<OfferingId>();
         foreach (string sectionCodeValue in sectionCodeValues)
         {
-            offeringIds.Add(CreateOfferingId(
-                courseCodeValue,
-                sectionCodeValue));
+            offeringIds.Add(CreateOfferingId(courseCodeValue, sectionCodeValue));
         }
 
         return CourseChoiceGroup.CreateWithAcceptableOfferings(
@@ -164,9 +159,7 @@ internal static class ScheduleRecommendationTestData
         return new CourseId("handong-global-university:" + courseCodeValue);
     }
 
-    public static OfferingId CreateOfferingId(
-        string courseCodeValue,
-        string sectionCodeValue)
+    public static OfferingId CreateOfferingId(string courseCodeValue, string sectionCodeValue)
     {
         return new OfferingId(
             "handong-global-university:2026-2:"

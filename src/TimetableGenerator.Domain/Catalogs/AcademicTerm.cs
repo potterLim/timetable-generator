@@ -31,16 +31,12 @@ public readonly record struct AcademicTerm
     {
         if (academicYear.IsValid == false)
         {
-            throw new ArgumentException(
-                "Academic terms require a valid academic year.",
-                nameof(academicYear));
+            throw new ArgumentException("Academic terms require a valid academic year.", nameof(academicYear));
         }
 
         if (semester.IsValid == false)
         {
-            throw new ArgumentException(
-                "Academic terms require a valid academic semester.",
-                nameof(semester));
+            throw new ArgumentException("Academic terms require a valid academic semester.", nameof(semester));
         }
 
         AcademicYear = academicYear;
@@ -74,13 +70,10 @@ public readonly record struct AcademicTerm
             out semesterValue);
         if (isAcademicYearParsed == false || isSemesterParsed == false)
         {
-            throw new FormatException(
-                "Academic terms must contain numeric year and semester values.");
+            throw new FormatException("Academic terms must contain numeric year and semester values.");
         }
 
-        return new AcademicTerm(
-            new AcademicYear(academicYearValue),
-            new AcademicSemester(semesterValue));
+        return new AcademicTerm(new AcademicYear(academicYearValue), new AcademicSemester(semesterValue));
     }
 
     public override string ToString()

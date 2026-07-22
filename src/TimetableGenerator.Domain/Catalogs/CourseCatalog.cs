@@ -66,9 +66,7 @@ public sealed class CourseCatalog
 
         if (revision.IsValid == false)
         {
-            throw new ArgumentException(
-                "Course catalogs require a valid revision.",
-                nameof(revision));
+            throw new ArgumentException("Course catalogs require a valid revision.", nameof(revision));
         }
 
         if (courses == null)
@@ -82,9 +80,7 @@ public sealed class CourseCatalog
         }
 
         IReadOnlyList<CatalogCourse> copiedCourses = copyAndValidateCourses(courses);
-        IReadOnlyList<CatalogOffering> copiedOfferings = copyAndValidateOfferings(
-            offerings,
-            copiedCourses);
+        IReadOnlyList<CatalogOffering> copiedOfferings = copyAndValidateOfferings(offerings, copiedCourses);
 
         Id = id;
         InstitutionId = institutionId;
@@ -105,9 +101,7 @@ public sealed class CourseCatalog
         {
             if (course == null)
             {
-                throw new ArgumentException(
-                    "Course catalogs cannot contain null courses.",
-                    nameof(courses));
+                throw new ArgumentException("Course catalogs cannot contain null courses.", nameof(courses));
             }
 
             if (courseIds.Add(course.Id) == false)
@@ -129,9 +123,7 @@ public sealed class CourseCatalog
 
         if (copiedCourses.Count == 0)
         {
-            throw new ArgumentException(
-                "Course catalogs require at least one course.",
-                nameof(courses));
+            throw new ArgumentException("Course catalogs require at least one course.", nameof(courses));
         }
 
         return copiedCourses.AsReadOnly();
@@ -153,9 +145,7 @@ public sealed class CourseCatalog
         {
             if (offering == null)
             {
-                throw new ArgumentException(
-                    "Course catalogs cannot contain null offerings.",
-                    nameof(offerings));
+                throw new ArgumentException("Course catalogs cannot contain null offerings.", nameof(offerings));
             }
 
             if (offeringIds.Add(offering.Id) == false)
@@ -177,9 +167,7 @@ public sealed class CourseCatalog
 
         if (copiedOfferings.Count == 0)
         {
-            throw new ArgumentException(
-                "Course catalogs require at least one offering.",
-                nameof(offerings));
+            throw new ArgumentException("Course catalogs require at least one offering.", nameof(offerings));
         }
 
         return copiedOfferings.AsReadOnly();

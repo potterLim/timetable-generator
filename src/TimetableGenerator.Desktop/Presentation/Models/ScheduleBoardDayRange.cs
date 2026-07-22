@@ -54,8 +54,7 @@ internal sealed class ScheduleBoardDayRange
         mDays = days;
     }
 
-    public static ScheduleBoardDayRange CreateForEntries(
-        IReadOnlyList<ScheduleEntry> entries)
+    public static ScheduleBoardDayRange CreateForEntries(IReadOnlyList<ScheduleEntry> entries)
     {
         ArgumentNullException.ThrowIfNull(entries);
 
@@ -116,9 +115,7 @@ internal sealed class ScheduleBoardDayRange
         }
     }
 
-    public static string CreateFullDayTimeDisplayText(
-        EDay day,
-        DailyTimeRange timeRange)
+    public static string CreateFullDayTimeDisplayText(EDay day, DailyTimeRange timeRange)
     {
         ensureValidTimeRange(timeRange);
         return FindFullDayDisplayName(day) + ": " + timeRange;
@@ -131,9 +128,7 @@ internal sealed class ScheduleBoardDayRange
         ArgumentNullException.ThrowIfNull(days);
         if (days.Count == 0)
         {
-            throw new ArgumentException(
-                "Schedule displays require at least one day.",
-                nameof(days));
+            throw new ArgumentException("Schedule displays require at least one day.", nameof(days));
         }
 
         ensureValidTimeRange(timeRange);
@@ -162,9 +157,7 @@ internal sealed class ScheduleBoardDayRange
             }
         }
 
-        return hasSaturday
-            ? SATURDAY_VISIBLE_DAY_COUNT
-            : DEFAULT_VISIBLE_DAY_COUNT;
+        return hasSaturday ? SATURDAY_VISIBLE_DAY_COUNT : DEFAULT_VISIBLE_DAY_COUNT;
     }
 
     private static string findShortDisplayName(EDay day)
@@ -197,9 +190,7 @@ internal sealed class ScheduleBoardDayRange
     {
         if (timeRange.IsValid == false)
         {
-            throw new ArgumentException(
-                "Schedule displays require a valid time range.",
-                nameof(timeRange));
+            throw new ArgumentException("Schedule displays require a valid time range.", nameof(timeRange));
         }
     }
 }

@@ -51,19 +51,14 @@ public sealed class CatalogCacheLoadResult
         return new CatalogCacheLoadResult(ECatalogCacheLoadStatus.NotFound, null);
     }
 
-    internal static CatalogCacheLoadResult createLoadedLatestGeneration(
-        VerifiedCatalogPackage package)
+    internal static CatalogCacheLoadResult createLoadedLatestGeneration(VerifiedCatalogPackage package)
     {
-        return new CatalogCacheLoadResult(
-            ECatalogCacheLoadStatus.LoadedLatestGeneration,
-            package);
+        return new CatalogCacheLoadResult(ECatalogCacheLoadStatus.LoadedLatestGeneration, package);
     }
 
     internal static CatalogCacheLoadResult createRecoveredPreviousGeneration(
         VerifiedCatalogPackage package)
     {
-        return new CatalogCacheLoadResult(
-            ECatalogCacheLoadStatus.RecoveredPreviousGeneration,
-            package);
+        return new CatalogCacheLoadResult(ECatalogCacheLoadStatus.RecoveredPreviousGeneration, package);
     }
 }

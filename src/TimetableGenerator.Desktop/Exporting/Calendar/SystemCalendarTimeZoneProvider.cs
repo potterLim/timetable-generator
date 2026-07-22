@@ -6,7 +6,6 @@ internal sealed class SystemCalendarTimeZoneProvider : ICalendarTimeZoneProvider
 {
     public CalendarTimeZoneId GetTimeZoneId()
     {
-        return CalendarTimeZoneId.CreateFromSystemTimeZone(
-            TimeZoneInfo.Local);
+        return CalendarTimeZoneId.CreateFromSystemTimeZone(TimeZoneInfo.Local);
     }
 }

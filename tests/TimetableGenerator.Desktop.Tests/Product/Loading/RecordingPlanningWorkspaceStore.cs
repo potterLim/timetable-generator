@@ -34,8 +34,7 @@ internal sealed class RecordingPlanningWorkspaceStore : IPlanningWorkspaceStore
         mSavedWorkspaces = new List<PlanningWorkspace>();
     }
 
-    public Task<PlanningWorkspaceLoadResult> LoadAsync(
-        CancellationToken cancellationToken)
+    public Task<PlanningWorkspaceLoadResult> LoadAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ++LoadCount;
@@ -56,16 +55,12 @@ internal sealed class RecordingPlanningWorkspaceStore : IPlanningWorkspaceStore
         PlanningWorkspaceConcurrencyToken actualToken = mLoadResult.ConcurrencyToken;
         if (expectedToken != actualToken)
         {
-            throw new PlanningWorkspaceConcurrencyException(
-                expectedToken,
-                actualToken);
+            throw new PlanningWorkspaceConcurrencyException(expectedToken, actualToken);
         }
 
         PlanningWorkspaceConcurrencyToken savedToken = actualToken.GetNext();
         mSavedWorkspaces.Add(workspace);
-        mLoadResult = PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(
-            workspace,
-            savedToken);
+        mLoadResult = PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(workspace, savedToken);
         return Task.FromResult(savedToken);
     }
 }

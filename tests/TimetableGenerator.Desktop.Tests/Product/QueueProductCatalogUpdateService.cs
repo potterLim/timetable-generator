@@ -32,11 +32,7 @@ internal sealed class QueueProductCatalogUpdateService :
             throw new ArgumentNullException(nameof(checks));
         }
 
-        mChecks = new Queue<Func<
-            VerifiedCatalogPackage,
-            PlanningWorkspace,
-            CancellationToken,
-            Task<ProductCatalogUpdateResult>>>(checks);
+        mChecks = new Queue<Func<VerifiedCatalogPackage, PlanningWorkspace, CancellationToken, Task<ProductCatalogUpdateResult>>>(checks);
     }
 
     public Task<ProductCatalogUpdateResult> CheckAndStageAsync(

@@ -57,9 +57,7 @@ public sealed class PlanningWorkspaceSessionTests
             new ScheduleRecommendationLimit(10),
             CancellationToken.None);
 
-        Assert.HasCount(
-            1,
-            session.Workspace.GetActivePlan().UnscheduledOfferingSelections);
+        Assert.HasCount(1, session.Workspace.GetActivePlan().UnscheduledOfferingSelections);
         Assert.HasCount(1, result.Recommendations);
         Assert.AreEqual(
             ERecommendationVerificationStatus.RequiresManualReview,
@@ -82,8 +80,7 @@ public sealed class PlanningWorkspaceSessionTests
         Assert.ThrowsExactly<ArgumentException>(
             () => session.AddCourse(invalidSelection));
         Assert.IsEmpty(session.Workspace.GetActivePlan().CourseChoiceGroups);
-        Assert.IsEmpty(
-            session.Workspace.GetActivePlan().UnscheduledOfferingSelections);
+        Assert.IsEmpty(session.Workspace.GetActivePlan().UnscheduledOfferingSelections);
     }
 
     [TestMethod]
@@ -93,9 +90,7 @@ public sealed class PlanningWorkspaceSessionTests
         PlanningWorkspaceSession session = createEmptySession(catalog);
         PlanId newPlanId = PlanId.CreateNew();
 
-        PlanningWorkspace workspace = session.AddPlan(
-            newPlanId,
-            new PlanName("둘째 계획"));
+        PlanningWorkspace workspace = session.AddPlan(newPlanId, new PlanName("둘째 계획"));
 
         PlanningPlan plan = workspace.GetActivePlan();
         Assert.AreEqual(newPlanId, plan.Id);
@@ -103,9 +98,7 @@ public sealed class PlanningWorkspaceSessionTests
         Assert.AreEqual(catalog.InstitutionId, plan.CatalogBinding.InstitutionId);
         Assert.AreEqual(catalog.Term, plan.CatalogBinding.Term);
         Assert.AreEqual(catalog.Revision, plan.CatalogBinding.Revision);
-        Assert.AreEqual(
-            new CatalogArtifactSha256(new string('a', 64)),
-            plan.CatalogBinding.ArtifactSha256);
+        Assert.AreEqual(new CatalogArtifactSha256(new string('a', 64)), plan.CatalogBinding.ArtifactSha256);
     }
 
     [TestMethod]
@@ -119,19 +112,14 @@ public sealed class PlanningWorkspaceSessionTests
         session.AddPersonalSchedule(firstPlanSchedule);
         session.AddPlan(PlanId.CreateNew(), new PlanName("둘째 계획"));
         PersonalScheduleId secondScheduleId = PersonalScheduleId.CreateNew();
-        PersonalSchedule secondPlanSchedule = createPersonalSchedule(
-            secondScheduleId,
-            "둘째 계획 일정");
+        PersonalSchedule secondPlanSchedule = createPersonalSchedule(secondScheduleId, "둘째 계획 일정");
 
         session.AddPersonalSchedule(secondPlanSchedule);
-        session.UpdatePersonalSchedule(
-            createPersonalSchedule(secondScheduleId, "수정한 둘째 일정"));
+        session.UpdatePersonalSchedule(createPersonalSchedule(secondScheduleId, "수정한 둘째 일정"));
         session.RemovePersonalSchedule(secondScheduleId);
 
         Assert.HasCount(1, session.Workspace.Plans[0].PersonalSchedules);
-        Assert.AreSame(
-            firstPlanSchedule,
-            session.Workspace.Plans[0].PersonalSchedules[0]);
+        Assert.AreSame(firstPlanSchedule, session.Workspace.Plans[0].PersonalSchedules[0]);
         Assert.IsEmpty(session.Workspace.GetActivePlan().PersonalSchedules);
     }
 
@@ -142,14 +130,10 @@ public sealed class PlanningWorkspaceSessionTests
         PlanningWorkspaceSession session = createEmptySession(catalog);
         PlanId firstPlanId = session.Workspace.ActivePlanIdOrNull!.Value;
         PlanName firstPlanName = session.Workspace.GetActivePlan().Name;
-        session.AddPersonalSchedule(createPersonalSchedule(
-            PersonalScheduleId.CreateNew(),
-            "첫 계획 일정"));
+        session.AddPersonalSchedule(createPersonalSchedule(PersonalScheduleId.CreateNew(), "첫 계획 일정"));
         PlanId secondPlanId = PlanId.CreateNew();
         session.AddPlan(secondPlanId, new PlanName("둘째 계획"));
-        session.AddPersonalSchedule(createPersonalSchedule(
-            PersonalScheduleId.CreateNew(),
-            "둘째 계획 일정"));
+        session.AddPersonalSchedule(createPersonalSchedule(PersonalScheduleId.CreateNew(), "둘째 계획 일정"));
         PlanningPlan untouchedFirstPlan = session.Workspace.Plans[0];
 
         PlanningWorkspace result = session.ClearActivePlanContent();
@@ -173,9 +157,7 @@ public sealed class PlanningWorkspaceSessionTests
     {
         CourseCatalog catalog = createCatalog();
         PlanningWorkspaceSession session = createEmptySession(catalog);
-        PersonalSchedule existingSchedule = createPersonalSchedule(
-            PersonalScheduleId.CreateNew(),
-            "기존 일정");
+        PersonalSchedule existingSchedule = createPersonalSchedule(PersonalScheduleId.CreateNew(), "기존 일정");
         session.AddPersonalSchedule(existingSchedule);
         PlanningWorkspace workspaceBeforeRejectedEdit = session.Workspace;
         PersonalSchedule overlappingSchedule = createPersonalSchedule(
@@ -189,9 +171,7 @@ public sealed class PlanningWorkspaceSessionTests
 
         Assert.AreSame(workspaceBeforeRejectedEdit, session.Workspace);
         Assert.HasCount(1, session.Workspace.GetActivePlan().PersonalSchedules);
-        Assert.AreSame(
-            existingSchedule,
-            session.Workspace.GetActivePlan().PersonalSchedules[0]);
+        Assert.AreSame(existingSchedule, session.Workspace.GetActivePlan().PersonalSchedules[0]);
     }
 
     [TestMethod]
@@ -227,18 +207,11 @@ public sealed class PlanningWorkspaceSessionTests
             catalog.Term,
             catalog.Revision,
             new CatalogArtifactSha256(new string('a', 64)));
-        PlanningWorkspace workspace = new PlanningWorkspace(
-            binding,
-            null,
-            Array.Empty<PlanningPlan>());
-        PlanningWorkspaceSession session = new PlanningWorkspaceSession(
-            catalog,
-            workspace);
+        PlanningWorkspace workspace = new PlanningWorkspace(binding, null, Array.Empty<PlanningPlan>());
+        PlanningWorkspaceSession session = new PlanningWorkspaceSession(catalog, workspace);
         PlanId addedPlanId = PlanId.CreateNew();
 
-        PlanningWorkspace result = session.AddPlan(
-            addedPlanId,
-            new PlanName("새 시간표"));
+        PlanningWorkspace result = session.AddPlan(addedPlanId, new PlanName("새 시간표"));
 
         Assert.AreSame(binding, result.CatalogBinding);
         Assert.AreEqual(addedPlanId, result.ActivePlanIdOrNull);
@@ -256,13 +229,8 @@ public sealed class PlanningWorkspaceSessionTests
             catalog.Term,
             catalog.Revision,
             new CatalogArtifactSha256(new string('a', 64)));
-        PlanningWorkspace workspace = new PlanningWorkspace(
-            binding,
-            null,
-            Array.Empty<PlanningPlan>());
-        PlanningWorkspaceSession session = new PlanningWorkspaceSession(
-            catalog,
-            workspace);
+        PlanningWorkspace workspace = new PlanningWorkspace(binding, null, Array.Empty<PlanningPlan>());
+        PlanningWorkspaceSession session = new PlanningWorkspaceSession(catalog, workspace);
 
         Assert.ThrowsExactly<InvalidOperationException>(
             () => session.ClearActivePlanContent());
@@ -282,9 +250,7 @@ public sealed class PlanningWorkspaceSessionTests
             string courseCodeValue = "AAA" + (groupIndex + 1).ToString("D5");
             EDay day = (EDay)((groupIndex / 10) + 1);
             int periodValue = (groupIndex % 10) + 1;
-            MeetingSlot slot = ScheduleRecommendationTestData.CreateMeetingSlot(
-                day,
-                periodValue);
+            MeetingSlot slot = ScheduleRecommendationTestData.CreateMeetingSlot(day, periodValue);
             courses.Add(ScheduleRecommendationTestData.CreateCourse(courseCodeValue));
             offerings.Add(ScheduleRecommendationTestData.CreateScheduledOffering(
                 courseCodeValue,
@@ -294,20 +260,12 @@ public sealed class PlanningWorkspaceSessionTests
                 courseCodeValue,
                 "02",
                 new MeetingSlot[] { slot }));
-            groups.Add(ScheduleRecommendationTestData.CreateCourseChoiceGroup(
-                courseCodeValue,
-                "01",
-                "02"));
+            groups.Add(ScheduleRecommendationTestData.CreateCourseChoiceGroup(courseCodeValue, "01", "02"));
         }
 
-        CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(
-            courses,
-            offerings);
-        MeetingSlot blockedSlot = ScheduleRecommendationTestData.CreateMeetingSlot(
-            EDay.Wednesday,
-            4);
-        DailyTimeRange blockedTimeRange = AcademicPeriodTimeTable.GetTimeRange(
-            blockedSlot);
+        CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(courses, offerings);
+        MeetingSlot blockedSlot = ScheduleRecommendationTestData.CreateMeetingSlot(EDay.Wednesday, 4);
+        DailyTimeRange blockedTimeRange = AcademicPeriodTimeTable.GetTimeRange(blockedSlot);
         PersonalSchedule blockingSchedule = new PersonalSchedule(
             PersonalScheduleId.CreateNew(),
             new PersonalScheduleTitle("마지막 후보 차단"),
@@ -326,19 +284,15 @@ public sealed class PlanningWorkspaceSessionTests
             plan.Id,
             new PlanningPlan[] { plan });
 
-        PlanningWorkspaceSession session = new PlanningWorkspaceSession(
-            catalog,
-            workspace);
+        PlanningWorkspaceSession session = new PlanningWorkspaceSession(catalog, workspace);
 
         Assert.AreSame(workspace, session.Workspace);
     }
 
     private static CourseCatalog createCatalog()
     {
-        CatalogCourse scheduledCourse =
-            ScheduleRecommendationTestData.CreateCourse("AAA10001");
-        CatalogCourse unscheduledCourse =
-            ScheduleRecommendationTestData.CreateCourse("BBB10001");
+        CatalogCourse scheduledCourse = ScheduleRecommendationTestData.CreateCourse("AAA10001");
+        CatalogCourse unscheduledCourse = ScheduleRecommendationTestData.CreateCourse("BBB10001");
         CatalogOffering firstScheduledOffering =
             ScheduleRecommendationTestData.CreateScheduledOffering(
                 "AAA10001",
@@ -386,15 +340,9 @@ public sealed class PlanningWorkspaceSessionTests
         return new PlanningWorkspaceSession(catalog, workspace);
     }
 
-    private static PersonalSchedule createPersonalSchedule(
-        PersonalScheduleId id,
-        string title)
+    private static PersonalSchedule createPersonalSchedule(PersonalScheduleId id, string title)
     {
-        return createPersonalSchedule(
-            id,
-            title,
-            new ScheduleTime(12, 0),
-            new ScheduleTime(13, 0));
+        return createPersonalSchedule(id, title, new ScheduleTime(12, 0), new ScheduleTime(13, 0));
     }
 
     private static PersonalSchedule createPersonalSchedule(
@@ -403,9 +351,7 @@ public sealed class PlanningWorkspaceSessionTests
         ScheduleTime start,
         ScheduleTime end)
     {
-        WeeklyTimeRange timeRange = new WeeklyTimeRange(
-            EDay.Wednesday,
-            new DailyTimeRange(start, end));
+        WeeklyTimeRange timeRange = new WeeklyTimeRange(EDay.Wednesday, new DailyTimeRange(start, end));
         return new PersonalSchedule(
             id,
             new PersonalScheduleTitle(title),

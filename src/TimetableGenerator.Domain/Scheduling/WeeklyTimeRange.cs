@@ -30,9 +30,7 @@ public readonly record struct WeeklyTimeRange
 
         if (timeRange.IsValid == false)
         {
-            throw new ArgumentException(
-                "Weekly time ranges require a valid daily range.",
-                nameof(timeRange));
+            throw new ArgumentException("Weekly time ranges require a valid daily range.", nameof(timeRange));
         }
 
         Day = day;

@@ -14,9 +14,7 @@ public sealed class PersonalScheduleTests
     [TestMethod]
     public void ScheduleDefensivelyCopiesAndSortsRepeatedDayRanges()
     {
-        DailyTimeRange timeRange = createTimeRange(
-            new ScheduleTime(12, 0),
-            new ScheduleTime(13, 0));
+        DailyTimeRange timeRange = createTimeRange(new ScheduleTime(12, 0), new ScheduleTime(13, 0));
         List<WeeklyTimeRange> mutableRanges = new List<WeeklyTimeRange>()
         {
             new WeeklyTimeRange(EDay.Thursday, timeRange),
@@ -74,12 +72,8 @@ public sealed class PersonalScheduleTests
     [TestMethod]
     public void ScheduleSupportsTheWholeWeekAndRequiresOneSharedRepeatedTime()
     {
-        DailyTimeRange noon = createTimeRange(
-            new ScheduleTime(12, 0),
-            new ScheduleTime(13, 0));
-        DailyTimeRange evening = createTimeRange(
-            new ScheduleTime(18, 0),
-            new ScheduleTime(19, 0));
+        DailyTimeRange noon = createTimeRange(new ScheduleTime(12, 0), new ScheduleTime(13, 0));
+        DailyTimeRange evening = createTimeRange(new ScheduleTime(18, 0), new ScheduleTime(19, 0));
 
         PersonalSchedule weekendSchedule = new PersonalSchedule(
             PersonalScheduleId.CreateNew(),
@@ -158,9 +152,7 @@ public sealed class PersonalScheduleTests
             personalSchedules);
     }
 
-    private static DailyTimeRange createTimeRange(
-        ScheduleTime start,
-        ScheduleTime end)
+    private static DailyTimeRange createTimeRange(ScheduleTime start, ScheduleTime end)
     {
         return new DailyTimeRange(start, end);
     }

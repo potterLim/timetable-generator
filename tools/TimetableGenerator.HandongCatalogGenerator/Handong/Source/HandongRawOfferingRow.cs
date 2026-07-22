@@ -40,8 +40,7 @@ internal sealed class HandongRawOfferingRow
     private static IReadOnlyList<IReadOnlyList<string>> copyCellLinesByColumn(
         IReadOnlyList<IReadOnlyList<string>> cellLinesByColumn)
     {
-        List<IReadOnlyList<string>> copiedCellLinesByColumn =
-            new List<IReadOnlyList<string>>(cellLinesByColumn.Count);
+        List<IReadOnlyList<string>> copiedCellLinesByColumn = new List<IReadOnlyList<string>>(cellLinesByColumn.Count);
 
         foreach (IReadOnlyList<string> cellLines in cellLinesByColumn)
         {

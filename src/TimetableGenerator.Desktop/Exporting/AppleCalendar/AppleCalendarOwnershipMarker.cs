@@ -6,8 +6,7 @@ namespace TimetableGenerator.Desktop.Exporting.AppleCalendar;
 
 internal static class AppleCalendarOwnershipMarker
 {
-    public const string PREFIX =
-        "timetable-generator://managed-calendar/v1/";
+    public const string PREFIX = "timetable-generator://managed-calendar/v1/";
 
     public static string CreateForPlan(PlanId planId)
     {
@@ -23,8 +22,6 @@ internal static class AppleCalendarOwnershipMarker
 
     public static bool IsApplicationManaged(string? descriptionOrNull)
     {
-        return descriptionOrNull?.StartsWith(
-            PREFIX,
-            StringComparison.Ordinal) == true;
+        return descriptionOrNull?.StartsWith(PREFIX, StringComparison.Ordinal) == true;
     }
 }

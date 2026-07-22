@@ -20,8 +20,7 @@ internal static class CatalogSourceConfigurationJsonReader
     {
         if (jsonBytes.IsEmpty)
         {
-            throw new CatalogSourceConfigurationException(
-                "The catalog source configuration is empty.");
+            throw new CatalogSourceConfigurationException("The catalog source configuration is empty.");
         }
 
         try
@@ -47,9 +46,7 @@ internal static class CatalogSourceConfigurationJsonReader
         }
         catch (ArgumentException exception)
         {
-            throw new CatalogSourceConfigurationException(
-                "The catalog index address is invalid.",
-                exception);
+            throw new CatalogSourceConfigurationException("The catalog index address is invalid.", exception);
         }
     }
 
@@ -61,8 +58,7 @@ internal static class CatalogSourceConfigurationJsonReader
                 "The catalog source configuration root must be an object.");
         }
 
-        HashSet<string> discoveredPropertyNames = new HashSet<string>(
-            StringComparer.Ordinal);
+        HashSet<string> discoveredPropertyNames = new HashSet<string>(StringComparer.Ordinal);
         foreach (JsonProperty property in rootElement.EnumerateObject())
         {
             if (EXPECTED_PROPERTY_NAMES.Contains(property.Name) == false)
@@ -101,20 +97,16 @@ internal static class CatalogSourceConfigurationJsonReader
         JsonElement indexUriElement = rootElement.GetProperty("indexUri");
         if (indexUriElement.ValueKind != JsonValueKind.String)
         {
-            throw new CatalogSourceConfigurationException(
-                "The catalog index address must be a string.");
+            throw new CatalogSourceConfigurationException("The catalog index address must be a string.");
         }
 
         string? indexUriTextOrNull = indexUriElement.GetString();
         if (string.IsNullOrWhiteSpace(indexUriTextOrNull))
         {
-            throw new CatalogSourceConfigurationException(
-                "The catalog index address cannot be empty.");
+            throw new CatalogSourceConfigurationException("The catalog index address cannot be empty.");
         }
 
-        return createConfiguration(
-            indexUriTextOrNull,
-            ECatalogSourceOrigin.LocalFile);
+        return createConfiguration(indexUriTextOrNull, ECatalogSourceOrigin.LocalFile);
     }
 
     internal static CatalogSourceConfiguration createFromEnvironment(string value)
@@ -127,14 +119,10 @@ internal static class CatalogSourceConfigurationJsonReader
         ECatalogSourceOrigin origin)
     {
         Uri? indexUriOrNull;
-        bool isValidUri = Uri.TryCreate(
-            indexUriText.Trim(),
-            UriKind.Absolute,
-            out indexUriOrNull);
+        bool isValidUri = Uri.TryCreate(indexUriText.Trim(), UriKind.Absolute, out indexUriOrNull);
         if (isValidUri == false || indexUriOrNull == null)
         {
-            throw new CatalogSourceConfigurationException(
-                "The catalog index address must be an absolute URI.");
+            throw new CatalogSourceConfigurationException("The catalog index address must be an absolute URI.");
         }
 
         CatalogIndexEndpoint endpoint = new CatalogIndexEndpoint(indexUriOrNull);

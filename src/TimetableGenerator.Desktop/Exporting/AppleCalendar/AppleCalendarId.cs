@@ -16,9 +16,7 @@ internal sealed record AppleCalendarId
         string normalizedValue = value.Trim();
         if (normalizedValue.Length == 0)
         {
-            throw new ArgumentException(
-                "Apple Calendar IDs cannot be empty.",
-                nameof(value));
+            throw new ArgumentException("Apple Calendar IDs cannot be empty.", nameof(value));
         }
 
         Value = normalizedValue;

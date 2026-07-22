@@ -55,9 +55,7 @@ internal static class SchedulePngFileNameFactory
 
     public static string Create(PlanName? planNameOrNull)
     {
-        return createFileSystemComponent(
-            getBaseName(planNameOrNull),
-            PNG_EXTENSION);
+        return createFileSystemComponent(getBaseName(planNameOrNull), PNG_EXTENSION);
     }
 
     public static string CreateBatchFolderName(PlanName? planNameOrNull)
@@ -65,9 +63,7 @@ internal static class SchedulePngFileNameFactory
         return CreateBatchFolderName(planNameOrNull, 1);
     }
 
-    public static string CreateBatchFolderName(
-        PlanName? planNameOrNull,
-        int copyNumber)
+    public static string CreateBatchFolderName(PlanName? planNameOrNull, int copyNumber)
     {
         if (copyNumber < 1)
         {
@@ -80,18 +76,14 @@ internal static class SchedulePngFileNameFactory
         string copySuffix = copyNumber == 1
             ? string.Empty
             : " (" + copyNumber + ")";
-        return createFileSystemComponent(
-            getBaseName(planNameOrNull),
-            copySuffix);
+        return createFileSystemComponent(getBaseName(planNameOrNull), copySuffix);
     }
 
     public static string CreateBatchCandidate(
         PlanName? planNameOrNull,
         SchedulePngCandidateNumber candidateNumber)
     {
-        int digitCount = candidateNumber.Total
-            .ToString(CultureInfo.InvariantCulture)
-            .Length;
+        int digitCount = candidateNumber.Total.ToString(CultureInfo.InvariantCulture).Length;
         string sequenceText = candidateNumber.Value.ToString(
             "D" + digitCount,
             CultureInfo.InvariantCulture);
@@ -99,9 +91,7 @@ internal static class SchedulePngFileNameFactory
             + sequenceText
             + ")"
             + PNG_EXTENSION;
-        return createFileSystemComponent(
-            getBaseName(planNameOrNull),
-            suffix);
+        return createFileSystemComponent(getBaseName(planNameOrNull), suffix);
     }
 
     private static string getBaseName(PlanName? planNameOrNull)
@@ -112,9 +102,7 @@ internal static class SchedulePngFileNameFactory
         }
 
         string sanitizedBaseName = sanitizeBaseName(planNameOrNull.Value);
-        return string.IsNullOrWhiteSpace(sanitizedBaseName)
-            ? FALLBACK_BASE_NAME
-            : sanitizedBaseName;
+        return string.IsNullOrWhiteSpace(sanitizedBaseName) ? FALLBACK_BASE_NAME : sanitizedBaseName;
     }
 
     private static string sanitizeBaseName(string value)
@@ -123,9 +111,7 @@ internal static class SchedulePngFileNameFactory
         StringBuilder sanitizedNameBuilder = new StringBuilder(value.Length);
         foreach (char character in value)
         {
-            bool isPlatformInvalid = Array.IndexOf(
-                platformInvalidCharacters,
-                character) >= 0;
+            bool isPlatformInvalid = Array.IndexOf(platformInvalidCharacters, character) >= 0;
             bool isWindowsInvalid = character < ' '
                 || WINDOWS_INVALID_FILE_NAME_CHARACTERS.Contains(character);
             sanitizedNameBuilder.Append(
@@ -134,36 +120,26 @@ internal static class SchedulePngFileNameFactory
                     : character);
         }
 
-        string sanitizedBaseName = sanitizedNameBuilder
-            .ToString()
-            .TrimEnd(' ', '.');
-        string windowsDeviceBaseName = getWindowsDeviceBaseName(
-            sanitizedBaseName);
+        string sanitizedBaseName = sanitizedNameBuilder.ToString().TrimEnd(' ', '.');
+        string windowsDeviceBaseName = getWindowsDeviceBaseName(sanitizedBaseName);
         if (WINDOWS_RESERVED_BASE_NAMES.Contains(windowsDeviceBaseName))
         {
-            sanitizedBaseName = escapeWindowsReservedBaseName(
-                sanitizedBaseName);
+            sanitizedBaseName = escapeWindowsReservedBaseName(sanitizedBaseName);
         }
 
         return sanitizedBaseName;
     }
 
-    private static string createFileSystemComponent(
-        string baseName,
-        string suffix)
+    private static string createFileSystemComponent(string baseName, string suffix)
     {
         int suffixByteCount = Encoding.UTF8.GetByteCount(suffix);
-        int baseNameByteBudget = MAXIMUM_UTF8_COMPONENT_BYTE_COUNT
-            - suffixByteCount;
+        int baseNameByteBudget = MAXIMUM_UTF8_COMPONENT_BYTE_COUNT - suffixByteCount;
         if (baseNameByteBudget <= 0)
         {
-            throw new InvalidOperationException(
-                "The PNG export suffix exceeds the file-system name limit.");
+            throw new InvalidOperationException("The PNG export suffix exceeds the file-system name limit.");
         }
 
-        string truncatedBaseName = truncateToUtf8ByteCount(
-            baseName,
-            baseNameByteBudget);
+        string truncatedBaseName = truncateToUtf8ByteCount(baseName, baseNameByteBudget);
         if (string.IsNullOrWhiteSpace(truncatedBaseName))
         {
             truncatedBaseName = FALLBACK_BASE_NAME;
@@ -172,13 +148,10 @@ internal static class SchedulePngFileNameFactory
         return truncatedBaseName + suffix;
     }
 
-    private static string truncateToUtf8ByteCount(
-        string value,
-        int maximumByteCount)
+    private static string truncateToUtf8ByteCount(string value, int maximumByteCount)
     {
         StringBuilder builder = new StringBuilder(value.Length);
-        TextElementEnumerator enumerator =
-            StringInfo.GetTextElementEnumerator(value);
+        TextElementEnumerator enumerator = StringInfo.GetTextElementEnumerator(value);
         int byteCount = 0;
         while (enumerator.MoveNext())
         {
@@ -215,8 +188,6 @@ internal static class SchedulePngFileNameFactory
             return baseName + REPLACEMENT_CHARACTER;
         }
 
-        return baseName.Insert(
-            extensionSeparatorIndex,
-            REPLACEMENT_CHARACTER.ToString());
+        return baseName.Insert(extensionSeparatorIndex, REPLACEMENT_CHARACTER.ToString());
     }
 }

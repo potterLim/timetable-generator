@@ -26,16 +26,11 @@ internal sealed class CalendarEventContent
         }
     }
 
-    public CalendarEventContent(
-        string summary,
-        string location,
-        string description)
+    public CalendarEventContent(string summary, string location, string description)
     {
         if (string.IsNullOrWhiteSpace(summary))
         {
-            throw new ArgumentException(
-                "Calendar events require a summary.",
-                nameof(summary));
+            throw new ArgumentException("Calendar events require a summary.", nameof(summary));
         }
 
         if (location == null)

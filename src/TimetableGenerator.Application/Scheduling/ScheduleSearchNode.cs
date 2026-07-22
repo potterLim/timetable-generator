@@ -9,8 +9,7 @@ internal sealed class ScheduleSearchNode
 {
     private readonly IReadOnlyList<ScheduledOffering> mSelectedOfferings;
 
-    private readonly IReadOnlyList<UnscheduledOfferingSelection>
-        mSelectedUnscheduledSelections;
+    private readonly IReadOnlyList<UnscheduledOfferingSelection> mSelectedUnscheduledSelections;
 
     private readonly HashSet<MeetingSlot> mOccupiedSlots;
 
@@ -32,8 +31,7 @@ internal sealed class ScheduleSearchNode
         }
     }
 
-    public IReadOnlyList<UnscheduledOfferingSelection>
-        SelectedUnscheduledSelections
+    public IReadOnlyList<UnscheduledOfferingSelection> SelectedUnscheduledSelections
     {
         get
         {
@@ -87,40 +85,33 @@ internal sealed class ScheduleSearchNode
             RecommendationScore.ZERO);
     }
 
-    public ScheduleSearchNode CreateChild(
-        ValidatedOfferingCandidate offeringCandidate)
+    public ScheduleSearchNode CreateChild(ValidatedOfferingCandidate offeringCandidate)
     {
         if (offeringCandidate == null)
         {
             throw new ArgumentNullException(nameof(offeringCandidate));
         }
 
-        List<ScheduledOffering> selectedOfferings =
-            new List<ScheduledOffering>(mSelectedOfferings);
-        List<UnscheduledOfferingSelection> selectedUnscheduledSelections =
-            new List<UnscheduledOfferingSelection>(
-                mSelectedUnscheduledSelections);
+        List<ScheduledOffering> selectedOfferings = new List<ScheduledOffering>(mSelectedOfferings);
+        List<UnscheduledOfferingSelection> selectedUnscheduledSelections = new List<UnscheduledOfferingSelection>(mSelectedUnscheduledSelections);
 
         HashSet<MeetingSlot> occupiedSlots = new HashSet<MeetingSlot>(mOccupiedSlots);
         if (offeringCandidate.IsScheduled)
         {
-            ScheduledOffering scheduledOffering =
-                offeringCandidate.GetScheduledOffering();
+            ScheduledOffering scheduledOffering = offeringCandidate.GetScheduledOffering();
             selectedOfferings.Add(scheduledOffering);
             foreach (MeetingSlot meetingSlot in scheduledOffering.MeetingSlots)
             {
                 bool hasAddedSlot = occupiedSlots.Add(meetingSlot);
                 if (hasAddedSlot == false)
                 {
-                    throw new InvalidOperationException(
-                        "A validated offering contains an occupied meeting slot.");
+                    throw new InvalidOperationException("A validated offering contains an occupied meeting slot.");
                 }
             }
         }
         else
         {
-            selectedUnscheduledSelections.Add(
-                offeringCandidate.GetUnscheduledSelection());
+            selectedUnscheduledSelections.Add(offeringCandidate.GetUnscheduledSelection());
         }
 
         return new ScheduleSearchNode(

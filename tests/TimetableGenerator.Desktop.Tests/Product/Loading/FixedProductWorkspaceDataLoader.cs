@@ -20,8 +20,7 @@ internal sealed class FixedProductWorkspaceDataLoader : IProductWorkspaceDataLoa
         mLoadResult = loadResult;
     }
 
-    public Task<ProductWorkspaceLoadResult> LoadAsync(
-        CancellationToken cancellationToken)
+    public Task<ProductWorkspaceLoadResult> LoadAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         return Task.FromResult(mLoadResult);

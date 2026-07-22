@@ -33,12 +33,9 @@ public sealed class UnsatisfiedScheduleExperienceTests
     [AvaloniaFact]
     public async Task UnsatisfiedCoursesWithoutPersonalSchedulesShowRecoveryStateAsync()
     {
-        CourseCatalogDocument document =
-            CatalogProjectionTestFixture.CreateDocument();
-        IScheduleRecommendationProvider recommendationProvider =
-            new ForcedConflictRecommendationProvider(document.Catalog);
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace(recommendationProvider))
+        CourseCatalogDocument document = CatalogProjectionTestFixture.CreateDocument();
+        IScheduleRecommendationProvider recommendationProvider = new ForcedConflictRecommendationProvider(document.Catalog);
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace(recommendationProvider))
         {
             await workspace.RecommendationRefreshTask;
 
@@ -60,34 +57,20 @@ public sealed class UnsatisfiedScheduleExperienceTests
                 Border recoveryState = findRequiredControl<Border>(
                     scheduleWorkspace,
                     "UnsatisfiedScheduleEmptyState");
-                Border ordinaryEmptyState = findRequiredControl<Border>(
-                    scheduleWorkspace,
-                    "ScheduleEmptyState");
+                Border ordinaryEmptyState = findRequiredControl<Border>(scheduleWorkspace, "ScheduleEmptyState");
                 Button openPlanButton = findRequiredControl<Button>(
                     scheduleWorkspace,
                     "UnsatisfiedScheduleOpenPlanButton");
-                Button exportButton = findRequiredControl<Button>(
-                    scheduleWorkspace,
-                    "ExportScheduleButton");
-                string[] recoveryTexts = recoveryState.GetVisualDescendants()
-                    .OfType<TextBlock>()
-                    .Select(getTextOrEmpty)
-                    .ToArray();
+                Button exportButton = findRequiredControl<Button>(scheduleWorkspace, "ExportScheduleButton");
+                string[] recoveryTexts = recoveryState.GetVisualDescendants().OfType<TextBlock>().Select(getTextOrEmpty).ToArray();
 
                 Assert.True(recoveryState.IsEffectivelyVisible);
                 Assert.False(ordinaryEmptyState.IsEffectivelyVisible);
-                Assert.Contains(
-                    "현재 선택으로 만들 수 있는 시간표가 없습니다",
-                    recoveryTexts);
-                Assert.Contains(
-                    "겹치는 개인 일정이나 제외한 분반을 확인해 보세요.",
-                    recoveryTexts);
+                Assert.Contains("현재 선택으로 만들 수 있는 시간표가 없습니다", recoveryTexts);
+                Assert.Contains("겹치는 개인 일정이나 제외한 분반을 확인해 보세요.", recoveryTexts);
                 Assert.True(openPlanButton.IsEffectivelyVisible);
-                Assert.Equal(
-                    "충돌한 과목 선택을 시간표 관리에서 확인",
-                    AutomationProperties.GetName(openPlanButton));
-                Assert.Empty(
-                    ordinaryEmptyState.GetVisualDescendants().OfType<Button>());
+                Assert.Equal("충돌한 과목 선택을 시간표 관리에서 확인", AutomationProperties.GetName(openPlanButton));
+                Assert.Empty(ordinaryEmptyState.GetVisualDescendants().OfType<Button>());
                 Assert.False(exportButton.IsEffectivelyVisible);
                 Assert.False(exportButton.IsEnabled);
 
@@ -96,15 +79,11 @@ public sealed class UnsatisfiedScheduleExperienceTests
                 workspace.OpenInspectorPaneCommand.Execute(null);
                 Assert.True(workspace.IsInspectorPaneOpen);
 
-                saveRenderedFrame(
-                    window,
-                    "unsatisfied-schedule-light-1200x760.png");
+                saveRenderedFrame(window, "unsatisfied-schedule-light-1200x760.png");
                 window.RequestedThemeVariant = ThemeVariant.Dark;
                 Dispatcher.UIThread.RunJobs();
                 Dispatcher.UIThread.RunJobs();
-                saveRenderedFrame(
-                    window,
-                    "unsatisfied-schedule-dark-1200x760.png");
+                saveRenderedFrame(window, "unsatisfied-schedule-dark-1200x760.png");
             }
             finally
             {
@@ -116,8 +95,7 @@ public sealed class UnsatisfiedScheduleExperienceTests
     [AvaloniaFact]
     public async Task UnsatisfiedCoursesWithPersonalSchedulesShowPreviewAndWarningAsync()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace())
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
         {
             addPersonalSchedule(
                 workspace,
@@ -159,24 +137,15 @@ public sealed class UnsatisfiedScheduleExperienceTests
                 Border centralRecoveryState = findRequiredControl<Border>(
                     scheduleWorkspace,
                     "UnsatisfiedScheduleEmptyState");
-                Button exportButton = findRequiredControl<Button>(
-                    scheduleWorkspace,
-                    "ExportScheduleButton");
-                Button openPlanButton = warningBanner.GetVisualDescendants()
-                    .OfType<Button>()
-                    .Single();
-                string[] warningTexts = warningBanner.GetVisualDescendants()
-                    .OfType<TextBlock>()
-                    .Select(getTextOrEmpty)
-                    .ToArray();
+                Button exportButton = findRequiredControl<Button>(scheduleWorkspace, "ExportScheduleButton");
+                Button openPlanButton = warningBanner.GetVisualDescendants().OfType<Button>().Single();
+                string[] warningTexts = warningBanner.GetVisualDescendants().OfType<TextBlock>().Select(getTextOrEmpty).ToArray();
 
                 Assert.True(warningBanner.IsEffectivelyVisible);
                 Assert.True(scheduleBoardContainer.IsEffectivelyVisible);
                 Assert.False(centralRecoveryState.IsEffectivelyVisible);
                 Assert.Contains("과목은 배치하지 못했습니다", warningTexts);
-                Assert.Contains(
-                    "아래에는 개인 일정만 표시됩니다. 겹치는 개인 일정이나 분반 선택을 조정해 보세요.",
-                    warningTexts);
+                Assert.Contains("아래에는 개인 일정만 표시됩니다. 겹치는 개인 일정이나 분반 선택을 조정해 보세요.", warningTexts);
                 Assert.True(openPlanButton.IsEffectivelyVisible);
                 Assert.Equal("선택 과목 확인", openPlanButton.Content);
                 Assert.False(exportButton.IsEffectivelyVisible);
@@ -213,9 +182,7 @@ public sealed class UnsatisfiedScheduleExperienceTests
         workspace.SavePersonalScheduleCommand.Execute(null);
     }
 
-    private static void selectPersonalScheduleDay(
-        PlannerWorkspaceViewModel workspace,
-        EDay day)
+    private static void selectPersonalScheduleDay(PlannerWorkspaceViewModel workspace, EDay day)
     {
         PersonalScheduleDayOption? optionOrNull =
             workspace.PersonalScheduleDayOptions.FirstOrDefault(
@@ -231,16 +198,13 @@ public sealed class UnsatisfiedScheduleExperienceTests
         optionOrNull.IsSelected = true;
     }
 
-    private static TControl findRequiredControl<TControl>(
-        Control root,
-        string controlName)
+    private static TControl findRequiredControl<TControl>(Control root, string controlName)
         where TControl : Control
     {
         TControl? controlOrNull = root.FindControl<TControl>(controlName);
         if (controlOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The required workspace control was not found: " + controlName);
+            throw new InvalidOperationException("The required workspace control was not found: " + controlName);
         }
 
         return controlOrNull;
@@ -257,8 +221,7 @@ public sealed class UnsatisfiedScheduleExperienceTests
         Assert.NotNull(renderedFrameOrNull);
         if (renderedFrameOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The unsatisfied schedule renderer did not produce a frame.");
+            throw new InvalidOperationException("The unsatisfied schedule renderer did not produce a frame.");
         }
 
         using (WriteableBitmap renderedFrame = renderedFrameOrNull)
@@ -343,9 +306,7 @@ public sealed class UnsatisfiedScheduleExperienceTests
             ScheduleTime start,
             ScheduleTime end)
         {
-            WeeklyTimeRange timeRange = new WeeklyTimeRange(
-                day,
-                new DailyTimeRange(start, end));
+            WeeklyTimeRange timeRange = new WeeklyTimeRange(day, new DailyTimeRange(start, end));
             return new PersonalSchedule(
                 PersonalScheduleId.CreateNew(),
                 new PersonalScheduleTitle(title),

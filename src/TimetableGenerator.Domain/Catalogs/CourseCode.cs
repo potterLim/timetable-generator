@@ -5,9 +5,7 @@ namespace TimetableGenerator.Domain.Catalogs;
 
 public sealed record CourseCode
 {
-    private static readonly Regex VALID_FORMAT = new Regex(
-        "^[A-Z]{3}[0-9]{5}$",
-        RegexOptions.CultureInvariant);
+    private static readonly Regex VALID_FORMAT = new Regex("^[A-Z]{3}[0-9]{5}$", RegexOptions.CultureInvariant);
 
     public string Value { get; }
 

@@ -30,8 +30,7 @@ public sealed class CatalogDocumentCounts
 
         if (scheduledOfferingCount.Value + meetingNotProvidedCount.Value != offeringCount.Value)
         {
-            throw new ArgumentException(
-                "Scheduled and time-not-provided counts must partition all offerings.");
+            throw new ArgumentException("Scheduled and time-not-provided counts must partition all offerings.");
         }
 
         CourseCount = courseCount;

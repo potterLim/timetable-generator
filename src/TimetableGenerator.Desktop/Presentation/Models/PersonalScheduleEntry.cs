@@ -87,9 +87,7 @@ internal sealed class PersonalScheduleEntry : ScheduleEntry
         }
     }
 
-    public PersonalScheduleEntry(
-        PersonalSchedule schedule,
-        WeeklyTimeRange timeRange)
+    public PersonalScheduleEntry(PersonalSchedule schedule, WeeklyTimeRange timeRange)
         : base(timeRange.Day, timeRange.TimeRange)
     {
         if (schedule == null)

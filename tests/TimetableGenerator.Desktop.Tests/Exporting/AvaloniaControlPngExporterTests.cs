@@ -34,18 +34,14 @@ public sealed class AvaloniaControlPngExporterTests
     public async Task ExportControlRendersArrangedControlAsHighDensityPngAsync()
     {
         Border sourceControl = createArrangedControl();
-        AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(
-            PngExportScale.PRODUCT_QUALITY);
+        AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(PngExportScale.PRODUCT_QUALITY);
 
         using (MemoryStream destinationStream = new MemoryStream())
         {
             await Task.Run(
                 delegate
                 {
-                    return exporter.ExportControlAsync(
-                        sourceControl,
-                        destinationStream,
-                        CancellationToken.None);
+                    return exporter.ExportControlAsync(sourceControl, destinationStream, CancellationToken.None);
                 });
 
             byte[] pngBytes = destinationStream.ToArray();
@@ -64,18 +60,14 @@ public sealed class AvaloniaControlPngExporterTests
     public async Task ExportControlRejectsControlWithoutArrangedSizeAsync()
     {
         Border sourceControl = new Border();
-        AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(
-            PngExportScale.PRODUCT_QUALITY);
+        AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(PngExportScale.PRODUCT_QUALITY);
 
         using (MemoryStream destinationStream = new MemoryStream())
         {
             InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
                 delegate
                 {
-                    return exporter.ExportControlAsync(
-                        sourceControl,
-                        destinationStream,
-                        CancellationToken.None);
+                    return exporter.ExportControlAsync(sourceControl, destinationStream, CancellationToken.None);
                 });
 
             Assert.Contains("positive arranged size", exception.Message, StringComparison.Ordinal);
@@ -87,16 +79,12 @@ public sealed class AvaloniaControlPngExporterTests
     public async Task ExportControlRejectsNullDestinationStreamAsync()
     {
         Border sourceControl = createArrangedControl();
-        AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(
-            PngExportScale.PRODUCT_QUALITY);
+        AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(PngExportScale.PRODUCT_QUALITY);
 
         ArgumentNullException exception = await Assert.ThrowsAsync<ArgumentNullException>(
             delegate
             {
-                return exporter.ExportControlAsync(
-                    sourceControl,
-                    null!,
-                    CancellationToken.None);
+                return exporter.ExportControlAsync(sourceControl, null!, CancellationToken.None);
             });
 
         Assert.Equal("destinationStream", exception.ParamName);
@@ -106,8 +94,7 @@ public sealed class AvaloniaControlPngExporterTests
     public async Task ExportControlRejectsReadOnlyDestinationStreamAsync()
     {
         Border sourceControl = createArrangedControl();
-        AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(
-            PngExportScale.PRODUCT_QUALITY);
+        AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(PngExportScale.PRODUCT_QUALITY);
         byte[] destinationBuffer = new byte[128];
 
         using (MemoryStream destinationStream = new MemoryStream(destinationBuffer, false))
@@ -115,10 +102,7 @@ public sealed class AvaloniaControlPngExporterTests
             ArgumentException exception = await Assert.ThrowsAsync<ArgumentException>(
                 delegate
                 {
-                    return exporter.ExportControlAsync(
-                        sourceControl,
-                        destinationStream,
-                        CancellationToken.None);
+                    return exporter.ExportControlAsync(sourceControl, destinationStream, CancellationToken.None);
                 });
 
             Assert.Equal("destinationStream", exception.ParamName);
@@ -130,8 +114,7 @@ public sealed class AvaloniaControlPngExporterTests
     public async Task ExportControlHonorsCancellationBeforeRenderingAsync()
     {
         Border sourceControl = createArrangedControl();
-        AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(
-            PngExportScale.PRODUCT_QUALITY);
+        AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(PngExportScale.PRODUCT_QUALITY);
 
         using (MemoryStream destinationStream = new MemoryStream())
         using (CancellationTokenSource cancellationSource = new CancellationTokenSource())
@@ -141,10 +124,7 @@ public sealed class AvaloniaControlPngExporterTests
             await Assert.ThrowsAnyAsync<OperationCanceledException>(
                 delegate
                 {
-                    return exporter.ExportControlAsync(
-                        sourceControl,
-                        destinationStream,
-                        cancellationSource.Token);
+                    return exporter.ExportControlAsync(sourceControl, destinationStream, cancellationSource.Token);
                 });
 
             Assert.Empty(destinationStream.ToArray());

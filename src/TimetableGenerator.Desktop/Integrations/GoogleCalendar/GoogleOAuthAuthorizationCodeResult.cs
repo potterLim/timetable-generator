@@ -64,10 +64,6 @@ internal sealed class GoogleOAuthAuthorizationCodeResult
                 nameof(status));
         }
 
-        return new GoogleOAuthAuthorizationCodeResult(
-            status,
-            null,
-            redirectUri,
-            diagnosticCodeOrNull);
+        return new GoogleOAuthAuthorizationCodeResult(status, null, redirectUri, diagnosticCodeOrNull);
     }
 }

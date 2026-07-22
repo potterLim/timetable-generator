@@ -11,10 +11,8 @@ internal sealed class ControlledSaveAttempt
 
     public ControlledSaveAttempt()
     {
-        mStartedCompletionSource = new TaskCompletionSource<PlanningWorkspace>(
-            TaskCreationOptions.RunContinuationsAsynchronously);
-        mSaveCompletionSource = new TaskCompletionSource(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+        mStartedCompletionSource = new TaskCompletionSource<PlanningWorkspace>(TaskCreationOptions.RunContinuationsAsynchronously);
+        mSaveCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 
     public Task<PlanningWorkspace> WaitForStartAsync()

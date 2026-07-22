@@ -39,8 +39,7 @@ internal readonly record struct ScheduleSearchPriority :
             return scoreComparison;
         }
 
-        int depthComparison = RemainingGroupCount.CompareTo(
-            other.RemainingGroupCount);
+        int depthComparison = RemainingGroupCount.CompareTo(other.RemainingGroupCount);
         if (depthComparison != 0)
         {
             return depthComparison;

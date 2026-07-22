@@ -19,10 +19,8 @@ internal sealed class AvaloniaProductThemeVariantService
         mApplication = application;
     }
 
-    public void ApplyThemePreference(
-        EProductThemePreference themePreference)
+    public void ApplyThemePreference(EProductThemePreference themePreference)
     {
-        mApplication.RequestedThemeVariant =
-            ProductThemeVariantPolicy.FindThemeVariant(themePreference);
+        mApplication.RequestedThemeVariant = ProductThemeVariantPolicy.FindThemeVariant(themePreference);
     }
 }

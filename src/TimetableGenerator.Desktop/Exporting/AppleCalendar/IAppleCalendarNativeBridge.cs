@@ -18,8 +18,7 @@ internal interface IAppleCalendarNativeBridge
 {
     bool IsAvailable { get; }
 
-    Task<IReadOnlyList<AppleCalendarDescriptor>> GetCalendarsAsync(
-        CancellationToken cancellationToken);
+    Task<IReadOnlyList<AppleCalendarDescriptor>> GetCalendarsAsync(CancellationToken cancellationToken);
 
     Task<AppleCalendarNativeExportResult> ApplyExportAsync(
         AppleCalendarExportMutation mutation,

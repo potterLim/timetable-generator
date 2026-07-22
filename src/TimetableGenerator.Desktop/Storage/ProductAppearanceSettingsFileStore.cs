@@ -67,8 +67,7 @@ internal sealed class ProductAppearanceSettingsFileStore
             string? directoryPathOrNull = Path.GetDirectoryName(mFilePath.Value);
             if (directoryPathOrNull == null)
             {
-                throw new InvalidOperationException(
-                    "The appearance settings path has no parent directory.");
+                throw new InvalidOperationException("The appearance settings path has no parent directory.");
             }
 
             Directory.CreateDirectory(directoryPathOrNull);
@@ -133,9 +132,7 @@ internal sealed class ProductAppearanceSettingsFileStore
         catch (Exception exception) when (exception is IOException
             || exception is UnauthorizedAccessException)
         {
-            Trace.TraceWarning(
-                "A temporary appearance settings file could not be removed: {0}",
-                exception);
+            Trace.TraceWarning("A temporary appearance settings file could not be removed: {0}", exception);
         }
     }
 }

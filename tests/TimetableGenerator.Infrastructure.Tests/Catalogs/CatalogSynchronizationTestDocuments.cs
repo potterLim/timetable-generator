@@ -9,8 +9,7 @@ namespace TimetableGenerator.Infrastructure.Tests.Catalogs;
 
 internal static class CatalogSynchronizationTestDocuments
 {
-    public const string VALID_RELATIVE_PATH =
-        "handong-global-university/2026-2/catalog-r0001.json";
+    public const string VALID_RELATIVE_PATH = "handong-global-university/2026-2/catalog-r0001.json";
 
     public static byte[] CreateValidCatalogBytes()
     {
@@ -226,8 +225,7 @@ internal static class CatalogSynchronizationTestDocuments
         return VerifiedCatalogPackage.ReadAndVerify(indexBytes, catalogBytes);
     }
 
-    public static VerifiedCatalogPackage CreateVerifiedPackageWithKoreanName(
-        string koreanName)
+    public static VerifiedCatalogPackage CreateVerifiedPackageWithKoreanName(string koreanName)
     {
         byte[] catalogBytes = CreateCatalogBytesWithKoreanName(koreanName);
         byte[] indexBytes = CreateValidIndexBytes(catalogBytes);
@@ -240,26 +238,18 @@ internal static class CatalogSynchronizationTestDocuments
     {
         if (revision.IsValid == false)
         {
-            throw new ArgumentException(
-                "Test catalog packages require a valid revision.",
-                nameof(revision));
+            throw new ArgumentException("Test catalog packages require a valid revision.", nameof(revision));
         }
 
         byte[] catalogBytes = CreateCatalogBytesWithKoreanName(koreanName);
-        catalogBytes = Replace(
-            catalogBytes,
-            "r0001",
-            revision.FileComponent);
+        catalogBytes = Replace(catalogBytes, "r0001", revision.FileComponent);
         catalogBytes = Replace(
             catalogBytes,
             "\"revision\": 1",
             "\"revision\": " + revision.Value.ToString(CultureInfo.InvariantCulture));
 
         byte[] indexBytes = CreateValidIndexBytes(catalogBytes);
-        indexBytes = Replace(
-            indexBytes,
-            "r0001",
-            revision.FileComponent);
+        indexBytes = Replace(indexBytes, "r0001", revision.FileComponent);
         indexBytes = Replace(
             indexBytes,
             "\"revision\": 1",
@@ -267,16 +257,10 @@ internal static class CatalogSynchronizationTestDocuments
         return VerifiedCatalogPackage.ReadAndVerify(indexBytes, catalogBytes);
     }
 
-    public static byte[] Replace(
-        byte[] sourceBytes,
-        string oldValue,
-        string newValue)
+    public static byte[] Replace(byte[] sourceBytes, string oldValue, string newValue)
     {
         string sourceJson = Encoding.UTF8.GetString(sourceBytes);
-        string replacedJson = sourceJson.Replace(
-            oldValue,
-            newValue,
-            StringComparison.Ordinal);
+        string replacedJson = sourceJson.Replace(oldValue, newValue, StringComparison.Ordinal);
         if (string.Equals(sourceJson, replacedJson, StringComparison.Ordinal))
         {
             throw new InvalidOperationException("The requested JSON test mutation did not match.");

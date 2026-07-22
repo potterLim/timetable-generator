@@ -29,8 +29,7 @@ internal sealed class CourseScheduleListSource : ScheduleListSource
 
     internal override bool hasSameIdentityAs(ScheduleListSource other)
     {
-        CourseScheduleListSource? courseSourceOrNull =
-            other as CourseScheduleListSource;
+        CourseScheduleListSource? courseSourceOrNull = other as CourseScheduleListSource;
         return courseSourceOrNull != null
             && courseSourceOrNull.CourseId == CourseId
             && courseSourceOrNull.OfferingId == OfferingId;

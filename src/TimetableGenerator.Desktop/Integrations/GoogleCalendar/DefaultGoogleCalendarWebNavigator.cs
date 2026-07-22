@@ -6,9 +6,7 @@ namespace TimetableGenerator.Desktop.Integrations.GoogleCalendar;
 internal sealed class DefaultGoogleCalendarWebNavigator
     : IGoogleCalendarWebNavigator
 {
-    private static readonly Uri GOOGLE_CALENDAR_DESTINATION = new Uri(
-        "https://calendar.google.com/calendar/r",
-        UriKind.Absolute);
+    private static readonly Uri GOOGLE_CALENDAR_DESTINATION = new Uri("https://calendar.google.com/calendar/r", UriKind.Absolute);
 
     private readonly IExternalBrowserLauncher mBrowserLauncher;
 
@@ -17,8 +15,7 @@ internal sealed class DefaultGoogleCalendarWebNavigator
     {
     }
 
-    internal DefaultGoogleCalendarWebNavigator(
-        IExternalBrowserLauncher browserLauncher)
+    internal DefaultGoogleCalendarWebNavigator(IExternalBrowserLauncher browserLauncher)
     {
         if (browserLauncher == null)
         {

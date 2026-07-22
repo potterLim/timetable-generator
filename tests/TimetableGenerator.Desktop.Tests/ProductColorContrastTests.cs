@@ -22,115 +22,61 @@ public sealed class ProductColorContrastTests
     private const double SRGB_CURVE_EXPONENT = 2.4;
     private const double COLOR_CHANNEL_MAXIMUM = byte.MaxValue;
 
-    private static readonly ColorToken ACCENT =
-        new ColorToken("AccentBrush");
-    private static readonly ColorToken ACCENT_FILL =
-        new ColorToken("ProductPrimaryActionFillBrush");
-    private static readonly ColorToken ACCENT_FILL_HOVER =
-        new ColorToken("ProductPrimaryActionHoverFillBrush");
-    private static readonly ColorToken ACCENT_FILL_PRESSED =
-        new ColorToken("ProductPrimaryActionPressedFillBrush");
-    private static readonly ColorToken ACCENT_HOVER =
-        new ColorToken("AccentHoverBrush");
-    private static readonly ColorToken ACCENT_PRESSED =
-        new ColorToken("AccentPressedBrush");
-    private static readonly ColorToken ACCENT_TINT =
-        new ColorToken("AccentTintBrush");
-    private static readonly ColorToken SELECTION_SURFACE =
-        new ColorToken("SelectionSurfaceBrush");
-    private static readonly ColorToken SELECTION_HOVER_SURFACE =
-        new ColorToken("SelectionHoverSurfaceBrush");
-    private static readonly ColorToken SELECTION_PRESSED_SURFACE =
-        new ColorToken("SelectionPressedSurfaceBrush");
-    private static readonly ColorToken SELECTION_INDICATOR =
-        new ColorToken("SelectionIndicatorBrush");
-    private static readonly ColorToken CONTROL_BORDER =
-        new ColorToken("ControlBorderBrush");
-    private static readonly ColorToken CONTROL_HOVER_SURFACE =
-        new ColorToken("ControlHoverSurfaceBrush");
-    private static readonly ColorToken CONTROL_SURFACE =
-        new ColorToken("ControlSurfaceBrush");
-    private static readonly ColorToken CAPTION_CLOSE_HOVER_BACKGROUND =
-        new ColorToken("CaptionCloseButtonHoverBackgroundBrush");
-    private static readonly ColorToken CAPTION_CLOSE_PRESSED_BACKGROUND =
-        new ColorToken("CaptionCloseButtonPressedBackgroundBrush");
-    private static readonly ColorToken CAPTION_CLOSE_FOREGROUND =
-        new ColorToken("CaptionCloseButtonForegroundBrush");
-    private static readonly ColorToken COURSE_BLUE_BACKGROUND =
-        new ColorToken("CourseBlueBackgroundBrush");
-    private static readonly ColorToken COURSE_BLUE_BORDER =
-        new ColorToken("CourseBlueBorderBrush");
-    private static readonly ColorToken COURSE_GREEN_BACKGROUND =
-        new ColorToken("CourseGreenBackgroundBrush");
-    private static readonly ColorToken COURSE_GREEN_BORDER =
-        new ColorToken("CourseGreenBorderBrush");
-    private static readonly ColorToken COURSE_PURPLE_BACKGROUND =
-        new ColorToken("CoursePurpleBackgroundBrush");
-    private static readonly ColorToken COURSE_PURPLE_BORDER =
-        new ColorToken("CoursePurpleBorderBrush");
-    private static readonly ColorToken ELEVATED_SURFACE =
-        new ColorToken("ElevatedSurfaceBrush");
-    private static readonly ColorToken ERROR =
-        new ColorToken("ErrorBrush");
-    private static readonly ColorToken ERROR_FILL =
-        new ColorToken("ProductDangerActionFillBrush");
-    private static readonly ColorToken ERROR_FILL_HOVER =
-        new ColorToken("ProductDangerActionHoverFillBrush");
-    private static readonly ColorToken ERROR_FILL_PRESSED =
-        new ColorToken("ProductDangerActionPressedFillBrush");
-    private static readonly ColorToken ERROR_SUBTLE =
-        new ColorToken("ErrorSubtleBrush");
-    private static readonly ColorToken FOCUS_ON_FILL_STROKE =
-        new ColorToken("ProductFocusOnFillStrokeBrush");
-    private static readonly ColorToken FOCUS_STROKE =
-        new ColorToken("ProductFocusStrokeBrush");
-    private static readonly ColorToken HOVER_SURFACE =
-        new ColorToken("HoverSurfaceBrush");
-    private static readonly ColorToken ON_ACCENT_FILL =
-        new ColorToken("ProductOnPrimaryActionFillBrush");
-    private static readonly ColorToken ON_ERROR_FILL =
-        new ColorToken("ProductOnDangerActionFillBrush");
-    private static readonly ColorToken PANE_SURFACE =
-        new ColorToken("PaneSurfaceBrush");
-    private static readonly ColorToken OVERLAY_SCRIM =
-        new ColorToken("OverlayScrimBrush");
-    private static readonly ColorToken PERSONAL_SCHEDULE_BACKGROUND =
-        new ColorToken("PersonalScheduleBackgroundBrush");
-    private static readonly ColorToken PERSONAL_SCHEDULE_BORDER =
-        new ColorToken("PersonalScheduleBorderBrush");
-    private static readonly ColorToken PRESSED_SURFACE =
-        new ColorToken("PressedSurfaceBrush");
-    private static readonly ColorToken SUBTLE_SURFACE =
-        new ColorToken("SubtleSurfaceBrush");
-    private static readonly ColorToken SUCCESS =
-        new ColorToken("SuccessBrush");
-    private static readonly ColorToken SUCCESS_SUBTLE =
-        new ColorToken("SuccessSubtleBrush");
-    private static readonly ColorToken SURFACE =
-        new ColorToken("SurfaceBrush");
-    private static readonly ColorToken SCHEDULE_HOUR_GRID_LINE =
-        new ColorToken("ScheduleHourGridLineBrush");
-    private static readonly ColorToken SCHEDULE_HALF_HOUR_GRID_LINE =
-        new ColorToken("ScheduleHalfHourGridLineBrush");
-    private static readonly ColorToken TEXT_PRIMARY =
-        new ColorToken("TextPrimaryBrush");
-    private static readonly ColorToken TEXT_SECONDARY =
-        new ColorToken("TextSecondaryBrush");
-    private static readonly ColorToken TEXT_TERTIARY =
-        new ColorToken("TextTertiaryBrush");
-    private static readonly ColorToken WARNING =
-        new ColorToken("WarningBrush");
-    private static readonly ColorToken WARNING_SUBTLE =
-        new ColorToken("WarningSubtleBrush");
-    private static readonly ColorToken WINDOW_BACKGROUND =
-        new ColorToken("WindowBackgroundBrush");
+    private static readonly ColorToken ACCENT = new ColorToken("AccentBrush");
+    private static readonly ColorToken ACCENT_FILL = new ColorToken("ProductPrimaryActionFillBrush");
+    private static readonly ColorToken ACCENT_FILL_HOVER = new ColorToken("ProductPrimaryActionHoverFillBrush");
+    private static readonly ColorToken ACCENT_FILL_PRESSED = new ColorToken("ProductPrimaryActionPressedFillBrush");
+    private static readonly ColorToken ACCENT_HOVER = new ColorToken("AccentHoverBrush");
+    private static readonly ColorToken ACCENT_PRESSED = new ColorToken("AccentPressedBrush");
+    private static readonly ColorToken ACCENT_TINT = new ColorToken("AccentTintBrush");
+    private static readonly ColorToken SELECTION_SURFACE = new ColorToken("SelectionSurfaceBrush");
+    private static readonly ColorToken SELECTION_HOVER_SURFACE = new ColorToken("SelectionHoverSurfaceBrush");
+    private static readonly ColorToken SELECTION_PRESSED_SURFACE = new ColorToken("SelectionPressedSurfaceBrush");
+    private static readonly ColorToken SELECTION_INDICATOR = new ColorToken("SelectionIndicatorBrush");
+    private static readonly ColorToken CONTROL_BORDER = new ColorToken("ControlBorderBrush");
+    private static readonly ColorToken CONTROL_HOVER_SURFACE = new ColorToken("ControlHoverSurfaceBrush");
+    private static readonly ColorToken CONTROL_SURFACE = new ColorToken("ControlSurfaceBrush");
+    private static readonly ColorToken CAPTION_CLOSE_HOVER_BACKGROUND = new ColorToken("CaptionCloseButtonHoverBackgroundBrush");
+    private static readonly ColorToken CAPTION_CLOSE_PRESSED_BACKGROUND = new ColorToken("CaptionCloseButtonPressedBackgroundBrush");
+    private static readonly ColorToken CAPTION_CLOSE_FOREGROUND = new ColorToken("CaptionCloseButtonForegroundBrush");
+    private static readonly ColorToken COURSE_BLUE_BACKGROUND = new ColorToken("CourseBlueBackgroundBrush");
+    private static readonly ColorToken COURSE_BLUE_BORDER = new ColorToken("CourseBlueBorderBrush");
+    private static readonly ColorToken COURSE_GREEN_BACKGROUND = new ColorToken("CourseGreenBackgroundBrush");
+    private static readonly ColorToken COURSE_GREEN_BORDER = new ColorToken("CourseGreenBorderBrush");
+    private static readonly ColorToken COURSE_PURPLE_BACKGROUND = new ColorToken("CoursePurpleBackgroundBrush");
+    private static readonly ColorToken COURSE_PURPLE_BORDER = new ColorToken("CoursePurpleBorderBrush");
+    private static readonly ColorToken ELEVATED_SURFACE = new ColorToken("ElevatedSurfaceBrush");
+    private static readonly ColorToken ERROR = new ColorToken("ErrorBrush");
+    private static readonly ColorToken ERROR_FILL = new ColorToken("ProductDangerActionFillBrush");
+    private static readonly ColorToken ERROR_FILL_HOVER = new ColorToken("ProductDangerActionHoverFillBrush");
+    private static readonly ColorToken ERROR_FILL_PRESSED = new ColorToken("ProductDangerActionPressedFillBrush");
+    private static readonly ColorToken ERROR_SUBTLE = new ColorToken("ErrorSubtleBrush");
+    private static readonly ColorToken FOCUS_ON_FILL_STROKE = new ColorToken("ProductFocusOnFillStrokeBrush");
+    private static readonly ColorToken FOCUS_STROKE = new ColorToken("ProductFocusStrokeBrush");
+    private static readonly ColorToken HOVER_SURFACE = new ColorToken("HoverSurfaceBrush");
+    private static readonly ColorToken ON_ACCENT_FILL = new ColorToken("ProductOnPrimaryActionFillBrush");
+    private static readonly ColorToken ON_ERROR_FILL = new ColorToken("ProductOnDangerActionFillBrush");
+    private static readonly ColorToken PANE_SURFACE = new ColorToken("PaneSurfaceBrush");
+    private static readonly ColorToken OVERLAY_SCRIM = new ColorToken("OverlayScrimBrush");
+    private static readonly ColorToken PERSONAL_SCHEDULE_BACKGROUND = new ColorToken("PersonalScheduleBackgroundBrush");
+    private static readonly ColorToken PERSONAL_SCHEDULE_BORDER = new ColorToken("PersonalScheduleBorderBrush");
+    private static readonly ColorToken PRESSED_SURFACE = new ColorToken("PressedSurfaceBrush");
+    private static readonly ColorToken SUBTLE_SURFACE = new ColorToken("SubtleSurfaceBrush");
+    private static readonly ColorToken SUCCESS = new ColorToken("SuccessBrush");
+    private static readonly ColorToken SUCCESS_SUBTLE = new ColorToken("SuccessSubtleBrush");
+    private static readonly ColorToken SURFACE = new ColorToken("SurfaceBrush");
+    private static readonly ColorToken SCHEDULE_HOUR_GRID_LINE = new ColorToken("ScheduleHourGridLineBrush");
+    private static readonly ColorToken SCHEDULE_HALF_HOUR_GRID_LINE = new ColorToken("ScheduleHalfHourGridLineBrush");
+    private static readonly ColorToken TEXT_PRIMARY = new ColorToken("TextPrimaryBrush");
+    private static readonly ColorToken TEXT_SECONDARY = new ColorToken("TextSecondaryBrush");
+    private static readonly ColorToken TEXT_TERTIARY = new ColorToken("TextTertiaryBrush");
+    private static readonly ColorToken WARNING = new ColorToken("WarningBrush");
+    private static readonly ColorToken WARNING_SUBTLE = new ColorToken("WarningSubtleBrush");
+    private static readonly ColorToken WINDOW_BACKGROUND = new ColorToken("WindowBackgroundBrush");
 
-    private static readonly ContrastRatio MINIMUM_BODY_TEXT_CONTRAST =
-        new ContrastRatio(4.5);
-    private static readonly ContrastRatio MINIMUM_NON_TEXT_CONTRAST =
-        new ContrastRatio(3.0);
-    private static readonly ContrastRatio MINIMUM_INTERACTION_STATE_CONTRAST =
-        new ContrastRatio(1.2);
+    private static readonly ContrastRatio MINIMUM_BODY_TEXT_CONTRAST = new ContrastRatio(4.5);
+    private static readonly ContrastRatio MINIMUM_NON_TEXT_CONTRAST = new ContrastRatio(3.0);
+    private static readonly ContrastRatio MINIMUM_INTERACTION_STATE_CONTRAST = new ContrastRatio(1.2);
 
     private static readonly ColorToken[] REQUIRED_SOLID_COLOR_TOKENS =
     {
@@ -233,9 +179,7 @@ public sealed class ProductColorContrastTests
         {
             foreach (ShadowToken shadowToken in REQUIRED_BOX_SHADOW_TOKENS)
             {
-                BoxShadows boxShadows = findRequiredBoxShadows(
-                    shadowToken,
-                    themeVariant);
+                BoxShadows boxShadows = findRequiredBoxShadows(shadowToken, themeVariant);
                 Assert.True(boxShadows.Count > 0);
             }
         }
@@ -379,15 +323,9 @@ public sealed class ProductColorContrastTests
 
         foreach (ThemeVariant themeVariant in themeVariants)
         {
-            Color hoverColor = findRequiredBrush(
-                CAPTION_CLOSE_HOVER_BACKGROUND,
-                themeVariant).Color;
-            Color pressedColor = findRequiredBrush(
-                CAPTION_CLOSE_PRESSED_BACKGROUND,
-                themeVariant).Color;
-            ContrastRatio actualContrast = calculateContrastRatio(
-                hoverColor,
-                pressedColor);
+            Color hoverColor = findRequiredBrush(CAPTION_CLOSE_HOVER_BACKGROUND, themeVariant).Color;
+            Color pressedColor = findRequiredBrush(CAPTION_CLOSE_PRESSED_BACKGROUND, themeVariant).Color;
+            ContrastRatio actualContrast = calculateContrastRatio(hoverColor, pressedColor);
 
             Assert.True(
                 actualContrast.IsAtLeast(MINIMUM_INTERACTION_STATE_CONTRAST),
@@ -409,12 +347,8 @@ public sealed class ProductColorContrastTests
     [AvaloniaFact]
     public void OverlayScrimsPreserveModalFocusWithoutObscuringContext()
     {
-        SolidColorBrush lightScrim = findRequiredBrush(
-            OVERLAY_SCRIM,
-            ThemeVariant.Light);
-        SolidColorBrush darkScrim = findRequiredBrush(
-            OVERLAY_SCRIM,
-            ThemeVariant.Dark);
+        SolidColorBrush lightScrim = findRequiredBrush(OVERLAY_SCRIM, ThemeVariant.Light);
+        SolidColorBrush darkScrim = findRequiredBrush(OVERLAY_SCRIM, ThemeVariant.Dark);
 
         Assert.Equal(0x52, lightScrim.Color.A);
         Assert.Equal(0x80, darkScrim.Color.A);
@@ -423,18 +357,10 @@ public sealed class ProductColorContrastTests
     [AvaloniaFact]
     public void PrimaryActionPaletteUsesCalmProductBluesInBothThemes()
     {
-        SolidColorBrush lightFill = findRequiredBrush(
-            ACCENT_FILL,
-            ThemeVariant.Light);
-        SolidColorBrush darkFill = findRequiredBrush(
-            ACCENT_FILL,
-            ThemeVariant.Dark);
-        SolidColorBrush darkHover = findRequiredBrush(
-            ACCENT_FILL_HOVER,
-            ThemeVariant.Dark);
-        SolidColorBrush darkPressed = findRequiredBrush(
-            ACCENT_FILL_PRESSED,
-            ThemeVariant.Dark);
+        SolidColorBrush lightFill = findRequiredBrush(ACCENT_FILL, ThemeVariant.Light);
+        SolidColorBrush darkFill = findRequiredBrush(ACCENT_FILL, ThemeVariant.Dark);
+        SolidColorBrush darkHover = findRequiredBrush(ACCENT_FILL_HOVER, ThemeVariant.Dark);
+        SolidColorBrush darkPressed = findRequiredBrush(ACCENT_FILL_PRESSED, ThemeVariant.Dark);
 
         Assert.Equal(Color.Parse("#0A60C8"), lightFill.Color);
         Assert.Equal(Color.Parse("#1B63C9"), darkFill.Color);
@@ -650,11 +576,7 @@ public sealed class ProductColorContrastTests
         ColorToken foreground,
         ColorToken background)
     {
-        return new ContrastRequirement(
-            themeVariant,
-            foreground,
-            background,
-            MINIMUM_BODY_TEXT_CONTRAST);
+        return new ContrastRequirement(themeVariant, foreground, background, MINIMUM_BODY_TEXT_CONTRAST);
     }
 
     private static ContrastRequirement nonText(
@@ -662,11 +584,7 @@ public sealed class ProductColorContrastTests
         ColorToken foreground,
         ColorToken background)
     {
-        return new ContrastRequirement(
-            themeVariant,
-            foreground,
-            background,
-            MINIMUM_NON_TEXT_CONTRAST);
+        return new ContrastRequirement(themeVariant, foreground, background, MINIMUM_NON_TEXT_CONTRAST);
     }
 
     private static void assertContrastRequirements(
@@ -685,48 +603,29 @@ public sealed class ProductColorContrastTests
         Color expectedPressedSurface,
         Color expectedIndicator)
     {
-        Assert.Equal(
-            expectedSurface,
-            findRequiredBrush(SELECTION_SURFACE, themeVariant).Color);
-        Assert.Equal(
-            expectedHoverSurface,
-            findRequiredBrush(SELECTION_HOVER_SURFACE, themeVariant).Color);
+        Assert.Equal(expectedSurface, findRequiredBrush(SELECTION_SURFACE, themeVariant).Color);
+        Assert.Equal(expectedHoverSurface, findRequiredBrush(SELECTION_HOVER_SURFACE, themeVariant).Color);
         Assert.Equal(
             expectedPressedSurface,
             findRequiredBrush(SELECTION_PRESSED_SURFACE, themeVariant).Color);
-        Assert.Equal(
-            expectedIndicator,
-            findRequiredBrush(SELECTION_INDICATOR, themeVariant).Color);
+        Assert.Equal(expectedIndicator, findRequiredBrush(SELECTION_INDICATOR, themeVariant).Color);
     }
 
     private static void assertThemePaletteHierarchy(ThemeVariant themeVariant)
     {
-        Color controlSurface = findRequiredBrush(
-            CONTROL_SURFACE,
-            themeVariant).Color;
-        Color controlHoverSurface = findRequiredBrush(
-            CONTROL_HOVER_SURFACE,
-            themeVariant).Color;
+        Color controlSurface = findRequiredBrush(CONTROL_SURFACE, themeVariant).Color;
+        Color controlHoverSurface = findRequiredBrush(CONTROL_HOVER_SURFACE, themeVariant).Color;
         Color surface = findRequiredBrush(SURFACE, themeVariant).Color;
-        Color hourGridLine = findRequiredBrush(
-            SCHEDULE_HOUR_GRID_LINE,
-            themeVariant).Color;
-        Color halfHourGridLine = findRequiredBrush(
-            SCHEDULE_HALF_HOUR_GRID_LINE,
-            themeVariant).Color;
+        Color hourGridLine = findRequiredBrush(SCHEDULE_HOUR_GRID_LINE, themeVariant).Color;
+        Color halfHourGridLine = findRequiredBrush(SCHEDULE_HALF_HOUR_GRID_LINE, themeVariant).Color;
 
         Assert.NotEqual(controlSurface, controlHoverSurface);
-        ContrastRatio hourLineContrast = calculateContrastRatio(
-            hourGridLine,
-            surface);
-        ContrastRatio halfHourLineContrast = calculateContrastRatio(
-            halfHourGridLine,
-            surface);
+        ContrastRatio hourLineContrast = calculateContrastRatio(hourGridLine, surface);
+        ContrastRatio halfHourLineContrast = calculateContrastRatio(halfHourGridLine, surface);
         Assert.True(hourLineContrast.Value > halfHourLineContrast.Value);
     }
 
-    private static void assertContrastRequirement(
-        ContrastRequirement contrastRequirement)
+    private static void assertContrastRequirement(ContrastRequirement contrastRequirement)
     {
         SolidColorBrush foregroundBrush = findRequiredBrush(
             contrastRequirement.Foreground,
@@ -738,9 +637,7 @@ public sealed class ProductColorContrastTests
         Assert.Equal(byte.MaxValue, foregroundBrush.Color.A);
         Assert.Equal(byte.MaxValue, backgroundBrush.Color.A);
 
-        ContrastRatio actualContrast = calculateContrastRatio(
-            foregroundBrush.Color,
-            backgroundBrush.Color);
+        ContrastRatio actualContrast = calculateContrastRatio(foregroundBrush.Color, backgroundBrush.Color);
         string failureMessage =
             contrastRequirement.ThemeVariant + " theme " +
             contrastRequirement.Foreground.Value + " on " +
@@ -748,21 +645,16 @@ public sealed class ProductColorContrastTests
             actualContrast.Value.ToString("F2") + ":1; required " +
             contrastRequirement.Minimum.Value.ToString("F2") + ":1 or greater.";
 
-        Assert.True(
-            actualContrast.IsAtLeast(contrastRequirement.Minimum),
-            failureMessage);
+        Assert.True(actualContrast.IsAtLeast(contrastRequirement.Minimum), failureMessage);
     }
 
-    private static SolidColorBrush findRequiredBrush(
-        ColorToken colorToken,
-        ThemeVariant themeVariant)
+    private static SolidColorBrush findRequiredBrush(ColorToken colorToken, ThemeVariant themeVariant)
     {
         Avalonia.Application? applicationOrNull = Avalonia.Application.Current;
         Assert.NotNull(applicationOrNull);
         if (applicationOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The Avalonia test application is not initialized.");
+            throw new InvalidOperationException("The Avalonia test application is not initialized.");
         }
 
         object? resourceOrNull;
@@ -770,9 +662,7 @@ public sealed class ProductColorContrastTests
             colorToken.Value,
             themeVariant,
             out resourceOrNull);
-        Assert.True(
-            hasResource,
-            "The product color token could not be resolved: " + colorToken.Value);
+        Assert.True(hasResource, "The product color token could not be resolved: " + colorToken.Value);
 
         SolidColorBrush? brushOrNull = resourceOrNull as SolidColorBrush;
         Assert.NotNull(brushOrNull);
@@ -786,16 +676,13 @@ public sealed class ProductColorContrastTests
         return brushOrNull;
     }
 
-    private static BoxShadows findRequiredBoxShadows(
-        ShadowToken shadowToken,
-        ThemeVariant themeVariant)
+    private static BoxShadows findRequiredBoxShadows(ShadowToken shadowToken, ThemeVariant themeVariant)
     {
         Avalonia.Application? applicationOrNull = Avalonia.Application.Current;
         Assert.NotNull(applicationOrNull);
         if (applicationOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The Avalonia test application is not initialized.");
+            throw new InvalidOperationException("The Avalonia test application is not initialized.");
         }
 
         object? resourceOrNull;
@@ -811,18 +698,12 @@ public sealed class ProductColorContrastTests
         return Assert.IsType<BoxShadows>(resourceOrNull);
     }
 
-    private static ContrastRatio calculateContrastRatio(
-        Color foregroundColor,
-        Color backgroundColor)
+    private static ContrastRatio calculateContrastRatio(Color foregroundColor, Color backgroundColor)
     {
         double foregroundLuminance = calculateRelativeLuminance(foregroundColor);
         double backgroundLuminance = calculateRelativeLuminance(backgroundColor);
-        double lighterLuminance = Math.Max(
-            foregroundLuminance,
-            backgroundLuminance);
-        double darkerLuminance = Math.Min(
-            foregroundLuminance,
-            backgroundLuminance);
+        double lighterLuminance = Math.Max(foregroundLuminance, backgroundLuminance);
+        double darkerLuminance = Math.Min(foregroundLuminance, backgroundLuminance);
         double contrastValue =
             (lighterLuminance + CONTRAST_LUMINANCE_OFFSET) /
             (darkerLuminance + CONTRAST_LUMINANCE_OFFSET);

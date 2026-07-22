@@ -16,9 +16,7 @@ public sealed class CalendarNameConflictPolicyTests
         PlanName composedName = new PlanName("  CAF\u00C9  ");
         PlanName decomposedName = new PlanName("cafe\u0301");
 
-        bool isSameName = CalendarNameConflictPolicy.IsSameName(
-            composedName,
-            decomposedName);
+        bool isSameName = CalendarNameConflictPolicy.IsSameName(composedName, decomposedName);
 
         Assert.True(isSameName);
         Assert.True(
@@ -62,8 +60,7 @@ public sealed class CalendarNameConflictPolicyTests
     [Fact]
     public void NextAvailableNameRespectsThePlanNameLengthLimit()
     {
-        PlanName requestedName = new PlanName(
-            new string('가', PlanName.MAXIMUM_LENGTH));
+        PlanName requestedName = new PlanName(new string('가', PlanName.MAXIMUM_LENGTH));
 
         PlanName nextAvailableName =
             CalendarNameConflictPolicy.FindNextAvailableName(
@@ -95,8 +92,7 @@ public sealed class CalendarNameConflictPolicyTests
     [Fact]
     public void LongerCopyNumbersReserveEnoughSuffixSpace()
     {
-        PlanName requestedName = new PlanName(
-            new string('a', PlanName.MAXIMUM_LENGTH));
+        PlanName requestedName = new PlanName(new string('a', PlanName.MAXIMUM_LENGTH));
         List<PlanName> existingNames = new List<PlanName> { requestedName };
         for (int copyNumber = 2; copyNumber <= 10; ++copyNumber)
         {
@@ -145,11 +141,9 @@ public sealed class CalendarNameConflictPolicyTests
     [Theory]
     [InlineData((int)ECalendarExportProvider.Google)]
     [InlineData((int)ECalendarExportProvider.Apple)]
-    public void ConflictCarriesProviderNamesAndReplacementAvailability(
-        int providerValue)
+    public void ConflictCarriesProviderNamesAndReplacementAvailability(int providerValue)
     {
-        ECalendarExportProvider provider =
-            (ECalendarExportProvider)providerValue;
+        ECalendarExportProvider provider = (ECalendarExportProvider)providerValue;
         PlanName requestedName = new PlanName("시간표");
         PlanName nextAvailableName = new PlanName("시간표 (2)");
 
@@ -162,9 +156,7 @@ public sealed class CalendarNameConflictPolicyTests
         Assert.Equal(provider, conflict.Provider);
         Assert.Same(requestedName, conflict.RequestedName);
         Assert.Same(nextAvailableName, conflict.NextAvailableName);
-        Assert.Equal(
-            ECalendarReplacementAvailability.Available,
-            conflict.ReplacementAvailability);
+        Assert.Equal(ECalendarReplacementAvailability.Available, conflict.ReplacementAvailability);
         Assert.True(conflict.CanReplace);
     }
 
@@ -216,24 +208,18 @@ public sealed class CalendarNameConflictPolicyTests
     [InlineData((int)ECalendarNameConflictResolution.ReplaceExisting)]
     [InlineData((int)ECalendarNameConflictResolution.CreateWithAvailableName)]
     [InlineData((int)ECalendarNameConflictResolution.Cancel)]
-    public void AvailableReplacementSupportsEveryExplicitResolution(
-        int resolutionValue)
+    public void AvailableReplacementSupportsEveryExplicitResolution(int resolutionValue)
     {
-        ECalendarNameConflictResolution resolution =
-            (ECalendarNameConflictResolution)resolutionValue;
-        CalendarNameConflict conflict = createConflict(
-            ECalendarReplacementAvailability.Available);
+        ECalendarNameConflictResolution resolution = (ECalendarNameConflictResolution)resolutionValue;
+        CalendarNameConflict conflict = createConflict(ECalendarReplacementAvailability.Available);
 
-        CalendarNameConflictPolicy.EnsureResolutionIsSupported(
-            conflict,
-            resolution);
+        CalendarNameConflictPolicy.EnsureResolutionIsSupported(conflict, resolution);
     }
 
     [Fact]
     public void UnavailableReplacementRejectsReplaceButAllowsSafeChoices()
     {
-        CalendarNameConflict conflict = createConflict(
-            ECalendarReplacementAvailability.Unavailable);
+        CalendarNameConflict conflict = createConflict(ECalendarReplacementAvailability.Unavailable);
 
         Assert.Throws<InvalidOperationException>(
             () => CalendarNameConflictPolicy.EnsureResolutionIsSupported(
@@ -250,8 +236,7 @@ public sealed class CalendarNameConflictPolicyTests
     [Fact]
     public void ResolutionValidationRejectsMissingOrUnknownResolution()
     {
-        CalendarNameConflict conflict = createConflict(
-            ECalendarReplacementAvailability.Available);
+        CalendarNameConflict conflict = createConflict(ECalendarReplacementAvailability.Available);
 
         Assert.Throws<ArgumentNullException>(
             () => CalendarNameConflictPolicy.EnsureResolutionIsSupported(

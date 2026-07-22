@@ -27,8 +27,7 @@ public sealed class PlanningWorkspaceCatalogRebindResult
         }
 
         bool hasReboundWorkspace = reboundWorkspaceOrNull != null;
-        if ((status == EPlanningWorkspaceCatalogRebindStatus.Rebound)
-            != hasReboundWorkspace)
+        if ((status == EPlanningWorkspaceCatalogRebindStatus.Rebound) != hasReboundWorkspace)
         {
             throw new ArgumentException(
                 "Only a successful catalog rebind can contain a workspace.",

@@ -53,9 +53,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         connectWorkspace(DataContext as PlannerWorkspaceViewModel);
     }
 
-    private void onAttachedToVisualTree(
-        object? senderOrNull,
-        VisualTreeAttachmentEventArgs eventArgs)
+    private void onAttachedToVisualTree(object? senderOrNull, VisualTreeAttachmentEventArgs eventArgs)
     {
         mIsAttachedToVisualTree = true;
         connectWorkspace(DataContext as PlannerWorkspaceViewModel);
@@ -76,12 +74,9 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         }
 
         mWorkspaceOrNull.PropertyChanged += onWorkspacePropertyChanged;
-        mWasPlanEditingOverlayVisible =
-            mWorkspaceOrNull.IsPlanEditingOverlayVisible;
-        mWasPersonalScheduleOverlayVisible =
-            mWorkspaceOrNull.IsPersonalScheduleOverlayVisible;
-        mWasCourseChoiceEditorVisible =
-            mWorkspaceOrNull.IsCourseChoiceEditorVisible;
+        mWasPlanEditingOverlayVisible = mWorkspaceOrNull.IsPlanEditingOverlayVisible;
+        mWasPersonalScheduleOverlayVisible = mWorkspaceOrNull.IsPersonalScheduleOverlayVisible;
+        mWasCourseChoiceEditorVisible = mWorkspaceOrNull.IsCourseChoiceEditorVisible;
         focusPlanEditingControlWhenRequired();
         focusPersonalScheduleControlWhenRequired();
         focusCourseChoiceControlWhenRequired();
@@ -96,22 +91,17 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         }
     }
 
-    private void onWorkspacePropertyChanged(
-        object? senderOrNull,
-        PropertyChangedEventArgs eventArgs)
+    private void onWorkspacePropertyChanged(object? senderOrNull, PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName
-            == nameof(PlannerWorkspaceViewModel.IsPlanEditingOverlayVisible))
+        if (eventArgs.PropertyName == nameof(PlannerWorkspaceViewModel.IsPlanEditingOverlayVisible))
         {
             handlePlanEditingOverlayStateChanged();
         }
-        else if (eventArgs.PropertyName
-            == nameof(PlannerWorkspaceViewModel.PlanNameValidationMessage))
+        else if (eventArgs.PropertyName == nameof(PlannerWorkspaceViewModel.PlanNameValidationMessage))
         {
             focusPlanNameValidationControlWhenRequired();
         }
-        else if (eventArgs.PropertyName
-            == nameof(PlannerWorkspaceViewModel.IsPersonalScheduleEditorVisible))
+        else if (eventArgs.PropertyName == nameof(PlannerWorkspaceViewModel.IsPersonalScheduleEditorVisible))
         {
             handlePersonalScheduleOverlayStateChanged();
         }
@@ -121,23 +111,19 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         {
             handlePersonalScheduleOverlayStateChanged();
         }
-        else if (eventArgs.PropertyName
-            == nameof(PlannerWorkspaceViewModel.PersonalScheduleValidationError))
+        else if (eventArgs.PropertyName == nameof(PlannerWorkspaceViewModel.PersonalScheduleValidationError))
         {
             focusPersonalScheduleValidationControlWhenRequired();
         }
-        else if (eventArgs.PropertyName
-            == nameof(PlannerWorkspaceViewModel.IsCourseChoiceEditorVisible))
+        else if (eventArgs.PropertyName == nameof(PlannerWorkspaceViewModel.IsCourseChoiceEditorVisible))
         {
             handleCourseChoiceEditorStateChanged();
         }
-        else if (eventArgs.PropertyName
-            == nameof(PlannerWorkspaceViewModel.IsCoursePaneOpen))
+        else if (eventArgs.PropertyName == nameof(PlannerWorkspaceViewModel.IsCoursePaneOpen))
         {
             handleCoursePaneOpenStateChanged();
         }
-        else if (eventArgs.PropertyName
-            == nameof(PlannerWorkspaceViewModel.IsInspectorPaneOpen))
+        else if (eventArgs.PropertyName == nameof(PlannerWorkspaceViewModel.IsInspectorPaneOpen))
         {
             handleInspectorPaneOpenStateChanged();
         }
@@ -145,8 +131,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
 
     private void focusPlanEditingControlWhenRequired()
     {
-        if (mWorkspaceOrNull == null
-            || mWorkspaceOrNull.IsPlanEditingOverlayVisible == false)
+        if (mWorkspaceOrNull == null || mWorkspaceOrNull.IsPlanEditingOverlayVisible == false)
         {
             return;
         }
@@ -167,16 +152,13 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
             TopLevel? topLevelOrNull = TopLevel.GetTopLevel(this);
             if (topLevelOrNull != null)
             {
-                mPlanEditingFocusReturnTargetOrNull =
-                    topLevelOrNull.FocusManager?.GetFocusedElement() as Control;
+                mPlanEditingFocusReturnTargetOrNull = topLevelOrNull.FocusManager?.GetFocusedElement() as Control;
             }
         }
 
         if (isOverlayVisible == false && mWasPlanEditingOverlayVisible)
         {
-            Dispatcher.UIThread.Post(
-                restorePlanEditingFocus,
-                DispatcherPriority.Input);
+            Dispatcher.UIThread.Post(restorePlanEditingFocus, DispatcherPriority.Input);
         }
 
         mWasPlanEditingOverlayVisible = isOverlayVisible;
@@ -213,8 +195,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
 
         if (mWorkspaceOrNull.IsDeletePlanConfirmationVisible)
         {
-            Button? cancelButtonOrNull = this.FindControl<Button>(
-                "CancelDeletePlanButton");
+            Button? cancelButtonOrNull = this.FindControl<Button>("CancelDeletePlanButton");
             if (cancelButtonOrNull != null)
             {
                 cancelButtonOrNull.Focus();
@@ -225,8 +206,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
 
         if (mWorkspaceOrNull.IsClearActivePlanConfirmationVisible)
         {
-            Button? cancelButtonOrNull = this.FindControl<Button>(
-                "CancelClearActivePlanButton");
+            Button? cancelButtonOrNull = this.FindControl<Button>("CancelClearActivePlanButton");
             if (cancelButtonOrNull != null)
             {
                 cancelButtonOrNull.Focus();
@@ -247,8 +227,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
             return;
         }
 
-        Button? planManagementButtonOrNull = this.FindControl<Button>(
-            "PlanManagementButton");
+        Button? planManagementButtonOrNull = this.FindControl<Button>("PlanManagementButton");
         if (planManagementButtonOrNull != null
             && planManagementButtonOrNull.IsEffectivelyVisible
             && planManagementButtonOrNull.Focus())
@@ -279,9 +258,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
             return;
         }
 
-        Dispatcher.UIThread.Post(
-            focusPlanNameValidationControl,
-            DispatcherPriority.Input);
+        Dispatcher.UIThread.Post(focusPlanNameValidationControl, DispatcherPriority.Input);
     }
 
     private void focusPlanNameValidationControl()
@@ -319,8 +296,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
 
     private void focusPersonalScheduleControlWhenRequired()
     {
-        if (mWorkspaceOrNull == null
-            || mWorkspaceOrNull.IsPersonalScheduleOverlayVisible == false)
+        if (mWorkspaceOrNull == null || mWorkspaceOrNull.IsPersonalScheduleOverlayVisible == false)
         {
             return;
         }
@@ -341,16 +317,13 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
             TopLevel? topLevelOrNull = TopLevel.GetTopLevel(this);
             if (topLevelOrNull != null)
             {
-                mPersonalScheduleFocusReturnTargetOrNull =
-                    topLevelOrNull.FocusManager?.GetFocusedElement() as Control;
+                mPersonalScheduleFocusReturnTargetOrNull = topLevelOrNull.FocusManager?.GetFocusedElement() as Control;
             }
         }
 
         if (isOverlayVisible == false && mWasPersonalScheduleOverlayVisible)
         {
-            Dispatcher.UIThread.Post(
-                restorePersonalScheduleFocus,
-                DispatcherPriority.Input);
+            Dispatcher.UIThread.Post(restorePersonalScheduleFocus, DispatcherPriority.Input);
         }
 
         mWasPersonalScheduleOverlayVisible = isOverlayVisible;
@@ -366,9 +339,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
 
         if (mWorkspaceOrNull.IsPersonalScheduleEditorVisible)
         {
-            PersonalScheduleEditorView? editorOrNull =
-                this.FindControl<PersonalScheduleEditorView>(
-                    "PersonalScheduleEditor");
+            PersonalScheduleEditorView? editorOrNull = this.FindControl<PersonalScheduleEditorView>("PersonalScheduleEditor");
             if (editorOrNull != null)
             {
                 editorOrNull.focusInitialInput();
@@ -379,8 +350,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
 
         if (mWorkspaceOrNull.IsDeletePersonalScheduleConfirmationVisible)
         {
-            Button? cancelButtonOrNull = this.FindControl<Button>(
-                "CancelDeletePersonalScheduleButton");
+            Button? cancelButtonOrNull = this.FindControl<Button>("CancelDeletePersonalScheduleButton");
             if (cancelButtonOrNull != null)
             {
                 cancelButtonOrNull.Focus();
@@ -398,9 +368,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
             return;
         }
 
-        Dispatcher.UIThread.Post(
-            focusPersonalScheduleValidationControl,
-            DispatcherPriority.Input);
+        Dispatcher.UIThread.Post(focusPersonalScheduleValidationControl, DispatcherPriority.Input);
     }
 
     private void focusPersonalScheduleValidationControl()
@@ -410,13 +378,10 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
             return;
         }
 
-        PersonalScheduleEditorView? editorOrNull =
-            this.FindControl<PersonalScheduleEditorView>(
-                "PersonalScheduleEditor");
+        PersonalScheduleEditorView? editorOrNull = this.FindControl<PersonalScheduleEditorView>("PersonalScheduleEditor");
         if (editorOrNull != null)
         {
-            editorOrNull.focusValidationTarget(
-                mWorkspaceOrNull.PersonalScheduleValidationError);
+            editorOrNull.focusValidationTarget(mWorkspaceOrNull.PersonalScheduleValidationError);
         }
     }
 
@@ -433,8 +398,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
             return;
         }
 
-        Button? inspectorAddButtonOrNull = this.FindControl<Button>(
-            "AddPersonalScheduleButton");
+        Button? inspectorAddButtonOrNull = this.FindControl<Button>("AddPersonalScheduleButton");
         if (mWorkspaceOrNull != null
             && mWorkspaceOrNull.IsInspectorPaneOpen
             && inspectorAddButtonOrNull != null
@@ -454,8 +418,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
 
     private void focusCourseChoiceControlWhenRequired()
     {
-        if (mWorkspaceOrNull == null
-            || mWorkspaceOrNull.IsCourseChoiceEditorVisible == false)
+        if (mWorkspaceOrNull == null || mWorkspaceOrNull.IsCourseChoiceEditorVisible == false)
         {
             return;
         }
@@ -476,16 +439,13 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
             TopLevel? topLevelOrNull = TopLevel.GetTopLevel(this);
             if (topLevelOrNull != null)
             {
-                mCourseChoiceFocusReturnTargetOrNull =
-                    topLevelOrNull.FocusManager?.GetFocusedElement() as Control;
+                mCourseChoiceFocusReturnTargetOrNull = topLevelOrNull.FocusManager?.GetFocusedElement() as Control;
             }
         }
 
         if (isEditorVisible == false && mWasCourseChoiceEditorVisible)
         {
-            Dispatcher.UIThread.Post(
-                restoreCourseChoiceFocus,
-                DispatcherPriority.Input);
+            Dispatcher.UIThread.Post(restoreCourseChoiceFocus, DispatcherPriority.Input);
         }
 
         mWasCourseChoiceEditorVisible = isEditorVisible;
@@ -494,8 +454,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
 
     private void focusCourseChoiceControl()
     {
-        CourseChoiceEditorView? editorOrNull =
-            this.FindControl<CourseChoiceEditorView>("CourseChoiceEditor");
+        CourseChoiceEditorView? editorOrNull = this.FindControl<CourseChoiceEditorView>("CourseChoiceEditor");
         editorOrNull?.focusInitialInput();
     }
 
@@ -570,15 +529,11 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
 
         if (mWorkspaceOrNull.IsInspectorPaneOpen)
         {
-            Dispatcher.UIThread.Post(
-                focusInspectorPaneDismissAction,
-                DispatcherPriority.Input);
+            Dispatcher.UIThread.Post(focusInspectorPaneDismissAction, DispatcherPriority.Input);
             return;
         }
 
-        Dispatcher.UIThread.Post(
-            focusInspectorPaneOpenAction,
-            DispatcherPriority.Input);
+        Dispatcher.UIThread.Post(focusInspectorPaneOpenAction, DispatcherPriority.Input);
     }
 
     private void focusInspectorPaneDismissAction()
@@ -601,8 +556,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
 
     private void onKeyDown(object? senderOrNull, KeyEventArgs eventArgs)
     {
-        if (mWorkspaceOrNull != null
-            && mWorkspaceOrNull.IsWorkspaceInteractionEnabled == false)
+        if (mWorkspaceOrNull != null && mWorkspaceOrNull.IsWorkspaceInteractionEnabled == false)
         {
             if (eventArgs.Key == Key.Escape)
             {
@@ -642,9 +596,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         searchBoxOrNull?.Focus();
     }
 
-    private void onDetachedFromVisualTree(
-        object? senderOrNull,
-        VisualTreeAttachmentEventArgs eventArgs)
+    private void onDetachedFromVisualTree(object? senderOrNull, VisualTreeAttachmentEventArgs eventArgs)
     {
         mIsAttachedToVisualTree = false;
         disconnectWorkspace();

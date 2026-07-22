@@ -14,33 +14,24 @@ public sealed class GoogleCalendarEventResourceTests
     [Fact]
     public void ResourceUsesNormalizedIanaIdAndGroupsWeekdays()
     {
-        PlanId planId = new PlanId(
-            Guid.Parse("71f3be04-d4c6-41d4-a269-792321e71423"));
+        PlanId planId = new PlanId(Guid.Parse("71f3be04-d4c6-41d4-a269-792321e71423"));
         GoogleCalendarExportEvent exportEvent = createEvent("course:ITP30003");
         TimeZoneInfo windowsTimeZone = TimeZoneInfo.CreateCustomTimeZone(
             "Korea Standard Time",
             TimeSpan.FromHours(9.0),
             "Korea Standard Time",
             "Korea Standard Time");
-        CalendarTimeZoneId timeZoneId =
-            CalendarTimeZoneId.CreateFromSystemTimeZone(windowsTimeZone);
+        CalendarTimeZoneId timeZoneId = CalendarTimeZoneId.CreateFromSystemTimeZone(windowsTimeZone);
 
-        JsonObject resource = GoogleCalendarEventResourceFactory.Create(
-            planId,
-            timeZoneId,
-            exportEvent);
+        JsonObject resource = GoogleCalendarEventResourceFactory.Create(planId, timeZoneId, exportEvent);
         JsonObject start = Assert.IsType<JsonObject>(resource["start"]);
         JsonValue startDateTime = Assert.IsAssignableFrom<JsonValue>(start["dateTime"]);
         JsonValue startTimeZone = Assert.IsAssignableFrom<JsonValue>(start["timeZone"]);
         JsonArray recurrence = Assert.IsType<JsonArray>(resource["recurrence"]);
         JsonValue recurrenceRule = Assert.IsAssignableFrom<JsonValue>(recurrence[0]);
 
-        Assert.Equal(
-            "2026-08-31T11:30:00+09:00",
-            startDateTime.GetValue<string>());
-        Assert.Equal(
-            "Asia/Seoul",
-            startTimeZone.GetValue<string>());
+        Assert.Equal("2026-08-31T11:30:00+09:00", startDateTime.GetValue<string>());
+        Assert.Equal("Asia/Seoul", startTimeZone.GetValue<string>());
         Assert.Equal(
             "RRULE:FREQ=WEEKLY;BYDAY=MO,TH;UNTIL=20261220T145959Z",
             recurrenceRule.GetValue<string>());
@@ -49,25 +40,19 @@ public sealed class GoogleCalendarEventResourceTests
     [Fact]
     public void ResourceUsesDateSpecificOffsetsAcrossDaylightSavingTime()
     {
-        PlanId planId = new PlanId(
-            Guid.Parse("71f3be04-d4c6-41d4-a269-792321e71423"));
-        GoogleCalendarExportEvent exportEvent = createEvent(
-            "course:ITP30003");
+        PlanId planId = new PlanId(Guid.Parse("71f3be04-d4c6-41d4-a269-792321e71423"));
+        GoogleCalendarExportEvent exportEvent = createEvent("course:ITP30003");
 
         JsonObject resource = GoogleCalendarEventResourceFactory.Create(
             planId,
             new CalendarTimeZoneId("America/New_York"),
             exportEvent);
         JsonObject start = Assert.IsType<JsonObject>(resource["start"]);
-        JsonValue startDateTime =
-            Assert.IsAssignableFrom<JsonValue>(start["dateTime"]);
+        JsonValue startDateTime = Assert.IsAssignableFrom<JsonValue>(start["dateTime"]);
         JsonArray recurrence = Assert.IsType<JsonArray>(resource["recurrence"]);
-        JsonValue recurrenceRule =
-            Assert.IsAssignableFrom<JsonValue>(recurrence[0]);
+        JsonValue recurrenceRule = Assert.IsAssignableFrom<JsonValue>(recurrence[0]);
 
-        Assert.Equal(
-            "2026-08-31T11:30:00-04:00",
-            startDateTime.GetValue<string>());
+        Assert.Equal("2026-08-31T11:30:00-04:00", startDateTime.GetValue<string>());
         Assert.Equal(
             "RRULE:FREQ=WEEKLY;BYDAY=MO,TH;UNTIL=20261221T045959Z",
             recurrenceRule.GetValue<string>());
@@ -76,10 +61,8 @@ public sealed class GoogleCalendarEventResourceTests
     [Fact]
     public void EventIdsAreDeterministicAndGoogleCompatible()
     {
-        PlanId planId = new PlanId(
-            Guid.Parse("71f3be04-d4c6-41d4-a269-792321e71423"));
-        GoogleCalendarSourceEventId sourceId =
-            new GoogleCalendarSourceEventId("course:ITP30003");
+        PlanId planId = new PlanId(Guid.Parse("71f3be04-d4c6-41d4-a269-792321e71423"));
+        GoogleCalendarSourceEventId sourceId = new GoogleCalendarSourceEventId("course:ITP30003");
 
         GoogleCalendarEventId first = GoogleCalendarEventId.Create(planId, sourceId);
         GoogleCalendarEventId second = GoogleCalendarEventId.Create(planId, sourceId);
@@ -127,8 +110,7 @@ public sealed class GoogleCalendarEventResourceTests
             metadata,
             new RecurringCalendarEvent[] { recurringEvent });
 
-        GoogleCalendarExportPlan plan = GoogleCalendarExportPlan.CreateFromDocument(
-            document);
+        GoogleCalendarExportPlan plan = GoogleCalendarExportPlan.CreateFromDocument(document);
 
         Assert.Equal(
             TimeSpan.FromHours(9.0),

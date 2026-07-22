@@ -8,13 +8,11 @@ namespace TimetableGenerator.Desktop.Tests;
 
 internal sealed class ImmediatePlanningWorkspaceStore : IPlanningWorkspaceStore
 {
-    private PlanningWorkspaceConcurrencyToken mConcurrencyToken =
-        PlanningWorkspaceConcurrencyToken.MissingWorkspace;
+    private PlanningWorkspaceConcurrencyToken mConcurrencyToken = PlanningWorkspaceConcurrencyToken.MissingWorkspace;
 
     public PlanningWorkspace? LastSavedWorkspaceOrNull { get; private set; }
 
-    public Task<PlanningWorkspaceLoadResult> LoadAsync(
-        CancellationToken cancellationToken)
+    public Task<PlanningWorkspaceLoadResult> LoadAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (LastSavedWorkspaceOrNull == null)
@@ -36,9 +34,7 @@ internal sealed class ImmediatePlanningWorkspaceStore : IPlanningWorkspaceStore
         cancellationToken.ThrowIfCancellationRequested();
         if (expectedToken != mConcurrencyToken)
         {
-            throw new PlanningWorkspaceConcurrencyException(
-                expectedToken,
-                mConcurrencyToken);
+            throw new PlanningWorkspaceConcurrencyException(expectedToken, mConcurrencyToken);
         }
 
         LastSavedWorkspaceOrNull = workspace;

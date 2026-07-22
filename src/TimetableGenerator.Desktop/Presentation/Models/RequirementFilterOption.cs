@@ -25,14 +25,10 @@ internal sealed class RequirementFilterOption
 
     public static RequirementFilterOption CreateAll()
     {
-        return new RequirementFilterOption(
-            ECourseFilterScope.All,
-            null,
-            "이수구분 전체");
+        return new RequirementFilterOption(ECourseFilterScope.All, null, "이수구분 전체");
     }
 
-    public static RequirementFilterOption CreateSpecific(
-        ERequirementType requirementType)
+    public static RequirementFilterOption CreateSpecific(ERequirementType requirementType)
     {
         if (Enum.IsDefined(typeof(ERequirementType), requirementType) == false)
         {
@@ -59,8 +55,7 @@ internal sealed class RequirementFilterOption
 
         if (mRequirementTypeOrNull.HasValue == false)
         {
-            throw new InvalidOperationException(
-                "Specific course filters require an exact requirement type.");
+            throw new InvalidOperationException("Specific course filters require an exact requirement type.");
         }
 
         foreach (ERequirementType requirementType in course.RequirementTypes)

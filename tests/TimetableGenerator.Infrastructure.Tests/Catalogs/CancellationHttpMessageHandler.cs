@@ -19,8 +19,7 @@ internal sealed class CancellationHttpMessageHandler : HttpMessageHandler
 
     public CancellationHttpMessageHandler()
     {
-        mRequestStartedSource = new TaskCompletionSource(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+        mRequestStartedSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(

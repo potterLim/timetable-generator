@@ -29,18 +29,13 @@ internal readonly record struct FileGeneration
     {
         if (value < FIRST_GENERATION)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "File generations must be positive.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "File generations must be positive.");
         }
 
         Value = value;
     }
 
-    public static bool TryParseFileComponent(
-        string value,
-        out FileGeneration generation)
+    public static bool TryParseFileComponent(string value, out FileGeneration generation)
     {
         generation = default(FileGeneration);
         if (value == null || value.Length != 21 || value[0] != 'g')

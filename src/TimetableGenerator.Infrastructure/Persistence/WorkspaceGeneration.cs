@@ -42,16 +42,13 @@ public readonly record struct WorkspaceGeneration
     {
         if (Value == long.MaxValue)
         {
-            throw new InvalidOperationException(
-                "The planning workspace generation range is exhausted.");
+            throw new InvalidOperationException("The planning workspace generation range is exhausted.");
         }
 
         return new WorkspaceGeneration(Value + 1);
     }
 
-    public static bool TryParseFileComponent(
-        string value,
-        out WorkspaceGeneration generation)
+    public static bool TryParseFileComponent(string value, out WorkspaceGeneration generation)
     {
         generation = default(WorkspaceGeneration);
         if (value == null || value.Length != 21 || value[0] != 'g')

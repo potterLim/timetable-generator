@@ -10,9 +10,7 @@ internal sealed record GooglePkceCodeVerifier
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException(
-                "Google PKCE code verifiers cannot be empty.",
-                nameof(value));
+            throw new ArgumentException("Google PKCE code verifiers cannot be empty.", nameof(value));
         }
 
         Value = value;

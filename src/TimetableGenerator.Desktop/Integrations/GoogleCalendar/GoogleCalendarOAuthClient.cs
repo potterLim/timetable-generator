@@ -16,9 +16,7 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
 {
     private const long MAXIMUM_TOKEN_RESPONSE_BODY_BYTES = 65_536L;
 
-    private static readonly Uri TOKEN_ENDPOINT = new Uri(
-        "https://oauth2.googleapis.com/token",
-        UriKind.Absolute);
+    private static readonly Uri TOKEN_ENDPOINT = new Uri("https://oauth2.googleapis.com/token", UriKind.Absolute);
 
     private readonly HttpClient mHttpClient;
     private readonly IGoogleCalendarOAuthConfigurationProvider mConfigurationProvider;
@@ -52,8 +50,7 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
     public async Task<GoogleOAuthAuthorizationResult> AuthorizeAsync(
         CancellationToken cancellationToken)
     {
-        GoogleCalendarOAuthConfiguration? configurationOrNull =
-            mConfigurationProvider.GetConfigurationOrNull();
+        GoogleCalendarOAuthConfiguration? configurationOrNull = mConfigurationProvider.GetConfigurationOrNull();
         if (configurationOrNull == null)
         {
             return GoogleOAuthAuthorizationResult.Fail(
@@ -70,8 +67,7 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
         catch (OperationCanceledException exception) when (
             cancellationToken.IsCancellationRequested == false)
         {
-            Trace.TraceError(
-                $"Google Calendar authorization timed out.{Environment.NewLine}{exception}");
+            Trace.TraceError($"Google Calendar authorization timed out.{Environment.NewLine}{exception}");
 
             return GoogleOAuthAuthorizationResult.Fail(
                 EGoogleOAuthAuthorizationStatus.NetworkFailed,
@@ -110,14 +106,10 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
         GoogleCalendarOAuthConfiguration configuration,
         CancellationToken cancellationToken)
     {
-        GoogleOAuthState state = new GoogleOAuthState(
-            createRandomBase64UrlValue(32));
-        GooglePkceCodeVerifier codeVerifier = new GooglePkceCodeVerifier(
-            createRandomBase64UrlValue(64));
-        byte[] challengeDigest = SHA256.HashData(
-            Encoding.ASCII.GetBytes(codeVerifier.Value));
-        GooglePkceCodeChallenge codeChallenge = new GooglePkceCodeChallenge(
-            encodeBase64Url(challengeDigest));
+        GoogleOAuthState state = new GoogleOAuthState(createRandomBase64UrlValue(32));
+        GooglePkceCodeVerifier codeVerifier = new GooglePkceCodeVerifier(createRandomBase64UrlValue(64));
+        byte[] challengeDigest = SHA256.HashData(Encoding.ASCII.GetBytes(codeVerifier.Value));
+        GooglePkceCodeChallenge codeChallenge = new GooglePkceCodeChallenge(encodeBase64Url(challengeDigest));
         GoogleOAuthAuthorizationCodeResult codeResult =
             await mAuthorizationCodeProvider.RequestCodeAsync(
                 configuration.ClientId,
@@ -126,13 +118,10 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
                 cancellationToken).ConfigureAwait(false);
         if (codeResult.Status != EGoogleOAuthAuthorizationStatus.Completed)
         {
-            return GoogleOAuthAuthorizationResult.Fail(
-                codeResult.Status,
-                codeResult.DiagnosticCodeOrNull);
+            return GoogleOAuthAuthorizationResult.Fail(codeResult.Status, codeResult.DiagnosticCodeOrNull);
         }
 
-        GoogleOAuthAuthorizationCode? authorizationCodeOrNull =
-            codeResult.AuthorizationCodeOrNull;
+        GoogleOAuthAuthorizationCode? authorizationCodeOrNull = codeResult.AuthorizationCodeOrNull;
         if (authorizationCodeOrNull == null)
         {
             return GoogleOAuthAuthorizationResult.Fail(
@@ -212,9 +201,7 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
 
             if (response.IsSuccessStatusCode == false)
             {
-                string diagnosticCode = createTokenErrorDiagnosticCode(
-                    responseContent,
-                    response.StatusCode);
+                string diagnosticCode = createTokenErrorDiagnosticCode(responseContent, response.StatusCode);
                 int numericStatusCode = (int)response.StatusCode;
                 bool isNetworkFailure = response.StatusCode == HttpStatusCode.RequestTimeout
                     || response.StatusCode == HttpStatusCode.TooManyRequests
@@ -233,16 +220,12 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
                     failureKind = EGoogleTokenExchangeFailureKind.Permanent;
                 }
 
-                return GoogleTokenExchangeResult.Fail(
-                    failureKind,
-                    diagnosticCode);
+                return GoogleTokenExchangeResult.Fail(failureKind, diagnosticCode);
             }
 
             using (JsonDocument document = JsonDocument.Parse(responseContent))
             {
-                string? accessTokenOrNull = getStringOrNull(
-                    document.RootElement,
-                    "access_token");
+                string? accessTokenOrNull = getStringOrNull(document.RootElement, "access_token");
                 if (string.IsNullOrWhiteSpace(accessTokenOrNull))
                 {
                     return GoogleTokenExchangeResult.Fail(
@@ -250,21 +233,15 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
                         "access_token_missing");
                 }
 
-                string? tokenTypeOrNull = getStringOrNull(
-                    document.RootElement,
-                    "token_type");
-                if (string.Equals(
-                    tokenTypeOrNull,
-                    "Bearer",
-                    StringComparison.OrdinalIgnoreCase) == false)
+                string? tokenTypeOrNull = getStringOrNull(document.RootElement, "token_type");
+                if (string.Equals(tokenTypeOrNull, "Bearer", StringComparison.OrdinalIgnoreCase) == false)
                 {
                     return GoogleTokenExchangeResult.Fail(
                         EGoogleTokenExchangeFailureKind.Permanent,
                         "unsupported_token_type");
                 }
 
-                return GoogleTokenExchangeResult.Complete(
-                    new GoogleAccessToken(accessTokenOrNull));
+                return GoogleTokenExchangeResult.Complete(new GoogleAccessToken(accessTokenOrNull));
             }
         }
     }
@@ -277,10 +254,7 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
 
     private static string encodeBase64Url(byte[] value)
     {
-        return Convert.ToBase64String(value)
-            .TrimEnd('=')
-            .Replace('+', '-')
-            .Replace('/', '_');
+        return Convert.ToBase64String(value).TrimEnd('=').Replace('+', '-').Replace('/', '_');
     }
 
     private static string? getStringOrNull(JsonElement element, string propertyName)
@@ -304,12 +278,8 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
         {
             using (JsonDocument document = JsonDocument.Parse(responseContent))
             {
-                string? errorOrNull = getStringOrNull(
-                    document.RootElement,
-                    "error");
-                string? descriptionOrNull = getStringOrNull(
-                    document.RootElement,
-                    "error_description");
+                string? errorOrNull = getStringOrNull(document.RootElement, "error");
+                string? descriptionOrNull = getStringOrNull(document.RootElement, "error_description");
                 switch (errorOrNull)
                 {
                     case "invalid_request":

@@ -12,10 +12,7 @@ public sealed class CatalogJsonFormatException : FormatException
         JsonPath = jsonPath;
     }
 
-    public CatalogJsonFormatException(
-        string jsonPath,
-        string reason,
-        Exception innerException)
+    public CatalogJsonFormatException(string jsonPath, string reason, Exception innerException)
         : base(buildMessage(jsonPath, reason), innerException)
     {
         JsonPath = jsonPath;

@@ -65,13 +65,10 @@ internal sealed class GoogleCalendarDescriptor
         string normalizedDisplayName = displayName.Trim();
         if (normalizedDisplayName.Length == 0)
         {
-            throw new ArgumentException(
-                "Google calendars require a display name.",
-                nameof(displayName));
+            throw new ArgumentException("Google calendars require a display name.", nameof(displayName));
         }
 
-        if (managedPlanIdOrNull.HasValue
-            && managedPlanIdOrNull.Value.IsValid == false)
+        if (managedPlanIdOrNull.HasValue && managedPlanIdOrNull.Value.IsValid == false)
         {
             throw new ArgumentException(
                 "Managed Google calendars require a valid plan ID.",
@@ -87,8 +84,7 @@ internal sealed class GoogleCalendarDescriptor
         AccessRole = accessRole;
     }
 
-    private static void validateAccessRole(
-        EGoogleCalendarAccessRole accessRole)
+    private static void validateAccessRole(EGoogleCalendarAccessRole accessRole)
     {
         switch (accessRole)
         {

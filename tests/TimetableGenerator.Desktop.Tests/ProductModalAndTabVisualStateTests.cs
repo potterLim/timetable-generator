@@ -22,23 +22,18 @@ namespace TimetableGenerator.Desktop.Tests;
 
 public sealed class ProductModalAndTabVisualStateTests
 {
-    private static readonly ColorToken CONTROL_BORDER =
-        new ColorToken("ControlBorderBrush");
+    private static readonly ColorToken CONTROL_BORDER = new ColorToken("ControlBorderBrush");
 
-    private static readonly ColorToken CONTROL_SURFACE =
-        new ColorToken("ControlSurfaceBrush");
+    private static readonly ColorToken CONTROL_SURFACE = new ColorToken("ControlSurfaceBrush");
 
-    private static readonly ColorToken SELECTION_INDICATOR =
-        new ColorToken("SelectionIndicatorBrush");
+    private static readonly ColorToken SELECTION_INDICATOR = new ColorToken("SelectionIndicatorBrush");
 
-    private static readonly ColorToken TEXT_PRIMARY =
-        new ColorToken("TextPrimaryBrush");
+    private static readonly ColorToken TEXT_PRIMARY = new ColorToken("TextPrimaryBrush");
 
     [AvaloniaFact]
     public void ModalBackgroundKeepsRoleSurfacesWhileRemainingDisabled()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         ProductWorkspaceHostView host = new ProductWorkspaceHostView();
         host.DataContext = workspace;
         Window window = createWindow(host);
@@ -48,10 +43,8 @@ public sealed class ProductModalAndTabVisualStateTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            Button? workspaceRetryButtonOrNull =
-                host.FindControl<Button>("WorkspaceRetryAutosaveButton");
-            Button? emptyWorkspaceRetryButtonOrNull =
-                host.FindControl<Button>("EmptyWorkspaceRetryAutosaveButton");
+            Button? workspaceRetryButtonOrNull = host.FindControl<Button>("WorkspaceRetryAutosaveButton");
+            Button? emptyWorkspaceRetryButtonOrNull = host.FindControl<Button>("EmptyWorkspaceRetryAutosaveButton");
             Assert.NotNull(workspaceRetryButtonOrNull);
             Assert.NotNull(emptyWorkspaceRetryButtonOrNull);
             Assert.Contains("subtle", workspaceRetryButtonOrNull.Classes);
@@ -68,24 +61,12 @@ public sealed class ProductModalAndTabVisualStateTests
                 workspace.BeginAddPersonalScheduleCommand.Execute(null);
                 Dispatcher.UIThread.RunJobs();
 
-                Grid workspaceSurface = findRequiredControl<Grid>(
-                    host,
-                    "WorkspaceSurface");
-                Button iconButton = findRequiredControl<Button>(
-                    host,
-                    "AddPlanButton");
-                TextBox searchBox = findRequiredControl<TextBox>(
-                    host,
-                    "CourseSearchBox");
-                ComboBox departmentFilter = findRequiredControl<ComboBox>(
-                    host,
-                    "DepartmentFilter");
-                Button exportButton = findRequiredControl<Button>(
-                    host,
-                    "ExportScheduleButton");
-                Button outlineButton = findRequiredControl<Button>(
-                    host,
-                    "WorkspaceAddPersonalScheduleButton");
+                Grid workspaceSurface = findRequiredControl<Grid>(host, "WorkspaceSurface");
+                Button iconButton = findRequiredControl<Button>(host, "AddPlanButton");
+                TextBox searchBox = findRequiredControl<TextBox>(host, "CourseSearchBox");
+                ComboBox departmentFilter = findRequiredControl<ComboBox>(host, "DepartmentFilter");
+                Button exportButton = findRequiredControl<Button>(host, "ExportScheduleButton");
+                Button outlineButton = findRequiredControl<Button>(host, "WorkspaceAddPersonalScheduleButton");
                 TabStrip planTabs = host.GetVisualDescendants()
                     .OfType<TabStrip>()
                     .Single(candidate => candidate.Classes.Contains("plan-tabs"));
@@ -127,44 +108,19 @@ public sealed class ProductModalAndTabVisualStateTests
                         "PART_ContentPresenter");
                 Assert.Equal(1.0, outlineButton.Opacity);
                 Assert.Equal(1.0, outlinePresenter.Opacity);
-                assertBrushUsesToken(
-                    outlinePresenter.Background,
-                    CONTROL_SURFACE,
-                    themeVariant);
-                assertBrushUsesToken(
-                    outlinePresenter.BorderBrush,
-                    CONTROL_BORDER,
-                    themeVariant);
-                assertBrushUsesToken(
-                    outlineButton.Foreground,
-                    TEXT_PRIMARY,
-                    themeVariant);
+                assertBrushUsesToken(outlinePresenter.Background, CONTROL_SURFACE, themeVariant);
+                assertBrushUsesToken(outlinePresenter.BorderBrush, CONTROL_BORDER, themeVariant);
+                assertBrushUsesToken(outlineButton.Foreground, TEXT_PRIMARY, themeVariant);
 
-                Border textBoxBorder = findRequiredTemplateControl<Border>(
-                    searchBox,
-                    "PART_BorderElement");
+                Border textBoxBorder = findRequiredTemplateControl<Border>(searchBox, "PART_BorderElement");
                 Assert.Equal(1.0, searchBox.Opacity);
-                assertBrushUsesToken(
-                    textBoxBorder.Background,
-                    CONTROL_SURFACE,
-                    themeVariant);
-                assertBrushUsesToken(
-                    textBoxBorder.BorderBrush,
-                    CONTROL_BORDER,
-                    themeVariant);
+                assertBrushUsesToken(textBoxBorder.Background, CONTROL_SURFACE, themeVariant);
+                assertBrushUsesToken(textBoxBorder.BorderBrush, CONTROL_BORDER, themeVariant);
 
-                Border comboBoxBorder = findRequiredTemplateControl<Border>(
-                    departmentFilter,
-                    "Background");
+                Border comboBoxBorder = findRequiredTemplateControl<Border>(departmentFilter, "Background");
                 Assert.Equal(1.0, departmentFilter.Opacity);
-                assertBrushUsesToken(
-                    comboBoxBorder.Background,
-                    CONTROL_SURFACE,
-                    themeVariant);
-                assertBrushUsesToken(
-                    comboBoxBorder.BorderBrush,
-                    CONTROL_BORDER,
-                    themeVariant);
+                assertBrushUsesToken(comboBoxBorder.Background, CONTROL_SURFACE, themeVariant);
+                assertBrushUsesToken(comboBoxBorder.BorderBrush, CONTROL_BORDER, themeVariant);
 
                 ContentPresenter exportPresenter =
                     findRequiredTemplateControl<ContentPresenter>(
@@ -186,22 +142,16 @@ public sealed class ProductModalAndTabVisualStateTests
     [AvaloniaFact]
     public void AppearanceButtonKeepsAQuietTransparentDisabledStateDuringModal()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
-        ProductShellViewModel shell =
-            PlannerWorkspaceTestFactory.CreateShell(workspace);
-        MainWindow window = new MainWindow(
-            shell,
-            ProductAppearanceTestFactory.CreateViewModel());
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+        ProductShellViewModel shell = PlannerWorkspaceTestFactory.CreateShell(workspace);
+        MainWindow window = new MainWindow(shell, ProductAppearanceTestFactory.CreateViewModel());
 
         try
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            Button appearanceButton = findRequiredControl<Button>(
-                window,
-                "AppearanceButton");
+            Button appearanceButton = findRequiredControl<Button>(window, "AppearanceButton");
             ThemeVariant[] themeVariants =
             {
                 ThemeVariant.Light,
@@ -263,8 +213,7 @@ public sealed class ProductModalAndTabVisualStateTests
     [AvaloniaFact]
     public void PlanTabsRenderOneFullWidthProductSelectionIndicator()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         ProductWorkspaceHostView host = new ProductWorkspaceHostView();
         host.DataContext = workspace;
         Window window = createWindow(host);
@@ -287,9 +236,7 @@ public sealed class ProductModalAndTabVisualStateTests
                 TabStrip planTabs = host.GetVisualDescendants()
                     .OfType<TabStrip>()
                     .Single(candidate => candidate.Classes.Contains("plan-tabs"));
-                TabStripItem[] planTabItems = planTabs.GetVisualDescendants()
-                    .OfType<TabStripItem>()
-                    .ToArray();
+                TabStripItem[] planTabItems = planTabs.GetVisualDescendants().OfType<TabStripItem>().ToArray();
                 Border[] selectionPipes = planTabItems
                     .Select(
                         tab => findRequiredTemplateControl<Border>(
@@ -300,21 +247,14 @@ public sealed class ProductModalAndTabVisualStateTests
                 TabStripItem selectedTab = Assert.Single(
                     planTabItems,
                     static tab => tab.IsSelected);
-                Border selectedPipe = findRequiredTemplateControl<Border>(
-                    selectedTab,
-                    "PART_SelectedPipe");
+                Border selectedPipe = findRequiredTemplateControl<Border>(selectedTab, "PART_SelectedPipe");
 
-                Assert.Equal(
-                    new Thickness(0.0, 0.0, 0.0, 2.0),
-                    selectedTab.BorderThickness);
+                Assert.Equal(new Thickness(0.0, 0.0, 0.0, 2.0), selectedTab.BorderThickness);
                 Assert.All(
                     selectionPipes,
                     static pipe => Assert.False(pipe.IsVisible));
                 Assert.False(selectedPipe.IsVisible);
-                assertBrushUsesToken(
-                    selectedTab.BorderBrush,
-                    SELECTION_INDICATOR,
-                    themeVariant);
+                assertBrushUsesToken(selectedTab.BorderBrush, SELECTION_INDICATOR, themeVariant);
             }
         }
         finally
@@ -329,18 +269,14 @@ public sealed class ProductModalAndTabVisualStateTests
         ColorToken expectedToken,
         ThemeVariant themeVariant)
     {
-        ISolidColorBrush? actualSolidBrushOrNull =
-            actualBrushOrNull as ISolidColorBrush;
+        ISolidColorBrush? actualSolidBrushOrNull = actualBrushOrNull as ISolidColorBrush;
         Assert.NotNull(actualSolidBrushOrNull);
         if (actualSolidBrushOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The rendered brush was not a solid color brush.");
+            throw new InvalidOperationException("The rendered brush was not a solid color brush.");
         }
 
-        SolidColorBrush expectedBrush = findRequiredBrush(
-            expectedToken,
-            themeVariant);
+        SolidColorBrush expectedBrush = findRequiredBrush(expectedToken, themeVariant);
         Assert.Equal(expectedBrush.Color, actualSolidBrushOrNull.Color);
     }
 
@@ -350,16 +286,13 @@ public sealed class ProductModalAndTabVisualStateTests
         Assert.NotNull(solidBrushOrNull);
         if (solidBrushOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The rendered brush was not a solid color brush.");
+            throw new InvalidOperationException("The rendered brush was not a solid color brush.");
         }
 
         Assert.Equal(byte.MinValue, solidBrushOrNull.Color.A);
     }
 
-    private static TControl findRequiredControl<TControl>(
-        Control root,
-        string name)
+    private static TControl findRequiredControl<TControl>(Control root, string name)
         where TControl : Control
     {
         TControl? controlOrNull = root.GetVisualDescendants()
@@ -368,16 +301,13 @@ public sealed class ProductModalAndTabVisualStateTests
         Assert.NotNull(controlOrNull);
         if (controlOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The required control was not found: " + name);
+            throw new InvalidOperationException("The required control was not found: " + name);
         }
 
         return controlOrNull;
     }
 
-    private static TControl findRequiredTemplateControl<TControl>(
-        Control root,
-        string name)
+    private static TControl findRequiredTemplateControl<TControl>(Control root, string name)
         where TControl : Control
     {
         TControl? controlOrNull = root.GetVisualDescendants()
@@ -386,23 +316,19 @@ public sealed class ProductModalAndTabVisualStateTests
         Assert.NotNull(controlOrNull);
         if (controlOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The required template control was not found: " + name);
+            throw new InvalidOperationException("The required template control was not found: " + name);
         }
 
         return controlOrNull;
     }
 
-    private static SolidColorBrush findRequiredBrush(
-        ColorToken colorToken,
-        ThemeVariant themeVariant)
+    private static SolidColorBrush findRequiredBrush(ColorToken colorToken, ThemeVariant themeVariant)
     {
         Avalonia.Application? applicationOrNull = Avalonia.Application.Current;
         Assert.NotNull(applicationOrNull);
         if (applicationOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The Avalonia test application was not initialized.");
+            throw new InvalidOperationException("The Avalonia test application was not initialized.");
         }
 
         object? resourceOrNull;

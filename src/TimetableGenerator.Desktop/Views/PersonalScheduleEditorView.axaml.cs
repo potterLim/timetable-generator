@@ -31,16 +31,11 @@ internal sealed partial class PersonalScheduleEditorView : UserControl
     {
         AvaloniaXamlLoader.Load(this);
         mNameInput = findRequiredControl<TextBox>("PersonalScheduleNameInput");
-        mStartTimeInput = findRequiredControl<ProductTimePicker>(
-            "PersonalScheduleStartTimeInput");
-        mEndTimeInput = findRequiredControl<ProductTimePicker>(
-            "PersonalScheduleEndTimeInput");
-        mSectionInput = findRequiredControl<TextBox>(
-            "PersonalScheduleSectionInput");
-        mInstructorInput = findRequiredControl<TextBox>(
-            "PersonalScheduleInstructorInput");
-        mLocationInput = findRequiredControl<TextBox>(
-            "PersonalScheduleLocationInput");
+        mStartTimeInput = findRequiredControl<ProductTimePicker>("PersonalScheduleStartTimeInput");
+        mEndTimeInput = findRequiredControl<ProductTimePicker>("PersonalScheduleEndTimeInput");
+        mSectionInput = findRequiredControl<TextBox>("PersonalScheduleSectionInput");
+        mInstructorInput = findRequiredControl<TextBox>("PersonalScheduleInstructorInput");
+        mLocationInput = findRequiredControl<TextBox>("PersonalScheduleLocationInput");
     }
 
     internal void focusInitialInput()
@@ -49,8 +44,7 @@ internal sealed partial class PersonalScheduleEditorView : UserControl
         mNameInput.SelectAll();
     }
 
-    internal void focusValidationTarget(
-        EPersonalScheduleDraftValidationError validationError)
+    internal void focusValidationTarget(EPersonalScheduleDraftValidationError validationError)
     {
         Control target;
         switch (validationError)
@@ -98,8 +92,7 @@ internal sealed partial class PersonalScheduleEditorView : UserControl
         object? senderOrNull,
         ContainerPreparedEventArgs eventArgs)
     {
-        if (eventArgs.Index < 0
-            || eventArgs.Index >= WEEKDAY_COLUMN_COUNT)
+        if (eventArgs.Index < 0 || eventArgs.Index >= WEEKDAY_COLUMN_COUNT)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(eventArgs),
@@ -137,8 +130,7 @@ internal sealed partial class PersonalScheduleEditorView : UserControl
                     && dayOption.Day == day);
         if (dayInputOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The personal schedule day input was not found: " + day);
+            throw new InvalidOperationException("The personal schedule day input was not found: " + day);
         }
 
         return dayInputOrNull;
@@ -150,8 +142,7 @@ internal sealed partial class PersonalScheduleEditorView : UserControl
         TControl? controlOrNull = this.FindControl<TControl>(name);
         if (controlOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The personal schedule editor control was not found: " + name);
+            throw new InvalidOperationException("The personal schedule editor control was not found: " + name);
         }
 
         return controlOrNull;

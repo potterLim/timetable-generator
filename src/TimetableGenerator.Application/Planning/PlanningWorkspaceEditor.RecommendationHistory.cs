@@ -31,9 +31,7 @@ public sealed partial class PlanningWorkspaceEditor
         return replacePlan(workspace, updatedPlan);
     }
 
-    public PlanningWorkspace ForgetLastViewedRecommendation(
-        PlanningWorkspace workspace,
-        PlanId planId)
+    public PlanningWorkspace ForgetLastViewedRecommendation(PlanningWorkspace workspace, PlanId planId)
     {
         if (workspace == null)
         {

@@ -16,9 +16,7 @@ public sealed record EnglishInstitutionName
         string normalizedValue = value.Trim();
         if (normalizedValue.Length == 0)
         {
-            throw new ArgumentException(
-                "English institution names cannot be empty.",
-                nameof(value));
+            throw new ArgumentException("English institution names cannot be empty.", nameof(value));
         }
 
         Value = normalizedValue;

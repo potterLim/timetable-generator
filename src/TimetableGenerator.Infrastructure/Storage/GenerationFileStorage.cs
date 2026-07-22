@@ -78,10 +78,7 @@ internal sealed class GenerationFileStorage
             + ".tmp";
         try
         {
-            await writeDurableFileAsync(
-                temporaryPath,
-                content,
-                cancellationToken).ConfigureAwait(false);
+            await writeDurableFileAsync(temporaryPath, content, cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
             File.Move(temporaryPath, finalPath.Value);
             return new GenerationFile(generation, finalPath);
@@ -107,8 +104,7 @@ internal sealed class GenerationFileStorage
         PruneGenerations(new GenerationFileRetentionSet());
     }
 
-    public void PruneGenerations(
-        GenerationFileRetentionSet additionallyRetainedGenerations)
+    public void PruneGenerations(GenerationFileRetentionSet additionallyRetainedGenerations)
     {
         if (additionallyRetainedGenerations == null)
         {
@@ -136,9 +132,7 @@ internal sealed class GenerationFileStorage
         }
     }
 
-    private static int compareGenerationFilesDescending(
-        GenerationFile first,
-        GenerationFile second)
+    private static int compareGenerationFilesDescending(GenerationFile first, GenerationFile second)
     {
         return second.Generation.Value.CompareTo(first.Generation.Value);
     }
@@ -191,12 +185,10 @@ internal sealed class GenerationFileStorage
                     Directory.CreateDirectory(mStoragePath.DirectoryPath);
                     break;
                 default:
-                    throw new InvalidOperationException(
-                        "The generation directory preparation is unsupported.");
+                    throw new InvalidOperationException("The generation directory preparation is unsupported.");
             }
 
-            FileStream processLock = await acquireCrossProcessLockAsync(
-                cancellationToken).ConfigureAwait(false);
+            FileStream processLock = await acquireCrossProcessLockAsync(cancellationToken).ConfigureAwait(false);
             pruneTemporaryFiles();
             return new GenerationFileStorageAccess(processLock, mAccessGate);
         }
@@ -207,8 +199,7 @@ internal sealed class GenerationFileStorage
         }
     }
 
-    private async Task<FileStream> acquireCrossProcessLockAsync(
-        CancellationToken cancellationToken)
+    private async Task<FileStream> acquireCrossProcessLockAsync(CancellationToken cancellationToken)
     {
         IOException? lastExceptionOrNull = null;
         for (int attempt = 0; attempt < MAXIMUM_LOCK_ATTEMPTS; ++attempt)
@@ -227,14 +218,11 @@ internal sealed class GenerationFileStorage
             catch (IOException exception)
             {
                 lastExceptionOrNull = exception;
-                await Task.Delay(
-                    LOCK_RETRY_DELAY_MILLISECONDS,
-                    cancellationToken).ConfigureAwait(false);
+                await Task.Delay(LOCK_RETRY_DELAY_MILLISECONDS, cancellationToken).ConfigureAwait(false);
             }
         }
 
-        InvalidOperationException fallbackException = new InvalidOperationException(
-            "The generation file lock attempt ended without an I/O exception.");
+        InvalidOperationException fallbackException = new InvalidOperationException("The generation file lock attempt ended without an I/O exception.");
         Exception failure = fallbackException;
         if (lastExceptionOrNull != null)
         {

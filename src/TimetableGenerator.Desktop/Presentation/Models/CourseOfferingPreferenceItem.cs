@@ -62,9 +62,7 @@ internal sealed class CourseOfferingPreferenceItem : ObservableObject
     {
         get
         {
-            return EnglishInstructionPercentageRange
-                .CreateUniform(EnglishInstructionPercentage)
-                .DisplayText;
+            return EnglishInstructionPercentageRange.CreateUniform(EnglishInstructionPercentage).DisplayText;
         }
     }
 
@@ -72,9 +70,7 @@ internal sealed class CourseOfferingPreferenceItem : ObservableObject
     {
         get
         {
-            return EnglishInstructionPercentageRange
-                .CreateUniform(EnglishInstructionPercentage)
-                .AccessibleText;
+            return EnglishInstructionPercentageRange.CreateUniform(EnglishInstructionPercentage).AccessibleText;
         }
     }
 

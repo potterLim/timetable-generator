@@ -5,8 +5,7 @@ namespace TimetableGenerator.Desktop.Presentation.Models;
 
 internal sealed class ScheduleBoardLayout
 {
-    private static readonly ScheduleBoardLayout DEFAULT_LAYOUT =
-        CreateForEntries(Array.Empty<ScheduleEntry>());
+    private static readonly ScheduleBoardLayout DEFAULT_LAYOUT = CreateForEntries(Array.Empty<ScheduleEntry>());
 
     public static ScheduleBoardLayout Default
     {
@@ -20,21 +19,16 @@ internal sealed class ScheduleBoardLayout
 
     public ScheduleBoardTimeAxis TimeAxis { get; }
 
-    private ScheduleBoardLayout(
-        ScheduleBoardDayRange dayRange,
-        ScheduleBoardTimeAxis timeAxis)
+    private ScheduleBoardLayout(ScheduleBoardDayRange dayRange, ScheduleBoardTimeAxis timeAxis)
     {
         DayRange = dayRange;
         TimeAxis = timeAxis;
     }
 
-    public static ScheduleBoardLayout CreateForEntries(
-        IReadOnlyList<ScheduleEntry> entries)
+    public static ScheduleBoardLayout CreateForEntries(IReadOnlyList<ScheduleEntry> entries)
     {
         ArgumentNullException.ThrowIfNull(entries);
-        return CreateForEntries(
-            entries,
-            ScheduleBoardDayRange.CreateForEntries(entries));
+        return CreateForEntries(entries, ScheduleBoardDayRange.CreateForEntries(entries));
     }
 
     public static ScheduleBoardLayout CreateForEntries(
@@ -43,13 +37,10 @@ internal sealed class ScheduleBoardLayout
     {
         ArgumentNullException.ThrowIfNull(entries);
         ArgumentNullException.ThrowIfNull(dayRange);
-        return new ScheduleBoardLayout(
-            dayRange,
-            ScheduleBoardTimeAxis.CreateForEntries(entries));
+        return new ScheduleBoardLayout(dayRange, ScheduleBoardTimeAxis.CreateForEntries(entries));
     }
 
-    public static ScheduleBoardLayout CreateForPngExport(
-        IReadOnlyList<ScheduleEntry> entries)
+    public static ScheduleBoardLayout CreateForPngExport(IReadOnlyList<ScheduleEntry> entries)
     {
         ArgumentNullException.ThrowIfNull(entries);
         return new ScheduleBoardLayout(

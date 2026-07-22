@@ -21,9 +21,7 @@ internal readonly record struct CalendarTimeZoneId
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException(
-                "Calendar time-zone IDs cannot be empty.",
-                nameof(value));
+            throw new ArgumentException("Calendar time-zone IDs cannot be empty.", nameof(value));
         }
 
         string normalizedValue = value.Trim();
@@ -32,8 +30,7 @@ internal readonly record struct CalendarTimeZoneId
             TimeZoneInfo.TryConvertIanaIdToWindowsId(
                 normalizedValue,
                 out windowsTimeZoneIdOrNull);
-        if (hasWindowsTimeZoneEquivalent == false
-            || string.IsNullOrWhiteSpace(windowsTimeZoneIdOrNull))
+        if (hasWindowsTimeZoneEquivalent == false || string.IsNullOrWhiteSpace(windowsTimeZoneIdOrNull))
         {
             throw new ArgumentException(
                 "Calendar time-zone IDs must be IANA identifiers supported on every target platform.",
@@ -63,8 +60,7 @@ internal readonly record struct CalendarTimeZoneId
         mIsInitialized = true;
     }
 
-    public static CalendarTimeZoneId CreateFromSystemTimeZone(
-        TimeZoneInfo timeZone)
+    public static CalendarTimeZoneId CreateFromSystemTimeZone(TimeZoneInfo timeZone)
     {
         if (timeZone == null)
         {
@@ -80,8 +76,7 @@ internal readonly record struct CalendarTimeZoneId
         bool hasIanaTimeZoneId = TimeZoneInfo.TryConvertWindowsIdToIanaId(
             timeZone.Id,
             out ianaTimeZoneIdOrNull);
-        if (hasIanaTimeZoneId == false
-            || string.IsNullOrWhiteSpace(ianaTimeZoneIdOrNull))
+        if (hasIanaTimeZoneId == false || string.IsNullOrWhiteSpace(ianaTimeZoneIdOrNull))
         {
             throw new ArgumentException(
                 "The system time zone cannot be represented by a portable IANA identifier.",
@@ -93,9 +88,7 @@ internal readonly record struct CalendarTimeZoneId
 
     public CalendarUtcOffset FindUtcOffset(DateOnly date, TimeOnly time)
     {
-        DateTime localDateTime = date.ToDateTime(
-            time,
-            DateTimeKind.Unspecified);
+        DateTime localDateTime = date.ToDateTime(time, DateTimeKind.Unspecified);
         TimeZoneInfo timeZone = findSystemTimeZone();
         if (timeZone.IsInvalidTime(localDateTime))
         {
@@ -108,9 +101,7 @@ internal readonly record struct CalendarTimeZoneId
         TimeSpan utcOffset;
         if (timeZone.IsAmbiguousTime(localDateTime))
         {
-            utcOffset = findFirstOccurrenceUtcOffset(
-                timeZone,
-                localDateTime);
+            utcOffset = findFirstOccurrenceUtcOffset(timeZone, localDateTime);
         }
         else
         {
@@ -122,9 +113,7 @@ internal readonly record struct CalendarTimeZoneId
 
     public DateTimeOffset ResolveLocalDateTime(DateOnly date, TimeOnly time)
     {
-        DateTime localDateTime = date.ToDateTime(
-            time,
-            DateTimeKind.Unspecified);
+        DateTime localDateTime = date.ToDateTime(time, DateTimeKind.Unspecified);
         CalendarUtcOffset utcOffset = FindUtcOffset(date, time);
         return new DateTimeOffset(localDateTime, utcOffset.Value);
     }
@@ -138,8 +127,7 @@ internal readonly record struct CalendarTimeZoneId
     {
         if (IsValid == false)
         {
-            throw new InvalidOperationException(
-                "An uninitialized calendar time-zone ID cannot be resolved.");
+            throw new InvalidOperationException("An uninitialized calendar time-zone ID cannot be resolved.");
         }
 
         return TimeZoneInfo.FindSystemTimeZoneById(Value);
@@ -149,10 +137,7 @@ internal readonly record struct CalendarTimeZoneId
         TimeZoneInfo timeZone,
         DateTime ambiguousLocalDateTime)
     {
-        TimeSpan[] possibleOffsets =
-            timeZone.GetAmbiguousTimeOffsets(ambiguousLocalDateTime);
-        return possibleOffsets[0] > possibleOffsets[1]
-            ? possibleOffsets[0]
-            : possibleOffsets[1];
+        TimeSpan[] possibleOffsets = timeZone.GetAmbiguousTimeOffsets(ambiguousLocalDateTime);
+        return possibleOffsets[0] > possibleOffsets[1] ? possibleOffsets[0] : possibleOffsets[1];
     }
 }

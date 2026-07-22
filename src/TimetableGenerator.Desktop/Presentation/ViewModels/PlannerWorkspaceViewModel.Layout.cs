@@ -9,18 +9,12 @@ namespace TimetableGenerator.Desktop.Presentation.ViewModels;
 
 internal sealed partial class PlannerWorkspaceViewModel
 {
-    private static readonly WorkspacePaneWidth COLLAPSED_COURSE_PANE_WIDTH =
-        new WorkspacePaneWidth(320.0);
-    private static readonly WorkspacePaneWidth COLLAPSED_INSPECTOR_PANE_WIDTH =
-        new WorkspacePaneWidth(304.0);
-    private static readonly WorkspacePaneWidth EXTRA_WIDE_COURSE_PANE_WIDTH =
-        new WorkspacePaneWidth(312.0);
-    private static readonly WorkspacePaneWidth EXTRA_WIDE_INSPECTOR_PANE_WIDTH =
-        new WorkspacePaneWidth(288.0);
-    private static readonly WorkspacePaneWidth WIDE_COURSE_PANE_WIDTH =
-        new WorkspacePaneWidth(312.0);
-    private static readonly WorkspacePaneWidth WIDE_INSPECTOR_PANE_WIDTH =
-        new WorkspacePaneWidth(304.0);
+    private static readonly WorkspacePaneWidth COLLAPSED_COURSE_PANE_WIDTH = new WorkspacePaneWidth(320.0);
+    private static readonly WorkspacePaneWidth COLLAPSED_INSPECTOR_PANE_WIDTH = new WorkspacePaneWidth(304.0);
+    private static readonly WorkspacePaneWidth EXTRA_WIDE_COURSE_PANE_WIDTH = new WorkspacePaneWidth(312.0);
+    private static readonly WorkspacePaneWidth EXTRA_WIDE_INSPECTOR_PANE_WIDTH = new WorkspacePaneWidth(288.0);
+    private static readonly WorkspacePaneWidth WIDE_COURSE_PANE_WIDTH = new WorkspacePaneWidth(312.0);
+    private static readonly WorkspacePaneWidth WIDE_INSPECTOR_PANE_WIDTH = new WorkspacePaneWidth(304.0);
 
     private EWorkspaceLayoutMode mLayoutMode;
 
@@ -166,8 +160,7 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     internal void applyWorkspaceWidth(WorkspaceWidth workspaceWidth)
     {
-        EWorkspaceLayoutMode newLayoutMode = WorkspaceLayoutPolicy.FindLayoutMode(
-            workspaceWidth);
+        EWorkspaceLayoutMode newLayoutMode = WorkspaceLayoutPolicy.FindLayoutMode(workspaceWidth);
         bool isInitialLayout = mHasAppliedWorkspaceLayout == false;
         if (newLayoutMode == LayoutMode && isInitialLayout == false)
         {
@@ -238,8 +231,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         IsInspectorPaneOpen = false;
     }
 
-    private void updatePaneStateAfterPlanCollectionChanged(
-        bool previouslyHadActivePlan)
+    private void updatePaneStateAfterPlanCollectionChanged(bool previouslyHadActivePlan)
     {
         if (HasActivePlan == false)
         {
@@ -260,36 +252,20 @@ internal sealed partial class PlannerWorkspaceViewModel
         switch (LayoutMode)
         {
             case EWorkspaceLayoutMode.ExtraWide:
-                setCoursePanePresentation(
-                    SplitViewDisplayMode.Inline,
-                    EXTRA_WIDE_COURSE_PANE_WIDTH);
-                setInspectorPanePresentation(
-                    SplitViewDisplayMode.Inline,
-                    EXTRA_WIDE_INSPECTOR_PANE_WIDTH);
+                setCoursePanePresentation(SplitViewDisplayMode.Inline, EXTRA_WIDE_COURSE_PANE_WIDTH);
+                setInspectorPanePresentation(SplitViewDisplayMode.Inline, EXTRA_WIDE_INSPECTOR_PANE_WIDTH);
                 break;
             case EWorkspaceLayoutMode.Wide:
-                setCoursePanePresentation(
-                    SplitViewDisplayMode.Inline,
-                    WIDE_COURSE_PANE_WIDTH);
-                setInspectorPanePresentation(
-                    SplitViewDisplayMode.Inline,
-                    WIDE_INSPECTOR_PANE_WIDTH);
+                setCoursePanePresentation(SplitViewDisplayMode.Inline, WIDE_COURSE_PANE_WIDTH);
+                setInspectorPanePresentation(SplitViewDisplayMode.Inline, WIDE_INSPECTOR_PANE_WIDTH);
                 break;
             case EWorkspaceLayoutMode.Medium:
-                setCoursePanePresentation(
-                    SplitViewDisplayMode.Inline,
-                    COLLAPSED_COURSE_PANE_WIDTH);
-                setInspectorPanePresentation(
-                    SplitViewDisplayMode.Overlay,
-                    COLLAPSED_INSPECTOR_PANE_WIDTH);
+                setCoursePanePresentation(SplitViewDisplayMode.Inline, COLLAPSED_COURSE_PANE_WIDTH);
+                setInspectorPanePresentation(SplitViewDisplayMode.Overlay, COLLAPSED_INSPECTOR_PANE_WIDTH);
                 break;
             case EWorkspaceLayoutMode.Compact:
-                setCoursePanePresentation(
-                    SplitViewDisplayMode.Overlay,
-                    COLLAPSED_COURSE_PANE_WIDTH);
-                setInspectorPanePresentation(
-                    SplitViewDisplayMode.Overlay,
-                    COLLAPSED_INSPECTOR_PANE_WIDTH);
+                setCoursePanePresentation(SplitViewDisplayMode.Overlay, COLLAPSED_COURSE_PANE_WIDTH);
+                setInspectorPanePresentation(SplitViewDisplayMode.Overlay, COLLAPSED_INSPECTOR_PANE_WIDTH);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(

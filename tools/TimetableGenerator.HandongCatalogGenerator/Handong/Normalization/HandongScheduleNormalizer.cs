@@ -9,19 +9,13 @@ namespace TimetableGenerator.HandongCatalogGenerator.Handong.Normalization;
 
 internal sealed class HandongScheduleNormalizer
 {
-    private static readonly Regex KOREAN_SLOT_FORMAT = new Regex(
-        "^(?<day>[월화수목금토일])(?<period>[0-9]+)$",
-        RegexOptions.CultureInvariant);
+    private static readonly Regex KOREAN_SLOT_FORMAT = new Regex("^(?<day>[월화수목금토일])(?<period>[0-9]+)$", RegexOptions.CultureInvariant);
 
-    private static readonly Regex ENGLISH_SLOT_FORMAT = new Regex(
-        "^(?<day>Mon|Tue|Wed|Thu|Fri|Sat|Sun)(?<period>[0-9]+)$",
-        RegexOptions.CultureInvariant);
+    private static readonly Regex ENGLISH_SLOT_FORMAT = new Regex("^(?<day>Mon|Tue|Wed|Thu|Fri|Sat|Sun)(?<period>[0-9]+)$", RegexOptions.CultureInvariant);
 
     public HandongScheduleNormalizationResult NormalizeSchedule(HandongRawOfferingRow row)
     {
-        IReadOnlyList<string> lines = HandongCellValueReader.getNonEmptyLines(
-            row,
-            EHandongColumn.Period);
+        IReadOnlyList<string> lines = HandongCellValueReader.getNonEmptyLines(row, EHandongColumn.Period);
         if (lines.Count == 0)
         {
             return new HandongScheduleNormalizationResult(
@@ -35,15 +29,11 @@ internal sealed class HandongScheduleNormalizer
 
         KoreanScheduleText sourceText = new KoreanScheduleText(koreanSourceText);
         MeetingSchedule schedule = MeetingSchedule.CreateScheduled(sourceText, koreanSlots);
-        EEnglishScheduleComparison englishScheduleComparison = compareEnglishSchedule(
-            lines,
-            koreanSlots);
+        EEnglishScheduleComparison englishScheduleComparison = compareEnglishSchedule(lines, koreanSlots);
         return new HandongScheduleNormalizationResult(schedule, englishScheduleComparison);
     }
 
-    private static List<MeetingSlot> parseKoreanSlots(
-        string sourceText,
-        HandongRawOfferingRow row)
+    private static List<MeetingSlot> parseKoreanSlots(string sourceText, HandongRawOfferingRow row)
     {
         string[] tokens = sourceText.Split(',', StringSplitOptions.None);
         List<MeetingSlot> slots = new List<MeetingSlot>();
@@ -61,9 +51,7 @@ internal sealed class HandongScheduleNormalizer
             }
 
             EDay day = parseKoreanDay(slotMatch.Groups["day"].Value, row);
-            AcademicPeriod period = parsePeriod(
-                slotMatch.Groups["period"].Value,
-                row);
+            AcademicPeriod period = parsePeriod(slotMatch.Groups["period"].Value, row);
             MeetingSlot slot = new MeetingSlot(day, period);
             if (uniqueSlots.Add(slot) == false)
             {
@@ -113,9 +101,7 @@ internal sealed class HandongScheduleNormalizer
         }
     }
 
-    private static AcademicPeriod parsePeriod(
-        string sourceValue,
-        HandongRawOfferingRow row)
+    private static AcademicPeriod parsePeriod(string sourceValue, HandongRawOfferingRow row)
     {
         int periodValue;
         bool isPeriodParsed = int.TryParse(
@@ -177,9 +163,7 @@ internal sealed class HandongScheduleNormalizer
         return EEnglishScheduleComparison.MatchesKoreanSchedule;
     }
 
-    private static bool tryParseEnglishSlots(
-        string sourceText,
-        out List<MeetingSlot> slots)
+    private static bool tryParseEnglishSlots(string sourceText, out List<MeetingSlot> slots)
     {
         slots = new List<MeetingSlot>();
         HashSet<MeetingSlot> uniqueSlots = new HashSet<MeetingSlot>();
@@ -201,10 +185,7 @@ internal sealed class HandongScheduleNormalizer
                 NumberStyles.None,
                 CultureInfo.InvariantCulture,
                 out periodValue);
-            if (isDayParsed == false ||
-                isPeriodParsed == false ||
-                periodValue < 1 ||
-                periodValue > 10)
+            if (isDayParsed == false || isPeriodParsed == false || periodValue < 1 || periodValue > 10)
             {
                 return false;
             }

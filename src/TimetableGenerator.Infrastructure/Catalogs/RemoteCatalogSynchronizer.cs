@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+
 using TimetableGenerator.CatalogJson;
 
 namespace TimetableGenerator.Infrastructure.Catalogs;
@@ -17,8 +18,7 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
 
     private static readonly TimeSpan HTTP_TIMEOUT = TimeSpan.FromSeconds(30.0);
 
-    private static readonly TimeSpan POOLED_CONNECTION_LIFETIME =
-        TimeSpan.FromMinutes(15.0);
+    private static readonly TimeSpan POOLED_CONNECTION_LIFETIME = TimeSpan.FromMinutes(15.0);
 
     private readonly HttpClient mHttpClient;
 
@@ -101,20 +101,6 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
             EHttpClientOwnership.Synchronizer);
     }
 
-    internal static RemoteCatalogSynchronizer createForTesting(
-        HttpClient httpClient,
-        CatalogIndexEndpoint endpoint,
-        CatalogSynchronizationLimits limits,
-        CatalogCacheFileStore cacheStore)
-    {
-        return new RemoteCatalogSynchronizer(
-            httpClient,
-            endpoint,
-            limits,
-            cacheStore,
-            EHttpClientOwnership.External);
-    }
-
     public void Dispose()
     {
         if (mHttpClientOwnership == EHttpClientOwnership.Synchronizer)
@@ -126,8 +112,7 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
     public async Task<VerifiedCatalogPackage> SynchronizeDefaultCatalogAsync(
         CancellationToken cancellationToken)
     {
-        VerifiedCatalogPackage package = await DownloadDefaultCatalogAsync(
-            cancellationToken).ConfigureAwait(false);
+        VerifiedCatalogPackage package = await DownloadDefaultCatalogAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             await mCacheStore.SaveAsync(package, cancellationToken).ConfigureAwait(false);
@@ -170,15 +155,12 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
             }
 
             Uri catalogUri = mEndpoint.ResolveCatalogUri(entry.File.RelativePath);
-            CatalogResourceByteLimit declaredCatalogLimit =
-                new CatalogResourceByteLimit(entry.File.Size.Value);
+            CatalogResourceByteLimit declaredCatalogLimit = new CatalogResourceByteLimit(entry.File.Size.Value);
             byte[] catalogBytes = await downloadContentAsync(
                 catalogUri,
                 declaredCatalogLimit,
                 cancellationToken).ConfigureAwait(false);
-            VerifiedCatalogPackage package = VerifiedCatalogPackage.ReadAndVerify(
-                indexBytes,
-                catalogBytes);
+            VerifiedCatalogPackage package = VerifiedCatalogPackage.ReadAndVerify(indexBytes, catalogBytes);
             return package;
         }
         catch (OperationCanceledException exception) when (
@@ -220,6 +202,20 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
         }
     }
 
+    internal static RemoteCatalogSynchronizer createForTesting(
+        HttpClient httpClient,
+        CatalogIndexEndpoint endpoint,
+        CatalogSynchronizationLimits limits,
+        CatalogCacheFileStore cacheStore)
+    {
+        return new RemoteCatalogSynchronizer(
+            httpClient,
+            endpoint,
+            limits,
+            cacheStore,
+            EHttpClientOwnership.External);
+    }
+
     private async Task<byte[]> downloadContentAsync(
         Uri resourceUri,
         CatalogResourceByteLimit byteLimit,
@@ -245,8 +241,7 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
                 }
 
                 long? declaredLengthOrNull = response.Content.Headers.ContentLength;
-                if (declaredLengthOrNull.HasValue
-                    && declaredLengthOrNull.Value > byteLimit.Bytes)
+                if (declaredLengthOrNull.HasValue && declaredLengthOrNull.Value > byteLimit.Bytes)
                 {
                     throw new RemoteCatalogSynchronizationException(
                         ERemoteCatalogSynchronizationFailureKind.ResourceLimit,
@@ -285,8 +280,7 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
             initialCapacity = checked((int)declaredLengthOrNull.Value);
         }
 
-        using (Stream responseStream = await content.ReadAsStreamAsync(cancellationToken)
-            .ConfigureAwait(false))
+        using (Stream responseStream = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false))
         using (MemoryStream contentStream = new MemoryStream(initialCapacity))
         {
             byte[] buffer = new byte[DOWNLOAD_BUFFER_SIZE];

@@ -24,9 +24,7 @@ internal sealed class AsyncDelegateCommand : ICommand
         }
     }
 
-    public AsyncDelegateCommand(
-        Func<Task> executeAsync,
-        Action<Exception> failureHandler)
+    public AsyncDelegateCommand(Func<Task> executeAsync, Action<Exception> failureHandler)
     {
         if (executeAsync == null)
         {

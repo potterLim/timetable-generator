@@ -25,13 +25,10 @@ internal sealed class ProductWorkspaceViewModelLoader : IProductWorkspaceLoader
         mDataLoader = dataLoader;
     }
 
-    public async Task<ProductWorkspacePresentation> LoadAsync(
-        CancellationToken cancellationToken)
+    public async Task<ProductWorkspacePresentation> LoadAsync(CancellationToken cancellationToken)
     {
-        ProductWorkspaceLoadResult loadResult = await mDataLoader.LoadAsync(
-            cancellationToken);
-        CourseCatalogProjection catalogProjection = CourseCatalogProjector.Project(
-            loadResult.CatalogPackage.Document);
+        ProductWorkspaceLoadResult loadResult = await mDataLoader.LoadAsync(cancellationToken);
+        CourseCatalogProjection catalogProjection = CourseCatalogProjector.Project(loadResult.CatalogPackage.Document);
         PlanningWorkspaceSession session = new PlanningWorkspaceSession(
             loadResult.CatalogPackage.Document.Catalog,
             loadResult.Workspace);
@@ -39,9 +36,7 @@ internal sealed class ProductWorkspaceViewModelLoader : IProductWorkspaceLoader
             new PlanningWorkspaceAutosaveQueue(
                 loadResult.WorkspaceStore,
                 loadResult.WorkspaceConcurrencyToken);
-        IScheduleRecommendationProvider recommendationProvider =
-            new CatalogScheduleRecommendationProvider(
-                loadResult.CatalogPackage.Document.Catalog);
+        IScheduleRecommendationProvider recommendationProvider = new CatalogScheduleRecommendationProvider(loadResult.CatalogPackage.Document.Catalog);
         PlannerWorkspaceViewModel workspace = new PlannerWorkspaceViewModel(
             catalogProjection,
             session,

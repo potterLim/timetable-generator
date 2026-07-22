@@ -16,30 +16,19 @@ public sealed class ProductWorkspaceLoaderTests
     public async Task CachedExactWorkspaceLoadsWithoutDownloaderAsync()
     {
         CatalogRevision revision = new CatalogRevision(1);
-        VerifiedCatalogPackage catalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackage(revision);
-        PlanningWorkspace workspace =
-            ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(revision);
-        PlanningWorkspaceLoadResult workspaceLoadResult =
-            createLoadedWorkspaceResult(workspace);
-        using (ProductWorkspaceLoaderTestContext context = createContext(
-            workspaceLoadResult))
+        VerifiedCatalogPackage catalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(revision);
+        PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(revision);
+        PlanningWorkspaceLoadResult workspaceLoadResult = createLoadedWorkspaceResult(workspace);
+        using (ProductWorkspaceLoaderTestContext context = createContext(workspaceLoadResult))
         {
-            await context.CatalogCacheStore.SaveAsync(
-                catalogPackage,
-                CancellationToken.None);
+            await context.CatalogCacheStore.SaveAsync(catalogPackage, CancellationToken.None);
 
-            ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(
-                CancellationToken.None);
+            ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(CancellationToken.None);
 
             Assert.Equal(EProductCatalogOrigin.OfflineCache, result.CatalogOrigin);
             Assert.Equal(EProductWorkspaceRecoveryFlags.None, result.RecoveryFlags);
-            Assert.Equal(
-                "저장된 시간표",
-                result.Workspace.GetActivePlan().Name.Value);
-            Assert.Equal(
-                catalogPackage.Document.Catalog.Id,
-                result.CatalogPackage.Document.Catalog.Id);
+            Assert.Equal("저장된 시간표", result.Workspace.GetActivePlan().Name.Value);
+            Assert.Equal(catalogPackage.Document.Catalog.Id, result.CatalogPackage.Document.Catalog.Id);
             Assert.Same(workspace, result.Workspace);
             Assert.Same(context.WorkspaceStore, result.WorkspaceStore);
             Assert.Empty(context.WorkspaceStore.SavedWorkspaces);
@@ -51,17 +40,11 @@ public sealed class ProductWorkspaceLoaderTests
     public async Task CachedChangedArtifactAtSavedRevisionIsRejectedAsync()
     {
         CatalogRevision revision = new CatalogRevision(1);
-        VerifiedCatalogPackage changedArtifactPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackageWithoutSavedCourse(
-                revision);
-        PlanningWorkspace workspace =
-            ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(revision);
-        using (ProductWorkspaceLoaderTestContext context = createContext(
-            createLoadedWorkspaceResult(workspace)))
+        VerifiedCatalogPackage changedArtifactPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackageWithoutSavedCourse(revision);
+        PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(revision);
+        using (ProductWorkspaceLoaderTestContext context = createContext(createLoadedWorkspaceResult(workspace)))
         {
-            await context.CatalogCacheStore.SaveAsync(
-                changedArtifactPackage,
-                CancellationToken.None);
+            await context.CatalogCacheStore.SaveAsync(changedArtifactPackage, CancellationToken.None);
 
             ProductWorkspaceCatalogCompatibilityException exception =
                 await Assert.ThrowsAsync<ProductWorkspaceCatalogCompatibilityException>(
@@ -82,11 +65,8 @@ public sealed class ProductWorkspaceLoaderTests
     public async Task DownloadedChangedArtifactAtSavedRevisionIsNotInstalledAsync()
     {
         CatalogRevision revision = new CatalogRevision(1);
-        VerifiedCatalogPackage changedArtifactPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackageWithoutSavedCourse(
-                revision);
-        PlanningWorkspace workspace =
-            ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(revision);
+        VerifiedCatalogPackage changedArtifactPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackageWithoutSavedCourse(revision);
+        PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(revision);
         Func<CancellationToken, Task<VerifiedCatalogPackage>> download =
             delegate (CancellationToken cancellationToken)
             {
@@ -103,8 +83,7 @@ public sealed class ProductWorkspaceLoaderTests
                     {
                         await context.Loader.LoadAsync(CancellationToken.None);
                     });
-            CatalogCacheLoadResult cacheLoadResult =
-                await context.CatalogCacheStore.LoadAsync(CancellationToken.None);
+            CatalogCacheLoadResult cacheLoadResult = await context.CatalogCacheStore.LoadAsync(CancellationToken.None);
 
             Assert.Equal(
                 EPlanningWorkspaceCatalogRebindStatus.CatalogArtifactSha256Mismatch,
@@ -119,13 +98,9 @@ public sealed class ProductWorkspaceLoaderTests
     public void LoadResultRejectsChangedArtifactAtWorkspaceRevision()
     {
         CatalogRevision revision = new CatalogRevision(1);
-        VerifiedCatalogPackage changedArtifactPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackageWithoutSavedCourse(
-                revision);
-        PlanningWorkspace workspace =
-            ProductWorkspaceLoaderTestData.CreateEmptyWorkspace(revision);
-        using (ProductWorkspaceLoaderTestContext context = createContext(
-            createLoadedWorkspaceResult(workspace)))
+        VerifiedCatalogPackage changedArtifactPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackageWithoutSavedCourse(revision);
+        PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateEmptyWorkspace(revision);
+        using (ProductWorkspaceLoaderTestContext context = createContext(createLoadedWorkspaceResult(workspace)))
         {
             Assert.Throws<ArgumentException>(
                 () => new ProductWorkspaceLoadResult(
@@ -141,39 +116,28 @@ public sealed class ProductWorkspaceLoaderTests
     [Fact]
     public async Task MissingWorkspaceCreatesAndPersistsDefaultPlanFromCacheAsync()
     {
-        VerifiedCatalogPackage catalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackage(new CatalogRevision(1));
-        using (ProductWorkspaceLoaderTestContext context = createContext(
-            PlanningWorkspaceLoadResult.CreateNotFound()))
+        VerifiedCatalogPackage catalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(new CatalogRevision(1));
+        using (ProductWorkspaceLoaderTestContext context = createContext(PlanningWorkspaceLoadResult.CreateNotFound()))
         {
-            await context.CatalogCacheStore.SaveAsync(
-                catalogPackage,
-                CancellationToken.None);
+            await context.CatalogCacheStore.SaveAsync(catalogPackage, CancellationToken.None);
 
-            ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(
-                CancellationToken.None);
+            ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(CancellationToken.None);
 
             PlanningPlan activePlan = result.Workspace.GetActivePlan();
             Assert.Equal(EProductCatalogOrigin.OfflineCache, result.CatalogOrigin);
             Assert.True(result.WasWorkspaceCreated);
-            Assert.Equal(
-                new PlanningWorkspaceConcurrencyToken(1L),
-                result.WorkspaceConcurrencyToken);
+            Assert.Equal(new PlanningWorkspaceConcurrencyToken(1L), result.WorkspaceConcurrencyToken);
             Assert.Equal("2026-2학기 시간표", activePlan.Name.Value);
             Assert.Empty(activePlan.CourseChoiceGroups);
             Assert.Empty(activePlan.UnscheduledOfferingSelections);
             Assert.Equal(catalogPackage.Entry.CatalogId, activePlan.CatalogBinding.CatalogId);
-            Assert.Equal(
-                catalogPackage.Entry.Institution.Id,
-                activePlan.CatalogBinding.InstitutionId);
+            Assert.Equal(catalogPackage.Entry.Institution.Id, activePlan.CatalogBinding.InstitutionId);
             Assert.Equal(catalogPackage.Entry.Term, activePlan.CatalogBinding.Term);
             Assert.Equal(catalogPackage.Entry.Revision, activePlan.CatalogBinding.Revision);
             Assert.Equal(
                 catalogPackage.CreatePlanCatalogBinding().ArtifactSha256,
                 activePlan.CatalogBinding.ArtifactSha256);
-            Assert.Same(
-                result.Workspace,
-                Assert.Single(context.WorkspaceStore.SavedWorkspaces));
+            Assert.Same(result.Workspace, Assert.Single(context.WorkspaceStore.SavedWorkspaces));
             Assert.Equal(0, context.CatalogDownloader.DownloadCount);
         }
     }
@@ -183,26 +147,15 @@ public sealed class ProductWorkspaceLoaderTests
     {
         CatalogRevision savedRevision = new CatalogRevision(1);
         CatalogRevision latestRevision = new CatalogRevision(2);
-        VerifiedCatalogPackage savedCatalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackage(savedRevision);
-        VerifiedCatalogPackage latestCatalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackageWithoutSavedCourse(
-                latestRevision);
-        PlanningWorkspace workspace =
-            ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(
-                savedRevision);
-        using (ProductWorkspaceLoaderTestContext context = createContext(
-            createLoadedWorkspaceResult(workspace)))
+        VerifiedCatalogPackage savedCatalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(savedRevision);
+        VerifiedCatalogPackage latestCatalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackageWithoutSavedCourse(latestRevision);
+        PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(savedRevision);
+        using (ProductWorkspaceLoaderTestContext context = createContext(createLoadedWorkspaceResult(workspace)))
         {
-            await context.CatalogCacheStore.SaveAsync(
-                savedCatalogPackage,
-                CancellationToken.None);
-            await context.CatalogCacheStore.SaveAsync(
-                latestCatalogPackage,
-                CancellationToken.None);
+            await context.CatalogCacheStore.SaveAsync(savedCatalogPackage, CancellationToken.None);
+            await context.CatalogCacheStore.SaveAsync(latestCatalogPackage, CancellationToken.None);
 
-            ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(
-                CancellationToken.None);
+            ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(CancellationToken.None);
 
             Assert.Equal(savedRevision, result.CatalogPackage.Entry.Revision);
             Assert.Same(workspace, result.Workspace);
@@ -218,40 +171,24 @@ public sealed class ProductWorkspaceLoaderTests
     {
         CatalogRevision savedRevision = new CatalogRevision(1);
         CatalogRevision latestRevision = new CatalogRevision(2);
-        VerifiedCatalogPackage savedCatalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackage(savedRevision);
-        VerifiedCatalogPackage latestCatalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackage(latestRevision);
-        PlanningWorkspace workspace =
-            ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(
-                savedRevision);
-        using (ProductWorkspaceLoaderTestContext context = createContext(
-            createLoadedWorkspaceResult(workspace)))
+        VerifiedCatalogPackage savedCatalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(savedRevision);
+        VerifiedCatalogPackage latestCatalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(latestRevision);
+        PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(savedRevision);
+        using (ProductWorkspaceLoaderTestContext context = createContext(createLoadedWorkspaceResult(workspace)))
         {
-            await context.CatalogCacheStore.SaveAsync(
-                savedCatalogPackage,
-                CancellationToken.None);
-            await context.CatalogCacheStore.SaveAsync(
-                latestCatalogPackage,
-                CancellationToken.None);
+            await context.CatalogCacheStore.SaveAsync(savedCatalogPackage, CancellationToken.None);
+            await context.CatalogCacheStore.SaveAsync(latestCatalogPackage, CancellationToken.None);
 
-            ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(
-                CancellationToken.None);
+            ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(CancellationToken.None);
 
             Assert.Equal(latestRevision, result.CatalogPackage.Entry.Revision);
-            Assert.Equal(
-                latestRevision,
-                result.Workspace.GetActivePlan().CatalogBinding.Revision);
+            Assert.Equal(latestRevision, result.Workspace.GetActivePlan().CatalogBinding.Revision);
             Assert.Equal(
                 latestCatalogPackage.CreatePlanCatalogBinding().ArtifactSha256,
                 result.Workspace.GetActivePlan().CatalogBinding.ArtifactSha256);
             Assert.True(result.WasWorkspaceCatalogRebound);
-            Assert.Equal(
-                new PlanningWorkspaceConcurrencyToken(2L),
-                result.WorkspaceConcurrencyToken);
-            Assert.Same(
-                result.Workspace,
-                Assert.Single(context.WorkspaceStore.SavedWorkspaces));
+            Assert.Equal(new PlanningWorkspaceConcurrencyToken(2L), result.WorkspaceConcurrencyToken);
+            Assert.Same(result.Workspace, Assert.Single(context.WorkspaceStore.SavedWorkspaces));
             Assert.Equal(0, context.CatalogDownloader.DownloadCount);
         }
     }
@@ -261,25 +198,15 @@ public sealed class ProductWorkspaceLoaderTests
     {
         CatalogRevision currentRevision = new CatalogRevision(2);
         CatalogRevision rollbackRevision = new CatalogRevision(1);
-        VerifiedCatalogPackage currentCatalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackage(currentRevision);
-        VerifiedCatalogPackage rollbackCatalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackage(rollbackRevision);
-        PlanningWorkspace workspace =
-            ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(
-                currentRevision);
-        using (ProductWorkspaceLoaderTestContext context = createContext(
-            createLoadedWorkspaceResult(workspace)))
+        VerifiedCatalogPackage currentCatalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(currentRevision);
+        VerifiedCatalogPackage rollbackCatalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(rollbackRevision);
+        PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(currentRevision);
+        using (ProductWorkspaceLoaderTestContext context = createContext(createLoadedWorkspaceResult(workspace)))
         {
-            await context.CatalogCacheStore.SaveAsync(
-                currentCatalogPackage,
-                CancellationToken.None);
-            await context.CatalogCacheStore.SaveAsync(
-                rollbackCatalogPackage,
-                CancellationToken.None);
+            await context.CatalogCacheStore.SaveAsync(currentCatalogPackage, CancellationToken.None);
+            await context.CatalogCacheStore.SaveAsync(rollbackCatalogPackage, CancellationToken.None);
 
-            ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(
-                CancellationToken.None);
+            ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(CancellationToken.None);
 
             Assert.Equal(currentRevision, result.CatalogPackage.Entry.Revision);
             Assert.Same(workspace, result.Workspace);
@@ -292,32 +219,21 @@ public sealed class ProductWorkspaceLoaderTests
     public async Task DifferentInstitutionCatalogFallsBackToMatchingCurrentCatalogAsync()
     {
         CatalogRevision currentRevision = new CatalogRevision(1);
-        VerifiedCatalogPackage currentCatalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackage(currentRevision);
+        VerifiedCatalogPackage currentCatalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(currentRevision);
         VerifiedCatalogPackage otherInstitutionCatalogPackage =
             ProductWorkspaceLoaderTestData.CreateCatalogPackage(
                 new CatalogRevision(2),
                 new InstitutionId("another-university"),
                 AcademicTerm.Parse("2026-2"));
-        PlanningWorkspace workspace =
-            ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(
-                currentRevision);
-        using (ProductWorkspaceLoaderTestContext context = createContext(
-            createLoadedWorkspaceResult(workspace)))
+        PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(currentRevision);
+        using (ProductWorkspaceLoaderTestContext context = createContext(createLoadedWorkspaceResult(workspace)))
         {
-            await context.CatalogCacheStore.SaveAsync(
-                currentCatalogPackage,
-                CancellationToken.None);
-            await context.CatalogCacheStore.SaveAsync(
-                otherInstitutionCatalogPackage,
-                CancellationToken.None);
+            await context.CatalogCacheStore.SaveAsync(currentCatalogPackage, CancellationToken.None);
+            await context.CatalogCacheStore.SaveAsync(otherInstitutionCatalogPackage, CancellationToken.None);
 
-            ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(
-                CancellationToken.None);
+            ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(CancellationToken.None);
 
-            Assert.Equal(
-                currentCatalogPackage.Entry.CatalogId,
-                result.CatalogPackage.Entry.CatalogId);
+            Assert.Equal(currentCatalogPackage.Entry.CatalogId, result.CatalogPackage.Entry.CatalogId);
             Assert.Same(workspace, result.Workspace);
             Assert.False(result.WasWorkspaceCatalogRebound);
             Assert.Empty(context.WorkspaceStore.SavedWorkspaces);
@@ -328,32 +244,21 @@ public sealed class ProductWorkspaceLoaderTests
     public async Task DifferentTermCatalogFallsBackToMatchingCurrentCatalogAsync()
     {
         CatalogRevision currentRevision = new CatalogRevision(1);
-        VerifiedCatalogPackage currentCatalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackage(currentRevision);
+        VerifiedCatalogPackage currentCatalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(currentRevision);
         VerifiedCatalogPackage otherTermCatalogPackage =
             ProductWorkspaceLoaderTestData.CreateCatalogPackage(
                 new CatalogRevision(2),
                 new InstitutionId("handong-global-university"),
                 AcademicTerm.Parse("2027-1"));
-        PlanningWorkspace workspace =
-            ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(
-                currentRevision);
-        using (ProductWorkspaceLoaderTestContext context = createContext(
-            createLoadedWorkspaceResult(workspace)))
+        PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(currentRevision);
+        using (ProductWorkspaceLoaderTestContext context = createContext(createLoadedWorkspaceResult(workspace)))
         {
-            await context.CatalogCacheStore.SaveAsync(
-                currentCatalogPackage,
-                CancellationToken.None);
-            await context.CatalogCacheStore.SaveAsync(
-                otherTermCatalogPackage,
-                CancellationToken.None);
+            await context.CatalogCacheStore.SaveAsync(currentCatalogPackage, CancellationToken.None);
+            await context.CatalogCacheStore.SaveAsync(otherTermCatalogPackage, CancellationToken.None);
 
-            ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(
-                CancellationToken.None);
+            ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(CancellationToken.None);
 
-            Assert.Equal(
-                currentCatalogPackage.Entry.CatalogId,
-                result.CatalogPackage.Entry.CatalogId);
+            Assert.Equal(currentCatalogPackage.Entry.CatalogId, result.CatalogPackage.Entry.CatalogId);
             Assert.Same(workspace, result.Workspace);
             Assert.False(result.WasWorkspaceCatalogRebound);
             Assert.Empty(context.WorkspaceStore.SavedWorkspaces);
@@ -365,29 +270,20 @@ public sealed class ProductWorkspaceLoaderTests
     {
         CatalogRevision savedRevision = new CatalogRevision(1);
         CatalogRevision latestRevision = new CatalogRevision(2);
-        VerifiedCatalogPackage latestCatalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackage(latestRevision);
-        PlanningWorkspace workspace =
-            ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(
-                savedRevision);
-        using (ProductWorkspaceLoaderTestContext context = createContext(
-            createLoadedWorkspaceResult(workspace)))
+        VerifiedCatalogPackage latestCatalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(latestRevision);
+        PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(savedRevision);
+        using (ProductWorkspaceLoaderTestContext context = createContext(createLoadedWorkspaceResult(workspace)))
         {
-            await context.CatalogCacheStore.SaveAsync(
-                latestCatalogPackage,
-                CancellationToken.None);
+            await context.CatalogCacheStore.SaveAsync(latestCatalogPackage, CancellationToken.None);
 
-            ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(
-                CancellationToken.None);
+            ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(CancellationToken.None);
 
             PlanningPlan reboundPlan = result.Workspace.GetActivePlan();
             Assert.Equal(latestRevision, reboundPlan.CatalogBinding.Revision);
             Assert.True(result.WasWorkspaceCatalogRebound);
             Assert.False(result.WasCatalogCacheRecovered);
             Assert.Single(reboundPlan.CourseChoiceGroups);
-            Assert.Same(
-                result.Workspace,
-                Assert.Single(context.WorkspaceStore.SavedWorkspaces));
+            Assert.Same(result.Workspace, Assert.Single(context.WorkspaceStore.SavedWorkspaces));
             Assert.Equal(savedRevision, workspace.GetActivePlan().CatalogBinding.Revision);
             Assert.Equal(0, context.CatalogDownloader.DownloadCount);
         }
@@ -397,16 +293,11 @@ public sealed class ProductWorkspaceLoaderTests
     public async Task IncompatibleWorkspaceThrowsWithoutResetOrSaveAsync()
     {
         CatalogRevision revision = new CatalogRevision(1);
-        VerifiedCatalogPackage catalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackage(revision);
-        PlanningWorkspace workspace =
-            ProductWorkspaceLoaderTestData.CreateWorkspaceWithMissingOffering(revision);
-        using (ProductWorkspaceLoaderTestContext context = createContext(
-            createLoadedWorkspaceResult(workspace)))
+        VerifiedCatalogPackage catalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(revision);
+        PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateWorkspaceWithMissingOffering(revision);
+        using (ProductWorkspaceLoaderTestContext context = createContext(createLoadedWorkspaceResult(workspace)))
         {
-            await context.CatalogCacheStore.SaveAsync(
-                catalogPackage,
-                CancellationToken.None);
+            await context.CatalogCacheStore.SaveAsync(catalogPackage, CancellationToken.None);
 
             ProductWorkspaceCatalogCompatibilityException exception =
                 await Assert.ThrowsAsync<ProductWorkspaceCatalogCompatibilityException>(
@@ -415,9 +306,7 @@ public sealed class ProductWorkspaceLoaderTests
                         await context.Loader.LoadAsync(CancellationToken.None);
                     });
 
-            Assert.Equal(
-                EPlanningWorkspaceCatalogRebindStatus.OfferingNotFound,
-                exception.RebindStatus);
+            Assert.Equal(EPlanningWorkspaceCatalogRebindStatus.OfferingNotFound, exception.RebindStatus);
             Assert.Empty(context.WorkspaceStore.SavedWorkspaces);
             Assert.Equal(0, context.CatalogDownloader.DownloadCount);
             Assert.Equal(
@@ -436,29 +325,19 @@ public sealed class ProductWorkspaceLoaderTests
     {
         CatalogRevision savedRevision = new CatalogRevision(1);
         CatalogRevision latestRevision = new CatalogRevision(2);
-        VerifiedCatalogPackage catalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackage(latestRevision);
-        PlanningWorkspace workspace =
-            ProductWorkspaceLoaderTestData.CreateWorkspaceWithoutPlans(savedRevision);
-        using (ProductWorkspaceLoaderTestContext context = createContext(
-            createLoadedWorkspaceResult(workspace)))
+        VerifiedCatalogPackage catalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(latestRevision);
+        PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateWorkspaceWithoutPlans(savedRevision);
+        using (ProductWorkspaceLoaderTestContext context = createContext(createLoadedWorkspaceResult(workspace)))
         {
-            await context.CatalogCacheStore.SaveAsync(
-                catalogPackage,
-                CancellationToken.None);
+            await context.CatalogCacheStore.SaveAsync(catalogPackage, CancellationToken.None);
 
-            ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(
-                CancellationToken.None);
+            ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(CancellationToken.None);
 
             Assert.True(result.WasWorkspaceCatalogRebound);
-            Assert.Equal(
-                catalogPackage.CreatePlanCatalogBinding(),
-                result.Workspace.CatalogBinding);
+            Assert.Equal(catalogPackage.CreatePlanCatalogBinding(), result.Workspace.CatalogBinding);
             Assert.Null(result.Workspace.ActivePlanIdOrNull);
             Assert.Empty(result.Workspace.Plans);
-            Assert.Same(
-                result.Workspace,
-                Assert.Single(context.WorkspaceStore.SavedWorkspaces));
+            Assert.Same(result.Workspace, Assert.Single(context.WorkspaceStore.SavedWorkspaces));
             Assert.Equal(0, context.CatalogDownloader.DownloadCount);
         }
     }
@@ -466,8 +345,7 @@ public sealed class ProductWorkspaceLoaderTests
     [Fact]
     public async Task FirstRunDownloadsCachesAndPersistsWorkspaceAsync()
     {
-        VerifiedCatalogPackage catalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackage(new CatalogRevision(1));
+        VerifiedCatalogPackage catalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(new CatalogRevision(1));
         Func<CancellationToken, Task<VerifiedCatalogPackage>> download =
             delegate (CancellationToken cancellationToken)
             {
@@ -478,21 +356,16 @@ public sealed class ProductWorkspaceLoaderTests
             PlanningWorkspaceLoadResult.CreateNotFound(),
             download))
         {
-            ProductWorkspaceLoadResult firstResult = await context.Loader.LoadAsync(
-                CancellationToken.None);
-            CatalogCacheLoadResult installedCache =
-                await context.CatalogCacheStore.LoadAsync(CancellationToken.None);
+            ProductWorkspaceLoadResult firstResult = await context.Loader.LoadAsync(CancellationToken.None);
+            CatalogCacheLoadResult installedCache = await context.CatalogCacheStore.LoadAsync(CancellationToken.None);
 
             Assert.Equal(EProductCatalogOrigin.RemoteDownload, firstResult.CatalogOrigin);
             Assert.True(firstResult.WasWorkspaceCreated);
             Assert.True(installedCache.IsFound);
             Assert.Equal(catalogPackage.Entry.CatalogId, installedCache.GetPackage().Entry.CatalogId);
-            Assert.Same(
-                firstResult.Workspace,
-                Assert.Single(context.WorkspaceStore.SavedWorkspaces));
+            Assert.Same(firstResult.Workspace, Assert.Single(context.WorkspaceStore.SavedWorkspaces));
 
-            ProductWorkspaceLoadResult secondResult = await context.Loader.LoadAsync(
-                CancellationToken.None);
+            ProductWorkspaceLoadResult secondResult = await context.Loader.LoadAsync(CancellationToken.None);
 
             Assert.Equal(EProductCatalogOrigin.OfflineCache, secondResult.CatalogOrigin);
             Assert.Equal(1, context.CatalogDownloader.DownloadCount);
@@ -504,11 +377,8 @@ public sealed class ProductWorkspaceLoaderTests
     {
         CatalogRevision savedRevision = new CatalogRevision(1);
         CatalogRevision downloadedRevision = new CatalogRevision(2);
-        VerifiedCatalogPackage downloadedCatalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackage(downloadedRevision);
-        PlanningWorkspace workspace =
-            ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(
-                savedRevision);
+        VerifiedCatalogPackage downloadedCatalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(downloadedRevision);
+        PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(savedRevision);
         Func<CancellationToken, Task<VerifiedCatalogPackage>> download =
             delegate (CancellationToken cancellationToken)
             {
@@ -519,25 +389,17 @@ public sealed class ProductWorkspaceLoaderTests
             createLoadedWorkspaceResult(workspace),
             download))
         {
-            ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(
-                CancellationToken.None);
-            CatalogCacheLoadResult installedCache =
-                await context.CatalogCacheStore.LoadAsync(CancellationToken.None);
+            ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(CancellationToken.None);
+            CatalogCacheLoadResult installedCache = await context.CatalogCacheStore.LoadAsync(CancellationToken.None);
 
             Assert.Equal(EProductCatalogOrigin.RemoteDownload, result.CatalogOrigin);
             Assert.True(result.WasWorkspaceCatalogRebound);
-            Assert.Equal(
-                downloadedRevision,
-                result.Workspace.GetActivePlan().CatalogBinding.Revision);
+            Assert.Equal(downloadedRevision, result.Workspace.GetActivePlan().CatalogBinding.Revision);
             Assert.Equal(
                 downloadedCatalogPackage.CreatePlanCatalogBinding().ArtifactSha256,
                 result.Workspace.GetActivePlan().CatalogBinding.ArtifactSha256);
-            Assert.Equal(
-                downloadedRevision,
-                installedCache.GetPackage().Entry.Revision);
-            Assert.Same(
-                result.Workspace,
-                Assert.Single(context.WorkspaceStore.SavedWorkspaces));
+            Assert.Equal(downloadedRevision, installedCache.GetPackage().Entry.Revision);
+            Assert.Same(result.Workspace, Assert.Single(context.WorkspaceStore.SavedWorkspaces));
             Assert.Equal(1, context.CatalogDownloader.DownloadCount);
         }
     }
@@ -546,10 +408,8 @@ public sealed class ProductWorkspaceLoaderTests
     public async Task IncompatibleDownloadedCatalogIsNotInstalledAsync()
     {
         CatalogRevision revision = new CatalogRevision(1);
-        VerifiedCatalogPackage catalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackage(revision);
-        PlanningWorkspace workspace =
-            ProductWorkspaceLoaderTestData.CreateWorkspaceWithMissingOffering(revision);
+        VerifiedCatalogPackage catalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(revision);
+        PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateWorkspaceWithMissingOffering(revision);
         Func<CancellationToken, Task<VerifiedCatalogPackage>> download =
             delegate (CancellationToken cancellationToken)
             {
@@ -565,8 +425,7 @@ public sealed class ProductWorkspaceLoaderTests
                 {
                     await context.Loader.LoadAsync(CancellationToken.None);
                 });
-            CatalogCacheLoadResult cacheLoadResult =
-                await context.CatalogCacheStore.LoadAsync(CancellationToken.None);
+            CatalogCacheLoadResult cacheLoadResult = await context.CatalogCacheStore.LoadAsync(CancellationToken.None);
 
             Assert.False(cacheLoadResult.IsFound);
             Assert.Empty(context.WorkspaceStore.SavedWorkspaces);
@@ -577,14 +436,10 @@ public sealed class ProductWorkspaceLoaderTests
     [Fact]
     public async Task CorruptCacheBlocksDownloaderFallbackAsync()
     {
-        VerifiedCatalogPackage catalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackage(new CatalogRevision(1));
-        using (ProductWorkspaceLoaderTestContext context = createContext(
-            PlanningWorkspaceLoadResult.CreateNotFound()))
+        VerifiedCatalogPackage catalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(new CatalogRevision(1));
+        using (ProductWorkspaceLoaderTestContext context = createContext(PlanningWorkspaceLoadResult.CreateNotFound()))
         {
-            await context.CatalogCacheStore.SaveAsync(
-                catalogPackage,
-                CancellationToken.None);
+            await context.CatalogCacheStore.SaveAsync(catalogPackage, CancellationToken.None);
             await context.CorruptOnlyCatalogGenerationAsync();
 
             await Assert.ThrowsAsync<CatalogCachePersistenceException>(
@@ -602,19 +457,13 @@ public sealed class ProductWorkspaceLoaderTests
     public async Task RecoveredWorkspaceGenerationIsReportedAsync()
     {
         CatalogRevision revision = new CatalogRevision(1);
-        VerifiedCatalogPackage catalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackage(revision);
-        PlanningWorkspace workspace =
-            ProductWorkspaceLoaderTestData.CreateEmptyWorkspace(revision);
-        using (ProductWorkspaceLoaderTestContext context = createContext(
-            createRecoveredWorkspaceResult(workspace)))
+        VerifiedCatalogPackage catalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(revision);
+        PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateEmptyWorkspace(revision);
+        using (ProductWorkspaceLoaderTestContext context = createContext(createRecoveredWorkspaceResult(workspace)))
         {
-            await context.CatalogCacheStore.SaveAsync(
-                catalogPackage,
-                CancellationToken.None);
+            await context.CatalogCacheStore.SaveAsync(catalogPackage, CancellationToken.None);
 
-            ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(
-                CancellationToken.None);
+            ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(CancellationToken.None);
 
             Assert.True(result.WasWorkspaceRecovered);
             Assert.False(result.WasWorkspaceCreated);
@@ -623,8 +472,7 @@ public sealed class ProductWorkspaceLoaderTests
         }
     }
 
-    private static PlanningWorkspaceLoadResult createLoadedWorkspaceResult(
-        PlanningWorkspace workspace)
+    private static PlanningWorkspaceLoadResult createLoadedWorkspaceResult(PlanningWorkspace workspace)
     {
         return PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(
             workspace,

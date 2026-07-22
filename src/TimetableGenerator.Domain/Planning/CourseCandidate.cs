@@ -18,9 +18,7 @@ public sealed class CourseCandidate
         }
     }
 
-    public CourseCandidate(
-        CourseId courseId,
-        IEnumerable<OfferingCandidate> offeringCandidates)
+    public CourseCandidate(CourseId courseId, IEnumerable<OfferingCandidate> offeringCandidates)
     {
         if (courseId == null)
         {

@@ -83,8 +83,7 @@ public sealed class AvaloniaControlPngExporter : IControlPngExporter
         double scaledHeight = Math.Ceiling(controlSize.Height * mExportScale.Multiplier);
         if (scaledWidth > int.MaxValue || scaledHeight > int.MaxValue)
         {
-            throw new InvalidOperationException(
-                "The arranged control is too large to export as a PNG image.");
+            throw new InvalidOperationException("The arranged control is too large to export as a PNG image.");
         }
 
         return new PixelSize((int)scaledWidth, (int)scaledHeight);

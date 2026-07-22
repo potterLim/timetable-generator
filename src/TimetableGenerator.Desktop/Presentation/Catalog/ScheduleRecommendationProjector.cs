@@ -5,10 +5,8 @@ using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Planning;
 using TimetableGenerator.Domain.Scheduling;
-using ApplicationScheduleRecommendation =
-    TimetableGenerator.Application.Scheduling.ScheduleRecommendation;
-using PresentationScheduleRecommendation =
-    TimetableGenerator.Desktop.Presentation.Models.ScheduleRecommendation;
+using ApplicationScheduleRecommendation = TimetableGenerator.Application.Scheduling.ScheduleRecommendation;
+using PresentationScheduleRecommendation = TimetableGenerator.Desktop.Presentation.Models.ScheduleRecommendation;
 
 namespace TimetableGenerator.Desktop.Presentation.Catalog;
 
@@ -60,10 +58,7 @@ internal static class ScheduleRecommendationProjector
         List<ScheduleEntry> entries = new List<ScheduleEntry>();
         foreach (ScheduledOffering scheduledOffering in recommendation.ScheduledOfferings)
         {
-            validateScheduledOffering(
-                scheduledOffering,
-                catalogProjection,
-                selectedCourseIds);
+            validateScheduledOffering(scheduledOffering, catalogProjection, selectedCourseIds);
             addScheduleEntries(scheduledOffering, catalogProjection, entries);
         }
 
@@ -104,8 +99,7 @@ internal static class ScheduleRecommendationProjector
                 nameof(scheduledOffering));
         }
 
-        CatalogOffering sourceOffering = catalogProjection.FindOfferingById(
-            scheduledOffering.OfferingId).Offering;
+        CatalogOffering sourceOffering = catalogProjection.FindOfferingById(scheduledOffering.OfferingId).Offering;
         bool hasMatchingIdentity = sourceOffering.CourseId == scheduledOffering.CourseId
             && sourceOffering.SectionCode == scheduledOffering.SectionCode;
         if (hasMatchingIdentity == false)
@@ -145,8 +139,7 @@ internal static class ScheduleRecommendationProjector
                 nameof(selection));
         }
 
-        CatalogOffering sourceOffering = catalogProjection.FindOfferingById(
-            selection.OfferingId).Offering;
+        CatalogOffering sourceOffering = catalogProjection.FindOfferingById(selection.OfferingId).Offering;
         if (sourceOffering.CourseId != selection.CourseId)
         {
             throw new ArgumentException(
@@ -154,8 +147,7 @@ internal static class ScheduleRecommendationProjector
                 nameof(selection));
         }
 
-        if (sourceOffering.MeetingSchedule.Status
-            != EMeetingScheduleStatus.NotProvided)
+        if (sourceOffering.MeetingSchedule.Status != EMeetingScheduleStatus.NotProvided)
         {
             throw new ArgumentException(
                 "Time-not-provided selections must reference offerings without a schedule.",
@@ -175,10 +167,8 @@ internal static class ScheduleRecommendationProjector
         CourseCatalogProjection catalogProjection,
         ICollection<ScheduleEntry> entries)
     {
-        CatalogCourseProjection courseProjection = catalogProjection.FindCourseById(
-            scheduledOffering.CourseId);
-        CatalogOfferingProjection offeringProjection = catalogProjection.FindOfferingById(
-            scheduledOffering.OfferingId);
+        CatalogCourseProjection courseProjection = catalogProjection.FindCourseById(scheduledOffering.CourseId);
+        CatalogOfferingProjection offeringProjection = catalogProjection.FindOfferingById(scheduledOffering.OfferingId);
         ScheduleCourseDetails courseDetails = new ScheduleCourseDetails(
             courseProjection.Course.Code,
             courseProjection.Course.KoreanName,
@@ -215,8 +205,7 @@ internal static class ScheduleRecommendationProjector
 
     private static int compareScheduleEntries(ScheduleEntry left, ScheduleEntry right)
     {
-        int startComparison = left.TimeRange.Start.CompareTo(
-            right.TimeRange.Start);
+        int startComparison = left.TimeRange.Start.CompareTo(right.TimeRange.Start);
         if (startComparison != 0)
         {
             return startComparison;
@@ -228,10 +217,7 @@ internal static class ScheduleRecommendationProjector
             return dayComparison;
         }
 
-        return string.Compare(
-            getEntrySortName(left),
-            getEntrySortName(right),
-            StringComparison.Ordinal);
+        return string.Compare(getEntrySortName(left), getEntrySortName(right), StringComparison.Ordinal);
     }
 
     private static string getEntrySortName(ScheduleEntry entry)
@@ -248,9 +234,6 @@ internal static class ScheduleRecommendationProjector
             return personalEntryOrNull.Title;
         }
 
-        throw new ArgumentOutOfRangeException(
-            nameof(entry),
-            entry,
-            "Unknown schedule entry type.");
+        throw new ArgumentOutOfRangeException(nameof(entry), entry, "Unknown schedule entry type.");
     }
 }

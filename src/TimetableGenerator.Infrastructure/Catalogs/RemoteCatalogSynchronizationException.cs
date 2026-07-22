@@ -25,11 +25,9 @@ public sealed class RemoteCatalogSynchronizationException : Exception
         FailureKind = failureKind;
     }
 
-    private static void validateFailureKind(
-        ERemoteCatalogSynchronizationFailureKind failureKind)
+    private static void validateFailureKind(ERemoteCatalogSynchronizationFailureKind failureKind)
     {
-        if (Enum.IsDefined(typeof(ERemoteCatalogSynchronizationFailureKind), failureKind)
-            == false)
+        if (Enum.IsDefined(typeof(ERemoteCatalogSynchronizationFailureKind), failureKind) == false)
         {
             throw new ArgumentOutOfRangeException(nameof(failureKind));
         }

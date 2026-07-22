@@ -125,9 +125,7 @@ internal static class HandongExportSchema
         }
     }
 
-    public static bool IsExpectedHeader(
-        EHandongColumn column,
-        IReadOnlyList<string> headerLines)
+    public static bool IsExpectedHeader(EHandongColumn column, IReadOnlyList<string> headerLines)
     {
         string actualHeaderText = GetCanonicalHeaderText(headerLines);
         string expectedHeaderText = GetExpectedHeaderText(column);

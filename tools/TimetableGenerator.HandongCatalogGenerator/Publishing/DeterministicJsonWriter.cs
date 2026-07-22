@@ -50,8 +50,7 @@ internal static class DeterministicJsonWriter
                     && content[followingByteIndex] == LINE_FEED;
                 if (isCarriageReturnLineFeed == false)
                 {
-                    throw new InvalidOperationException(
-                        "Deterministic JSON contains a bare carriage return.");
+                    throw new InvalidOperationException("Deterministic JSON contains a bare carriage return.");
                 }
             }
 

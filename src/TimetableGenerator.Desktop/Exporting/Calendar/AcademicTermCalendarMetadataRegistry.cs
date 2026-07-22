@@ -6,24 +6,15 @@ namespace TimetableGenerator.Desktop.Exporting.Calendar;
 
 internal static class AcademicTermCalendarMetadataRegistry
 {
-    private static readonly AcademicTerm SECOND_SEMESTER_2026 =
-        AcademicTerm.Parse("2026-2");
+    private static readonly AcademicTerm SECOND_SEMESTER_2026 = AcademicTerm.Parse("2026-2");
 
-    private static readonly AcademicTermDateRange SECOND_SEMESTER_2026_DATE_RANGE =
-        new AcademicTermDateRange(
-            new DateOnly(2026, 8, 31),
-            new DateOnly(2026, 12, 20));
+    private static readonly AcademicTermDateRange SECOND_SEMESTER_2026_DATE_RANGE = new AcademicTermDateRange(new DateOnly(2026, 8, 31), new DateOnly(2026, 12, 20));
 
     public static AcademicTermCalendarMetadata FindByTerm(AcademicTerm term)
     {
         AcademicTermDateRange dateRange = findDateRange(term);
-        CalendarTimeZoneId localTimeZoneId =
-            CalendarTimeZoneId.CreateFromSystemTimeZone(
-                TimeZoneInfo.Local);
-        return new AcademicTermCalendarMetadata(
-            term,
-            dateRange,
-            localTimeZoneId);
+        CalendarTimeZoneId localTimeZoneId = CalendarTimeZoneId.CreateFromSystemTimeZone(TimeZoneInfo.Local);
+        return new AcademicTermCalendarMetadata(term, dateRange, localTimeZoneId);
     }
 
     internal static AcademicTermCalendarMetadata findByTerm(
@@ -31,10 +22,7 @@ internal static class AcademicTermCalendarMetadataRegistry
         CalendarTimeZoneId timeZoneId)
     {
         AcademicTermDateRange dateRange = findDateRange(term);
-        return new AcademicTermCalendarMetadata(
-            term,
-            dateRange,
-            timeZoneId);
+        return new AcademicTermCalendarMetadata(term, dateRange, timeZoneId);
     }
 
     private static AcademicTermDateRange findDateRange(AcademicTerm term)

@@ -49,15 +49,11 @@ internal sealed class ScheduleBoardTimeAxis
         }
     }
 
-    private ScheduleBoardTimeAxis(
-        ScheduleBoardTimeBoundary start,
-        ScheduleBoardTimeBoundary end)
+    private ScheduleBoardTimeAxis(ScheduleBoardTimeBoundary start, ScheduleBoardTimeBoundary end)
     {
         if (start.CompareTo(end) >= 0)
         {
-            throw new ArgumentException(
-                "Schedule board time axes must end after they start.",
-                nameof(end));
+            throw new ArgumentException("Schedule board time axes must end after they start.", nameof(end));
         }
 
         Start = start;
@@ -66,14 +62,12 @@ internal sealed class ScheduleBoardTimeAxis
         mLabelTimes = createLabelTimes(start, end);
     }
 
-    public static ScheduleBoardTimeAxis CreateForEntries(
-        IReadOnlyList<ScheduleEntry> entries)
+    public static ScheduleBoardTimeAxis CreateForEntries(IReadOnlyList<ScheduleEntry> entries)
     {
         return createForEntries(entries);
     }
 
-    public static ScheduleBoardTimeAxis CreateForPngExport(
-        IReadOnlyList<ScheduleEntry> entries)
+    public static ScheduleBoardTimeAxis CreateForPngExport(IReadOnlyList<ScheduleEntry> entries)
     {
         return createForEntries(entries);
     }
@@ -103,13 +97,11 @@ internal sealed class ScheduleBoardTimeAxis
                 "The time boundary is outside the visible schedule axis.");
         }
 
-        int minuteOffset = boundary.MinutesFromMidnight
-            - Start.MinutesFromMidnight;
+        int minuteOffset = boundary.MinutesFromMidnight - Start.MinutesFromMidnight;
         return minuteOffset / LAYOUT_INCREMENT_MINUTES;
     }
 
-    private static ScheduleBoardTimeAxis createForEntries(
-        IReadOnlyList<ScheduleEntry> entries)
+    private static ScheduleBoardTimeAxis createForEntries(IReadOnlyList<ScheduleEntry> entries)
     {
         ArgumentNullException.ThrowIfNull(entries);
 
@@ -126,18 +118,11 @@ internal sealed class ScheduleBoardTimeAxis
         int latestMinute = entries[0].TimeRange.End.MinutesFromMidnight;
         foreach (ScheduleEntry entry in entries)
         {
-            earliestMinute = Math.Min(
-                earliestMinute,
-                entry.TimeRange.Start.MinutesFromMidnight);
-            latestMinute = Math.Max(
-                latestMinute,
-                entry.TimeRange.End.MinutesFromMidnight);
+            earliestMinute = Math.Min(earliestMinute, entry.TimeRange.Start.MinutesFromMidnight);
+            latestMinute = Math.Max(latestMinute, entry.TimeRange.End.MinutesFromMidnight);
         }
 
-        int startMinute = Math.Max(
-            0,
-            roundDown(earliestMinute, MINUTES_PER_HOUR)
-                - START_CONTEXT_MINUTES);
+        int startMinute = Math.Max(0, roundDown(earliestMinute, MINUTES_PER_HOUR) - START_CONTEXT_MINUTES);
         int endMinute = Math.Min(
             MINUTES_PER_DAY,
             roundDown(latestMinute, MINUTES_PER_HOUR)
@@ -151,10 +136,8 @@ internal sealed class ScheduleBoardTimeAxis
         ScheduleBoardTimeBoundary start,
         ScheduleBoardTimeBoundary end)
     {
-        List<ScheduleBoardTimeBoundary> guideTimes =
-            new List<ScheduleBoardTimeBoundary>();
-        for (int guideMinute =
-                start.MinutesFromMidnight + GUIDE_INTERVAL_MINUTES;
+        List<ScheduleBoardTimeBoundary> guideTimes = new List<ScheduleBoardTimeBoundary>();
+        for (int guideMinute = start.MinutesFromMidnight + GUIDE_INTERVAL_MINUTES;
             guideMinute < end.MinutesFromMidnight;
             guideMinute += GUIDE_INTERVAL_MINUTES)
         {
@@ -168,8 +151,7 @@ internal sealed class ScheduleBoardTimeAxis
         ScheduleBoardTimeBoundary start,
         ScheduleBoardTimeBoundary end)
     {
-        List<ScheduleBoardTimeBoundary> labelTimes =
-            new List<ScheduleBoardTimeBoundary>();
+        List<ScheduleBoardTimeBoundary> labelTimes = new List<ScheduleBoardTimeBoundary>();
         int firstLabelMinute = start.IsFullHour
             ? start.MinutesFromMidnight
             : roundUp(

@@ -17,14 +17,11 @@ public sealed class ProductAppearanceSettingsFileStoreTests
         string testDirectoryPath = createTestDirectoryPath();
         try
         {
-            ProductAppearanceSettingsFileStore store = createStore(
-                testDirectoryPath);
+            ProductAppearanceSettingsFileStore store = createStore(testDirectoryPath);
 
             ProductAppearanceSettings settings = store.LoadOrDefault();
 
-            Assert.Equal(
-                EProductThemePreference.System,
-                settings.ThemePreference);
+            Assert.Equal(EProductThemePreference.System, settings.ThemePreference);
         }
         finally
         {
@@ -38,21 +35,14 @@ public sealed class ProductAppearanceSettingsFileStoreTests
         string testDirectoryPath = createTestDirectoryPath();
         try
         {
-            ProductAppearanceSettingsFileStore firstStore = createStore(
-                testDirectoryPath);
-            firstStore.Save(
-                new ProductAppearanceSettings(EProductThemePreference.Light));
-            ProductAppearanceSettingsFileStore secondStore = createStore(
-                testDirectoryPath);
+            ProductAppearanceSettingsFileStore firstStore = createStore(testDirectoryPath);
+            firstStore.Save(new ProductAppearanceSettings(EProductThemePreference.Light));
+            ProductAppearanceSettingsFileStore secondStore = createStore(testDirectoryPath);
 
-            ProductAppearanceSettings restoredSettings =
-                secondStore.LoadOrDefault();
+            ProductAppearanceSettings restoredSettings = secondStore.LoadOrDefault();
 
-            Assert.Equal(
-                EProductThemePreference.Light,
-                restoredSettings.ThemePreference);
-            Assert.Empty(
-                Directory.GetFiles(testDirectoryPath, "*.tmp"));
+            Assert.Equal(EProductThemePreference.Light, restoredSettings.ThemePreference);
+            Assert.Empty(Directory.GetFiles(testDirectoryPath, "*.tmp"));
         }
         finally
         {
@@ -66,21 +56,14 @@ public sealed class ProductAppearanceSettingsFileStoreTests
         string testDirectoryPath = createTestDirectoryPath();
         try
         {
-            string settingsFilePath = createSettingsFilePath(
-                testDirectoryPath);
+            string settingsFilePath = createSettingsFilePath(testDirectoryPath);
             Directory.CreateDirectory(testDirectoryPath);
-            File.WriteAllText(
-                settingsFilePath,
-                "not-json",
-                Encoding.UTF8);
-            ProductAppearanceSettingsFileStore store = createStore(
-                testDirectoryPath);
+            File.WriteAllText(settingsFilePath, "not-json", Encoding.UTF8);
+            ProductAppearanceSettingsFileStore store = createStore(testDirectoryPath);
 
             ProductAppearanceSettings settings = store.LoadOrDefault();
 
-            Assert.Equal(
-                EProductThemePreference.System,
-                settings.ThemePreference);
+            Assert.Equal(EProductThemePreference.System, settings.ThemePreference);
         }
         finally
         {
@@ -88,15 +71,10 @@ public sealed class ProductAppearanceSettingsFileStoreTests
         }
     }
 
-    private static ProductAppearanceSettingsFileStore createStore(
-        string testDirectoryPath)
+    private static ProductAppearanceSettingsFileStore createStore(string testDirectoryPath)
     {
-        ProductAppearanceSettingsFilePath filePath =
-            new ProductAppearanceSettingsFilePath(
-                createSettingsFilePath(testDirectoryPath));
-        return new ProductAppearanceSettingsFileStore(
-            filePath,
-            new ProductAppearanceSettingsJsonCodec());
+        ProductAppearanceSettingsFilePath filePath = new ProductAppearanceSettingsFilePath(createSettingsFilePath(testDirectoryPath));
+        return new ProductAppearanceSettingsFileStore(filePath, new ProductAppearanceSettingsJsonCodec());
     }
 
     private static string createSettingsFilePath(string testDirectoryPath)
@@ -106,10 +84,7 @@ public sealed class ProductAppearanceSettingsFileStoreTests
 
     private static string createTestDirectoryPath()
     {
-        return Path.Combine(
-            Path.GetTempPath(),
-            "TimetableGenerator.Tests",
-            Guid.NewGuid().ToString("N"));
+        return Path.Combine(Path.GetTempPath(), "TimetableGenerator.Tests", Guid.NewGuid().ToString("N"));
     }
 
     private static void tryDeleteDirectory(string testDirectoryPath)

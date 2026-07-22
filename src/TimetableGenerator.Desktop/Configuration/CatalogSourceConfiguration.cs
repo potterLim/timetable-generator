@@ -9,9 +9,7 @@ internal sealed class CatalogSourceConfiguration
 
     public ECatalogSourceOrigin Origin { get; }
 
-    public CatalogSourceConfiguration(
-        CatalogIndexEndpoint endpoint,
-        ECatalogSourceOrigin origin)
+    public CatalogSourceConfiguration(CatalogIndexEndpoint endpoint, ECatalogSourceOrigin origin)
     {
         if (endpoint == null)
         {

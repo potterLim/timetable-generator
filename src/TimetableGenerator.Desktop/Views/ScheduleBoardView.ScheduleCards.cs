@@ -24,23 +24,17 @@ internal sealed partial class ScheduleBoardView
         }
         else
         {
-            PersonalScheduleEntry? personalEntryOrNull =
-                entry as PersonalScheduleEntry;
+            PersonalScheduleEntry? personalEntryOrNull = entry as PersonalScheduleEntry;
             if (personalEntryOrNull == null)
             {
-                throw new ArgumentOutOfRangeException(
-                    nameof(entry),
-                    entry,
-                    "Unknown schedule entry type.");
+                throw new ArgumentOutOfRangeException(nameof(entry), entry, "Unknown schedule entry type.");
             }
 
             configurePersonalScheduleCard(scheduleCard, personalEntryOrNull);
         }
 
-        int startRowOffset = mRenderedLayout.TimeAxis.FindStartingRowOffset(
-            entry.TimeRange.Start);
-        int endRowOffset = mRenderedLayout.TimeAxis.FindEndingRowOffset(
-            entry.TimeRange.End);
+        int startRowOffset = mRenderedLayout.TimeAxis.FindStartingRowOffset(entry.TimeRange.Start);
+        int endRowOffset = mRenderedLayout.TimeAxis.FindEndingRowOffset(entry.TimeRange.End);
         Grid.SetRow(scheduleCard, 1 + startRowOffset);
         Grid.SetRowSpan(scheduleCard, Math.Max(1, endRowOffset - startRowOffset));
         ScheduleBoardDay boardDay = mRenderedLayout.DayRange.FindDay(entry.Day);
@@ -85,9 +79,7 @@ internal sealed partial class ScheduleBoardView
         return separator;
     }
 
-    private static Flyout createDetailsFlyout(
-        StackPanel details,
-        string accessibleName)
+    private static Flyout createDetailsFlyout(StackPanel details, string accessibleName)
     {
         Border detailsSurface = new Border();
         detailsSurface.Padding = new Thickness(6.0);
@@ -102,10 +94,8 @@ internal sealed partial class ScheduleBoardView
     private static Grid createDetailRow(string label, string value)
     {
         Grid row = new Grid();
-        row.ColumnDefinitions.Add(new ColumnDefinition(
-            new GridLength(52.0, GridUnitType.Pixel)));
-        row.ColumnDefinitions.Add(new ColumnDefinition(
-            new GridLength(1.0, GridUnitType.Star)));
+        row.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(52.0, GridUnitType.Pixel)));
+        row.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1.0, GridUnitType.Star)));
 
         TextBlock labelText = new TextBlock();
         labelText.Text = label;
@@ -122,10 +112,7 @@ internal sealed partial class ScheduleBoardView
         return row;
     }
 
-    private static TextBlock createCardText(
-        string text,
-        double fontSize,
-        FontWeight fontWeight)
+    private static TextBlock createCardText(string text, double fontSize, FontWeight fontWeight)
     {
         TextBlock textBlock = new TextBlock();
         textBlock.Text = text;
@@ -145,10 +132,7 @@ internal sealed partial class ScheduleBoardView
             case ECourseAccent.Green:
                 return "green";
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(accent),
-                    accent,
-                    "Unknown course accent.");
+                throw new ArgumentOutOfRangeException(nameof(accent), accent, "Unknown course accent.");
         }
     }
 }

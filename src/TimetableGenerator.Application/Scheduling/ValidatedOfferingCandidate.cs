@@ -27,9 +27,7 @@ internal sealed class ValidatedOfferingCandidate
 
     public RecommendationScore Score { get; }
 
-    public ValidatedOfferingCandidate(
-        ScheduledOffering offering,
-        EOfferingPreference preference)
+    public ValidatedOfferingCandidate(ScheduledOffering offering, EOfferingPreference preference)
     {
         if (offering == null)
         {
@@ -80,15 +78,13 @@ internal sealed class ValidatedOfferingCandidate
     {
         if (mUnscheduledSelectionOrNull == null)
         {
-            throw new InvalidOperationException(
-                "Scheduled candidates do not have an unscheduled selection.");
+            throw new InvalidOperationException("Scheduled candidates do not have an unscheduled selection.");
         }
 
         return mUnscheduledSelectionOrNull;
     }
 
-    private static RecommendationScore createScore(
-        EOfferingPreference preference)
+    private static RecommendationScore createScore(EOfferingPreference preference)
     {
         validatePreference(preference);
         return preference == EOfferingPreference.Preferred
@@ -98,8 +94,7 @@ internal sealed class ValidatedOfferingCandidate
 
     private static void validatePreference(EOfferingPreference preference)
     {
-        if (preference != EOfferingPreference.Preferred
-            && preference != EOfferingPreference.Acceptable)
+        if (preference != EOfferingPreference.Preferred && preference != EOfferingPreference.Acceptable)
         {
             throw new ArgumentOutOfRangeException(nameof(preference));
         }

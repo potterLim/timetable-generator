@@ -8,8 +8,7 @@ namespace TimetableGenerator.Desktop.Presentation.Appearance;
 
 internal static class ProductThemeVariantPolicy
 {
-    public static ThemeVariant FindThemeVariant(
-        EProductThemePreference themePreference)
+    public static ThemeVariant FindThemeVariant(EProductThemePreference themePreference)
     {
         switch (themePreference)
         {

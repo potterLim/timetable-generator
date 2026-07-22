@@ -74,8 +74,7 @@ public sealed class CourseCatalogDocument
             throw new ArgumentNullException(nameof(offeringMetadata));
         }
 
-        Dictionary<OfferingId, CatalogOfferingMetadata> metadataById =
-            copyAndValidateOfferingMetadata(catalog, offeringMetadata);
+        Dictionary<OfferingId, CatalogOfferingMetadata> metadataById = copyAndValidateOfferingMetadata(catalog, offeringMetadata);
         List<CatalogOfferingMetadata> copiedMetadata = new List<CatalogOfferingMetadata>();
         foreach (CatalogOffering offering in catalog.Offerings)
         {
@@ -119,8 +118,7 @@ public sealed class CourseCatalogDocument
             knownOfferingIds.Add(offering.Id);
         }
 
-        Dictionary<OfferingId, CatalogOfferingMetadata> metadataById =
-            new Dictionary<OfferingId, CatalogOfferingMetadata>();
+        Dictionary<OfferingId, CatalogOfferingMetadata> metadataById = new Dictionary<OfferingId, CatalogOfferingMetadata>();
         foreach (CatalogOfferingMetadata metadata in offeringMetadata)
         {
             if (metadata == null)

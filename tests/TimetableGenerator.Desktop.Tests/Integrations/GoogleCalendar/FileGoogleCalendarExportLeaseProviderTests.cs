@@ -18,23 +18,17 @@ public sealed class FileGoogleCalendarExportLeaseProviderTests
         GoogleCalendarExportLockFilePath path =
             new GoogleCalendarExportLockFilePath(
                 Path.Combine(directoryPath, "google-calendar-export.lock"));
-        FileGoogleCalendarExportLeaseProvider firstProvider =
-            new FileGoogleCalendarExportLeaseProvider(path);
-        FileGoogleCalendarExportLeaseProvider secondProvider =
-            new FileGoogleCalendarExportLeaseProvider(path);
+        FileGoogleCalendarExportLeaseProvider firstProvider = new FileGoogleCalendarExportLeaseProvider(path);
+        FileGoogleCalendarExportLeaseProvider secondProvider = new FileGoogleCalendarExportLeaseProvider(path);
 
         try
         {
-            IGoogleCalendarExportLease firstLease = await firstProvider.AcquireAsync(
-                TestContext.Current.CancellationToken);
+            IGoogleCalendarExportLease firstLease = await firstProvider.AcquireAsync(TestContext.Current.CancellationToken);
             Task<IGoogleCalendarExportLease> secondLeaseTask;
             await using (firstLease)
             {
-                secondLeaseTask = secondProvider.AcquireAsync(
-                    TestContext.Current.CancellationToken);
-                await Task.Delay(
-                    TimeSpan.FromMilliseconds(200.0),
-                    TestContext.Current.CancellationToken);
+                secondLeaseTask = secondProvider.AcquireAsync(TestContext.Current.CancellationToken);
+                await Task.Delay(TimeSpan.FromMilliseconds(200.0), TestContext.Current.CancellationToken);
                 Assert.False(secondLeaseTask.IsCompleted);
             }
 

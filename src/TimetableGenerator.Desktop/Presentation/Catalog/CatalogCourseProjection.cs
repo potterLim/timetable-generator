@@ -89,26 +89,21 @@ internal sealed class CatalogCourseProjection
             throw new ArgumentNullException(nameof(offerings));
         }
 
-        List<CatalogOfferingProjection> copiedOfferings =
-            new List<CatalogOfferingProjection>();
+        List<CatalogOfferingProjection> copiedOfferings = new List<CatalogOfferingProjection>();
         List<OfferingId> scheduledOfferingIds = new List<OfferingId>();
         List<OfferingId> timeNotProvidedOfferingIds = new List<OfferingId>();
-        List<EnglishInstructionPercentage> englishInstructionPercentages =
-            new List<EnglishInstructionPercentage>();
+        List<EnglishInstructionPercentage> englishInstructionPercentages = new List<EnglishInstructionPercentage>();
         HashSet<OfferingId> uniqueOfferingIds = new HashSet<OfferingId>();
-        SortedDictionary<string, OfferingUnitName> offeringUnitNamesByValue =
-            new SortedDictionary<string, OfferingUnitName>(StringComparer.Ordinal);
+        SortedDictionary<string, OfferingUnitName> offeringUnitNamesByValue = new SortedDictionary<string, OfferingUnitName>(StringComparer.Ordinal);
         SortedSet<ERequirementType> requirementTypes = new SortedSet<ERequirementType>();
 
         foreach (CatalogOfferingProjection offering in offerings)
         {
             validateOffering(course, offering, uniqueOfferingIds);
             copiedOfferings.Add(offering);
-            englishInstructionPercentages.Add(
-                offering.EnglishInstructionPercentage);
+            englishInstructionPercentages.Add(offering.EnglishInstructionPercentage);
 
-            if (offering.Offering.MeetingSchedule.Status
-                == EMeetingScheduleStatus.Scheduled)
+            if (offering.Offering.MeetingSchedule.Status == EMeetingScheduleStatus.Scheduled)
             {
                 scheduledOfferingIds.Add(offering.Offering.Id);
             }
@@ -117,11 +112,9 @@ internal sealed class CatalogCourseProjection
                 timeNotProvidedOfferingIds.Add(offering.Offering.Id);
             }
 
-            OfferingUnitName offeringUnitName =
-                offering.Metadata.Classification.OfferingUnitName;
+            OfferingUnitName offeringUnitName = offering.Metadata.Classification.OfferingUnitName;
             offeringUnitNamesByValue.TryAdd(offeringUnitName.Value, offeringUnitName);
-            ERequirementType requirementType =
-                offering.Metadata.Classification.RequirementType;
+            ERequirementType requirementType = offering.Metadata.Classification.RequirementType;
             if (Enum.IsDefined(typeof(ERequirementType), requirementType) == false)
             {
                 throw new ArgumentException(
@@ -134,14 +127,11 @@ internal sealed class CatalogCourseProjection
 
         Course = course;
         Accent = accent;
-        EnglishInstructionRange =
-            EnglishInstructionPercentageRange.Create(
-                englishInstructionPercentages);
+        EnglishInstructionRange = EnglishInstructionPercentageRange.Create(englishInstructionPercentages);
         mOfferings = copiedOfferings.AsReadOnly();
         mScheduledOfferingIds = scheduledOfferingIds.AsReadOnly();
         mTimeNotProvidedOfferingIds = timeNotProvidedOfferingIds.AsReadOnly();
-        mOfferingUnitNames = new List<OfferingUnitName>(
-            offeringUnitNamesByValue.Values).AsReadOnly();
+        mOfferingUnitNames = new List<OfferingUnitName>(offeringUnitNamesByValue.Values).AsReadOnly();
         mRequirementTypes = new List<ERequirementType>(requirementTypes).AsReadOnly();
     }
 
@@ -152,9 +142,7 @@ internal sealed class CatalogCourseProjection
     {
         if (offering == null)
         {
-            throw new ArgumentException(
-                "Course projections cannot contain null offerings.",
-                nameof(offering));
+            throw new ArgumentException("Course projections cannot contain null offerings.", nameof(offering));
         }
 
         if (offering.Offering.CourseId != course.Id)

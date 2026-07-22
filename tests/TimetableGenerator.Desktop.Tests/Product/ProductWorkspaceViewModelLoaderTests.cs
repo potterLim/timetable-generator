@@ -18,16 +18,13 @@ public sealed class ProductWorkspaceViewModelLoaderTests
     public async Task LoadPreservesRecoveryFlagsInPresentationAsync()
     {
         CatalogRevision revision = new CatalogRevision(1);
-        VerifiedCatalogPackage catalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackage(revision);
-        PlanningWorkspace workspace =
-            ProductWorkspaceLoaderTestData.CreateEmptyWorkspace(revision);
+        VerifiedCatalogPackage catalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(revision);
+        PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateEmptyWorkspace(revision);
         PlanningWorkspaceLoadResult persistedWorkspaceLoadResult =
             PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(
                 workspace,
                 new PlanningWorkspaceConcurrencyToken(1L));
-        RecordingPlanningWorkspaceStore workspaceStore =
-            new RecordingPlanningWorkspaceStore(persistedWorkspaceLoadResult);
+        RecordingPlanningWorkspaceStore workspaceStore = new RecordingPlanningWorkspaceStore(persistedWorkspaceLoadResult);
         EProductWorkspaceRecoveryFlags recoveryFlags =
             EProductWorkspaceRecoveryFlags.CatalogPreviousGeneration
             | EProductWorkspaceRecoveryFlags.WorkspacePreviousGeneration;
@@ -39,13 +36,10 @@ public sealed class ProductWorkspaceViewModelLoaderTests
                 persistedWorkspaceLoadResult.ConcurrencyToken,
                 EProductCatalogOrigin.OfflineCache,
                 recoveryFlags);
-        FixedProductWorkspaceDataLoader dataLoader =
-            new FixedProductWorkspaceDataLoader(dataLoadResult);
-        ProductWorkspaceViewModelLoader loader =
-            new ProductWorkspaceViewModelLoader(dataLoader);
+        FixedProductWorkspaceDataLoader dataLoader = new FixedProductWorkspaceDataLoader(dataLoadResult);
+        ProductWorkspaceViewModelLoader loader = new ProductWorkspaceViewModelLoader(dataLoader);
 
-        ProductWorkspacePresentation presentation = await loader.LoadAsync(
-            CancellationToken.None);
+        ProductWorkspacePresentation presentation = await loader.LoadAsync(CancellationToken.None);
 
         try
         {

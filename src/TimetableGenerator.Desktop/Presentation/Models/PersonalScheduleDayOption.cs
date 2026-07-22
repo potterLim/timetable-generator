@@ -80,10 +80,7 @@ internal sealed class PersonalScheduleDayOption : ObservableObject
             case EDay.Sunday:
                 return "일";
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(day),
-                    day,
-                    "Unknown personal schedule day.");
+                throw new ArgumentOutOfRangeException(nameof(day), day, "Unknown personal schedule day.");
         }
     }
 
@@ -106,10 +103,7 @@ internal sealed class PersonalScheduleDayOption : ObservableObject
             case EDay.Sunday:
                 return "일요일";
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(day),
-                    day,
-                    "Unknown personal schedule day.");
+                throw new ArgumentOutOfRangeException(nameof(day), day, "Unknown personal schedule day.");
         }
     }
 

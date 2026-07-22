@@ -23,14 +23,8 @@ internal sealed partial class ScheduleBoardView : UserControl
     private const double TIME_LABEL_HEIGHT = 16.0;
     private const double TIME_LABEL_GUIDE_GAP = 10.0;
 
-    [SuppressMessage(
-        "Style",
-        "IDE1006:Naming Styles",
-        Justification = "Avalonia requires the {PropertyName}Property field convention.")]
-    public static readonly StyledProperty<ICommand?>
-        EditPersonalScheduleCommandProperty =
-            AvaloniaProperty.Register<ScheduleBoardView, ICommand?>(
-                nameof(EditPersonalScheduleCommand));
+    [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Avalonia requires the {PropertyName}Property field convention.")]
+    public static readonly StyledProperty<ICommand?> EditPersonalScheduleCommandProperty = AvaloniaProperty.Register<ScheduleBoardView, ICommand?>(nameof(EditPersonalScheduleCommand));
 
     private readonly Grid mBoardGrid;
 
@@ -79,16 +73,11 @@ internal sealed partial class ScheduleBoardView : UserControl
     public ScheduleBoardView()
     {
         AvaloniaXamlLoader.Load(this);
-        Border? boardExportSurfaceOrNull = this.FindControl<Border>(
-            "BoardExportSurface");
-        Border? boardContextHeaderOrNull = this.FindControl<Border>(
-            "BoardContextHeader");
-        Border? boardStickyHeaderContainerOrNull = this.FindControl<Border>(
-            "BoardStickyHeaderContainer");
-        Grid? boardStickyDayHeaderGridOrNull = this.FindControl<Grid>(
-            "BoardStickyDayHeaderGrid");
-        ScrollViewer? scheduleScrollViewerOrNull = this.FindControl<ScrollViewer>(
-            "ScheduleScrollViewer");
+        Border? boardExportSurfaceOrNull = this.FindControl<Border>("BoardExportSurface");
+        Border? boardContextHeaderOrNull = this.FindControl<Border>("BoardContextHeader");
+        Border? boardStickyHeaderContainerOrNull = this.FindControl<Border>("BoardStickyHeaderContainer");
+        Grid? boardStickyDayHeaderGridOrNull = this.FindControl<Grid>("BoardStickyDayHeaderGrid");
+        ScrollViewer? scheduleScrollViewerOrNull = this.FindControl<ScrollViewer>("ScheduleScrollViewer");
         Grid? boardGridOrNull = this.FindControl<Grid>("BoardGrid");
         if (boardExportSurfaceOrNull == null
             || boardContextHeaderOrNull == null
@@ -97,8 +86,7 @@ internal sealed partial class ScheduleBoardView : UserControl
             || scheduleScrollViewerOrNull == null
             || boardGridOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The schedule board surfaces were not initialized.");
+            throw new InvalidOperationException("The schedule board surfaces were not initialized.");
         }
 
         mBoardExportSurface = boardExportSurfaceOrNull;
@@ -124,14 +112,12 @@ internal sealed partial class ScheduleBoardView : UserControl
         return scheduleBoard;
     }
 
-    internal void prepareForPngExport(
-        ScheduleBoardPresentation presentation)
+    internal void prepareForPngExport(ScheduleBoardPresentation presentation)
     {
         ArgumentNullException.ThrowIfNull(presentation);
         if (mIsPngExport == false)
         {
-            throw new InvalidOperationException(
-                "Only a PNG export board can be prepared for export.");
+            throw new InvalidOperationException("Only a PNG export board can be prepared for export.");
         }
 
         DataContext = presentation;
@@ -149,20 +135,14 @@ internal sealed partial class ScheduleBoardView : UserControl
         rebuildBoard();
     }
 
-    private void onAttachedToVisualTree(
-        object? senderOrNull,
-        VisualTreeAttachmentEventArgs eventArgs)
+    private void onAttachedToVisualTree(object? senderOrNull, VisualTreeAttachmentEventArgs eventArgs)
     {
         rebuildBoard();
     }
 
-    private void onActualThemeVariantChanged(
-        object? senderOrNull,
-        EventArgs eventArgs)
+    private void onActualThemeVariantChanged(object? senderOrNull, EventArgs eventArgs)
     {
-        Dispatcher.UIThread.Post(
-            rebuildBoardAfterThemeChange,
-            DispatcherPriority.Render);
+        Dispatcher.UIThread.Post(rebuildBoardAfterThemeChange, DispatcherPriority.Render);
     }
 
     private void rebuildBoardAfterThemeChange()
@@ -173,9 +153,7 @@ internal sealed partial class ScheduleBoardView : UserControl
             "BorderBrush",
             ActualThemeVariant,
             out borderBrushOrNull);
-        if (VisualRoot == null
-            || hasBorderBrush == false
-            || borderBrushOrNull is not IBrush)
+        if (VisualRoot == null || hasBorderBrush == false || borderBrushOrNull is not IBrush)
         {
             return;
         }
@@ -185,8 +163,7 @@ internal sealed partial class ScheduleBoardView : UserControl
 
     private void rebuildBoard()
     {
-        ScheduleBoardPresentation? presentationOrNull =
-            DataContext as ScheduleBoardPresentation;
+        ScheduleBoardPresentation? presentationOrNull = DataContext as ScheduleBoardPresentation;
         ScheduleRecommendation? recommendationOrNull = null;
         if (presentationOrNull == null)
         {
@@ -239,9 +216,7 @@ internal sealed partial class ScheduleBoardView : UserControl
         }
 
         RowDefinition headerRow = new RowDefinition();
-        headerRow.Height = new GridLength(
-            findBoardGridHeaderRowHeight(),
-            GridUnitType.Pixel);
+        headerRow.Height = new GridLength(findBoardGridHeaderRowHeight(), GridUnitType.Pixel);
         mBoardGrid.RowDefinitions.Add(headerRow);
 
         for (int incrementIndex = 0;
@@ -249,9 +224,7 @@ internal sealed partial class ScheduleBoardView : UserControl
             ++incrementIndex)
         {
             RowDefinition timeRow = new RowDefinition();
-            timeRow.Height = new GridLength(
-                TIME_INCREMENT_ROW_HEIGHT,
-                GridUnitType.Pixel);
+            timeRow.Height = new GridLength(TIME_INCREMENT_ROW_HEIGHT, GridUnitType.Pixel);
             mBoardGrid.RowDefinitions.Add(timeRow);
         }
     }
@@ -271,9 +244,7 @@ internal sealed partial class ScheduleBoardView : UserControl
                 columnIndex < totalColumnCount - 1 ? 1.0 : 0.0,
                 0.0);
             Grid.SetRow(columnGuide, 0);
-            Grid.SetRowSpan(
-                columnGuide,
-                mRenderedLayout.TimeAxis.IncrementCount + 1);
+            Grid.SetRowSpan(columnGuide, mRenderedLayout.TimeAxis.IncrementCount + 1);
             Grid.SetColumn(columnGuide, columnIndex);
             mBoardGrid.Children.Add(columnGuide);
         }
@@ -288,8 +259,7 @@ internal sealed partial class ScheduleBoardView : UserControl
         foreach (ScheduleBoardTimeBoundary guideTime
             in mRenderedLayout.TimeAxis.GuideTimes)
         {
-            int rowIndex = 1
-                + mRenderedLayout.TimeAxis.FindBoundaryRowOffset(guideTime);
+            int rowIndex = 1 + mRenderedLayout.TimeAxis.FindBoundaryRowOffset(guideTime);
             Border timeGuide = new Border();
             string gridLineBrushKey = guideTime.IsFullHour
                 ? "ScheduleHourGridLineBrush"
@@ -300,11 +270,7 @@ internal sealed partial class ScheduleBoardView : UserControl
             if (guideTime.IsFullHour)
             {
                 timeGuide.Classes.Add("schedule-hour-guide");
-                timeGuide.Margin = new Thickness(
-                    TIME_COLUMN_WIDTH - HOUR_GUIDE_EXTENSION_WIDTH,
-                    0.0,
-                    0.0,
-                    0.0);
+                timeGuide.Margin = new Thickness(TIME_COLUMN_WIDTH - HOUR_GUIDE_EXTENSION_WIDTH, 0.0, 0.0, 0.0);
                 Grid.SetColumn(timeGuide, 0);
                 Grid.SetColumnSpan(timeGuide, totalColumnCount);
             }
@@ -403,14 +369,9 @@ internal sealed partial class ScheduleBoardView : UserControl
             timeHeader.TextAlignment = TextAlignment.Right;
             timeHeader.HorizontalAlignment = HorizontalAlignment.Right;
             timeHeader.VerticalAlignment = VerticalAlignment.Center;
-            timeHeader.Margin = new Thickness(
-                0.0,
-                0.0,
-                HOUR_GUIDE_EXTENSION_WIDTH + TIME_LABEL_GUIDE_GAP,
-                0.0);
+            timeHeader.Margin = new Thickness(0.0, 0.0, HOUR_GUIDE_EXTENSION_WIDTH + TIME_LABEL_GUIDE_GAP, 0.0);
             timeHeader.IsHitTestVisible = false;
-            int boundaryRowIndex = 1
-                + mRenderedLayout.TimeAxis.FindBoundaryRowOffset(labelTime);
+            int boundaryRowIndex = 1 + mRenderedLayout.TimeAxis.FindBoundaryRowOffset(labelTime);
             int labelRowIndex = labelTime == mRenderedLayout.TimeAxis.Start
                 ? boundaryRowIndex
                 : boundaryRowIndex - 1;

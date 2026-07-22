@@ -19,10 +19,7 @@ public readonly record struct CatalogFileSize
     {
         if (value <= 0L)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "Catalog file sizes must be positive.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Catalog file sizes must be positive.");
         }
 
         Value = value;

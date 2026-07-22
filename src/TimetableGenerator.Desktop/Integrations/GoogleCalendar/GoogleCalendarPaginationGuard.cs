@@ -12,9 +12,7 @@ internal sealed class GoogleCalendarPaginationGuard
 
     private int mRequestedPageCount;
 
-    public GoogleCalendarPaginationGuard(
-        int maximumPageCount,
-        string diagnosticCode)
+    public GoogleCalendarPaginationGuard(int maximumPageCount, string diagnosticCode)
     {
         if (maximumPageCount <= 0)
         {
@@ -23,9 +21,7 @@ internal sealed class GoogleCalendarPaginationGuard
 
         if (string.IsNullOrWhiteSpace(diagnosticCode))
         {
-            throw new ArgumentException(
-                "Pagination guards require a diagnostic code.",
-                nameof(diagnosticCode));
+            throw new ArgumentException("Pagination guards require a diagnostic code.", nameof(diagnosticCode));
         }
 
         mMaximumPageCount = maximumPageCount;
@@ -59,8 +55,6 @@ internal sealed class GoogleCalendarPaginationGuard
 
     private GoogleCalendarApiException createProtocolException()
     {
-        return new GoogleCalendarApiException(
-            HttpStatusCode.OK,
-            mDiagnosticCode);
+        return new GoogleCalendarApiException(HttpStatusCode.OK, mDiagnosticCode);
     }
 }

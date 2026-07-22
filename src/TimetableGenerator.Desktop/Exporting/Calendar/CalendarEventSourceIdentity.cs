@@ -18,9 +18,7 @@ internal readonly record struct CalendarEventSourceIdentity
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException(
-                "Calendar event source identities cannot be empty.",
-                nameof(value));
+            throw new ArgumentException("Calendar event source identities cannot be empty.", nameof(value));
         }
 
         Value = value.Trim();

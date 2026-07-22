@@ -8,9 +8,7 @@ public sealed class PlanningWorkspaceAutosaveFailedState
 {
     public Exception Failure { get; }
 
-    public PlanningWorkspaceAutosaveFailedState(
-        PlanningWorkspace workspace,
-        Exception failure)
+    public PlanningWorkspaceAutosaveFailedState(PlanningWorkspace workspace, Exception failure)
         : base(EPlanningWorkspaceAutosaveStatus.Failed, workspace)
     {
         if (failure == null)

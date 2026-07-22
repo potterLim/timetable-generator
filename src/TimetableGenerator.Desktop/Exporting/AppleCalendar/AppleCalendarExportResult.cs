@@ -50,8 +50,7 @@ internal sealed class AppleCalendarExportResult
         DiagnosticCodeOrNull = diagnosticCodeOrNull;
     }
 
-    public static AppleCalendarExportResult Complete(
-        AppleCalendarNativeExportResult nativeResult)
+    public static AppleCalendarExportResult Complete(AppleCalendarNativeExportResult nativeResult)
     {
         if (nativeResult == null)
         {
@@ -71,20 +70,13 @@ internal sealed class AppleCalendarExportResult
         EAppleCalendarExportStatus status,
         string? diagnosticCodeOrNull)
     {
-        if (status == EAppleCalendarExportStatus.None
-            || status == EAppleCalendarExportStatus.Success)
+        if (status == EAppleCalendarExportStatus.None || status == EAppleCalendarExportStatus.Success)
         {
             throw new ArgumentException(
                 "Completed Apple Calendar exports require completion details.",
                 nameof(status));
         }
 
-        return new AppleCalendarExportResult(
-            status,
-            null,
-            null,
-            0,
-            0,
-            diagnosticCodeOrNull);
+        return new AppleCalendarExportResult(status, null, null, 0, 0, diagnosticCodeOrNull);
     }
 }

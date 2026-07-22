@@ -29,10 +29,7 @@ public readonly record struct CatalogRevision
     {
         if (value < MINIMUM_REVISION)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "Catalog revisions must be positive.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Catalog revisions must be positive.");
         }
 
         Value = value;

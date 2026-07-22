@@ -13,8 +13,7 @@ internal static class CatalogSummaryFormatter
     private const string LOCATION_NOT_PROVIDED_SUMMARY = "강의실 미정";
     private const string SCHEDULE_NOT_PROVIDED_SUMMARY = "시간 미정";
 
-    public static string FormatInstructorSummary(
-        InstructorAssignmentMetadata instructorAssignment)
+    public static string FormatInstructorSummary(InstructorAssignmentMetadata instructorAssignment)
     {
         if (instructorAssignment == null)
         {
@@ -113,10 +112,7 @@ internal static class CatalogSummaryFormatter
             case EDay.Sunday:
                 return "일";
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(day),
-                    day,
-                    "Unknown academic day.");
+                throw new ArgumentOutOfRangeException(nameof(day), day, "Unknown academic day.");
         }
     }
 }

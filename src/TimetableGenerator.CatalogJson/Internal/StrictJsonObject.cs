@@ -10,9 +10,7 @@ internal sealed class StrictJsonObject
 
     public string Path { get; }
 
-    private StrictJsonObject(
-        string path,
-        Dictionary<string, JsonElement> propertiesByName)
+    private StrictJsonObject(string path, Dictionary<string, JsonElement> propertiesByName)
     {
         Path = path;
         mPropertiesByName = propertiesByName;
@@ -28,11 +26,8 @@ internal sealed class StrictJsonObject
             throw new CatalogJsonFormatException(path, "an object is required.");
         }
 
-        HashSet<string> expectedNames = new HashSet<string>(
-            expectedPropertyNames,
-            StringComparer.Ordinal);
-        Dictionary<string, JsonElement> propertiesByName =
-            new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+        HashSet<string> expectedNames = new HashSet<string>(expectedPropertyNames, StringComparer.Ordinal);
+        Dictionary<string, JsonElement> propertiesByName = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
         foreach (JsonProperty property in element.EnumerateObject())
         {
             if (propertiesByName.TryAdd(property.Name, property.Value) == false)
@@ -81,9 +76,7 @@ internal sealed class StrictJsonObject
         JsonElement element = GetElement(propertyName);
         if (element.ValueKind != JsonValueKind.Array)
         {
-            throw new CatalogJsonFormatException(
-                GetPropertyPath(propertyName),
-                "an array is required.");
+            throw new CatalogJsonFormatException(GetPropertyPath(propertyName), "an array is required.");
         }
 
         return element;
@@ -94,9 +87,7 @@ internal sealed class StrictJsonObject
         JsonElement element = GetElement(propertyName);
         if (element.ValueKind != JsonValueKind.String)
         {
-            throw new CatalogJsonFormatException(
-                GetPropertyPath(propertyName),
-                "a string is required.");
+            throw new CatalogJsonFormatException(GetPropertyPath(propertyName), "a string is required.");
         }
 
         string? valueOrNull = element.GetString();
@@ -201,12 +192,9 @@ internal sealed class StrictJsonObject
     public bool GetBoolean(string propertyName)
     {
         JsonElement element = GetElement(propertyName);
-        if (element.ValueKind != JsonValueKind.True
-            && element.ValueKind != JsonValueKind.False)
+        if (element.ValueKind != JsonValueKind.True && element.ValueKind != JsonValueKind.False)
         {
-            throw new CatalogJsonFormatException(
-                GetPropertyPath(propertyName),
-                "a Boolean value is required.");
+            throw new CatalogJsonFormatException(GetPropertyPath(propertyName), "a Boolean value is required.");
         }
 
         return element.GetBoolean();

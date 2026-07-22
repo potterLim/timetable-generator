@@ -6,8 +6,7 @@ internal sealed record ProductAppearanceSettings
 {
     public EProductThemePreference ThemePreference { get; }
 
-    public ProductAppearanceSettings(
-        EProductThemePreference themePreference)
+    public ProductAppearanceSettings(EProductThemePreference themePreference)
     {
         switch (themePreference)
         {

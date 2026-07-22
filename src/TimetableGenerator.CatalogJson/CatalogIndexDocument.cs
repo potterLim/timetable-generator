@@ -18,9 +18,7 @@ public sealed class CatalogIndexDocument
         }
     }
 
-    public CatalogIndexDocument(
-        CatalogId defaultCatalogId,
-        IEnumerable<CatalogIndexEntry> entries)
+    public CatalogIndexDocument(CatalogId defaultCatalogId, IEnumerable<CatalogIndexEntry> entries)
     {
         if (defaultCatalogId == null)
         {
@@ -39,9 +37,7 @@ public sealed class CatalogIndexDocument
         {
             if (entry == null)
             {
-                throw new ArgumentException(
-                    "Catalog indexes cannot contain null entries.",
-                    nameof(entries));
+                throw new ArgumentException("Catalog indexes cannot contain null entries.", nameof(entries));
             }
 
             if (catalogIds.Add(entry.CatalogId) == false)
@@ -61,9 +57,7 @@ public sealed class CatalogIndexDocument
 
         if (copiedEntries.Count == 0)
         {
-            throw new ArgumentException(
-                "Catalog indexes require at least one entry.",
-                nameof(entries));
+            throw new ArgumentException("Catalog indexes require at least one entry.", nameof(entries));
         }
 
         if (hasDefaultEntry == false)

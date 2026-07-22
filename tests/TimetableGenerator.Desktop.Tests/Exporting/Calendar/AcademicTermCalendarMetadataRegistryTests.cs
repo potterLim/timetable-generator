@@ -13,8 +13,7 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
     [Fact]
     public void SecondSemesterOf2026UsesTheConfiguredInclusiveClassPeriod()
     {
-        AcademicTermCalendarMetadata metadata =
-            getSeoulCalendarMetadata();
+        AcademicTermCalendarMetadata metadata = getSeoulCalendarMetadata();
 
         Assert.Equal(new DateOnly(2026, 8, 31), metadata.DateRange.StartDate);
         Assert.Equal(new DateOnly(2026, 12, 20), metadata.DateRange.EndDate);
@@ -29,28 +28,19 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
     [Fact]
     public void LastIncludedInstantConvertsKoreanLocalTimeToUtc()
     {
-        AcademicTermCalendarMetadata metadata =
-            getSeoulCalendarMetadata();
+        AcademicTermCalendarMetadata metadata = getSeoulCalendarMetadata();
 
-        DateTimeOffset lastIncludedInstant =
-            metadata.GetLastIncludedInstantUtc();
+        DateTimeOffset lastIncludedInstant = metadata.GetLastIncludedInstantUtc();
 
-        Assert.Equal(
-            new DateTimeOffset(2026, 12, 20, 14, 59, 59, TimeSpan.Zero),
-            lastIncludedInstant);
+        Assert.Equal(new DateTimeOffset(2026, 12, 20, 14, 59, 59, TimeSpan.Zero), lastIncludedInstant);
     }
 
     [Theory]
     [InlineData(EDay.Monday, 2026, 8, 31)]
     [InlineData(EDay.Sunday, 2026, 9, 6)]
-    public void FirstOccurrenceIncludesEverySupportedWeekday(
-        EDay day,
-        int year,
-        int month,
-        int date)
+    public void FirstOccurrenceIncludesEverySupportedWeekday(EDay day, int year, int month, int date)
     {
-        AcademicTermCalendarMetadata metadata =
-            getSeoulCalendarMetadata();
+        AcademicTermCalendarMetadata metadata = getSeoulCalendarMetadata();
 
         DateOnly firstOccurrenceDate = metadata.FindFirstOccurrenceDate(day);
 
@@ -69,12 +59,9 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
     [Fact]
     public void DefaultRegistryMetadataUsesTheCurrentSystemTimeZone()
     {
-        CalendarTimeZoneId expectedTimeZoneId =
-            CalendarTimeZoneId.CreateFromSystemTimeZone(TimeZoneInfo.Local);
+        CalendarTimeZoneId expectedTimeZoneId = CalendarTimeZoneId.CreateFromSystemTimeZone(TimeZoneInfo.Local);
 
-        AcademicTermCalendarMetadata metadata =
-            AcademicTermCalendarMetadataRegistry.FindByTerm(
-                AcademicTerm.Parse("2026-2"));
+        AcademicTermCalendarMetadata metadata = AcademicTermCalendarMetadataRegistry.FindByTerm(AcademicTerm.Parse("2026-2"));
 
         Assert.Equal(expectedTimeZoneId, metadata.TimeZoneId);
     }
@@ -106,8 +93,7 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
     [Fact]
     public void UtcOffsetsFollowIanaRulesForEachCalendarDate()
     {
-        CalendarTimeZoneId timeZoneId =
-            new CalendarTimeZoneId("America/New_York");
+        CalendarTimeZoneId timeZoneId = new CalendarTimeZoneId("America/New_York");
 
         CalendarUtcOffset winterOffset = timeZoneId.FindUtcOffset(
             new DateOnly(2026, 1, 15),
@@ -123,8 +109,7 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
     [Fact]
     public void NonexistentDaylightTransitionTimeIsRejected()
     {
-        CalendarTimeZoneId timeZoneId =
-            new CalendarTimeZoneId("America/New_York");
+        CalendarTimeZoneId timeZoneId = new CalendarTimeZoneId("America/New_York");
 
         Assert.Throws<InvalidOperationException>(
             () => timeZoneId.ResolveLocalDateTime(
@@ -135,8 +120,7 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
     [Fact]
     public void AmbiguousDaylightTransitionTimeUsesFirstOccurrence()
     {
-        CalendarTimeZoneId timeZoneId =
-            new CalendarTimeZoneId("America/New_York");
+        CalendarTimeZoneId timeZoneId = new CalendarTimeZoneId("America/New_York");
 
         DateTimeOffset resolvedTime = timeZoneId.ResolveLocalDateTime(
             new DateOnly(2026, 11, 1),
@@ -171,8 +155,7 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
             "Korea Standard Time",
             "Korea Standard Time");
 
-        CalendarTimeZoneId timeZoneId =
-            CalendarTimeZoneId.CreateFromSystemTimeZone(windowsTimeZone);
+        CalendarTimeZoneId timeZoneId = CalendarTimeZoneId.CreateFromSystemTimeZone(windowsTimeZone);
 
         Assert.Equal("Asia/Seoul", timeZoneId.Value);
     }
@@ -180,11 +163,9 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
     [Fact]
     public void IanaSystemTimeZoneIdIsPreserved()
     {
-        TimeZoneInfo ianaTimeZone =
-            TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
+        TimeZoneInfo ianaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
 
-        CalendarTimeZoneId timeZoneId =
-            CalendarTimeZoneId.CreateFromSystemTimeZone(ianaTimeZone);
+        CalendarTimeZoneId timeZoneId = CalendarTimeZoneId.CreateFromSystemTimeZone(ianaTimeZone);
 
         Assert.Equal("America/New_York", timeZoneId.Value);
     }

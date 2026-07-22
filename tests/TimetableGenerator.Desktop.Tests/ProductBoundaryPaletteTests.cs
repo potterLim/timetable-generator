@@ -40,29 +40,22 @@ public sealed class ProductBoundaryPaletteTests
             new ExpectedColor("AccentTintBrush", "#172F4A"));
     }
 
-    private static void assertPalette(
-        ThemeVariant themeVariant,
-        params ExpectedColor[] expectedColors)
+    private static void assertPalette(ThemeVariant themeVariant, params ExpectedColor[] expectedColors)
     {
         foreach (ExpectedColor expectedColor in expectedColors)
         {
-            SolidColorBrush brush = findRequiredBrush(
-                expectedColor.Token,
-                themeVariant);
+            SolidColorBrush brush = findRequiredBrush(expectedColor.Token, themeVariant);
             Assert.Equal(Color.Parse(expectedColor.HexColor), brush.Color);
         }
     }
 
-    private static SolidColorBrush findRequiredBrush(
-        ColorToken colorToken,
-        ThemeVariant themeVariant)
+    private static SolidColorBrush findRequiredBrush(ColorToken colorToken, ThemeVariant themeVariant)
     {
         Avalonia.Application? applicationOrNull = Avalonia.Application.Current;
         Assert.NotNull(applicationOrNull);
         if (applicationOrNull == null)
         {
-            throw new System.InvalidOperationException(
-                "The Avalonia test application was not initialized.");
+            throw new System.InvalidOperationException("The Avalonia test application was not initialized.");
         }
 
         object? resourceOrNull;
@@ -70,10 +63,7 @@ public sealed class ProductBoundaryPaletteTests
             colorToken.Value,
             themeVariant,
             out resourceOrNull);
-        Assert.True(
-            hasResource,
-            "The product color token could not be resolved: " +
-                colorToken.Value);
+        Assert.True(hasResource, "The product color token could not be resolved: " + colorToken.Value);
 
         SolidColorBrush? brushOrNull = resourceOrNull as SolidColorBrush;
         Assert.NotNull(brushOrNull);

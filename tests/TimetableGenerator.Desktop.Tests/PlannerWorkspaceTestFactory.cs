@@ -25,8 +25,7 @@ internal static class PlannerWorkspaceTestFactory
     public static PlannerWorkspaceViewModel CreateWorkspace()
     {
         CourseCatalogDocument document = CatalogProjectionTestFixture.CreateDocument();
-        IScheduleRecommendationProvider recommendationProvider =
-            new CatalogScheduleRecommendationProvider(document.Catalog);
+        IScheduleRecommendationProvider recommendationProvider = new CatalogScheduleRecommendationProvider(document.Catalog);
         return createWorkspace(
             document,
             recommendationProvider,
@@ -43,13 +42,8 @@ internal static class PlannerWorkspaceTestFactory
         }
 
         CourseCatalogDocument document = CatalogProjectionTestFixture.CreateDocument();
-        IScheduleRecommendationProvider recommendationProvider =
-            new CatalogScheduleRecommendationProvider(document.Catalog);
-        return createWorkspace(
-            document,
-            recommendationProvider,
-            null,
-            planningWorkspaceStore);
+        IScheduleRecommendationProvider recommendationProvider = new CatalogScheduleRecommendationProvider(document.Catalog);
+        return createWorkspace(document, recommendationProvider, null, planningWorkspaceStore);
     }
 
     public static PlannerWorkspaceViewModel CreateWorkspace(
@@ -67,8 +61,7 @@ internal static class PlannerWorkspaceTestFactory
         }
 
         CourseCatalogDocument document = CatalogProjectionTestFixture.CreateDocument();
-        IScheduleRecommendationProvider recommendationProvider =
-            new CatalogScheduleRecommendationProvider(document.Catalog);
+        IScheduleRecommendationProvider recommendationProvider = new CatalogScheduleRecommendationProvider(document.Catalog);
         return createWorkspace(
             document,
             recommendationProvider,
@@ -92,16 +85,14 @@ internal static class PlannerWorkspaceTestFactory
             new ImmediatePlanningWorkspaceStore());
     }
 
-    public static PlannerWorkspaceViewModel CreateWorkspace(
-        CourseCatalogDocument document)
+    public static PlannerWorkspaceViewModel CreateWorkspace(CourseCatalogDocument document)
     {
         if (document == null)
         {
             throw new ArgumentNullException(nameof(document));
         }
 
-        IScheduleRecommendationProvider recommendationProvider =
-            new CatalogScheduleRecommendationProvider(document.Catalog);
+        IScheduleRecommendationProvider recommendationProvider = new CatalogScheduleRecommendationProvider(document.Catalog);
         return createWorkspace(
             document,
             recommendationProvider,
@@ -109,16 +100,14 @@ internal static class PlannerWorkspaceTestFactory
             new ImmediatePlanningWorkspaceStore());
     }
 
-    public static PlannerWorkspaceViewModel CreateWorkspaceWithEmptyPlan(
-        CourseCatalogDocument document)
+    public static PlannerWorkspaceViewModel CreateWorkspaceWithEmptyPlan(CourseCatalogDocument document)
     {
         if (document == null)
         {
             throw new ArgumentNullException(nameof(document));
         }
 
-        IScheduleRecommendationProvider recommendationProvider =
-            new CatalogScheduleRecommendationProvider(document.Catalog);
+        IScheduleRecommendationProvider recommendationProvider = new CatalogScheduleRecommendationProvider(document.Catalog);
         PlanCatalogBinding binding = createCatalogBinding(document);
         PlanId planId = PlanId.CreateNew();
         PlanningPlan plan = new PlanningPlan(
@@ -154,13 +143,9 @@ internal static class PlannerWorkspaceTestFactory
         }
 
         CourseCatalogDocument document = CatalogProjectionTestFixture.CreateDocument();
-        IScheduleRecommendationProvider recommendationProvider =
-            new CatalogScheduleRecommendationProvider(document.Catalog);
+        IScheduleRecommendationProvider recommendationProvider = new CatalogScheduleRecommendationProvider(document.Catalog);
         PlanCatalogBinding binding = createCatalogBinding(document);
-        PlanningWorkspace workspace = new PlanningWorkspace(
-            binding,
-            null,
-            Array.Empty<PlanningPlan>());
+        PlanningWorkspace workspace = new PlanningWorkspace(binding, null, Array.Empty<PlanningPlan>());
         return createWorkspaceFromSnapshot(
             document,
             recommendationProvider,
@@ -168,8 +153,7 @@ internal static class PlannerWorkspaceTestFactory
             planningWorkspaceStore);
     }
 
-    public static ProductShellViewModel CreateShell(
-        PlannerWorkspaceViewModel workspace)
+    public static ProductShellViewModel CreateShell(PlannerWorkspaceViewModel workspace)
     {
         QueueProductWorkspaceLoader loader = new QueueProductWorkspaceLoader(
             new Func<CancellationToken, Task<ProductWorkspacePresentation>>[]
@@ -199,12 +183,9 @@ internal static class PlannerWorkspaceTestFactory
         return new ProductShellViewModel(loader, catalogUpdateService);
     }
 
-    public static ProductWorkspacePresentation CreatePresentation(
-        PlannerWorkspaceViewModel workspace)
+    public static ProductWorkspacePresentation CreatePresentation(PlannerWorkspaceViewModel workspace)
     {
-        return CreatePresentation(
-            workspace,
-            EProductCatalogOrigin.OfflineCache);
+        return CreatePresentation(workspace, EProductCatalogOrigin.OfflineCache);
     }
 
     public static ProductWorkspacePresentation CreatePresentation(
@@ -217,10 +198,8 @@ internal static class PlannerWorkspaceTestFactory
         }
 
         CatalogRevision revision = new CatalogRevision(1);
-        VerifiedCatalogPackage activeCatalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackage(revision);
-        PlanningWorkspace workspaceSnapshot =
-            ProductWorkspaceLoaderTestData.CreateEmptyWorkspace(revision);
+        VerifiedCatalogPackage activeCatalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(revision);
+        PlanningWorkspace workspaceSnapshot = ProductWorkspaceLoaderTestData.CreateEmptyWorkspace(revision);
         return new ProductWorkspacePresentation(
             workspace,
             activeCatalogPackage,
@@ -239,10 +218,8 @@ internal static class PlannerWorkspaceTestFactory
         }
 
         CatalogRevision revision = new CatalogRevision(1);
-        VerifiedCatalogPackage activeCatalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackage(revision);
-        PlanningWorkspace workspaceSnapshot =
-            ProductWorkspaceLoaderTestData.CreateEmptyWorkspace(revision);
+        VerifiedCatalogPackage activeCatalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(revision);
+        PlanningWorkspace workspaceSnapshot = ProductWorkspaceLoaderTestData.CreateEmptyWorkspace(revision);
         return new ProductWorkspacePresentation(
             workspace,
             activeCatalogPackage,
@@ -257,9 +234,7 @@ internal static class PlannerWorkspaceTestFactory
         ScheduleRecommendationBookmark? recommendationBookmarkOrNull,
         IPlanningWorkspaceStore planningWorkspaceStore)
     {
-        PlanningWorkspace workspace = createPlanningWorkspace(
-            document,
-            recommendationBookmarkOrNull);
+        PlanningWorkspace workspace = createPlanningWorkspace(document, recommendationBookmarkOrNull);
         return createWorkspaceFromSnapshot(
             document,
             recommendationProvider,
@@ -273,9 +248,7 @@ internal static class PlannerWorkspaceTestFactory
         PlanningWorkspace workspace,
         IPlanningWorkspaceStore planningWorkspaceStore)
     {
-        PlanningWorkspaceSession session = new PlanningWorkspaceSession(
-            document.Catalog,
-            workspace);
+        PlanningWorkspaceSession session = new PlanningWorkspaceSession(document.Catalog, workspace);
         PlanningWorkspaceAutosaveQueue autosaveQueue =
             new PlanningWorkspaceAutosaveQueue(
                 planningWorkspaceStore,
@@ -326,8 +299,7 @@ internal static class PlannerWorkspaceTestFactory
             new PlanningPlan[] { primaryPlan, secondaryPlan });
     }
 
-    private static PlanCatalogBinding createCatalogBinding(
-        CourseCatalogDocument document)
+    private static PlanCatalogBinding createCatalogBinding(CourseCatalogDocument document)
     {
         return new PlanCatalogBinding(
             document.Catalog.Id,

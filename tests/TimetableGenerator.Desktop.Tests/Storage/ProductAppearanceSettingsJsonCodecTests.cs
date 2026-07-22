@@ -13,25 +13,19 @@ public sealed class ProductAppearanceSettingsJsonCodecTests
     [Fact]
     public void SystemPreferenceRoundTripsWithStableSerializedValue()
     {
-        assertPreferenceRoundTrip(
-            EProductThemePreference.System,
-            "system");
+        assertPreferenceRoundTrip(EProductThemePreference.System, "system");
     }
 
     [Fact]
     public void LightPreferenceRoundTripsWithStableSerializedValue()
     {
-        assertPreferenceRoundTrip(
-            EProductThemePreference.Light,
-            "light");
+        assertPreferenceRoundTrip(EProductThemePreference.Light, "light");
     }
 
     [Fact]
     public void DarkPreferenceRoundTripsWithStableSerializedValue()
     {
-        assertPreferenceRoundTrip(
-            EProductThemePreference.Dark,
-            "dark");
+        assertPreferenceRoundTrip(EProductThemePreference.Dark, "dark");
     }
 
     [Theory]
@@ -43,8 +37,7 @@ public sealed class ProductAppearanceSettingsJsonCodecTests
     [InlineData("{\"schemaVersion\":1,\"schemaVersion\":1,\"themePreference\":\"dark\"}")]
     public void InvalidContractIsRejected(string json)
     {
-        ProductAppearanceSettingsJsonCodec codec =
-            new ProductAppearanceSettingsJsonCodec();
+        ProductAppearanceSettingsJsonCodec codec = new ProductAppearanceSettingsJsonCodec();
 
         Assert.Throws<ProductAppearanceSettingsException>(
             () => codec.Deserialize(Encoding.UTF8.GetBytes(json)));
@@ -54,10 +47,8 @@ public sealed class ProductAppearanceSettingsJsonCodecTests
         EProductThemePreference preference,
         string serializedValue)
     {
-        ProductAppearanceSettingsJsonCodec codec =
-            new ProductAppearanceSettingsJsonCodec();
-        ProductAppearanceSettings settings =
-            new ProductAppearanceSettings(preference);
+        ProductAppearanceSettingsJsonCodec codec = new ProductAppearanceSettingsJsonCodec();
+        ProductAppearanceSettings settings = new ProductAppearanceSettings(preference);
 
         byte[] content = codec.Serialize(settings);
         ProductAppearanceSettings decodedSettings = codec.Deserialize(content);

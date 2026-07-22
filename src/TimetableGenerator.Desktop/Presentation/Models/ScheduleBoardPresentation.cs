@@ -84,8 +84,7 @@ internal sealed class ScheduleBoardPresentation
         mListGroups = ScheduleListProjector.Project(schedule.Entries);
     }
 
-    private static ScheduleBoardLayout createLayout(
-        ScheduleRecommendation schedule)
+    private static ScheduleBoardLayout createLayout(ScheduleRecommendation schedule)
     {
         if (schedule == null)
         {

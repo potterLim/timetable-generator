@@ -19,8 +19,7 @@ public sealed class CourseCatalogProjectorTests
         CourseCatalogProjection projection = CourseCatalogProjector.Project(document);
 
         Assert.Equal(2, projection.Courses.Count);
-        CatalogCourseProjection programmingCourse = projection.FindCourseById(
-            new CourseId("course-programming"));
+        CatalogCourseProjection programmingCourse = projection.FindCourseById(new CourseId("course-programming"));
         Assert.Equal(2, programmingCourse.Offerings.Count);
         Assert.Equal(2, programmingCourse.ScheduledOfferingIds.Count);
         Assert.Empty(programmingCourse.TimeNotProvidedOfferingIds);
@@ -31,8 +30,7 @@ public sealed class CourseCatalogProjectorTests
             new OfferingId("offering-programming-alternative"),
             programmingCourse.ScheduledOfferingIds[1]);
 
-        CatalogCourseProjection seminarCourse = projection.FindCourseById(
-            new CourseId("course-seminar"));
+        CatalogCourseProjection seminarCourse = projection.FindCourseById(new CourseId("course-seminar"));
         Assert.Empty(seminarCourse.ScheduledOfferingIds);
         Assert.Equal(2, seminarCourse.TimeNotProvidedOfferingIds.Count);
         Assert.Equal(
@@ -63,9 +61,7 @@ public sealed class CourseCatalogProjectorTests
             projection,
             ERequirementType.MajorRequired);
         Assert.Single(majorRequiredGroup.Courses);
-        Assert.Equal(
-            new CourseId("course-programming"),
-            majorRequiredGroup.Courses[0].Course.Id);
+        Assert.Equal(new CourseId("course-programming"), majorRequiredGroup.Courses[0].Course.Id);
 
         CatalogRequirementGroup generalElectiveGroup = findRequirementGroup(
             projection,
@@ -76,23 +72,19 @@ public sealed class CourseCatalogProjectorTests
     [Fact]
     public void ProjectPreservesTruthfulInstructorLocationAndScheduleSummaries()
     {
-        CourseCatalogProjection projection = CourseCatalogProjector.Project(
-            CatalogProjectionTestFixture.CreateDocument());
+        CourseCatalogProjection projection = CourseCatalogProjector.Project(CatalogProjectionTestFixture.CreateDocument());
 
-        CatalogOfferingProjection primary = projection.FindOfferingById(
-            new OfferingId("offering-programming-primary"));
+        CatalogOfferingProjection primary = projection.FindOfferingById(new OfferingId("offering-programming-primary"));
         Assert.Equal("홍길동 외 1명", primary.InstructorSummary);
         Assert.Equal("오석관 301", primary.LocationSummary);
         Assert.Equal("월 1교시, 수 2교시", primary.ScheduleSummary);
 
-        CatalogOfferingProjection alternative = projection.FindOfferingById(
-            new OfferingId("offering-programming-alternative"));
+        CatalogOfferingProjection alternative = projection.FindOfferingById(new OfferingId("offering-programming-alternative"));
         Assert.Equal("교수 정보 없음", alternative.InstructorSummary);
         Assert.Equal("강의실 미정", alternative.LocationSummary);
         Assert.Equal("화 3교시", alternative.ScheduleSummary);
 
-        CatalogOfferingProjection seminar = projection.FindOfferingById(
-            new OfferingId("offering-seminar-unscheduled"));
+        CatalogOfferingProjection seminar = projection.FindOfferingById(new OfferingId("offering-seminar-unscheduled"));
         Assert.Equal("교수 미정", seminar.InstructorSummary);
         Assert.Equal("강의실 미정", seminar.LocationSummary);
         Assert.Equal("시간 미정", seminar.ScheduleSummary);
@@ -108,9 +100,7 @@ public sealed class CourseCatalogProjectorTests
                 new MeetingSlot(EDay.Wednesday, new AcademicPeriod(2)),
             });
 
-        Assert.Equal(
-            "수 2교시, 금 2교시",
-            CatalogSummaryFormatter.FormatScheduleSummary(schedule));
+        Assert.Equal("수 2교시, 금 2교시", CatalogSummaryFormatter.FormatScheduleSummary(schedule));
     }
 
     [Fact]
@@ -127,10 +117,8 @@ public sealed class CourseCatalogProjectorTests
     [Fact]
     public void ProjectAssignsTheSameAccentRegardlessOfCatalogOrder()
     {
-        CourseCatalogProjection originalProjection = CourseCatalogProjector.Project(
-            CatalogProjectionTestFixture.CreateDocument());
-        CourseCatalogProjection reorderedProjection = CourseCatalogProjector.Project(
-            CatalogProjectionTestFixture.CreateReorderedDocument());
+        CourseCatalogProjection originalProjection = CourseCatalogProjector.Project(CatalogProjectionTestFixture.CreateDocument());
+        CourseCatalogProjection reorderedProjection = CourseCatalogProjector.Project(CatalogProjectionTestFixture.CreateReorderedDocument());
         CourseId programmingCourseId = new CourseId("course-programming");
         CourseId seminarCourseId = new CourseId("course-seminar");
 
@@ -154,7 +142,6 @@ public sealed class CourseCatalogProjectorTests
             }
         }
 
-        throw new InvalidOperationException(
-            "The expected requirement group was not projected.");
+        throw new InvalidOperationException("The expected requirement group was not projected.");
     }
 }

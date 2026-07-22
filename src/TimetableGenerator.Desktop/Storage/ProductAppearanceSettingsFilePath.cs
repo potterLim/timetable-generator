@@ -16,9 +16,7 @@ internal sealed record ProductAppearanceSettingsFilePath
 
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException(
-                "Appearance settings file paths cannot be empty.",
-                nameof(value));
+            throw new ArgumentException("Appearance settings file paths cannot be empty.", nameof(value));
         }
 
         if (Path.IsPathFullyQualified(value) == false)
@@ -31,9 +29,7 @@ internal sealed record ProductAppearanceSettingsFilePath
         string fullPath = Path.GetFullPath(value);
         if (string.IsNullOrWhiteSpace(Path.GetFileName(fullPath)))
         {
-            throw new ArgumentException(
-                "Appearance settings paths must identify a file.",
-                nameof(value));
+            throw new ArgumentException("Appearance settings paths must identify a file.", nameof(value));
         }
 
         Value = fullPath;

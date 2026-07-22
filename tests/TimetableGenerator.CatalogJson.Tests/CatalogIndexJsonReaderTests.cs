@@ -6,16 +6,13 @@ namespace TimetableGenerator.CatalogJson.Tests;
 [TestClass]
 public sealed class CatalogIndexJsonReaderTests
 {
-    private static readonly Sha256Digest VALID_SHA256 = new Sha256Digest(
-        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+    private static readonly Sha256Digest VALID_SHA256 = new Sha256Digest("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
 
     [TestMethod]
     public void ReadValidIndexCreatesStronglyTypedEntry()
     {
         CatalogFileSize fileSize = new CatalogFileSize(1_024L);
-        byte[] indexBytes = CatalogJsonTestDocuments.CreateValidIndexBytes(
-            fileSize,
-            VALID_SHA256);
+        byte[] indexBytes = CatalogJsonTestDocuments.CreateValidIndexBytes(fileSize, VALID_SHA256);
 
         CatalogIndexDocument document = CatalogIndexJsonReader.Read(indexBytes);
         CatalogIndexEntry defaultEntry = document.FindDefaultEntry();

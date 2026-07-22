@@ -20,10 +20,7 @@ public sealed class ProductAppearanceSettingsFilePathTests
     [Fact]
     public void DirectoryPathIsRejected()
     {
-        string directoryPath = Path.Combine(
-            Path.GetTempPath(),
-            "Settings")
-            + Path.DirectorySeparatorChar;
+        string directoryPath = Path.Combine(Path.GetTempPath(), "Settings") + Path.DirectorySeparatorChar;
 
         Assert.Throws<ArgumentException>(
             () => new ProductAppearanceSettingsFilePath(directoryPath));

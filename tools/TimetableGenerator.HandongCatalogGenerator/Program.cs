@@ -52,14 +52,10 @@ internal static class Program
         Console.Out.WriteLine("sourceSha256: " + result.SourceSha256.HexValue);
         Console.Out.WriteLine("courses: " + result.Summary.CourseCount.Value);
         Console.Out.WriteLine("offerings: " + result.Summary.OfferingCount.Value);
-        Console.Out.WriteLine(
-            "scheduledOfferings: " + result.Summary.ScheduledOfferingCount.Value);
-        Console.Out.WriteLine(
-            "meetingNotProvided: " + result.Summary.MeetingNotProvidedCount.Value);
-        Console.Out.WriteLine(
-            "roomNotProvided: " + result.Summary.RoomNotProvidedCount.Value);
-        Console.Out.WriteLine(
-            "instructorUnconfirmed: " + result.Summary.InstructorUnconfirmedCount.Value);
+        Console.Out.WriteLine("scheduledOfferings: " + result.Summary.ScheduledOfferingCount.Value);
+        Console.Out.WriteLine("meetingNotProvided: " + result.Summary.MeetingNotProvidedCount.Value);
+        Console.Out.WriteLine("roomNotProvided: " + result.Summary.RoomNotProvidedCount.Value);
+        Console.Out.WriteLine("instructorUnconfirmed: " + result.Summary.InstructorUnconfirmedCount.Value);
         Console.Out.WriteLine(
             "sourceEnglishScheduleMismatch: "
             + result.Summary.EnglishScheduleMismatchCount.Value);

@@ -12,8 +12,7 @@ internal sealed class DefaultExternalBrowserLauncher : IExternalBrowserLauncher
     {
     }
 
-    internal DefaultExternalBrowserLauncher(
-        Func<ProcessStartInfo, Process?> processStarter)
+    internal DefaultExternalBrowserLauncher(Func<ProcessStartInfo, Process?> processStarter)
     {
         if (processStarter == null)
         {
@@ -37,8 +36,7 @@ internal sealed class DefaultExternalBrowserLauncher : IExternalBrowserLauncher
         Process? processOrNull = mProcessStarter(startInfo);
         if (processOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The operating system did not start the external browser.");
+            throw new InvalidOperationException("The operating system did not start the external browser.");
         }
 
         processOrNull.Dispose();

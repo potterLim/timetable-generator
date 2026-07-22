@@ -19,8 +19,7 @@ public sealed class ScheduleRecommendationGenerator
 
         if (cancellationToken.IsCancellationRequested)
         {
-            return ScheduleRecommendationResult.createCanceled(
-                Array.Empty<ScheduleRecommendation>());
+            return ScheduleRecommendationResult.createCanceled(Array.Empty<ScheduleRecommendation>());
         }
 
         PlanCatalogValidator validator = new PlanCatalogValidator(request.Catalog);
@@ -51,13 +50,9 @@ public sealed class ScheduleRecommendationGenerator
             return ScheduleRecommendationResult.createCanceled(state.Recommendations);
         }
 
-        ScheduleRecommendationBookmarkRestorer.IncludeIfValid(
-            state,
-            request.Plan);
+        ScheduleRecommendationBookmarkRestorer.IncludeIfValid(state, request.Plan);
 
-        return ScheduleRecommendationResult.createCompleted(
-            state.Recommendations,
-            state.Completion);
+        return ScheduleRecommendationResult.createCompleted(state.Recommendations, state.Completion);
     }
 
     private static ScheduleRecommendationResult createResultWithoutScheduledChoices(
@@ -81,8 +76,7 @@ public sealed class ScheduleRecommendationGenerator
             EScheduleRecommendationCompletion.Completed);
     }
 
-    private static void generateRecommendations(
-        ScheduleRecommendationGenerationState state)
+    private static void generateRecommendations(ScheduleRecommendationGenerationState state)
     {
         while (state.HasPendingNodes() && state.ShouldStop == false)
         {
@@ -105,8 +99,7 @@ public sealed class ScheduleRecommendationGenerator
                 continue;
             }
 
-            ValidatedCourseChoiceGroup courseChoiceGroup =
-                state.CourseChoiceGroups[node.NextGroupIndex];
+            ValidatedCourseChoiceGroup courseChoiceGroup = state.CourseChoiceGroups[node.NextGroupIndex];
             foreach (ValidatedOfferingCandidate offeringCandidate
                 in courseChoiceGroup.OfferingCandidates)
             {

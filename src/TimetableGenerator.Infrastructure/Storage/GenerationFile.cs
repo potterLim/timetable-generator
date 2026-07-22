@@ -8,15 +8,11 @@ internal sealed class GenerationFile
 
     public GenerationFilePath Path { get; }
 
-    public GenerationFile(
-        FileGeneration generation,
-        GenerationFilePath path)
+    public GenerationFile(FileGeneration generation, GenerationFilePath path)
     {
         if (generation.IsValid == false)
         {
-            throw new ArgumentException(
-                "Generation files require a valid generation.",
-                nameof(generation));
+            throw new ArgumentException("Generation files require a valid generation.", nameof(generation));
         }
 
         if (path == null)

@@ -18,9 +18,7 @@ internal readonly record struct CalendarEventUid
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException(
-                "Calendar event UIDs cannot be empty.",
-                nameof(value));
+            throw new ArgumentException("Calendar event UIDs cannot be empty.", nameof(value));
         }
 
         Value = value.Trim();

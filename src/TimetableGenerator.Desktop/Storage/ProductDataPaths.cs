@@ -31,8 +31,7 @@ internal sealed class ProductDataPaths
         Root = root;
         CatalogCache = new CatalogCacheFilePath(
             Path.Combine(root.Value, "Catalogs", CATALOG_CACHE_FILE_NAME));
-        Workspace = new WorkspaceFilePath(
-            Path.Combine(root.Value, "Planning", WORKSPACE_FILE_NAME));
+        Workspace = new WorkspaceFilePath(Path.Combine(root.Value, "Planning", WORKSPACE_FILE_NAME));
         AppearanceSettings = new ProductAppearanceSettingsFilePath(
             Path.Combine(
                 root.Value,

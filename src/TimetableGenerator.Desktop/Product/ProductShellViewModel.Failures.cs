@@ -13,9 +13,7 @@ internal sealed partial class ProductShellViewModel
 {
     private void showFailure(Exception exception)
     {
-        Trace.TraceError(
-            "The product workspace could not be loaded: {0}",
-            exception);
+        Trace.TraceError("The product workspace could not be loaded: {0}", exception);
         mWorkspaceOrNull = null;
         mState = EProductShellState.Error;
         mStatusTitle = "과목 데이터를 불러오지 못했습니다";
@@ -38,8 +36,7 @@ internal sealed partial class ProductShellViewModel
             return "이 설치본에 과목 데이터 주소가 설정되지 않았습니다. 배포 설정을 확인한 뒤 다시 시도해 주세요.";
         }
 
-        RemoteCatalogSynchronizationException? synchronizationExceptionOrNull =
-            exception as RemoteCatalogSynchronizationException;
+        RemoteCatalogSynchronizationException? synchronizationExceptionOrNull = exception as RemoteCatalogSynchronizationException;
         if (synchronizationExceptionOrNull != null)
         {
             switch (synchronizationExceptionOrNull.FailureKind)
@@ -76,8 +73,7 @@ internal sealed partial class ProductShellViewModel
             return "더 새로운 버전에서 저장한 데이터입니다. 앱을 업데이트한 뒤 다시 열어 주세요.";
         }
 
-        if (exception is CatalogCachePersistenceException
-            || exception is WorkspacePersistenceException)
+        if (exception is CatalogCachePersistenceException || exception is WorkspacePersistenceException)
         {
             return "이 기기의 저장 공간에 접근할 수 없습니다. 폴더 권한과 남은 용량을 확인한 뒤 다시 시도해 주세요.";
         }

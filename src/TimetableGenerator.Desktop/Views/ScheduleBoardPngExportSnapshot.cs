@@ -34,31 +34,36 @@ internal sealed class ScheduleBoardPngExportSnapshot : IDisposable
         }
     }
 
-    private ScheduleBoardPngExportSnapshot(
-        Canvas host,
-        ScheduleBoardView scheduleBoard)
+    private ScheduleBoardPngExportSnapshot(Canvas host, ScheduleBoardView scheduleBoard)
     {
         mHost = host;
         mScheduleBoard = scheduleBoard;
         mIsDisposed = false;
     }
 
-    public static ScheduleBoardPngExportSnapshot Create(
-        Canvas host,
-        ScheduleBoardView sourceBoard)
+    public static ScheduleBoardPngExportSnapshot Create(Canvas host, ScheduleBoardView sourceBoard)
     {
         ArgumentNullException.ThrowIfNull(host);
         ArgumentNullException.ThrowIfNull(sourceBoard);
 
-        ScheduleBoardPresentation? sourcePresentationOrNull =
-            sourceBoard.DataContext as ScheduleBoardPresentation;
+        ScheduleBoardPresentation? sourcePresentationOrNull = sourceBoard.DataContext as ScheduleBoardPresentation;
         if (sourcePresentationOrNull == null)
         {
-            throw new InvalidOperationException(
-                "PNG export requires a rendered schedule presentation.");
+            throw new InvalidOperationException("PNG export requires a rendered schedule presentation.");
         }
 
         return create(host, sourcePresentationOrNull, sourceBoard);
+    }
+
+    public void Dispose()
+    {
+        if (mIsDisposed)
+        {
+            return;
+        }
+
+        mHost.Children.Remove(mScheduleBoard);
+        mIsDisposed = true;
     }
 
     internal static ScheduleBoardPngExportSnapshot create(
@@ -72,8 +77,7 @@ internal sealed class ScheduleBoardPngExportSnapshot : IDisposable
 
         ScheduleBoardView exportBoard = ScheduleBoardView.createForPngExport();
         host.Children.Add(exportBoard);
-        ScheduleBoardPngExportSnapshot snapshot =
-            new ScheduleBoardPngExportSnapshot(host, exportBoard);
+        ScheduleBoardPngExportSnapshot snapshot = new ScheduleBoardPngExportSnapshot(host, exportBoard);
         try
         {
             snapshot.update(sourcePresentation, sizingBoard);
@@ -86,20 +90,16 @@ internal sealed class ScheduleBoardPngExportSnapshot : IDisposable
         }
     }
 
-    internal void update(
-        ScheduleBoardPresentation sourcePresentation,
-        ScheduleBoardView sizingBoard)
+    internal void update(ScheduleBoardPresentation sourcePresentation, ScheduleBoardView sizingBoard)
     {
         ArgumentNullException.ThrowIfNull(sourcePresentation);
         ArgumentNullException.ThrowIfNull(sizingBoard);
         if (mIsDisposed)
         {
-            throw new ObjectDisposedException(
-                nameof(ScheduleBoardPngExportSnapshot));
+            throw new ObjectDisposedException(nameof(ScheduleBoardPngExportSnapshot));
         }
 
-        ScheduleBoardLayout exportLayout = ScheduleBoardLayout.CreateForPngExport(
-            sourcePresentation.Schedule.Entries);
+        ScheduleBoardLayout exportLayout = ScheduleBoardLayout.CreateForPngExport(sourcePresentation.Schedule.Entries);
         ScheduleBoardPresentation exportPresentation =
             new ScheduleBoardPresentation(
                 sourcePresentation.Schedule,
@@ -113,8 +113,7 @@ internal sealed class ScheduleBoardPngExportSnapshot : IDisposable
         double exportWidth = Math.Max(sizingBoard.Bounds.Width, minimumWidth);
         if (double.IsFinite(exportWidth) == false || exportWidth <= 0.0)
         {
-            throw new InvalidOperationException(
-                "PNG export requires a positive schedule board width.");
+            throw new InvalidOperationException("PNG export requires a positive schedule board width.");
         }
 
         mScheduleBoard.Width = exportWidth;
@@ -124,25 +123,10 @@ internal sealed class ScheduleBoardPngExportSnapshot : IDisposable
         double exportHeight = mScheduleBoard.DesiredSize.Height;
         if (double.IsFinite(exportHeight) == false || exportHeight <= 0.0)
         {
-            throw new InvalidOperationException(
-                "PNG export could not measure the schedule board.");
+            throw new InvalidOperationException("PNG export could not measure the schedule board.");
         }
 
-        mScheduleBoard.Arrange(new Rect(
-            0.0,
-            0.0,
-            exportWidth,
-            exportHeight));
+        mScheduleBoard.Arrange(new Rect(0.0, 0.0, exportWidth, exportHeight));
     }
 
-    public void Dispose()
-    {
-        if (mIsDisposed)
-        {
-            return;
-        }
-
-        mHost.Children.Remove(mScheduleBoard);
-        mIsDisposed = true;
-    }
 }

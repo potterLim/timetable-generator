@@ -21,28 +21,16 @@ public sealed class CourseChoiceGroupEditingTests
             CourseChoiceGroupId.CreateNew(),
             EOfferingPreference.Acceptable);
 
-        PlanningWorkspace withGroup = editor.AddCourseChoiceGroup(
-            workspace,
-            plan.Id,
-            originalGroup);
-        CourseChoiceGroup updatedGroup = createGroup(
-            originalGroup.Id,
-            EOfferingPreference.Preferred);
-        PlanningWorkspace withUpdate = editor.UpdateCourseChoiceGroup(
-            withGroup,
-            plan.Id,
-            updatedGroup);
+        PlanningWorkspace withGroup = editor.AddCourseChoiceGroup(workspace, plan.Id, originalGroup);
+        CourseChoiceGroup updatedGroup = createGroup(originalGroup.Id, EOfferingPreference.Preferred);
+        PlanningWorkspace withUpdate = editor.UpdateCourseChoiceGroup(withGroup, plan.Id, updatedGroup);
         PlanningWorkspace withoutGroup = editor.RemoveCourseChoiceGroup(
             withUpdate,
             plan.Id,
             updatedGroup.Id);
 
-        Assert.AreSame(
-            originalGroup,
-            withGroup.GetActivePlan().CourseChoiceGroups[0]);
-        Assert.AreSame(
-            updatedGroup,
-            withUpdate.GetActivePlan().CourseChoiceGroups[0]);
+        Assert.AreSame(originalGroup, withGroup.GetActivePlan().CourseChoiceGroups[0]);
+        Assert.AreSame(updatedGroup, withUpdate.GetActivePlan().CourseChoiceGroups[0]);
         Assert.AreEqual(
             EOfferingPreference.Preferred,
             withUpdate.GetActivePlan()
@@ -62,30 +50,23 @@ public sealed class CourseChoiceGroupEditingTests
         CourseChoiceGroup group = createGroup(
             CourseChoiceGroupId.CreateNew(),
             EOfferingPreference.Acceptable);
-        PlanningWorkspace withGroup = editor.AddCourseChoiceGroup(
-            workspace,
-            plan.Id,
-            group);
+        PlanningWorkspace withGroup = editor.AddCourseChoiceGroup(workspace, plan.Id, group);
 
         PlanningWorkspace withoutFirstCourse = editor.RemoveCourse(
             withGroup,
             plan.Id,
             new CourseId("institution:AAA10001"));
 
-        CourseChoiceGroup remainingGroup =
-            withoutFirstCourse.GetActivePlan().CourseChoiceGroups[0];
+        CourseChoiceGroup remainingGroup = withoutFirstCourse.GetActivePlan().CourseChoiceGroups[0];
         Assert.AreEqual(group.Id, remainingGroup.Id);
         Assert.HasCount(1, remainingGroup.CourseCandidates);
-        Assert.AreEqual(
-            new CourseId("institution:BBB10001"),
-            remainingGroup.CourseCandidates[0].CourseId);
+        Assert.AreEqual(new CourseId("institution:BBB10001"), remainingGroup.CourseCandidates[0].CourseId);
     }
 
     [TestMethod]
     public void SessionExposesValidatedGroupEditingForDesktopIntegration()
     {
-        CatalogCourse course =
-            ScheduleRecommendationTestData.CreateCourse("AAA10001");
+        CatalogCourse course = ScheduleRecommendationTestData.CreateCourse("AAA10001");
         CatalogOffering offering =
             ScheduleRecommendationTestData.CreateScheduledOffering(
                 "AAA10001",
@@ -116,9 +97,7 @@ public sealed class CourseChoiceGroupEditingTests
             plan.CatalogBinding,
             plan.Id,
             new PlanningPlan[] { plan });
-        PlanningWorkspaceSession session = new PlanningWorkspaceSession(
-            catalog,
-            workspace);
+        PlanningWorkspaceSession session = new PlanningWorkspaceSession(catalog, workspace);
         CourseChoiceGroup group = new CourseChoiceGroup(
             CourseChoiceGroupId.CreateNew(),
             ECourseChoiceCardinality.ExactlyOne,
@@ -151,9 +130,7 @@ public sealed class CourseChoiceGroupEditingTests
             });
         session.UpdateCourseChoiceGroup(updatedGroup);
 
-        Assert.AreSame(
-            updatedGroup,
-            session.Workspace.GetActivePlan().CourseChoiceGroups[0]);
+        Assert.AreSame(updatedGroup, session.Workspace.GetActivePlan().CourseChoiceGroups[0]);
 
         session.RemoveCourseChoiceGroup(group.Id);
 

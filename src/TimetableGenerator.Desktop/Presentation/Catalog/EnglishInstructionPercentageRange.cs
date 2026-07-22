@@ -68,8 +68,7 @@ internal readonly record struct EnglishInstructionPercentageRange
             throw new ArgumentNullException(nameof(percentages));
         }
 
-        using (IEnumerator<EnglishInstructionPercentage> enumerator =
-            percentages.GetEnumerator())
+        using (IEnumerator<EnglishInstructionPercentage> enumerator = percentages.GetEnumerator())
         {
             if (enumerator.MoveNext() == false)
             {

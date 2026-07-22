@@ -8,9 +8,7 @@ internal sealed class CatalogIndexDocument
     public string DefaultCatalogId { get; }
     public IReadOnlyList<CatalogIndexEntry> Entries { get; }
 
-    public CatalogIndexDocument(
-        CatalogIndexEntry defaultEntry,
-        IEnumerable<CatalogIndexEntry> entries)
+    public CatalogIndexDocument(CatalogIndexEntry defaultEntry, IEnumerable<CatalogIndexEntry> entries)
     {
         ArgumentNullException.ThrowIfNull(defaultEntry);
         ArgumentNullException.ThrowIfNull(entries);

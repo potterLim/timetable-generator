@@ -63,13 +63,11 @@ public sealed class ScheduleBoardCandidateLayoutTests
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
-            ScrollViewer? scrollViewerOrNull =
-                scheduleBoard.FindControl<ScrollViewer>("ScheduleScrollViewer");
+            ScrollViewer? scrollViewerOrNull = scheduleBoard.FindControl<ScrollViewer>("ScheduleScrollViewer");
             Assert.NotNull(scrollViewerOrNull);
             if (scrollViewerOrNull == null)
             {
-                throw new InvalidOperationException(
-                    "The schedule scroll viewer was not found.");
+                throw new InvalidOperationException("The schedule scroll viewer was not found.");
             }
 
             scrollViewerOrNull.ScrollToEnd();
@@ -82,9 +80,7 @@ public sealed class ScheduleBoardCandidateLayoutTests
             Dispatcher.UIThread.RunJobs();
 
             Assert.Equal(0.0, scrollViewerOrNull.Offset.Y);
-            Assert.Equal(
-                new ScheduleBoardTimeBoundary(690),
-                scheduleBoard.RenderedLayout.TimeAxis.Start);
+            Assert.Equal(new ScheduleBoardTimeBoundary(690), scheduleBoard.RenderedLayout.TimeAxis.Start);
         }
         finally
         {
@@ -123,8 +119,7 @@ public sealed class ScheduleBoardCandidateLayoutTests
             Assert.NotNull(boardGridOrNull);
             if (boardGridOrNull == null)
             {
-                throw new InvalidOperationException(
-                    "The rendered schedule grid was not found.");
+                throw new InvalidOperationException("The rendered schedule grid was not found.");
             }
 
             TextBlock midnightLabel = Assert.Single(
@@ -139,8 +134,7 @@ public sealed class ScheduleBoardCandidateLayoutTests
         }
     }
 
-    private static ScheduleBoardPresentation createPresentation(
-        params ScheduleEntry[] entries)
+    private static ScheduleBoardPresentation createPresentation(params ScheduleEntry[] entries)
     {
         return new ScheduleBoardPresentation(
             new ScheduleRecommendation(entries),
@@ -149,9 +143,7 @@ public sealed class ScheduleBoardCandidateLayoutTests
             AcademicTerm.Parse("2026-2"));
     }
 
-    private static ScheduleEntry createCourseEntry(
-        EDay day,
-        AcademicPeriod period)
+    private static ScheduleEntry createCourseEntry(EDay day, AcademicPeriod period)
     {
         return new CourseScheduleEntry(
             new CourseId("course-candidate-axis"),
@@ -169,10 +161,7 @@ public sealed class ScheduleBoardCandidateLayoutTests
             ECourseAccent.Blue);
     }
 
-    private static ScheduleEntry createEntry(
-        EDay day,
-        ScheduleTime start,
-        ScheduleTime end)
+    private static ScheduleEntry createEntry(EDay day, ScheduleTime start, ScheduleTime end)
     {
         return new TestScheduleEntry(day, new DailyTimeRange(start, end));
     }

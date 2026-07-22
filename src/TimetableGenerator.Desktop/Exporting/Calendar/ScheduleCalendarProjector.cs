@@ -38,14 +38,10 @@ internal static class ScheduleCalendarProjector
             throw new ArgumentNullException(nameof(academicCalendar));
         }
 
-        Dictionary<CalendarEventProjectionGroupKey, CalendarEventProjectionGroup>
-            groupsByKey = new Dictionary<
-                CalendarEventProjectionGroupKey,
-                CalendarEventProjectionGroup>();
+        Dictionary<CalendarEventProjectionGroupKey, CalendarEventProjectionGroup> groupsByKey = new Dictionary<CalendarEventProjectionGroupKey, CalendarEventProjectionGroup>();
         foreach (ScheduleEntry scheduleEntry in displayedSchedule.Entries)
         {
-            CalendarEventSourceIdentity sourceIdentity =
-                createSourceIdentity(scheduleEntry);
+            CalendarEventSourceIdentity sourceIdentity = createSourceIdentity(scheduleEntry);
             CalendarEventProjectionGroupKey key =
                 new CalendarEventProjectionGroupKey(
                     sourceIdentity,
@@ -53,9 +49,7 @@ internal static class ScheduleCalendarProjector
             CalendarEventContent content = createEventContent(scheduleEntry);
 
             CalendarEventProjectionGroup? existingGroupOrNull;
-            bool hasExistingGroup = groupsByKey.TryGetValue(
-                key,
-                out existingGroupOrNull);
+            bool hasExistingGroup = groupsByKey.TryGetValue(key, out existingGroupOrNull);
             CalendarEventProjectionGroup group;
             if (hasExistingGroup && existingGroupOrNull != null)
             {
@@ -70,46 +64,33 @@ internal static class ScheduleCalendarProjector
             group.AddDay(scheduleEntry.Day, content);
         }
 
-        List<CalendarEventProjectionGroup> sortedGroups =
-            new List<CalendarEventProjectionGroup>(groupsByKey.Values);
+        List<CalendarEventProjectionGroup> sortedGroups = new List<CalendarEventProjectionGroup>(groupsByKey.Values);
         sortedGroups.Sort(compareGroups);
 
-        List<RecurringCalendarEvent> events =
-            new List<RecurringCalendarEvent>(sortedGroups.Count);
+        List<RecurringCalendarEvent> events = new List<RecurringCalendarEvent>(sortedGroups.Count);
         foreach (CalendarEventProjectionGroup group in sortedGroups)
         {
             events.Add(group.CreateEvent(planId));
         }
 
-        return new CalendarExportDocument(
-            planId,
-            planName,
-            academicCalendar,
-            events);
+        return new CalendarExportDocument(planId, planName, academicCalendar, events);
     }
 
-    private static CalendarEventSourceIdentity createSourceIdentity(
-        ScheduleEntry entry)
+    private static CalendarEventSourceIdentity createSourceIdentity(ScheduleEntry entry)
     {
         CourseScheduleEntry? courseEntryOrNull = entry as CourseScheduleEntry;
         if (courseEntryOrNull != null)
         {
-            return new CalendarEventSourceIdentity(
-                "course:" + courseEntryOrNull.OfferingId.Value);
+            return new CalendarEventSourceIdentity("course:" + courseEntryOrNull.OfferingId.Value);
         }
 
-        PersonalScheduleEntry? personalEntryOrNull =
-            entry as PersonalScheduleEntry;
+        PersonalScheduleEntry? personalEntryOrNull = entry as PersonalScheduleEntry;
         if (personalEntryOrNull != null)
         {
-            return new CalendarEventSourceIdentity(
-                "personal:" + personalEntryOrNull.ScheduleId);
+            return new CalendarEventSourceIdentity("personal:" + personalEntryOrNull.ScheduleId);
         }
 
-        throw new ArgumentOutOfRangeException(
-            nameof(entry),
-            entry,
-            "Unknown schedule entry type.");
+        throw new ArgumentOutOfRangeException(nameof(entry), entry, "Unknown schedule entry type.");
     }
 
     private static CalendarEventContent createEventContent(ScheduleEntry entry)
@@ -120,26 +101,19 @@ internal static class ScheduleCalendarProjector
             return createCourseEventContent(courseEntryOrNull);
         }
 
-        PersonalScheduleEntry? personalEntryOrNull =
-            entry as PersonalScheduleEntry;
+        PersonalScheduleEntry? personalEntryOrNull = entry as PersonalScheduleEntry;
         if (personalEntryOrNull != null)
         {
             return createPersonalEventContent(personalEntryOrNull);
         }
 
-        throw new ArgumentOutOfRangeException(
-            nameof(entry),
-            entry,
-            "Unknown schedule entry type.");
+        throw new ArgumentOutOfRangeException(nameof(entry), entry, "Unknown schedule entry type.");
     }
 
-    private static CalendarEventContent createCourseEventContent(
-        CourseScheduleEntry entry)
+    private static CalendarEventContent createCourseEventContent(CourseScheduleEntry entry)
     {
         string summary = entry.Name;
-        string location = entry.HasAssignedLocation
-            ? entry.LocationDisplayText
-            : string.Empty;
+        string location = entry.HasAssignedLocation ? entry.LocationDisplayText : string.Empty;
         List<string> descriptionLines = new List<string>
         {
             "과목 코드: " + entry.Code,
@@ -156,8 +130,7 @@ internal static class ScheduleCalendarProjector
             string.Join(DESCRIPTION_LINE_SEPARATOR, descriptionLines));
     }
 
-    private static CalendarEventContent createPersonalEventContent(
-        PersonalScheduleEntry entry)
+    private static CalendarEventContent createPersonalEventContent(PersonalScheduleEntry entry)
     {
         List<string> descriptionLines = new List<string>();
         if (entry.HasSection)
@@ -170,9 +143,7 @@ internal static class ScheduleCalendarProjector
             descriptionLines.Add("담당: " + entry.InstructorDisplayText);
         }
 
-        string location = entry.HasLocation
-            ? entry.LocationDisplayText
-            : string.Empty;
+        string location = entry.HasLocation ? entry.LocationDisplayText : string.Empty;
         return new CalendarEventContent(
             entry.Title,
             location,
@@ -183,8 +154,7 @@ internal static class ScheduleCalendarProjector
         CalendarEventProjectionGroup left,
         CalendarEventProjectionGroup right)
     {
-        int startComparison = left.Key.TimeRange.Start.CompareTo(
-            right.Key.TimeRange.Start);
+        int startComparison = left.Key.TimeRange.Start.CompareTo(right.Key.TimeRange.Start);
         if (startComparison != 0)
         {
             return startComparison;

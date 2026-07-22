@@ -87,31 +87,23 @@ public sealed class AcademicPeriodTimeTableTests
                 new ScheduleTime(endHour, endMinute)));
     }
 
-    private static void assertTimeTable(
-        EDay day,
-        IReadOnlyList<ExpectedPeriodTime> expectedPeriods)
+    private static void assertTimeTable(EDay day, IReadOnlyList<ExpectedPeriodTime> expectedPeriods)
     {
         ScheduleTime? previousEndOrNull = null;
         foreach (ExpectedPeriodTime expectedPeriod in expectedPeriods)
         {
             MeetingSlot slot = new MeetingSlot(day, expectedPeriod.Period);
 
-            DailyTimeRange actualTimeRange =
-                AcademicPeriodTimeTable.GetTimeRange(slot);
-            WeeklyTimeRange actualWeeklyTimeRange =
-                AcademicPeriodTimeTable.GetWeeklyTimeRange(slot);
+            DailyTimeRange actualTimeRange = AcademicPeriodTimeTable.GetTimeRange(slot);
+            WeeklyTimeRange actualWeeklyTimeRange = AcademicPeriodTimeTable.GetWeeklyTimeRange(slot);
 
             Assert.AreEqual(expectedPeriod.TimeRange, actualTimeRange);
             Assert.AreEqual(75, actualTimeRange.DurationMinutes);
             Assert.AreEqual(day, actualWeeklyTimeRange.Day);
-            Assert.AreEqual(
-                expectedPeriod.TimeRange,
-                actualWeeklyTimeRange.TimeRange);
+            Assert.AreEqual(expectedPeriod.TimeRange, actualWeeklyTimeRange.TimeRange);
             if (previousEndOrNull.HasValue)
             {
-                Assert.IsLessThan(
-                    upperBound: actualTimeRange.Start,
-                    value: previousEndOrNull.Value);
+                Assert.IsLessThan(upperBound: actualTimeRange.Start, value: previousEndOrNull.Value);
             }
 
             previousEndOrNull = actualTimeRange.End;

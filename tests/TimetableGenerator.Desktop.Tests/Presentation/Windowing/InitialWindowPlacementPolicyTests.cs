@@ -15,16 +15,12 @@ public sealed class InitialWindowPlacementPolicyTests
     [InlineData(1.25)]
     [InlineData(1.5)]
     [InlineData(2.0)]
-    public void CreatePlacementKeepsWindowInsideFullHdWorkingArea(
-        double scaleValue)
+    public void CreatePlacementKeepsWindowInsideFullHdWorkingArea(double scaleValue)
     {
         PixelRect bounds = new PixelRect(0, 0, 1_920, 1_020);
-        WindowWorkingArea workingArea = new WindowWorkingArea(
-            bounds,
-            new DisplayScale(scaleValue));
+        WindowWorkingArea workingArea = new WindowWorkingArea(bounds, new DisplayScale(scaleValue));
 
-        InitialWindowPlacement placement =
-            InitialWindowPlacementPolicy.CreatePlacement(workingArea);
+        InitialWindowPlacement placement = InitialWindowPlacementPolicy.CreatePlacement(workingArea);
 
         assertPlacementInvariants(placement, workingArea);
     }
@@ -33,18 +29,13 @@ public sealed class InitialWindowPlacementPolicyTests
     public void CreatePlacementReducesEffectiveMinimumOnSmallDisplay()
     {
         PixelRect bounds = new PixelRect(0, 0, 800, 450);
-        WindowWorkingArea workingArea = new WindowWorkingArea(
-            bounds,
-            new DisplayScale(2.0));
+        WindowWorkingArea workingArea = new WindowWorkingArea(bounds, new DisplayScale(2.0));
 
-        InitialWindowPlacement placement =
-            InitialWindowPlacementPolicy.CreatePlacement(workingArea);
+        InitialWindowPlacement placement = InitialWindowPlacementPolicy.CreatePlacement(workingArea);
 
         Assert.True(placement.EffectiveMinimumSize.Width < 900.0);
         Assert.True(placement.EffectiveMinimumSize.Height < 640.0);
-        Assert.Equal(
-            placement.EffectiveMinimumSize,
-            placement.InitialSize);
+        Assert.Equal(placement.EffectiveMinimumSize, placement.InitialSize);
         assertPlacementInvariants(placement, workingArea);
     }
 
@@ -52,12 +43,9 @@ public sealed class InitialWindowPlacementPolicyTests
     public void CreatePlacementCentersWindowInOffsetWorkingArea()
     {
         PixelRect bounds = new PixelRect(-2_560, 120, 2_560, 1_400);
-        WindowWorkingArea workingArea = new WindowWorkingArea(
-            bounds,
-            new DisplayScale(1.5));
+        WindowWorkingArea workingArea = new WindowWorkingArea(bounds, new DisplayScale(1.5));
 
-        InitialWindowPlacement placement =
-            InitialWindowPlacementPolicy.CreatePlacement(workingArea);
+        InitialWindowPlacement placement = InitialWindowPlacementPolicy.CreatePlacement(workingArea);
 
         assertPlacementInvariants(placement, workingArea);
     }
@@ -66,17 +54,11 @@ public sealed class InitialWindowPlacementPolicyTests
         InitialWindowPlacement placement,
         WindowWorkingArea workingArea)
     {
-        Assert.True(
-            placement.InitialSize.Width
-            >= placement.EffectiveMinimumSize.Width);
-        Assert.True(
-            placement.InitialSize.Height
-            >= placement.EffectiveMinimumSize.Height);
+        Assert.True(placement.InitialSize.Width >= placement.EffectiveMinimumSize.Width);
+        Assert.True(placement.InitialSize.Height >= placement.EffectiveMinimumSize.Height);
 
-        int initialPixelWidth = (int)Math.Ceiling(
-            placement.InitialSize.Width * workingArea.Scale.Value);
-        int initialPixelHeight = (int)Math.Ceiling(
-            placement.InitialSize.Height * workingArea.Scale.Value);
+        int initialPixelWidth = (int)Math.Ceiling(placement.InitialSize.Width * workingArea.Scale.Value);
+        int initialPixelHeight = (int)Math.Ceiling(placement.InitialSize.Height * workingArea.Scale.Value);
         int right = placement.Position.X + initialPixelWidth;
         int bottom = placement.Position.Y + initialPixelHeight;
 

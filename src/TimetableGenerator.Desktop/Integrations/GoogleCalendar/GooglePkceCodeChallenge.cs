@@ -10,9 +10,7 @@ internal sealed record GooglePkceCodeChallenge
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException(
-                "Google PKCE code challenges cannot be empty.",
-                nameof(value));
+            throw new ArgumentException("Google PKCE code challenges cannot be empty.", nameof(value));
         }
 
         Value = value;

@@ -32,9 +32,7 @@ internal sealed class GoogleCalendarExportPlan
     {
         if (planId.IsValid == false)
         {
-            throw new ArgumentException(
-                "Google Calendar exports require a valid plan ID.",
-                nameof(planId));
+            throw new ArgumentException("Google Calendar exports require a valid plan ID.", nameof(planId));
         }
 
         if (calendarName == null)
@@ -60,9 +58,7 @@ internal sealed class GoogleCalendarExportPlan
         {
             if (exportEvent == null)
             {
-                throw new ArgumentException(
-                    "Google Calendar exports cannot contain null events.",
-                    nameof(events));
+                throw new ArgumentException("Google Calendar exports cannot contain null events.", nameof(events));
             }
 
             if (sourceIds.Add(exportEvent.SourceId) == false)
@@ -88,8 +84,7 @@ internal sealed class GoogleCalendarExportPlan
             throw new ArgumentNullException(nameof(document));
         }
 
-        List<GoogleCalendarExportEvent> events =
-            new List<GoogleCalendarExportEvent>(document.Events.Count);
+        List<GoogleCalendarExportEvent> events = new List<GoogleCalendarExportEvent>(document.Events.Count);
         foreach (RecurringCalendarEvent calendarEvent in document.Events)
         {
             DateOnly firstOccurrenceDate = findFirstOccurrenceDate(
@@ -115,11 +110,7 @@ internal sealed class GoogleCalendarExportPlan
 
     public GoogleCalendarExportPlan WithCalendarName(PlanName calendarName)
     {
-        return new GoogleCalendarExportPlan(
-            PlanId,
-            calendarName,
-            TimeZoneId,
-            mEvents);
+        return new GoogleCalendarExportPlan(PlanId, calendarName, TimeZoneId, mEvents);
     }
 
     private static DateOnly findFirstOccurrenceDate(

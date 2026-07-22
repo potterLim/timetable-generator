@@ -19,10 +19,8 @@ public sealed class GoogleCalendarExportServiceTests
     [Fact]
     public async Task AvailableRequestedNameCreatesANewCalendarWithoutPromptingAsync()
     {
-        CalendarExportHttpMessageHandler handler =
-            new CalendarExportHttpMessageHandler("{\"items\":[]}");
-        RecordingConflictResolver resolver = new RecordingConflictResolver(
-            ECalendarNameConflictResolution.Cancel);
+        CalendarExportHttpMessageHandler handler = new CalendarExportHttpMessageHandler("{\"items\":[]}");
+        RecordingConflictResolver resolver = new RecordingConflictResolver(ECalendarNameConflictResolution.Cancel);
 
         GoogleCalendarExportResult result = await exportAsync(handler, resolver);
 
@@ -46,10 +44,8 @@ public sealed class GoogleCalendarExportServiceTests
                 "2026-2학기 시간표",
                 false,
                 null));
-        CalendarExportHttpMessageHandler handler =
-            new CalendarExportHttpMessageHandler(listJson, listJson);
-        RecordingConflictResolver resolver = new RecordingConflictResolver(
-            ECalendarNameConflictResolution.CreateWithAvailableName);
+        CalendarExportHttpMessageHandler handler = new CalendarExportHttpMessageHandler(listJson, listJson);
+        RecordingConflictResolver resolver = new RecordingConflictResolver(ECalendarNameConflictResolution.CreateWithAvailableName);
 
         GoogleCalendarExportResult result = await exportAsync(handler, resolver);
 
@@ -57,9 +53,7 @@ public sealed class GoogleCalendarExportServiceTests
         Assert.Equal("2026-2학기 시간표 (2)", result.CalendarNameOrNull?.Value);
         Assert.Equal(1, resolver.CallCount);
         Assert.False(resolver.ConflictOrNull?.CanReplace);
-        Assert.Equal(
-            "2026-2학기 시간표 (2)",
-            resolver.ConflictOrNull?.NextAvailableName.Value);
+        Assert.Equal("2026-2학기 시간표 (2)", resolver.ConflictOrNull?.NextAvailableName.Value);
         Assert.Contains(
             handler.Requests,
             request => request.Method == HttpMethod.Post
@@ -71,8 +65,7 @@ public sealed class GoogleCalendarExportServiceTests
     public async Task ApplicationManagedNonPrimaryCalendarCanBeReplacedAsync()
     {
         GoogleCalendarExportPlan plan = createPlan();
-        string marker = GoogleCalendarApiClient.createPlanMarker(
-            new PlanId(Guid.Parse("5c113dab-0fe8-4c86-a69f-ef657e21314b")));
+        string marker = GoogleCalendarApiClient.createPlanMarker(new PlanId(Guid.Parse("5c113dab-0fe8-4c86-a69f-ef657e21314b")));
         string listJson = createCalendarListJson(
             createCalendarJson(
                 "managed-calendar",
@@ -92,8 +85,7 @@ public sealed class GoogleCalendarExportServiceTests
             {
                 EventListJson = eventListJson,
             };
-        RecordingConflictResolver resolver = new RecordingConflictResolver(
-            ECalendarNameConflictResolution.ReplaceExisting);
+        RecordingConflictResolver resolver = new RecordingConflictResolver(ECalendarNameConflictResolution.ReplaceExisting);
 
         GoogleCalendarExportResult result = await exportAsync(handler, resolver, plan);
 
@@ -139,15 +131,10 @@ public sealed class GoogleCalendarExportServiceTests
                 false,
                 GoogleCalendarApiClient.createPlanMarker(plan.PlanId),
                 accessRoleOrNull));
-        CalendarExportHttpMessageHandler handler =
-            new CalendarExportHttpMessageHandler(listJson);
-        RecordingConflictResolver resolver = new RecordingConflictResolver(
-            ECalendarNameConflictResolution.Cancel);
+        CalendarExportHttpMessageHandler handler = new CalendarExportHttpMessageHandler(listJson);
+        RecordingConflictResolver resolver = new RecordingConflictResolver(ECalendarNameConflictResolution.Cancel);
 
-        GoogleCalendarExportResult result = await exportAsync(
-            handler,
-            resolver,
-            plan);
+        GoogleCalendarExportResult result = await exportAsync(handler, resolver, plan);
 
         Assert.Equal(EGoogleCalendarExportStatus.Cancelled, result.Status);
         Assert.Equal(expectedCanReplace, resolver.ConflictOrNull?.CanReplace);
@@ -175,10 +162,8 @@ public sealed class GoogleCalendarExportServiceTests
                 plan.CalendarName.Value,
                 isPrimary,
                 markerOrNull));
-        CalendarExportHttpMessageHandler handler =
-            new CalendarExportHttpMessageHandler(listJson);
-        RecordingConflictResolver resolver = new RecordingConflictResolver(
-            ECalendarNameConflictResolution.ReplaceExisting);
+        CalendarExportHttpMessageHandler handler = new CalendarExportHttpMessageHandler(listJson);
+        RecordingConflictResolver resolver = new RecordingConflictResolver(ECalendarNameConflictResolution.ReplaceExisting);
 
         GoogleCalendarExportResult result = await exportAsync(handler, resolver, plan);
 
@@ -201,10 +186,8 @@ public sealed class GoogleCalendarExportServiceTests
                 plan.CalendarName.Value,
                 false,
                 GoogleCalendarApiClient.createPlanMarker(plan.PlanId)));
-        CalendarExportHttpMessageHandler handler =
-            new CalendarExportHttpMessageHandler(listJson);
-        RecordingConflictResolver resolver = new RecordingConflictResolver(
-            ECalendarNameConflictResolution.Cancel);
+        CalendarExportHttpMessageHandler handler = new CalendarExportHttpMessageHandler(listJson);
+        RecordingConflictResolver resolver = new RecordingConflictResolver(ECalendarNameConflictResolution.Cancel);
 
         GoogleCalendarExportResult result = await exportAsync(handler, resolver, plan);
 
@@ -232,10 +215,8 @@ public sealed class GoogleCalendarExportServiceTests
                 plan.CalendarName.Value,
                 false,
                 null));
-        CalendarExportHttpMessageHandler handler =
-            new CalendarExportHttpMessageHandler(firstListJson, secondListJson);
-        RecordingConflictResolver resolver = new RecordingConflictResolver(
-            ECalendarNameConflictResolution.ReplaceExisting);
+        CalendarExportHttpMessageHandler handler = new CalendarExportHttpMessageHandler(firstListJson, secondListJson);
+        RecordingConflictResolver resolver = new RecordingConflictResolver(ECalendarNameConflictResolution.ReplaceExisting);
 
         GoogleCalendarExportResult result = await exportAsync(handler, resolver, plan);
 
@@ -264,10 +245,8 @@ public sealed class GoogleCalendarExportServiceTests
                 plan.CalendarName.Value,
                 false,
                 marker));
-        CalendarExportHttpMessageHandler handler =
-            new CalendarExportHttpMessageHandler(firstListJson, secondListJson);
-        RecordingConflictResolver resolver = new RecordingConflictResolver(
-            ECalendarNameConflictResolution.ReplaceExisting);
+        CalendarExportHttpMessageHandler handler = new CalendarExportHttpMessageHandler(firstListJson, secondListJson);
+        RecordingConflictResolver resolver = new RecordingConflictResolver(ECalendarNameConflictResolution.ReplaceExisting);
 
         GoogleCalendarExportResult result = await exportAsync(handler, resolver, plan);
 
@@ -297,10 +276,8 @@ public sealed class GoogleCalendarExportServiceTests
                 "이름이 바뀐 시간표",
                 false,
                 marker));
-        CalendarExportHttpMessageHandler handler =
-            new CalendarExportHttpMessageHandler(firstListJson, secondListJson);
-        RecordingConflictResolver resolver = new RecordingConflictResolver(
-            ECalendarNameConflictResolution.ReplaceExisting);
+        CalendarExportHttpMessageHandler handler = new CalendarExportHttpMessageHandler(firstListJson, secondListJson);
+        RecordingConflictResolver resolver = new RecordingConflictResolver(ECalendarNameConflictResolution.ReplaceExisting);
 
         GoogleCalendarExportResult result = await exportAsync(handler, resolver, plan);
 
@@ -328,10 +305,8 @@ public sealed class GoogleCalendarExportServiceTests
                 plan.CalendarName.Value,
                 false,
                 GoogleCalendarApiClient.createPlanMarker(PlanId.CreateNew())));
-        CalendarExportHttpMessageHandler handler =
-            new CalendarExportHttpMessageHandler(firstListJson, secondListJson);
-        RecordingConflictResolver resolver = new RecordingConflictResolver(
-            ECalendarNameConflictResolution.ReplaceExisting);
+        CalendarExportHttpMessageHandler handler = new CalendarExportHttpMessageHandler(firstListJson, secondListJson);
+        RecordingConflictResolver resolver = new RecordingConflictResolver(ECalendarNameConflictResolution.ReplaceExisting);
 
         GoogleCalendarExportResult result = await exportAsync(handler, resolver, plan);
 
@@ -362,10 +337,8 @@ public sealed class GoogleCalendarExportServiceTests
                 false,
                 marker,
                 "reader"));
-        CalendarExportHttpMessageHandler handler =
-            new CalendarExportHttpMessageHandler(firstListJson, secondListJson);
-        RecordingConflictResolver resolver = new RecordingConflictResolver(
-            ECalendarNameConflictResolution.ReplaceExisting);
+        CalendarExportHttpMessageHandler handler = new CalendarExportHttpMessageHandler(firstListJson, secondListJson);
+        RecordingConflictResolver resolver = new RecordingConflictResolver(ECalendarNameConflictResolution.ReplaceExisting);
 
         GoogleCalendarExportResult result = await exportAsync(handler, resolver, plan);
 
@@ -399,8 +372,7 @@ public sealed class GoogleCalendarExportServiceTests
                 firstListJson,
                 secondListJson,
                 secondListJson);
-        RecordingConflictResolver resolver = new RecordingConflictResolver(
-            ECalendarNameConflictResolution.CreateWithAvailableName);
+        RecordingConflictResolver resolver = new RecordingConflictResolver(ECalendarNameConflictResolution.CreateWithAvailableName);
 
         GoogleCalendarExportResult result = await exportAsync(handler, resolver, plan);
 
@@ -408,12 +380,8 @@ public sealed class GoogleCalendarExportServiceTests
         Assert.Equal("2026-2학기 시간표 (3)", result.CalendarNameOrNull?.Value);
         Assert.Equal(2, resolver.CallCount);
         Assert.Equal(2, resolver.Conflicts.Count);
-        Assert.Equal(
-            "2026-2학기 시간표 (2)",
-            resolver.Conflicts[0].NextAvailableName.Value);
-        Assert.Equal(
-            "2026-2학기 시간표 (3)",
-            resolver.Conflicts[1].NextAvailableName.Value);
+        Assert.Equal("2026-2학기 시간표 (2)", resolver.Conflicts[0].NextAvailableName.Value);
+        Assert.Equal("2026-2학기 시간표 (3)", resolver.Conflicts[1].NextAvailableName.Value);
         Assert.Contains(
             handler.Requests,
             request => request.Method == HttpMethod.Post
@@ -438,8 +406,7 @@ public sealed class GoogleCalendarExportServiceTests
             new CalendarExportHttpMessageHandler(
                 createCalendarListJson(requestedCalendar),
                 createCalendarListJson(occupiedCopy));
-        RecordingConflictResolver resolver = new RecordingConflictResolver(
-            ECalendarNameConflictResolution.CreateWithAvailableName);
+        RecordingConflictResolver resolver = new RecordingConflictResolver(ECalendarNameConflictResolution.CreateWithAvailableName);
 
         GoogleCalendarExportResult result = await exportAsync(handler, resolver, plan);
 
@@ -496,21 +463,9 @@ public sealed class GoogleCalendarExportServiceTests
             plan.CalendarName.Value,
             false,
             null);
-        string copyTwo = createCalendarJson(
-            "copy-two",
-            plan.CalendarName.Value + " (2)",
-            false,
-            null);
-        string copyThree = createCalendarJson(
-            "copy-three",
-            plan.CalendarName.Value + " (3)",
-            false,
-            null);
-        string copyFour = createCalendarJson(
-            "copy-four",
-            plan.CalendarName.Value + " (4)",
-            false,
-            null);
+        string copyTwo = createCalendarJson("copy-two", plan.CalendarName.Value + " (2)", false, null);
+        string copyThree = createCalendarJson("copy-three", plan.CalendarName.Value + " (3)", false, null);
+        string copyFour = createCalendarJson("copy-four", plan.CalendarName.Value + " (4)", false, null);
         CalendarExportHttpMessageHandler handler =
             new CalendarExportHttpMessageHandler(
                 createCalendarListJson(requestedCalendar),
@@ -521,8 +476,7 @@ public sealed class GoogleCalendarExportServiceTests
                     copyTwo,
                     copyThree,
                     copyFour));
-        RecordingConflictResolver resolver = new RecordingConflictResolver(
-            ECalendarNameConflictResolution.CreateWithAvailableName);
+        RecordingConflictResolver resolver = new RecordingConflictResolver(ECalendarNameConflictResolution.CreateWithAvailableName);
 
         GoogleCalendarExportResult result = await exportAsync(handler, resolver, plan);
 
@@ -545,10 +499,8 @@ public sealed class GoogleCalendarExportServiceTests
         GoogleCalendarEventId staleId = GoogleCalendarEventId.Create(
             new PlanId(Guid.NewGuid()),
             new GoogleCalendarSourceEventId("stale"));
-        ReconciliationHttpMessageHandler handler =
-            new ReconciliationHttpMessageHandler(desiredId, staleId);
-        GoogleCalendarApiClient apiClient = new GoogleCalendarApiClient(
-            new HttpClient(handler));
+        ReconciliationHttpMessageHandler handler = new ReconciliationHttpMessageHandler(desiredId, staleId);
+        GoogleCalendarApiClient apiClient = new GoogleCalendarApiClient(new HttpClient(handler));
 
         GoogleCalendarReconciliationResult result = await apiClient.ReconcileEventsAsync(
             new GoogleAccessToken("access-secret"),
@@ -644,18 +596,14 @@ public sealed class GoogleCalendarExportServiceTests
     [Fact]
     public async Task RepeatedCalendarListPageTokenIsRejectedAsync()
     {
-        RepeatingCalendarPageHttpMessageHandler handler =
-            new RepeatingCalendarPageHttpMessageHandler();
-        GoogleCalendarApiClient apiClient = new GoogleCalendarApiClient(
-            new HttpClient(handler));
+        RepeatingCalendarPageHttpMessageHandler handler = new RepeatingCalendarPageHttpMessageHandler();
+        GoogleCalendarApiClient apiClient = new GoogleCalendarApiClient(new HttpClient(handler));
 
         GoogleCalendarApiException exception = await Assert.ThrowsAsync<
             GoogleCalendarApiException>(
             async delegate
             {
-                await apiClient.ListCalendarsAsync(
-                    new GoogleAccessToken("access-secret"),
-                    CancellationToken.None);
+                await apiClient.ListCalendarsAsync(new GoogleAccessToken("access-secret"), CancellationToken.None);
             });
 
         Assert.Equal("calendar_list_invalid_pagination", exception.DiagnosticCode);
@@ -675,9 +623,7 @@ public sealed class GoogleCalendarExportServiceTests
             GoogleCalendarApiException>(
             async delegate
             {
-                await apiClient.ListCalendarsAsync(
-                    new GoogleAccessToken("access-secret"),
-                    CancellationToken.None);
+                await apiClient.ListCalendarsAsync(new GoogleAccessToken("access-secret"), CancellationToken.None);
             });
 
         Assert.Equal("google_calendar_response_too_large", exception.DiagnosticCode);
@@ -686,8 +632,7 @@ public sealed class GoogleCalendarExportServiceTests
     [Fact]
     public async Task DisposeDuringActiveExportCancelsBeforeReleasingOwnedResourcesAsync()
     {
-        BlockingAccessTokenProvider accessTokenProvider =
-            new BlockingAccessTokenProvider();
+        BlockingAccessTokenProvider accessTokenProvider = new BlockingAccessTokenProvider();
         TrackingDisposable ownedResources = new TrackingDisposable();
         GoogleCalendarExportService exporter = new GoogleCalendarExportService(
             accessTokenProvider,
@@ -719,9 +664,7 @@ public sealed class GoogleCalendarExportServiceTests
         Assert.Throws<ArgumentException>(
             delegate
             {
-                GoogleCalendarExportResult.Fail(
-                    EGoogleCalendarExportStatus.None,
-                    "invalid");
+                GoogleCalendarExportResult.Fail(EGoogleCalendarExportStatus.None, "invalid");
             });
         Assert.Throws<ArgumentOutOfRangeException>(
             delegate
@@ -764,10 +707,17 @@ public sealed class GoogleCalendarExportServiceTests
             new FixedAccessTokenProvider(),
             new GoogleCalendarApiClient(new HttpClient(handler))))
         {
-            return await exporter.ExportAsync(
-                planOrNull ?? createPlan(),
-                resolver,
-                CancellationToken.None);
+            GoogleCalendarExportPlan plan;
+            if (planOrNull == null)
+            {
+                plan = createPlan();
+            }
+            else
+            {
+                plan = planOrNull;
+            }
+
+            return await exporter.ExportAsync(plan, resolver, CancellationToken.None);
         }
     }
 
@@ -790,8 +740,7 @@ public sealed class GoogleCalendarExportServiceTests
 
     private static GoogleCalendarExportPlan createPlan()
     {
-        PlanId planId = new PlanId(
-            Guid.Parse("71f3be04-d4c6-41d4-a269-792321e71423"));
+        PlanId planId = new PlanId(Guid.Parse("71f3be04-d4c6-41d4-a269-792321e71423"));
         GoogleCalendarExportEvent exportEvent = new GoogleCalendarExportEvent(
             new GoogleCalendarSourceEventId("course:ITP30003"),
             new CalendarEventContent("컴퓨터 구조(01)", "OH 401", "담당: 이원형"),
@@ -814,9 +763,7 @@ public sealed class GoogleCalendarExportServiceTests
         return "{\"items\":[" + string.Join(',', items) + "]}";
     }
 
-    private static bool hasCalendarSummary(
-        RequestRecord request,
-        string expectedSummary)
+    private static bool hasCalendarSummary(RequestRecord request, string expectedSummary)
     {
         using (JsonDocument document = JsonDocument.Parse(request.Body))
         {
@@ -836,12 +783,7 @@ public sealed class GoogleCalendarExportServiceTests
         bool isPrimary,
         string? descriptionOrNull)
     {
-        return createCalendarJson(
-            id,
-            name,
-            isPrimary,
-            descriptionOrNull,
-            "owner");
+        return createCalendarJson(id, name, isPrimary, descriptionOrNull, "owner");
     }
 
     private static string createCalendarJson(
@@ -864,8 +806,7 @@ public sealed class GoogleCalendarExportServiceTests
 
     private sealed class FixedAccessTokenProvider : IGoogleAccessTokenProvider
     {
-        public Task<GoogleOAuthAuthorizationResult> AuthorizeAsync(
-            CancellationToken cancellationToken)
+        public Task<GoogleOAuthAuthorizationResult> AuthorizeAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(
                 GoogleOAuthAuthorizationResult.Complete(
@@ -877,8 +818,7 @@ public sealed class GoogleCalendarExportServiceTests
     {
         private readonly ECalendarNameConflictResolution mResolution;
 
-        private readonly List<CalendarNameConflict> mConflicts =
-            new List<CalendarNameConflict>();
+        private readonly List<CalendarNameConflict> mConflicts = new List<CalendarNameConflict>();
 
         public int CallCount { get; private set; }
 
@@ -914,18 +854,14 @@ public sealed class GoogleCalendarExportServiceTests
 
         public int CallCount { get; private set; }
 
-        public SequencedConflictResolver(
-            params ECalendarNameConflictResolution[] resolutions)
+        public SequencedConflictResolver(params ECalendarNameConflictResolution[] resolutions)
         {
             if (resolutions == null || resolutions.Length == 0)
             {
-                throw new ArgumentException(
-                    "At least one conflict resolution is required.",
-                    nameof(resolutions));
+                throw new ArgumentException("At least one conflict resolution is required.", nameof(resolutions));
             }
 
-            mResolutions = new Queue<ECalendarNameConflictResolution>(
-                resolutions);
+            mResolutions = new Queue<ECalendarNameConflictResolution>(resolutions);
         }
 
         public Task<ECalendarNameConflictResolution> ResolveAsync(
@@ -940,8 +876,7 @@ public sealed class GoogleCalendarExportServiceTests
             cancellationToken.ThrowIfCancellationRequested();
             if (mResolutions.Count == 0)
             {
-                throw new InvalidOperationException(
-                    "No recorded conflict resolution remains.");
+                throw new InvalidOperationException("No recorded conflict resolution remains.");
             }
 
             CallCount++;
@@ -951,8 +886,7 @@ public sealed class GoogleCalendarExportServiceTests
 
     private sealed class BlockingAccessTokenProvider : IGoogleAccessTokenProvider
     {
-        private readonly TaskCompletionSource mStartedSource =
-            new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource mStartedSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public Task Started
         {
@@ -997,9 +931,7 @@ public sealed class GoogleCalendarExportServiceTests
         private readonly HttpStatusCode mStatusCode;
         private readonly string mBody;
 
-        public FixedResponseHttpMessageHandler(
-            HttpStatusCode statusCode,
-            string body)
+        public FixedResponseHttpMessageHandler(HttpStatusCode statusCode, string body)
         {
             mStatusCode = statusCode;
             mBody = body;
@@ -1078,8 +1010,7 @@ public sealed class GoogleCalendarExportServiceTests
                 return jsonResponse("{\"id\":\"created-calendar\"}");
             }
 
-            if (request.Method == HttpMethod.Get
-                && request.Path.Contains("/events?", StringComparison.Ordinal))
+            if (request.Method == HttpMethod.Get && request.Path.Contains("/events?", StringComparison.Ordinal))
             {
                 return jsonResponse(EventListJson);
             }
@@ -1139,9 +1070,7 @@ public sealed class GoogleCalendarExportServiceTests
             string body = request.Content == null
                 ? string.Empty
                 : await request.Content.ReadAsStringAsync(cancellationToken);
-            string path = request.RequestUri == null
-                ? string.Empty
-                : request.RequestUri.PathAndQuery;
+            string path = request.RequestUri == null ? string.Empty : request.RequestUri.PathAndQuery;
             RequestRecord record = new RequestRecord(request.Method, path, body);
             mRequests.Add(record);
             return createResponse(record);

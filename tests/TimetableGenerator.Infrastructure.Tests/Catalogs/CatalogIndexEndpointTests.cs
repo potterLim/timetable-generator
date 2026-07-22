@@ -11,10 +11,8 @@ public sealed class CatalogIndexEndpointTests
     [TestMethod]
     public void ResolveCatalogUriUsesIndexDirectoryAndPreservesOrigin()
     {
-        CatalogIndexEndpoint endpoint = new CatalogIndexEndpoint(
-            new Uri("https://catalog.example.edu/catalog/v1/index.json"));
-        CatalogRelativePath relativePath = new CatalogRelativePath(
-            CatalogSynchronizationTestDocuments.VALID_RELATIVE_PATH);
+        CatalogIndexEndpoint endpoint = new CatalogIndexEndpoint(new Uri("https://catalog.example.edu/catalog/v1/index.json"));
+        CatalogRelativePath relativePath = new CatalogRelativePath(CatalogSynchronizationTestDocuments.VALID_RELATIVE_PATH);
 
         Uri catalogUri = endpoint.ResolveCatalogUri(relativePath);
 

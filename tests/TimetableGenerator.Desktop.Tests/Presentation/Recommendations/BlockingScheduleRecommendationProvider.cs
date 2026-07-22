@@ -82,7 +82,6 @@ internal sealed class BlockingScheduleRecommendationProvider :
 
     private static TaskCompletionSource<bool> createCompletionSource()
     {
-        return new TaskCompletionSource<bool>(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+        return new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 }

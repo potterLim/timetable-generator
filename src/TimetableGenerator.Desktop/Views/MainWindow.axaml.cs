@@ -43,13 +43,9 @@ internal sealed partial class MainWindow : Window
 
         mProductShellViewModel = productShellViewModel;
         Appearance = appearance;
-        EWindowChromePlatform windowChromePlatform =
-            WindowChromeLayoutPolicy.FindCurrentPlatform();
-        WindowDecorations = WindowChromeLayoutPolicy.FindWindowDecorations(
-            windowChromePlatform);
-        UsesProductCaptionControls =
-            WindowDecorations
-                == Avalonia.Controls.WindowDecorations.None;
+        EWindowChromePlatform windowChromePlatform = WindowChromeLayoutPolicy.FindCurrentPlatform();
+        WindowDecorations = WindowChromeLayoutPolicy.FindWindowDecorations(windowChromePlatform);
+        UsesProductCaptionControls = WindowDecorations == Avalonia.Controls.WindowDecorations.None;
         AvaloniaXamlLoader.Load(this);
         DataContext = mProductShellViewModel;
         initializeProductCaptionControls();
@@ -77,8 +73,7 @@ internal sealed partial class MainWindow : Window
             return;
         }
 
-        PlannerWorkspaceViewModel? workspaceOrNull =
-            mProductShellViewModel.WorkspaceOrNull;
+        PlannerWorkspaceViewModel? workspaceOrNull = mProductShellViewModel.WorkspaceOrNull;
         if (workspaceOrNull == null)
         {
             return;
@@ -124,11 +119,9 @@ internal sealed partial class MainWindow : Window
     {
         try
         {
-            using (CancellationTokenSource timeoutSource =
-                new CancellationTokenSource(TimeSpan.FromSeconds(10.0)))
+            using (CancellationTokenSource timeoutSource = new CancellationTokenSource(TimeSpan.FromSeconds(10.0)))
             {
-                await mProductShellViewModel.CompleteAutosaveAsync(
-                    timeoutSource.Token);
+                await mProductShellViewModel.CompleteAutosaveAsync(timeoutSource.Token);
             }
 
             await Appearance.CompletePersistenceAsync();
@@ -146,17 +139,14 @@ internal sealed partial class MainWindow : Window
         }
     }
 
-    private void onProductShellPropertyChanged(
-        object? senderOrNull,
-        PropertyChangedEventArgs eventArgs)
+    private void onProductShellPropertyChanged(object? senderOrNull, PropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.PropertyName == nameof(ProductShellViewModel.WorkspaceOrNull))
         {
             connectWorkspaceInteraction();
             applyWorkspaceWidth(Bounds.Width);
         }
-        else if (eventArgs.PropertyName
-            == nameof(ProductShellViewModel.IsProductInteractionEnabled))
+        else if (eventArgs.PropertyName == nameof(ProductShellViewModel.IsProductInteractionEnabled))
         {
             updateAppearanceInteraction();
         }
@@ -164,23 +154,19 @@ internal sealed partial class MainWindow : Window
             == nameof(ProductShellViewModel.HasShutdownError)
             && mProductShellViewModel.HasShutdownError)
         {
-            Dispatcher.UIThread.Post(
-                focusContinueEditingButton,
-                DispatcherPriority.Input);
+            Dispatcher.UIThread.Post(focusContinueEditingButton, DispatcherPriority.Input);
         }
     }
 
     private void focusContinueEditingButton()
     {
-        Button? continueEditingButtonOrNull =
-            this.FindControl<Button>("ContinueEditingButton");
+        Button? continueEditingButtonOrNull = this.FindControl<Button>("ContinueEditingButton");
         continueEditingButtonOrNull?.Focus();
     }
 
     private void applyWorkspaceWidth(double width)
     {
-        PlannerWorkspaceViewModel? workspaceOrNull =
-            mProductShellViewModel.WorkspaceOrNull;
+        PlannerWorkspaceViewModel? workspaceOrNull = mProductShellViewModel.WorkspaceOrNull;
         if (workspaceOrNull != null && width > 0.0)
         {
             workspaceOrNull.applyWorkspaceWidth(new WorkspaceWidth(width));
@@ -196,13 +182,11 @@ internal sealed partial class MainWindow : Window
             return;
         }
 
-        DisplayScale displayScale = new DisplayScale(
-            primaryScreenOrNull.Scaling);
+        DisplayScale displayScale = new DisplayScale(primaryScreenOrNull.Scaling);
         WindowWorkingArea workingArea = new WindowWorkingArea(
             primaryScreenOrNull.WorkingArea,
             displayScale);
-        InitialWindowPlacement placement =
-            InitialWindowPlacementPolicy.CreatePlacement(workingArea);
+        InitialWindowPlacement placement = InitialWindowPlacementPolicy.CreatePlacement(workingArea);
 
         MinWidth = placement.EffectiveMinimumSize.Width;
         MinHeight = placement.EffectiveMinimumSize.Height;

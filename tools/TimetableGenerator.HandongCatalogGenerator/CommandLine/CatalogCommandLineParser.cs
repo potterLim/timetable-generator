@@ -16,9 +16,7 @@ internal static class CatalogCommandLineParser
     private const string SOURCE_OPTION = "--source";
     private const string TERM_OPTION = "--term";
 
-    public const string USAGE =
-        "generate --source <path> --term <YYYY-S> --revision <positive-int> " +
-        "--output-root <path>";
+    public const string USAGE = "generate --source <path> --term <YYYY-S> --revision <positive-int> " + "--output-root <path>";
 
     public static CatalogGenerationRequest Parse(IReadOnlyList<string> arguments)
     {
@@ -50,11 +48,9 @@ internal static class CatalogCommandLineParser
         }
     }
 
-    private static Dictionary<string, string> readOptionValues(
-        IReadOnlyList<string> arguments)
+    private static Dictionary<string, string> readOptionValues(IReadOnlyList<string> arguments)
     {
-        Dictionary<string, string> optionValues = new Dictionary<string, string>(
-            StringComparer.Ordinal);
+        Dictionary<string, string> optionValues = new Dictionary<string, string>(StringComparer.Ordinal);
         int argumentIndex = 1;
         while (argumentIndex < arguments.Count)
         {
@@ -88,8 +84,7 @@ internal static class CatalogCommandLineParser
         return optionValues;
     }
 
-    private static void validateRequiredOptions(
-        IReadOnlyDictionary<string, string> optionValues)
+    private static void validateRequiredOptions(IReadOnlyDictionary<string, string> optionValues)
     {
         List<string> missingOptions = new List<string>();
         addMissingOption(optionValues, missingOptions, SOURCE_OPTION);
@@ -197,10 +192,7 @@ internal static class CatalogCommandLineParser
         }
         catch (ArgumentOutOfRangeException exception)
         {
-            throw createInvalidOptionValueException(
-                REVISION_OPTION,
-                exception.Message,
-                exception);
+            throw createInvalidOptionValueException(REVISION_OPTION, exception.Message, exception);
         }
     }
 
@@ -212,10 +204,7 @@ internal static class CatalogCommandLineParser
         }
         catch (Exception exception) when (isPathValidationException(exception))
         {
-            throw createInvalidOptionValueException(
-                OUTPUT_ROOT_OPTION,
-                exception.Message,
-                exception);
+            throw createInvalidOptionValueException(OUTPUT_ROOT_OPTION, exception.Message, exception);
         }
     }
 

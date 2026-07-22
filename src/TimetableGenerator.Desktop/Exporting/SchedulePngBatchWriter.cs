@@ -47,9 +47,7 @@ internal sealed class SchedulePngBatchWriter
                 cancellationToken.ThrowIfCancellationRequested();
                 if (candidateIndex > 0)
                 {
-                    snapshot.update(
-                        exportBatch.Candidates[candidateIndex],
-                        sizingBoard);
+                    snapshot.update(exportBatch.Candidates[candidateIndex], sizingBoard);
                 }
 
                 SchedulePngCandidateNumber candidateNumber =
@@ -60,13 +58,9 @@ internal sealed class SchedulePngBatchWriter
                     SchedulePngFileNameFactory.CreateBatchCandidate(
                         exportBatch.PlanName,
                         candidateNumber);
-                using (Stream destinationStream =
-                    destinationDirectory.createFile(fileName))
+                using (Stream destinationStream = destinationDirectory.createFile(fileName))
                 {
-                    await mPngExporter.ExportControlAsync(
-                        snapshot.Surface,
-                        destinationStream,
-                        cancellationToken);
+                    await mPngExporter.ExportControlAsync(snapshot.Surface, destinationStream, cancellationToken);
                     await destinationStream.FlushAsync(cancellationToken);
                 }
             }

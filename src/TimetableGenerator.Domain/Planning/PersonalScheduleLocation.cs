@@ -8,10 +8,7 @@ public sealed record PersonalScheduleLocation
 
     public PersonalScheduleLocation(string value)
     {
-        Value = PersonalScheduleText.Normalize(
-            value,
-            MAXIMUM_LENGTH,
-            "Personal schedule locations");
+        Value = PersonalScheduleText.Normalize(value, MAXIMUM_LENGTH, "Personal schedule locations");
     }
 
     public override string ToString()

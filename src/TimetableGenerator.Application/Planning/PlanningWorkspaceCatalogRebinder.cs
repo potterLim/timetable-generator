@@ -34,17 +34,14 @@ public static class PlanningWorkspaceCatalogRebinder
             PlanningCatalogTransitionPolicy.EvaluateTransition(
                 currentBinding,
                 newBinding);
-        EPlanningWorkspaceCatalogRebindStatus? transitionFailureOrNull =
-            getTransitionFailureOrNull(transitionStatus);
+        EPlanningWorkspaceCatalogRebindStatus? transitionFailureOrNull = getTransitionFailureOrNull(transitionStatus);
         if (transitionFailureOrNull.HasValue)
         {
-            return PlanningWorkspaceCatalogRebindResult.createFailure(
-                transitionFailureOrNull.Value);
+            return PlanningWorkspaceCatalogRebindResult.createFailure(transitionFailureOrNull.Value);
         }
 
         Dictionary<CourseId, CatalogCourse> coursesById = createCoursesById(newCatalog);
-        Dictionary<OfferingId, CatalogOffering> offeringsById =
-            createOfferingsById(newCatalog);
+        Dictionary<OfferingId, CatalogOffering> offeringsById = createOfferingsById(newCatalog);
         EPlanningWorkspaceCatalogRebindStatus validationStatus = validatePlans(
             workspace,
             coursesById,
@@ -62,9 +59,7 @@ public static class PlanningWorkspaceCatalogRebinder
         return PlanningWorkspaceCatalogRebindResult.createRebound(reboundWorkspace);
     }
 
-    private static void requireBindingMatchesCatalog(
-        CourseCatalog catalog,
-        PlanCatalogBinding binding)
+    private static void requireBindingMatchesCatalog(CourseCatalog catalog, PlanCatalogBinding binding)
     {
         bool hasMatchingCatalogIdentity = binding.CatalogId == catalog.Id
             && binding.InstitutionId == catalog.InstitutionId
@@ -78,8 +73,7 @@ public static class PlanningWorkspaceCatalogRebinder
         }
     }
 
-    private static EPlanningWorkspaceCatalogRebindStatus?
-        getTransitionFailureOrNull(
+    private static EPlanningWorkspaceCatalogRebindStatus? getTransitionFailureOrNull(
             EPlanningCatalogTransitionStatus transitionStatus)
     {
         switch (transitionStatus)
@@ -94,8 +88,7 @@ public static class PlanningWorkspaceCatalogRebinder
             case EPlanningCatalogTransitionStatus.RevisionNotNewer:
                 return EPlanningWorkspaceCatalogRebindStatus.CatalogRevisionNotNewer;
             case EPlanningCatalogTransitionStatus.ArtifactSha256Mismatch:
-                return EPlanningWorkspaceCatalogRebindStatus
-                    .CatalogArtifactSha256Mismatch;
+                return EPlanningWorkspaceCatalogRebindStatus.CatalogArtifactSha256Mismatch;
             default:
                 throw new ArgumentOutOfRangeException(
                     nameof(transitionStatus),
@@ -104,11 +97,9 @@ public static class PlanningWorkspaceCatalogRebinder
         }
     }
 
-    private static Dictionary<CourseId, CatalogCourse> createCoursesById(
-        CourseCatalog catalog)
+    private static Dictionary<CourseId, CatalogCourse> createCoursesById(CourseCatalog catalog)
     {
-        Dictionary<CourseId, CatalogCourse> coursesById =
-            new Dictionary<CourseId, CatalogCourse>();
+        Dictionary<CourseId, CatalogCourse> coursesById = new Dictionary<CourseId, CatalogCourse>();
         foreach (CatalogCourse course in catalog.Courses)
         {
             coursesById.Add(course.Id, course);
@@ -117,11 +108,9 @@ public static class PlanningWorkspaceCatalogRebinder
         return coursesById;
     }
 
-    private static Dictionary<OfferingId, CatalogOffering> createOfferingsById(
-        CourseCatalog catalog)
+    private static Dictionary<OfferingId, CatalogOffering> createOfferingsById(CourseCatalog catalog)
     {
-        Dictionary<OfferingId, CatalogOffering> offeringsById =
-            new Dictionary<OfferingId, CatalogOffering>();
+        Dictionary<OfferingId, CatalogOffering> offeringsById = new Dictionary<OfferingId, CatalogOffering>();
         foreach (CatalogOffering offering in catalog.Offerings)
         {
             offeringsById.Add(offering.Id, offering);
@@ -137,10 +126,7 @@ public static class PlanningWorkspaceCatalogRebinder
     {
         foreach (PlanningPlan plan in workspace.Plans)
         {
-            EPlanningWorkspaceCatalogRebindStatus planStatus = validatePlan(
-                plan,
-                coursesById,
-                offeringsById);
+            EPlanningWorkspaceCatalogRebindStatus planStatus = validatePlan(plan, coursesById, offeringsById);
             if (planStatus != EPlanningWorkspaceCatalogRebindStatus.Rebound)
             {
                 return planStatus;
@@ -202,9 +188,7 @@ public static class PlanningWorkspaceCatalogRebinder
                 in courseCandidate.OfferingCandidates)
             {
                 CatalogOffering? offeringOrNull;
-                bool hasOffering = offeringsById.TryGetValue(
-                    offeringCandidate.OfferingId,
-                    out offeringOrNull);
+                bool hasOffering = offeringsById.TryGetValue(offeringCandidate.OfferingId, out offeringOrNull);
                 if (hasOffering == false || offeringOrNull == null)
                 {
                     return EPlanningWorkspaceCatalogRebindStatus.OfferingNotFound;
@@ -212,8 +196,7 @@ public static class PlanningWorkspaceCatalogRebinder
 
                 if (offeringOrNull.CourseId != courseCandidate.CourseId)
                 {
-                    return EPlanningWorkspaceCatalogRebindStatus
-                        .OfferingCourseMismatch;
+                    return EPlanningWorkspaceCatalogRebindStatus.OfferingCourseMismatch;
                 }
             }
         }
@@ -232,9 +215,7 @@ public static class PlanningWorkspaceCatalogRebinder
         }
 
         CatalogOffering? offeringOrNull;
-        bool hasOffering = offeringsById.TryGetValue(
-            selection.OfferingId,
-            out offeringOrNull);
+        bool hasOffering = offeringsById.TryGetValue(selection.OfferingId, out offeringOrNull);
         if (hasOffering == false || offeringOrNull == null)
         {
             return EPlanningWorkspaceCatalogRebindStatus.OfferingNotFound;
@@ -260,11 +241,7 @@ public static class PlanningWorkspaceCatalogRebinder
         List<PlanningPlan> reboundPlans = new List<PlanningPlan>(workspace.Plans.Count);
         foreach (PlanningPlan plan in workspace.Plans)
         {
-            PlanningPlan reboundPlan = new PlanningPlan(
-                plan.Id,
-                plan.Name,
-                newBinding,
-                plan.Content);
+            PlanningPlan reboundPlan = new PlanningPlan(plan.Id, plan.Name, newBinding, plan.Content);
             reboundPlans.Add(reboundPlan);
         }
 

@@ -71,8 +71,7 @@ internal sealed class PlanCatalogValidationResult
             EPlanCatalogValidationError.None);
     }
 
-    public static PlanCatalogValidationResult CreateInvalid(
-        EPlanCatalogValidationError error)
+    public static PlanCatalogValidationResult CreateInvalid(EPlanCatalogValidationError error)
     {
         if (error == EPlanCatalogValidationError.None)
         {
@@ -88,8 +87,7 @@ internal sealed class PlanCatalogValidationResult
     private static IReadOnlyList<ValidatedCourseChoiceGroup> copyCourseChoiceGroups(
         IEnumerable<ValidatedCourseChoiceGroup> courseChoiceGroups)
     {
-        List<ValidatedCourseChoiceGroup> copiedGroups =
-            new List<ValidatedCourseChoiceGroup>();
+        List<ValidatedCourseChoiceGroup> copiedGroups = new List<ValidatedCourseChoiceGroup>();
         foreach (ValidatedCourseChoiceGroup courseChoiceGroup in courseChoiceGroups)
         {
             copiedGroups.Add(courseChoiceGroup);
@@ -101,8 +99,7 @@ internal sealed class PlanCatalogValidationResult
     private static IReadOnlyList<UnscheduledOfferingSelection> copyUnscheduledSelections(
         IEnumerable<UnscheduledOfferingSelection> unscheduledSelections)
     {
-        List<UnscheduledOfferingSelection> copiedSelections =
-            new List<UnscheduledOfferingSelection>();
+        List<UnscheduledOfferingSelection> copiedSelections = new List<UnscheduledOfferingSelection>();
         foreach (UnscheduledOfferingSelection selection in unscheduledSelections)
         {
             copiedSelections.Add(selection);

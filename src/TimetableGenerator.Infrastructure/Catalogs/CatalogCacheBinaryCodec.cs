@@ -64,8 +64,7 @@ internal sealed class CatalogCacheBinaryCodec
             content.AsSpan(CATALOG_LENGTH_OFFSET, sizeof(int)),
             catalogBytes.Length);
         indexBytes.Span.CopyTo(content.AsSpan(HEADER_LENGTH, indexBytes.Length));
-        catalogBytes.Span.CopyTo(
-            content.AsSpan(HEADER_LENGTH + indexBytes.Length, catalogBytes.Length));
+        catalogBytes.Span.CopyTo(content.AsSpan(HEADER_LENGTH + indexBytes.Length, catalogBytes.Length));
         return content;
     }
 
@@ -101,8 +100,7 @@ internal sealed class CatalogCacheBinaryCodec
             contentSpan.Slice(GENERATION_OFFSET, sizeof(long)));
         if (generationValue <= 0L)
         {
-            throw new CatalogCacheDocumentException(
-                "The catalog cache document has an invalid generation.");
+            throw new CatalogCacheDocumentException("The catalog cache document has an invalid generation.");
         }
 
         int indexLength = BinaryPrimitives.ReadInt32LittleEndian(
@@ -118,17 +116,11 @@ internal sealed class CatalogCacheBinaryCodec
         }
 
         ReadOnlyMemory<byte> indexBytes = content.Slice(HEADER_LENGTH, indexLength);
-        ReadOnlyMemory<byte> catalogBytes = content.Slice(
-            HEADER_LENGTH + indexLength,
-            catalogLength);
+        ReadOnlyMemory<byte> catalogBytes = content.Slice(HEADER_LENGTH + indexLength, catalogLength);
         try
         {
-            VerifiedCatalogPackage package = VerifiedCatalogPackage.ReadAndVerify(
-                indexBytes,
-                catalogBytes);
-            return new CatalogCacheDocument(
-                new CatalogCacheGeneration(generationValue),
-                package);
+            VerifiedCatalogPackage package = VerifiedCatalogPackage.ReadAndVerify(indexBytes, catalogBytes);
+            return new CatalogCacheDocument(new CatalogCacheGeneration(generationValue), package);
         }
         catch (CatalogJsonFormatException exception)
         {
@@ -142,14 +134,12 @@ internal sealed class CatalogCacheBinaryCodec
     {
         if (indexLength <= 0 || indexLength > mLimits.Index.Bytes)
         {
-            throw new CatalogCacheDocumentException(
-                "The cached index exceeds its configured size limit.");
+            throw new CatalogCacheDocumentException("The cached index exceeds its configured size limit.");
         }
 
         if (catalogLength <= 0 || catalogLength > mLimits.Catalog.Bytes)
         {
-            throw new CatalogCacheDocumentException(
-                "The cached catalog exceeds its configured size limit.");
+            throw new CatalogCacheDocumentException("The cached catalog exceeds its configured size limit.");
         }
     }
 }

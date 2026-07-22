@@ -21,8 +21,7 @@ public sealed class GenerationFileStorageTests
             GenerationFileStorage storage = createStorage(testDirectoryPath);
             byte[] content = Encoding.UTF8.GetBytes("durable content");
 
-            using (GenerationFileStorageAccess storageAccess =
-                await storage.AcquireCreatingDirectoryAsync(CancellationToken.None))
+            using (GenerationFileStorageAccess storageAccess = await storage.AcquireCreatingDirectoryAsync(CancellationToken.None))
             {
                 GenerationFile generationFile = await storage.CommitAsync(
                     new FileGeneration(1L),
@@ -49,8 +48,7 @@ public sealed class GenerationFileStorageTests
         try
         {
             GenerationFileStorage storage = createStorage(testDirectoryPath);
-            using (GenerationFileStorageAccess storageAccess =
-                await storage.AcquireCreatingDirectoryAsync(CancellationToken.None))
+            using (GenerationFileStorageAccess storageAccess = await storage.AcquireCreatingDirectoryAsync(CancellationToken.None))
             {
                 FileGeneration generation = new FileGeneration(1L);
                 await storage.CommitAsync(
@@ -102,8 +100,7 @@ public sealed class GenerationFileStorageTests
                 CancellationToken.None);
             GenerationFileStorage storage = createStorage(testDirectoryPath);
 
-            IReadOnlyList<GenerationFile> generationFiles =
-                storage.GetGenerationFiles();
+            IReadOnlyList<GenerationFile> generationFiles = storage.GetGenerationFiles();
 
             Assert.HasCount(2, generationFiles);
             Assert.AreEqual(3L, generationFiles[0].Generation.Value);
@@ -122,8 +119,7 @@ public sealed class GenerationFileStorageTests
         try
         {
             GenerationFileStorage storage = createStorage(testDirectoryPath);
-            using (GenerationFileStorageAccess storageAccess =
-                await storage.AcquireCreatingDirectoryAsync(CancellationToken.None))
+            using (GenerationFileStorageAccess storageAccess = await storage.AcquireCreatingDirectoryAsync(CancellationToken.None))
             {
                 GenerationFile? firstGenerationOrNull = null;
                 for (long generationValue = 1L; generationValue <= 7L; ++generationValue)
@@ -139,19 +135,14 @@ public sealed class GenerationFileStorageTests
                 }
 
                 Assert.IsNotNull(firstGenerationOrNull);
-                GenerationFileRetentionSet retentionSet =
-                    new GenerationFileRetentionSet();
+                GenerationFileRetentionSet retentionSet = new GenerationFileRetentionSet();
                 retentionSet.Retain(firstGenerationOrNull);
 
                 storage.PruneGenerations(retentionSet);
 
-                Assert.IsTrue(File.Exists(
-                    getGenerationPath(testDirectoryPath, new FileGeneration(1L))));
-                Assert.IsFalse(File.Exists(
-                    getGenerationPath(testDirectoryPath, new FileGeneration(2L))));
-                Assert.HasCount(
-                    6,
-                    Directory.GetFiles(testDirectoryPath, "product.g*.data"));
+                Assert.IsTrue(File.Exists(getGenerationPath(testDirectoryPath, new FileGeneration(1L))));
+                Assert.IsFalse(File.Exists(getGenerationPath(testDirectoryPath, new FileGeneration(2L))));
+                Assert.HasCount(6, Directory.GetFiles(testDirectoryPath, "product.g*.data"));
             }
         }
         finally
@@ -168,11 +159,9 @@ public sealed class GenerationFileStorageTests
         {
             GenerationFileStorage firstStorage = createStorage(testDirectoryPath);
             GenerationFileStorage secondStorage = createStorage(testDirectoryPath);
-            using (GenerationFileStorageAccess firstAccess =
-                await firstStorage.AcquireCreatingDirectoryAsync(CancellationToken.None))
+            using (GenerationFileStorageAccess firstAccess = await firstStorage.AcquireCreatingDirectoryAsync(CancellationToken.None))
             {
-                using (CancellationTokenSource cancellationSource =
-                    new CancellationTokenSource())
+                using (CancellationTokenSource cancellationSource = new CancellationTokenSource())
                 {
                     cancellationSource.CancelAfter(100);
                     await Assert.ThrowsAsync<OperationCanceledException>(
@@ -181,9 +170,7 @@ public sealed class GenerationFileStorageTests
                 }
             }
 
-            using (GenerationFileStorageAccess secondAccess =
-                await secondStorage.AcquireExistingDirectoryAsync(
-                    CancellationToken.None))
+            using (GenerationFileStorageAccess secondAccess = await secondStorage.AcquireExistingDirectoryAsync(CancellationToken.None))
             {
                 Assert.IsNotNull(secondAccess);
             }
@@ -197,14 +184,11 @@ public sealed class GenerationFileStorageTests
     private static GenerationFileStorage createStorage(string testDirectoryPath)
     {
         string baseFilePath = Path.Combine(testDirectoryPath, "product.data");
-        GenerationFileStoragePath storagePath = new GenerationFileStoragePath(
-            baseFilePath);
+        GenerationFileStoragePath storagePath = new GenerationFileStoragePath(baseFilePath);
         return new GenerationFileStorage(storagePath);
     }
 
-    private static string getGenerationPath(
-        string testDirectoryPath,
-        FileGeneration generation)
+    private static string getGenerationPath(string testDirectoryPath, FileGeneration generation)
     {
         return Path.Combine(
             testDirectoryPath,

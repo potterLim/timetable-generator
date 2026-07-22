@@ -81,9 +81,7 @@ internal sealed class ScheduleListMetadata
             ResponsiblePersonDisplayText);
     }
 
-    private ScheduleListMetadata(
-        ScheduleListMetadata source,
-        string displayText)
+    private ScheduleListMetadata(ScheduleListMetadata source, string displayText)
     {
         SectionDisplayText = source.SectionDisplayText;
         LocationDisplayText = source.LocationDisplayText;
@@ -147,9 +145,7 @@ internal sealed class ScheduleListMetadata
         return string.Join(" · ", visibleValues);
     }
 
-    private static void addVisibleValue(
-        ICollection<string> values,
-        string candidate)
+    private static void addVisibleValue(ICollection<string> values, string candidate)
     {
         if (string.IsNullOrWhiteSpace(candidate) == false)
         {

@@ -9,8 +9,7 @@ internal sealed class CatalogSourceConfigurationLoader
 {
     private const long MAXIMUM_CONFIGURATION_FILE_BYTES = 16_384L;
 
-    internal const string ENVIRONMENT_VARIABLE_NAME =
-        "TIMETABLE_GENERATOR_CATALOG_INDEX_URI";
+    internal const string ENVIRONMENT_VARIABLE_NAME = "TIMETABLE_GENERATOR_CATALOG_INDEX_URI";
 
     private readonly CatalogSourceConfigurationPath mPath;
 
@@ -44,14 +43,12 @@ internal sealed class CatalogSourceConfigurationLoader
         mEnvironmentValueProvider = environmentValueProvider;
     }
 
-    public async Task<CatalogSourceConfiguration> LoadAsync(
-        CancellationToken cancellationToken)
+    public async Task<CatalogSourceConfiguration> LoadAsync(CancellationToken cancellationToken)
     {
         string? environmentValueOrNull = mEnvironmentValueProvider();
         if (string.IsNullOrWhiteSpace(environmentValueOrNull) == false)
         {
-            return CatalogSourceConfigurationJsonReader.createFromEnvironment(
-                environmentValueOrNull);
+            return CatalogSourceConfigurationJsonReader.createFromEnvironment(environmentValueOrNull);
         }
 
         if (File.Exists(mPath.Value) == false)
@@ -69,9 +66,7 @@ internal sealed class CatalogSourceConfigurationLoader
                     "The catalog source configuration exceeds the product size limit.");
             }
 
-            byte[] content = await File.ReadAllBytesAsync(
-                mPath.Value,
-                cancellationToken).ConfigureAwait(false);
+            byte[] content = await File.ReadAllBytesAsync(mPath.Value, cancellationToken).ConfigureAwait(false);
             return CatalogSourceConfigurationJsonReader.Read(content);
         }
         catch (OperationCanceledException)

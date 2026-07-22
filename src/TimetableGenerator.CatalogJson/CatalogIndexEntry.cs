@@ -42,9 +42,7 @@ public sealed class CatalogIndexEntry
 
         if (revision.IsValid == false)
         {
-            throw new ArgumentException(
-                "Index entries require a valid revision.",
-                nameof(revision));
+            throw new ArgumentException("Index entries require a valid revision.", nameof(revision));
         }
 
         if (file == null)

@@ -4,10 +4,7 @@ namespace TimetableGenerator.Domain.Planning;
 
 internal static class PersonalScheduleText
 {
-    public static string Normalize(
-        string value,
-        int maximumLength,
-        string fieldDescription)
+    public static string Normalize(string value, int maximumLength, string fieldDescription)
     {
         if (value == null)
         {
@@ -17,9 +14,7 @@ internal static class PersonalScheduleText
         string normalizedValue = value.Trim();
         if (normalizedValue.Length == 0)
         {
-            throw new ArgumentException(
-                fieldDescription + " cannot be empty.",
-                nameof(value));
+            throw new ArgumentException(fieldDescription + " cannot be empty.", nameof(value));
         }
 
         if (normalizedValue.Length > maximumLength)
@@ -31,9 +26,7 @@ internal static class PersonalScheduleText
 
         if (normalizedValue.Contains('\r') || normalizedValue.Contains('\n'))
         {
-            throw new ArgumentException(
-                fieldDescription + " cannot contain line breaks.",
-                nameof(value));
+            throw new ArgumentException(fieldDescription + " cannot contain line breaks.", nameof(value));
         }
 
         return normalizedValue;

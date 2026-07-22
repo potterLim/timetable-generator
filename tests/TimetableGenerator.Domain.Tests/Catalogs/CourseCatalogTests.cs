@@ -21,10 +21,7 @@ public sealed class CourseCatalogTests
                 {
                     new MeetingSlot(EDay.Monday, new AcademicPeriod(1)),
                 }));
-        CatalogOffering unscheduledOffering = createOffering(
-            course.Id,
-            "02",
-            MeetingSchedule.NotProvided);
+        CatalogOffering unscheduledOffering = createOffering(course.Id, "02", MeetingSchedule.NotProvided);
 
         CourseCatalog catalog = createCatalog(
             new CatalogCourse[] { course },
@@ -33,19 +30,14 @@ public sealed class CourseCatalogTests
         Assert.HasCount(1, catalog.Courses);
         Assert.HasCount(2, catalog.Offerings);
         Assert.IsTrue(catalog.Offerings[0].MeetingSchedule.IsScheduled);
-        Assert.AreEqual(
-            EMeetingScheduleStatus.NotProvided,
-            catalog.Offerings[1].MeetingSchedule.Status);
+        Assert.AreEqual(EMeetingScheduleStatus.NotProvided, catalog.Offerings[1].MeetingSchedule.Status);
     }
 
     [TestMethod]
     public void CatalogRejectsDuplicateAndOrphanedIdentityReferences()
     {
         CatalogCourse course = createCourse("CSE30001");
-        CatalogOffering offering = createOffering(
-            course.Id,
-            "01",
-            MeetingSchedule.NotProvided);
+        CatalogOffering offering = createOffering(course.Id, "01", MeetingSchedule.NotProvided);
         CatalogOffering orphanedOffering = createOffering(
             new CourseId("handong-global-university:CSE30002"),
             "02",
@@ -69,10 +61,7 @@ public sealed class CourseCatalogTests
     public void CatalogDefensivelyCopiesSourceCollections()
     {
         CatalogCourse course = createCourse("CSE30001");
-        CatalogOffering offering = createOffering(
-            course.Id,
-            "01",
-            MeetingSchedule.NotProvided);
+        CatalogOffering offering = createOffering(course.Id, "01", MeetingSchedule.NotProvided);
         List<CatalogCourse> mutableCourses = new List<CatalogCourse>() { course };
         List<CatalogOffering> mutableOfferings = new List<CatalogOffering>() { offering };
 

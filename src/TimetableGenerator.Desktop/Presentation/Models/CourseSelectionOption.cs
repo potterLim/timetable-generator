@@ -88,15 +88,12 @@ internal sealed class CourseSelectionOption
 
         if (string.IsNullOrWhiteSpace(displayName))
         {
-            throw new ArgumentException(
-                "Course selection option names cannot be empty.",
-                nameof(displayName));
+            throw new ArgumentException("Course selection option names cannot be empty.", nameof(displayName));
         }
 
         Selection = selection;
         ScheduleStatus = scheduleStatus;
-        ExactEnglishInstructionPercentageOrNull =
-            exactEnglishInstructionPercentageOrNull;
+        ExactEnglishInstructionPercentageOrNull = exactEnglishInstructionPercentageOrNull;
         string normalizedDisplayName = displayName.Trim();
         if (exactEnglishInstructionPercentageOrNull.HasValue)
         {
@@ -144,11 +141,7 @@ internal sealed class CourseSelectionOption
                 nameof(selection));
         }
 
-        return new CourseSelectionOption(
-            selection,
-            EMeetingScheduleStatus.Scheduled,
-            displayName,
-            null);
+        return new CourseSelectionOption(selection, EMeetingScheduleStatus.Scheduled, displayName, null);
     }
 
     public bool Represents(PlanningCourseSelection selection)
@@ -158,8 +151,7 @@ internal sealed class CourseSelectionOption
             throw new ArgumentNullException(nameof(selection));
         }
 
-        if (Selection.CourseId != selection.CourseId
-            || Selection.Kind != selection.Kind)
+        if (Selection.CourseId != selection.CourseId || Selection.Kind != selection.Kind)
         {
             return false;
         }
@@ -169,8 +161,7 @@ internal sealed class CourseSelectionOption
             case EPlanningCourseSelectionKind.ScheduledAlternatives:
                 return containsSameScheduledOfferings(selection);
             case EPlanningCourseSelectionKind.TimeNotProvidedOffering:
-                return Selection.GetTimeNotProvidedOfferingId()
-                    == selection.GetTimeNotProvidedOfferingId();
+                return Selection.GetTimeNotProvidedOfferingId() == selection.GetTimeNotProvidedOfferingId();
             default:
                 throw new ArgumentOutOfRangeException(
                     nameof(selection),
@@ -181,10 +172,8 @@ internal sealed class CourseSelectionOption
 
     private bool containsSameScheduledOfferings(PlanningCourseSelection selection)
     {
-        IReadOnlyList<OfferingId> representedOfferingIds =
-            Selection.GetScheduledOfferingIds();
-        IReadOnlyList<OfferingId> candidateOfferingIds =
-            selection.GetScheduledOfferingIds();
+        IReadOnlyList<OfferingId> representedOfferingIds = Selection.GetScheduledOfferingIds();
+        IReadOnlyList<OfferingId> candidateOfferingIds = selection.GetScheduledOfferingIds();
         if (representedOfferingIds.Count != candidateOfferingIds.Count)
         {
             return false;

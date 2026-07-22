@@ -87,16 +87,13 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         mAutosaveQueue = autosaveQueue;
         mRecommendationProvider = recommendationProvider;
         mAllCourses = createCourseItems(catalogProjection);
-        mAlternativeCourseSearchItemsByCourseId =
-            createAlternativeCourseSearchItemsByCourseId(mAllCourses);
+        mAlternativeCourseSearchItemsByCourseId = createAlternativeCourseSearchItemsByCourseId(mAllCourses);
         mRecommendations = Array.Empty<ScheduleRecommendationViewItem>();
         mPersonalSchedulePreview = EMPTY_RECOMMENDATION;
 
         VisibleCourses = new ObservableCollection<CourseSearchItem>();
-        CourseChoiceDraftCourses =
-            new ObservableCollection<CourseChoiceDraftCourseItem>();
-        AlternativeCourseSearchResults =
-            new ObservableCollection<CourseChoiceAlternativeSearchItem>();
+        CourseChoiceDraftCourses = new ObservableCollection<CourseChoiceDraftCourseItem>();
+        AlternativeCourseSearchResults = new ObservableCollection<CourseChoiceAlternativeSearchItem>();
         UnitFilters = createUnitFilters(catalogProjection);
         RequirementFilters = createRequirementFilters(catalogProjection);
         Plans = new ObservableCollection<PlanTabItem>();
@@ -105,8 +102,7 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         mSelectedUnitFilter = UnitFilters[0];
         mSelectedRequirementFilter = RequirementFilters[0];
         rebuildPlanItems();
-        mActivePlanOrNull = findPlanItemOrNull(
-            mSession.Workspace.ActivePlanIdOrNull);
+        mActivePlanOrNull = findPlanItemOrNull(mSession.Workspace.ActivePlanIdOrNull);
         mPlanNameDraft = string.Empty;
         if (mActivePlanOrNull != null)
         {
@@ -138,44 +134,25 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         mAlternativeCourseSearchText = string.Empty;
 
         AddCourseCommand = new ParameterizedCommand<CourseSearchItem>(addCourse);
-        RemoveTimeNotProvidedCourseCommand =
-            new ParameterizedCommand<TimeNotProvidedCourseItem>(
-                removeTimeNotProvidedCourse);
-        BeginEditCourseChoiceGroupCommand =
-            new ParameterizedCommand<PlanCourseChoiceGroupItem>(
-                beginEditCourseChoiceGroup);
-        RemoveCourseChoiceGroupCommand =
-            new ParameterizedCommand<PlanCourseChoiceGroupItem>(
-                removeCourseChoiceGroup);
-        RemoveCourseChoiceDraftCourseCommand =
-            new ParameterizedCommand<CourseChoiceDraftCourseItem>(
-                removeCourseChoiceDraftCourse);
-        AddAlternativeCourseCommand =
-            new ParameterizedCommand<CourseChoiceAlternativeSearchItem>(
-                addAlternativeCourse);
+        RemoveTimeNotProvidedCourseCommand = new ParameterizedCommand<TimeNotProvidedCourseItem>(removeTimeNotProvidedCourse);
+        BeginEditCourseChoiceGroupCommand = new ParameterizedCommand<PlanCourseChoiceGroupItem>(beginEditCourseChoiceGroup);
+        RemoveCourseChoiceGroupCommand = new ParameterizedCommand<PlanCourseChoiceGroupItem>(removeCourseChoiceGroup);
+        RemoveCourseChoiceDraftCourseCommand = new ParameterizedCommand<CourseChoiceDraftCourseItem>(removeCourseChoiceDraftCourse);
+        AddAlternativeCourseCommand = new ParameterizedCommand<CourseChoiceAlternativeSearchItem>(addAlternativeCourse);
         mSaveCourseChoiceCommand = new DelegateCommand(
             saveCourseChoice,
             delegate
             {
                 return CanSaveCourseChoice;
             });
-        CancelCourseChoiceEditCommand = new DelegateCommand(
-            cancelCourseChoiceEdit);
-        BeginAddPersonalScheduleCommand = new DelegateCommand(
-            beginAddPersonalSchedule);
-        BeginEditPersonalScheduleCommand =
-            new ParameterizedCommand<PersonalScheduleId>(
-                beginEditPersonalSchedule);
+        CancelCourseChoiceEditCommand = new DelegateCommand(cancelCourseChoiceEdit);
+        BeginAddPersonalScheduleCommand = new DelegateCommand(beginAddPersonalSchedule);
+        BeginEditPersonalScheduleCommand = new ParameterizedCommand<PersonalScheduleId>(beginEditPersonalSchedule);
         SavePersonalScheduleCommand = new DelegateCommand(savePersonalSchedule);
-        CancelPersonalScheduleEditCommand = new DelegateCommand(
-            cancelPersonalScheduleEdit);
-        BeginDeletePersonalScheduleCommand =
-            new ParameterizedCommand<PersonalScheduleItem>(
-                beginDeletePersonalSchedule);
-        ConfirmDeletePersonalScheduleCommand = new DelegateCommand(
-            confirmDeletePersonalSchedule);
-        CancelDeletePersonalScheduleCommand = new DelegateCommand(
-            cancelDeletePersonalSchedule);
+        CancelPersonalScheduleEditCommand = new DelegateCommand(cancelPersonalScheduleEdit);
+        BeginDeletePersonalScheduleCommand = new ParameterizedCommand<PersonalScheduleItem>(beginDeletePersonalSchedule);
+        ConfirmDeletePersonalScheduleCommand = new DelegateCommand(confirmDeletePersonalSchedule);
+        CancelDeletePersonalScheduleCommand = new DelegateCommand(cancelDeletePersonalSchedule);
         AddPlanCommand = new DelegateCommand(beginCreatePlan);
         mPreviousRecommendationCommand = new DelegateCommand(
             selectPreviousRecommendation,
@@ -189,21 +166,13 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         BeginRenamePlanCommand = new DelegateCommand(beginRenamePlan);
         ConfirmPlanNameCommand = new DelegateCommand(confirmPlanName);
         CancelPlanNameCommand = new DelegateCommand(cancelPlanNameEditing);
-        mBeginDeletePlanCommand = new DelegateCommand(
-            beginDeletePlan,
-            canDeletePlan);
+        mBeginDeletePlanCommand = new DelegateCommand(beginDeletePlan, canDeletePlan);
         ConfirmDeletePlanCommand = new DelegateCommand(confirmDeletePlan);
         CancelDeletePlanCommand = new DelegateCommand(cancelDeletePlan);
-        mBeginClearActivePlanCommand = new DelegateCommand(
-            beginClearActivePlan,
-            canClearActivePlan);
-        ConfirmClearActivePlanCommand = new DelegateCommand(
-            confirmClearActivePlan);
-        CancelClearActivePlanCommand = new DelegateCommand(
-            cancelClearActivePlan);
-        mRetryAutosaveCommand = new DelegateCommand(
-            retryAutosave,
-            canRetryAutosave);
+        mBeginClearActivePlanCommand = new DelegateCommand(beginClearActivePlan, canClearActivePlan);
+        ConfirmClearActivePlanCommand = new DelegateCommand(confirmClearActivePlan);
+        CancelClearActivePlanCommand = new DelegateCommand(cancelClearActivePlan);
+        mRetryAutosaveCommand = new DelegateCommand(retryAutosave, canRetryAutosave);
         mRetryRecommendationCommand = new DelegateCommand(
             requestRecommendationRefresh,
             canRetryRecommendation);

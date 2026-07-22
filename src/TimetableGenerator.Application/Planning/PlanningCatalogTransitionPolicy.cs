@@ -37,8 +37,7 @@ public static class PlanningCatalogTransitionPolicy
         bool isSameCatalogRevision = currentBinding.CatalogId
                 == candidateBinding.CatalogId
             && currentBinding.Revision == candidateBinding.Revision;
-        if (isSameCatalogRevision
-            && currentBinding.ArtifactSha256 != candidateBinding.ArtifactSha256)
+        if (isSameCatalogRevision && currentBinding.ArtifactSha256 != candidateBinding.ArtifactSha256)
         {
             return EPlanningCatalogTransitionStatus.ArtifactSha256Mismatch;
         }

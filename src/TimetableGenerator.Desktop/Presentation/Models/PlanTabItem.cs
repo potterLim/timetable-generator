@@ -216,23 +216,18 @@ internal sealed class PlanTabItem
             },
             canClose);
         CourseChoiceGroups = new ObservableCollection<PlanCourseChoiceGroupItem>();
-        TimeNotProvidedCourses =
-            new ObservableCollection<TimeNotProvidedCourseItem>();
+        TimeNotProvidedCourses = new ObservableCollection<TimeNotProvidedCourseItem>();
         PersonalSchedules = new ObservableCollection<PersonalScheduleItem>();
         foreach (CourseChoiceGroup group in plan.CourseChoiceGroups)
         {
-            CourseChoiceGroups.Add(new PlanCourseChoiceGroupItem(
-                group,
-                catalogProjection));
+            CourseChoiceGroups.Add(new PlanCourseChoiceGroupItem(group, catalogProjection));
         }
 
         foreach (UnscheduledOfferingSelection selection
             in plan.UnscheduledOfferingSelections)
         {
-            CatalogCourseProjection course = catalogProjection.FindCourseById(
-                selection.CourseId);
-            TimeNotProvidedCourses.Add(
-                new TimeNotProvidedCourseItem(course, selection));
+            CatalogCourseProjection course = catalogProjection.FindCourseById(selection.CourseId);
+            TimeNotProvidedCourses.Add(new TimeNotProvidedCourseItem(course, selection));
         }
 
         foreach (PersonalSchedule personalSchedule in plan.PersonalSchedules)

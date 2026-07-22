@@ -8,10 +8,7 @@ public sealed record PersonalScheduleSection
 
     public PersonalScheduleSection(string value)
     {
-        Value = PersonalScheduleText.Normalize(
-            value,
-            MAXIMUM_LENGTH,
-            "Personal schedule sections");
+        Value = PersonalScheduleText.Normalize(value, MAXIMUM_LENGTH, "Personal schedule sections");
     }
 
     public override string ToString()

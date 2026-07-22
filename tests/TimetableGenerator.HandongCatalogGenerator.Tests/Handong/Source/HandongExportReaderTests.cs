@@ -14,8 +14,7 @@ public sealed class HandongExportReaderTests
     [TestMethod]
     public async Task ReadAsync_Cp949HtmlWithExactSixteenColumns_ReadsOfferingAsync()
     {
-        using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(
-            HandongExportTestHtml.Create()))
+        using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(HandongExportTestHtml.Create()))
         {
             HandongExportDocument document = await HandongExportReader.ReadAsync(
                 sourceFile.FilePath,
@@ -43,8 +42,7 @@ public sealed class HandongExportReaderTests
     [TestMethod]
     public async Task ReadAsync_BreakElements_PreserveSemanticCellLinesAsync()
     {
-        using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(
-            HandongExportTestHtml.Create()))
+        using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(HandongExportTestHtml.Create()))
         {
             HandongExportDocument document = await HandongExportReader.ReadAsync(
                 sourceFile.FilePath,
@@ -66,8 +64,7 @@ public sealed class HandongExportReaderTests
     [TestMethod]
     public async Task ReadAsync_PhpWarningOutsideTable_DoesNotBecomeCatalogDataAsync()
     {
-        using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(
-            HandongExportTestHtml.Create()))
+        using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(HandongExportTestHtml.Create()))
         {
             HandongExportDocument document = await HandongExportReader.ReadAsync(
                 sourceFile.FilePath,
@@ -91,14 +88,12 @@ public sealed class HandongExportReaderTests
     [TestMethod]
     public async Task ReadAsync_OfferingLink_ExtractsTermCourseAndSectionAsync()
     {
-        using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(
-            HandongExportTestHtml.Create()))
+        using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(HandongExportTestHtml.Create()))
         {
             HandongExportDocument document = await HandongExportReader.ReadAsync(
                 sourceFile.FilePath,
                 CancellationToken.None);
-            HandongSourceLinkMetadata? metadataOrNull =
-                document.Rows[0].SourceLinkMetadataOrNull;
+            HandongSourceLinkMetadata? metadataOrNull = document.Rows[0].SourceLinkMetadataOrNull;
 
             Assert.IsNotNull(metadataOrNull);
             Assert.AreEqual("2026-2", metadataOrNull.AcademicTerm.Id);
@@ -112,10 +107,8 @@ public sealed class HandongExportReaderTests
     [TestMethod]
     public async Task ReadAsync_ChangedHeader_RejectsSchemaDriftAsync()
     {
-        string sourceHtml = HandongExportTestHtml.CreateWithCourseCodeHeader(
-            "<td>교과목코드</td>");
-        using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(
-            sourceHtml))
+        string sourceHtml = HandongExportTestHtml.CreateWithCourseCodeHeader("<td>교과목코드</td>");
+        using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(sourceHtml))
         {
             HandongSourceFormatException exception =
                 await Assert.ThrowsExactlyAsync<HandongSourceFormatException>(
@@ -131,8 +124,7 @@ public sealed class HandongExportReaderTests
     public async Task ReadAsync_DataRowWithFifteenColumns_RejectsRecordAsync()
     {
         string sourceHtml = HandongExportTestHtml.CreateWithOfferingColumnCount(15);
-        using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(
-            sourceHtml))
+        using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(sourceHtml))
         {
             HandongSourceFormatException exception =
                 await Assert.ThrowsExactlyAsync<HandongSourceFormatException>(
@@ -159,8 +151,7 @@ public sealed class HandongExportReaderTests
             0x1A,
             0xE1,
         };
-        using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(
-            compoundFileHeader))
+        using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(compoundFileHeader))
         {
             await Assert.ThrowsExactlyAsync<HandongSourceFormatException>(
                 () => HandongExportReader.ReadAsync(
@@ -173,8 +164,7 @@ public sealed class HandongExportReaderTests
     public async Task ReadAsync_InvalidCp949ByteSequence_RejectsSourceAsync()
     {
         byte[] invalidCp949Bytes = new byte[] { 0x81 };
-        using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(
-            invalidCp949Bytes))
+        using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(invalidCp949Bytes))
         {
             HandongSourceFormatException exception =
                 await Assert.ThrowsExactlyAsync<HandongSourceFormatException>(

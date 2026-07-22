@@ -101,8 +101,7 @@ internal sealed class TimeNotProvidedCourseItem
                 nameof(selection));
         }
 
-        CatalogOfferingProjection offering =
-            findTimeNotProvidedOffering(course, selection);
+        CatalogOfferingProjection offering = findTimeNotProvidedOffering(course, selection);
         CourseId = course.Course.Id;
         Code = course.Course.Code.Value;
         Name = course.Course.KoreanName.Value;
@@ -123,8 +122,7 @@ internal sealed class TimeNotProvidedCourseItem
         {
             if (offering.Offering.Id == selection.OfferingId)
             {
-                if (offering.Offering.MeetingSchedule.Status
-                    != EMeetingScheduleStatus.NotProvided)
+                if (offering.Offering.MeetingSchedule.Status != EMeetingScheduleStatus.NotProvided)
                 {
                     throw new ArgumentException(
                         "The selected offering must have no provided meeting time.",

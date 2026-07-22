@@ -31,8 +31,7 @@ internal sealed class HandongOfferingNormalizer
         CourseSectionCode sectionCode = new CourseSectionCode(
             HandongCellValueReader.getRequiredSingleLine(row, EHandongColumn.Section));
         validateSourceLinkIdentity(row, courseCode, sectionCode);
-        HandongCourseNameNormalizationResult courseNames =
-            mCourseNameNormalizer.NormalizeCourseName(row);
+        HandongCourseNameNormalizationResult courseNames = mCourseNameNormalizer.NormalizeCourseName(row);
         CourseCredits credits = parseCredits(row);
 
         CatalogCourse course = new CatalogCourse(
@@ -43,24 +42,19 @@ internal sealed class HandongOfferingNormalizer
             row.SourceRecordNumber);
 
         ERequirementType requirementType = parseRequirementType(row);
-        HandongOfferingInformationNormalizationResult offeringInformation =
-            mOfferingInformationNormalizer.NormalizeOfferingInformation(row);
-        GeneralEducationCategoryAssignment generalEducationCategory =
-            normalizeGeneralEducationCategory(row);
+        HandongOfferingInformationNormalizationResult offeringInformation = mOfferingInformationNormalizer.NormalizeOfferingInformation(row);
+        GeneralEducationCategoryAssignment generalEducationCategory = normalizeGeneralEducationCategory(row);
         OfferingClassification classification = new OfferingClassification(
             requirementType,
             offeringInformation.OfferingUnitName,
             offeringInformation.InstructionSession,
             generalEducationCategory);
 
-        HandongScheduleNormalizationResult scheduleResult =
-            mScheduleNormalizer.NormalizeSchedule(row);
+        HandongScheduleNormalizationResult scheduleResult = mScheduleNormalizer.NormalizeSchedule(row);
         LocationAssignment location = normalizeLocation(row);
         OfferingLogistics logistics = new OfferingLogistics(scheduleResult.Schedule, location);
 
-        OfferingCapacity capacity = new OfferingCapacity(
-            parseSeatCapacity(row),
-            normalizeEnrollment(row));
+        OfferingCapacity capacity = new OfferingCapacity(parseSeatCapacity(row), normalizeEnrollment(row));
         OfferingInstruction instruction = new OfferingInstruction(
             offeringInformation.InstructorAssignment,
             parseEnglishInstructionPercentage(row),
@@ -84,9 +78,7 @@ internal sealed class HandongOfferingNormalizer
 
     private static CourseCredits parseCredits(HandongRawOfferingRow row)
     {
-        string sourceValue = HandongCellValueReader.getRequiredSingleLine(
-            row,
-            EHandongColumn.Credits);
+        string sourceValue = HandongCellValueReader.getRequiredSingleLine(row, EHandongColumn.Credits);
         decimal creditValue;
         bool isCreditParsed = decimal.TryParse(
             sourceValue,
@@ -192,9 +184,7 @@ internal sealed class HandongOfferingNormalizer
 
     private static SeatCapacity parseSeatCapacity(HandongRawOfferingRow row)
     {
-        string sourceValue = HandongCellValueReader.getRequiredSingleLine(
-            row,
-            EHandongColumn.Capacity);
+        string sourceValue = HandongCellValueReader.getRequiredSingleLine(row, EHandongColumn.Capacity);
         int capacityValue = parseNonnegativeInteger(
             sourceValue,
             row,
@@ -288,16 +278,13 @@ internal sealed class HandongOfferingNormalizer
     private static GradingPolicy normalizeGradingPolicy(HandongRawOfferingRow row)
     {
         EGradingType gradingType = parseGradingType(row);
-        EPassFailOptionAvailability passFailOptionAvailability =
-            parsePassFailOptionAvailability(row);
+        EPassFailOptionAvailability passFailOptionAvailability = parsePassFailOptionAvailability(row);
         return new GradingPolicy(gradingType, passFailOptionAvailability);
     }
 
     private static EGradingType parseGradingType(HandongRawOfferingRow row)
     {
-        string sourceValue = HandongCellValueReader.getRequiredSingleLine(
-            row,
-            EHandongColumn.GradingType);
+        string sourceValue = HandongCellValueReader.getRequiredSingleLine(row, EHandongColumn.GradingType);
         switch (sourceValue)
         {
             case "A+":
@@ -369,8 +356,7 @@ internal sealed class HandongOfferingNormalizer
         {
             remarksAvailability = ERemarksAvailability.NotProvided;
         }
-        else if (noteLines.Count == 1
-            && string.Equals(noteLines[0], "조회", StringComparison.Ordinal))
+        else if (noteLines.Count == 1 && string.Equals(noteLines[0], "조회", StringComparison.Ordinal))
         {
             remarksAvailability = ERemarksAvailability.LookupAvailable;
         }

@@ -5,8 +5,7 @@ namespace TimetableGenerator.CatalogJson.Tests;
 
 internal static class CatalogJsonTestDocuments
 {
-    public const string VALID_RELATIVE_PATH =
-        "handong-global-university/2026-2/catalog-r0001.json";
+    public const string VALID_RELATIVE_PATH = "handong-global-university/2026-2/catalog-r0001.json";
 
     public static byte[] CreateValidCatalogBytes()
     {
@@ -151,9 +150,7 @@ internal static class CatalogJsonTestDocuments
         return Encoding.UTF8.GetBytes(json);
     }
 
-    public static byte[] CreateValidIndexBytes(
-        CatalogFileSize fileSize,
-        Sha256Digest sha256)
+    public static byte[] CreateValidIndexBytes(CatalogFileSize fileSize, Sha256Digest sha256)
     {
         return CreateIndexBytes(VALID_RELATIVE_PATH, fileSize, sha256);
     }
@@ -204,16 +201,10 @@ internal static class CatalogJsonTestDocuments
         return Encoding.UTF8.GetBytes(json);
     }
 
-    public static byte[] Replace(
-        byte[] sourceBytes,
-        string oldValue,
-        string newValue)
+    public static byte[] Replace(byte[] sourceBytes, string oldValue, string newValue)
     {
         string sourceJson = Encoding.UTF8.GetString(sourceBytes);
-        string replacedJson = sourceJson.Replace(
-            oldValue,
-            newValue,
-            StringComparison.Ordinal);
+        string replacedJson = sourceJson.Replace(oldValue, newValue, StringComparison.Ordinal);
         if (string.Equals(sourceJson, replacedJson, StringComparison.Ordinal))
         {
             throw new InvalidOperationException("The requested JSON test mutation did not match.");

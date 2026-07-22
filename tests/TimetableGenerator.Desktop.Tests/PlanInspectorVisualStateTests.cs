@@ -33,8 +33,7 @@ public sealed class PlanInspectorVisualStateTests
     [AvaloniaFact]
     public void PlanTitleRemainsFullyVisibleAsTheManagementActionAtProductWidths()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace())
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
         {
             workspace.BeginRenamePlanCommand.Execute(null);
             workspace.PlanNameDraft = TERM_PLAN_NAME;
@@ -59,12 +58,8 @@ public sealed class PlanInspectorVisualStateTests
                     window.Show();
                     Dispatcher.UIThread.RunJobs();
 
-                    Button managementButton = findRequiredControl<Button>(
-                        inspector,
-                        "PlanManagementButton");
-                    TextBlock planTitle = findRequiredControl<TextBlock>(
-                        inspector,
-                        "PlanManagementTitle");
+                    Button managementButton = findRequiredControl<Button>(inspector, "PlanManagementButton");
+                    TextBlock planTitle = findRequiredControl<TextBlock>(inspector, "PlanManagementTitle");
                     ContentPresenter managementPresenter = managementButton
                         .GetVisualDescendants()
                         .OfType<ContentPresenter>()
@@ -89,17 +84,9 @@ public sealed class PlanInspectorVisualStateTests
                     Assert.True(
                         naturalTitle.DesiredSize.Height
                         <= planTitle.Bounds.Height + 0.05);
-                    assertControlsShareVerticalCenter(
-                        managementButton,
-                        managementButton,
-                        planTitle);
-                    assertControlsShareVerticalCenter(
-                        managementButton,
-                        managementPresenter,
-                        planTitle);
-                    Assert.Equal(
-                        TextTrimming.CharacterEllipsis,
-                        planTitle.TextTrimming);
+                    assertControlsShareVerticalCenter(managementButton, managementButton, planTitle);
+                    assertControlsShareVerticalCenter(managementButton, managementPresenter, planTitle);
+                    Assert.Equal(TextTrimming.CharacterEllipsis, planTitle.TextTrimming);
                     Assert.True(
                         naturalTitle.DesiredSize.Width
                         <= planTitle.Bounds.Width + 0.05,
@@ -108,23 +95,11 @@ public sealed class PlanInspectorVisualStateTests
                             + naturalTitle.DesiredSize.Width
                             + ", arranged title width: "
                             + planTitle.Bounds.Width + ".");
-                    Assert.Equal(
-                        TERM_PLAN_NAME,
-                        AutomationProperties.GetName(managementButton));
-                    Assert.Equal(
-                        "시간표 관리",
-                        AutomationProperties.GetHelpText(managementButton));
-                    Assert.Equal(
-                        2,
-                        (int)AutomationProperties.GetHeadingLevel(
-                            managementButton));
-                    Assert.Equal(
-                        "시간표 관리",
-                        ToolTip.GetTip(managementButton));
-                    Assert.Empty(
-                        managementButton
-                            .GetVisualDescendants()
-                            .OfType<FluentIcon>());
+                    Assert.Equal(TERM_PLAN_NAME, AutomationProperties.GetName(managementButton));
+                    Assert.Equal("시간표 관리", AutomationProperties.GetHelpText(managementButton));
+                    Assert.Equal(2, (int)AutomationProperties.GetHeadingLevel(managementButton));
+                    Assert.Equal("시간표 관리", ToolTip.GetTip(managementButton));
+                    Assert.Empty(managementButton.GetVisualDescendants().OfType<FluentIcon>());
                 }
                 finally
                 {
@@ -137,8 +112,7 @@ public sealed class PlanInspectorVisualStateTests
     [AvaloniaFact]
     public void EmptyPlanMenuUsesSubduedTextOnlyDisabledTreatmentAcrossThemes()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace())
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
         {
             workspace.ActivePlan = workspace.Plans[1];
             PlanInspectorView inspector = new PlanInspectorView();
@@ -163,9 +137,7 @@ public sealed class PlanInspectorVisualStateTests
                     window.RequestedThemeVariant = themeVariant;
                     Dispatcher.UIThread.RunJobs();
 
-                    assertDisabledClearActionVisuals(
-                        inspector,
-                        themeVariant);
+                    assertDisabledClearActionVisuals(inspector, themeVariant);
                 }
             }
             finally
@@ -178,13 +150,9 @@ public sealed class PlanInspectorVisualStateTests
     [AvaloniaFact]
     public void AlternativeChoiceCardUsesAContinuousFrameAndCountedHeading()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace(
-                CatalogProjectionTestFixture
-                    .CreateDocumentWithScheduledAlternativeCourse()))
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace(CatalogProjectionTestFixture.CreateDocumentWithScheduledAlternativeCourse()))
         {
-            PlanCourseChoiceGroupItem initialGroup = Assert.Single(
-                workspace.ActivePlan.CourseChoiceGroups);
+            PlanCourseChoiceGroupItem initialGroup = Assert.Single(workspace.ActivePlan.CourseChoiceGroups);
             workspace.BeginEditCourseChoiceGroupCommand.Execute(initialGroup);
             workspace.AlternativeCourseSearchText = "세미나";
             workspace.AddAlternativeCourseCommand.Execute(
@@ -220,8 +188,7 @@ public sealed class PlanInspectorVisualStateTests
 
                 Grid groupSurface = Assert.IsType<Grid>(alternativeGroup.Child);
                 Assert.Equal(2, groupSurface.Children.Count);
-                StackPanel groupContent = Assert.IsType<StackPanel>(
-                    groupSurface.Children[0]);
+                StackPanel groupContent = Assert.IsType<StackPanel>(groupSurface.Children[0]);
                 Border frame = Assert.IsType<Border>(groupSurface.Children[1]);
                 Assert.Equal("AlternativeCourseChoiceFrame", frame.Name);
                 Assert.Equal(1, frame.ZIndex);
@@ -242,10 +209,7 @@ public sealed class PlanInspectorVisualStateTests
 
                 Assert.Equal(0.0, groupContentOriginOrNull.Value.X, 3);
                 Assert.Equal(0.0, groupContentOriginOrNull.Value.Y, 3);
-                Assert.Equal(
-                    alternativeGroup.Bounds.Width,
-                    groupContent.Bounds.Width,
-                    3);
+                Assert.Equal(alternativeGroup.Bounds.Width, groupContent.Bounds.Width, 3);
                 Assert.Equal(alternativeGroup.Bounds, frame.Bounds);
 
                 Border[] courseCards = alternativeGroup.GetVisualDescendants()
@@ -270,41 +234,25 @@ public sealed class PlanInspectorVisualStateTests
         PlanInspectorView inspector,
         ThemeVariant themeVariant)
     {
-        Button managementButton = findRequiredControl<Button>(
-            inspector,
-            "PlanManagementButton");
-        Flyout managementFlyout = Assert.IsType<Flyout>(
-            managementButton.Flyout);
+        Button managementButton = findRequiredControl<Button>(inspector, "PlanManagementButton");
+        Flyout managementFlyout = Assert.IsType<Flyout>(managementButton.Flyout);
         managementFlyout.ShowAt(managementButton);
         Dispatcher.UIThread.RunJobs();
 
         try
         {
-            StackPanel managementContent = Assert.IsType<StackPanel>(
-                managementFlyout.Content);
+            StackPanel managementContent = Assert.IsType<StackPanel>(managementFlyout.Content);
             Assert.Equal(148.0, managementContent.MinWidth);
             Assert.InRange(managementContent.Bounds.Width, 148.0, 150.0);
-            Button[] managementActions = managementContent
-                .GetVisualDescendants()
-                .OfType<Button>()
-                .ToArray();
+            Button[] managementActions = managementContent.GetVisualDescendants().OfType<Button>().ToArray();
             Assert.Equal(3, managementActions.Length);
             foreach (Button managementAction in managementActions)
             {
-                Assert.Equal(
-                    PRODUCT_FONT_FAMILY_NAME,
-                    managementAction.FontFamily.Name);
+                Assert.Equal(PRODUCT_FONT_FAMILY_NAME, managementAction.FontFamily.Name);
                 Assert.Equal(14.0, managementAction.FontSize);
                 Assert.Equal(FontWeight.SemiBold, managementAction.FontWeight);
-                Assert.Equal(
-                    HorizontalAlignment.Stretch,
-                    managementAction.HorizontalAlignment);
-                Assert.InRange(
-                    Math.Abs(
-                        managementAction.Bounds.Width
-                        - managementContent.Bounds.Width),
-                    0.0,
-                    0.05);
+                Assert.Equal(HorizontalAlignment.Stretch, managementAction.HorizontalAlignment);
+                Assert.InRange(Math.Abs(managementAction.Bounds.Width - managementContent.Bounds.Width), 0.0, 0.05);
             }
 
             Button clearButton = managementActions.Single(
@@ -313,16 +261,11 @@ public sealed class PlanInspectorVisualStateTests
                 .GetVisualDescendants()
                 .OfType<ContentPresenter>()
                 .Single(candidate => candidate.Name == "PART_ContentPresenter");
-            StackPanel buttonContent = Assert.IsType<StackPanel>(
-                clearButton.Content);
+            StackPanel buttonContent = Assert.IsType<StackPanel>(clearButton.Content);
             Assert.Equal(8.0, buttonContent.Spacing);
-            Control[] contentChildren = buttonContent.Children
-                .OfType<Control>()
-                .ToArray();
-            FluentIcon clearIcon = Assert.IsType<FluentIcon>(
-                contentChildren[0]);
-            TextBlock clearLabel = Assert.IsType<TextBlock>(
-                contentChildren[1]);
+            Control[] contentChildren = buttonContent.Children.OfType<Control>().ToArray();
+            FluentIcon clearIcon = Assert.IsType<FluentIcon>(contentChildren[0]);
+            TextBlock clearLabel = Assert.IsType<TextBlock>(contentChildren[1]);
 
             Assert.False(clearButton.IsEnabled);
             Assert.Equal(1.0, clearButton.Opacity);
@@ -341,14 +284,8 @@ public sealed class PlanInspectorVisualStateTests
             Assert.Equal(18.0, clearIcon.Height);
             Assert.Equal(18.0, clearLabel.Height);
             Assert.Equal(18.0, clearLabel.LineHeight);
-            assertControlsShareVerticalCenter(
-                buttonContent,
-                contentChildren[0],
-                contentChildren[1]);
-            assertControlsShareVerticalCenter(
-                clearButton,
-                clearButton,
-                buttonContent);
+            assertControlsShareVerticalCenter(buttonContent, contentChildren[0], contentChildren[1]);
+            assertControlsShareVerticalCenter(clearButton, clearButton, buttonContent);
         }
         finally
         {
@@ -356,9 +293,7 @@ public sealed class PlanInspectorVisualStateTests
         }
     }
 
-    private static TControl findRequiredControl<TControl>(
-        Control root,
-        string controlName)
+    private static TControl findRequiredControl<TControl>(Control root, string controlName)
         where TControl : Control
     {
         TControl? controlOrNull = root.FindControl<TControl>(controlName);
@@ -377,47 +312,33 @@ public sealed class PlanInspectorVisualStateTests
         Control firstControl,
         Control secondControl)
     {
-        Point? firstOriginOrNull = firstControl.TranslatePoint(
-            new Point(0.0, 0.0),
-            root);
-        Point? secondOriginOrNull = secondControl.TranslatePoint(
-            new Point(0.0, 0.0),
-            root);
+        Point? firstOriginOrNull = firstControl.TranslatePoint(new Point(0.0, 0.0), root);
+        Point? secondOriginOrNull = secondControl.TranslatePoint(new Point(0.0, 0.0), root);
         Assert.NotNull(firstOriginOrNull);
         Assert.NotNull(secondOriginOrNull);
         if (firstOriginOrNull == null || secondOriginOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The plan management action geometry could not be resolved.");
+            throw new InvalidOperationException("The plan management action geometry could not be resolved.");
         }
 
         double firstCenterY = firstOriginOrNull.Value.Y
             + (firstControl.Bounds.Height / 2.0);
         double secondCenterY = secondOriginOrNull.Value.Y
             + (secondControl.Bounds.Height / 2.0);
-        Assert.InRange(
-            Math.Abs(firstCenterY - secondCenterY),
-            0.0,
-            0.05);
+        Assert.InRange(Math.Abs(firstCenterY - secondCenterY), 0.0, 0.05);
     }
 
-    private static Color getRequiredApplicationColor(
-        string resourceKey,
-        ThemeVariant themeVariant)
+    private static Color getRequiredApplicationColor(string resourceKey, ThemeVariant themeVariant)
     {
         Avalonia.Application? applicationOrNull = Avalonia.Application.Current;
         Assert.NotNull(applicationOrNull);
         if (applicationOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The Avalonia test application was not initialized.");
+            throw new InvalidOperationException("The Avalonia test application was not initialized.");
         }
 
         object? resourceOrNull;
-        bool hasResource = applicationOrNull.TryGetResource(
-            resourceKey,
-            themeVariant,
-            out resourceOrNull);
+        bool hasResource = applicationOrNull.TryGetResource(resourceKey, themeVariant, out resourceOrNull);
         Assert.True(hasResource);
 
         return getRequiredSolidColor(resourceOrNull as IBrush);
@@ -429,8 +350,7 @@ public sealed class PlanInspectorVisualStateTests
         Assert.NotNull(solidBrushOrNull);
         if (solidBrushOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The plan management action brush was not a solid color.");
+            throw new InvalidOperationException("The plan management action brush was not a solid color.");
         }
 
         return solidBrushOrNull.Color;

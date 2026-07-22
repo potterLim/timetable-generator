@@ -48,12 +48,8 @@ internal sealed class ProductCatalogUpdateService : IProductCatalogUpdateService
             throw new ArgumentNullException(nameof(workspaceSnapshot));
         }
 
-        PlanCatalogBinding activeBinding = requireWorkspaceBinding(
-            activePackage,
-            workspaceSnapshot);
-        VerifiedCatalogPackage candidatePackage =
-            await mCatalogDownloader.DownloadDefaultCatalogAsync(cancellationToken)
-                .ConfigureAwait(false);
+        PlanCatalogBinding activeBinding = requireWorkspaceBinding(activePackage, workspaceSnapshot);
+        VerifiedCatalogPackage candidatePackage = await mCatalogDownloader.DownloadDefaultCatalogAsync(cancellationToken).ConfigureAwait(false);
         EPlanningCatalogTransitionStatus transitionStatus =
             PlanningCatalogTransitionPolicy.EvaluateTransition(
                 activeBinding,
@@ -65,8 +61,7 @@ internal sealed class ProductCatalogUpdateService : IProductCatalogUpdateService
                 candidatePackage.Entry.Revision);
         }
 
-        if (transitionStatus
-            == EPlanningCatalogTransitionStatus.ArtifactSha256Mismatch)
+        if (transitionStatus == EPlanningCatalogTransitionStatus.ArtifactSha256Mismatch)
         {
             return new ProductCatalogUpdateResult(
                 EProductCatalogUpdateStatus.RevisionArtifactChanged,

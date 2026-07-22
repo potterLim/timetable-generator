@@ -26,15 +26,12 @@ internal static class GoogleHttpResponseBodyReader
         }
 
         long? contentLengthOrNull = content.Headers.ContentLength;
-        if (contentLengthOrNull.HasValue
-            && contentLengthOrNull.Value > maximumByteCount)
+        if (contentLengthOrNull.HasValue && contentLengthOrNull.Value > maximumByteCount)
         {
-            throw new GoogleHttpResponseBodyLimitExceededException(
-                maximumByteCount);
+            throw new GoogleHttpResponseBodyLimitExceededException(maximumByteCount);
         }
 
-        using (Stream source = await content.ReadAsStreamAsync(
-            cancellationToken).ConfigureAwait(false))
+        using (Stream source = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false))
         using (MemoryStream destination = createDestination(
             contentLengthOrNull,
             maximumByteCount))
@@ -52,8 +49,7 @@ internal static class GoogleHttpResponseBodyReader
 
                 if (destination.Length > maximumByteCount - readByteCount)
                 {
-                    throw new GoogleHttpResponseBodyLimitExceededException(
-                        maximumByteCount);
+                    throw new GoogleHttpResponseBodyLimitExceededException(maximumByteCount);
                 }
 
                 await destination.WriteAsync(
@@ -63,9 +59,7 @@ internal static class GoogleHttpResponseBodyReader
         }
     }
 
-    private static MemoryStream createDestination(
-        long? contentLengthOrNull,
-        long maximumByteCount)
+    private static MemoryStream createDestination(long? contentLengthOrNull, long maximumByteCount)
     {
         if (contentLengthOrNull.HasValue == false)
         {

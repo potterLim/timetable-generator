@@ -97,16 +97,13 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
             throw new ArgumentNullException(nameof(conflictResolver));
         }
 
-        CancellationTokenSource linkedCancellationSource = beginOperation(
-            cancellationToken);
+        CancellationTokenSource linkedCancellationSource = beginOperation(cancellationToken);
         bool gateWasAcquired = false;
         try
         {
             await mExportGate.WaitAsync(linkedCancellationSource.Token).ConfigureAwait(false);
             gateWasAcquired = true;
-            GoogleOAuthAuthorizationResult authorizationResult =
-                await mAccessTokenProvider.AuthorizeAsync(
-                    linkedCancellationSource.Token).ConfigureAwait(false);
+            GoogleOAuthAuthorizationResult authorizationResult = await mAccessTokenProvider.AuthorizeAsync(linkedCancellationSource.Token).ConfigureAwait(false);
             if (authorizationResult.Status != EGoogleOAuthAuthorizationStatus.Completed)
             {
                 return mapAuthorizationFailure(authorizationResult);
@@ -121,9 +118,7 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
             }
 
             GoogleAccessToken accessToken = accessTokenOrNull;
-            await using (IGoogleCalendarExportLease exportLease =
-                await mExportLeaseProvider.AcquireAsync(
-                    linkedCancellationSource.Token).ConfigureAwait(false))
+            await using (IGoogleCalendarExportLease exportLease = await mExportLeaseProvider.AcquireAsync(linkedCancellationSource.Token).ConfigureAwait(false))
             {
                 GoogleCalendarDestination? destinationOrNull =
                     await selectDestinationAsync(
@@ -196,9 +191,7 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
             exception is HttpRequestException
             || exception is TimeoutException)
         {
-            Trace.TraceError(
-                "Google Calendar export transport failed: {0}",
-                exception);
+            Trace.TraceError("Google Calendar export transport failed: {0}", exception);
             return GoogleCalendarExportResult.Fail(
                 EGoogleCalendarExportStatus.NetworkFailed,
                 "google_calendar_transport_failed");
@@ -209,9 +202,7 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
             || exception is JsonException
             || exception is InvalidOperationException)
         {
-            Trace.TraceError(
-                "Google Calendar export infrastructure failed: {0}",
-                exception);
+            Trace.TraceError("Google Calendar export infrastructure failed: {0}", exception);
             return GoogleCalendarExportResult.Fail(
                 EGoogleCalendarExportStatus.Failed,
                 "google_calendar_local_state_failed");
@@ -269,9 +260,7 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
             attempt < MAXIMUM_DESTINATION_SELECTION_ATTEMPTS;
             ++attempt)
         {
-            IReadOnlyList<GoogleCalendarDescriptor> matches = findNameMatches(
-                plan.CalendarName,
-                calendars);
+            IReadOnlyList<GoogleCalendarDescriptor> matches = findNameMatches(plan.CalendarName, calendars);
             if (matches.Count == 0)
             {
                 if (attempt > 0)
@@ -283,8 +272,7 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
                 return new GoogleCalendarDestination(plan, null);
             }
 
-            GoogleCalendarDescriptor? replaceableCalendarOrNull =
-                findSoleReplaceableCalendarOrNull(matches);
+            GoogleCalendarDescriptor? replaceableCalendarOrNull = findSoleReplaceableCalendarOrNull(matches);
             ECalendarReplacementAvailability replacementAvailability =
                 replaceableCalendarOrNull == null
                     ? ECalendarReplacementAvailability.Unavailable
@@ -302,9 +290,7 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
                 await conflictResolver.ResolveAsync(
                     conflict,
                     cancellationToken).ConfigureAwait(false);
-            CalendarNameConflictPolicy.EnsureResolutionIsSupported(
-                conflict,
-                resolution);
+            CalendarNameConflictPolicy.EnsureResolutionIsSupported(conflict, resolution);
 
             if (resolution == ECalendarNameConflictResolution.Cancel)
             {
@@ -315,16 +301,13 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
                 await mApiClient.ListCalendarsAsync(
                     accessToken,
                     cancellationToken).ConfigureAwait(false);
-            if (resolution
-                == ECalendarNameConflictResolution.CreateWithAvailableName)
+            if (resolution == ECalendarNameConflictResolution.CreateWithAvailableName)
             {
                 if (CalendarNameConflictPolicy.IsNameInUse(
                         nextAvailableName,
                         getExistingNames(currentCalendars)) == false)
                 {
-                    return new GoogleCalendarDestination(
-                        plan.WithCalendarName(nextAvailableName),
-                        null);
+                    return new GoogleCalendarDestination(plan.WithCalendarName(nextAvailableName), null);
                 }
 
                 calendars = currentCalendars;
@@ -341,24 +324,19 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
                     replaceableCalendarOrNull,
                     plan.CalendarName) == false)
             {
-                throw new InvalidOperationException(
-                    "The selected Google calendar is no longer safe to replace.");
+                throw new InvalidOperationException("The selected Google calendar is no longer safe to replace.");
             }
 
-            return new GoogleCalendarDestination(
-                plan,
-                replaceableCalendarOrNull.CalendarId);
+            return new GoogleCalendarDestination(plan, replaceableCalendarOrNull.CalendarId);
         }
 
-        throw new InvalidOperationException(
-            "The Google calendar destination changed too many times.");
+        throw new InvalidOperationException("The Google calendar destination changed too many times.");
     }
 
     private static GoogleCalendarDescriptor? findSoleReplaceableCalendarOrNull(
         IReadOnlyList<GoogleCalendarDescriptor> matchingCalendars)
     {
-        if (matchingCalendars.Count != 1
-            || matchingCalendars[0].CanReplace == false)
+        if (matchingCalendars.Count != 1 || matchingCalendars[0].CanReplace == false)
         {
             return null;
         }
@@ -386,8 +364,7 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
         GoogleCalendarDescriptor confirmedCalendar,
         PlanName requestedName)
     {
-        PlanName? displayNameOrNull = tryCreatePlanNameOrNull(
-            currentCalendar.DisplayName);
+        PlanName? displayNameOrNull = tryCreatePlanNameOrNull(currentCalendar.DisplayName);
         return currentCalendar.CalendarId == confirmedCalendar.CalendarId
             && currentCalendar.ManagedPlanIdOrNull
                 == confirmedCalendar.ManagedPlanIdOrNull
@@ -402,8 +379,7 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
         PlanName requestedName,
         IReadOnlyList<GoogleCalendarDescriptor> calendars)
     {
-        List<GoogleCalendarDescriptor> matches =
-            new List<GoogleCalendarDescriptor>();
+        List<GoogleCalendarDescriptor> matches = new List<GoogleCalendarDescriptor>();
         foreach (GoogleCalendarDescriptor calendar in calendars)
         {
             PlanName? displayNameOrNull = tryCreatePlanNameOrNull(calendar.DisplayName);
@@ -438,8 +414,7 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
     private static PlanName? tryCreatePlanNameOrNull(string value)
     {
         string normalizedValue = value.Trim().Normalize(NormalizationForm.FormC);
-        if (normalizedValue.Length == 0
-            || normalizedValue.Length > PlanName.MAXIMUM_LENGTH)
+        if (normalizedValue.Length == 0 || normalizedValue.Length > PlanName.MAXIMUM_LENGTH)
         {
             return null;
         }
@@ -471,9 +446,7 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
                 authorizationResult.Status,
                 "Unknown Google Calendar authorization status."),
         };
-        return GoogleCalendarExportResult.Fail(
-            status,
-            authorizationResult.DiagnosticCodeOrNull);
+        return GoogleCalendarExportResult.Fail(status, authorizationResult.DiagnosticCodeOrNull);
     }
 
     private static EGoogleCalendarExportStatus mapApiFailure(HttpStatusCode statusCode)

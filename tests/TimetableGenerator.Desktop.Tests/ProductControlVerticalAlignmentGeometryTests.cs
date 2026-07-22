@@ -38,8 +38,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
 
     private readonly ITestOutputHelper mOutputHelper;
 
-    public ProductControlVerticalAlignmentGeometryTests(
-        ITestOutputHelper outputHelper)
+    public ProductControlVerticalAlignmentGeometryTests(ITestOutputHelper outputHelper)
     {
         mOutputHelper = outputHelper;
     }
@@ -73,10 +72,8 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                         "DarkThemeOption"),
                     "다크"),
             };
-            List<VerticalCenterComparison> centerComparisons =
-                new List<VerticalCenterComparison>();
-            List<ControlHeightComparison> heightComparisons =
-                new List<ControlHeightComparison>();
+            List<VerticalCenterComparison> centerComparisons = new List<VerticalCenterComparison>();
+            List<ControlHeightComparison> heightComparisons = new List<ControlHeightComparison>();
 
             foreach (ThemeVariant themeVariant in getProductThemeVariants())
             {
@@ -99,18 +96,12 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                             stateName,
                             APPEARANCE_OPTION_HEIGHT_DIP,
                             option.Bounds.Height));
-                        centerComparisons.AddRange(
-                            getAppearanceOptionCenterComparisons(
-                                option,
-                                text,
-                                stateName));
+                        centerComparisons.AddRange(getAppearanceOptionCenterComparisons(option, text, stateName));
                     }
                 }
             }
 
-            assertAllGeometryMatches(
-                centerComparisons,
-                heightComparisons);
+            assertAllGeometryMatches(centerComparisons, heightComparisons);
         }
         finally
         {
@@ -121,8 +112,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
     [AvaloniaFact]
     public void PersonalScheduleDayOptionsCenterTextLayoutsAcrossStates()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         ProductWorkspaceHostView host = new ProductWorkspaceHostView();
         host.DataContext = workspace;
         Window window = createWindow(host, 900.0, 760.0);
@@ -138,24 +128,19 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                 .Where(candidate => candidate.Classes.Contains("day-option"))
                 .ToArray();
             Assert.Equal(7, dayInputs.Length);
-            List<VerticalCenterComparison> comparisons =
-                new List<VerticalCenterComparison>();
+            List<VerticalCenterComparison> comparisons = new List<VerticalCenterComparison>();
 
             foreach (ThemeVariant themeVariant in getProductThemeVariants())
             {
                 window.RequestedThemeVariant = themeVariant;
                 foreach (ToggleButton dayInput in dayInputs)
                 {
-                    PersonalScheduleDayOption dayOption =
-                        Assert.IsType<PersonalScheduleDayOption>(
-                            dayInput.DataContext);
+                    PersonalScheduleDayOption dayOption = Assert.IsType<PersonalScheduleDayOption>(dayInput.DataContext);
                     foreach (bool isSelected in new bool[] { false, true })
                     {
                         dayOption.IsSelected = isSelected;
                         Dispatcher.UIThread.RunJobs();
-                        TextBlock text = findRequiredTextBlock(
-                            dayInput,
-                            dayOption.ShortName);
+                        TextBlock text = findRequiredTextBlock(dayInput, dayOption.ShortName);
                         comparisons.Add(compareControlAndTextLayoutCenters(
                             "Personal schedule day '" + dayOption.ShortName
                                 + "' [theme=" + themeVariant.Key
@@ -200,8 +185,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                 .Take(3)
                 .ToArray();
             Assert.Equal(3, preferenceInputs.Length);
-            List<VerticalCenterComparison> comparisons =
-                new List<VerticalCenterComparison>();
+            List<VerticalCenterComparison> comparisons = new List<VerticalCenterComparison>();
 
             foreach (ThemeVariant themeVariant in getProductThemeVariants())
             {
@@ -216,17 +200,12 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                         int selectedOptionIndex = isSelected
                             ? optionIndex
                             : (optionIndex + 1) % preferenceInputs.Length;
-                        preferenceInputs[selectedOptionIndex]
-                            .Command?
-                            .Execute(null);
+                        preferenceInputs[selectedOptionIndex].Command?.Execute(null);
                         Dispatcher.UIThread.RunJobs();
 
                         Assert.Equal(isSelected, preferenceInput.IsChecked);
-                        string preferenceText = Assert.IsType<string>(
-                            preferenceInput.Content);
-                        TextBlock text = findRequiredTextBlock(
-                            preferenceInput,
-                            preferenceText);
+                        string preferenceText = Assert.IsType<string>(preferenceInput.Content);
+                        TextBlock text = findRequiredTextBlock(preferenceInput, preferenceText);
                         comparisons.Add(compareControlAndTextLayoutCenters(
                             "Course preference '" + preferenceText
                                 + "' [theme=" + themeVariant.Key
@@ -274,8 +253,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            List<VerticalCenterComparison> comparisons =
-                new List<VerticalCenterComparison>();
+            List<VerticalCenterComparison> comparisons = new List<VerticalCenterComparison>();
             foreach (ThemeVariant themeVariant in getProductThemeVariants())
             {
                 window.RequestedThemeVariant = themeVariant;
@@ -283,9 +261,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                 foreach (Button button in buttons)
                 {
                     string buttonText = Assert.IsType<string>(button.Content);
-                    TextBlock text = findRequiredTextBlock(
-                        button,
-                        buttonText);
+                    TextBlock text = findRequiredTextBlock(button, buttonText);
                     comparisons.Add(compareControlAndTextLayoutCenters(
                         "Button '" + buttonText + "' [theme="
                             + themeVariant.Key + "]",
@@ -315,8 +291,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            List<VerticalCenterComparison> comparisons =
-                new List<VerticalCenterComparison>();
+            List<VerticalCenterComparison> comparisons = new List<VerticalCenterComparison>();
             foreach (ThemeVariant themeVariant in getProductThemeVariants())
             {
                 window.RequestedThemeVariant = themeVariant;
@@ -341,8 +316,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
     [AvaloniaFact]
     public void CourseBrowserInputsCenterTextLayoutsAcrossThemes()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         ProductWorkspaceHostView host = new ProductWorkspaceHostView();
         host.DataContext = workspace;
         Window window = createWindow(host, 1_200.0, 760.0);
@@ -352,20 +326,15 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            CourseBrowserView courseBrowser = host.GetVisualDescendants()
-                .OfType<CourseBrowserView>()
-                .Single();
-            TextBox searchInput = findRequiredControl<TextBox>(
-                courseBrowser,
-                "CourseSearchBox");
+            CourseBrowserView courseBrowser = host.GetVisualDescendants().OfType<CourseBrowserView>().Single();
+            TextBox searchInput = findRequiredControl<TextBox>(courseBrowser, "CourseSearchBox");
             ComboBox[] selectionInputs = courseBrowser
                 .GetVisualDescendants()
                 .OfType<ComboBox>()
                 .Where(candidate => candidate.IsEffectivelyVisible)
                 .ToArray();
             Assert.Equal(2, selectionInputs.Length);
-            List<VerticalCenterComparison> comparisons =
-                new List<VerticalCenterComparison>();
+            List<VerticalCenterComparison> comparisons = new List<VerticalCenterComparison>();
 
             foreach (ThemeVariant themeVariant in getProductThemeVariants())
             {
@@ -376,9 +345,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                     .GetVisualDescendants()
                     .OfType<TextBlock>()
                     .Single(candidate => candidate.Name == "PART_Placeholder");
-                Assert.Equal(
-                    "과목명, 코드, 교수 검색",
-                    searchPlaceholder.Text);
+                Assert.Equal("과목명, 코드, 교수 검색", searchPlaceholder.Text);
                 comparisons.Add(compareControlAndTextLayoutCenters(
                     "Course search placeholder [theme="
                         + themeVariant.Key + "]",
@@ -428,8 +395,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                 .Where(candidate => candidate.Classes.Contains("time-segment"))
                 .ToArray();
             Assert.Equal(3, segments.Length);
-            List<VerticalCenterComparison> comparisons =
-                new List<VerticalCenterComparison>();
+            List<VerticalCenterComparison> comparisons = new List<VerticalCenterComparison>();
 
             foreach (ThemeVariant themeVariant in getProductThemeVariants())
             {
@@ -462,8 +428,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
     [AvaloniaFact]
     public void PlanTabsCenterTextAndCloseIconsAcrossStates()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         ProductWorkspaceHostView host = new ProductWorkspaceHostView();
         host.DataContext = workspace;
         Window window = createWindow(host, 1_000.0, 760.0);
@@ -476,14 +441,10 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
             TabStrip planTabs = host.GetVisualDescendants()
                 .OfType<TabStrip>()
                 .Single(candidate => candidate.Classes.Contains("plan-tabs"));
-            TabStripItem[] planTabItems = planTabs.GetVisualDescendants()
-                .OfType<TabStripItem>()
-                .ToArray();
+            TabStripItem[] planTabItems = planTabs.GetVisualDescendants().OfType<TabStripItem>().ToArray();
             Assert.Equal(workspace.Plans.Count, planTabItems.Length);
-            List<VerticalCenterComparison> centerComparisons =
-                new List<VerticalCenterComparison>();
-            List<ControlHeightComparison> heightComparisons =
-                new List<ControlHeightComparison>();
+            List<VerticalCenterComparison> centerComparisons = new List<VerticalCenterComparison>();
+            List<ControlHeightComparison> heightComparisons = new List<ControlHeightComparison>();
 
             foreach (ThemeVariant themeVariant in getProductThemeVariants())
             {
@@ -498,19 +459,11 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                     Dispatcher.UIThread.RunJobs();
                     foreach (TabStripItem planTabItem in planTabItems)
                     {
-                        PlanTabItem plan = Assert.IsType<PlanTabItem>(
-                            planTabItem.DataContext);
+                        PlanTabItem plan = Assert.IsType<PlanTabItem>(planTabItem.DataContext);
                         bool isSelected = ReferenceEquals(plan, selectedPlan);
-                        TextBlock text = findRequiredTextBlock(
-                            planTabItem,
-                            plan.DisplayName);
-                        Button closeButton = planTabItem.GetVisualDescendants()
-                            .OfType<Button>()
-                            .Single();
-                        FluentIcon closeIcon = closeButton
-                            .GetVisualDescendants()
-                            .OfType<FluentIcon>()
-                            .Single();
+                        TextBlock text = findRequiredTextBlock(planTabItem, plan.DisplayName);
+                        Button closeButton = planTabItem.GetVisualDescendants().OfType<Button>().Single();
+                        FluentIcon closeIcon = closeButton.GetVisualDescendants().OfType<FluentIcon>().Single();
                         string stateName = " [theme=" + themeVariant.Key
                             + ", selected=" + isSelected + "]";
 
@@ -547,9 +500,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                 }
             }
 
-            assertAllGeometryMatches(
-                centerComparisons,
-                heightComparisons);
+            assertAllGeometryMatches(centerComparisons, heightComparisons);
         }
         finally
         {
@@ -561,8 +512,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
     [AvaloniaFact]
     public void PlanTabContextMenuCentersIconAndTextAcrossThemes()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         ProductWorkspaceHostView host = new ProductWorkspaceHostView();
         host.DataContext = workspace;
         Window window = createWindow(host, 1_000.0, 760.0);
@@ -572,22 +522,16 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            TabStripItem planTabItem = host.GetVisualDescendants()
-                .OfType<TabStripItem>()
-                .First();
+            TabStripItem planTabItem = host.GetVisualDescendants().OfType<TabStripItem>().First();
             StackPanel contextMenuOwner = planTabItem
                 .GetVisualDescendants()
                 .OfType<StackPanel>()
                 .Single(candidate => candidate.ContextMenu != null);
-            ContextMenu contextMenu = Assert.IsType<ContextMenu>(
-                contextMenuOwner.ContextMenu);
+            ContextMenu contextMenu = Assert.IsType<ContextMenu>(contextMenuOwner.ContextMenu);
             Assert.Equal(new Thickness(4.0), contextMenu.Padding);
-            MenuItem[] menuItems = contextMenu.Items
-                .OfType<MenuItem>()
-                .ToArray();
+            MenuItem[] menuItems = contextMenu.Items.OfType<MenuItem>().ToArray();
             Assert.Equal(2, menuItems.Length);
-            List<VerticalCenterComparison> comparisons =
-                new List<VerticalCenterComparison>();
+            List<VerticalCenterComparison> comparisons = new List<VerticalCenterComparison>();
 
             foreach (ThemeVariant themeVariant in getProductThemeVariants())
             {
@@ -596,28 +540,20 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                 Dispatcher.UIThread.RunJobs();
 
                 Assert.InRange(contextMenu.Bounds.Width, 158.0, 170.0);
-                Assert.InRange(
-                    Math.Abs(menuItems[0].Bounds.Width - menuItems[1].Bounds.Width),
-                    0.0,
-                    0.05);
+                Assert.InRange(Math.Abs(menuItems[0].Bounds.Width - menuItems[1].Bounds.Width), 0.0, 0.05);
                 foreach (MenuItem menuItem in menuItems)
                 {
                     Assert.Equal("Pretendard", menuItem.FontFamily.Name);
                     Assert.Equal(BODY_FONT_SIZE_DIP, menuItem.FontSize);
                     Assert.Equal(FontWeight.SemiBold, menuItem.FontWeight);
                     string headerText = Assert.IsType<string>(menuItem.Header);
-                    TextBlock header = findRequiredTextBlock(
-                        menuItem,
-                        headerText);
+                    TextBlock header = findRequiredTextBlock(menuItem, headerText);
                     ContentControl iconPresenter = menuItem
                         .GetVisualDescendants()
                         .OfType<ContentControl>()
                         .Single(
                             candidate => candidate.Name == "PART_IconPresenter");
-                    FluentIcon icon = iconPresenter
-                        .GetVisualDescendants()
-                        .OfType<FluentIcon>()
-                        .Single();
+                    FluentIcon icon = iconPresenter.GetVisualDescendants().OfType<FluentIcon>().Single();
                     string stateName = "Plan tab context menu '"
                         + headerText + "' [theme=" + themeVariant.Key + "]";
 
@@ -683,16 +619,13 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            List<VerticalCenterComparison> comparisons =
-                new List<VerticalCenterComparison>();
+            List<VerticalCenterComparison> comparisons = new List<VerticalCenterComparison>();
             foreach (ThemeVariant themeVariant in getProductThemeVariants())
             {
                 window.RequestedThemeVariant = themeVariant;
                 Dispatcher.UIThread.RunJobs();
-                VerticalCenterMeasurement iconMeasurement =
-                    measureArrangedBounds(iconBox, button);
-                VerticalCenterMeasurement textMeasurement =
-                    measureTextLayout(label, button);
+                VerticalCenterMeasurement iconMeasurement = measureArrangedBounds(iconBox, button);
+                VerticalCenterMeasurement textMeasurement = measureTextLayout(label, button);
                 comparisons.Add(compareCenters(
                     "Button icon versus '시간표 관리' [theme="
                         + themeVariant.Key + "]",
@@ -715,17 +648,12 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
 
     private static PlannerWorkspaceViewModel createCourseChoiceWorkspace()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace(
-                CatalogProjectionTestFixture
-                    .CreateDocumentWithScheduledAlternativeCourse());
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace(CatalogProjectionTestFixture.CreateDocumentWithScheduledAlternativeCourse());
         workspace.ActivePlan = workspace.Plans[1];
         return workspace;
     }
 
-    private static Button createTextButton(
-        string content,
-        double height)
+    private static Button createTextButton(string content, double height)
     {
         Button button = new Button();
         button.Height = height;
@@ -733,18 +661,14 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
         return button;
     }
 
-    private static Button createTextButton(
-        string content,
-        double height,
-        string className)
+    private static Button createTextButton(string content, double height, string className)
     {
         Button button = createTextButton(content, height);
         button.Classes.Add(className);
         return button;
     }
 
-    private static IReadOnlyList<VerticalCenterComparison>
-        getAppearanceOptionCenterComparisons(
+    private static IReadOnlyList<VerticalCenterComparison> getAppearanceOptionCenterComparisons(
         RadioButton option,
         string expectedText,
         string stateName)
@@ -752,12 +676,9 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
         Visual indicator = option.GetVisualDescendants()
             .Single(candidate => candidate.Name == "OuterEllipse");
         TextBlock text = findRequiredTextBlock(option, expectedText);
-        VerticalCenterMeasurement optionMeasurement =
-            measureArrangedBounds(option, option);
-        VerticalCenterMeasurement indicatorMeasurement =
-            measureArrangedBounds(indicator, option);
-        VerticalCenterMeasurement textMeasurement =
-            measureTextLayout(text, option);
+        VerticalCenterMeasurement optionMeasurement = measureArrangedBounds(option, option);
+        VerticalCenterMeasurement indicatorMeasurement = measureArrangedBounds(indicator, option);
+        VerticalCenterMeasurement textMeasurement = measureTextLayout(text, option);
         return new VerticalCenterComparison[]
         {
             compareCenters(
@@ -791,18 +712,12 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
         VerticalCenterMeasurement referenceMeasurement,
         VerticalCenterMeasurement comparedMeasurement)
     {
-        return new VerticalCenterComparison(
-            measurementName,
-            referenceMeasurement,
-            comparedMeasurement);
+        return new VerticalCenterComparison(measurementName, referenceMeasurement, comparedMeasurement);
     }
 
-    private void assertAllLayoutCentersMatch(
-        IReadOnlyList<VerticalCenterComparison> comparisons)
+    private void assertAllLayoutCentersMatch(IReadOnlyList<VerticalCenterComparison> comparisons)
     {
-        string comparisonReport = string.Join(
-            Environment.NewLine,
-            comparisons.Select(formatComparison));
+        string comparisonReport = string.Join(Environment.NewLine, comparisons.Select(formatComparison));
         mOutputHelper.WriteLine(comparisonReport);
         Assert.True(
             comparisons.All(comparison => comparison.IsWithinTolerance),
@@ -813,9 +728,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
         IReadOnlyList<VerticalCenterComparison> centerComparisons,
         IReadOnlyList<ControlHeightComparison> heightComparisons)
     {
-        string centerReport = string.Join(
-            Environment.NewLine,
-            centerComparisons.Select(formatComparison));
+        string centerReport = string.Join(Environment.NewLine, centerComparisons.Select(formatComparison));
         string heightReport = string.Join(
             Environment.NewLine,
             heightComparisons.Select(formatHeightComparison));
@@ -831,8 +744,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
             geometryReport);
     }
 
-    private static string formatComparison(
-        VerticalCenterComparison comparison)
+    private static string formatComparison(VerticalCenterComparison comparison)
     {
         return string.Create(
             CultureInfo.InvariantCulture,
@@ -850,8 +762,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
             + $"ink center={comparison.Compared.InkCenterY:F3}.");
     }
 
-    private static string formatHeightComparison(
-        ControlHeightComparison comparison)
+    private static string formatHeightComparison(ControlHeightComparison comparison)
     {
         return string.Create(
             CultureInfo.InvariantCulture,
@@ -863,9 +774,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
             + $"actual={comparison.ActualHeight:F3}.");
     }
 
-    private static VerticalCenterMeasurement measureArrangedBounds(
-        Visual visual,
-        Visual relativeTo)
+    private static VerticalCenterMeasurement measureArrangedBounds(Visual visual, Visual relativeTo)
     {
         Point origin = findRequiredOrigin(visual, relativeTo);
         return new VerticalCenterMeasurement(
@@ -884,18 +793,14 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
         return measureTextLayout(text.TextLayout, origin.Y + text.Padding.Top);
     }
 
-    private static VerticalCenterMeasurement measureTextLayout(
-        TextPresenter text,
-        Visual relativeTo)
+    private static VerticalCenterMeasurement measureTextLayout(TextPresenter text, Visual relativeTo)
     {
         Assert.Equal(BODY_FONT_SIZE_DIP, text.FontSize);
         Point origin = findRequiredOrigin(text, relativeTo);
         return measureTextLayout(text.TextLayout, origin.Y);
     }
 
-    private static VerticalCenterMeasurement measureTextLayout(
-        TextLayout textLayout,
-        double layoutTop)
+    private static VerticalCenterMeasurement measureTextLayout(TextLayout textLayout, double layoutTop)
     {
         double inkBottom = layoutTop
             + textLayout.Height
@@ -903,30 +808,22 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
         double inkTop = inkBottom - textLayout.Extent;
         double inkCenterY = inkTop + (textLayout.Extent / 2.0);
 
-        return new VerticalCenterMeasurement(
-            layoutTop,
-            textLayout.Height,
-            inkCenterY);
+        return new VerticalCenterMeasurement(layoutTop, textLayout.Height, inkCenterY);
     }
 
     private static Point findRequiredOrigin(Visual visual, Visual relativeTo)
     {
-        Point? originOrNull = visual.TranslatePoint(
-            new Point(0.0, 0.0),
-            relativeTo);
+        Point? originOrNull = visual.TranslatePoint(new Point(0.0, 0.0), relativeTo);
         Assert.NotNull(originOrNull);
         if (originOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The control was not attached to the requested visual root.");
+            throw new InvalidOperationException("The control was not attached to the requested visual root.");
         }
 
         return originOrNull.Value;
     }
 
-    private static TextBlock findRequiredTextBlock(
-        Control root,
-        string expectedText)
+    private static TextBlock findRequiredTextBlock(Control root, string expectedText)
     {
         TextBlock? textOrNull = root.GetVisualDescendants()
             .OfType<TextBlock>()
@@ -942,17 +839,14 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
         return textOrNull;
     }
 
-    private static TControl findRequiredControl<TControl>(
-        Control root,
-        string controlName)
+    private static TControl findRequiredControl<TControl>(Control root, string controlName)
         where TControl : Control
     {
         TControl? controlOrNull = root.FindControl<TControl>(controlName);
         Assert.NotNull(controlOrNull);
         if (controlOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The control could not be resolved: " + controlName);
+            throw new InvalidOperationException("The control could not be resolved: " + controlName);
         }
 
         return controlOrNull;
@@ -967,10 +861,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
         };
     }
 
-    private static Window createWindow(
-        Control content,
-        double width,
-        double height)
+    private static Window createWindow(Control content, double width, double height)
     {
         Window window = new Window();
         window.Width = width;

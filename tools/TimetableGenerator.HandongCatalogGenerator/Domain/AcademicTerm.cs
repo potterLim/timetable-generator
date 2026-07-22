@@ -54,9 +54,7 @@ internal readonly record struct AcademicTerm
             throw new FormatException("The academic term must contain numeric year and semester values.");
         }
 
-        return new AcademicTerm(
-            new AcademicYear(academicYearValue),
-            new AcademicSemester(semesterValue));
+        return new AcademicTerm(new AcademicYear(academicYearValue), new AcademicSemester(semesterValue));
     }
 
     public override string ToString()

@@ -34,9 +34,7 @@ public sealed record PlanCatalogBinding
 
         if (term.IsValid == false)
         {
-            throw new ArgumentException(
-                "Plan catalog bindings require a valid academic term.",
-                nameof(term));
+            throw new ArgumentException("Plan catalog bindings require a valid academic term.", nameof(term));
         }
 
         if (revision.IsValid == false)

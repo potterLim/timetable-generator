@@ -11,26 +11,12 @@ public sealed class ScheduleConflictDetectorTests
     [TestMethod]
     public void ConflictDetectionIsSymmetricAndDeterministic()
     {
-        ScheduledOffering firstOffering = createScheduledOffering(
-            "CSE30001",
-            "01",
-            EDay.Monday,
-            1);
-        ScheduledOffering secondOffering = createScheduledOffering(
-            "CSE30002",
-            "01",
-            EDay.Monday,
-            1);
+        ScheduledOffering firstOffering = createScheduledOffering("CSE30001", "01", EDay.Monday, 1);
+        ScheduledOffering secondOffering = createScheduledOffering("CSE30002", "01", EDay.Monday, 1);
 
-        bool firstResult = ScheduleConflictDetector.HasConflict(
-            firstOffering,
-            secondOffering);
-        bool reversedResult = ScheduleConflictDetector.HasConflict(
-            secondOffering,
-            firstOffering);
-        bool repeatedResult = ScheduleConflictDetector.HasConflict(
-            firstOffering,
-            secondOffering);
+        bool firstResult = ScheduleConflictDetector.HasConflict(firstOffering, secondOffering);
+        bool reversedResult = ScheduleConflictDetector.HasConflict(secondOffering, firstOffering);
+        bool repeatedResult = ScheduleConflictDetector.HasConflict(firstOffering, secondOffering);
 
         Assert.IsTrue(firstResult);
         Assert.AreEqual(firstResult, reversedResult);
@@ -40,16 +26,8 @@ public sealed class ScheduleConflictDetectorTests
     [TestMethod]
     public void DifferentMeetingSlotsDoNotConflict()
     {
-        ScheduledOffering firstOffering = createScheduledOffering(
-            "CSE30001",
-            "01",
-            EDay.Monday,
-            1);
-        ScheduledOffering secondOffering = createScheduledOffering(
-            "CSE30002",
-            "01",
-            EDay.Tuesday,
-            1);
+        ScheduledOffering firstOffering = createScheduledOffering("CSE30001", "01", EDay.Monday, 1);
+        ScheduledOffering secondOffering = createScheduledOffering("CSE30002", "01", EDay.Tuesday, 1);
 
         Assert.IsFalse(ScheduleConflictDetector.HasConflict(firstOffering, secondOffering));
     }
@@ -70,40 +48,14 @@ public sealed class ScheduleConflictDetectorTests
     [TestMethod]
     public void ActualTimeRangesUseHalfOpenOverlapRules()
     {
-        WeeklyTimeRange firstRange = createTimeRange(
-            EDay.Monday,
-            9,
-            0,
-            10,
-            0);
-        WeeklyTimeRange touchingRange = createTimeRange(
-            EDay.Monday,
-            10,
-            0,
-            11,
-            0);
-        WeeklyTimeRange overlappingRange = createTimeRange(
-            EDay.Monday,
-            9,
-            59,
-            10,
-            30);
-        WeeklyTimeRange otherDayRange = createTimeRange(
-            EDay.Tuesday,
-            9,
-            30,
-            10,
-            30);
+        WeeklyTimeRange firstRange = createTimeRange(EDay.Monday, 9, 0, 10, 0);
+        WeeklyTimeRange touchingRange = createTimeRange(EDay.Monday, 10, 0, 11, 0);
+        WeeklyTimeRange overlappingRange = createTimeRange(EDay.Monday, 9, 59, 10, 30);
+        WeeklyTimeRange otherDayRange = createTimeRange(EDay.Tuesday, 9, 30, 10, 30);
 
-        Assert.IsFalse(ScheduleConflictDetector.HasConflict(
-            firstRange,
-            touchingRange));
-        Assert.IsTrue(ScheduleConflictDetector.HasConflict(
-            firstRange,
-            overlappingRange));
-        Assert.IsFalse(ScheduleConflictDetector.HasConflict(
-            firstRange,
-            otherDayRange));
+        Assert.IsFalse(ScheduleConflictDetector.HasConflict(firstRange, touchingRange));
+        Assert.IsTrue(ScheduleConflictDetector.HasConflict(firstRange, overlappingRange));
+        Assert.IsFalse(ScheduleConflictDetector.HasConflict(firstRange, otherDayRange));
     }
 
     private static WeeklyTimeRange createTimeRange(

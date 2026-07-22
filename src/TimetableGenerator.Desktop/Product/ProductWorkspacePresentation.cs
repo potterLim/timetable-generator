@@ -52,8 +52,7 @@ internal sealed class ProductWorkspacePresentation
             throw new ArgumentOutOfRangeException(nameof(catalogOrigin));
         }
 
-        EProductWorkspaceRecoveryFlags unknownFlags =
-            recoveryFlags & ~ALL_RECOVERY_FLAGS;
+        EProductWorkspaceRecoveryFlags unknownFlags = recoveryFlags & ~ALL_RECOVERY_FLAGS;
         if (unknownFlags != EProductWorkspaceRecoveryFlags.None)
         {
             throw new ArgumentOutOfRangeException(nameof(recoveryFlags));

@@ -73,24 +73,17 @@ internal sealed record GenerationFileStoragePath
         return new GenerationFilePath(Path.Combine(DirectoryPath, fileName));
     }
 
-    public bool TryParseGenerationFilePath(
-        string path,
-        out FileGeneration generation)
+    public bool TryParseGenerationFilePath(string path, out FileGeneration generation)
     {
         generation = default(FileGeneration);
         string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(path);
         string expectedPrefix = BaseFileName + ".";
-        if (fileNameWithoutExtension.StartsWith(
-            expectedPrefix,
-            StringComparison.Ordinal) == false)
+        if (fileNameWithoutExtension.StartsWith(expectedPrefix, StringComparison.Ordinal) == false)
         {
             return false;
         }
 
-        string generationComponent = fileNameWithoutExtension.Substring(
-            expectedPrefix.Length);
-        return FileGeneration.TryParseFileComponent(
-            generationComponent,
-            out generation);
+        string generationComponent = fileNameWithoutExtension.Substring(expectedPrefix.Length);
+        return FileGeneration.TryParseFileComponent(generationComponent, out generation);
     }
 }

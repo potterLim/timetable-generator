@@ -65,31 +65,23 @@ public sealed class ScheduleRecommendation
 
         if (score.IsValid == false)
         {
-            throw new ArgumentException(
-                "Schedule recommendations require a valid score.",
-                nameof(score));
+            throw new ArgumentException("Schedule recommendations require a valid score.", nameof(score));
         }
 
-        IReadOnlyList<ScheduledOffering> copiedScheduledOfferings =
-            copyAndValidateScheduledOfferings(scheduledOfferings);
-        IReadOnlyList<UnscheduledOfferingSelection> copiedUnscheduledSelections =
-            copyUnscheduledSelections(unscheduledSelections);
-        IReadOnlyList<PersonalSchedule> copiedPersonalSchedules =
-            copyPersonalSchedules(personalSchedules);
+        IReadOnlyList<ScheduledOffering> copiedScheduledOfferings = copyAndValidateScheduledOfferings(scheduledOfferings);
+        IReadOnlyList<UnscheduledOfferingSelection> copiedUnscheduledSelections = copyUnscheduledSelections(unscheduledSelections);
+        IReadOnlyList<PersonalSchedule> copiedPersonalSchedules = copyPersonalSchedules(personalSchedules);
         validateUniqueCourseAndOfferingSelections(
             copiedScheduledOfferings,
             copiedUnscheduledSelections,
             nameof(scheduledOfferings),
             nameof(unscheduledSelections));
-        validateFixedScheduleConflicts(
-            copiedScheduledOfferings,
-            copiedPersonalSchedules);
+        validateFixedScheduleConflicts(copiedScheduledOfferings, copiedPersonalSchedules);
         if (copiedScheduledOfferings.Count == 0
             && copiedUnscheduledSelections.Count == 0
             && copiedPersonalSchedules.Count == 0)
         {
-            throw new ArgumentException(
-                "Schedule recommendations require at least one selected item.");
+            throw new ArgumentException("Schedule recommendations require at least one selected item.");
         }
 
         mScheduledOfferings = copiedScheduledOfferings;
@@ -133,8 +125,7 @@ public sealed class ScheduleRecommendation
     private static IReadOnlyList<UnscheduledOfferingSelection> copyUnscheduledSelections(
         IEnumerable<UnscheduledOfferingSelection> unscheduledSelections)
     {
-        List<UnscheduledOfferingSelection> copiedSelections =
-            new List<UnscheduledOfferingSelection>();
+        List<UnscheduledOfferingSelection> copiedSelections = new List<UnscheduledOfferingSelection>();
         foreach (UnscheduledOfferingSelection selection in unscheduledSelections)
         {
             if (selection == null)
@@ -236,16 +227,13 @@ public sealed class ScheduleRecommendation
         {
             foreach (MeetingSlot meetingSlot in scheduledOffering.MeetingSlots)
             {
-                WeeklyTimeRange offeringTimeRange =
-                    AcademicPeriodTimeTable.GetWeeklyTimeRange(meetingSlot);
+                WeeklyTimeRange offeringTimeRange = AcademicPeriodTimeTable.GetWeeklyTimeRange(meetingSlot);
                 foreach (PersonalSchedule personalSchedule in personalSchedules)
                 {
                     foreach (WeeklyTimeRange personalTimeRange
                         in personalSchedule.TimeRanges)
                     {
-                        if (ScheduleConflictDetector.HasConflict(
-                            offeringTimeRange,
-                            personalTimeRange))
+                        if (ScheduleConflictDetector.HasConflict(offeringTimeRange, personalTimeRange))
                         {
                             throw new ArgumentException(
                                 "Schedule recommendations cannot contain a course "

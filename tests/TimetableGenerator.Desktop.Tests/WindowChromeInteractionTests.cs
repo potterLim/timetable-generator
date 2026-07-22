@@ -27,21 +27,15 @@ public sealed class WindowChromeInteractionTests
     [AvaloniaFact]
     public void AppearanceSettingsStayUnavailableWhileWorkspaceModalIsVisible()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
-        ProductShellViewModel shell =
-            PlannerWorkspaceTestFactory.CreateShell(workspace);
-        MainWindow hostWindow = new MainWindow(
-            shell,
-            ProductAppearanceTestFactory.CreateViewModel());
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+        ProductShellViewModel shell = PlannerWorkspaceTestFactory.CreateShell(workspace);
+        MainWindow hostWindow = new MainWindow(shell, ProductAppearanceTestFactory.CreateViewModel());
 
         try
         {
             hostWindow.Show();
             Dispatcher.UIThread.RunJobs();
-            Button appearanceButton = findRequiredControl<Button>(
-                hostWindow,
-                "AppearanceButton");
+            Button appearanceButton = findRequiredControl<Button>(hostWindow, "AppearanceButton");
 
             Assert.True(appearanceButton.IsEnabled);
 
@@ -66,36 +60,22 @@ public sealed class WindowChromeInteractionTests
     [AvaloniaFact]
     public void ProductTitleBarUsesOneAccessibleCaptionControlSystem()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
-        ProductShellViewModel shell =
-            PlannerWorkspaceTestFactory.CreateShell(workspace);
-        MainWindow hostWindow = new MainWindow(
-            shell,
-            ProductAppearanceTestFactory.CreateViewModel());
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+        ProductShellViewModel shell = PlannerWorkspaceTestFactory.CreateShell(workspace);
+        MainWindow hostWindow = new MainWindow(shell, ProductAppearanceTestFactory.CreateViewModel());
 
         try
         {
             hostWindow.Show();
 
-            Border titleBar = findRequiredControl<Border>(
-                hostWindow,
-                "ProductTitleBar");
-            Button appearanceButton = findRequiredControl<Button>(
-                hostWindow,
-                "AppearanceButton");
-            StackPanel captionButtons = findRequiredControl<StackPanel>(
-                hostWindow,
-                "ProductCaptionButtons");
-            Button minimizeButton = findRequiredControl<Button>(
-                hostWindow,
-                "WindowMinimizeButton");
+            Border titleBar = findRequiredControl<Border>(hostWindow, "ProductTitleBar");
+            Button appearanceButton = findRequiredControl<Button>(hostWindow, "AppearanceButton");
+            StackPanel captionButtons = findRequiredControl<StackPanel>(hostWindow, "ProductCaptionButtons");
+            Button minimizeButton = findRequiredControl<Button>(hostWindow, "WindowMinimizeButton");
             Button maximizeRestoreButton = findRequiredControl<Button>(
                 hostWindow,
                 "WindowMaximizeRestoreButton");
-            Button closeButton = findRequiredControl<Button>(
-                hostWindow,
-                "WindowCloseButton");
+            Button closeButton = findRequiredControl<Button>(hostWindow, "WindowCloseButton");
             FluentIcon maximizeRestoreIcon =
                 findRequiredControl<FluentIcon>(
                     hostWindow,
@@ -111,18 +91,13 @@ public sealed class WindowChromeInteractionTests
             Assert.True(appearanceButton.Focusable);
             Assert.NotNull(appearanceButton.Flyout);
 
-            EWindowChromePlatform platform =
-                WindowChromeLayoutPolicy.FindCurrentPlatform();
-            WindowDecorations expectedDecorations =
-                WindowChromeLayoutPolicy.FindWindowDecorations(platform);
-            WindowChromeInsets insets =
-                WindowChromeLayoutPolicy.FindTitleBarInsets(platform);
+            EWindowChromePlatform platform = WindowChromeLayoutPolicy.FindCurrentPlatform();
+            WindowDecorations expectedDecorations = WindowChromeLayoutPolicy.FindWindowDecorations(platform);
+            WindowChromeInsets insets = WindowChromeLayoutPolicy.FindTitleBarInsets(platform);
             Assert.Equal(expectedDecorations, hostWindow.WindowDecorations);
             Assert.Equal(insets.Left, titleBar.Padding.Left);
             Assert.Equal(insets.Right, titleBar.Padding.Right);
-            Assert.Equal(
-                platform == EWindowChromePlatform.Windows,
-                captionButtons.IsVisible);
+            Assert.Equal(platform == EWindowChromePlatform.Windows, captionButtons.IsVisible);
 
             assertCaptionButton(
                 minimizeButton,
@@ -153,40 +128,25 @@ public sealed class WindowChromeInteractionTests
             foreach ((string name, WindowDecorationsElementRole role)
                 in resizeGrips)
             {
-                Border resizeGrip = findRequiredControl<Border>(
-                    hostWindow,
-                    name);
-                Assert.Equal(
-                    platform == EWindowChromePlatform.Windows,
-                    resizeGrip.IsVisible);
-                Assert.Equal(
-                    AccessibilityView.Raw,
-                    AutomationProperties.GetAccessibilityView(resizeGrip));
-                Assert.Equal(
-                    role,
-                    WindowDecorationProperties.GetElementRole(resizeGrip));
+                Border resizeGrip = findRequiredControl<Border>(hostWindow, name);
+                Assert.Equal(platform == EWindowChromePlatform.Windows, resizeGrip.IsVisible);
+                Assert.Equal(AccessibilityView.Raw, AutomationProperties.GetAccessibilityView(resizeGrip));
+                Assert.Equal(role, WindowDecorationProperties.GetElementRole(resizeGrip));
             }
 
             if (platform == EWindowChromePlatform.Windows)
             {
-                maximizeRestoreButton.RaiseEvent(
-                    new RoutedEventArgs(Button.ClickEvent));
+                maximizeRestoreButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 Assert.Equal(WindowState.Maximized, hostWindow.WindowState);
-                Assert.Equal(
-                    "복원",
-                    AutomationProperties.GetName(maximizeRestoreButton));
+                Assert.Equal("복원", AutomationProperties.GetName(maximizeRestoreButton));
                 Assert.Equal(Icon.SquareMultiple, maximizeRestoreIcon.Icon);
 
-                maximizeRestoreButton.RaiseEvent(
-                    new RoutedEventArgs(Button.ClickEvent));
+                maximizeRestoreButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 Assert.Equal(WindowState.Normal, hostWindow.WindowState);
-                Assert.Equal(
-                    "최대화",
-                    AutomationProperties.GetName(maximizeRestoreButton));
+                Assert.Equal("최대화", AutomationProperties.GetName(maximizeRestoreButton));
                 Assert.Equal(Icon.Square, maximizeRestoreIcon.Icon);
 
-                minimizeButton.RaiseEvent(
-                    new RoutedEventArgs(Button.ClickEvent));
+                minimizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 Assert.Equal(WindowState.Minimized, hostWindow.WindowState);
                 hostWindow.WindowState = WindowState.Normal;
             }
@@ -203,31 +163,23 @@ public sealed class WindowChromeInteractionTests
         string expectedName,
         WindowDecorationsElementRole expectedRole)
     {
-        Assert.Equal(
-            expectedAutomationId,
-            AutomationProperties.GetAutomationId(button));
+        Assert.Equal(expectedAutomationId, AutomationProperties.GetAutomationId(button));
         Assert.Equal(expectedName, AutomationProperties.GetName(button));
-        Assert.Equal(
-            expectedRole,
-            WindowDecorationProperties.GetElementRole(button));
-        AutomationPeer peer = ControlAutomationPeer.CreatePeerForElement(
-            button);
+        Assert.Equal(expectedRole, WindowDecorationProperties.GetElementRole(button));
+        AutomationPeer peer = ControlAutomationPeer.CreatePeerForElement(button);
         Assert.IsType<ButtonAutomationPeer>(peer);
         Assert.IsAssignableFrom<IInvokeProvider>(peer);
         Assert.Equal(expectedName, peer.GetName());
     }
 
-    private static TControl findRequiredControl<TControl>(
-        Control root,
-        string controlName)
+    private static TControl findRequiredControl<TControl>(Control root, string controlName)
         where TControl : Control
     {
         TControl? controlOrNull = root.FindControl<TControl>(controlName);
         Assert.NotNull(controlOrNull);
         if (controlOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The required control could not be resolved: " + controlName);
+            throw new InvalidOperationException("The required control could not be resolved: " + controlName);
         }
 
         return controlOrNull;

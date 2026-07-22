@@ -18,25 +18,18 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
     private const int MAXIMUM_REQUEST_HEADER_BYTES = 16_384;
     private const int LISTENER_BACKLOG = 8;
     private const string CALLBACK_PATH = "/";
-    private const string GOOGLE_CALENDAR_SCOPES =
-        "https://www.googleapis.com/auth/calendar.app.created "
-        + "https://www.googleapis.com/auth/calendar.calendarlist.readonly";
+    private const string GOOGLE_CALENDAR_SCOPES = "https://www.googleapis.com/auth/calendar.app.created " + "https://www.googleapis.com/auth/calendar.calendarlist.readonly";
 
-    private const string SUCCESS_PAGE_SCRIPT =
-        "history.replaceState(null,document.title,'/');"
-        + "window.setTimeout(function(){window.close();},800);";
+    private const string SUCCESS_PAGE_SCRIPT = "history.replaceState(null,document.title,'/');" + "window.setTimeout(function(){window.close();},800);";
 
-    private static readonly Uri AUTHORIZATION_ENDPOINT = new Uri(
-        "https://accounts.google.com/o/oauth2/v2/auth",
-        UriKind.Absolute);
+    private static readonly Uri AUTHORIZATION_ENDPOINT = new Uri("https://accounts.google.com/o/oauth2/v2/auth", UriKind.Absolute);
 
     private static readonly TimeSpan CONNECTION_TIMEOUT = TimeSpan.FromSeconds(5.0);
 
     private readonly IExternalBrowserLauncher mBrowserLauncher;
     private readonly TimeSpan mAuthorizationTimeout;
 
-    public LoopbackGoogleOAuthAuthorizationCodeProvider(
-        IExternalBrowserLauncher browserLauncher)
+    public LoopbackGoogleOAuthAuthorizationCodeProvider(IExternalBrowserLauncher browserLauncher)
         : this(browserLauncher, TimeSpan.FromMinutes(5.0))
     {
     }
@@ -50,8 +43,7 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
             throw new ArgumentNullException(nameof(browserLauncher));
         }
 
-        if (authorizationTimeout <= TimeSpan.Zero
-            || authorizationTimeout > TimeSpan.FromMinutes(10.0))
+        if (authorizationTimeout <= TimeSpan.Zero || authorizationTimeout > TimeSpan.FromMinutes(10.0))
         {
             throw new ArgumentOutOfRangeException(nameof(authorizationTimeout));
         }
@@ -82,8 +74,7 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
         }
 
         TcpListener listener = new TcpListener(IPAddress.Loopback, 0);
-        using (CancellationTokenSource timeoutSource =
-            CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
+        using (CancellationTokenSource timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
         {
             timeoutSource.CancelAfter(mAuthorizationTimeout);
             listener.Start(LISTENER_BACKLOG);
@@ -96,11 +87,7 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
                         + listenerEndpoint.Port.ToString(CultureInfo.InvariantCulture)
                         + CALLBACK_PATH,
                         UriKind.Absolute));
-                Uri authorizationUri = createAuthorizationUri(
-                    clientId,
-                    redirectUri,
-                    state,
-                    codeChallenge);
+                Uri authorizationUri = createAuthorizationUri(clientId, redirectUri, state, codeChallenge);
                 try
                 {
                     mBrowserLauncher.Launch(authorizationUri);
@@ -118,12 +105,9 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
 
                 while (true)
                 {
-                    using (TcpClient client = await listener.AcceptTcpClientAsync(
-                        timeoutSource.Token).ConfigureAwait(false))
+                    using (TcpClient client = await listener.AcceptTcpClientAsync(timeoutSource.Token).ConfigureAwait(false))
                     using (NetworkStream stream = client.GetStream())
-                    using (CancellationTokenSource connectionSource =
-                        CancellationTokenSource.CreateLinkedTokenSource(
-                            timeoutSource.Token))
+                    using (CancellationTokenSource connectionSource = CancellationTokenSource.CreateLinkedTokenSource(timeoutSource.Token))
                     {
                         connectionSource.CancelAfter(CONNECTION_TIMEOUT);
                         try
@@ -131,10 +115,7 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
                             string requestLine = await readRequestLineAsync(
                                 stream,
                                 connectionSource.Token).ConfigureAwait(false);
-                            GoogleOAuthAuthorizationCodeResult result = parseRequestLine(
-                                requestLine,
-                                redirectUri,
-                                state);
+                            GoogleOAuthAuthorizationCodeResult result = parseRequestLine(requestLine, redirectUri, state);
                             bool shouldContinue = isIgnorableCallbackFailure(result);
                             EGoogleLoopbackResponseKind responseKind = shouldContinue
                                 ? EGoogleLoopbackResponseKind.InvalidRequest
@@ -143,10 +124,7 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
                                     : EGoogleLoopbackResponseKind.AuthorizationFailed;
                             try
                             {
-                                await writeBrowserResponseAsync(
-                                    stream,
-                                    responseKind,
-                                    connectionSource.Token).ConfigureAwait(false);
+                                await writeBrowserResponseAsync(stream, responseKind, connectionSource.Token).ConfigureAwait(false);
                             }
                             catch (Exception exception) when (
                                 exception is IOException
@@ -290,8 +268,7 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
         }
 
         string? code;
-        if (query.TryGetValue("code", out code) == false
-            || string.IsNullOrWhiteSpace(code))
+        if (query.TryGetValue("code", out code) == false || string.IsNullOrWhiteSpace(code))
         {
             return GoogleOAuthAuthorizationCodeResult.Fail(
                 EGoogleOAuthAuthorizationStatus.Failed,
@@ -306,11 +283,8 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
 
     private static IReadOnlyDictionary<string, string> parseQuery(string query)
     {
-        Dictionary<string, string> values = new Dictionary<string, string>(
-            StringComparer.Ordinal);
-        string queryWithoutPrefix = query.StartsWith("?", StringComparison.Ordinal)
-            ? query[1..]
-            : query;
+        Dictionary<string, string> values = new Dictionary<string, string>(StringComparer.Ordinal);
+        string queryWithoutPrefix = query.StartsWith("?", StringComparison.Ordinal) ? query[1..] : query;
         foreach (string part in queryWithoutPrefix.Split('&', StringSplitOptions.RemoveEmptyEntries))
         {
             int separatorIndex = part.IndexOf('=', StringComparison.Ordinal);
@@ -345,8 +319,7 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
                 cancellationToken).ConfigureAwait(false);
             if (bytesRead == 0)
             {
-                throw new IOException(
-                    "The Google OAuth loopback request ended before its headers.");
+                throw new IOException("The Google OAuth loopback request ended before its headers.");
             }
 
             length += bytesRead;
@@ -355,8 +328,7 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
                 int requestLineEndIndex = findRequestLineEndIndex(buffer, length);
                 if (requestLineEndIndex <= 0)
                 {
-                    throw new IOException(
-                        "The Google OAuth loopback request line is invalid.");
+                    throw new IOException("The Google OAuth loopback request line is invalid.");
                 }
 
                 return Encoding.ASCII.GetString(buffer, 0, requestLineEndIndex);
@@ -378,17 +350,13 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
         }
 
         bool isSuccess = responseKind == EGoogleLoopbackResponseKind.Success;
-        string title = isSuccess
-            ? "Google 승인이 완료되었습니다"
-            : "Google에 연결하지 못했습니다";
+        string title = isSuccess ? "Google 승인이 완료되었습니다" : "Google에 연결하지 못했습니다";
         string message = isSuccess
             ? "Timetable Generator에서 내보내기를 마무리하고 있습니다."
             : responseKind == EGoogleLoopbackResponseKind.InvalidRequest
                 ? "올바른 Google 로그인 응답을 기다리고 있습니다."
                 : "Timetable Generator로 돌아가 다시 시도해 주세요.";
-        string supportingMessage = isSuccess
-            ? "이 창은 닫아도 됩니다."
-            : "";
+        string supportingMessage = isSuccess ? "이 창은 닫아도 됩니다." : "";
         string scriptElement = isSuccess
             ? "<script>" + SUCCESS_PAGE_SCRIPT + "</script>"
             : "";
@@ -472,8 +440,7 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
         return -1;
     }
 
-    private static bool isIgnorableCallbackFailure(
-        GoogleOAuthAuthorizationCodeResult result)
+    private static bool isIgnorableCallbackFailure(GoogleOAuthAuthorizationCodeResult result)
     {
         if (result.Status != EGoogleOAuthAuthorizationStatus.Failed)
         {
@@ -501,9 +468,6 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
 
     private static GoogleOAuthRedirectUri createFallbackRedirectUri()
     {
-        return new GoogleOAuthRedirectUri(
-            new Uri(
-                "http://127.0.0.1:1" + CALLBACK_PATH,
-                UriKind.Absolute));
+        return new GoogleOAuthRedirectUri(new Uri("http://127.0.0.1:1" + CALLBACK_PATH, UriKind.Absolute));
     }
 }

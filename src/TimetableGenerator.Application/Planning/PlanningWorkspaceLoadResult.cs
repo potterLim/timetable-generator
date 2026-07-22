@@ -44,8 +44,7 @@ public sealed class PlanningWorkspaceLoadResult
                 nameof(concurrencyToken));
         }
 
-        if (status != EPlanningWorkspaceLoadStatus.NotFound
-            && concurrencyToken.RepresentsMissingWorkspace)
+        if (status != EPlanningWorkspaceLoadStatus.NotFound && concurrencyToken.RepresentsMissingWorkspace)
         {
             throw new ArgumentException(
                 "A found workspace result requires a persisted concurrency token.",

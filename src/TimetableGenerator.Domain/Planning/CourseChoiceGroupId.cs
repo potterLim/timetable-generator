@@ -18,9 +18,7 @@ public readonly record struct CourseChoiceGroupId
     {
         if (value == Guid.Empty)
         {
-            throw new ArgumentException(
-                "Course choice group IDs cannot be empty.",
-                nameof(value));
+            throw new ArgumentException("Course choice group IDs cannot be empty.", nameof(value));
         }
 
         Value = value;

@@ -29,9 +29,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             "첫 계획",
             new CourseChoiceGroup[] { courseChoiceGroup },
             Array.Empty<UnscheduledOfferingSelection>());
-        OfferingId bookmarkedOfferingId = courseChoiceGroup.CourseCandidates[0]
-            .OfferingCandidates[0]
-            .OfferingId;
+        OfferingId bookmarkedOfferingId = courseChoiceGroup.CourseCandidates[0].OfferingCandidates[0].OfferingId;
         PlanningPlan firstPlan = new PlanningPlan(
             firstPlanWithoutBookmark.Id,
             firstPlanWithoutBookmark.Name,
@@ -50,43 +48,29 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             new PlanningPlan[] { firstPlan, secondPlan });
         CourseCatalog newCatalog = createCompatibleCatalog();
 
-        PlanningWorkspaceCatalogRebindResult result =
-            tryRebind(newCatalog, workspace);
+        PlanningWorkspaceCatalogRebindResult result = tryRebind(newCatalog, workspace);
 
         Assert.IsTrue(result.IsRebound);
         Assert.AreEqual(EPlanningWorkspaceCatalogRebindStatus.Rebound, result.Status);
         PlanningWorkspace? reboundWorkspaceOrNull = result.ReboundWorkspaceOrNull;
         Assert.IsNotNull(reboundWorkspaceOrNull);
         Assert.AreNotSame(workspace, reboundWorkspaceOrNull);
-        Assert.AreEqual(
-            workspace.ActivePlanIdOrNull,
-            reboundWorkspaceOrNull.ActivePlanIdOrNull);
+        Assert.AreEqual(workspace.ActivePlanIdOrNull, reboundWorkspaceOrNull.ActivePlanIdOrNull);
         Assert.HasCount(2, reboundWorkspaceOrNull.Plans);
-        assertPlanWasRebound(
-            firstPlan,
-            reboundWorkspaceOrNull.Plans[0],
-            newCatalog);
-        assertPlanWasRebound(
-            secondPlan,
-            reboundWorkspaceOrNull.Plans[1],
-            newCatalog);
-        Assert.AreSame(
-            courseChoiceGroup,
-            reboundWorkspaceOrNull.Plans[0].CourseChoiceGroups[0]);
+        assertPlanWasRebound(firstPlan, reboundWorkspaceOrNull.Plans[0], newCatalog);
+        assertPlanWasRebound(secondPlan, reboundWorkspaceOrNull.Plans[1], newCatalog);
+        Assert.AreSame(courseChoiceGroup, reboundWorkspaceOrNull.Plans[0].CourseChoiceGroups[0]);
         Assert.AreSame(
             unscheduledSelection,
             reboundWorkspaceOrNull.Plans[1].UnscheduledOfferingSelections[0]);
-        Assert.IsNull(
-            reboundWorkspaceOrNull.Plans[0].LastViewedRecommendationOrNull);
+        Assert.IsNull(reboundWorkspaceOrNull.Plans[0].LastViewedRecommendationOrNull);
     }
 
     [TestMethod]
     public void TryRebindPreservesCrossCourseCandidatesAndPreferences()
     {
-        CatalogCourse firstCourse =
-            ScheduleRecommendationTestData.CreateCourse("AAA10001");
-        CatalogCourse secondCourse =
-            ScheduleRecommendationTestData.CreateCourse("BBB10001");
+        CatalogCourse firstCourse = ScheduleRecommendationTestData.CreateCourse("AAA10001");
+        CatalogCourse secondCourse = ScheduleRecommendationTestData.CreateCourse("BBB10001");
         CatalogOffering preferredOffering =
             ScheduleRecommendationTestData.CreateScheduledOffering(
                 "AAA10001",
@@ -167,14 +151,11 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             plan.Id,
             new PlanningPlan[] { plan });
 
-        PlanningWorkspaceCatalogRebindResult result = tryRebind(
-            newCatalog,
-            workspace);
+        PlanningWorkspaceCatalogRebindResult result = tryRebind(newCatalog, workspace);
 
         Assert.IsTrue(result.IsRebound);
         Assert.IsNotNull(result.ReboundWorkspaceOrNull);
-        CourseChoiceGroup reboundGroup =
-            result.ReboundWorkspaceOrNull.Plans[0].CourseChoiceGroups[0];
+        CourseChoiceGroup reboundGroup = result.ReboundWorkspaceOrNull.Plans[0].CourseChoiceGroups[0];
         Assert.AreSame(group, reboundGroup);
         Assert.AreEqual(
             EOfferingPreference.Excluded,
@@ -213,12 +194,9 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
                     }),
             });
 
-        PlanningWorkspaceCatalogRebindResult result =
-            tryRebind(nextTermCatalog, workspace);
+        PlanningWorkspaceCatalogRebindResult result = tryRebind(nextTermCatalog, workspace);
 
-        assertFailure(
-            result,
-            EPlanningWorkspaceCatalogRebindStatus.AcademicTermMismatch);
+        assertFailure(result, EPlanningWorkspaceCatalogRebindStatus.AcademicTermMismatch);
     }
 
     [TestMethod]
@@ -242,14 +220,9 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             originalCatalog.Courses,
             originalCatalog.Offerings);
 
-        PlanningWorkspaceCatalogRebindResult result =
-            tryRebind(
-                otherInstitutionCatalog,
-                workspace);
+        PlanningWorkspaceCatalogRebindResult result = tryRebind(otherInstitutionCatalog, workspace);
 
-        assertFailure(
-            result,
-            EPlanningWorkspaceCatalogRebindStatus.InstitutionMismatch);
+        assertFailure(result, EPlanningWorkspaceCatalogRebindStatus.InstitutionMismatch);
     }
 
     [TestMethod]
@@ -263,16 +236,13 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             Array.Empty<PlanningPlan>());
         CourseCatalog compatibleCatalog = createCompatibleCatalog();
 
-        PlanningWorkspaceCatalogRebindResult result =
-            tryRebind(compatibleCatalog, workspace);
+        PlanningWorkspaceCatalogRebindResult result = tryRebind(compatibleCatalog, workspace);
 
         Assert.IsTrue(result.IsRebound);
         Assert.AreEqual(EPlanningWorkspaceCatalogRebindStatus.Rebound, result.Status);
         PlanningWorkspace? reboundWorkspaceOrNull = result.ReboundWorkspaceOrNull;
         Assert.IsNotNull(reboundWorkspaceOrNull);
-        Assert.AreEqual(
-            createBinding(compatibleCatalog),
-            reboundWorkspaceOrNull.CatalogBinding);
+        Assert.AreEqual(createBinding(compatibleCatalog), reboundWorkspaceOrNull.CatalogBinding);
         Assert.IsNull(reboundWorkspaceOrNull.ActivePlanIdOrNull);
         Assert.IsEmpty(reboundWorkspaceOrNull.Plans);
     }
@@ -303,10 +273,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
                 changedArtifactBinding,
                 workspace);
 
-        assertFailure(
-            result,
-            EPlanningWorkspaceCatalogRebindStatus
-                .CatalogArtifactSha256Mismatch);
+        assertFailure(result, EPlanningWorkspaceCatalogRebindStatus.CatalogArtifactSha256Mismatch);
     }
 
     [TestMethod]
@@ -316,10 +283,8 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             ScheduleRecommendationTestData.CreateCourseChoiceGroup(
                 "AAA10001",
                 "01");
-        PlanningWorkspace workspace = createWorkspaceWithCourseChoiceGroup(
-            choiceGroup);
-        CatalogCourse otherCourse =
-            ScheduleRecommendationTestData.CreateCourse("CCC10001");
+        PlanningWorkspace workspace = createWorkspaceWithCourseChoiceGroup(choiceGroup);
+        CatalogCourse otherCourse = ScheduleRecommendationTestData.CreateCourse("CCC10001");
         CatalogOffering otherOffering =
             ScheduleRecommendationTestData.CreateScheduledOffering(
                 "CCC10001",
@@ -332,10 +297,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             new CatalogCourse[] { otherCourse },
             new CatalogOffering[] { otherOffering });
 
-        PlanningWorkspaceCatalogRebindResult result =
-            tryRebind(
-                incompatibleCatalog,
-                workspace);
+        PlanningWorkspaceCatalogRebindResult result = tryRebind(incompatibleCatalog, workspace);
 
         assertFailure(result, EPlanningWorkspaceCatalogRebindStatus.CourseNotFound);
     }
@@ -347,12 +309,8 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             ScheduleRecommendationTestData.CreateCourseChoiceGroup(
                 "AAA10001",
                 "01");
-        PlanningWorkspace workspace = createWorkspaceWithCourseChoiceGroup(
-            choiceGroup);
-        OfferingId selectedOfferingId = choiceGroup
-            .CourseCandidates[0]
-            .OfferingCandidates[0]
-            .OfferingId;
+        PlanningWorkspace workspace = createWorkspaceWithCourseChoiceGroup(choiceGroup);
+        OfferingId selectedOfferingId = choiceGroup.CourseCandidates[0].OfferingCandidates[0].OfferingId;
         CourseCatalog compatibleCatalog = createCompatibleCatalog();
         List<CatalogOffering> offerings = new List<CatalogOffering>();
         foreach (CatalogOffering offering in compatibleCatalog.Offerings)
@@ -370,10 +328,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             compatibleCatalog.Courses,
             offerings);
 
-        PlanningWorkspaceCatalogRebindResult result =
-            tryRebind(
-                incompatibleCatalog,
-                workspace);
+        PlanningWorkspaceCatalogRebindResult result = tryRebind(incompatibleCatalog, workspace);
 
         assertFailure(result, EPlanningWorkspaceCatalogRebindStatus.OfferingNotFound);
     }
@@ -385,16 +340,10 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             ScheduleRecommendationTestData.CreateCourseChoiceGroup(
                 "AAA10001",
                 "01");
-        PlanningWorkspace workspace = createWorkspaceWithCourseChoiceGroup(
-            choiceGroup);
-        OfferingId selectedOfferingId = choiceGroup
-            .CourseCandidates[0]
-            .OfferingCandidates[0]
-            .OfferingId;
-        CatalogCourse expectedCourse =
-            ScheduleRecommendationTestData.CreateCourse("AAA10001");
-        CatalogCourse actualCourse =
-            ScheduleRecommendationTestData.CreateCourse("BBB10001");
+        PlanningWorkspace workspace = createWorkspaceWithCourseChoiceGroup(choiceGroup);
+        OfferingId selectedOfferingId = choiceGroup.CourseCandidates[0].OfferingCandidates[0].OfferingId;
+        CatalogCourse expectedCourse = ScheduleRecommendationTestData.CreateCourse("AAA10001");
+        CatalogCourse actualCourse = ScheduleRecommendationTestData.CreateCourse("BBB10001");
         CatalogOffering mismatchedOffering = new CatalogOffering(
             selectedOfferingId,
             actualCourse.Id,
@@ -407,14 +356,9 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             new CatalogCourse[] { expectedCourse, actualCourse },
             new CatalogOffering[] { mismatchedOffering });
 
-        PlanningWorkspaceCatalogRebindResult result =
-            tryRebind(
-                incompatibleCatalog,
-                workspace);
+        PlanningWorkspaceCatalogRebindResult result = tryRebind(incompatibleCatalog, workspace);
 
-        assertFailure(
-            result,
-            EPlanningWorkspaceCatalogRebindStatus.OfferingCourseMismatch);
+        assertFailure(result, EPlanningWorkspaceCatalogRebindStatus.OfferingCourseMismatch);
     }
 
     [TestMethod]
@@ -424,8 +368,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             ScheduleRecommendationTestData.CreateCourseChoiceGroup(
                 "AAA10001",
                 "01");
-        PlanningWorkspace workspace = createWorkspaceWithCourseChoiceGroup(
-            choiceGroup);
+        PlanningWorkspace workspace = createWorkspaceWithCourseChoiceGroup(choiceGroup);
         CatalogCourse course = ScheduleRecommendationTestData.CreateCourse("AAA10001");
         CatalogOffering unscheduledOffering =
             ScheduleRecommendationTestData.CreateUnscheduledOffering(
@@ -438,19 +381,12 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             new CatalogCourse[] { course },
             new CatalogOffering[] { unscheduledOffering });
 
-        PlanningWorkspaceCatalogRebindResult result =
-            tryRebind(
-                updatedCatalog,
-                workspace);
+        PlanningWorkspaceCatalogRebindResult result = tryRebind(updatedCatalog, workspace);
 
         Assert.IsTrue(result.IsRebound);
-        Assert.AreEqual(
-            EPlanningWorkspaceCatalogRebindStatus.Rebound,
-            result.Status);
+        Assert.AreEqual(EPlanningWorkspaceCatalogRebindStatus.Rebound, result.Status);
         Assert.IsNotNull(result.ReboundWorkspaceOrNull);
-        Assert.HasCount(
-            1,
-            result.ReboundWorkspaceOrNull.GetActivePlan().CourseChoiceGroups);
+        Assert.HasCount(1, result.ReboundWorkspaceOrNull.GetActivePlan().CourseChoiceGroups);
     }
 
     [TestMethod]
@@ -483,14 +419,9 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             new CatalogCourse[] { course },
             new CatalogOffering[] { scheduledOffering });
 
-        PlanningWorkspaceCatalogRebindResult result =
-            tryRebind(
-                incompatibleCatalog,
-                workspace);
+        PlanningWorkspaceCatalogRebindResult result = tryRebind(incompatibleCatalog, workspace);
 
-        assertFailure(
-            result,
-            EPlanningWorkspaceCatalogRebindStatus.UnscheduledSelectionHasProvidedTime);
+        assertFailure(result, EPlanningWorkspaceCatalogRebindStatus.UnscheduledSelectionHasProvidedTime);
     }
 
     [TestMethod]
@@ -534,10 +465,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
                     createMondaySlot()),
             });
 
-        PlanningWorkspaceCatalogRebindResult result =
-            tryRebind(
-                incompatibleCatalog,
-                workspace);
+        PlanningWorkspaceCatalogRebindResult result = tryRebind(incompatibleCatalog, workspace);
 
         assertFailure(result, EPlanningWorkspaceCatalogRebindStatus.OfferingNotFound);
         Assert.AreSame(firstPlan, workspace.Plans[0]);
@@ -643,8 +571,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             offerings);
     }
 
-    private static PlanningWorkspace createWorkspaceWithCourseChoiceGroup(
-        CourseChoiceGroup choiceGroup)
+    private static PlanningWorkspace createWorkspaceWithCourseChoiceGroup(CourseChoiceGroup choiceGroup)
     {
         CourseCatalog originalCatalog = createOriginalCatalog();
         PlanningPlan plan = createPlan(
@@ -697,14 +624,10 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
         Assert.AreEqual(originalPlan.Id, reboundPlan.Id);
         Assert.AreSame(originalPlan.Name, reboundPlan.Name);
         Assert.AreEqual(catalog.Id, reboundPlan.CatalogBinding.CatalogId);
-        Assert.AreEqual(
-            catalog.InstitutionId,
-            reboundPlan.CatalogBinding.InstitutionId);
+        Assert.AreEqual(catalog.InstitutionId, reboundPlan.CatalogBinding.InstitutionId);
         Assert.AreEqual(catalog.Term, reboundPlan.CatalogBinding.Term);
         Assert.AreEqual(catalog.Revision, reboundPlan.CatalogBinding.Revision);
-        Assert.AreEqual(
-            createArtifactSha256(catalog),
-            reboundPlan.CatalogBinding.ArtifactSha256);
+        Assert.AreEqual(createArtifactSha256(catalog), reboundPlan.CatalogBinding.ArtifactSha256);
     }
 
     private static void assertFailure(
@@ -720,10 +643,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
         CourseCatalog catalog,
         PlanningWorkspace workspace)
     {
-        return PlanningWorkspaceCatalogRebinder.TryRebind(
-            catalog,
-            createBinding(catalog),
-            workspace);
+        return PlanningWorkspaceCatalogRebinder.TryRebind(catalog, createBinding(catalog), workspace);
     }
 
     private static PlanCatalogBinding createBinding(CourseCatalog catalog)
@@ -736,8 +656,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             createArtifactSha256(catalog));
     }
 
-    private static CatalogArtifactSha256 createArtifactSha256(
-        CourseCatalog catalog)
+    private static CatalogArtifactSha256 createArtifactSha256(CourseCatalog catalog)
     {
         char hexCharacter = catalog.Revision.Value == 1 ? 'a' : 'b';
         return new CatalogArtifactSha256(new string(hexCharacter, 64));

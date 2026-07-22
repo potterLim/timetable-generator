@@ -53,9 +53,7 @@ public sealed class VerifiedCatalogPackage
     {
         CatalogIndexDocument index = CatalogIndexJsonReader.Read(indexBytes);
         CatalogIndexEntry entry = index.FindDefaultEntry();
-        CourseCatalogDocument document = CourseCatalogJsonReader.ReadAndVerify(
-            catalogBytes,
-            entry);
+        CourseCatalogDocument document = CourseCatalogJsonReader.ReadAndVerify(catalogBytes, entry);
         return new VerifiedCatalogPackage(
             indexBytes.ToArray(),
             catalogBytes.ToArray(),
@@ -66,8 +64,7 @@ public sealed class VerifiedCatalogPackage
 
     public PlanCatalogBinding CreatePlanCatalogBinding()
     {
-        CatalogArtifactSha256 artifactSha256 =
-            new CatalogArtifactSha256(Entry.File.Sha256.HexValue);
+        CatalogArtifactSha256 artifactSha256 = new CatalogArtifactSha256(Entry.File.Sha256.HexValue);
         return new PlanCatalogBinding(
             Entry.CatalogId,
             Entry.Institution.Id,

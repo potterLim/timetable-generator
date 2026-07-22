@@ -24,9 +24,7 @@ public sealed class CatalogSynchronizationLimits
     {
         if (index.IsValid == false)
         {
-            throw new ArgumentException(
-                "Catalog synchronization requires a valid index limit.",
-                nameof(index));
+            throw new ArgumentException("Catalog synchronization requires a valid index limit.", nameof(index));
         }
 
         if (catalog.IsValid == false)

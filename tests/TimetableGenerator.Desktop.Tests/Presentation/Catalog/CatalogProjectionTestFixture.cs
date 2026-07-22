@@ -20,10 +20,7 @@ internal static class CatalogProjectionTestFixture
                 new MeetingSlot(EDay.Wednesday, new AcademicPeriod(2)),
                 new MeetingSlot(EDay.Monday, new AcademicPeriod(1)),
             });
-        return createDocument(
-            primarySchedule,
-            ECatalogCourseOrder.Original,
-            false);
+        return createDocument(primarySchedule, ECatalogCourseOrder.Original, false);
     }
 
     public static CourseCatalogDocument CreateDocumentWithScheduledAlternativeCourse()
@@ -34,10 +31,7 @@ internal static class CatalogProjectionTestFixture
                 new MeetingSlot(EDay.Wednesday, new AcademicPeriod(2)),
                 new MeetingSlot(EDay.Monday, new AcademicPeriod(1)),
             });
-        return createDocument(
-            primarySchedule,
-            ECatalogCourseOrder.Original,
-            true);
+        return createDocument(primarySchedule, ECatalogCourseOrder.Original, true);
     }
 
     public static CourseCatalogDocument CreateDocumentWithChangedPrimarySchedule()
@@ -47,10 +41,7 @@ internal static class CatalogProjectionTestFixture
             {
                 new MeetingSlot(EDay.Monday, new AcademicPeriod(4)),
             });
-        return createDocument(
-            changedSchedule,
-            ECatalogCourseOrder.Original,
-            false);
+        return createDocument(changedSchedule, ECatalogCourseOrder.Original, false);
     }
 
     public static CourseCatalogDocument CreateReorderedDocument()
@@ -61,10 +52,7 @@ internal static class CatalogProjectionTestFixture
                 new MeetingSlot(EDay.Wednesday, new AcademicPeriod(2)),
                 new MeetingSlot(EDay.Monday, new AcademicPeriod(1)),
             });
-        return createDocument(
-            primarySchedule,
-            ECatalogCourseOrder.Reversed,
-            false);
+        return createDocument(primarySchedule, ECatalogCourseOrder.Reversed, false);
     }
 
     public static CourseCatalogDocument CreateKoreanImeSearchDocument()
@@ -175,8 +163,7 @@ internal static class CatalogProjectionTestFixture
                 CourseChoiceGroupId.CreateNew(),
                 programmingCourseId,
                 new OfferingId[] { primaryOfferingId });
-        UnscheduledOfferingSelection unscheduledSelection =
-            new UnscheduledOfferingSelection(seminarCourseId, seminarOfferingId);
+        UnscheduledOfferingSelection unscheduledSelection = new UnscheduledOfferingSelection(seminarCourseId, seminarOfferingId);
         PlanningPlanContent content = new PlanningPlanContent(
             new CourseChoiceGroup[] { courseChoiceGroup },
             new UnscheduledOfferingSelection[] { unscheduledSelection },
@@ -422,14 +409,12 @@ internal static class CatalogProjectionTestFixture
         };
     }
 
-    private static CatalogOfferingMetadata createPrimaryOfferingMetadata(
-        OfferingId offeringId)
+    private static CatalogOfferingMetadata createPrimaryOfferingMetadata(OfferingId offeringId)
     {
         InstructorAssignmentMetadata instructor = InstructorAssignmentMetadata.CreateConfirmed(
             new InstructorDisplayText("홍길동 외 1명"),
             new AdditionalInstructorCount(1));
-        LocationAssignmentMetadata location = LocationAssignmentMetadata.CreateAssigned(
-            new ClassroomDisplayText("오석관 301"));
+        LocationAssignmentMetadata location = LocationAssignmentMetadata.CreateAssigned(new ClassroomDisplayText("오석관 301"));
         return createScheduledMetadata(
             offeringId,
             ERequirementType.MajorRequired,
@@ -440,8 +425,7 @@ internal static class CatalogProjectionTestFixture
             new SourceRecordNumber(1));
     }
 
-    private static CatalogOfferingMetadata createAlternativeOfferingMetadata(
-        OfferingId offeringId)
+    private static CatalogOfferingMetadata createAlternativeOfferingMetadata(OfferingId offeringId)
     {
         return createScheduledMetadata(
             offeringId,
@@ -453,19 +437,15 @@ internal static class CatalogProjectionTestFixture
             new SourceRecordNumber(2));
     }
 
-    private static CatalogOfferingMetadata createSeminarOfferingMetadata(
-        OfferingId offeringId)
+    private static CatalogOfferingMetadata createSeminarOfferingMetadata(OfferingId offeringId)
     {
         CatalogOfferingClassificationMetadata classification =
             CatalogOfferingClassificationMetadata.CreateWithoutGeneralEducationCategory(
                 ERequirementType.GeneralElective,
                 new OfferingUnitName("ICT창업학부"),
                 EInstructionSession.Daytime);
-        CatalogOfferingInstructionMetadata instruction = createInstruction(
-            InstructorAssignmentMetadata.Unconfirmed);
-        CatalogOfferingLogisticsMetadata logistics =
-            CatalogOfferingLogisticsMetadata.CreateWithoutProvidedSchedule(
-                LocationAssignmentMetadata.NotProvided);
+        CatalogOfferingInstructionMetadata instruction = createInstruction(InstructorAssignmentMetadata.Unconfirmed);
+        CatalogOfferingLogisticsMetadata logistics = CatalogOfferingLogisticsMetadata.CreateWithoutProvidedSchedule(LocationAssignmentMetadata.NotProvided);
         return createMetadata(
             offeringId,
             classification,
@@ -474,8 +454,7 @@ internal static class CatalogProjectionTestFixture
             new SourceRecordNumber(3));
     }
 
-    private static CatalogOfferingMetadata createScheduledSeminarOfferingMetadata(
-        OfferingId offeringId)
+    private static CatalogOfferingMetadata createScheduledSeminarOfferingMetadata(OfferingId offeringId)
     {
         return createScheduledMetadata(
             offeringId,
@@ -487,19 +466,15 @@ internal static class CatalogProjectionTestFixture
             new SourceRecordNumber(3));
     }
 
-    private static CatalogOfferingMetadata createSecondSeminarOfferingMetadata(
-        OfferingId offeringId)
+    private static CatalogOfferingMetadata createSecondSeminarOfferingMetadata(OfferingId offeringId)
     {
         CatalogOfferingClassificationMetadata classification =
             CatalogOfferingClassificationMetadata.CreateWithoutGeneralEducationCategory(
                 ERequirementType.GeneralElective,
                 new OfferingUnitName("ICT창업학부"),
                 EInstructionSession.Daytime);
-        CatalogOfferingInstructionMetadata instruction = createInstruction(
-            InstructorAssignmentMetadata.NotProvided);
-        CatalogOfferingLogisticsMetadata logistics =
-            CatalogOfferingLogisticsMetadata.CreateWithoutProvidedSchedule(
-                LocationAssignmentMetadata.NotProvided);
+        CatalogOfferingInstructionMetadata instruction = createInstruction(InstructorAssignmentMetadata.NotProvided);
+        CatalogOfferingLogisticsMetadata logistics = CatalogOfferingLogisticsMetadata.CreateWithoutProvidedSchedule(LocationAssignmentMetadata.NotProvided);
         return createMetadata(
             offeringId,
             classification,
@@ -523,14 +498,8 @@ internal static class CatalogProjectionTestFixture
                 offeringUnitName,
                 EInstructionSession.Daytime);
         CatalogOfferingInstructionMetadata instruction = createInstruction(instructor);
-        CatalogOfferingLogisticsMetadata logistics =
-            CatalogOfferingLogisticsMetadata.CreateScheduled(scheduleSourceText, location);
-        return createMetadata(
-            offeringId,
-            classification,
-            instruction,
-            logistics,
-            sourceRecordNumber);
+        CatalogOfferingLogisticsMetadata logistics = CatalogOfferingLogisticsMetadata.CreateScheduled(scheduleSourceText, location);
+        return createMetadata(offeringId, classification, instruction, logistics, sourceRecordNumber);
     }
 
     private static CatalogOfferingInstructionMetadata createInstruction(

@@ -39,10 +39,7 @@ public sealed class ApplicationIconAssetTests
     [Fact]
     public void AppIconMasterIsSquareHighResolutionPngWithAlpha()
     {
-        string iconPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "ProductAssets",
-            "AppIcon.png");
+        string iconPath = Path.Combine(AppContext.BaseDirectory, "ProductAssets", "AppIcon.png");
         byte[] bytes = File.ReadAllBytes(iconPath);
 
         Assert.True(bytes.Length >= 26);
@@ -58,10 +55,7 @@ public sealed class ApplicationIconAssetTests
     [Fact]
     public void WindowsIconContainsEveryRequiredDesktopSize()
     {
-        string iconPath = Path.Combine(
-            AppContext.BaseDirectory,
-            "ProductAssets",
-            "AppIcon.ico");
+        string iconPath = Path.Combine(AppContext.BaseDirectory, "ProductAssets", "AppIcon.ico");
         byte[] bytes = File.ReadAllBytes(iconPath);
 
         Assert.True(bytes.Length >= 6);

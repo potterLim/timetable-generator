@@ -31,9 +31,7 @@ internal sealed class CalendarExportDocument
     {
         if (planId.IsValid == false)
         {
-            throw new ArgumentException(
-                "Calendar export documents require a valid plan ID.",
-                nameof(planId));
+            throw new ArgumentException("Calendar export documents require a valid plan ID.", nameof(planId));
         }
 
         if (calendarName == null)
@@ -60,8 +58,7 @@ internal sealed class CalendarExportDocument
     private static IReadOnlyList<RecurringCalendarEvent> copyAndValidateEvents(
         IEnumerable<RecurringCalendarEvent> events)
     {
-        List<RecurringCalendarEvent> copiedEvents =
-            new List<RecurringCalendarEvent>();
+        List<RecurringCalendarEvent> copiedEvents = new List<RecurringCalendarEvent>();
         HashSet<CalendarEventUid> uniqueUids = new HashSet<CalendarEventUid>();
         foreach (RecurringCalendarEvent calendarEvent in events)
         {

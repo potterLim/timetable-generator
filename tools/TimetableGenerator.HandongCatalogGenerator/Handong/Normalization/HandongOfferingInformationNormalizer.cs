@@ -9,13 +9,9 @@ namespace TimetableGenerator.HandongCatalogGenerator.Handong.Normalization;
 
 internal sealed class HandongOfferingInformationNormalizer
 {
-    private static readonly Regex OFFERING_INFORMATION_FORMAT = new Regex(
-        "^(?<unit>.+?)\\s*(?<session>주간|야간)$",
-        RegexOptions.CultureInvariant);
+    private static readonly Regex OFFERING_INFORMATION_FORMAT = new Regex("^(?<unit>.+?)\\s*(?<session>주간|야간)$", RegexOptions.CultureInvariant);
 
-    private static readonly Regex ADDITIONAL_INSTRUCTOR_FORMAT = new Regex(
-        "외\\s*(?<count>[0-9]+)\\s*명$",
-        RegexOptions.CultureInvariant);
+    private static readonly Regex ADDITIONAL_INSTRUCTOR_FORMAT = new Regex("외\\s*(?<count>[0-9]+)\\s*명$", RegexOptions.CultureInvariant);
 
     public HandongOfferingInformationNormalizationResult NormalizeOfferingInformation(
         HandongRawOfferingRow row)
@@ -40,8 +36,7 @@ internal sealed class HandongOfferingInformationNormalizer
                 "The offering information must end with 주간 or 야간.");
         }
 
-        OfferingUnitName offeringUnitName = new OfferingUnitName(
-            offeringInformationMatch.Groups["unit"].Value);
+        OfferingUnitName offeringUnitName = new OfferingUnitName(offeringInformationMatch.Groups["unit"].Value);
         EInstructionSession instructionSession = parseInstructionSession(
             offeringInformationMatch.Groups["session"].Value,
             row);
@@ -81,16 +76,12 @@ internal sealed class HandongOfferingInformationNormalizer
         }
 
         string instructorDisplayValue = HandongCellValueReader.getCombinedText(lines, 1);
-        if (string.Equals(
-            instructorDisplayValue,
-            "Unconfirmed",
-            StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(instructorDisplayValue, "Unconfirmed", StringComparison.OrdinalIgnoreCase))
         {
             return InstructorAssignment.Unconfirmed;
         }
 
-        Match additionalInstructorMatch = ADDITIONAL_INSTRUCTOR_FORMAT.Match(
-            instructorDisplayValue);
+        Match additionalInstructorMatch = ADDITIONAL_INSTRUCTOR_FORMAT.Match(instructorDisplayValue);
         int additionalInstructorCountValue = 0;
         if (additionalInstructorMatch.Success)
         {
@@ -109,8 +100,7 @@ internal sealed class HandongOfferingInformationNormalizer
         }
 
         InstructorDisplayText displayText = new InstructorDisplayText(instructorDisplayValue);
-        AdditionalInstructorCount additionalInstructorCount = new AdditionalInstructorCount(
-            additionalInstructorCountValue);
+        AdditionalInstructorCount additionalInstructorCount = new AdditionalInstructorCount(additionalInstructorCountValue);
         return InstructorAssignment.CreateConfirmed(displayText, additionalInstructorCount);
     }
 }

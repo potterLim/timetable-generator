@@ -38,9 +38,7 @@ internal static class HandongCellValueReader
         return normalizedLines.AsReadOnly();
     }
 
-    internal static string getRequiredSingleLine(
-        HandongRawOfferingRow row,
-        EHandongColumn column)
+    internal static string getRequiredSingleLine(HandongRawOfferingRow row, EHandongColumn column)
     {
         IReadOnlyList<string> lines = getNonEmptyLines(row, column);
         if (lines.Count != 1)

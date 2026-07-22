@@ -79,16 +79,12 @@ internal sealed class ScheduleListGroup
     {
         if (string.IsNullOrWhiteSpace(title))
         {
-            throw new ArgumentException(
-                "Schedule list groups require a title.",
-                nameof(title));
+            throw new ArgumentException("Schedule list groups require a title.", nameof(title));
         }
 
         if (string.IsNullOrWhiteSpace(titleDisplayText))
         {
-            throw new ArgumentException(
-                "Schedule list groups require display text.",
-                nameof(titleDisplayText));
+            throw new ArgumentException("Schedule list groups require display text.", nameof(titleDisplayText));
         }
 
         if (occurrences == null)
@@ -110,9 +106,7 @@ internal sealed class ScheduleListGroup
 
         if (sources.Count == 0)
         {
-            throw new ArgumentException(
-                "Schedule list groups require at least one source.",
-                nameof(sources));
+            throw new ArgumentException("Schedule list groups require at least one source.", nameof(sources));
         }
 
         Title = title;
@@ -121,16 +115,14 @@ internal sealed class ScheduleListGroup
         mSources = new List<ScheduleListSource>(sources).AsReadOnly();
     }
 
-    private static string findSourceKindDisplayText(
-        IReadOnlyList<ScheduleListSource> sources)
+    private static string findSourceKindDisplayText(IReadOnlyList<ScheduleListSource> sources)
     {
         bool hasCourse = false;
         bool hasPersonalSchedule = false;
         foreach (ScheduleListSource source in sources)
         {
             hasCourse |= source.Kind == EScheduleListEntryKind.Course;
-            hasPersonalSchedule |= source.Kind
-                == EScheduleListEntryKind.PersonalSchedule;
+            hasPersonalSchedule |= source.Kind == EScheduleListEntryKind.PersonalSchedule;
         }
 
         if (hasCourse && hasPersonalSchedule)

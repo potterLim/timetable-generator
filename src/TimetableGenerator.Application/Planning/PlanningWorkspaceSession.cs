@@ -34,9 +34,7 @@ public sealed class PlanningWorkspaceSession
         }
     }
 
-    public PlanningWorkspaceSession(
-        CourseCatalog catalog,
-        PlanningWorkspace workspace)
+    public PlanningWorkspaceSession(CourseCatalog catalog, PlanningWorkspace workspace)
     {
         if (catalog == null)
         {
@@ -66,9 +64,7 @@ public sealed class PlanningWorkspaceSession
     {
         if (planId.IsValid == false)
         {
-            throw new ArgumentException(
-                "Planning sessions require a valid new plan ID.",
-                nameof(planId));
+            throw new ArgumentException("Planning sessions require a valid new plan ID.", nameof(planId));
         }
 
         if (name == null)
@@ -103,9 +99,7 @@ public sealed class PlanningWorkspaceSession
 
     public PlanningWorkspace ClearActivePlanContent()
     {
-        mWorkspace = mEditor.ClearPlanContent(
-            mWorkspace,
-            getRequiredActivePlanId());
+        mWorkspace = mEditor.ClearPlanContent(mWorkspace, getRequiredActivePlanId());
         return mWorkspace;
     }
 
@@ -121,8 +115,7 @@ public sealed class PlanningWorkspaceSession
         {
             case EPlanningCourseSelectionKind.ScheduledAlternatives:
                 validateScheduledSelection(selection);
-                CourseChoiceGroup courseChoiceGroup =
-                    createCourseChoiceGroup(selection);
+                CourseChoiceGroup courseChoiceGroup = createCourseChoiceGroup(selection);
                 editedWorkspace = mEditor.AddCourseChoiceGroup(
                     mWorkspace,
                     getRequiredActivePlanId(),
@@ -150,8 +143,7 @@ public sealed class PlanningWorkspaceSession
         return mWorkspace;
     }
 
-    public PlanningWorkspace AddCourseChoiceGroup(
-        CourseChoiceGroup courseChoiceGroup)
+    public PlanningWorkspace AddCourseChoiceGroup(CourseChoiceGroup courseChoiceGroup)
     {
         if (courseChoiceGroup == null)
         {
@@ -167,8 +159,7 @@ public sealed class PlanningWorkspaceSession
         return mWorkspace;
     }
 
-    public PlanningWorkspace UpdateCourseChoiceGroup(
-        CourseChoiceGroup courseChoiceGroup)
+    public PlanningWorkspace UpdateCourseChoiceGroup(CourseChoiceGroup courseChoiceGroup)
     {
         if (courseChoiceGroup == null)
         {
@@ -184,8 +175,7 @@ public sealed class PlanningWorkspaceSession
         return mWorkspace;
     }
 
-    public PlanningWorkspace RemoveCourseChoiceGroup(
-        CourseChoiceGroupId courseChoiceGroupId)
+    public PlanningWorkspace RemoveCourseChoiceGroup(CourseChoiceGroupId courseChoiceGroupId)
     {
         mWorkspace = mEditor.RemoveCourseChoiceGroup(
             mWorkspace,
@@ -196,10 +186,7 @@ public sealed class PlanningWorkspaceSession
 
     public PlanningWorkspace RemoveCourse(CourseId courseId)
     {
-        mWorkspace = mEditor.RemoveCourse(
-            mWorkspace,
-            getRequiredActivePlanId(),
-            courseId);
+        mWorkspace = mEditor.RemoveCourse(mWorkspace, getRequiredActivePlanId(), courseId);
         return mWorkspace;
     }
 
@@ -210,10 +197,7 @@ public sealed class PlanningWorkspaceSession
             throw new ArgumentNullException(nameof(personalSchedule));
         }
 
-        mWorkspace = mEditor.AddPersonalSchedule(
-            mWorkspace,
-            getRequiredActivePlanId(),
-            personalSchedule);
+        mWorkspace = mEditor.AddPersonalSchedule(mWorkspace, getRequiredActivePlanId(), personalSchedule);
         return mWorkspace;
     }
 
@@ -231,8 +215,7 @@ public sealed class PlanningWorkspaceSession
         return mWorkspace;
     }
 
-    public PlanningWorkspace RemovePersonalSchedule(
-        PersonalScheduleId personalScheduleId)
+    public PlanningWorkspace RemovePersonalSchedule(PersonalScheduleId personalScheduleId)
     {
         mWorkspace = mEditor.RemovePersonalSchedule(
             mWorkspace,
@@ -258,9 +241,7 @@ public sealed class PlanningWorkspaceSession
 
     public PlanningWorkspace ForgetLastViewedRecommendation()
     {
-        mWorkspace = mEditor.ForgetLastViewedRecommendation(
-            mWorkspace,
-            getRequiredActivePlanId());
+        mWorkspace = mEditor.ForgetLastViewedRecommendation(mWorkspace, getRequiredActivePlanId());
         return mWorkspace;
     }
 
@@ -272,9 +253,7 @@ public sealed class PlanningWorkspaceSession
             mCatalog,
             getRequiredActivePlan(),
             recommendationLimit);
-        return mRecommendationGenerator.GenerateRecommendations(
-            request,
-            cancellationToken);
+        return mRecommendationGenerator.GenerateRecommendations(request, cancellationToken);
     }
 
     private void validateWorkspace(PlanningWorkspace workspace)
@@ -302,8 +281,7 @@ public sealed class PlanningWorkspaceSession
         PlanId? activePlanIdOrNull = mWorkspace.ActivePlanIdOrNull;
         if (activePlanIdOrNull.HasValue == false)
         {
-            throw new InvalidOperationException(
-                "This planning operation requires an active plan.");
+            throw new InvalidOperationException("This planning operation requires an active plan.");
         }
 
         return activePlanIdOrNull.Value;
@@ -314,8 +292,7 @@ public sealed class PlanningWorkspaceSession
         return mWorkspace.GetActivePlan();
     }
 
-    private static CourseChoiceGroup createCourseChoiceGroup(
-        PlanningCourseSelection selection)
+    private static CourseChoiceGroup createCourseChoiceGroup(PlanningCourseSelection selection)
     {
         return CourseChoiceGroup.CreateWithAcceptableOfferings(
             CourseChoiceGroupId.CreateNew(),
@@ -337,8 +314,7 @@ public sealed class PlanningWorkspaceSession
                 }
             }
 
-            if (matchingOfferingOrNull != null
-                && matchingOfferingOrNull.MeetingSchedule.IsScheduled == false)
+            if (matchingOfferingOrNull != null && matchingOfferingOrNull.MeetingSchedule.IsScheduled == false)
             {
                 throw new ArgumentException(
                     "Scheduled course selections require offerings with provided times.",
@@ -349,8 +325,7 @@ public sealed class PlanningWorkspaceSession
 
     private void validatePlan(PlanningPlan plan)
     {
-        PlanCatalogValidationResult validationResult =
-            mPlanCatalogValidator.Validate(plan);
+        PlanCatalogValidationResult validationResult = mPlanCatalogValidator.Validate(plan);
         if (validationResult.IsValid == false)
         {
             throw new ArgumentException(

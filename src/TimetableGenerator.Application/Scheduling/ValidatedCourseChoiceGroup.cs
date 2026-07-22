@@ -18,18 +18,15 @@ internal sealed class ValidatedCourseChoiceGroup
 
     public RecommendationScore MinimumScore { get; }
 
-    public ValidatedCourseChoiceGroup(
-        IEnumerable<ValidatedOfferingCandidate> offeringCandidates)
+    public ValidatedCourseChoiceGroup(IEnumerable<ValidatedOfferingCandidate> offeringCandidates)
     {
         if (offeringCandidates == null)
         {
             throw new ArgumentNullException(nameof(offeringCandidates));
         }
 
-        List<ValidatedOfferingCandidate> preferredCandidates =
-            new List<ValidatedOfferingCandidate>();
-        List<ValidatedOfferingCandidate> acceptableCandidates =
-            new List<ValidatedOfferingCandidate>();
+        List<ValidatedOfferingCandidate> preferredCandidates = new List<ValidatedOfferingCandidate>();
+        List<ValidatedOfferingCandidate> acceptableCandidates = new List<ValidatedOfferingCandidate>();
         foreach (ValidatedOfferingCandidate offeringCandidate
             in offeringCandidates)
         {

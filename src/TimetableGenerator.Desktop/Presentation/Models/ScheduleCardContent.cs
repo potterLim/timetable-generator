@@ -18,12 +18,8 @@ internal sealed class ScheduleCardContent
         }
 
         Title = entry.Name;
-        LocationOrNull = entry.HasAssignedLocation
-            ? entry.LocationDisplayText
-            : null;
-        ResponsiblePersonOrNull = entry.HasConfirmedInstructor
-            ? entry.InstructorDisplayText
-            : null;
+        LocationOrNull = entry.HasAssignedLocation ? entry.LocationDisplayText : null;
+        ResponsiblePersonOrNull = entry.HasConfirmedInstructor ? entry.InstructorDisplayText : null;
     }
 
     public ScheduleCardContent(PersonalScheduleEntry entry)
@@ -34,11 +30,7 @@ internal sealed class ScheduleCardContent
         }
 
         Title = entry.Title;
-        LocationOrNull = entry.HasLocation
-            ? entry.LocationDisplayText
-            : null;
-        ResponsiblePersonOrNull = entry.HasInstructor
-            ? entry.InstructorDisplayText
-            : null;
+        LocationOrNull = entry.HasLocation ? entry.LocationDisplayText : null;
+        ResponsiblePersonOrNull = entry.HasInstructor ? entry.InstructorDisplayText : null;
     }
 }

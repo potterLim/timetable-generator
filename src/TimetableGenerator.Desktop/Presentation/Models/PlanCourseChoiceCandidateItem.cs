@@ -114,15 +114,13 @@ internal sealed class PlanCourseChoiceCandidateItem : ObservableObject
     public void SynchronizeSelectedOffering(
         ScheduleRecommendationBookmark? recommendationBookmarkOrNull)
     {
-        CatalogOfferingProjection? selectedOfferingOrNull =
-            findSelectedOfferingOrNull(recommendationBookmarkOrNull);
+        CatalogOfferingProjection? selectedOfferingOrNull = findSelectedOfferingOrNull(recommendationBookmarkOrNull);
         bool hasTimeNotProvidedSelection = selectedOfferingOrNull != null
             && selectedOfferingOrNull.Offering.MeetingSchedule.IsScheduled == false;
         string displayText = string.Empty;
         if (hasTimeNotProvidedSelection && selectedOfferingOrNull != null)
         {
-            displayText = selectedOfferingOrNull.Offering.SectionCode.Value
-                + "분반: 시간 미정";
+            displayText = selectedOfferingOrNull.Offering.SectionCode.Value + "분반: 시간 미정";
         }
 
         setProperty(
@@ -146,8 +144,7 @@ internal sealed class PlanCourseChoiceCandidateItem : ObservableObject
         foreach (OfferingCandidate offeringCandidate
             in mCourseCandidate.OfferingCandidates)
         {
-            if (recommendationBookmarkOrNull.ContainsOffering(
-                offeringCandidate.OfferingId) == false)
+            if (recommendationBookmarkOrNull.ContainsOffering(offeringCandidate.OfferingId) == false)
             {
                 continue;
             }

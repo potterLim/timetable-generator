@@ -65,10 +65,8 @@ public static partial class CourseCatalogJsonReader
             decodedWithText,
             "windows-949",
             sourceObject.GetPropertyPath("decodedWith"));
-        CatalogSourceLogicalFileName logicalFileName = new CatalogSourceLogicalFileName(
-            logicalFileNameText);
-        CatalogFileExtension declaredExtension = new CatalogFileExtension(
-            declaredExtensionText);
+        CatalogSourceLogicalFileName logicalFileName = new CatalogSourceLogicalFileName(logicalFileNameText);
+        CatalogFileExtension declaredExtension = new CatalogFileExtension(declaredExtensionText);
         CatalogMediaType detectedMediaType = new CatalogMediaType(detectedMediaTypeText);
         CatalogCharset declaredCharset = new CatalogCharset(declaredCharsetText);
         CatalogDecoderName decodedWith = new CatalogDecoderName(decodedWithText);
@@ -111,8 +109,7 @@ public static partial class CourseCatalogJsonReader
                 "a numeric converter version is required.");
         }
 
-        CatalogConverterVersion converterVersion = new CatalogConverterVersion(
-            parsedVersionOrNull);
+        CatalogConverterVersion converterVersion = new CatalogConverterVersion(parsedVersionOrNull);
         return new CatalogConverterMetadata(converterId, converterVersion);
     }
 

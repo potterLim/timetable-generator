@@ -35,10 +35,7 @@ internal sealed class GoogleTokenExchangeResult
 
     public static GoogleTokenExchangeResult Complete(GoogleAccessToken accessToken)
     {
-        return new GoogleTokenExchangeResult(
-            accessToken,
-            EGoogleTokenExchangeFailureKind.None,
-            null);
+        return new GoogleTokenExchangeResult(accessToken, EGoogleTokenExchangeFailureKind.None, null);
     }
 
     public static GoogleTokenExchangeResult Fail(
@@ -47,9 +44,7 @@ internal sealed class GoogleTokenExchangeResult
     {
         if (failureKind == EGoogleTokenExchangeFailureKind.None)
         {
-            throw new ArgumentException(
-                "Failed token exchanges require a failure kind.",
-                nameof(failureKind));
+            throw new ArgumentException("Failed token exchanges require a failure kind.", nameof(failureKind));
         }
 
         if (string.IsNullOrWhiteSpace(diagnosticCode))
@@ -59,9 +54,6 @@ internal sealed class GoogleTokenExchangeResult
                 nameof(diagnosticCode));
         }
 
-        return new GoogleTokenExchangeResult(
-            null,
-            failureKind,
-            diagnosticCode);
+        return new GoogleTokenExchangeResult(null, failureKind, diagnosticCode);
     }
 }

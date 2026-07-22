@@ -15,9 +15,7 @@ internal sealed class RecordingAppleCalendarExporter : IAppleCalendarExporter
 
     public CalendarExportDocument? ExportedDocumentOrNull { get; private set; }
 
-    public RecordingAppleCalendarExporter(
-        bool isAvailable,
-        AppleCalendarExportResult result)
+    public RecordingAppleCalendarExporter(bool isAvailable, AppleCalendarExportResult result)
     {
         if (result == null)
         {

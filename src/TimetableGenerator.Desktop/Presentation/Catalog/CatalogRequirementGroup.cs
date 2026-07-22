@@ -34,8 +34,7 @@ internal sealed class CatalogRequirementGroup
             throw new ArgumentNullException(nameof(courses));
         }
 
-        List<CatalogCourseProjection> copiedCourses =
-            new List<CatalogCourseProjection>();
+        List<CatalogCourseProjection> copiedCourses = new List<CatalogCourseProjection>();
         HashSet<CourseId> uniqueCourseIds = new HashSet<CourseId>();
         foreach (CatalogCourseProjection course in courses)
         {
@@ -65,9 +64,7 @@ internal sealed class CatalogRequirementGroup
 
         if (copiedCourses.Count == 0)
         {
-            throw new ArgumentException(
-                "Requirement groups require at least one course.",
-                nameof(courses));
+            throw new ArgumentException("Requirement groups require at least one course.", nameof(courses));
         }
 
         RequirementType = requirementType;

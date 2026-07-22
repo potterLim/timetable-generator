@@ -40,9 +40,7 @@ internal readonly record struct CatalogCacheGeneration
         return new CatalogCacheGeneration(Value + 1L);
     }
 
-    public static bool TryParseFileComponent(
-        string value,
-        out CatalogCacheGeneration generation)
+    public static bool TryParseFileComponent(string value, out CatalogCacheGeneration generation)
     {
         generation = default(CatalogCacheGeneration);
         if (value == null || value.Length != 21 || value[0] != 'g')

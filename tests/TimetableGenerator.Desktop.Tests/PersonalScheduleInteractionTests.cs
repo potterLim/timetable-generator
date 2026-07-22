@@ -36,8 +36,7 @@ public sealed class PersonalScheduleInteractionTests
     [AvaloniaFact]
     public void AddEditAndDeleteStayInsideTheActivePlan()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
 
         try
         {
@@ -54,37 +53,30 @@ public sealed class PersonalScheduleInteractionTests
             workspace.SavePersonalScheduleCommand.Execute(null);
 
             Assert.False(workspace.IsPersonalScheduleEditorVisible);
-            PersonalScheduleItem addedItem = Assert.Single(
-                workspace.ActivePlan.PersonalSchedules);
+            PersonalScheduleItem addedItem = Assert.Single(workspace.ActivePlan.PersonalSchedules);
             PersonalScheduleId addedScheduleId = addedItem.Id;
             Assert.Equal("랩 미팅", addedItem.Title);
             Assert.Equal("화·목: 18:00–19:30", addedItem.TimeSummary);
-            Assert.Equal(
-                "분반: A · 담당: 김교수 · 장소: 느헤미야홀",
-                addedItem.DetailsSummary);
+            Assert.Equal("분반: A · 담당: 김교수 · 장소: 느헤미야홀", addedItem.DetailsSummary);
 
             workspace.ActivePlan = workspace.Plans[1];
             Assert.Empty(workspace.ActivePlan.PersonalSchedules);
 
             workspace.ActivePlan = workspace.Plans[0];
-            PersonalScheduleItem itemToEdit = Assert.Single(
-                workspace.ActivePlan.PersonalSchedules);
+            PersonalScheduleItem itemToEdit = Assert.Single(workspace.ActivePlan.PersonalSchedules);
             workspace.BeginEditPersonalScheduleCommand.Execute(itemToEdit.Id);
             workspace.PersonalScheduleTitleDraft = "연구실 정기 미팅";
             workspace.PersonalScheduleLocationDraft = string.Empty;
             workspace.SavePersonalScheduleCommand.Execute(null);
 
-            PersonalScheduleItem editedItem = Assert.Single(
-                workspace.ActivePlan.PersonalSchedules);
+            PersonalScheduleItem editedItem = Assert.Single(workspace.ActivePlan.PersonalSchedules);
             Assert.Equal(addedScheduleId, editedItem.Id);
             Assert.Equal("연구실 정기 미팅", editedItem.Title);
             Assert.DoesNotContain("느헤미야홀", editedItem.DetailsSummary);
 
             workspace.BeginDeletePersonalScheduleCommand.Execute(editedItem);
             Assert.True(workspace.IsDeletePersonalScheduleConfirmationVisible);
-            Assert.Equal(
-                "시간표에서 개인 일정 '연구실 정기 미팅'을 삭제합니다.",
-                workspace.PersonalScheduleDeletionDescription);
+            Assert.Equal("시간표에서 개인 일정 '연구실 정기 미팅'을 삭제합니다.", workspace.PersonalScheduleDeletionDescription);
             Assert.DoesNotContain(
                 "추천 시간표",
                 workspace.PersonalScheduleDeletionDescription,
@@ -106,8 +98,7 @@ public sealed class PersonalScheduleInteractionTests
     [AvaloniaFact]
     public void PersonalScheduleEditorUsesACenteredAccessibleModal()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         ProductWorkspaceHostView host = new ProductWorkspaceHostView();
         host.DataContext = workspace;
         Window window = new Window();
@@ -129,12 +120,8 @@ public sealed class PersonalScheduleInteractionTests
             workspace.BeginAddPersonalScheduleCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
 
-            Border workspaceSurface = findRequiredControl<Border>(
-                host,
-                "PersonalScheduleEditorOverlay");
-            Border dialog = findRequiredControl<Border>(
-                host,
-                "PersonalScheduleEditorDialog");
+            Border workspaceSurface = findRequiredControl<Border>(host, "PersonalScheduleEditorOverlay");
+            Border dialog = findRequiredControl<Border>(host, "PersonalScheduleEditorDialog");
             TextBox nameInput = host.GetVisualDescendants()
                 .OfType<TextBox>()
                 .Single(candidate => candidate.Name == "PersonalScheduleNameInput");
@@ -143,43 +130,25 @@ public sealed class PersonalScheduleInteractionTests
                 .Single(
                     candidate => candidate.Name
                         == "PersonalScheduleInstructorInput");
-            Grid rootWorkspaceSurface = findRequiredControl<Grid>(
-                host,
-                "WorkspaceSurface");
+            Grid rootWorkspaceSurface = findRequiredControl<Grid>(host, "WorkspaceSurface");
 
             Assert.True(workspaceSurface.IsVisible);
             Assert.False(rootWorkspaceSurface.IsEnabled);
             Assert.True(nameInput.IsKeyboardFocusWithin);
-            Assert.Equal(
-                "PersonalScheduleNameInput",
-                AutomationProperties.GetAutomationId(nameInput));
-            Assert.Equal(
-                "개인 일정 담당자",
-                AutomationProperties.GetName(instructorInput));
-            Assert.Equal(
-                VerticalAlignment.Center,
-                instructorInput.VerticalContentAlignment);
+            Assert.Equal("PersonalScheduleNameInput", AutomationProperties.GetAutomationId(nameInput));
+            Assert.Equal("개인 일정 담당자", AutomationProperties.GetName(instructorInput));
+            Assert.Equal(VerticalAlignment.Center, instructorInput.VerticalContentAlignment);
             Assert.Equal(680.0, dialog.Bounds.Width);
-            Assert.Equal(
-                KeyboardNavigationMode.Cycle,
-                KeyboardNavigation.GetTabNavigation(dialog));
-            PersonalScheduleEditorView editor = host.GetVisualDescendants()
-                .OfType<PersonalScheduleEditorView>()
-                .Single();
-            Assert.Equal(
-                KeyboardNavigationMode.Cycle,
-                KeyboardNavigation.GetTabNavigation(editor));
-            Assert.Equal(
-                "개인 일정 대화상자",
-                AutomationProperties.GetName(dialog));
+            Assert.Equal(KeyboardNavigationMode.Cycle, KeyboardNavigation.GetTabNavigation(dialog));
+            PersonalScheduleEditorView editor = host.GetVisualDescendants().OfType<PersonalScheduleEditorView>().Single();
+            Assert.Equal(KeyboardNavigationMode.Cycle, KeyboardNavigation.GetTabNavigation(editor));
+            Assert.Equal("개인 일정 대화상자", AutomationProperties.GetName(dialog));
             Button closeButton = host.GetVisualDescendants()
                 .OfType<Button>()
                 .Single(
                     candidate => candidate.Name
                         == "ClosePersonalScheduleEditorButton");
-            Assert.Equal(
-                "개인 일정 편집기 닫기",
-                AutomationProperties.GetName(closeButton));
+            Assert.Equal("개인 일정 편집기 닫기", AutomationProperties.GetName(closeButton));
 
             workspace.SavePersonalScheduleCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
@@ -212,14 +181,12 @@ public sealed class PersonalScheduleInteractionTests
     [AvaloniaFact]
     public void PersonalScheduleDeleteConfirmationUsesACompactCenteredLayout()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         workspace.BeginAddPersonalScheduleCommand.Execute(null);
         workspace.PersonalScheduleTitleDraft = "연구실 정기 미팅";
         selectPersonalScheduleDay(workspace, EDay.Tuesday);
         workspace.SavePersonalScheduleCommand.Execute(null);
-        PersonalScheduleItem schedule = Assert.Single(
-            workspace.ActivePlan.PersonalSchedules);
+        PersonalScheduleItem schedule = Assert.Single(workspace.ActivePlan.PersonalSchedules);
         ProductWorkspaceHostView host = new ProductWorkspaceHostView();
         host.DataContext = workspace;
         Window window = new Window();
@@ -233,58 +200,36 @@ public sealed class PersonalScheduleInteractionTests
             workspace.BeginEditPersonalScheduleCommand.Execute(schedule.Id);
             Dispatcher.UIThread.RunJobs();
 
-            Border dialog = findRequiredControl<Border>(
-                host,
-                "PersonalScheduleEditorDialog");
+            Border dialog = findRequiredControl<Border>(host, "PersonalScheduleEditorDialog");
             Assert.Equal(680.0, dialog.Bounds.Width);
 
             workspace.CancelPersonalScheduleEditCommand.Execute(null);
             workspace.BeginDeletePersonalScheduleCommand.Execute(schedule);
             Dispatcher.UIThread.RunJobs();
 
-            Border iconSurface = findRequiredControl<Border>(
-                host,
-                "DeletePersonalScheduleIconSurface");
-            TextBlock heading = findRequiredControl<TextBlock>(
-                host,
-                "DeletePersonalScheduleHeading");
-            TextBlock description = findRequiredControl<TextBlock>(
-                host,
-                "DeletePersonalScheduleDescription");
-            StackPanel actions = findRequiredControl<StackPanel>(
-                host,
-                "DeletePersonalScheduleActions");
-            Button cancelButton = findRequiredControl<Button>(
-                host,
-                "CancelDeletePersonalScheduleButton");
-            Button confirmButton = findRequiredControl<Button>(
-                host,
-                "ConfirmDeletePersonalScheduleButton");
+            Border iconSurface = findRequiredControl<Border>(host, "DeletePersonalScheduleIconSurface");
+            TextBlock heading = findRequiredControl<TextBlock>(host, "DeletePersonalScheduleHeading");
+            TextBlock description = findRequiredControl<TextBlock>(host, "DeletePersonalScheduleDescription");
+            StackPanel actions = findRequiredControl<StackPanel>(host, "DeletePersonalScheduleActions");
+            Button cancelButton = findRequiredControl<Button>(host, "CancelDeletePersonalScheduleButton");
+            Button confirmButton = findRequiredControl<Button>(host, "ConfirmDeletePersonalScheduleButton");
 
             Assert.Equal(384.0, dialog.MaxWidth);
             Assert.Equal(384.0, dialog.Bounds.Width);
             Assert.Equal(new Thickness(24.0), dialog.Padding);
-            Assert.Equal(
-                HorizontalAlignment.Center,
-                iconSurface.HorizontalAlignment);
+            Assert.Equal(HorizontalAlignment.Center, iconSurface.HorizontalAlignment);
             Assert.Equal(TextAlignment.Center, heading.TextAlignment);
             Assert.Equal(TextWrapping.Wrap, heading.TextWrapping);
             Assert.Equal(TextAlignment.Center, description.TextAlignment);
             Assert.Equal(TextWrapping.Wrap, description.TextWrapping);
             Assert.Equal("삭제", confirmButton.Content);
-            Assert.Equal(
-                HorizontalAlignment.Center,
-                actions.HorizontalAlignment);
+            Assert.Equal(HorizontalAlignment.Center, actions.HorizontalAlignment);
             Assert.All(
                 new[] { cancelButton, confirmButton },
                 button =>
                 {
-                    Assert.Equal(
-                        HorizontalAlignment.Center,
-                        button.HorizontalContentAlignment);
-                    Assert.Equal(
-                        VerticalAlignment.Center,
-                        button.VerticalContentAlignment);
+                    Assert.Equal(HorizontalAlignment.Center, button.HorizontalContentAlignment);
+                    Assert.Equal(VerticalAlignment.Center, button.VerticalContentAlignment);
                 });
         }
         finally
@@ -297,8 +242,7 @@ public sealed class PersonalScheduleInteractionTests
     [AvaloniaFact]
     public void EditorSupportsTheWholeWeekAndUsesLocalizedTimeOrder()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         ProductWorkspaceHostView host = new ProductWorkspaceHostView();
         host.DataContext = workspace;
         Window window = new Window();
@@ -343,12 +287,10 @@ public sealed class PersonalScheduleInteractionTests
             Assert.Equal(8.0, dayOptionsGrid.ColumnSpacing);
             for (int dayIndex = 0; dayIndex < dayInputs.Length; ++dayIndex)
             {
-                Control? dayContainerOrNull =
-                    dayOptions.ContainerFromIndex(dayIndex);
+                Control? dayContainerOrNull = dayOptions.ContainerFromIndex(dayIndex);
                 if (dayContainerOrNull == null)
                 {
-                    throw new InvalidOperationException(
-                        "The weekday option container was not prepared.");
+                    throw new InvalidOperationException("The weekday option container was not prepared.");
                 }
 
                 Assert.Equal(dayIndex, Grid.GetColumn(dayContainerOrNull));
@@ -403,19 +345,14 @@ public sealed class PersonalScheduleInteractionTests
                 .Select(
                     candidate =>
                     {
-                        Avalonia.Point? originOrNull = candidate.TranslatePoint(
-                            new Avalonia.Point(0.0, 0.0),
-                            dayOptions);
+                        Avalonia.Point? originOrNull = candidate.TranslatePoint(new Avalonia.Point(0.0, 0.0), dayOptions);
                         Assert.NotNull(originOrNull);
                         if (originOrNull == null)
                         {
-                            throw new InvalidOperationException(
-                                "The day option geometry could not be resolved.");
+                            throw new InvalidOperationException("The day option geometry could not be resolved.");
                         }
 
-                        return (
-                            Left: originOrNull.Value.X,
-                            Width: candidate.Bounds.Width);
+                        return (Left: originOrNull.Value.X, Width: candidate.Bounds.Width);
                     })
                 .OrderBy(geometry => geometry.Left)
                 .ToArray();
@@ -423,10 +360,7 @@ public sealed class PersonalScheduleInteractionTests
                 geometry => geometry.Width);
             double maximumDayWidth = dayInputGeometry.Max(
                 geometry => geometry.Width);
-            Assert.InRange(
-                maximumDayWidth - minimumDayWidth,
-                0.0,
-                1.0);
+            Assert.InRange(maximumDayWidth - minimumDayWidth, 0.0, 1.0);
             Assert.All(
                 dayInputGeometry,
                 geometry =>
@@ -442,18 +376,13 @@ public sealed class PersonalScheduleInteractionTests
                 - (lastDay.Left + lastDay.Width);
             Assert.InRange(leadingMargin, 0.0, 0.5);
             Assert.InRange(trailingMargin, 0.0, 0.5);
-            Assert.InRange(
-                Math.Abs(leadingMargin - trailingMargin),
-                0.0,
-                1.0);
+            Assert.InRange(Math.Abs(leadingMargin - trailingMargin), 0.0, 1.0);
             for (int dayIndex = 0;
                 dayIndex < dayInputGeometry.Length - 1;
                 ++dayIndex)
             {
-                (double Left, double Width) currentDay =
-                    dayInputGeometry[dayIndex];
-                (double Left, double Width) nextDay =
-                    dayInputGeometry[dayIndex + 1];
+                (double Left, double Width) currentDay = dayInputGeometry[dayIndex];
+                (double Left, double Width) nextDay = dayInputGeometry[dayIndex + 1];
                 double gap = nextDay.Left
                     - (currentDay.Left + currentDay.Width);
                 Assert.InRange(gap, 7.0, 9.0);
@@ -473,37 +402,28 @@ public sealed class PersonalScheduleInteractionTests
                     host);
             Assert.NotNull(dayOptionsPositionOrNull);
             Assert.NotNull(nameInputPositionOrNull);
-            if (dayOptionsPositionOrNull == null
-                || nameInputPositionOrNull == null)
+            if (dayOptionsPositionOrNull == null || nameInputPositionOrNull == null)
             {
                 throw new InvalidOperationException(
                     "The personal schedule fields were not attached to the editor.");
             }
 
-            double dayOptionsRight = dayOptionsPositionOrNull.Value.X
-                + dayOptions.Bounds.Width;
-            double nameInputRight = nameInputPositionOrNull.Value.X
-                + scheduleNameInput.Bounds.Width;
+            double dayOptionsRight = dayOptionsPositionOrNull.Value.X + dayOptions.Bounds.Width;
+            double nameInputRight = nameInputPositionOrNull.Value.X + scheduleNameInput.Bounds.Width;
             Assert.InRange(
                 Math.Abs(
                     dayOptionsPositionOrNull.Value.X
                     - nameInputPositionOrNull.Value.X),
                 0.0,
                 0.5);
-            Assert.InRange(
-                Math.Abs(dayOptionsRight - nameInputRight),
-                0.0,
-                0.5);
+            Assert.InRange(Math.Abs(dayOptionsRight - nameInputRight), 0.0, 0.5);
 
             ProductTimePicker startTimeInput = host.GetVisualDescendants()
                 .OfType<ProductTimePicker>()
                 .Single(
                     candidate => candidate.Name
                         == "PersonalScheduleStartTimeInput");
-            string?[] segmentNames = startTimeInput.GetVisualDescendants()
-                .OfType<ComboBox>()
-                .Select(AutomationProperties.GetName)
-                .ToArray();
+            string?[] segmentNames = startTimeInput.GetVisualDescendants().OfType<ComboBox>().Select(AutomationProperties.GetName).ToArray();
             Assert.Equal(
                 new string?[]
                 {
@@ -517,8 +437,7 @@ public sealed class PersonalScheduleInteractionTests
             selectPersonalScheduleDay(workspace, EDay.Sunday);
             workspace.SavePersonalScheduleCommand.Execute(null);
 
-            PersonalSchedule savedSchedule = Assert.Single(
-                workspace.ActivePlan.Plan.PersonalSchedules);
+            PersonalSchedule savedSchedule = Assert.Single(workspace.ActivePlan.Plan.PersonalSchedules);
             Assert.Equal(EDay.Sunday, Assert.Single(savedSchedule.TimeRanges).Day);
         }
         finally
@@ -531,8 +450,7 @@ public sealed class PersonalScheduleInteractionTests
     [AvaloniaFact]
     public void DayOptionsUseCompleteVisualStatesAcrossThemes()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         ProductWorkspaceHostView host = new ProductWorkspaceHostView();
         host.DataContext = workspace;
         Window window = new Window();
@@ -603,10 +521,7 @@ public sealed class PersonalScheduleInteractionTests
                     "HoverSurfaceBrush",
                     "ControlBorderBrush",
                     new Thickness(1.0));
-                window.MouseDown(
-                    mondayCenter,
-                    MouseButton.Left,
-                    RawInputModifiers.None);
+                window.MouseDown(mondayCenter, MouseButton.Left, RawInputModifiers.None);
                 Dispatcher.UIThread.RunJobs();
                 assertDayOptionVisuals(
                     mondayInput,
@@ -614,10 +529,7 @@ public sealed class PersonalScheduleInteractionTests
                     "PressedSurfaceBrush",
                     "ControlBorderBrush",
                     new Thickness(1.0));
-                window.MouseUp(
-                    mondayCenter,
-                    MouseButton.Left,
-                    RawInputModifiers.None);
+                window.MouseUp(mondayCenter, MouseButton.Left, RawInputModifiers.None);
 
                 mondayOption.IsSelected = false;
                 movePointerOutsideDayOptions(window);
@@ -651,10 +563,7 @@ public sealed class PersonalScheduleInteractionTests
                     "SelectionHoverSurfaceBrush",
                     "SelectionIndicatorBrush",
                     new Thickness(1.0));
-                window.MouseDown(
-                    tuesdayCenter,
-                    MouseButton.Left,
-                    RawInputModifiers.None);
+                window.MouseDown(tuesdayCenter, MouseButton.Left, RawInputModifiers.None);
                 Dispatcher.UIThread.RunJobs();
                 assertDayOptionVisuals(
                     tuesdayInput,
@@ -662,10 +571,7 @@ public sealed class PersonalScheduleInteractionTests
                     "SelectionPressedSurfaceBrush",
                     "SelectionIndicatorBrush",
                     new Thickness(1.0));
-                window.MouseUp(
-                    tuesdayCenter,
-                    MouseButton.Left,
-                    RawInputModifiers.None);
+                window.MouseUp(tuesdayCenter, MouseButton.Left, RawInputModifiers.None);
 
                 tuesdayOption.IsSelected = true;
                 movePointerOutsideDayOptions(window);
@@ -701,8 +607,7 @@ public sealed class PersonalScheduleInteractionTests
     [AvaloniaFact]
     public void ClearedRequiredTimeIsRejectedAndFocused()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         ProductWorkspaceHostView host = new ProductWorkspaceHostView();
         host.DataContext = workspace;
         Window window = new Window();
@@ -745,8 +650,7 @@ public sealed class PersonalScheduleInteractionTests
     [AvaloniaFact]
     public void InvalidEndTimePrecisionIsRejectedAndFocused()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         ProductWorkspaceHostView host = new ProductWorkspaceHostView();
         host.DataContext = workspace;
         Window window = new Window();
@@ -787,8 +691,7 @@ public sealed class PersonalScheduleInteractionTests
     [AvaloniaFact]
     public void SaveAndDeleteRestoreFocusToALiveWorkspaceControl()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         workspace.BeginAddPersonalScheduleCommand.Execute(null);
         workspace.PersonalScheduleTitleDraft = "랩 미팅";
         selectPersonalScheduleDay(workspace, EDay.Tuesday);
@@ -804,8 +707,7 @@ public sealed class PersonalScheduleInteractionTests
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
-            PersonalScheduleItem itemToEdit = Assert.Single(
-                workspace.ActivePlan.PersonalSchedules);
+            PersonalScheduleItem itemToEdit = Assert.Single(workspace.ActivePlan.PersonalSchedules);
             Button editButton = host.GetVisualDescendants()
                 .OfType<Button>()
                 .Single(
@@ -826,8 +728,7 @@ public sealed class PersonalScheduleInteractionTests
                         == "WorkspaceAddPersonalScheduleButton");
             Assert.True(addButton.IsKeyboardFocusWithin);
 
-            PersonalScheduleItem itemToDelete = Assert.Single(
-                workspace.ActivePlan.PersonalSchedules);
+            PersonalScheduleItem itemToDelete = Assert.Single(workspace.ActivePlan.PersonalSchedules);
             Button deleteButton = host.GetVisualDescendants()
                 .OfType<Button>()
                 .Single(
@@ -837,12 +738,8 @@ public sealed class PersonalScheduleInteractionTests
 
             workspace.BeginDeletePersonalScheduleCommand.Execute(itemToDelete);
             Dispatcher.UIThread.RunJobs();
-            TextBlock deleteHeading = findRequiredControl<TextBlock>(
-                host,
-                "DeletePersonalScheduleHeading");
-            Assert.Equal(
-                1,
-                (int)AutomationProperties.GetHeadingLevel(deleteHeading));
+            TextBlock deleteHeading = findRequiredControl<TextBlock>(host, "DeletePersonalScheduleHeading");
+            Assert.Equal(1, (int)AutomationProperties.GetHeadingLevel(deleteHeading));
             workspace.ConfirmDeletePersonalScheduleCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
 
@@ -859,8 +756,7 @@ public sealed class PersonalScheduleInteractionTests
     [AvaloniaFact]
     public void OpenPersonalScheduleEditorRestoresFocusAfterHostReattachment()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         workspace.BeginAddPersonalScheduleCommand.Execute(null);
         ProductWorkspaceHostView host = new ProductWorkspaceHostView();
         host.DataContext = workspace;
@@ -918,16 +814,12 @@ public sealed class PersonalScheduleInteractionTests
             Dispatcher.UIThread.RunJobs();
 
             Grid boardGrid = findRequiredControl<Grid>(scheduleBoard, "BoardGrid");
-            Button scheduleCard = boardGrid.Children
-                .OfType<Button>()
-                .Single();
+            Button scheduleCard = boardGrid.Children.OfType<Button>().Single();
 
             Assert.Equal(11, Grid.GetRow(scheduleCard));
             Assert.Equal(12, Grid.GetRowSpan(scheduleCard));
             Assert.Contains("personal", scheduleCard.Classes);
-            Assert.Contains(
-                "수요일 12:20–13:20",
-                AutomationProperties.GetName(scheduleCard));
+            Assert.Contains("수요일 12:20–13:20", AutomationProperties.GetName(scheduleCard));
         }
         finally
         {
@@ -938,9 +830,7 @@ public sealed class PersonalScheduleInteractionTests
     [AvaloniaFact]
     public void PersonalScheduleBoardCardMatchesCourseCardHierarchy()
     {
-        DailyTimeRange timeRange = new DailyTimeRange(
-            new ScheduleTime(12, 0),
-            new ScheduleTime(13, 0));
+        DailyTimeRange timeRange = new DailyTimeRange(new ScheduleTime(12, 0), new ScheduleTime(13, 0));
         PersonalScheduleDetails details = new PersonalScheduleDetails(
             new PersonalScheduleSection("A"),
             new PersonalScheduleInstructor("김교수"),
@@ -977,9 +867,7 @@ public sealed class PersonalScheduleInteractionTests
                 .OfType<Button>()
                 .Single();
             Grid cardContent = Assert.IsType<Grid>(scheduleCard.Content);
-            TextBlock[] cardTexts = cardContent.Children
-                .OfType<TextBlock>()
-                .ToArray();
+            TextBlock[] cardTexts = cardContent.Children.OfType<TextBlock>().ToArray();
             Assert.Equal(
                 new string[] { "사용자 경험 연구 정기 회의", "느헤미야홀 101호", "김교수" },
                 cardTexts.Select(getTextOrEmpty));
@@ -1021,8 +909,7 @@ public sealed class PersonalScheduleInteractionTests
             Assert.NotNull(accessibleNameOrNull);
             if (accessibleNameOrNull == null)
             {
-                throw new InvalidOperationException(
-                    "The personal schedule card accessible name was missing.");
+                throw new InvalidOperationException("The personal schedule card accessible name was missing.");
             }
 
             string accessibleName = accessibleNameOrNull;
@@ -1049,14 +936,9 @@ public sealed class PersonalScheduleInteractionTests
                     "분반",
                     StringComparison.Ordinal));
 
-            Button exportCard = scheduleBoard.PngExportSurface
-                .GetVisualDescendants()
-                .OfType<Button>()
-                .Single();
+            Button exportCard = scheduleBoard.PngExportSurface.GetVisualDescendants().OfType<Button>().Single();
             Grid exportContent = Assert.IsType<Grid>(exportCard.Content);
-            TextBlock[] exportCardTexts = exportContent.Children
-                .OfType<TextBlock>()
-                .ToArray();
+            TextBlock[] exportCardTexts = exportContent.Children.OfType<TextBlock>().ToArray();
             Assert.Equal(
                 new string[] { "사용자 경험 연구 정기 회의", "느헤미야홀 101호", "김교수" },
                 exportCardTexts.Select(getTextOrEmpty));
@@ -1071,8 +953,7 @@ public sealed class PersonalScheduleInteractionTests
     [AvaloniaFact]
     public void PersonalScheduleDetailsOfferPrefilledEditing()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         workspace.BeginAddPersonalScheduleCommand.Execute(null);
         workspace.PersonalScheduleTitleDraft = "채플특강 받고";
         selectPersonalScheduleDay(workspace, EDay.Thursday);
@@ -1083,8 +964,7 @@ public sealed class PersonalScheduleInteractionTests
         workspace.PersonalScheduleInstructorDraft = "담당자";
         workspace.PersonalScheduleLocationDraft = "오석관";
         workspace.SavePersonalScheduleCommand.Execute(null);
-        PersonalScheduleItem personalScheduleItem = Assert.Single(
-            workspace.ActivePlan.PersonalSchedules);
+        PersonalScheduleItem personalScheduleItem = Assert.Single(workspace.ActivePlan.PersonalSchedules);
 
         ProductWorkspaceHostView host = new ProductWorkspaceHostView();
         host.DataContext = workspace;
@@ -1098,8 +978,7 @@ public sealed class PersonalScheduleInteractionTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            string scheduleCardAutomationIdPrefix =
-                "PersonalScheduleCard:" + personalScheduleItem.Id;
+            string scheduleCardAutomationIdPrefix = "PersonalScheduleCard:" + personalScheduleItem.Id;
             Button scheduleCard = host.GetVisualDescendants()
                 .OfType<Button>()
                 .First(
@@ -1110,11 +989,8 @@ public sealed class PersonalScheduleInteractionTests
             detailsFlyout.ShowAt(scheduleCard);
             Dispatcher.UIThread.RunJobs();
 
-            Control detailsContent = Assert.IsAssignableFrom<Control>(
-                detailsFlyout.Content);
-            Button editButton = detailsContent.GetVisualDescendants()
-                .OfType<Button>()
-                .Single();
+            Control detailsContent = Assert.IsAssignableFrom<Control>(detailsFlyout.Content);
+            Button editButton = detailsContent.GetVisualDescendants().OfType<Button>().Single();
             Assert.Contains("icon", editButton.Classes);
             Assert.Equal(36.0, editButton.Width);
             Assert.Equal(36.0, editButton.Height);
@@ -1133,8 +1009,7 @@ public sealed class PersonalScheduleInteractionTests
             Assert.NotNull(editCommandOrNull);
             if (editCommandOrNull == null)
             {
-                throw new InvalidOperationException(
-                    "The personal schedule edit command was missing.");
+                throw new InvalidOperationException("The personal schedule edit command was missing.");
             }
 
             editCommandOrNull.Execute(null);
@@ -1147,12 +1022,8 @@ public sealed class PersonalScheduleInteractionTests
             Assert.Equal("B", workspace.PersonalScheduleSectionDraft);
             Assert.Equal("담당자", workspace.PersonalScheduleInstructorDraft);
             Assert.Equal("오석관", workspace.PersonalScheduleLocationDraft);
-            Assert.Equal(
-                new ScheduleTime(20, 0),
-                workspace.PersonalScheduleStartTimeOrNull);
-            Assert.Equal(
-                new ScheduleTime(20, 30),
-                workspace.PersonalScheduleEndTimeOrNull);
+            Assert.Equal(new ScheduleTime(20, 0), workspace.PersonalScheduleStartTimeOrNull);
+            Assert.Equal(new ScheduleTime(20, 30), workspace.PersonalScheduleEndTimeOrNull);
             Assert.Equal(
                 new EDay[] { EDay.Thursday, EDay.Saturday },
                 workspace.PersonalScheduleDayOptions
@@ -1169,9 +1040,7 @@ public sealed class PersonalScheduleInteractionTests
     [AvaloniaFact]
     public void EarlyShortScheduleShowsAClockLabelAndUsableTarget()
     {
-        DailyTimeRange timeRange = new DailyTimeRange(
-            new ScheduleTime(7, 40),
-            new ScheduleTime(7, 55));
+        DailyTimeRange timeRange = new DailyTimeRange(new ScheduleTime(7, 40), new ScheduleTime(7, 55));
         PersonalSchedule schedule = new PersonalSchedule(
             PersonalScheduleId.CreateNew(),
             new PersonalScheduleTitle("아침 약속"),
@@ -1199,22 +1068,13 @@ public sealed class PersonalScheduleInteractionTests
 
             Grid boardGrid = findRequiredControl<Grid>(scheduleBoard, "BoardGrid");
             Button scheduleCard = boardGrid.Children.OfType<Button>().Single();
-            string[] labels = boardGrid.Children
-                .OfType<TextBlock>()
-                .Select(getTextOrEmpty)
-                .ToArray();
+            string[] labels = boardGrid.Children.OfType<TextBlock>().Select(getTextOrEmpty).ToArray();
 
             Assert.True(scheduleCard.Bounds.Height >= 24.0);
             Assert.Contains("07:00", labels);
-            Assert.Contains(
-                "월요일 07:40–07:55",
-                AutomationProperties.GetName(scheduleCard));
-            Assert.Equal(
-                new ScheduleBoardTimeBoundary(390),
-                scheduleBoard.RenderedLayout.TimeAxis.Start);
-            Assert.Equal(
-                new ScheduleBoardTimeBoundary(480),
-                scheduleBoard.RenderedLayout.TimeAxis.End);
+            Assert.Contains("월요일 07:40–07:55", AutomationProperties.GetName(scheduleCard));
+            Assert.Equal(new ScheduleBoardTimeBoundary(390), scheduleBoard.RenderedLayout.TimeAxis.Start);
+            Assert.Equal(new ScheduleBoardTimeBoundary(480), scheduleBoard.RenderedLayout.TimeAxis.End);
             Assert.Equal(18, scheduleBoard.RenderedLayout.TimeAxis.IncrementCount);
             Assert.Equal(2, scheduleBoard.RenderedLayout.TimeAxis.GuideTimes.Count);
             Assert.Single(scheduleBoard.RenderedLayout.TimeAxis.LabelTimes);
@@ -1228,9 +1088,7 @@ public sealed class PersonalScheduleInteractionTests
     [AvaloniaFact]
     public void ShortRepeatedScheduleUsesCompactUniqueCardsWithoutAnExportLegend()
     {
-        DailyTimeRange timeRange = new DailyTimeRange(
-            new ScheduleTime(12, 20),
-            new ScheduleTime(12, 35));
+        DailyTimeRange timeRange = new DailyTimeRange(new ScheduleTime(12, 20), new ScheduleTime(12, 35));
         PersonalScheduleDetails details = new PersonalScheduleDetails(
             new PersonalScheduleSection("A"),
             new PersonalScheduleInstructor("김교수"),
@@ -1248,8 +1106,7 @@ public sealed class PersonalScheduleInteractionTests
             .Select(range => (ScheduleEntry)new PersonalScheduleEntry(schedule, range))
             .ToArray();
         ScheduleBoardView scheduleBoard = new ScheduleBoardView();
-        scheduleBoard.DataContext = createScheduleBoardPresentation(
-            new ScheduleRecommendation(entries));
+        scheduleBoard.DataContext = createScheduleBoardPresentation(new ScheduleRecommendation(entries));
         Window window = new Window();
         window.Width = 800.0;
         window.Height = 520.0;
@@ -1279,20 +1136,14 @@ public sealed class PersonalScheduleInteractionTests
                     Assert.Equal(1, title.MaxLines);
                     Assert.Equal(TextAlignment.Center, title.TextAlignment);
                 });
-            Assert.Equal(
-                2,
-                cards.Select(AutomationProperties.GetAutomationId).Distinct().Count());
+            Assert.Equal(2, cards.Select(AutomationProperties.GetAutomationId).Distinct().Count());
             Assert.All(
                 cards,
                 card => Assert.Contains(
                     "분반 A",
                     AutomationProperties.GetName(card)));
 
-            string[] exportTexts = scheduleBoard.PngExportSurface
-                .GetVisualDescendants()
-                .OfType<TextBlock>()
-                .Select(getTextOrEmpty)
-                .ToArray();
+            string[] exportTexts = scheduleBoard.PngExportSurface.GetVisualDescendants().OfType<TextBlock>().Select(getTextOrEmpty).ToArray();
             Assert.DoesNotContain("개인 일정 세부 정보", exportTexts);
             Assert.Contains("테스트 계획", exportTexts);
             Assert.DoesNotContain("한동대학교 · 2026-2", exportTexts);
@@ -1314,8 +1165,7 @@ public sealed class PersonalScheduleInteractionTests
     [AvaloniaFact]
     public async Task UnsatisfiedCourseConstraintsShowAReadOnlyPersonalPreviewAsync()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace())
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
         {
             addPersonalSchedule(
                 workspace,
@@ -1375,9 +1225,7 @@ public sealed class PersonalScheduleInteractionTests
         workspace.SavePersonalScheduleCommand.Execute(null);
     }
 
-    private static void selectPersonalScheduleDay(
-        PlannerWorkspaceViewModel workspace,
-        EDay day)
+    private static void selectPersonalScheduleDay(PlannerWorkspaceViewModel workspace, EDay day)
     {
         PersonalScheduleDayOption? matchingOptionOrNull =
             workspace.PersonalScheduleDayOptions.FirstOrDefault(
@@ -1400,14 +1248,8 @@ public sealed class PersonalScheduleInteractionTests
         string borderResourceKey,
         Thickness borderThickness)
     {
-        assertBrushUsesResource(
-            option.Background,
-            backgroundResourceKey,
-            themeVariant);
-        assertBrushUsesResource(
-            option.BorderBrush,
-            borderResourceKey,
-            themeVariant);
+        assertBrushUsesResource(option.Background, backgroundResourceKey, themeVariant);
+        assertBrushUsesResource(option.BorderBrush, borderResourceKey, themeVariant);
         Assert.Equal(borderThickness, option.BorderThickness);
     }
 
@@ -1428,28 +1270,20 @@ public sealed class PersonalScheduleInteractionTests
         Assert.NotNull(applicationOrNull);
         if (applicationOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The Avalonia test application was not initialized.");
+            throw new InvalidOperationException("The Avalonia test application was not initialized.");
         }
 
         object? resourceOrNull;
-        bool hasResource = applicationOrNull.TryGetResource(
-            resourceKey,
-            themeVariant,
-            out resourceOrNull);
+        bool hasResource = applicationOrNull.TryGetResource(resourceKey, themeVariant, out resourceOrNull);
         Assert.True(hasResource, "Missing brush resource: " + resourceKey);
-        SolidColorBrush actualBrush = Assert.IsType<SolidColorBrush>(
-            actualBrushOrNull);
-        SolidColorBrush expectedBrush = Assert.IsType<SolidColorBrush>(
-            resourceOrNull);
+        SolidColorBrush actualBrush = Assert.IsType<SolidColorBrush>(actualBrushOrNull);
+        SolidColorBrush expectedBrush = Assert.IsType<SolidColorBrush>(resourceOrNull);
         Assert.Equal(expectedBrush.Color, actualBrush.Color);
     }
 
     private static Point findControlCenter(Window window, Control control)
     {
-        Point? originOrNull = control.TranslatePoint(
-            new Point(0.0, 0.0),
-            window);
+        Point? originOrNull = control.TranslatePoint(new Point(0.0, 0.0), window);
         Assert.NotNull(originOrNull);
         if (originOrNull == null)
         {
@@ -1467,9 +1301,7 @@ public sealed class PersonalScheduleInteractionTests
         Dispatcher.UIThread.RunJobs();
     }
 
-    private static TControl findRequiredControl<TControl>(
-        Control root,
-        string name)
+    private static TControl findRequiredControl<TControl>(Control root, string name)
         where TControl : Control
     {
         TControl? controlOrNull = root.FindControl<TControl>(name);
@@ -1487,12 +1319,9 @@ public sealed class PersonalScheduleInteractionTests
         return textBlock.Text == null ? string.Empty : textBlock.Text;
     }
 
-    private static bool hasAutomationIdPrefix(
-        Control control,
-        string automationIdPrefix)
+    private static bool hasAutomationIdPrefix(Control control, string automationIdPrefix)
     {
-        string? automationIdOrNull = AutomationProperties.GetAutomationId(
-            control);
+        string? automationIdOrNull = AutomationProperties.GetAutomationId(control);
         return automationIdOrNull != null
             && automationIdOrNull.StartsWith(
                 automationIdPrefix,

@@ -101,9 +101,7 @@ public sealed class CourseChoiceGroupTests
         Assert.AreEqual(
             EOfferingPreference.Acceptable,
             group.CourseCandidates[0].OfferingCandidates[0].Preference);
-        Assert.AreEqual(
-            courseId,
-            group.CourseCandidates[0].CourseId);
+        Assert.AreEqual(courseId, group.CourseCandidates[0].CourseId);
     }
 
     [TestMethod]

@@ -112,9 +112,7 @@ public sealed class ScheduleRecommendationGeneratorTests
     {
         CatalogCourse firstCourse = ScheduleRecommendationTestData.CreateCourse("AAA10001");
         CatalogCourse secondCourse = ScheduleRecommendationTestData.CreateCourse("BBB10001");
-        MeetingSlot occupiedSlot = ScheduleRecommendationTestData.CreateMeetingSlot(
-            EDay.Monday,
-            1);
+        MeetingSlot occupiedSlot = ScheduleRecommendationTestData.CreateMeetingSlot(EDay.Monday, 1);
         CatalogOffering firstOffering = ScheduleRecommendationTestData.CreateScheduledOffering(
             "AAA10001",
             "01",
@@ -167,14 +165,8 @@ public sealed class ScheduleRecommendationGeneratorTests
     {
         CourseCatalog catalog = createCartesianCatalog();
         PlanningPlan basePlan = createCartesianPlan(catalog);
-        OfferingId firstBookmarkedOfferingId = basePlan.CourseChoiceGroups[0]
-            .CourseCandidates[0]
-            .OfferingCandidates[1]
-            .OfferingId;
-        OfferingId secondBookmarkedOfferingId = basePlan.CourseChoiceGroups[1]
-            .CourseCandidates[0]
-            .OfferingCandidates[1]
-            .OfferingId;
+        OfferingId firstBookmarkedOfferingId = basePlan.CourseChoiceGroups[0].CourseCandidates[0].OfferingCandidates[1].OfferingId;
+        OfferingId secondBookmarkedOfferingId = basePlan.CourseChoiceGroups[1].CourseCandidates[0].OfferingCandidates[1].OfferingId;
         ScheduleRecommendationBookmark bookmark =
             new ScheduleRecommendationBookmark(
                 new OfferingId[]
@@ -189,18 +181,13 @@ public sealed class ScheduleRecommendationGeneratorTests
             basePlan.Content,
             bookmark);
 
-        ScheduleRecommendationResult result = generate(
-            catalog,
-            bookmarkedPlan,
-            2);
+        ScheduleRecommendationResult result = generate(catalog, bookmarkedPlan, 2);
 
         Assert.HasCount(2, result.Recommendations);
         Assert.AreEqual(
             EScheduleRecommendationCompletion.MaximumRecommendationCountReached,
             result.Completion);
-        CollectionAssert.Contains(
-            getRecommendationNames(result),
-            "AAA10001:02,BBB10001:02");
+        CollectionAssert.Contains(getRecommendationNames(result), "AAA10001:02,BBB10001:02");
     }
 
     [TestMethod]
@@ -236,15 +223,10 @@ public sealed class ScheduleRecommendationGeneratorTests
             new ScheduleRecommendationBookmark(
                 new OfferingId[] { secondOffering.Id }));
 
-        ScheduleRecommendationResult result = generate(
-            catalog,
-            bookmarkedPlan,
-            1);
+        ScheduleRecommendationResult result = generate(catalog, bookmarkedPlan, 1);
 
         Assert.HasCount(1, result.Recommendations);
-        Assert.AreEqual(
-            secondOffering.Id,
-            result.Recommendations[0].UnscheduledSelections[0].OfferingId);
+        Assert.AreEqual(secondOffering.Id, result.Recommendations[0].UnscheduledSelections[0].OfferingId);
     }
 
     [TestMethod]
@@ -274,10 +256,8 @@ public sealed class ScheduleRecommendationGeneratorTests
     [TestMethod]
     public void GenerateRecommendationsKeepsUnscheduledSelectionsSeparateForManualReview()
     {
-        CatalogCourse scheduledCourse =
-            ScheduleRecommendationTestData.CreateCourse("AAA10001");
-        CatalogCourse unscheduledCourse =
-            ScheduleRecommendationTestData.CreateCourse("BBB10001");
+        CatalogCourse scheduledCourse = ScheduleRecommendationTestData.CreateCourse("AAA10001");
+        CatalogCourse unscheduledCourse = ScheduleRecommendationTestData.CreateCourse("BBB10001");
         CatalogOffering scheduledOffering =
             ScheduleRecommendationTestData.CreateScheduledOffering(
                 "AAA10001",
@@ -286,8 +266,7 @@ public sealed class ScheduleRecommendationGeneratorTests
                 {
                     ScheduleRecommendationTestData.CreateMeetingSlot(EDay.Monday, 1),
                 });
-        CatalogOffering unscheduledOffering =
-            ScheduleRecommendationTestData.CreateUnscheduledOffering("BBB10001", "01");
+        CatalogOffering unscheduledOffering = ScheduleRecommendationTestData.CreateUnscheduledOffering("BBB10001", "01");
         CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(
             new CatalogCourse[] { scheduledCourse, unscheduledCourse },
             new CatalogOffering[] { scheduledOffering, unscheduledOffering });
@@ -367,15 +346,11 @@ public sealed class ScheduleRecommendationGeneratorTests
         Assert.AreEqual(
             preferredOffering.Id,
             result.Recommendations[0].UnscheduledSelections[0].OfferingId);
-        Assert.AreEqual(
-            RecommendationScore.ZERO,
-            result.Recommendations[0].Score);
+        Assert.AreEqual(RecommendationScore.ZERO, result.Recommendations[0].Score);
         Assert.AreEqual(
             acceptableOffering.Id,
             result.Recommendations[1].UnscheduledSelections[0].OfferingId);
-        Assert.AreEqual(
-            new RecommendationScore(1),
-            result.Recommendations[1].Score);
+        Assert.AreEqual(new RecommendationScore(1), result.Recommendations[1].Score);
         Assert.AreEqual(
             ERecommendationVerificationStatus.RequiresManualReview,
             result.Recommendations[0].VerificationStatus);
@@ -438,9 +413,7 @@ public sealed class ScheduleRecommendationGeneratorTests
         Assert.AreEqual(
             timeNotProvidedOffering.Id,
             result.Recommendations[0].UnscheduledSelections[0].OfferingId);
-        Assert.AreEqual(
-            new RecommendationScore(1),
-            result.Recommendations[0].Score);
+        Assert.AreEqual(new RecommendationScore(1), result.Recommendations[0].Score);
     }
 
     [TestMethod]
@@ -539,12 +512,8 @@ public sealed class ScheduleRecommendationGeneratorTests
         ScheduleRecommendationResult result = generate(catalog, plan, 10);
 
         Assert.HasCount(1, result.Recommendations);
-        Assert.AreEqual(
-            "02",
-            result.Recommendations[0].ScheduledOfferings[0].SectionCode.Value);
-        Assert.AreSame(
-            personalSchedule,
-            result.Recommendations[0].PersonalSchedules[0]);
+        Assert.AreEqual("02", result.Recommendations[0].ScheduledOfferings[0].SectionCode.Value);
+        Assert.AreSame(personalSchedule, result.Recommendations[0].PersonalSchedules[0]);
     }
 
     [TestMethod]
@@ -641,16 +610,13 @@ public sealed class ScheduleRecommendationGeneratorTests
         ScheduleRecommendationResult result = generate(catalog, plan, 10);
 
         Assert.HasCount(1, result.Recommendations);
-        Assert.AreEqual(
-            "01",
-            result.Recommendations[0].ScheduledOfferings[0].SectionCode.Value);
+        Assert.AreEqual("01", result.Recommendations[0].ScheduledOfferings[0].SectionCode.Value);
     }
 
     [TestMethod]
     public void PersonalOnlyPlanProducesAConfirmedRecommendation()
     {
-        CatalogCourse catalogCourse =
-            ScheduleRecommendationTestData.CreateCourse("AAA10001");
+        CatalogCourse catalogCourse = ScheduleRecommendationTestData.CreateCourse("AAA10001");
         CatalogOffering catalogOffering =
             ScheduleRecommendationTestData.CreateUnscheduledOffering(
                 "AAA10001",
@@ -684,9 +650,7 @@ public sealed class ScheduleRecommendationGeneratorTests
         ScheduleTime start,
         ScheduleTime end)
     {
-        WeeklyTimeRange timeRange = new WeeklyTimeRange(
-            day,
-            new DailyTimeRange(start, end));
+        WeeklyTimeRange timeRange = new WeeklyTimeRange(day, new DailyTimeRange(start, end));
         return new PersonalSchedule(
             PersonalScheduleId.CreateNew(),
             new PersonalScheduleTitle("랩 미팅"),

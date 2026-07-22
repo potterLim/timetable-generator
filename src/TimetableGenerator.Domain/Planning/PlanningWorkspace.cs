@@ -37,8 +37,7 @@ public sealed class PlanningWorkspace
             throw new ArgumentNullException(nameof(catalogBinding));
         }
 
-        if (activePlanIdOrNull.HasValue
-            && activePlanIdOrNull.Value.IsValid == false)
+        if (activePlanIdOrNull.HasValue && activePlanIdOrNull.Value.IsValid == false)
         {
             throw new ArgumentException(
                 "Planning workspaces require a valid active plan ID when one is set.",
@@ -58,9 +57,7 @@ public sealed class PlanningWorkspace
         {
             if (plan == null)
             {
-                throw new ArgumentException(
-                    "Planning workspaces cannot contain null plans.",
-                    nameof(plans));
+                throw new ArgumentException("Planning workspaces cannot contain null plans.", nameof(plans));
             }
 
             if (planIds.Add(plan.Id) == false)
@@ -84,8 +81,7 @@ public sealed class PlanningWorkspace
                     nameof(plans));
             }
 
-            if (activePlanIdOrNull.HasValue
-                && plan.Id == activePlanIdOrNull.Value)
+            if (activePlanIdOrNull.HasValue && plan.Id == activePlanIdOrNull.Value)
             {
                 hasActivePlan = true;
             }
@@ -124,8 +120,7 @@ public sealed class PlanningWorkspace
     {
         if (ActivePlanIdOrNull.HasValue == false)
         {
-            throw new InvalidOperationException(
-                "The planning workspace does not contain an active plan.");
+            throw new InvalidOperationException("The planning workspace does not contain an active plan.");
         }
 
         foreach (PlanningPlan plan in mPlans)

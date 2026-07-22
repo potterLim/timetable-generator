@@ -34,9 +34,7 @@ public sealed class PlannerWorkspaceSmokeTests
         workspace.SaveCourseChoiceCommand.Execute(null);
 
         Assert.True(visibleCourse.IsAdded);
-        Assert.Equal(
-            originalCourseCount + 1,
-            workspace.ActivePlan.CourseChoiceGroups.Count);
+        Assert.Equal(originalCourseCount + 1, workspace.ActivePlan.CourseChoiceGroups.Count);
 
         PlanCourseChoiceGroupItem addedCourse =
             workspace.ActivePlan.CourseChoiceGroups[
@@ -44,9 +42,7 @@ public sealed class PlannerWorkspaceSmokeTests
         workspace.RemoveCourseChoiceGroupCommand.Execute(addedCourse);
 
         Assert.False(visibleCourse.IsAdded);
-        Assert.Equal(
-            originalCourseCount,
-            workspace.ActivePlan.CourseChoiceGroups.Count);
+        Assert.Equal(originalCourseCount, workspace.ActivePlan.CourseChoiceGroups.Count);
     }
 
     [AvaloniaFact]
@@ -201,18 +197,10 @@ public sealed class PlannerWorkspaceSmokeTests
         ScheduleRecommendation firstRecommendation = workspace.ActiveRecommendation;
         Assert.Equal(2, workspace.PngExportCandidates.Count);
         Assert.True(workspace.CanExportAllPngCandidates);
-        Assert.Same(
-            firstRecommendation,
-            workspace.PngExportCandidates[0].Schedule);
-        ScheduleBoardPresentation firstBoard =
-            Assert.IsType<ScheduleBoardPresentation>(
-                workspace.DisplayedScheduleBoard);
-        Assert.Equal(
-            new ScheduleBoardTimeBoundary(510),
-            firstBoard.Layout.TimeAxis.Start);
-        Assert.Equal(
-            new ScheduleBoardTimeBoundary(720),
-            firstBoard.Layout.TimeAxis.End);
+        Assert.Same(firstRecommendation, workspace.PngExportCandidates[0].Schedule);
+        ScheduleBoardPresentation firstBoard = Assert.IsType<ScheduleBoardPresentation>(workspace.DisplayedScheduleBoard);
+        Assert.Equal(new ScheduleBoardTimeBoundary(510), firstBoard.Layout.TimeAxis.Start);
+        Assert.Equal(new ScheduleBoardTimeBoundary(720), firstBoard.Layout.TimeAxis.End);
         int sharedDayCount = firstBoard.Layout.DayRange.DayCount;
 
         workspace.NextRecommendationCommand.Execute(null);
@@ -223,18 +211,10 @@ public sealed class PlannerWorkspaceSmokeTests
             workspace.ActiveRecommendation.Entries,
             entry => Assert.True(
                 entry.TimeRange.Start.MinutesFromMidnight >= 600));
-        ScheduleBoardPresentation secondBoard =
-            Assert.IsType<ScheduleBoardPresentation>(
-                workspace.DisplayedScheduleBoard);
-        Assert.Equal(
-            new ScheduleBoardTimeBoundary(690),
-            secondBoard.Layout.TimeAxis.Start);
-        Assert.Equal(
-            new ScheduleBoardTimeBoundary(840),
-            secondBoard.Layout.TimeAxis.End);
-        Assert.Equal(
-            sharedDayCount,
-            secondBoard.Layout.DayRange.DayCount);
+        ScheduleBoardPresentation secondBoard = Assert.IsType<ScheduleBoardPresentation>(workspace.DisplayedScheduleBoard);
+        Assert.Equal(new ScheduleBoardTimeBoundary(690), secondBoard.Layout.TimeAxis.Start);
+        Assert.Equal(new ScheduleBoardTimeBoundary(840), secondBoard.Layout.TimeAxis.End);
+        Assert.Equal(sharedDayCount, secondBoard.Layout.DayRange.DayCount);
 
         workspace.PreviousRecommendationCommand.Execute(null);
 
@@ -245,10 +225,8 @@ public sealed class PlannerWorkspaceSmokeTests
     [AvaloniaFact]
     public async Task RecommendationNavigationPersistsTheExactCombinationAsync()
     {
-        ImmediatePlanningWorkspaceStore planningWorkspaceStore =
-            new ImmediatePlanningWorkspaceStore();
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace(planningWorkspaceStore))
+        ImmediatePlanningWorkspaceStore planningWorkspaceStore = new ImmediatePlanningWorkspaceStore();
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace(planningWorkspaceStore))
         {
             await workspace.RecommendationRefreshTask;
             Task completedRefreshTask = workspace.RecommendationRefreshTask;
@@ -259,11 +237,8 @@ public sealed class PlannerWorkspaceSmokeTests
             Assert.Equal("2 / 2", workspace.RecommendationSummary);
             Assert.Same(completedRefreshTask, workspace.RecommendationRefreshTask);
             Assert.False(workspace.IsRecommendationCalculating);
-            PlanningWorkspace savedWorkspace = Assert.IsType<PlanningWorkspace>(
-                planningWorkspaceStore.LastSavedWorkspaceOrNull);
-            ScheduleRecommendationBookmark savedBookmark =
-                Assert.IsType<ScheduleRecommendationBookmark>(
-                    savedWorkspace.GetActivePlan().LastViewedRecommendationOrNull);
+            PlanningWorkspace savedWorkspace = Assert.IsType<PlanningWorkspace>(planningWorkspaceStore.LastSavedWorkspaceOrNull);
+            ScheduleRecommendationBookmark savedBookmark = Assert.IsType<ScheduleRecommendationBookmark>(savedWorkspace.GetActivePlan().LastViewedRecommendationOrNull);
             Assert.True(savedBookmark.HasSameScheduledOfferingIds(
                 new OfferingId[]
                 {
@@ -281,8 +256,7 @@ public sealed class PlannerWorkspaceSmokeTests
                 {
                     new OfferingId("offering-programming-alternative"),
                 });
-        ImmediatePlanningWorkspaceStore planningWorkspaceStore =
-            new ImmediatePlanningWorkspaceStore();
+        ImmediatePlanningWorkspaceStore planningWorkspaceStore = new ImmediatePlanningWorkspaceStore();
         using (PlannerWorkspaceViewModel workspace =
             PlannerWorkspaceTestFactory.CreateWorkspace(
                 bookmark,
@@ -313,8 +287,7 @@ public sealed class PlannerWorkspaceSmokeTests
         Assert.True(secondOffering.IsTimeNotProvided);
 
         workspace.AddCourseCommand.Execute(seminar);
-        CourseChoiceDraftCourseItem draft = Assert.Single(
-            workspace.CourseChoiceDraftCourses);
+        CourseChoiceDraftCourseItem draft = Assert.Single(workspace.CourseChoiceDraftCourses);
         draft.Offerings[0].SelectExcludedCommand.Execute(null);
         draft.Offerings[1].SelectPreferredCommand.Execute(null);
         workspace.SaveCourseChoiceCommand.Execute(null);
@@ -323,14 +296,9 @@ public sealed class PlannerWorkspaceSmokeTests
             .CourseChoiceGroups
             .Single(group => group.CourseCandidates.Any(
                 candidate => candidate.CourseId == seminar.CourseId));
-        CourseCandidate candidate = Assert.Single(
-            seminarGroup.CourseCandidates);
-        Assert.Equal(
-            EOfferingPreference.Excluded,
-            candidate.OfferingCandidates[0].Preference);
-        Assert.Equal(
-            EOfferingPreference.Preferred,
-            candidate.OfferingCandidates[1].Preference);
+        CourseCandidate candidate = Assert.Single(seminarGroup.CourseCandidates);
+        Assert.Equal(EOfferingPreference.Excluded, candidate.OfferingCandidates[0].Preference);
+        Assert.Equal(EOfferingPreference.Preferred, candidate.OfferingCandidates[1].Preference);
         Assert.Empty(workspace.ActivePlan.TimeNotProvidedCourses);
         Assert.False(seminar.IsSelectionEnabled);
     }
@@ -338,12 +306,10 @@ public sealed class PlannerWorkspaceSmokeTests
     [AvaloniaFact]
     public void MultiOfferingCourseUsesOneConciseMetadataLine()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace())
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
         {
             workspace.SearchText = "프로그래밍";
-            CourseSearchItem programming = Assert.Single(
-                workspace.VisibleCourses);
+            CourseSearchItem programming = Assert.Single(workspace.VisibleCourses);
 
             Assert.False(programming.HasSingleOfferingDetails);
             Assert.Empty(programming.SingleOfferingDetailsDisplayText);
@@ -354,14 +320,12 @@ public sealed class PlannerWorkspaceSmokeTests
     [AvaloniaFact]
     public async Task PlanSwitchRestoresThePersistedOfferingSelectionAsync()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace())
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
         {
             workspace.SearchText = "세미나";
             CourseSearchItem seminar = Assert.Single(workspace.VisibleCourses);
             workspace.AddCourseCommand.Execute(seminar);
-            CourseChoiceDraftCourseItem draft = Assert.Single(
-                workspace.CourseChoiceDraftCourses);
+            CourseChoiceDraftCourseItem draft = Assert.Single(workspace.CourseChoiceDraftCourses);
             draft.Offerings[0].SelectExcludedCommand.Execute(null);
             draft.Offerings[1].SelectPreferredCommand.Execute(null);
             workspace.SaveCourseChoiceCommand.Execute(null);
@@ -383,8 +347,7 @@ public sealed class PlannerWorkspaceSmokeTests
     [AvaloniaFact]
     public void PlanSwitchClosesEditsBeforeCommandsCanMutateAnotherPlan()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace())
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
         {
             int originalPlanCount = workspace.Plans.Count;
             string originalPrimaryName = workspace.Plans[0].DisplayName;
@@ -408,23 +371,18 @@ public sealed class PlannerWorkspaceSmokeTests
     [AvaloniaFact]
     public async Task CourseMutationCancelsStaleRecommendationWorkAsync()
     {
-        BlockingScheduleRecommendationProvider recommendationProvider =
-            new BlockingScheduleRecommendationProvider();
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace(recommendationProvider))
+        BlockingScheduleRecommendationProvider recommendationProvider = new BlockingScheduleRecommendationProvider();
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace(recommendationProvider))
         {
-            await recommendationProvider.FirstCallStarted.WaitAsync(
-                TimeSpan.FromSeconds(5.0));
+            await recommendationProvider.FirstCallStarted.WaitAsync(TimeSpan.FromSeconds(5.0));
             workspace.SearchText = "세미나";
             CourseSearchItem seminar = Assert.Single(workspace.VisibleCourses);
 
             workspace.AddCourseCommand.Execute(seminar);
             workspace.SaveCourseChoiceCommand.Execute(null);
 
-            await recommendationProvider.FirstCallCanceled.WaitAsync(
-                TimeSpan.FromSeconds(5.0));
-            await recommendationProvider.SecondCallStarted.WaitAsync(
-                TimeSpan.FromSeconds(5.0));
+            await recommendationProvider.FirstCallCanceled.WaitAsync(TimeSpan.FromSeconds(5.0));
+            await recommendationProvider.SecondCallStarted.WaitAsync(TimeSpan.FromSeconds(5.0));
             Assert.True(workspace.IsRecommendationCalculating);
         }
     }
@@ -432,35 +390,27 @@ public sealed class PlannerWorkspaceSmokeTests
     [AvaloniaFact]
     public async Task ShutdownCancelsRecommendationWorkBeforeCompletingAutosaveAsync()
     {
-        BlockingScheduleRecommendationProvider recommendationProvider =
-            new BlockingScheduleRecommendationProvider();
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace(recommendationProvider))
-        using (CancellationTokenSource timeoutSource =
-            new CancellationTokenSource(TimeSpan.FromSeconds(5.0)))
+        BlockingScheduleRecommendationProvider recommendationProvider = new BlockingScheduleRecommendationProvider();
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace(recommendationProvider))
+        using (CancellationTokenSource timeoutSource = new CancellationTokenSource(TimeSpan.FromSeconds(5.0)))
         {
-            await recommendationProvider.FirstCallStarted.WaitAsync(
-                timeoutSource.Token);
+            await recommendationProvider.FirstCallStarted.WaitAsync(timeoutSource.Token);
 
             await workspace.CompleteAutosaveAsync(timeoutSource.Token);
 
-            await recommendationProvider.FirstCallCanceled.WaitAsync(
-                timeoutSource.Token);
+            await recommendationProvider.FirstCallCanceled.WaitAsync(timeoutSource.Token);
         }
     }
 
     [AvaloniaFact]
     public async Task ClearingActivePlanRequiresConfirmationAndAutosavesEmptyContentAsync()
     {
-        ImmediatePlanningWorkspaceStore planningWorkspaceStore =
-            new ImmediatePlanningWorkspaceStore();
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace(planningWorkspaceStore))
+        ImmediatePlanningWorkspaceStore planningWorkspaceStore = new ImmediatePlanningWorkspaceStore();
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace(planningWorkspaceStore))
         {
             PlanId originalPlanId = workspace.ActivePlan.PlanId;
             PlanName originalPlanName = workspace.ActivePlan.Name;
-            PlanCatalogBinding originalBinding =
-                workspace.ActivePlan.Plan.CatalogBinding;
+            PlanCatalogBinding originalBinding = workspace.ActivePlan.Plan.CatalogBinding;
             int originalPlanCount = workspace.Plans.Count;
 
             Assert.True(workspace.CanClearActivePlan);
@@ -470,9 +420,7 @@ public sealed class PlannerWorkspaceSmokeTests
             Assert.True(workspace.IsClearActivePlanConfirmationVisible);
             Assert.True(workspace.IsPlanEditingOverlayVisible);
             Assert.False(workspace.IsWorkspaceInteractionEnabled);
-            Assert.Equal(
-                "시간표 비우기 확인",
-                workspace.PlanEditingDialogAccessibleName);
+            Assert.Equal("시간표 비우기 확인", workspace.PlanEditingDialogAccessibleName);
             Assert.Equal(originalPlanName.Value, workspace.PlanPendingClearName);
             Assert.Equal(
                 "'" + originalPlanName.Value + "'의 모든 내용을 지웁니다.",
@@ -500,12 +448,10 @@ public sealed class PlannerWorkspaceSmokeTests
             Assert.Empty(workspace.ActivePlan.Plan.CourseChoiceGroups);
             Assert.Empty(workspace.ActivePlan.Plan.UnscheduledOfferingSelections);
             Assert.Empty(workspace.ActivePlan.Plan.PersonalSchedules);
-            Assert.Null(
-                workspace.ActivePlan.Plan.LastViewedRecommendationOrNull);
+            Assert.Null(workspace.ActivePlan.Plan.LastViewedRecommendationOrNull);
             Assert.False(workspace.CanClearActivePlan);
             Assert.False(workspace.BeginClearActivePlanCommand.CanExecute(null));
-            PlanningWorkspace savedWorkspace = Assert.IsType<PlanningWorkspace>(
-                planningWorkspaceStore.LastSavedWorkspaceOrNull);
+            PlanningWorkspace savedWorkspace = Assert.IsType<PlanningWorkspace>(planningWorkspaceStore.LastSavedWorkspaceOrNull);
             Assert.Empty(savedWorkspace.GetActivePlan().CourseChoiceGroups);
             Assert.Empty(savedWorkspace.GetActivePlan().UnscheduledOfferingSelections);
             Assert.Empty(savedWorkspace.GetActivePlan().PersonalSchedules);
@@ -544,8 +490,7 @@ public sealed class PlannerWorkspaceSmokeTests
     [AvaloniaFact]
     public void PlanTabRenameCommandTargetsTheClickedPlan()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace())
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
         {
             PlanId activePlanId = workspace.ActivePlan.PlanId;
             PlanTabItem planToRename = workspace.Plans[1];
@@ -572,8 +517,7 @@ public sealed class PlannerWorkspaceSmokeTests
     [AvaloniaFact]
     public void DuplicatePlanNameShowsSpecificValidationMessage()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace())
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
         {
             string existingPlanName = workspace.Plans[0].DisplayName;
             PlanTabItem planToRename = workspace.Plans[1];
@@ -583,17 +527,14 @@ public sealed class PlannerWorkspaceSmokeTests
             workspace.ConfirmPlanNameCommand.Execute(null);
 
             Assert.True(workspace.IsRenamingPlan);
-            Assert.Equal(
-                "같은 이름의 시간표가 이미 있습니다.",
-                workspace.PlanNameValidationMessage);
+            Assert.Equal("같은 이름의 시간표가 이미 있습니다.", workspace.PlanNameValidationMessage);
         }
     }
 
     [AvaloniaFact]
     public void NewPlanUsesAnAvailableDefaultName()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace())
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
         {
             workspace.ActivePlan = workspace.Plans[0];
             workspace.BeginRenamePlanCommand.Execute(null);
@@ -621,8 +562,7 @@ public sealed class PlannerWorkspaceSmokeTests
     [AvaloniaFact]
     public void CancelingPlanCreationLeavesTheWorkspaceUnchanged()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace())
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
         {
             int originalPlanCount = workspace.Plans.Count;
             PlanId originalActivePlanId = workspace.ActivePlan.PlanId;
@@ -644,8 +584,7 @@ public sealed class PlannerWorkspaceSmokeTests
     [AvaloniaFact]
     public void PlanCreationValidatesTheDraftBeforeMutatingTheWorkspace()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace())
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
         {
             int originalPlanCount = workspace.Plans.Count;
             string existingPlanName = workspace.Plans[0].DisplayName;
@@ -656,9 +595,7 @@ public sealed class PlannerWorkspaceSmokeTests
 
             Assert.True(workspace.IsCreatingPlan);
             Assert.Equal(originalPlanCount, workspace.Plans.Count);
-            Assert.Equal(
-                "같은 이름의 시간표가 이미 있습니다.",
-                workspace.PlanNameValidationMessage);
+            Assert.Equal("같은 이름의 시간표가 이미 있습니다.", workspace.PlanNameValidationMessage);
 
             workspace.PlanNameDraft = "새 학기 시간표";
             workspace.ConfirmPlanNameCommand.Execute(null);
@@ -672,8 +609,7 @@ public sealed class PlannerWorkspaceSmokeTests
     [AvaloniaFact]
     public void DeletingPlansTargetsTheVisibleTabAndAllowsAnEmptyWorkspace()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace())
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
         {
             PlanTabItem activePlan = workspace.Plans[0];
             PlanTabItem planToClose = workspace.Plans[1];
@@ -717,8 +653,7 @@ public sealed class PlannerWorkspaceSmokeTests
     [AvaloniaFact]
     public void EscapeCancelsPlanEditingBeforeClosingResponsivePanes()
     {
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace())
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
         {
             workspace.BeginRenamePlanCommand.Execute(null);
             Assert.True(workspace.IsPlanEditingOverlayVisible);

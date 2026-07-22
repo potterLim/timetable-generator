@@ -14,22 +14,16 @@ namespace TimetableGenerator.Desktop.Tests;
 
 public sealed class ScheduleListGroupingTests
 {
-    private static readonly ScheduleInstructorSummary CONFIRMED_INSTRUCTOR =
-        new ScheduleInstructorSummary(
-            InstructorAssignmentMetadata.CreateConfirmed(
-                new InstructorDisplayText("김교수"),
-                new AdditionalInstructorCount(0)));
+    private static readonly ScheduleInstructorSummary CONFIRMED_INSTRUCTOR = new ScheduleInstructorSummary(
+        InstructorAssignmentMetadata.CreateConfirmed(
+            new InstructorDisplayText("김교수"),
+            new AdditionalInstructorCount(0)));
 
-    private static readonly ScheduleLocationSummary ASSIGNED_LOCATION =
-        new ScheduleLocationSummary(
-            LocationAssignmentMetadata.CreateAssigned(
-                new ClassroomDisplayText("NTH 311")));
+    private static readonly ScheduleLocationSummary ASSIGNED_LOCATION = new ScheduleLocationSummary(LocationAssignmentMetadata.CreateAssigned(new ClassroomDisplayText("NTH 311")));
 
-    private static readonly ScheduleInstructorSummary UNCONFIRMED_INSTRUCTOR =
-        new ScheduleInstructorSummary(InstructorAssignmentMetadata.Unconfirmed);
+    private static readonly ScheduleInstructorSummary UNCONFIRMED_INSTRUCTOR = new ScheduleInstructorSummary(InstructorAssignmentMetadata.Unconfirmed);
 
-    private static readonly ScheduleLocationSummary UNASSIGNED_LOCATION =
-        new ScheduleLocationSummary(LocationAssignmentMetadata.NotProvided);
+    private static readonly ScheduleLocationSummary UNASSIGNED_LOCATION = new ScheduleLocationSummary(LocationAssignmentMetadata.NotProvided);
 
     [Fact]
     public void CourseMeetingsWithMatchingMetadataShareOneOccurrence()
@@ -58,8 +52,7 @@ public sealed class ScheduleListGroupingTests
         ScheduleListGroup group = Assert.Single(ScheduleListProjector.Project(
             new ScheduleEntry[] { fridayEntry, mondayEntry }));
         ScheduleListOccurrence occurrence = Assert.Single(group.Occurrences);
-        CourseScheduleListSource source = Assert.IsType<CourseScheduleListSource>(
-            Assert.Single(group.Sources));
+        CourseScheduleListSource source = Assert.IsType<CourseScheduleListSource>(Assert.Single(group.Sources));
 
         Assert.Equal("전자기학", group.Title);
         Assert.Equal("전자기학(01)", group.TitleDisplayText);
@@ -127,8 +120,7 @@ public sealed class ScheduleListGroupingTests
             new AcademicPeriod(2),
             CONFIRMED_INSTRUCTOR,
             ASSIGNED_LOCATION);
-        PersonalScheduleId scheduleId = new PersonalScheduleId(
-            new Guid("c142907f-09c8-44e4-a192-1f7401605e04"));
+        PersonalScheduleId scheduleId = new PersonalScheduleId(new Guid("c142907f-09c8-44e4-a192-1f7401605e04"));
         PersonalScheduleEntry personalEntry = createPersonalEntry(
             scheduleId,
             new PersonalScheduleTitle("project lab"),
@@ -192,26 +184,18 @@ public sealed class ScheduleListGroupingTests
         Assert.Equal("제품 디자인", group.TitleDisplayText);
         Assert.Equal(2, group.Occurrences.Count);
         Assert.Equal("화: 10:30–11:45", group.Occurrences[0].ScheduleDisplayText);
-        Assert.Equal(
-            "(01) · NTH 311 · 김교수",
-            group.Occurrences[0].MetadataDisplayText);
+        Assert.Equal("(01) · NTH 311 · 김교수", group.Occurrences[0].MetadataDisplayText);
         Assert.Equal("목: 12:00–13:15", group.Occurrences[1].ScheduleDisplayText);
-        Assert.Equal(
-            "(02) · OH 401 · 김교수",
-            group.Occurrences[1].MetadataDisplayText);
+        Assert.Equal("(02) · OH 401 · 김교수", group.Occurrences[1].MetadataDisplayText);
         Assert.Equal(2, group.Sources.Count);
     }
 
     [Fact]
     public void SeparatelyCreatedMatchingPersonalSchedulesKeepEveryIdentity()
     {
-        DailyTimeRange timeRange = new DailyTimeRange(
-            new ScheduleTime(12, 0),
-            new ScheduleTime(13, 0));
-        PersonalScheduleId mondayScheduleId = new PersonalScheduleId(
-            new Guid("ec29ea12-3130-4395-9764-13244700da45"));
-        PersonalScheduleId thursdayScheduleId = new PersonalScheduleId(
-            new Guid("4d4cf0ba-314f-4115-b032-97a57b2c1e37"));
+        DailyTimeRange timeRange = new DailyTimeRange(new ScheduleTime(12, 0), new ScheduleTime(13, 0));
+        PersonalScheduleId mondayScheduleId = new PersonalScheduleId(new Guid("ec29ea12-3130-4395-9764-13244700da45"));
+        PersonalScheduleId thursdayScheduleId = new PersonalScheduleId(new Guid("4d4cf0ba-314f-4115-b032-97a57b2c1e37"));
         PersonalScheduleEntry mondayEntry = createPersonalEntry(
             mondayScheduleId,
             new PersonalScheduleTitle("랩 미팅"),
@@ -244,17 +228,10 @@ public sealed class ScheduleListGroupingTests
     [Fact]
     public void OnePersonalScheduleListsEveryMatchingSelectedDayInOneOccurrence()
     {
-        DailyTimeRange timeRange = new DailyTimeRange(
-            new ScheduleTime(18, 0),
-            new ScheduleTime(19, 0));
-        WeeklyTimeRange wednesdayRange = new WeeklyTimeRange(
-            EDay.Wednesday,
-            timeRange);
-        WeeklyTimeRange sundayRange = new WeeklyTimeRange(
-            EDay.Sunday,
-            timeRange);
-        PersonalScheduleId scheduleId = new PersonalScheduleId(
-            new Guid("7e8a4f55-78eb-4e03-bf61-9db52985e845"));
+        DailyTimeRange timeRange = new DailyTimeRange(new ScheduleTime(18, 0), new ScheduleTime(19, 0));
+        WeeklyTimeRange wednesdayRange = new WeeklyTimeRange(EDay.Wednesday, timeRange);
+        WeeklyTimeRange sundayRange = new WeeklyTimeRange(EDay.Sunday, timeRange);
+        PersonalScheduleId scheduleId = new PersonalScheduleId(new Guid("7e8a4f55-78eb-4e03-bf61-9db52985e845"));
         PersonalSchedule schedule = new PersonalSchedule(
             scheduleId,
             new PersonalScheduleTitle("저녁 모임"),
@@ -268,9 +245,7 @@ public sealed class ScheduleListGroupingTests
                 new PersonalScheduleEntry(schedule, wednesdayRange),
             }));
         ScheduleListOccurrence occurrence = Assert.Single(group.Occurrences);
-        PersonalScheduleListSource source =
-            Assert.IsType<PersonalScheduleListSource>(
-                Assert.Single(occurrence.Sources));
+        PersonalScheduleListSource source = Assert.IsType<PersonalScheduleListSource>(Assert.Single(occurrence.Sources));
 
         Assert.Equal("저녁 모임", group.TitleDisplayText);
         Assert.Equal(

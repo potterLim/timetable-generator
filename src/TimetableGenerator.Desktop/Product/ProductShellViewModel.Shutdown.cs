@@ -114,13 +114,11 @@ internal sealed partial class ProductShellViewModel
         mShutdownTitle = "저장하지 못해 창을 닫지 않았습니다";
         if (exception is OperationCanceledException)
         {
-            mShutdownMessage =
-                "저장이 예상보다 오래 걸렸습니다. 저장 상태를 확인한 뒤 다시 닫아 주세요.";
+            mShutdownMessage = "저장이 예상보다 오래 걸렸습니다. 저장 상태를 확인한 뒤 다시 닫아 주세요.";
         }
         else
         {
-            mShutdownMessage =
-                "시간표는 화면에 그대로 남아 있습니다. 저장 오류를 해결한 뒤 다시 시도해 주세요.";
+            mShutdownMessage = "시간표는 화면에 그대로 남아 있습니다. 저장 오류를 해결한 뒤 다시 시도해 주세요.";
         }
 
         raiseShutdownPropertiesChanged();

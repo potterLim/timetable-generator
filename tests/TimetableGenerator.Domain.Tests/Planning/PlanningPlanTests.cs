@@ -33,9 +33,7 @@ public sealed class PlanningPlanTests
                 firstOfferingId,
                 EOfferingPreference.Acceptable),
         };
-        CourseCandidate courseCandidate = new CourseCandidate(
-            courseId,
-            mutableOfferingCandidates);
+        CourseCandidate courseCandidate = new CourseCandidate(courseId, mutableOfferingCandidates);
 
         mutableOfferingCandidates.Add(new OfferingCandidate(
             createOfferingId("CSE30001", "02"),
@@ -63,9 +61,7 @@ public sealed class PlanningPlanTests
     [TestMethod]
     public void PlanKeepsUnscheduledSelectionsOutsideCourseChoiceGroups()
     {
-        CourseChoiceGroup courseChoiceGroup = createCourseChoiceGroup(
-            "CSE30001",
-            "01");
+        CourseChoiceGroup courseChoiceGroup = createCourseChoiceGroup("CSE30001", "01");
         UnscheduledOfferingSelection unscheduledSelection =
             new UnscheduledOfferingSelection(
                 createCourseId("CSE30002"),
@@ -80,21 +76,15 @@ public sealed class PlanningPlanTests
         Assert.HasCount(1, plan.CourseChoiceGroups);
         Assert.HasCount(1, plan.UnscheduledOfferingSelections);
         Assert.IsTrue(plan.HasUnscheduledOfferingSelections);
-        Assert.AreEqual(
-            unscheduledSelection.OfferingId,
-            plan.UnscheduledOfferingSelections[0].OfferingId);
+        Assert.AreEqual(unscheduledSelection.OfferingId, plan.UnscheduledOfferingSelections[0].OfferingId);
     }
 
     [TestMethod]
     public void PlanRejectsDuplicateAndMixedCourseSelections()
     {
         CourseId courseId = createCourseId("CSE30001");
-        CourseChoiceGroup firstChoiceGroup = createCourseChoiceGroup(
-            "CSE30001",
-            "01");
-        CourseChoiceGroup duplicateCourseChoiceGroup = createCourseChoiceGroup(
-            "CSE30001",
-            "02");
+        CourseChoiceGroup firstChoiceGroup = createCourseChoiceGroup("CSE30001", "01");
+        CourseChoiceGroup duplicateCourseChoiceGroup = createCourseChoiceGroup("CSE30001", "02");
         UnscheduledOfferingSelection mixedSelection = new UnscheduledOfferingSelection(
             courseId,
             createOfferingId("CSE30001", "03"));
@@ -179,9 +169,7 @@ public sealed class PlanningPlanTests
         return new CourseId("handong-global-university:" + courseCodeValue);
     }
 
-    private static OfferingId createOfferingId(
-        string courseCodeValue,
-        string sectionCodeValue)
+    private static OfferingId createOfferingId(string courseCodeValue, string sectionCodeValue)
     {
         return new OfferingId(
             "handong-global-university:2026-2:"

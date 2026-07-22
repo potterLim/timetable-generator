@@ -8,9 +8,7 @@ internal sealed record GoogleCalendarRecurrenceDateRange
 
     public DateOnly LastOccurrenceDate { get; }
 
-    public GoogleCalendarRecurrenceDateRange(
-        DateOnly firstOccurrenceDate,
-        DateOnly lastOccurrenceDate)
+    public GoogleCalendarRecurrenceDateRange(DateOnly firstOccurrenceDate, DateOnly lastOccurrenceDate)
     {
         if (firstOccurrenceDate > lastOccurrenceDate)
         {

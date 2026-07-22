@@ -20,8 +20,7 @@ internal sealed class SchedulePngExportBatch
         }
     }
 
-    public SchedulePngExportBatch(
-        IReadOnlyList<ScheduleBoardPresentation> candidates)
+    public SchedulePngExportBatch(IReadOnlyList<ScheduleBoardPresentation> candidates)
     {
         ArgumentNullException.ThrowIfNull(candidates);
         if (candidates.Count <= 1)
@@ -40,8 +39,7 @@ internal sealed class SchedulePngExportBatch
         }
 
         PlanName = firstCandidate.PlanName;
-        List<ScheduleBoardPresentation> copiedCandidates =
-            new List<ScheduleBoardPresentation>(candidates.Count);
+        List<ScheduleBoardPresentation> copiedCandidates = new List<ScheduleBoardPresentation>(candidates.Count);
         foreach (ScheduleBoardPresentation candidate in candidates)
         {
             if (candidate == null)

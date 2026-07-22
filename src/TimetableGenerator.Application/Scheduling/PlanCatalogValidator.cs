@@ -33,15 +33,13 @@ internal sealed class PlanCatalogValidator
             throw new ArgumentNullException(nameof(plan));
         }
 
-        EPlanCatalogValidationError bindingError = validateCatalogBinding(
-            plan.CatalogBinding);
+        EPlanCatalogValidationError bindingError = validateCatalogBinding(plan.CatalogBinding);
         if (bindingError != EPlanCatalogValidationError.None)
         {
             return PlanCatalogValidationResult.CreateInvalid(bindingError);
         }
 
-        List<ValidatedCourseChoiceGroup> validatedGroups =
-            new List<ValidatedCourseChoiceGroup>();
+        List<ValidatedCourseChoiceGroup> validatedGroups = new List<ValidatedCourseChoiceGroup>();
         foreach (CourseChoiceGroup courseChoiceGroup in plan.CourseChoiceGroups)
         {
             EPlanCatalogValidationError choiceError = validateCourseChoiceGroup(
@@ -56,25 +54,20 @@ internal sealed class PlanCatalogValidator
         foreach (UnscheduledOfferingSelection selection
             in plan.UnscheduledOfferingSelections)
         {
-            EPlanCatalogValidationError selectionError =
-                validateUnscheduledSelection(selection);
+            EPlanCatalogValidationError selectionError = validateUnscheduledSelection(selection);
             if (selectionError != EPlanCatalogValidationError.None)
             {
                 return PlanCatalogValidationResult.CreateInvalid(selectionError);
             }
         }
 
-        return PlanCatalogValidationResult.CreateValid(
-            validatedGroups,
-            plan.UnscheduledOfferingSelections);
+        return PlanCatalogValidationResult.CreateValid(validatedGroups, plan.UnscheduledOfferingSelections);
     }
 
-    private EPlanCatalogValidationError validateCatalogBinding(
-        PlanCatalogBinding catalogBinding)
+    private EPlanCatalogValidationError validateCatalogBinding(PlanCatalogBinding catalogBinding)
     {
         bool hasMatchingCatalogId = mCatalog.Id == catalogBinding.CatalogId;
-        bool hasMatchingInstitutionId =
-            mCatalog.InstitutionId == catalogBinding.InstitutionId;
+        bool hasMatchingInstitutionId = mCatalog.InstitutionId == catalogBinding.InstitutionId;
         bool hasMatchingTerm = mCatalog.Term == catalogBinding.Term;
         bool hasMatchingRevision = mCatalog.Revision == catalogBinding.Revision;
         if (hasMatchingCatalogId == false
@@ -92,8 +85,7 @@ internal sealed class PlanCatalogValidator
         CourseChoiceGroup courseChoiceGroup,
         ICollection<ValidatedCourseChoiceGroup> validatedGroups)
     {
-        List<ValidatedOfferingCandidate> validatedCandidates =
-            new List<ValidatedOfferingCandidate>();
+        List<ValidatedOfferingCandidate> validatedCandidates = new List<ValidatedOfferingCandidate>();
         foreach (CourseCandidate courseCandidate
             in courseChoiceGroup.CourseCandidates)
         {
@@ -152,9 +144,7 @@ internal sealed class PlanCatalogValidator
         }
 
         CatalogOffering? catalogOfferingOrNull;
-        bool hasOffering = mOfferingsById.TryGetValue(
-            selection.OfferingId,
-            out catalogOfferingOrNull);
+        bool hasOffering = mOfferingsById.TryGetValue(selection.OfferingId, out catalogOfferingOrNull);
         if (hasOffering == false || catalogOfferingOrNull == null)
         {
             return EPlanCatalogValidationError.OfferingNotFound;
@@ -173,11 +163,9 @@ internal sealed class PlanCatalogValidator
         return EPlanCatalogValidationError.None;
     }
 
-    private static IReadOnlyDictionary<CourseId, CatalogCourse> createCoursesById(
-        CourseCatalog catalog)
+    private static IReadOnlyDictionary<CourseId, CatalogCourse> createCoursesById(CourseCatalog catalog)
     {
-        Dictionary<CourseId, CatalogCourse> coursesById =
-            new Dictionary<CourseId, CatalogCourse>();
+        Dictionary<CourseId, CatalogCourse> coursesById = new Dictionary<CourseId, CatalogCourse>();
         foreach (CatalogCourse course in catalog.Courses)
         {
             coursesById.Add(course.Id, course);
@@ -186,11 +174,9 @@ internal sealed class PlanCatalogValidator
         return coursesById;
     }
 
-    private static IReadOnlyDictionary<OfferingId, CatalogOffering>
-        createOfferingsById(CourseCatalog catalog)
+    private static IReadOnlyDictionary<OfferingId, CatalogOffering> createOfferingsById(CourseCatalog catalog)
     {
-        Dictionary<OfferingId, CatalogOffering> offeringsById =
-            new Dictionary<OfferingId, CatalogOffering>();
+        Dictionary<OfferingId, CatalogOffering> offeringsById = new Dictionary<OfferingId, CatalogOffering>();
         foreach (CatalogOffering offering in catalog.Offerings)
         {
             offeringsById.Add(offering.Id, offering);

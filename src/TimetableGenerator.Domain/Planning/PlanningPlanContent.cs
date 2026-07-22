@@ -9,8 +9,7 @@ public sealed class PlanningPlanContent
 {
     private readonly IReadOnlyList<CourseChoiceGroup> mCourseChoiceGroups;
 
-    private readonly IReadOnlyList<UnscheduledOfferingSelection>
-        mUnscheduledOfferingSelections;
+    private readonly IReadOnlyList<UnscheduledOfferingSelection> mUnscheduledOfferingSelections;
 
     private readonly IReadOnlyList<PersonalSchedule> mPersonalSchedules;
 
@@ -122,14 +121,12 @@ public sealed class PlanningPlanContent
         return copiedGroups.AsReadOnly();
     }
 
-    private static IReadOnlyList<UnscheduledOfferingSelection>
-        copyAndValidateUnscheduledOfferingSelections(
+    private static IReadOnlyList<UnscheduledOfferingSelection> copyAndValidateUnscheduledOfferingSelections(
             IEnumerable<UnscheduledOfferingSelection> unscheduledOfferingSelections,
             ISet<CourseId> selectedCourseIds,
             ISet<OfferingId> selectedOfferingIds)
     {
-        List<UnscheduledOfferingSelection> copiedSelections =
-            new List<UnscheduledOfferingSelection>();
+        List<UnscheduledOfferingSelection> copiedSelections = new List<UnscheduledOfferingSelection>();
         foreach (UnscheduledOfferingSelection selection in unscheduledOfferingSelections)
         {
             if (selection == null)
@@ -197,9 +194,7 @@ public sealed class PlanningPlanContent
             {
                 foreach (WeeklyTimeRange candidateRange in candidateSchedule.TimeRanges)
                 {
-                    if (ScheduleConflictDetector.HasConflict(
-                        existingRange,
-                        candidateRange))
+                    if (ScheduleConflictDetector.HasConflict(existingRange, candidateRange))
                     {
                         throw new ArgumentException(
                             "Personal schedules in one plan cannot overlap.",

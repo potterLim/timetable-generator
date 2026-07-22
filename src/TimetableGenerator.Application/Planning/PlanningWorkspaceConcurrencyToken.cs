@@ -7,8 +7,7 @@ public readonly record struct PlanningWorkspaceConcurrencyToken
 {
     private const long MISSING_WORKSPACE_GENERATION = 0L;
 
-    public static PlanningWorkspaceConcurrencyToken MissingWorkspace { get; } =
-        new PlanningWorkspaceConcurrencyToken(MISSING_WORKSPACE_GENERATION);
+    public static PlanningWorkspaceConcurrencyToken MissingWorkspace { get; } = new PlanningWorkspaceConcurrencyToken(MISSING_WORKSPACE_GENERATION);
 
     public long Value { get; }
 
@@ -37,8 +36,7 @@ public readonly record struct PlanningWorkspaceConcurrencyToken
     {
         if (Value == long.MaxValue)
         {
-            throw new InvalidOperationException(
-                "The planning workspace concurrency token range is exhausted.");
+            throw new InvalidOperationException("The planning workspace concurrency token range is exhausted.");
         }
 
         return new PlanningWorkspaceConcurrencyToken(Value + 1L);

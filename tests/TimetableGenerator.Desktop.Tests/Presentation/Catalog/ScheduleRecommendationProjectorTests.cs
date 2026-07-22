@@ -5,10 +5,8 @@ using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Scheduling;
 using Xunit;
-using ApplicationScheduleRecommendation =
-    TimetableGenerator.Application.Scheduling.ScheduleRecommendation;
-using PresentationScheduleRecommendation =
-    TimetableGenerator.Desktop.Presentation.Models.ScheduleRecommendation;
+using ApplicationScheduleRecommendation = TimetableGenerator.Application.Scheduling.ScheduleRecommendation;
+using PresentationScheduleRecommendation = TimetableGenerator.Desktop.Presentation.Models.ScheduleRecommendation;
 
 namespace TimetableGenerator.Desktop.Tests.Presentation.Catalog;
 
@@ -19,15 +17,12 @@ public sealed class ScheduleRecommendationProjectorTests
     {
         CourseCatalogDocument document = CatalogProjectionTestFixture.CreateDocument();
         CourseCatalogProjection catalogProjection = CourseCatalogProjector.Project(document);
-        ApplicationScheduleRecommendation recommendation =
-            CatalogProjectionTestFixture.CreateRecommendation(document);
+        ApplicationScheduleRecommendation recommendation = CatalogProjectionTestFixture.CreateRecommendation(document);
 
-        PresentationScheduleRecommendation projectedRecommendation =
-            ScheduleRecommendationProjector.Project(recommendation, catalogProjection);
+        PresentationScheduleRecommendation projectedRecommendation = ScheduleRecommendationProjector.Project(recommendation, catalogProjection);
 
         Assert.Equal(2, projectedRecommendation.Entries.Count);
-        CourseScheduleEntry? mondayEntryOrNull =
-            projectedRecommendation.Entries[0] as CourseScheduleEntry;
+        CourseScheduleEntry? mondayEntryOrNull = projectedRecommendation.Entries[0] as CourseScheduleEntry;
         Assert.NotNull(mondayEntryOrNull);
         CourseScheduleEntry mondayEntry = mondayEntryOrNull;
         Assert.Equal("CSE10001", mondayEntry.Code);
@@ -51,9 +46,7 @@ public sealed class ScheduleRecommendationProjectorTests
         Assert.Equal(new CourseCredits(3m), mondayEntry.CourseDetails.Credits);
         Assert.Equal(EDay.Monday, mondayEntry.Day);
         Assert.Equal(new AcademicPeriod(1), mondayEntry.Period);
-        Assert.Equal(
-            new MeetingSlot(EDay.Monday, new AcademicPeriod(1)),
-            mondayEntry.Slot);
+        Assert.Equal(new MeetingSlot(EDay.Monday, new AcademicPeriod(1)), mondayEntry.Slot);
         Assert.Equal(
             new DailyTimeRange(
                 new ScheduleTime(9, 0),
@@ -63,8 +56,7 @@ public sealed class ScheduleRecommendationProjectorTests
             catalogProjection.FindCourseById(new CourseId("course-programming")).Accent,
             mondayEntry.Accent);
 
-        CourseScheduleEntry? wednesdayEntryOrNull =
-            projectedRecommendation.Entries[1] as CourseScheduleEntry;
+        CourseScheduleEntry? wednesdayEntryOrNull = projectedRecommendation.Entries[1] as CourseScheduleEntry;
         Assert.NotNull(wednesdayEntryOrNull);
         CourseScheduleEntry wednesdayEntry = wednesdayEntryOrNull;
         Assert.Equal(EDay.Wednesday, wednesdayEntry.Day);
@@ -79,10 +71,8 @@ public sealed class ScheduleRecommendationProjectorTests
     [Fact]
     public void ProjectPreservesUnavailableInstructorAndLocationStates()
     {
-        CourseCatalogDocument notProvidedDocument =
-            CatalogProjectionTestFixture.CreateDocument();
-        CourseCatalogProjection notProvidedCatalog = CourseCatalogProjector.Project(
-            notProvidedDocument);
+        CourseCatalogDocument notProvidedDocument = CatalogProjectionTestFixture.CreateDocument();
+        CourseCatalogProjection notProvidedCatalog = CourseCatalogProjector.Project(notProvidedDocument);
         ApplicationScheduleRecommendation notProvidedRecommendation =
             CatalogProjectionTestFixture.CreateScheduledRecommendation(
                 notProvidedDocument,
@@ -94,8 +84,7 @@ public sealed class ScheduleRecommendationProjectorTests
                 notProvidedRecommendation,
                 notProvidedCatalog);
 
-        CourseScheduleEntry notProvidedEntry = Assert.IsType<CourseScheduleEntry>(
-            Assert.Single(notProvidedProjection.Entries));
+        CourseScheduleEntry notProvidedEntry = Assert.IsType<CourseScheduleEntry>(Assert.Single(notProvidedProjection.Entries));
         Assert.False(notProvidedEntry.HasConfirmedInstructor);
         Assert.False(notProvidedEntry.HasAssignedLocation);
         Assert.Equal("교수 정보 없음", notProvidedEntry.InstructorDisplayText);
@@ -107,10 +96,8 @@ public sealed class ScheduleRecommendationProjectorTests
             ELocationAssignmentStatus.NotProvided,
             notProvidedEntry.CourseDetails.LocationSummary.AssignmentStatus);
 
-        CourseCatalogDocument unconfirmedDocument =
-            CatalogProjectionTestFixture.CreateDocumentWithScheduledAlternativeCourse();
-        CourseCatalogProjection unconfirmedCatalog = CourseCatalogProjector.Project(
-            unconfirmedDocument);
+        CourseCatalogDocument unconfirmedDocument = CatalogProjectionTestFixture.CreateDocumentWithScheduledAlternativeCourse();
+        CourseCatalogProjection unconfirmedCatalog = CourseCatalogProjector.Project(unconfirmedDocument);
         ApplicationScheduleRecommendation unconfirmedRecommendation =
             CatalogProjectionTestFixture.CreateScheduledRecommendation(
                 unconfirmedDocument,
@@ -122,8 +109,7 @@ public sealed class ScheduleRecommendationProjectorTests
                 unconfirmedRecommendation,
                 unconfirmedCatalog);
 
-        CourseScheduleEntry unconfirmedEntry = Assert.IsType<CourseScheduleEntry>(
-            Assert.Single(unconfirmedProjection.Entries));
+        CourseScheduleEntry unconfirmedEntry = Assert.IsType<CourseScheduleEntry>(Assert.Single(unconfirmedProjection.Entries));
         Assert.False(unconfirmedEntry.HasConfirmedInstructor);
         Assert.False(unconfirmedEntry.HasAssignedLocation);
         Assert.Equal("교수 미정", unconfirmedEntry.InstructorDisplayText);
@@ -140,10 +126,8 @@ public sealed class ScheduleRecommendationProjectorTests
     public void ProjectRejectsRecommendationScheduleThatDiffersFromCatalog()
     {
         CourseCatalogDocument sourceDocument = CatalogProjectionTestFixture.CreateDocument();
-        ApplicationScheduleRecommendation recommendation =
-            CatalogProjectionTestFixture.CreateRecommendation(sourceDocument);
-        CourseCatalogProjection changedCatalogProjection = CourseCatalogProjector.Project(
-            CatalogProjectionTestFixture.CreateDocumentWithChangedPrimarySchedule());
+        ApplicationScheduleRecommendation recommendation = CatalogProjectionTestFixture.CreateRecommendation(sourceDocument);
+        CourseCatalogProjection changedCatalogProjection = CourseCatalogProjector.Project(CatalogProjectionTestFixture.CreateDocumentWithChangedPrimarySchedule());
 
         Assert.Throws<ArgumentException>(
             () => ScheduleRecommendationProjector.Project(

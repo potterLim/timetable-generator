@@ -76,22 +76,14 @@ internal sealed class GoogleCalendarExportResult
         EGoogleCalendarExportStatus status,
         string? diagnosticCodeOrNull)
     {
-        if (status == EGoogleCalendarExportStatus.None
-            || status == EGoogleCalendarExportStatus.Success)
+        if (status == EGoogleCalendarExportStatus.None || status == EGoogleCalendarExportStatus.Success)
         {
             throw new ArgumentException(
                 "Completed Google Calendar exports require completion details.",
                 nameof(status));
         }
 
-        return new GoogleCalendarExportResult(
-            status,
-            null,
-            null,
-            0,
-            0,
-            0,
-            diagnosticCodeOrNull);
+        return new GoogleCalendarExportResult(status, null, null, 0, 0, 0, diagnosticCodeOrNull);
     }
 
     private static void ensureNonNegative(int value, string parameterName)

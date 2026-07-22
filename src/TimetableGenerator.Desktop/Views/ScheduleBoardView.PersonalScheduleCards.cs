@@ -21,14 +21,11 @@ internal sealed partial class ScheduleBoardView
 
     private const double PERSONAL_SCHEDULE_EDIT_BUTTON_SIZE = 36.0;
 
-    private void configurePersonalScheduleCard(
-        Button scheduleCard,
-        PersonalScheduleEntry entry)
+    private void configurePersonalScheduleCard(Button scheduleCard, PersonalScheduleEntry entry)
     {
         scheduleCard.Classes.Add("personal");
         ScheduleCardContent cardContent = new ScheduleCardContent(entry);
-        if (entry.TimeRange.DurationMinutes
-            < REGULAR_PERSONAL_SCHEDULE_MINIMUM_DURATION_MINUTES)
+        if (entry.TimeRange.DurationMinutes < REGULAR_PERSONAL_SCHEDULE_MINIMUM_DURATION_MINUTES)
         {
             scheduleCard.Classes.Add("compact");
             scheduleCard.Content = createCompactScheduleCardContent(cardContent);
@@ -38,9 +35,7 @@ internal sealed partial class ScheduleBoardView
             scheduleCard.Content = createScheduleCardContent(cardContent);
         }
 
-        scheduleCard.Flyout = createPersonalScheduleEntryFlyout(
-            scheduleCard,
-            entry);
+        scheduleCard.Flyout = createPersonalScheduleEntryFlyout(scheduleCard, entry);
         AutomationProperties.SetAutomationId(
             scheduleCard,
             "PersonalScheduleCard:"
@@ -52,9 +47,7 @@ internal sealed partial class ScheduleBoardView
 
         string accessibleName = createPersonalScheduleAccessibleName(entry);
         AutomationProperties.SetName(scheduleCard, accessibleName);
-        AutomationProperties.SetHelpText(
-            scheduleCard,
-            "선택하면 개인 일정의 시간과 세부 정보를 엽니다.");
+        AutomationProperties.SetHelpText(scheduleCard, "선택하면 개인 일정의 시간과 세부 정보를 엽니다.");
         ToolTip.SetTip(
             scheduleCard,
             entry.Title
@@ -63,8 +56,7 @@ internal sealed partial class ScheduleBoardView
         ToolTip.SetShowDelay(scheduleCard, 650);
     }
 
-    private static string createPersonalScheduleAccessibleName(
-        PersonalScheduleEntry entry)
+    private static string createPersonalScheduleAccessibleName(PersonalScheduleEntry entry)
     {
         List<string> details = new List<string>();
         details.Add("개인 일정");
@@ -91,9 +83,7 @@ internal sealed partial class ScheduleBoardView
         return string.Join(", ", details);
     }
 
-    private Flyout createPersonalScheduleEntryFlyout(
-        Button scheduleCard,
-        PersonalScheduleEntry entry)
+    private Flyout createPersonalScheduleEntryFlyout(Button scheduleCard, PersonalScheduleEntry entry)
     {
         StackPanel details = createDetailsPanel();
         Grid heading = createPersonalScheduleFlyoutHeading();
@@ -120,13 +110,8 @@ internal sealed partial class ScheduleBoardView
             details.Children.Add(createDetailRow("담당", entry.InstructorDisplayText));
         }
 
-        Flyout detailsFlyout = createDetailsFlyout(
-            details,
-            entry.Title + " 개인 일정 상세 정보");
-        Button editButton = createPersonalScheduleEditButton(
-            scheduleCard,
-            entry,
-            detailsFlyout);
+        Flyout detailsFlyout = createDetailsFlyout(details, entry.Title + " 개인 일정 상세 정보");
+        Button editButton = createPersonalScheduleEditButton(scheduleCard, entry, detailsFlyout);
         Grid.SetColumn(editButton, 1);
         heading.Children.Add(editButton);
         return detailsFlyout;
@@ -135,14 +120,10 @@ internal sealed partial class ScheduleBoardView
     private Grid createPersonalScheduleFlyoutHeading()
     {
         Grid heading = new Grid();
-        heading.ColumnDefinitions.Add(new ColumnDefinition(
-            new GridLength(1.0, GridUnitType.Star)));
-        heading.ColumnDefinitions.Add(new ColumnDefinition(
-            GridLength.Auto));
+        heading.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1.0, GridUnitType.Star)));
+        heading.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
 
-        TextBlock identity = createFlyoutIdentity(
-            "개인 일정",
-            "TextSecondaryBrush");
+        TextBlock identity = createFlyoutIdentity("개인 일정", "TextSecondaryBrush");
         identity.VerticalAlignment = VerticalAlignment.Center;
         heading.Children.Add(identity);
         return heading;
@@ -173,15 +154,9 @@ internal sealed partial class ScheduleBoardView
             () => canEditPersonalSchedule(entry.ScheduleId));
         editButton.HorizontalAlignment = HorizontalAlignment.Right;
         editButton.VerticalAlignment = VerticalAlignment.Center;
-        AutomationProperties.SetAutomationId(
-            editButton,
-            "EditPersonalScheduleButton:" + entry.ScheduleId);
-        AutomationProperties.SetName(
-            editButton,
-            entry.Title + " 개인 일정 수정");
-        AutomationProperties.SetHelpText(
-            editButton,
-            "현재 개인 일정 정보가 채워진 수정 창을 엽니다.");
+        AutomationProperties.SetAutomationId(editButton, "EditPersonalScheduleButton:" + entry.ScheduleId);
+        AutomationProperties.SetName(editButton, entry.Title + " 개인 일정 수정");
+        AutomationProperties.SetHelpText(editButton, "현재 개인 일정 정보가 채워진 수정 창을 엽니다.");
         ToolTip.SetTip(editButton, "개인 일정 수정");
         return editButton;
     }
@@ -199,11 +174,9 @@ internal sealed partial class ScheduleBoardView
         Flyout detailsFlyout)
     {
         ICommand? editCommandOrNull = EditPersonalScheduleCommand;
-        if (editCommandOrNull == null
-            || editCommandOrNull.CanExecute(scheduleId) == false)
+        if (editCommandOrNull == null || editCommandOrNull.CanExecute(scheduleId) == false)
         {
-            throw new InvalidOperationException(
-                "Personal schedule editing requires an executable command.");
+            throw new InvalidOperationException("Personal schedule editing requires an executable command.");
         }
 
         detailsFlyout.Hide();

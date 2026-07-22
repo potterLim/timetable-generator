@@ -29,15 +29,12 @@ internal static class AcademicTermPlanNameFactory
             throw new ArgumentNullException(nameof(existingPlans));
         }
 
-        HashSet<string> existingPlanNames = new HashSet<string>(
-            StringComparer.OrdinalIgnoreCase);
+        HashSet<string> existingPlanNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (PlanningPlan plan in existingPlans)
         {
             if (plan == null)
             {
-                throw new ArgumentException(
-                    "Existing plans cannot contain null values.",
-                    nameof(existingPlans));
+                throw new ArgumentException("Existing plans cannot contain null values.", nameof(existingPlans));
             }
 
             existingPlanNames.Add(plan.Name.Value);
@@ -52,8 +49,7 @@ internal static class AcademicTermPlanNameFactory
         int planNumber = FIRST_ADDITIONAL_PLAN_NUMBER;
         while (true)
         {
-            string planNumberText = planNumber.ToString(
-                CultureInfo.InvariantCulture);
+            string planNumberText = planNumber.ToString(CultureInfo.InvariantCulture);
             string candidateNameValue =
                 initialPlanName.Value
                 + " ("
@@ -78,9 +74,7 @@ internal static class AcademicTermPlanNameFactory
     {
         if (academicTerm.IsValid == false)
         {
-            throw new ArgumentException(
-                "Plan names require a valid academic term.",
-                nameof(academicTerm));
+            throw new ArgumentException("Plan names require a valid academic term.", nameof(academicTerm));
         }
     }
 }

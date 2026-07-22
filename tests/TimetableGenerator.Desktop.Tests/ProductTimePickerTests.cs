@@ -46,14 +46,10 @@ public sealed class ProductTimePickerTests
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
-            ComboBox[] segments = timePicker.GetVisualDescendants()
-                .OfType<ComboBox>()
-                .ToArray();
+            ComboBox[] segments = timePicker.GetVisualDescendants().OfType<ComboBox>().ToArray();
 
             Assert.Equal(3, segments.Length);
-            Assert.Equal(
-                "시간 오전 또는 오후",
-                AutomationProperties.GetName(segments[0]));
+            Assert.Equal("시간 오전 또는 오후", AutomationProperties.GetName(segments[0]));
             Assert.Equal("시간 시", AutomationProperties.GetName(segments[1]));
             Assert.Equal("시간 분", AutomationProperties.GetName(segments[2]));
             Assert.True(timePicker.MinWidth >= 280.0);
@@ -109,9 +105,7 @@ public sealed class ProductTimePickerTests
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
-            ComboBox[] segments = timePicker.GetVisualDescendants()
-                .OfType<ComboBox>()
-                .ToArray();
+            ComboBox[] segments = timePicker.GetVisualDescendants().OfType<ComboBox>().ToArray();
 
             segments[0].SelectedIndex = 1;
             segments[1].SelectedIndex = 1;

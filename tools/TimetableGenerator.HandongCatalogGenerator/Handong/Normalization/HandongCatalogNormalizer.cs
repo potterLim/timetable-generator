@@ -21,10 +21,8 @@ internal sealed class HandongCatalogNormalizer
             throw new ArgumentNullException(nameof(document));
         }
 
-        Dictionary<CourseCode, CatalogCourse> coursesByCode =
-            new Dictionary<CourseCode, CatalogCourse>();
-        Dictionary<CourseOfferingKey, CatalogOffering> offeringsByKey =
-            new Dictionary<CourseOfferingKey, CatalogOffering>();
+        Dictionary<CourseCode, CatalogCourse> coursesByCode = new Dictionary<CourseCode, CatalogCourse>();
+        Dictionary<CourseOfferingKey, CatalogOffering> offeringsByKey = new Dictionary<CourseOfferingKey, CatalogOffering>();
 
         int englishScheduleMismatchCount = 0;
         int roomNotProvidedCount = 0;
@@ -36,8 +34,7 @@ internal sealed class HandongCatalogNormalizer
 
         foreach (HandongRawOfferingRow row in document.Rows)
         {
-            HandongOfferingNormalizationResult normalizationResult =
-                mOfferingNormalizer.NormalizeOffering(row);
+            HandongOfferingNormalizationResult normalizationResult = mOfferingNormalizer.NormalizeOffering(row);
             addOrValidateCourse(coursesByCode, normalizationResult.Course, manualReviews);
             addOffering(offeringsByKey, normalizationResult.Offering);
 
@@ -58,8 +55,7 @@ internal sealed class HandongCatalogNormalizer
                 ++enrollmentNotProvidedCount;
             }
 
-            InstructorAssignment instructorAssignment =
-                offering.Instruction.InstructorAssignment;
+            InstructorAssignment instructorAssignment = offering.Instruction.InstructorAssignment;
             if (instructorAssignment.Status == EInstructorAssignmentStatus.Unconfirmed)
             {
                 ++instructorUnconfirmedCount;
@@ -101,9 +97,7 @@ internal sealed class HandongCatalogNormalizer
         ICollection<CatalogManualReview> manualReviews)
     {
         CatalogCourse? existingCourseOrNull;
-        bool hasExistingCourse = coursesByCode.TryGetValue(
-            candidateCourse.Code,
-            out existingCourseOrNull);
+        bool hasExistingCourse = coursesByCode.TryGetValue(candidateCourse.Code, out existingCourseOrNull);
         if (hasExistingCourse)
         {
             if (existingCourseOrNull == null)
@@ -134,26 +128,17 @@ internal sealed class HandongCatalogNormalizer
     {
         if (existingCourse.KoreanName != candidateCourse.KoreanName)
         {
-            throw createCourseConflict(
-                existingCourse,
-                candidateCourse,
-                ECourseDefinitionField.KoreanName);
+            throw createCourseConflict(existingCourse, candidateCourse, ECourseDefinitionField.KoreanName);
         }
 
         if (existingCourse.EnglishName != candidateCourse.EnglishName)
         {
-            throw createCourseConflict(
-                existingCourse,
-                candidateCourse,
-                ECourseDefinitionField.EnglishName);
+            throw createCourseConflict(existingCourse, candidateCourse, ECourseDefinitionField.EnglishName);
         }
 
         if (existingCourse.Credits != candidateCourse.Credits)
         {
-            throw createCourseConflict(
-                existingCourse,
-                candidateCourse,
-                ECourseDefinitionField.Credits);
+            throw createCourseConflict(existingCourse, candidateCourse, ECourseDefinitionField.Credits);
         }
     }
 
@@ -174,9 +159,7 @@ internal sealed class HandongCatalogNormalizer
         CatalogOffering offering)
     {
         CatalogOffering? existingOfferingOrNull;
-        bool hasExistingOffering = offeringsByKey.TryGetValue(
-            offering.Key,
-            out existingOfferingOrNull);
+        bool hasExistingOffering = offeringsByKey.TryGetValue(offering.Key, out existingOfferingOrNull);
         if (hasExistingOffering)
         {
             if (existingOfferingOrNull == null)
@@ -216,9 +199,7 @@ internal sealed class HandongCatalogNormalizer
             StringComparison.Ordinal);
     }
 
-    private static int compareManualReviews(
-        CatalogManualReview left,
-        CatalogManualReview right)
+    private static int compareManualReviews(CatalogManualReview left, CatalogManualReview right)
     {
         int courseCodeComparison = string.Compare(
             left.CourseCode.Value,

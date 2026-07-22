@@ -37,8 +37,7 @@ internal sealed partial class CourseChoiceEditorView : UserControl
             return;
         }
 
-        TextBox? alternativeSearchBoxOrNull = this.FindControl<TextBox>(
-            "AlternativeCourseSearchBox");
+        TextBox? alternativeSearchBoxOrNull = this.FindControl<TextBox>("AlternativeCourseSearchBox");
         alternativeSearchBoxOrNull?.Focus();
     }
 }

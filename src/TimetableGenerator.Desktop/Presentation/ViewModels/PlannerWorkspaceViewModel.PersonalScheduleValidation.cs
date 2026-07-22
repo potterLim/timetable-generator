@@ -20,9 +20,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             {
                 foreach (WeeklyTimeRange candidateRange in candidate.TimeRanges)
                 {
-                    if (ScheduleConflictDetector.HasConflict(
-                        existingRange,
-                        candidateRange))
+                    if (ScheduleConflictDetector.HasConflict(existingRange, candidateRange))
                     {
                         return true;
                     }
@@ -107,9 +105,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             return EPersonalScheduleDraftValidationError.TitleRequired;
         }
 
-        if (hasInvalidPersonalScheduleText(
-            normalizedTitle,
-            PersonalScheduleTitle.MAXIMUM_LENGTH))
+        if (hasInvalidPersonalScheduleText(normalizedTitle, PersonalScheduleTitle.MAXIMUM_LENGTH))
         {
             return EPersonalScheduleDraftValidationError.TitleInvalid;
         }
@@ -146,8 +142,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             return EPersonalScheduleDraftValidationError.EndNotAfterStart;
         }
 
-        int durationMinutes = endTime.MinutesFromMidnight
-            - startTime.MinutesFromMidnight;
+        int durationMinutes = endTime.MinutesFromMidnight - startTime.MinutesFromMidnight;
         if (durationMinutes < PersonalSchedule.MINIMUM_DURATION_MINUTES)
         {
             return EPersonalScheduleDraftValidationError.DurationTooShort;
@@ -184,18 +179,14 @@ internal sealed partial class PlannerWorkspaceViewModel
         return value.IsValid && usesSupportedIncrement;
     }
 
-    private static bool hasInvalidOptionalPersonalScheduleText(
-        string value,
-        int maximumLength)
+    private static bool hasInvalidOptionalPersonalScheduleText(string value, int maximumLength)
     {
         string normalizedValue = value.Trim();
         return normalizedValue.Length > 0
             && hasInvalidPersonalScheduleText(normalizedValue, maximumLength);
     }
 
-    private static bool hasInvalidPersonalScheduleText(
-        string value,
-        int maximumLength)
+    private static bool hasInvalidPersonalScheduleText(string value, int maximumLength)
     {
         return value.Length > maximumLength
             || value.Contains('\r')

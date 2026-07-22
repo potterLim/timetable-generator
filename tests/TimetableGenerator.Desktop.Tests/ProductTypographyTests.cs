@@ -17,10 +17,8 @@ public sealed class ProductTypographyTests
     [AvaloniaFact]
     public void AppliesBundledPretendardAcrossProductText()
     {
-        FontFamily productFontFamily = findRequiredFontFamily(
-            PRODUCT_FONT_RESOURCE_KEY);
-        FontFamily fluentFontFamily = findRequiredFontFamily(
-            FLUENT_FONT_RESOURCE_KEY);
+        FontFamily productFontFamily = findRequiredFontFamily(PRODUCT_FONT_RESOURCE_KEY);
+        FontFamily fluentFontFamily = findRequiredFontFamily(FLUENT_FONT_RESOURCE_KEY);
         TextBlock text = new TextBlock();
         text.Text = "시간표 Timetable";
         Button action = new Button();
@@ -70,8 +68,7 @@ public sealed class ProductTypographyTests
     [AvaloniaFact]
     public void ResolvesBundledPretendardProductWeights()
     {
-        FontFamily productFontFamily = findRequiredFontFamily(
-            PRODUCT_FONT_RESOURCE_KEY);
+        FontFamily productFontFamily = findRequiredFontFamily(PRODUCT_FONT_RESOURCE_KEY);
         FontWeight[] productFontWeights = new FontWeight[]
         {
             FontWeight.Normal,
@@ -82,10 +79,7 @@ public sealed class ProductTypographyTests
 
         foreach (FontWeight productFontWeight in productFontWeights)
         {
-            Typeface productTypeface = new Typeface(
-                productFontFamily,
-                FontStyle.Normal,
-                productFontWeight);
+            Typeface productTypeface = new Typeface(productFontFamily, FontStyle.Normal, productFontWeight);
             GlyphTypeface? resolvedTypefaceOrNull;
             bool hasResolvedTypeface = FontManager.Current.TryGetGlyphTypeface(
                 productTypeface,
@@ -93,9 +87,7 @@ public sealed class ProductTypographyTests
 
             Assert.True(hasResolvedTypeface);
             Assert.NotNull(resolvedTypefaceOrNull);
-            Assert.Equal(
-                PRODUCT_FONT_FAMILY_NAME,
-                resolvedTypefaceOrNull.TypographicFamilyName);
+            Assert.Equal(PRODUCT_FONT_FAMILY_NAME, resolvedTypefaceOrNull.TypographicFamilyName);
             Assert.Equal(productFontWeight, resolvedTypefaceOrNull.Weight);
         }
     }
@@ -106,15 +98,11 @@ public sealed class ProductTypographyTests
         Assert.NotNull(applicationOrNull);
         if (applicationOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The Avalonia test application was not initialized.");
+            throw new InvalidOperationException("The Avalonia test application was not initialized.");
         }
 
         object? resourceOrNull;
-        bool hasResource = applicationOrNull.TryGetResource(
-            resourceKey,
-            null,
-            out resourceOrNull);
+        bool hasResource = applicationOrNull.TryGetResource(resourceKey, null, out resourceOrNull);
         Assert.True(hasResource);
         return Assert.IsType<FontFamily>(resourceOrNull);
     }

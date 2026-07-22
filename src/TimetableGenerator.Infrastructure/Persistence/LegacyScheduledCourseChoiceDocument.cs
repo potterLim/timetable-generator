@@ -18,9 +18,7 @@ internal sealed class LegacyScheduledCourseChoiceDocument
         }
     }
 
-    public LegacyScheduledCourseChoiceDocument(
-        CourseId courseId,
-        IEnumerable<OfferingId> offeringIds)
+    public LegacyScheduledCourseChoiceDocument(CourseId courseId, IEnumerable<OfferingId> offeringIds)
     {
         if (courseId == null)
         {

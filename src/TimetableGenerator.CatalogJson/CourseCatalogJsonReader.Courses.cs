@@ -22,9 +22,7 @@ public static partial class CourseCatalogJsonReader
 
         if (courses.Count == 0)
         {
-            throw new CatalogJsonFormatException(
-                "$.courses",
-                "at least one course is required.");
+            throw new CatalogJsonFormatException("$.courses", "at least one course is required.");
         }
 
         return courses;
@@ -56,9 +54,7 @@ public static partial class CourseCatalogJsonReader
 
         CourseId courseId = new CourseId(courseObject.GetString("courseId"));
         CourseCode courseCode = new CourseCode(courseObject.GetString("code"));
-        string expectedCourseId = CatalogJsonValueParser.BuildCourseId(
-            institutionId,
-            courseCode);
+        string expectedCourseId = CatalogJsonValueParser.BuildCourseId(institutionId, courseCode);
         CatalogJsonValueParser.RequireExactString(
             courseId.Value,
             expectedCourseId,
@@ -72,15 +68,12 @@ public static partial class CourseCatalogJsonReader
     private static Dictionary<CourseId, CourseCode> buildCourseCodesById(
         IEnumerable<CatalogCourse> courses)
     {
-        Dictionary<CourseId, CourseCode> courseCodesById =
-            new Dictionary<CourseId, CourseCode>();
+        Dictionary<CourseId, CourseCode> courseCodesById = new Dictionary<CourseId, CourseCode>();
         foreach (CatalogCourse course in courses)
         {
             if (courseCodesById.TryAdd(course.Id, course.Code) == false)
             {
-                throw new CatalogJsonFormatException(
-                    "$.courses",
-                    "duplicate course IDs are not allowed.");
+                throw new CatalogJsonFormatException("$.courses", "duplicate course IDs are not allowed.");
             }
         }
 

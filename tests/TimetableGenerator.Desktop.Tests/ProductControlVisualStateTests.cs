@@ -21,47 +21,27 @@ namespace TimetableGenerator.Desktop.Tests;
 
 public sealed class ProductControlVisualStateTests
 {
-    private static readonly ControlStyleClass PRIMARY_ACTION_STYLE =
-        new ControlStyleClass("accent");
-    private static readonly ControlStyleClass DANGER_ACTION_STYLE =
-        new ControlStyleClass("danger");
-    private static readonly ControlStyleClass OUTLINE_ACTION_STYLE =
-        new ControlStyleClass("outline");
-    private static readonly ControlStyleClass BUTTON_CONTENT_STYLE =
-        new ControlStyleClass("button-content");
-    private static readonly ControlThemeToken CAPTION_BUTTON_THEME =
-        new ControlThemeToken("ProductCaptionButtonTheme");
+    private static readonly ControlStyleClass PRIMARY_ACTION_STYLE = new ControlStyleClass("accent");
+    private static readonly ControlStyleClass DANGER_ACTION_STYLE = new ControlStyleClass("danger");
+    private static readonly ControlStyleClass OUTLINE_ACTION_STYLE = new ControlStyleClass("outline");
+    private static readonly ControlStyleClass BUTTON_CONTENT_STYLE = new ControlStyleClass("button-content");
+    private static readonly ControlThemeToken CAPTION_BUTTON_THEME = new ControlThemeToken("ProductCaptionButtonTheme");
 
-    private static readonly ColorToken PRIMARY_ACTION_FILL =
-        new ColorToken("ProductPrimaryActionFillBrush");
-    private static readonly ColorToken ON_PRIMARY_ACTION_FILL =
-        new ColorToken("ProductOnPrimaryActionFillBrush");
-    private static readonly ColorToken DANGER_ACTION_FILL =
-        new ColorToken("ProductDangerActionFillBrush");
-    private static readonly ColorToken CONTROL_BORDER =
-        new ColorToken("ControlBorderBrush");
-    private static readonly ColorToken CONTROL_SURFACE =
-        new ColorToken("ControlSurfaceBrush");
-    private static readonly ColorToken CONTROL_HOVER_SURFACE =
-        new ColorToken("ControlHoverSurfaceBrush");
-    private static readonly ColorToken HOVER_SURFACE =
-        new ColorToken("HoverSurfaceBrush");
-    private static readonly ColorToken PRESSED_SURFACE =
-        new ColorToken("PressedSurfaceBrush");
-    private static readonly ColorToken PRODUCT_FOCUS_STROKE =
-        new ColorToken("ProductFocusStrokeBrush");
-    private static readonly ColorToken CAPTION_CLOSE_HOVER_BACKGROUND =
-        new ColorToken("CaptionCloseButtonHoverBackgroundBrush");
-    private static readonly ColorToken CAPTION_CLOSE_PRESSED_BACKGROUND =
-        new ColorToken("CaptionCloseButtonPressedBackgroundBrush");
-    private static readonly ColorToken CAPTION_CLOSE_FOREGROUND =
-        new ColorToken("CaptionCloseButtonForegroundBrush");
-    private static readonly ColorToken CAPTION_BACKGROUND =
-        new ColorToken("CaptionButtonBackground");
-    private static readonly ColorToken CAPTION_PRESSED_BACKGROUND =
-        new ColorToken("CaptionButtonBorderBrush");
-    private static readonly ColorToken FOCUS_ON_FILL_STROKE =
-        new ColorToken("ProductFocusOnFillStrokeBrush");
+    private static readonly ColorToken PRIMARY_ACTION_FILL = new ColorToken("ProductPrimaryActionFillBrush");
+    private static readonly ColorToken ON_PRIMARY_ACTION_FILL = new ColorToken("ProductOnPrimaryActionFillBrush");
+    private static readonly ColorToken DANGER_ACTION_FILL = new ColorToken("ProductDangerActionFillBrush");
+    private static readonly ColorToken CONTROL_BORDER = new ColorToken("ControlBorderBrush");
+    private static readonly ColorToken CONTROL_SURFACE = new ColorToken("ControlSurfaceBrush");
+    private static readonly ColorToken CONTROL_HOVER_SURFACE = new ColorToken("ControlHoverSurfaceBrush");
+    private static readonly ColorToken HOVER_SURFACE = new ColorToken("HoverSurfaceBrush");
+    private static readonly ColorToken PRESSED_SURFACE = new ColorToken("PressedSurfaceBrush");
+    private static readonly ColorToken PRODUCT_FOCUS_STROKE = new ColorToken("ProductFocusStrokeBrush");
+    private static readonly ColorToken CAPTION_CLOSE_HOVER_BACKGROUND = new ColorToken("CaptionCloseButtonHoverBackgroundBrush");
+    private static readonly ColorToken CAPTION_CLOSE_PRESSED_BACKGROUND = new ColorToken("CaptionCloseButtonPressedBackgroundBrush");
+    private static readonly ColorToken CAPTION_CLOSE_FOREGROUND = new ColorToken("CaptionCloseButtonForegroundBrush");
+    private static readonly ColorToken CAPTION_BACKGROUND = new ColorToken("CaptionButtonBackground");
+    private static readonly ColorToken CAPTION_PRESSED_BACKGROUND = new ColorToken("CaptionButtonBorderBrush");
+    private static readonly ColorToken FOCUS_ON_FILL_STROKE = new ColorToken("ProductFocusOnFillStrokeBrush");
 
     [AvaloniaFact]
     public void ProductPrimaryActionUsesFilledBrandColorForApplicationDarkTheme()
@@ -70,12 +50,10 @@ public sealed class ProductControlVisualStateTests
         Assert.NotNull(applicationOrNull);
         if (applicationOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The Avalonia test application was not initialized.");
+            throw new InvalidOperationException("The Avalonia test application was not initialized.");
         }
 
-        ThemeVariant? previousThemeVariantOrNull =
-            applicationOrNull.RequestedThemeVariant;
+        ThemeVariant? previousThemeVariantOrNull = applicationOrNull.RequestedThemeVariant;
         Button primaryAction = createButton(PRIMARY_ACTION_STYLE);
         Window window = new Window();
         window.Content = primaryAction;
@@ -86,14 +64,8 @@ public sealed class ProductControlVisualStateTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            assertButtonBrush(
-                primaryAction.Background,
-                PRIMARY_ACTION_FILL,
-                ThemeVariant.Dark);
-            assertRenderedButtonBackground(
-                primaryAction,
-                PRIMARY_ACTION_FILL,
-                ThemeVariant.Dark);
+            assertButtonBrush(primaryAction.Background, PRIMARY_ACTION_FILL, ThemeVariant.Dark);
+            assertRenderedButtonBackground(primaryAction, PRIMARY_ACTION_FILL, ThemeVariant.Dark);
         }
         finally
         {
@@ -122,66 +94,27 @@ public sealed class ProductControlVisualStateTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            assertButtonBrush(
-                primaryAction.Background,
-                PRIMARY_ACTION_FILL,
-                ThemeVariant.Light);
-            assertRenderedButtonBackground(
-                primaryAction,
-                PRIMARY_ACTION_FILL,
-                ThemeVariant.Light);
-            assertButtonBrush(
-                primaryAction.Foreground,
-                ON_PRIMARY_ACTION_FILL,
-                ThemeVariant.Light);
-            assertButtonBrush(
-                dangerAction.Background,
-                DANGER_ACTION_FILL,
-                ThemeVariant.Light);
-            assertRenderedButtonBackground(
-                dangerAction,
-                DANGER_ACTION_FILL,
-                ThemeVariant.Light);
-            assertButtonBrush(
-                outlineAction.BorderBrush,
-                CONTROL_BORDER,
-                ThemeVariant.Light);
+            assertButtonBrush(primaryAction.Background, PRIMARY_ACTION_FILL, ThemeVariant.Light);
+            assertRenderedButtonBackground(primaryAction, PRIMARY_ACTION_FILL, ThemeVariant.Light);
+            assertButtonBrush(primaryAction.Foreground, ON_PRIMARY_ACTION_FILL, ThemeVariant.Light);
+            assertButtonBrush(dangerAction.Background, DANGER_ACTION_FILL, ThemeVariant.Light);
+            assertRenderedButtonBackground(dangerAction, DANGER_ACTION_FILL, ThemeVariant.Light);
+            assertButtonBrush(outlineAction.BorderBrush, CONTROL_BORDER, ThemeVariant.Light);
 
             window.RequestedThemeVariant = ThemeVariant.Dark;
             Dispatcher.UIThread.RunJobs();
 
-            assertButtonBrush(
-                primaryAction.Background,
-                PRIMARY_ACTION_FILL,
-                ThemeVariant.Dark);
-            assertRenderedButtonBackground(
-                primaryAction,
-                PRIMARY_ACTION_FILL,
-                ThemeVariant.Dark);
-            assertButtonBrush(
-                primaryAction.Foreground,
-                ON_PRIMARY_ACTION_FILL,
-                ThemeVariant.Dark);
-            assertButtonBrush(
-                dangerAction.Background,
-                DANGER_ACTION_FILL,
-                ThemeVariant.Dark);
-            assertRenderedButtonBackground(
-                dangerAction,
-                DANGER_ACTION_FILL,
-                ThemeVariant.Dark);
-            assertButtonBrush(
-                outlineAction.BorderBrush,
-                CONTROL_BORDER,
-                ThemeVariant.Dark);
+            assertButtonBrush(primaryAction.Background, PRIMARY_ACTION_FILL, ThemeVariant.Dark);
+            assertRenderedButtonBackground(primaryAction, PRIMARY_ACTION_FILL, ThemeVariant.Dark);
+            assertButtonBrush(primaryAction.Foreground, ON_PRIMARY_ACTION_FILL, ThemeVariant.Dark);
+            assertButtonBrush(dangerAction.Background, DANGER_ACTION_FILL, ThemeVariant.Dark);
+            assertRenderedButtonBackground(dangerAction, DANGER_ACTION_FILL, ThemeVariant.Dark);
+            assertButtonBrush(outlineAction.BorderBrush, CONTROL_BORDER, ThemeVariant.Dark);
 
             bool isPrimaryActionFocused = primaryAction.Focus();
             Assert.True(isPrimaryActionFocused);
             Dispatcher.UIThread.RunJobs();
-            assertButtonBrush(
-                primaryAction.Background,
-                PRIMARY_ACTION_FILL,
-                ThemeVariant.Dark);
+            assertButtonBrush(primaryAction.Background, PRIMARY_ACTION_FILL, ThemeVariant.Dark);
         }
         finally
         {
@@ -241,10 +174,7 @@ public sealed class ProductControlVisualStateTests
                     CONTROL_BORDER,
                     new Thickness(1.0));
 
-                window.MouseDown(
-                    actionCenter,
-                    MouseButton.Left,
-                    RawInputModifiers.None);
+                window.MouseDown(actionCenter, MouseButton.Left, RawInputModifiers.None);
                 Dispatcher.UIThread.RunJobs();
                 assertOutlineActionVisuals(
                     outlineAction,
@@ -252,10 +182,7 @@ public sealed class ProductControlVisualStateTests
                     PRESSED_SURFACE,
                     CONTROL_BORDER,
                     new Thickness(1.0));
-                window.MouseUp(
-                    actionCenter,
-                    MouseButton.Left,
-                    RawInputModifiers.None);
+                window.MouseUp(actionCenter, MouseButton.Left, RawInputModifiers.None);
 
                 window.MouseMove(new Point(1.0, 1.0), RawInputModifiers.None);
                 Assert.True(focusAnchor.Focus(NavigationMethod.Tab));
@@ -307,26 +234,14 @@ public sealed class ProductControlVisualStateTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            assertButtonBrush(
-                textBox.Background,
-                CONTROL_SURFACE,
-                ThemeVariant.Light);
-            assertButtonBrush(
-                comboBox.Background,
-                CONTROL_SURFACE,
-                ThemeVariant.Light);
+            assertButtonBrush(textBox.Background, CONTROL_SURFACE, ThemeVariant.Light);
+            assertButtonBrush(comboBox.Background, CONTROL_SURFACE, ThemeVariant.Light);
 
             movePointerToControl(window, textBox);
-            assertButtonBrush(
-                textBox.Background,
-                CONTROL_HOVER_SURFACE,
-                ThemeVariant.Light);
+            assertButtonBrush(textBox.Background, CONTROL_HOVER_SURFACE, ThemeVariant.Light);
 
             movePointerToControl(window, comboBox);
-            assertButtonBrush(
-                comboBox.Background,
-                CONTROL_HOVER_SURFACE,
-                ThemeVariant.Light);
+            assertButtonBrush(comboBox.Background, CONTROL_HOVER_SURFACE, ThemeVariant.Light);
         }
         finally
         {
@@ -395,15 +310,9 @@ public sealed class ProductControlVisualStateTests
             Assert.Equal(40.0, primaryButton.Bounds.Height);
             Assert.Equal(primaryButton.Bounds.Height, outlineButton.Bounds.Height);
             Assert.Equal(primaryButton.Bounds.Height, dangerButton.Bounds.Height);
-            Assert.Equal(
-                VerticalAlignment.Center,
-                primaryButton.VerticalContentAlignment);
-            Assert.Equal(
-                VerticalAlignment.Center,
-                outlineButton.VerticalContentAlignment);
-            Assert.Equal(
-                VerticalAlignment.Center,
-                dangerButton.VerticalContentAlignment);
+            Assert.Equal(VerticalAlignment.Center, primaryButton.VerticalContentAlignment);
+            Assert.Equal(VerticalAlignment.Center, outlineButton.VerticalContentAlignment);
+            Assert.Equal(VerticalAlignment.Center, dangerButton.VerticalContentAlignment);
         }
         finally
         {
@@ -439,8 +348,7 @@ public sealed class ProductControlVisualStateTests
         }
     }
 
-    private static void assertCaptionButtonVisualStates(
-        ThemeVariant themeVariant)
+    private static void assertCaptionButtonVisualStates(ThemeVariant themeVariant)
     {
         Border glyph = new Border();
         glyph.Width = 11.0;
@@ -453,9 +361,7 @@ public sealed class ProductControlVisualStateTests
         glyphViewbox.Child = glyph;
         Button captionButton = new Button();
         captionButton.Classes.Add("caption-button");
-        captionButton.Theme = findRequiredControlTheme(
-            CAPTION_BUTTON_THEME,
-            themeVariant);
+        captionButton.Theme = findRequiredControlTheme(CAPTION_BUTTON_THEME, themeVariant);
         captionButton.Content = glyphViewbox;
 
         Window window = new Window();
@@ -474,16 +380,9 @@ public sealed class ProductControlVisualStateTests
             Assert.Equal(0.0, captionButton.MinWidth);
             Assert.Equal(0.0, captionButton.MinHeight);
             Assert.Equal(new Thickness(0.0), captionButton.Padding);
-            Assert.Equal(
-                HorizontalAlignment.Center,
-                captionButton.HorizontalContentAlignment);
-            Assert.Equal(
-                VerticalAlignment.Center,
-                captionButton.VerticalContentAlignment);
-            assertControlsShareVerticalCenter(
-                captionButton,
-                captionButton,
-                glyphViewbox);
+            Assert.Equal(HorizontalAlignment.Center, captionButton.HorizontalContentAlignment);
+            Assert.Equal(VerticalAlignment.Center, captionButton.VerticalContentAlignment);
+            assertControlsShareVerticalCenter(captionButton, captionButton, glyphViewbox);
 
             Rect initialButtonBounds = captionButton.Bounds;
             Point initialGlyphCenter = findControlCenter(window, glyphViewbox);
@@ -494,13 +393,8 @@ public sealed class ProductControlVisualStateTests
 
             Assert.True(captionButton.Focus(NavigationMethod.Tab));
             Dispatcher.UIThread.RunJobs();
-            assertButtonBrush(
-                captionSurface.BorderBrush,
-                PRODUCT_FOCUS_STROKE,
-                themeVariant);
-            Assert.Equal(
-                new Thickness(2.0),
-                captionSurface.BorderThickness);
+            assertButtonBrush(captionSurface.BorderBrush, PRODUCT_FOCUS_STROKE, themeVariant);
+            Assert.Equal(new Thickness(2.0), captionSurface.BorderThickness);
             assertCaptionGeometryIsUnchanged(
                 window,
                 captionButton,
@@ -509,14 +403,9 @@ public sealed class ProductControlVisualStateTests
                 initialGlyphCenter);
 
             Point captionButtonCenter = findControlCenter(window, captionButton);
-            window.MouseMove(
-                captionButtonCenter,
-                RawInputModifiers.None);
+            window.MouseMove(captionButtonCenter, RawInputModifiers.None);
             Dispatcher.UIThread.RunJobs();
-            assertButtonBrush(
-                captionSurface.Background,
-                CAPTION_BACKGROUND,
-                themeVariant);
+            assertButtonBrush(captionSurface.Background, CAPTION_BACKGROUND, themeVariant);
             assertCaptionGeometryIsUnchanged(
                 window,
                 captionButton,
@@ -524,25 +413,16 @@ public sealed class ProductControlVisualStateTests
                 initialButtonBounds,
                 initialGlyphCenter);
 
-            window.MouseDown(
-                captionButtonCenter,
-                MouseButton.Left,
-                RawInputModifiers.None);
+            window.MouseDown(captionButtonCenter, MouseButton.Left, RawInputModifiers.None);
             Dispatcher.UIThread.RunJobs();
-            assertButtonBrush(
-                captionSurface.Background,
-                CAPTION_PRESSED_BACKGROUND,
-                themeVariant);
+            assertButtonBrush(captionSurface.Background, CAPTION_PRESSED_BACKGROUND, themeVariant);
             assertCaptionGeometryIsUnchanged(
                 window,
                 captionButton,
                 glyphViewbox,
                 initialButtonBounds,
                 initialGlyphCenter);
-            window.MouseUp(
-                captionButtonCenter,
-                MouseButton.Left,
-                RawInputModifiers.None);
+            window.MouseUp(captionButtonCenter, MouseButton.Left, RawInputModifiers.None);
             Dispatcher.UIThread.RunJobs();
         }
         finally
@@ -551,14 +431,11 @@ public sealed class ProductControlVisualStateTests
         }
     }
 
-    private static void assertCaptionCloseButtonVisualStates(
-        ThemeVariant themeVariant)
+    private static void assertCaptionCloseButtonVisualStates(ThemeVariant themeVariant)
     {
         Button closeButton = new Button();
         closeButton.Classes.Add("caption-close-button");
-        closeButton.Theme = findRequiredControlTheme(
-            CAPTION_BUTTON_THEME,
-            themeVariant);
+        closeButton.Theme = findRequiredControlTheme(CAPTION_BUTTON_THEME, themeVariant);
         Path closeGlyph = new Path();
         closeGlyph.Width = 11.0;
         closeGlyph.Height = 11.0;
@@ -593,13 +470,8 @@ public sealed class ProductControlVisualStateTests
 
             Assert.True(closeButton.Focus(NavigationMethod.Tab));
             Dispatcher.UIThread.RunJobs();
-            assertButtonBrush(
-                closeSurface.BorderBrush,
-                PRODUCT_FOCUS_STROKE,
-                themeVariant);
-            Assert.Equal(
-                new Thickness(2.0),
-                closeSurface.BorderThickness);
+            assertButtonBrush(closeSurface.BorderBrush, PRODUCT_FOCUS_STROKE, themeVariant);
+            Assert.Equal(new Thickness(2.0), closeSurface.BorderThickness);
             assertCaptionGeometryIsUnchanged(
                 window,
                 closeButton,
@@ -607,26 +479,12 @@ public sealed class ProductControlVisualStateTests
                 initialButtonBounds,
                 initialGlyphCenter);
 
-            window.MouseMove(
-                closeButtonCenter,
-                RawInputModifiers.None);
+            window.MouseMove(closeButtonCenter, RawInputModifiers.None);
             Dispatcher.UIThread.RunJobs();
-            assertButtonBrush(
-                closeSurface.Background,
-                CAPTION_CLOSE_HOVER_BACKGROUND,
-                themeVariant);
-            assertButtonBrush(
-                closeSurface.BorderBrush,
-                FOCUS_ON_FILL_STROKE,
-                themeVariant);
-            assertButtonBrush(
-                closeButton.Foreground,
-                CAPTION_CLOSE_FOREGROUND,
-                themeVariant);
-            assertButtonBrush(
-                closeGlyph.Fill,
-                CAPTION_CLOSE_FOREGROUND,
-                themeVariant);
+            assertButtonBrush(closeSurface.Background, CAPTION_CLOSE_HOVER_BACKGROUND, themeVariant);
+            assertButtonBrush(closeSurface.BorderBrush, FOCUS_ON_FILL_STROKE, themeVariant);
+            assertButtonBrush(closeButton.Foreground, CAPTION_CLOSE_FOREGROUND, themeVariant);
+            assertButtonBrush(closeGlyph.Fill, CAPTION_CLOSE_FOREGROUND, themeVariant);
             assertCaptionGeometryIsUnchanged(
                 window,
                 closeButton,
@@ -634,33 +492,18 @@ public sealed class ProductControlVisualStateTests
                 initialButtonBounds,
                 initialGlyphCenter);
 
-            window.MouseDown(
-                closeButtonCenter,
-                MouseButton.Left,
-                RawInputModifiers.None);
+            window.MouseDown(closeButtonCenter, MouseButton.Left, RawInputModifiers.None);
             Dispatcher.UIThread.RunJobs();
-            assertButtonBrush(
-                closeSurface.Background,
-                CAPTION_CLOSE_PRESSED_BACKGROUND,
-                themeVariant);
-            assertButtonBrush(
-                closeSurface.BorderBrush,
-                FOCUS_ON_FILL_STROKE,
-                themeVariant);
-            assertButtonBrush(
-                closeGlyph.Fill,
-                CAPTION_CLOSE_FOREGROUND,
-                themeVariant);
+            assertButtonBrush(closeSurface.Background, CAPTION_CLOSE_PRESSED_BACKGROUND, themeVariant);
+            assertButtonBrush(closeSurface.BorderBrush, FOCUS_ON_FILL_STROKE, themeVariant);
+            assertButtonBrush(closeGlyph.Fill, CAPTION_CLOSE_FOREGROUND, themeVariant);
             assertCaptionGeometryIsUnchanged(
                 window,
                 closeButton,
                 closeGlyph,
                 initialButtonBounds,
                 initialGlyphCenter);
-            window.MouseUp(
-                closeButtonCenter,
-                MouseButton.Left,
-                RawInputModifiers.None);
+            window.MouseUp(closeButtonCenter, MouseButton.Left, RawInputModifiers.None);
             Dispatcher.UIThread.RunJobs();
         }
         finally
@@ -678,14 +521,8 @@ public sealed class ProductControlVisualStateTests
     {
         Assert.Equal(expectedButtonBounds, captionButton.Bounds);
         Point actualGlyphCenter = findControlCenter(window, glyph);
-        Assert.InRange(
-            Math.Abs(actualGlyphCenter.X - expectedGlyphCenter.X),
-            0.0,
-            0.01);
-        Assert.InRange(
-            Math.Abs(actualGlyphCenter.Y - expectedGlyphCenter.Y),
-            0.0,
-            0.01);
+        Assert.InRange(Math.Abs(actualGlyphCenter.X - expectedGlyphCenter.X), 0.0, 0.01);
+        Assert.InRange(Math.Abs(actualGlyphCenter.Y - expectedGlyphCenter.Y), 0.0, 0.01);
     }
 
     private static Button createButton(ControlStyleClass styleClass)
@@ -696,9 +533,7 @@ public sealed class ProductControlVisualStateTests
         return button;
     }
 
-    private static void movePointerToControl(
-        Window window,
-        Control control)
+    private static void movePointerToControl(Window window, Control control)
     {
         Point controlCenter = findControlCenter(window, control);
         window.MouseMove(controlCenter, RawInputModifiers.None);
@@ -707,18 +542,13 @@ public sealed class ProductControlVisualStateTests
         Assert.True(control.IsPointerOver);
     }
 
-    private static Point findControlCenter(
-        Window window,
-        Control control)
+    private static Point findControlCenter(Window window, Control control)
     {
-        Point? controlOriginOrNull = control.TranslatePoint(
-            new Point(0.0, 0.0),
-            window);
+        Point? controlOriginOrNull = control.TranslatePoint(new Point(0.0, 0.0), window);
         Assert.NotNull(controlOriginOrNull);
         if (controlOriginOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The control position could not be resolved.");
+            throw new InvalidOperationException("The control position could not be resolved.");
         }
 
         return controlOriginOrNull.Value
@@ -730,18 +560,13 @@ public sealed class ProductControlVisualStateTests
         Control firstControl,
         Control secondControl)
     {
-        Point? firstOriginOrNull = firstControl.TranslatePoint(
-            new Point(0.0, 0.0),
-            root);
-        Point? secondOriginOrNull = secondControl.TranslatePoint(
-            new Point(0.0, 0.0),
-            root);
+        Point? firstOriginOrNull = firstControl.TranslatePoint(new Point(0.0, 0.0), root);
+        Point? secondOriginOrNull = secondControl.TranslatePoint(new Point(0.0, 0.0), root);
         Assert.NotNull(firstOriginOrNull);
         Assert.NotNull(secondOriginOrNull);
         if (firstOriginOrNull == null || secondOriginOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The button content geometry could not be resolved.");
+            throw new InvalidOperationException("The button content geometry could not be resolved.");
         }
 
         double firstCenterY = firstOriginOrNull.Value.Y
@@ -757,11 +582,8 @@ public sealed class ProductControlVisualStateTests
         ColorToken expectedColorToken,
         ThemeVariant themeVariant)
     {
-        SolidColorBrush actualBrush = Assert.IsType<SolidColorBrush>(
-            actualBrushOrNull);
-        SolidColorBrush expectedBrush = findRequiredThemeBrush(
-            expectedColorToken,
-            themeVariant);
+        SolidColorBrush actualBrush = Assert.IsType<SolidColorBrush>(actualBrushOrNull);
+        SolidColorBrush expectedBrush = findRequiredThemeBrush(expectedColorToken, themeVariant);
         Assert.Equal(expectedBrush.Color, actualBrush.Color);
     }
 
@@ -770,13 +592,8 @@ public sealed class ProductControlVisualStateTests
         ColorToken expectedColorToken,
         ThemeVariant themeVariant)
     {
-        ContentPresenter contentPresenter = button.GetVisualDescendants()
-            .OfType<ContentPresenter>()
-            .Single();
-        assertButtonBrush(
-            contentPresenter.Background,
-            expectedColorToken,
-            themeVariant);
+        ContentPresenter contentPresenter = button.GetVisualDescendants().OfType<ContentPresenter>().Single();
+        assertButtonBrush(contentPresenter.Background, expectedColorToken, themeVariant);
     }
 
     private static void assertOutlineActionVisuals(
@@ -805,8 +622,7 @@ public sealed class ProductControlVisualStateTests
         Assert.NotNull(applicationOrNull);
         if (applicationOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The Avalonia test application was not initialized.");
+            throw new InvalidOperationException("The Avalonia test application was not initialized.");
         }
 
         object? resourceOrNull;
@@ -814,9 +630,7 @@ public sealed class ProductControlVisualStateTests
             colorToken.Value,
             themeVariant,
             out resourceOrNull);
-        Assert.True(
-            hasResource,
-            "Missing brush resource: " + colorToken.Value);
+        Assert.True(hasResource, "Missing brush resource: " + colorToken.Value);
         return Assert.IsType<SolidColorBrush>(resourceOrNull);
     }
 
@@ -828,8 +642,7 @@ public sealed class ProductControlVisualStateTests
         Assert.NotNull(applicationOrNull);
         if (applicationOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The Avalonia test application was not initialized.");
+            throw new InvalidOperationException("The Avalonia test application was not initialized.");
         }
 
         object? resourceOrNull;
@@ -837,9 +650,7 @@ public sealed class ProductControlVisualStateTests
             controlThemeToken.Value,
             themeVariant,
             out resourceOrNull);
-        Assert.True(
-            hasResource,
-            "Missing control theme: " + controlThemeToken.Value);
+        Assert.True(hasResource, "Missing control theme: " + controlThemeToken.Value);
 
         return Assert.IsType<ControlTheme>(resourceOrNull);
     }

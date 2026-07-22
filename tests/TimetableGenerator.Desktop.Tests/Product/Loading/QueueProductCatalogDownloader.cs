@@ -9,8 +9,7 @@ namespace TimetableGenerator.Desktop.Tests.Product.Loading;
 
 internal sealed class QueueProductCatalogDownloader : IProductCatalogDownloader
 {
-    private readonly Queue<Func<CancellationToken, Task<VerifiedCatalogPackage>>>
-        mDownloads;
+    private readonly Queue<Func<CancellationToken, Task<VerifiedCatalogPackage>>> mDownloads;
 
     public int DownloadCount { get; private set; }
 
@@ -22,23 +21,19 @@ internal sealed class QueueProductCatalogDownloader : IProductCatalogDownloader
             throw new ArgumentNullException(nameof(downloads));
         }
 
-        mDownloads = new Queue<Func<CancellationToken, Task<VerifiedCatalogPackage>>>(
-            downloads);
+        mDownloads = new Queue<Func<CancellationToken, Task<VerifiedCatalogPackage>>>(downloads);
     }
 
-    public Task<VerifiedCatalogPackage> DownloadDefaultCatalogAsync(
-        CancellationToken cancellationToken)
+    public Task<VerifiedCatalogPackage> DownloadDefaultCatalogAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ++DownloadCount;
         if (mDownloads.Count == 0)
         {
-            throw new InvalidOperationException(
-                "The test catalog downloader received an unexpected request.");
+            throw new InvalidOperationException("The test catalog downloader received an unexpected request.");
         }
 
-        Func<CancellationToken, Task<VerifiedCatalogPackage>> download =
-            mDownloads.Dequeue();
+        Func<CancellationToken, Task<VerifiedCatalogPackage>> download = mDownloads.Dequeue();
         return download(cancellationToken);
     }
 }

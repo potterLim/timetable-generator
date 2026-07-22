@@ -28,9 +28,7 @@ public sealed class AppearanceSettingsInteractionTests
     [AvaloniaFact]
     public async Task ThemeOptionsReflectAndApplyTheSelectedPreferenceAsync()
     {
-        ControlledProductAppearanceSettingsStore settingsStore =
-            new ControlledProductAppearanceSettingsStore(
-                ProductAppearanceSettings.CreateDefault());
+        ControlledProductAppearanceSettingsStore settingsStore = new ControlledProductAppearanceSettingsStore(ProductAppearanceSettings.CreateDefault());
         ProductAppearanceViewModel appearance =
             new ProductAppearanceViewModel(
                 settingsStore,
@@ -44,37 +42,21 @@ public sealed class AppearanceSettingsInteractionTests
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
-            TextBlock heading = findRequiredControl<TextBlock>(
-                view,
-                "AppearanceSettingsHeading");
-            RadioButton systemOption = findRequiredControl<RadioButton>(
-                view,
-                "SystemThemeOption");
-            RadioButton lightOption = findRequiredControl<RadioButton>(
-                view,
-                "LightThemeOption");
-            RadioButton darkOption = findRequiredControl<RadioButton>(
-                view,
-                "DarkThemeOption");
+            TextBlock heading = findRequiredControl<TextBlock>(view, "AppearanceSettingsHeading");
+            RadioButton systemOption = findRequiredControl<RadioButton>(view, "SystemThemeOption");
+            RadioButton lightOption = findRequiredControl<RadioButton>(view, "LightThemeOption");
+            RadioButton darkOption = findRequiredControl<RadioButton>(view, "DarkThemeOption");
 
             Assert.Equal("ProductThemePreference", systemOption.GroupName);
             Assert.Equal(systemOption.GroupName, darkOption.GroupName);
             Assert.Equal(1, (int)AutomationProperties.GetHeadingLevel(heading));
-            Assert.Equal(
-                "시스템 설정에 맞춰 화면 모드 사용",
-                AutomationProperties.GetName(systemOption));
-            Assert.Equal(
-                "다크 모드 사용",
-                AutomationProperties.GetName(darkOption));
+            Assert.Equal("시스템 설정에 맞춰 화면 모드 사용", AutomationProperties.GetName(systemOption));
+            Assert.Equal("다크 모드 사용", AutomationProperties.GetName(darkOption));
             Assert.True(systemOption.MinHeight >= 44.0);
             Assert.True(darkOption.MinHeight >= 44.0);
             Assert.Equal("시스템 설정 사용", systemOption.Content);
-            Assert.Equal(
-                Avalonia.Layout.VerticalAlignment.Center,
-                systemOption.VerticalContentAlignment);
-            Assert.Equal(
-                new Thickness(8.0, 0.0, 0.0, 0.0),
-                systemOption.Padding);
+            Assert.Equal(Avalonia.Layout.VerticalAlignment.Center, systemOption.VerticalContentAlignment);
+            Assert.Equal(new Thickness(8.0, 0.0, 0.0, 0.0), systemOption.Padding);
             assertIndicatorAndContentUseProductSpacing(systemOption);
             assertIndicatorAndContentUseProductSpacing(lightOption);
             assertIndicatorAndContentUseProductSpacing(darkOption);
@@ -83,9 +65,7 @@ public sealed class AppearanceSettingsInteractionTests
             assertIndicatorHasSelectedSurfaceInset(darkOption);
             Assert.True(systemOption.IsChecked);
             Assert.False(darkOption.IsChecked);
-            assertCheckedOptionUsesSelectedHoverSurface(
-                window,
-                systemOption);
+            assertCheckedOptionUsesSelectedHoverSurface(window, systemOption);
 
             darkOption.IsChecked = true;
             await appearance.CompletePersistenceAsync();
@@ -93,9 +73,7 @@ public sealed class AppearanceSettingsInteractionTests
 
             Assert.False(systemOption.IsChecked);
             Assert.True(darkOption.IsChecked);
-            Assert.Equal(
-                EProductThemePreference.Dark,
-                settingsStore.SavedSettings[0].ThemePreference);
+            Assert.Equal(EProductThemePreference.Dark, settingsStore.SavedSettings[0].ThemePreference);
         }
         finally
         {
@@ -106,8 +84,7 @@ public sealed class AppearanceSettingsInteractionTests
     [AvaloniaFact]
     public void AppearancePopupUsesCompactResponsiveWidthAndScalableLabels()
     {
-        ProductAppearanceViewModel appearance =
-            ProductAppearanceTestFactory.CreateViewModel();
+        ProductAppearanceViewModel appearance = ProductAppearanceTestFactory.CreateViewModel();
         AppearanceSettingsView view = new AppearanceSettingsView();
         view.DataContext = appearance;
         view.FontSize = 24.0;
@@ -121,9 +98,7 @@ public sealed class AppearanceSettingsInteractionTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            RadioButton systemOption = findRequiredControl<RadioButton>(
-                view,
-                "SystemThemeOption");
+            RadioButton systemOption = findRequiredControl<RadioButton>(view, "SystemThemeOption");
             ContentPresenter presenter = systemOption.GetVisualDescendants()
                 .OfType<ContentPresenter>()
                 .Single(
@@ -149,9 +124,7 @@ public sealed class AppearanceSettingsInteractionTests
     [AvaloniaFact]
     public void ThemeOptionLabelsShareOneHorizontalOriginAcrossVisualStates()
     {
-        ControlledProductAppearanceSettingsStore settingsStore =
-            new ControlledProductAppearanceSettingsStore(
-                ProductAppearanceSettings.CreateDefault());
+        ControlledProductAppearanceSettingsStore settingsStore = new ControlledProductAppearanceSettingsStore(ProductAppearanceSettings.CreateDefault());
         ProductAppearanceViewModel appearance =
             new ProductAppearanceViewModel(
                 settingsStore,
@@ -200,9 +173,7 @@ public sealed class AppearanceSettingsInteractionTests
     [AvaloniaFact]
     public void ThemeOptionsUseCompleteVisualStatesAcrossThemes()
     {
-        ControlledProductAppearanceSettingsStore settingsStore =
-            new ControlledProductAppearanceSettingsStore(
-                ProductAppearanceSettings.CreateDefault());
+        ControlledProductAppearanceSettingsStore settingsStore = new ControlledProductAppearanceSettingsStore(ProductAppearanceSettings.CreateDefault());
         ProductAppearanceViewModel appearance =
             new ProductAppearanceViewModel(
                 settingsStore,
@@ -218,12 +189,8 @@ public sealed class AppearanceSettingsInteractionTests
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
-            RadioButton systemOption = findRequiredControl<RadioButton>(
-                view,
-                "SystemThemeOption");
-            RadioButton darkOption = findRequiredControl<RadioButton>(
-                view,
-                "DarkThemeOption");
+            RadioButton systemOption = findRequiredControl<RadioButton>(view, "SystemThemeOption");
+            RadioButton darkOption = findRequiredControl<RadioButton>(view, "DarkThemeOption");
             Border systemSurface = findAppearanceOptionSurface(systemOption);
             Border darkSurface = findAppearanceOptionSurface(darkOption);
             ThemeVariant[] themeVariants =
@@ -243,32 +210,17 @@ public sealed class AppearanceSettingsInteractionTests
 
                 Assert.Equal(true, systemOption.IsChecked);
                 Assert.Equal(false, darkOption.IsChecked);
-                assertSurfaceUsesResource(
-                    systemSurface,
-                    "SelectionSurfaceBrush",
-                    themeVariant);
+                assertSurfaceUsesResource(systemSurface, "SelectionSurfaceBrush", themeVariant);
                 assertTransparentSurface(darkSurface);
 
                 Point darkOptionCenter = findControlCenter(window, darkOption);
                 window.MouseMove(darkOptionCenter, RawInputModifiers.None);
                 Dispatcher.UIThread.RunJobs();
-                assertSurfaceUsesResource(
-                    darkSurface,
-                    "HoverSurfaceBrush",
-                    themeVariant);
-                window.MouseDown(
-                    darkOptionCenter,
-                    MouseButton.Left,
-                    RawInputModifiers.None);
+                assertSurfaceUsesResource(darkSurface, "HoverSurfaceBrush", themeVariant);
+                window.MouseDown(darkOptionCenter, MouseButton.Left, RawInputModifiers.None);
                 Dispatcher.UIThread.RunJobs();
-                assertSurfaceUsesResource(
-                    darkSurface,
-                    "PressedSurfaceBrush",
-                    themeVariant);
-                window.MouseUp(
-                    darkOptionCenter,
-                    MouseButton.Left,
-                    RawInputModifiers.None);
+                assertSurfaceUsesResource(darkSurface, "PressedSurfaceBrush", themeVariant);
+                window.MouseUp(darkOptionCenter, MouseButton.Left, RawInputModifiers.None);
 
                 systemOption.IsChecked = true;
                 movePointerOutsideAppearanceOptions(window);
@@ -284,48 +236,28 @@ public sealed class AppearanceSettingsInteractionTests
                 Assert.False(darkOption.IsEffectivelyEnabled);
                 assertTransparentSurface(darkSurface);
 
-                Point systemOptionCenter = findControlCenter(
-                    window,
-                    systemOption);
+                Point systemOptionCenter = findControlCenter(window, systemOption);
                 window.MouseMove(systemOptionCenter, RawInputModifiers.None);
                 Dispatcher.UIThread.RunJobs();
-                assertSurfaceUsesResource(
-                    systemSurface,
-                    "SelectionHoverSurfaceBrush",
-                    themeVariant);
-                window.MouseDown(
-                    systemOptionCenter,
-                    MouseButton.Left,
-                    RawInputModifiers.None);
+                assertSurfaceUsesResource(systemSurface, "SelectionHoverSurfaceBrush", themeVariant);
+                window.MouseDown(systemOptionCenter, MouseButton.Left, RawInputModifiers.None);
                 Dispatcher.UIThread.RunJobs();
-                assertSurfaceUsesResource(
-                    systemSurface,
-                    "SelectionPressedSurfaceBrush",
-                    themeVariant);
-                window.MouseUp(
-                    systemOptionCenter,
-                    MouseButton.Left,
-                    RawInputModifiers.None);
+                assertSurfaceUsesResource(systemSurface, "SelectionPressedSurfaceBrush", themeVariant);
+                window.MouseUp(systemOptionCenter, MouseButton.Left, RawInputModifiers.None);
 
                 movePointerOutsideAppearanceOptions(window);
                 darkOption.IsEnabled = true;
                 Assert.True(darkOption.Focus(NavigationMethod.Tab));
                 Assert.True(systemOption.Focus(NavigationMethod.Tab));
                 Dispatcher.UIThread.RunJobs();
-                assertSurfaceUsesResource(
-                    systemSurface,
-                    "SelectionSurfaceBrush",
-                    themeVariant);
+                assertSurfaceUsesResource(systemSurface, "SelectionSurfaceBrush", themeVariant);
                 assertFocusVisuals(systemOption, themeVariant);
 
                 systemOption.IsEnabled = false;
                 window.MouseMove(systemOptionCenter, RawInputModifiers.None);
                 Dispatcher.UIThread.RunJobs();
                 Assert.False(systemOption.IsEffectivelyEnabled);
-                assertSurfaceUsesResource(
-                    systemSurface,
-                    "SelectionSurfaceBrush",
-                    themeVariant);
+                assertSurfaceUsesResource(systemSurface, "SelectionSurfaceBrush", themeVariant);
             }
         }
         finally
@@ -337,11 +269,8 @@ public sealed class AppearanceSettingsInteractionTests
     [AvaloniaFact]
     public async Task PersistenceFailureOffersAWorkingRetryActionAsync()
     {
-        ControlledProductAppearanceSettingsStore settingsStore =
-            new ControlledProductAppearanceSettingsStore(
-                ProductAppearanceSettings.CreateDefault());
-        settingsStore.FailSaves(
-            new ProductAppearanceSettingsException("Controlled failure."));
+        ControlledProductAppearanceSettingsStore settingsStore = new ControlledProductAppearanceSettingsStore(ProductAppearanceSettings.CreateDefault());
+        settingsStore.FailSaves(new ProductAppearanceSettingsException("Controlled failure."));
         ProductAppearanceViewModel appearance =
             new ProductAppearanceViewModel(
                 settingsStore,
@@ -354,15 +283,11 @@ public sealed class AppearanceSettingsInteractionTests
         try
         {
             window.Show();
-            RadioButton darkOption = findRequiredControl<RadioButton>(
-                view,
-                "DarkThemeOption");
+            RadioButton darkOption = findRequiredControl<RadioButton>(view, "DarkThemeOption");
             darkOption.IsChecked = true;
             await appearance.CompletePersistenceAsync();
             Dispatcher.UIThread.RunJobs();
-            Button retryButton = findRequiredControl<Button>(
-                view,
-                "RetryAppearancePersistenceButton");
+            Button retryButton = findRequiredControl<Button>(view, "RetryAppearancePersistenceButton");
 
             Assert.True(appearance.HasPersistenceFailure);
             Assert.True(retryButton.IsEffectivelyVisible);
@@ -374,9 +299,7 @@ public sealed class AppearanceSettingsInteractionTests
             Dispatcher.UIThread.RunJobs();
 
             Assert.False(appearance.HasPersistenceFailure);
-            Assert.Equal(
-                EProductThemePreference.Dark,
-                settingsStore.SavedSettings[0].ThemePreference);
+            Assert.Equal(EProductThemePreference.Dark, settingsStore.SavedSettings[0].ThemePreference);
         }
         finally
         {
@@ -384,27 +307,21 @@ public sealed class AppearanceSettingsInteractionTests
         }
     }
 
-    private static void assertIndicatorAndContentUseProductSpacing(
-        RadioButton option)
+    private static void assertIndicatorAndContentUseProductSpacing(RadioButton option)
     {
         Visual indicator = option.GetVisualDescendants()
             .Single(candidate => candidate.Name == "OuterEllipse");
         ContentPresenter presenter = option.GetVisualDescendants()
             .OfType<ContentPresenter>()
             .Single(candidate => candidate.Name == "PART_ContentPresenter");
-        Point? indicatorOriginOrNull = indicator.TranslatePoint(
-            new Point(0.0, 0.0),
-            option);
-        Point? presenterOriginOrNull = presenter.TranslatePoint(
-            new Point(0.0, 0.0),
-            option);
+        Point? indicatorOriginOrNull = indicator.TranslatePoint(new Point(0.0, 0.0), option);
+        Point? presenterOriginOrNull = presenter.TranslatePoint(new Point(0.0, 0.0), option);
 
         Assert.NotNull(indicatorOriginOrNull);
         Assert.NotNull(presenterOriginOrNull);
         if (indicatorOriginOrNull == null || presenterOriginOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The appearance option geometry could not be resolved.");
+            throw new InvalidOperationException("The appearance option geometry could not be resolved.");
         }
 
         double indicatorCenterY = indicatorOriginOrNull.Value.Y
@@ -419,27 +336,17 @@ public sealed class AppearanceSettingsInteractionTests
         Assert.InRange(presenterCenterDelta, -0.05, 0.05);
     }
 
-    private static void assertOptionsShareHorizontalOrigins(
-        Control root,
-        RadioButton[] options)
+    private static void assertOptionsShareHorizontalOrigins(Control root, RadioButton[] options)
     {
         Visual expectedIndicator = options[0].GetVisualDescendants()
             .Single(candidate => candidate.Name == "OuterEllipse");
         ContentPresenter expectedPresenter = options[0].GetVisualDescendants()
             .OfType<ContentPresenter>()
             .Single(candidate => candidate.Name == "PART_ContentPresenter");
-        TextBlock expectedText = options[0].GetVisualDescendants()
-            .OfType<TextBlock>()
-            .Single();
-        double expectedIndicatorX = findRequiredHorizontalOrigin(
-            expectedIndicator,
-            root);
-        double expectedPresenterX = findRequiredHorizontalOrigin(
-            expectedPresenter,
-            root);
-        double expectedTextX = findRequiredHorizontalOrigin(
-            expectedText,
-            root);
+        TextBlock expectedText = options[0].GetVisualDescendants().OfType<TextBlock>().Single();
+        double expectedIndicatorX = findRequiredHorizontalOrigin(expectedIndicator, root);
+        double expectedPresenterX = findRequiredHorizontalOrigin(expectedPresenter, root);
+        double expectedTextX = findRequiredHorizontalOrigin(expectedText, root);
         double expectedIndicatorToPresenterGap = expectedPresenterX
             - expectedIndicatorX
             - expectedIndicator.Bounds.Width;
@@ -451,9 +358,7 @@ public sealed class AppearanceSettingsInteractionTests
             ContentPresenter presenter = option.GetVisualDescendants()
                 .OfType<ContentPresenter>()
                 .Single(candidate => candidate.Name == "PART_ContentPresenter");
-            TextBlock text = option.GetVisualDescendants()
-                .OfType<TextBlock>()
-                .Single();
+            TextBlock text = option.GetVisualDescendants().OfType<TextBlock>().Single();
             double indicatorX = findRequiredHorizontalOrigin(indicator, root);
             double presenterX = findRequiredHorizontalOrigin(presenter, root);
             double textX = findRequiredHorizontalOrigin(text, root);
@@ -461,33 +366,16 @@ public sealed class AppearanceSettingsInteractionTests
                 - indicatorX
                 - indicator.Bounds.Width;
 
-            Assert.InRange(
-                Math.Abs(indicatorX - expectedIndicatorX),
-                0.0,
-                0.05);
-            Assert.InRange(
-                Math.Abs(presenterX - expectedPresenterX),
-                0.0,
-                0.05);
-            Assert.InRange(
-                Math.Abs(textX - expectedTextX),
-                0.0,
-                0.05);
-            Assert.InRange(
-                Math.Abs(
-                    indicatorToPresenterGap - expectedIndicatorToPresenterGap),
-                0.0,
-                0.05);
+            Assert.InRange(Math.Abs(indicatorX - expectedIndicatorX), 0.0, 0.05);
+            Assert.InRange(Math.Abs(presenterX - expectedPresenterX), 0.0, 0.05);
+            Assert.InRange(Math.Abs(textX - expectedTextX), 0.0, 0.05);
+            Assert.InRange(Math.Abs(indicatorToPresenterGap - expectedIndicatorToPresenterGap), 0.0, 0.05);
         }
     }
 
-    private static double findRequiredHorizontalOrigin(
-        Visual visual,
-        Visual relativeTo)
+    private static double findRequiredHorizontalOrigin(Visual visual, Visual relativeTo)
     {
-        Point? originOrNull = visual.TranslatePoint(
-            new Point(0.0, 0.0),
-            relativeTo);
+        Point? originOrNull = visual.TranslatePoint(new Point(0.0, 0.0), relativeTo);
         Assert.NotNull(originOrNull);
         if (originOrNull == null)
         {
@@ -498,14 +386,11 @@ public sealed class AppearanceSettingsInteractionTests
         return originOrNull.Value.X;
     }
 
-    private static void assertIndicatorHasSelectedSurfaceInset(
-        RadioButton option)
+    private static void assertIndicatorHasSelectedSurfaceInset(RadioButton option)
     {
         Visual indicator = option.GetVisualDescendants()
             .Single(candidate => candidate.Name == "OuterEllipse");
-        Point? indicatorOriginOrNull = indicator.TranslatePoint(
-            new Point(0.0, 0.0),
-            option);
+        Point? indicatorOriginOrNull = indicator.TranslatePoint(new Point(0.0, 0.0), option);
 
         Assert.NotNull(indicatorOriginOrNull);
         if (indicatorOriginOrNull == null)
@@ -517,9 +402,7 @@ public sealed class AppearanceSettingsInteractionTests
         Assert.InRange(indicatorOriginOrNull.Value.X, 8.0, 10.0);
     }
 
-    private static void assertCheckedOptionUsesSelectedHoverSurface(
-        Window window,
-        RadioButton option)
+    private static void assertCheckedOptionUsesSelectedHoverSurface(Window window, RadioButton option)
     {
         Border rootBorder = option.GetVisualDescendants()
             .OfType<Border>()
@@ -527,18 +410,13 @@ public sealed class AppearanceSettingsInteractionTests
         Color restingColor = getRequiredApplicationColor(
             "SelectionSurfaceBrush",
             option.ActualThemeVariant);
-        Assert.Equal(
-            restingColor,
-            getRequiredSolidColor(rootBorder.Background));
-        Point? optionOriginOrNull = option.TranslatePoint(
-            new Point(0.0, 0.0),
-            window);
+        Assert.Equal(restingColor, getRequiredSolidColor(rootBorder.Background));
+        Point? optionOriginOrNull = option.TranslatePoint(new Point(0.0, 0.0), window);
 
         Assert.NotNull(optionOriginOrNull);
         if (optionOriginOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The appearance option position could not be resolved.");
+            throw new InvalidOperationException("The appearance option position could not be resolved.");
         }
 
         Point optionCenter = optionOriginOrNull.Value
@@ -563,14 +441,11 @@ public sealed class AppearanceSettingsInteractionTests
 
     private static Point findControlCenter(Window window, Control control)
     {
-        Point? originOrNull = control.TranslatePoint(
-            new Point(0.0, 0.0),
-            window);
+        Point? originOrNull = control.TranslatePoint(new Point(0.0, 0.0), window);
         Assert.NotNull(originOrNull);
         if (originOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The appearance option position could not be resolved.");
+            throw new InvalidOperationException("The appearance option position could not be resolved.");
         }
 
         return originOrNull.Value
@@ -583,9 +458,7 @@ public sealed class AppearanceSettingsInteractionTests
         Dispatcher.UIThread.RunJobs();
     }
 
-    private static void assertFocusVisuals(
-        RadioButton option,
-        ThemeVariant themeVariant)
+    private static void assertFocusVisuals(RadioButton option, ThemeVariant themeVariant)
     {
         Assert.Equal(new Thickness(2.0), option.BorderThickness);
         Assert.Equal(
@@ -616,23 +489,17 @@ public sealed class AppearanceSettingsInteractionTests
         Assert.Equal(Colors.Transparent, getRequiredSolidColor(backgroundOrNull));
     }
 
-    private static Color getRequiredApplicationColor(
-        string resourceKey,
-        ThemeVariant themeVariant)
+    private static Color getRequiredApplicationColor(string resourceKey, ThemeVariant themeVariant)
     {
         Avalonia.Application? applicationOrNull = Avalonia.Application.Current;
         Assert.NotNull(applicationOrNull);
         if (applicationOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The Avalonia test application was not initialized.");
+            throw new InvalidOperationException("The Avalonia test application was not initialized.");
         }
 
         object? resourceOrNull;
-        bool hasResource = applicationOrNull.TryGetResource(
-            resourceKey,
-            themeVariant,
-            out resourceOrNull);
+        bool hasResource = applicationOrNull.TryGetResource(resourceKey, themeVariant, out resourceOrNull);
         Assert.True(hasResource);
 
         return getRequiredSolidColor(resourceOrNull as IBrush);
@@ -644,25 +511,20 @@ public sealed class AppearanceSettingsInteractionTests
         Assert.NotNull(solidBrushOrNull);
         if (solidBrushOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The appearance option surface was not a solid color.");
+            throw new InvalidOperationException("The appearance option surface was not a solid color.");
         }
 
         return solidBrushOrNull.Color;
     }
 
-    private static TControl findRequiredControl<TControl>(
-        Control root,
-        string controlName)
+    private static TControl findRequiredControl<TControl>(Control root, string controlName)
         where TControl : Control
     {
         TControl? controlOrNull = root.FindControl<TControl>(controlName);
         Assert.NotNull(controlOrNull);
         if (controlOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The appearance control could not be resolved: "
-                + controlName);
+            throw new InvalidOperationException("The appearance control could not be resolved: " + controlName);
         }
 
         return controlOrNull;

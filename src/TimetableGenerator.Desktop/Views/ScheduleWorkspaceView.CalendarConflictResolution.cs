@@ -23,14 +23,10 @@ internal sealed partial class ScheduleWorkspaceView
         cancellationToken.ThrowIfCancellationRequested();
         if (Dispatcher.UIThread.CheckAccess())
         {
-            return showCalendarNameConflictAsync(
-                conflict,
-                cancellationToken);
+            return showCalendarNameConflictAsync(conflict, cancellationToken);
         }
 
-        TaskCompletionSource<ECalendarNameConflictResolution> completionSource =
-            new TaskCompletionSource<ECalendarNameConflictResolution>(
-                TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCompletionSource<ECalendarNameConflictResolution> completionSource = new TaskCompletionSource<ECalendarNameConflictResolution>(TaskCreationOptions.RunContinuationsAsynchronously);
         Dispatcher.UIThread.Post(
             async delegate
             {
@@ -55,20 +51,17 @@ internal sealed partial class ScheduleWorkspaceView
         return completionSource.Task;
     }
 
-    private async Task<ECalendarNameConflictResolution>
-        showCalendarNameConflictAsync(
+    private async Task<ECalendarNameConflictResolution> showCalendarNameConflictAsync(
             CalendarNameConflict conflict,
             CancellationToken cancellationToken)
     {
         Window? ownerOrNull = TopLevel.GetTopLevel(this) as Window;
         if (ownerOrNull == null)
         {
-            throw new InvalidOperationException(
-                "Calendar export conflicts require an owner window.");
+            throw new InvalidOperationException("Calendar export conflicts require an owner window.");
         }
 
-        CalendarNameConflictDialog dialog =
-            new CalendarNameConflictDialog(conflict);
+        CalendarNameConflictDialog dialog = new CalendarNameConflictDialog(conflict);
         using (CancellationTokenRegistration registration =
             cancellationToken.Register(
                 delegate
@@ -78,24 +71,19 @@ internal sealed partial class ScheduleWorkspaceView
                         {
                             if (dialog.IsVisible)
                             {
-                                dialog.Close(
-                                    ECalendarNameConflictResolution.Cancel);
+                                dialog.Close(ECalendarNameConflictResolution.Cancel);
                             }
                         });
                 }))
         {
-            ECalendarNameConflictResolution resolution =
-                await dialog.ShowDialog<ECalendarNameConflictResolution>(
-                    ownerOrNull);
+            ECalendarNameConflictResolution resolution = await dialog.ShowDialog<ECalendarNameConflictResolution>(ownerOrNull);
             cancellationToken.ThrowIfCancellationRequested();
             if (resolution == ECalendarNameConflictResolution.None)
             {
                 return ECalendarNameConflictResolution.Cancel;
             }
 
-            CalendarNameConflictPolicy.EnsureResolutionIsSupported(
-                conflict,
-                resolution);
+            CalendarNameConflictPolicy.EnsureResolutionIsSupported(conflict, resolution);
             return resolution;
         }
     }

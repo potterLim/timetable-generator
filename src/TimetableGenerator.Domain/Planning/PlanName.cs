@@ -33,9 +33,7 @@ public sealed record PlanName
         bool hasLineBreak = normalizedValue.Contains('\r') || normalizedValue.Contains('\n');
         if (hasLineBreak)
         {
-            throw new ArgumentException(
-                "Plan names cannot contain line breaks.",
-                nameof(value));
+            throw new ArgumentException("Plan names cannot contain line breaks.", nameof(value));
         }
 
         Value = normalizedValue;

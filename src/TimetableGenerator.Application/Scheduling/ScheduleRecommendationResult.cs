@@ -57,8 +57,7 @@ public sealed class ScheduleRecommendationResult
             throw new ArgumentOutOfRangeException(nameof(validationError));
         }
 
-        List<ScheduleRecommendation> copiedRecommendations =
-            new List<ScheduleRecommendation>();
+        List<ScheduleRecommendation> copiedRecommendations = new List<ScheduleRecommendation>();
         foreach (ScheduleRecommendation recommendation in recommendations)
         {
             if (recommendation == null)
@@ -75,8 +74,7 @@ public sealed class ScheduleRecommendationResult
         bool hasValidationError = validationError != EPlanCatalogValidationError.None;
         if (isInvalidPlan != hasValidationError)
         {
-            throw new ArgumentException(
-                "Only invalid plan results can contain plan validation errors.");
+            throw new ArgumentException("Only invalid plan results can contain plan validation errors.");
         }
 
         if (isInvalidPlan && copiedRecommendations.Count > 0)

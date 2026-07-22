@@ -108,9 +108,7 @@ internal static class HandongExportTestHtml
         return documentBuilder.ToString();
     }
 
-    private static void appendRow(
-        StringBuilder documentBuilder,
-        IReadOnlyList<string> cells)
+    private static void appendRow(StringBuilder documentBuilder, IReadOnlyList<string> cells)
     {
         documentBuilder.AppendLine("<tr>");
         foreach (string cell in cells)

@@ -12,9 +12,7 @@ internal sealed class GenerationFileStorageAccess : IDisposable
 
     private bool mIsDisposed;
 
-    public GenerationFileStorageAccess(
-        FileStream processLock,
-        SemaphoreSlim accessGate)
+    public GenerationFileStorageAccess(FileStream processLock, SemaphoreSlim accessGate)
     {
         if (processLock == null)
         {

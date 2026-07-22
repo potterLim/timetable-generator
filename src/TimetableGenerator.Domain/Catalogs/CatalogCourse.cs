@@ -43,9 +43,7 @@ public sealed class CatalogCourse
 
         if (credits.IsValid == false)
         {
-            throw new ArgumentException(
-                "Catalog courses require valid course credits.",
-                nameof(credits));
+            throw new ArgumentException("Catalog courses require valid course credits.", nameof(credits));
         }
 
         Id = id;

@@ -40,8 +40,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
     {
         if (content.IsEmpty)
         {
-            throw new WorkspaceDocumentException(
-                "The planning workspace document is empty.");
+            throw new WorkspaceDocumentException("The planning workspace document is empty.");
         }
 
         try
@@ -71,9 +70,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         }
     }
 
-    private static void writeWorkspace(
-        Utf8JsonWriter writer,
-        PlanningWorkspaceDocument document)
+    private static void writeWorkspace(Utf8JsonWriter writer, PlanningWorkspaceDocument document)
     {
         writer.WriteStartObject();
         writer.WriteNumber("schemaVersion", CURRENT_SCHEMA_VERSION);
@@ -122,9 +119,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         }
 
         writer.WriteEndArray();
-        writeLastViewedRecommendation(
-            writer,
-            plan.LastViewedRecommendationOrNull);
+        writeLastViewedRecommendation(writer, plan.LastViewedRecommendationOrNull);
         writer.WriteEndObject();
     }
 
@@ -194,12 +189,8 @@ public sealed partial class PlanningWorkspaceJsonCodec
         PlanId? activePlanIdOrNull;
         if (schemaVersion == CURRENT_SCHEMA_VERSION)
         {
-            catalogBinding = readCatalogBinding(
-                properties["catalog"],
-                "workspace.catalog");
-            activePlanIdOrNull = readOptionalPlanIdOrNull(
-                properties["activePlanId"],
-                "activePlanId");
+            catalogBinding = readCatalogBinding(properties["catalog"], "workspace.catalog");
+            activePlanIdOrNull = readOptionalPlanIdOrNull(properties["activePlanId"], "activePlanId");
         }
         else
         {
@@ -210,15 +201,10 @@ public sealed partial class PlanningWorkspaceJsonCodec
             }
 
             catalogBinding = plans[0].CatalogBinding;
-            activePlanIdOrNull = readPlanId(
-                properties["activePlanId"],
-                "activePlanId");
+            activePlanIdOrNull = readPlanId(properties["activePlanId"], "activePlanId");
         }
 
-        PlanningWorkspace workspace = new PlanningWorkspace(
-            catalogBinding,
-            activePlanIdOrNull,
-            plans);
+        PlanningWorkspace workspace = new PlanningWorkspace(catalogBinding, activePlanIdOrNull, plans);
         return new PlanningWorkspaceDocument(generation, workspace);
     }
 
@@ -233,8 +219,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
             {
                 if (hasSchemaVersion)
                 {
-                    throw new WorkspaceDocumentException(
-                        "workspace contains the duplicate property 'schemaVersion'.");
+                    throw new WorkspaceDocumentException("workspace contains the duplicate property 'schemaVersion'.");
                 }
 
                 schemaVersion = readInt32(property.Value, "schemaVersion");
@@ -244,8 +229,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
 
         if (hasSchemaVersion == false)
         {
-            throw new WorkspaceDocumentException(
-                "workspace is missing the required property 'schemaVersion'.");
+            throw new WorkspaceDocumentException("workspace is missing the required property 'schemaVersion'.");
         }
 
         return schemaVersion;
@@ -309,27 +293,18 @@ public sealed partial class PlanningWorkspaceJsonCodec
             expectedPropertyNames);
         PlanId planId = readPlanId(properties["id"], "plan.id");
         PlanName planName = new PlanName(readString(properties["name"], "plan.name"));
-        PlanCatalogBinding catalogBinding = readCatalogBinding(
-            properties["catalog"],
-            "plan.catalog");
+        PlanCatalogBinding catalogBinding = readCatalogBinding(properties["catalog"], "plan.catalog");
         IReadOnlyList<CourseChoiceGroup> courseChoiceGroups;
         if (schemaVersion >= COURSE_CHOICE_GROUP_SCHEMA_VERSION)
         {
-            courseChoiceGroups = readCourseChoiceGroups(
-                properties["courseChoiceGroups"]);
+            courseChoiceGroups = readCourseChoiceGroups(properties["courseChoiceGroups"]);
         }
         else
         {
-            IReadOnlyList<LegacyScheduledCourseChoiceDocument>
-                legacyChoiceDocuments =
-                    readLegacyScheduledChoiceDocuments(
-                        properties["scheduledChoices"]);
-            courseChoiceGroups = migrateLegacyScheduledChoiceDocuments(
-                planId,
-                legacyChoiceDocuments);
+            IReadOnlyList<LegacyScheduledCourseChoiceDocument> legacyChoiceDocuments = readLegacyScheduledChoiceDocuments(properties["scheduledChoices"]);
+            courseChoiceGroups = migrateLegacyScheduledChoiceDocuments(planId, legacyChoiceDocuments);
         }
-        IReadOnlyList<UnscheduledOfferingSelection> unscheduledSelections =
-            readUnscheduledSelections(properties["unscheduledSelections"]);
+        IReadOnlyList<UnscheduledOfferingSelection> unscheduledSelections = readUnscheduledSelections(properties["unscheduledSelections"]);
         IReadOnlyList<PersonalSchedule> personalSchedules;
         if (schemaVersion == LEGACY_SCHEMA_VERSION)
         {
@@ -343,8 +318,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         ScheduleRecommendationBookmark? lastViewedRecommendationOrNull = null;
         if (schemaVersion >= RECOMMENDATION_BOOKMARK_SCHEMA_VERSION)
         {
-            lastViewedRecommendationOrNull = readLastViewedRecommendationOrNull(
-                properties["lastViewedRecommendation"]);
+            lastViewedRecommendationOrNull = readLastViewedRecommendationOrNull(properties["lastViewedRecommendation"]);
         }
 
         return new PlanningPlan(
@@ -358,12 +332,10 @@ public sealed partial class PlanningWorkspaceJsonCodec
             lastViewedRecommendationOrNull);
     }
 
-    private static IReadOnlyList<UnscheduledOfferingSelection>
-        readUnscheduledSelections(JsonElement element)
+    private static IReadOnlyList<UnscheduledOfferingSelection> readUnscheduledSelections(JsonElement element)
     {
         requireValueKind(element, JsonValueKind.Array, "plan.unscheduledSelections");
-        List<UnscheduledOfferingSelection> selections =
-            new List<UnscheduledOfferingSelection>();
+        List<UnscheduledOfferingSelection> selections = new List<UnscheduledOfferingSelection>();
         foreach (JsonElement selectionElement in element.EnumerateArray())
         {
             Dictionary<string, JsonElement> properties = readExactObject(
@@ -390,16 +362,13 @@ public sealed partial class PlanningWorkspaceJsonCodec
         Guid parsedValue;
         if (Guid.TryParseExact(value, "D", out parsedValue) == false)
         {
-            throw new WorkspaceDocumentException(
-                context + " must be a GUID in D format.");
+            throw new WorkspaceDocumentException(context + " must be a GUID in D format.");
         }
 
         return new PlanId(parsedValue);
     }
 
-    private static PlanId? readOptionalPlanIdOrNull(
-        JsonElement element,
-        string context)
+    private static PlanId? readOptionalPlanIdOrNull(JsonElement element, string context)
     {
         if (element.ValueKind == JsonValueKind.Null)
         {

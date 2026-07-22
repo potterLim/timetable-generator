@@ -6,9 +6,7 @@ public sealed class CatalogCacheUpgradeRequiredException : CatalogCachePersisten
 {
     public int UnsupportedSchemaVersion { get; }
 
-    public CatalogCacheUpgradeRequiredException(
-        int unsupportedSchemaVersion,
-        Exception innerException)
+    public CatalogCacheUpgradeRequiredException(int unsupportedSchemaVersion, Exception innerException)
         : base(
             "The cached catalog was written by a newer application version.",
             innerException)

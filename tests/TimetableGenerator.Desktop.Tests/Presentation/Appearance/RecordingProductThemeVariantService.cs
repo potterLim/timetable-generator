@@ -23,8 +23,7 @@ internal sealed class RecordingProductThemeVariantService
         mAppliedPreferences = new List<EProductThemePreference>();
     }
 
-    public void ApplyThemePreference(
-        EProductThemePreference themePreference)
+    public void ApplyThemePreference(EProductThemePreference themePreference)
     {
         mAppliedPreferences.Add(themePreference);
     }

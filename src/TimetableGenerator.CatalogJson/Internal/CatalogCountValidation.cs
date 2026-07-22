@@ -8,10 +8,7 @@ internal static class CatalogCountValidation
     {
         if (value < 0)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                description + " cannot be negative.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, description + " cannot be negative.");
         }
     }
 
@@ -19,10 +16,7 @@ internal static class CatalogCountValidation
     {
         if (value <= 0)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                description + " must be positive.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, description + " must be positive.");
         }
     }
 }

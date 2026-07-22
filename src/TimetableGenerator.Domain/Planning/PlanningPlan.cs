@@ -100,8 +100,7 @@ public sealed class PlanningPlan
             return;
         }
 
-        if (lastViewedRecommendationOrNull.SelectedOfferingIds.Count
-            != content.CourseChoiceGroups.Count)
+        if (lastViewedRecommendationOrNull.SelectedOfferingIds.Count != content.CourseChoiceGroups.Count)
         {
             throw new ArgumentException(
                 "The last-viewed recommendation must select one offering per course choice group.",
@@ -110,9 +109,7 @@ public sealed class PlanningPlan
 
         foreach (CourseChoiceGroup courseChoiceGroup in content.CourseChoiceGroups)
         {
-            if (bookmarkSelectsEligibleOffering(
-                lastViewedRecommendationOrNull,
-                courseChoiceGroup) == false)
+            if (bookmarkSelectsEligibleOffering(lastViewedRecommendationOrNull, courseChoiceGroup) == false)
             {
                 throw new ArgumentException(
                     "The last-viewed recommendation must reference eligible plan offerings.",
@@ -130,9 +127,7 @@ public sealed class PlanningPlan
             foreach (OfferingCandidate offeringCandidate
                 in courseCandidate.OfferingCandidates)
             {
-                if (offeringCandidate.IsEligible
-                    && bookmark.ContainsOffering(
-                        offeringCandidate.OfferingId))
+                if (offeringCandidate.IsEligible && bookmark.ContainsOffering(offeringCandidate.OfferingId))
                 {
                     return true;
                 }

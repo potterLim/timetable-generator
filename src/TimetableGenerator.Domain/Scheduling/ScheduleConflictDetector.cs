@@ -4,9 +4,7 @@ namespace TimetableGenerator.Domain.Scheduling;
 
 public static class ScheduleConflictDetector
 {
-    public static bool HasConflict(
-        WeeklyTimeRange firstRange,
-        WeeklyTimeRange secondRange)
+    public static bool HasConflict(WeeklyTimeRange firstRange, WeeklyTimeRange secondRange)
     {
         if (firstRange.IsValid == false)
         {
@@ -31,9 +29,7 @@ public static class ScheduleConflictDetector
             && secondRange.TimeRange.Start.CompareTo(firstRange.TimeRange.End) < 0;
     }
 
-    public static bool HasConflict(
-        ScheduledOffering firstOffering,
-        ScheduledOffering secondOffering)
+    public static bool HasConflict(ScheduledOffering firstOffering, ScheduledOffering secondOffering)
     {
         if (firstOffering == null)
         {

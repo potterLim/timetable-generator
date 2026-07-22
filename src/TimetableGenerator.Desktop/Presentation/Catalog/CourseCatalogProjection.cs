@@ -58,14 +58,10 @@ internal sealed class CourseCatalogProjection
             throw new ArgumentNullException(nameof(courses));
         }
 
-        Dictionary<CourseId, CatalogCourse> sourceCoursesById = createSourceCoursesById(
-            document.Catalog.Courses);
-        Dictionary<OfferingId, CatalogOffering> sourceOfferingsById =
-            createSourceOfferingsById(document.Catalog.Offerings);
-        Dictionary<CourseId, CatalogCourseProjection> coursesById =
-            new Dictionary<CourseId, CatalogCourseProjection>();
-        Dictionary<OfferingId, CatalogOfferingProjection> offeringsById =
-            new Dictionary<OfferingId, CatalogOfferingProjection>();
+        Dictionary<CourseId, CatalogCourse> sourceCoursesById = createSourceCoursesById(document.Catalog.Courses);
+        Dictionary<OfferingId, CatalogOffering> sourceOfferingsById = createSourceOfferingsById(document.Catalog.Offerings);
+        Dictionary<CourseId, CatalogCourseProjection> coursesById = new Dictionary<CourseId, CatalogCourseProjection>();
+        Dictionary<OfferingId, CatalogOfferingProjection> offeringsById = new Dictionary<OfferingId, CatalogOfferingProjection>();
         List<CatalogCourseProjection> copiedCourses = copyAndValidateCourses(
             courses,
             sourceCoursesById,
@@ -153,8 +149,7 @@ internal sealed class CourseCatalogProjection
     private static Dictionary<CourseId, CatalogCourse> createSourceCoursesById(
         IEnumerable<CatalogCourse> sourceCourses)
     {
-        Dictionary<CourseId, CatalogCourse> sourceCoursesById =
-            new Dictionary<CourseId, CatalogCourse>();
+        Dictionary<CourseId, CatalogCourse> sourceCoursesById = new Dictionary<CourseId, CatalogCourse>();
         foreach (CatalogCourse sourceCourse in sourceCourses)
         {
             sourceCoursesById.Add(sourceCourse.Id, sourceCourse);
@@ -166,8 +161,7 @@ internal sealed class CourseCatalogProjection
     private static Dictionary<OfferingId, CatalogOffering> createSourceOfferingsById(
         IEnumerable<CatalogOffering> sourceOfferings)
     {
-        Dictionary<OfferingId, CatalogOffering> sourceOfferingsById =
-            new Dictionary<OfferingId, CatalogOffering>();
+        Dictionary<OfferingId, CatalogOffering> sourceOfferingsById = new Dictionary<OfferingId, CatalogOffering>();
         foreach (CatalogOffering sourceOffering in sourceOfferings)
         {
             sourceOfferingsById.Add(sourceOffering.Id, sourceOffering);
@@ -183,8 +177,7 @@ internal sealed class CourseCatalogProjection
         IDictionary<CourseId, CatalogCourseProjection> coursesById,
         IDictionary<OfferingId, CatalogOfferingProjection> offeringsById)
     {
-        List<CatalogCourseProjection> copiedCourses =
-            new List<CatalogCourseProjection>();
+        List<CatalogCourseProjection> copiedCourses = new List<CatalogCourseProjection>();
         foreach (CatalogCourseProjection course in courses)
         {
             validateSourceCourse(course, sourceCoursesById, coursesById);
@@ -206,15 +199,11 @@ internal sealed class CourseCatalogProjection
     {
         if (course == null)
         {
-            throw new ArgumentException(
-                "Catalog projections cannot contain null courses.",
-                nameof(course));
+            throw new ArgumentException("Catalog projections cannot contain null courses.", nameof(course));
         }
 
         CatalogCourse? sourceCourseOrNull;
-        bool hasSourceCourse = sourceCoursesById.TryGetValue(
-            course.Course.Id,
-            out sourceCourseOrNull);
+        bool hasSourceCourse = sourceCoursesById.TryGetValue(course.Course.Id, out sourceCourseOrNull);
         if (hasSourceCourse == false
             || sourceCourseOrNull == null
             || ReferenceEquals(sourceCourseOrNull, course.Course) == false)
@@ -261,8 +250,7 @@ internal sealed class CourseCatalogProjection
     private static IReadOnlyList<OfferingUnitName> collectOfferingUnitNames(
         IEnumerable<CatalogCourseProjection> courses)
     {
-        SortedDictionary<string, OfferingUnitName> offeringUnitNamesByValue =
-            new SortedDictionary<string, OfferingUnitName>(StringComparer.Ordinal);
+        SortedDictionary<string, OfferingUnitName> offeringUnitNamesByValue = new SortedDictionary<string, OfferingUnitName>(StringComparer.Ordinal);
         foreach (CatalogCourseProjection course in courses)
         {
             foreach (OfferingUnitName offeringUnitName in course.OfferingUnitNames)
@@ -277,16 +265,13 @@ internal sealed class CourseCatalogProjection
     private static IReadOnlyList<CatalogRequirementGroup> createRequirementGroups(
         IReadOnlyList<CatalogCourseProjection> courses)
     {
-        SortedDictionary<ERequirementType, List<CatalogCourseProjection>> coursesByRequirement =
-            new SortedDictionary<ERequirementType, List<CatalogCourseProjection>>();
+        SortedDictionary<ERequirementType, List<CatalogCourseProjection>> coursesByRequirement = new SortedDictionary<ERequirementType, List<CatalogCourseProjection>>();
         foreach (CatalogCourseProjection course in courses)
         {
             foreach (ERequirementType requirementType in course.RequirementTypes)
             {
                 List<CatalogCourseProjection>? matchingCoursesOrNull;
-                bool hasGroup = coursesByRequirement.TryGetValue(
-                    requirementType,
-                    out matchingCoursesOrNull);
+                bool hasGroup = coursesByRequirement.TryGetValue(requirementType, out matchingCoursesOrNull);
                 if (hasGroup == false || matchingCoursesOrNull == null)
                 {
                     matchingCoursesOrNull = new List<CatalogCourseProjection>();
@@ -297,8 +282,7 @@ internal sealed class CourseCatalogProjection
             }
         }
 
-        List<CatalogRequirementGroup> requirementGroups =
-            new List<CatalogRequirementGroup>();
+        List<CatalogRequirementGroup> requirementGroups = new List<CatalogRequirementGroup>();
         foreach (KeyValuePair<ERequirementType, List<CatalogCourseProjection>> pair
             in coursesByRequirement)
         {

@@ -11,8 +11,7 @@ public sealed class WindowChromeLayoutPolicyTests
     [Fact]
     public void WindowsInsetsKeepEmbeddedCaptionControlsFlushRight()
     {
-        WindowChromeInsets insets = WindowChromeLayoutPolicy.FindTitleBarInsets(
-            EWindowChromePlatform.Windows);
+        WindowChromeInsets insets = WindowChromeLayoutPolicy.FindTitleBarInsets(EWindowChromePlatform.Windows);
 
         Assert.Equal(28.0, insets.Left);
         Assert.Equal(0.0, insets.Right);
@@ -21,8 +20,7 @@ public sealed class WindowChromeLayoutPolicyTests
     [Fact]
     public void MacOSInsetsReserveTrafficLights()
     {
-        WindowChromeInsets insets = WindowChromeLayoutPolicy.FindTitleBarInsets(
-            EWindowChromePlatform.MacOS);
+        WindowChromeInsets insets = WindowChromeLayoutPolicy.FindTitleBarInsets(EWindowChromePlatform.MacOS);
 
         Assert.Equal(96.0, insets.Left);
         Assert.Equal(22.0, insets.Right);
@@ -31,8 +29,7 @@ public sealed class WindowChromeLayoutPolicyTests
     [Fact]
     public void OtherPlatformInsetsPreserveStandardContentMargins()
     {
-        WindowChromeInsets insets = WindowChromeLayoutPolicy.FindTitleBarInsets(
-            EWindowChromePlatform.Other);
+        WindowChromeInsets insets = WindowChromeLayoutPolicy.FindTitleBarInsets(EWindowChromePlatform.Other);
 
         Assert.Equal(28.0, insets.Left);
         Assert.Equal(22.0, insets.Right);
@@ -41,9 +38,7 @@ public sealed class WindowChromeLayoutPolicyTests
     [Fact]
     public void WindowsUsesEmbeddedCaptionControlsWithoutANativeTitleBar()
     {
-        WindowDecorations decorations =
-            WindowChromeLayoutPolicy.FindWindowDecorations(
-                EWindowChromePlatform.Windows);
+        WindowDecorations decorations = WindowChromeLayoutPolicy.FindWindowDecorations(EWindowChromePlatform.Windows);
 
         Assert.Equal(WindowDecorations.None, decorations);
     }
@@ -51,9 +46,7 @@ public sealed class WindowChromeLayoutPolicyTests
     [Fact]
     public void MacOSKeepsPlatformCaptionControls()
     {
-        WindowDecorations decorations =
-            WindowChromeLayoutPolicy.FindWindowDecorations(
-                EWindowChromePlatform.MacOS);
+        WindowDecorations decorations = WindowChromeLayoutPolicy.FindWindowDecorations(EWindowChromePlatform.MacOS);
 
         Assert.Equal(WindowDecorations.Full, decorations);
     }
@@ -61,9 +54,7 @@ public sealed class WindowChromeLayoutPolicyTests
     [Fact]
     public void OtherPlatformsKeepManagedCaptionControls()
     {
-        WindowDecorations decorations =
-            WindowChromeLayoutPolicy.FindWindowDecorations(
-                EWindowChromePlatform.Other);
+        WindowDecorations decorations = WindowChromeLayoutPolicy.FindWindowDecorations(EWindowChromePlatform.Other);
 
         Assert.Equal(WindowDecorations.Full, decorations);
     }

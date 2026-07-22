@@ -9,9 +9,7 @@ namespace TimetableGenerator.Infrastructure.Persistence;
 
 public sealed partial class PlanningWorkspaceJsonCodec
 {
-    private static void writePersonalSchedule(
-        Utf8JsonWriter writer,
-        PersonalSchedule personalSchedule)
+    private static void writePersonalSchedule(Utf8JsonWriter writer, PersonalSchedule personalSchedule)
     {
         writer.WriteStartObject();
         writer.WriteString("id", personalSchedule.Id.ToString());
@@ -27,23 +25,13 @@ public sealed partial class PlanningWorkspaceJsonCodec
         }
 
         writer.WriteEndArray();
-        writeOptionalString(
-            writer,
-            "section",
-            getSectionValueOrNull(personalSchedule.Details));
-        writeOptionalString(
-            writer,
-            "instructor",
-            getInstructorValueOrNull(personalSchedule.Details));
-        writeOptionalString(
-            writer,
-            "location",
-            getLocationValueOrNull(personalSchedule.Details));
+        writeOptionalString(writer, "section", getSectionValueOrNull(personalSchedule.Details));
+        writeOptionalString(writer, "instructor", getInstructorValueOrNull(personalSchedule.Details));
+        writeOptionalString(writer, "location", getLocationValueOrNull(personalSchedule.Details));
         writer.WriteEndObject();
     }
 
-    private static IReadOnlyList<PersonalSchedule> readPersonalSchedules(
-        JsonElement element)
+    private static IReadOnlyList<PersonalSchedule> readPersonalSchedules(JsonElement element)
     {
         requireValueKind(element, JsonValueKind.Array, "plan.personalSchedules");
         List<PersonalSchedule> personalSchedules = new List<PersonalSchedule>();
@@ -61,36 +49,24 @@ public sealed partial class PlanningWorkspaceJsonCodec
                     "instructor",
                     "location",
                 });
-            PersonalScheduleId scheduleId = readPersonalScheduleId(
-                properties["id"],
-                "personalSchedule.id");
+            PersonalScheduleId scheduleId = readPersonalScheduleId(properties["id"], "personalSchedule.id");
             PersonalScheduleTitle title = new PersonalScheduleTitle(
                 readString(properties["title"], "personalSchedule.title"));
-            IReadOnlyList<WeeklyTimeRange> timeRanges = readTimeRanges(
-                properties["timeRanges"]);
-            PersonalScheduleSection? sectionOrNull = readOptionalSectionOrNull(
-                properties["section"]);
-            PersonalScheduleInstructor? instructorOrNull =
-                readOptionalInstructorOrNull(
-                    properties["instructor"]);
-            PersonalScheduleLocation? locationOrNull =
-                readOptionalLocationOrNull(properties["location"]);
+            IReadOnlyList<WeeklyTimeRange> timeRanges = readTimeRanges(properties["timeRanges"]);
+            PersonalScheduleSection? sectionOrNull = readOptionalSectionOrNull(properties["section"]);
+            PersonalScheduleInstructor? instructorOrNull = readOptionalInstructorOrNull(properties["instructor"]);
+            PersonalScheduleLocation? locationOrNull = readOptionalLocationOrNull(properties["location"]);
             PersonalScheduleDetails details = new PersonalScheduleDetails(
                 sectionOrNull,
                 instructorOrNull,
                 locationOrNull);
-            personalSchedules.Add(new PersonalSchedule(
-                scheduleId,
-                title,
-                timeRanges,
-                details));
+            personalSchedules.Add(new PersonalSchedule(scheduleId, title, timeRanges, details));
         }
 
         return personalSchedules.AsReadOnly();
     }
 
-    private static IReadOnlyList<WeeklyTimeRange> readTimeRanges(
-        JsonElement element)
+    private static IReadOnlyList<WeeklyTimeRange> readTimeRanges(JsonElement element)
     {
         requireValueKind(element, JsonValueKind.Array, "personalSchedule.timeRanges");
         List<WeeklyTimeRange> timeRanges = new List<WeeklyTimeRange>();
@@ -101,44 +77,32 @@ public sealed partial class PlanningWorkspaceJsonCodec
                 "personal schedule time range",
                 new string[] { "day", "start", "end" });
             EDay day = readDay(properties["day"]);
-            ScheduleTime start = readScheduleTime(
-                properties["start"],
-                "personalSchedule.timeRanges[].start");
-            ScheduleTime end = readScheduleTime(
-                properties["end"],
-                "personalSchedule.timeRanges[].end");
-            timeRanges.Add(new WeeklyTimeRange(
-                day,
-                new DailyTimeRange(start, end)));
+            ScheduleTime start = readScheduleTime(properties["start"], "personalSchedule.timeRanges[].start");
+            ScheduleTime end = readScheduleTime(properties["end"], "personalSchedule.timeRanges[].end");
+            timeRanges.Add(new WeeklyTimeRange(day, new DailyTimeRange(start, end)));
         }
 
         return timeRanges.AsReadOnly();
     }
 
-    private static PersonalScheduleId readPersonalScheduleId(
-        JsonElement element,
-        string context)
+    private static PersonalScheduleId readPersonalScheduleId(JsonElement element, string context)
     {
         string value = readString(element, context);
         Guid parsedValue;
         if (Guid.TryParseExact(value, "D", out parsedValue) == false)
         {
-            throw new WorkspaceDocumentException(
-                context + " must be a GUID in D format.");
+            throw new WorkspaceDocumentException(context + " must be a GUID in D format.");
         }
 
         return new PersonalScheduleId(parsedValue);
     }
 
-    private static ScheduleTime readScheduleTime(
-        JsonElement element,
-        string context)
+    private static ScheduleTime readScheduleTime(JsonElement element, string context)
     {
         string value = readString(element, context);
         if (value.Length != 5 || value[2] != ':')
         {
-            throw new WorkspaceDocumentException(
-                context + " must use the HH:mm format.");
+            throw new WorkspaceDocumentException(context + " must use the HH:mm format.");
         }
 
         int hour;
@@ -155,8 +119,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
             out minute);
         if (hasHour == false || hasMinute == false)
         {
-            throw new WorkspaceDocumentException(
-                context + " must use the HH:mm format.");
+            throw new WorkspaceDocumentException(context + " must use the HH:mm format.");
         }
 
         return new ScheduleTime(hour, minute);
@@ -182,8 +145,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
             case "sunday":
                 return EDay.Sunday;
             default:
-                throw new WorkspaceDocumentException(
-                    "personalSchedule.timeRanges[].day is not a supported day.");
+                throw new WorkspaceDocumentException("personalSchedule.timeRanges[].day is not a supported day.");
         }
     }
 
@@ -206,51 +168,41 @@ public sealed partial class PlanningWorkspaceJsonCodec
             case EDay.Sunday:
                 return "sunday";
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(day),
-                    day,
-                    "Unknown schedule day.");
+                throw new ArgumentOutOfRangeException(nameof(day), day, "Unknown schedule day.");
         }
     }
 
-    private static PersonalScheduleSection? readOptionalSectionOrNull(
-        JsonElement element)
+    private static PersonalScheduleSection? readOptionalSectionOrNull(JsonElement element)
     {
         if (element.ValueKind == JsonValueKind.Null)
         {
             return null;
         }
 
-        return new PersonalScheduleSection(
-            readString(element, "personalSchedule.section"));
+        return new PersonalScheduleSection(readString(element, "personalSchedule.section"));
     }
 
-    private static PersonalScheduleInstructor? readOptionalInstructorOrNull(
-        JsonElement element)
+    private static PersonalScheduleInstructor? readOptionalInstructorOrNull(JsonElement element)
     {
         if (element.ValueKind == JsonValueKind.Null)
         {
             return null;
         }
 
-        return new PersonalScheduleInstructor(
-            readString(element, "personalSchedule.instructor"));
+        return new PersonalScheduleInstructor(readString(element, "personalSchedule.instructor"));
     }
 
-    private static PersonalScheduleLocation? readOptionalLocationOrNull(
-        JsonElement element)
+    private static PersonalScheduleLocation? readOptionalLocationOrNull(JsonElement element)
     {
         if (element.ValueKind == JsonValueKind.Null)
         {
             return null;
         }
 
-        return new PersonalScheduleLocation(
-            readString(element, "personalSchedule.location"));
+        return new PersonalScheduleLocation(readString(element, "personalSchedule.location"));
     }
 
-    private static string? getSectionValueOrNull(
-        PersonalScheduleDetails details)
+    private static string? getSectionValueOrNull(PersonalScheduleDetails details)
     {
         if (details.SectionOrNull == null)
         {
@@ -260,8 +212,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         return details.SectionOrNull.Value;
     }
 
-    private static string? getInstructorValueOrNull(
-        PersonalScheduleDetails details)
+    private static string? getInstructorValueOrNull(PersonalScheduleDetails details)
     {
         if (details.InstructorOrNull == null)
         {
@@ -271,8 +222,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         return details.InstructorOrNull.Value;
     }
 
-    private static string? getLocationValueOrNull(
-        PersonalScheduleDetails details)
+    private static string? getLocationValueOrNull(PersonalScheduleDetails details)
     {
         if (details.LocationOrNull == null)
         {

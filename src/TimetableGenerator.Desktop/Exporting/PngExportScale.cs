@@ -8,8 +8,7 @@ public sealed class PngExportScale
     private const double MINIMUM_MULTIPLIER = 1.0;
     private const double PRODUCT_QUALITY_MULTIPLIER = 2.0;
 
-    public static readonly PngExportScale PRODUCT_QUALITY =
-        new PngExportScale(PRODUCT_QUALITY_MULTIPLIER);
+    public static readonly PngExportScale PRODUCT_QUALITY = new PngExportScale(PRODUCT_QUALITY_MULTIPLIER);
 
     public double Multiplier
     {

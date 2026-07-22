@@ -11,8 +11,7 @@ public sealed class VerifiedCatalogPackageTests
     [TestMethod]
     public void PackageCreatesPlanBindingPinnedToVerifiedArtifactSha256()
     {
-        VerifiedCatalogPackage package =
-            CatalogSynchronizationTestDocuments.CreateVerifiedPackage();
+        VerifiedCatalogPackage package = CatalogSynchronizationTestDocuments.CreateVerifiedPackage();
 
         PlanCatalogBinding binding = package.CreatePlanCatalogBinding();
 

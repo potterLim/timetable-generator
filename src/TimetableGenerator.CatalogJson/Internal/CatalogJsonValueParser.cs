@@ -55,9 +55,7 @@ internal static class CatalogJsonValueParser
     {
         if (schemaVersion != CatalogJsonSchema.VERSION)
         {
-            throw new CatalogJsonFormatException(
-                path,
-                "only schemaVersion 1 is supported.");
+            throw new CatalogJsonFormatException(path, "only schemaVersion 1 is supported.");
         }
     }
 

@@ -9,9 +9,7 @@ public sealed class PlanningWorkspaceDocument
 
     public PlanningWorkspace Workspace { get; }
 
-    public PlanningWorkspaceDocument(
-        WorkspaceGeneration generation,
-        PlanningWorkspace workspace)
+    public PlanningWorkspaceDocument(WorkspaceGeneration generation, PlanningWorkspace workspace)
     {
         if (generation.IsValid == false)
         {

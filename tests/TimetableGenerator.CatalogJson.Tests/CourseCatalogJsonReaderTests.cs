@@ -136,9 +136,7 @@ public sealed class CourseCatalogJsonReaderTests
         byte[] catalogBytes = CatalogJsonTestDocuments.CreateValidCatalogBytes();
         Sha256Digest catalogSha256 = Sha256Digest.Compute(catalogBytes);
         CatalogFileSize catalogSize = new CatalogFileSize(catalogBytes.Length);
-        byte[] indexBytes = CatalogJsonTestDocuments.CreateValidIndexBytes(
-            catalogSize,
-            catalogSha256);
+        byte[] indexBytes = CatalogJsonTestDocuments.CreateValidIndexBytes(catalogSize, catalogSha256);
         CatalogIndexEntry indexEntry = CatalogIndexJsonReader.Read(indexBytes).FindDefaultEntry();
         byte[] changedCatalogBytes = CatalogJsonTestDocuments.Replace(
             catalogBytes,
@@ -155,8 +153,7 @@ public sealed class CourseCatalogJsonReaderTests
     [TestMethod]
     public void OfferingMetadataRejectsTheDefaultInvalidSourceRecordNumber()
     {
-        CourseCatalogDocument document = CourseCatalogJsonReader.Read(
-            CatalogJsonTestDocuments.CreateValidCatalogBytes());
+        CourseCatalogDocument document = CourseCatalogJsonReader.Read(CatalogJsonTestDocuments.CreateValidCatalogBytes());
         CatalogOfferingMetadata metadata = document.OfferingMetadata[0];
 
         Assert.ThrowsExactly<ArgumentException>(

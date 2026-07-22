@@ -12,25 +12,19 @@ internal static class AppleCalendarEventOccurrenceProjector
     private const int DAYS_PER_WEEK = 7;
     private const string ISO_OFFSET_FORMAT = "yyyy-MM-dd'T'HH:mm:sszzz";
 
-    public static IReadOnlyList<AppleCalendarAutomationEvent> Project(
-        CalendarExportDocument document)
+    public static IReadOnlyList<AppleCalendarAutomationEvent> Project(CalendarExportDocument document)
     {
         if (document == null)
         {
             throw new ArgumentNullException(nameof(document));
         }
 
-        List<AppleCalendarAutomationEvent> occurrences =
-            new List<AppleCalendarAutomationEvent>();
+        List<AppleCalendarAutomationEvent> occurrences = new List<AppleCalendarAutomationEvent>();
         foreach (RecurringCalendarEvent recurringEvent in document.Events)
         {
             foreach (EDay day in recurringEvent.Days)
             {
-                appendOccurrences(
-                    occurrences,
-                    document.AcademicCalendar,
-                    recurringEvent,
-                    day);
+                appendOccurrences(occurrences, document.AcademicCalendar, recurringEvent, day);
             }
         }
 
@@ -47,14 +41,8 @@ internal static class AppleCalendarEventOccurrenceProjector
         DateOnly occurrenceDate = academicCalendar.FindFirstOccurrenceDate(day);
         while (occurrenceDate <= academicCalendar.DateRange.EndDate)
         {
-            DateTimeOffset startsAt = resolve(
-                academicCalendar,
-                occurrenceDate,
-                recurringEvent.TimeRange.Start);
-            DateTimeOffset endsAt = resolve(
-                academicCalendar,
-                occurrenceDate,
-                recurringEvent.TimeRange.End);
+            DateTimeOffset startsAt = resolve(academicCalendar, occurrenceDate, recurringEvent.TimeRange.Start);
+            DateTimeOffset endsAt = resolve(academicCalendar, occurrenceDate, recurringEvent.TimeRange.End);
             occurrences.Add(
                 new AppleCalendarAutomationEvent(
                     recurringEvent.Uid.Value
@@ -78,9 +66,7 @@ internal static class AppleCalendarEventOccurrenceProjector
         ScheduleTime scheduleTime)
     {
         TimeOnly time = new TimeOnly(scheduleTime.Hour, scheduleTime.Minute);
-        return academicCalendar.TimeZoneId.ResolveLocalDateTime(
-            occurrenceDate,
-            time);
+        return academicCalendar.TimeZoneId.ResolveLocalDateTime(occurrenceDate, time);
     }
 
     private static string formatOffsetDateTime(DateTimeOffset value)
@@ -92,9 +78,7 @@ internal static class AppleCalendarEventOccurrenceProjector
         AppleCalendarAutomationEvent left,
         AppleCalendarAutomationEvent right)
     {
-        int startComparison = string.CompareOrdinal(
-            left.StartsAt,
-            right.StartsAt);
+        int startComparison = string.CompareOrdinal(left.StartsAt, right.StartsAt);
         if (startComparison != 0)
         {
             return startComparison;

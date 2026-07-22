@@ -27,9 +27,7 @@ public sealed class CourseChoiceGroup
     {
         if (id.IsValid == false)
         {
-            throw new ArgumentException(
-                "Course choice groups require a valid ID.",
-                nameof(id));
+            throw new ArgumentException("Course choice groups require a valid ID.", nameof(id));
         }
 
         if (cardinality != ECourseChoiceCardinality.ExactlyOne)
@@ -102,18 +100,13 @@ public sealed class CourseChoiceGroup
             throw new ArgumentNullException(nameof(offeringIds));
         }
 
-        List<OfferingCandidate> offeringCandidates =
-            new List<OfferingCandidate>();
+        List<OfferingCandidate> offeringCandidates = new List<OfferingCandidate>();
         foreach (OfferingId offeringId in offeringIds)
         {
-            offeringCandidates.Add(new OfferingCandidate(
-                offeringId,
-                EOfferingPreference.Acceptable));
+            offeringCandidates.Add(new OfferingCandidate(offeringId, EOfferingPreference.Acceptable));
         }
 
-        CourseCandidate courseCandidate = new CourseCandidate(
-            courseId,
-            offeringCandidates);
+        CourseCandidate courseCandidate = new CourseCandidate(courseId, offeringCandidates);
         return new CourseChoiceGroup(
             id,
             ECourseChoiceCardinality.ExactlyOne,

@@ -31,8 +31,7 @@ using TimetableGenerator.Domain.Planning;
 using TimetableGenerator.Domain.Scheduling;
 
 using Xunit;
-using ApplicationScheduleRecommendation =
-    TimetableGenerator.Application.Scheduling.ScheduleRecommendation;
+using ApplicationScheduleRecommendation = TimetableGenerator.Application.Scheduling.ScheduleRecommendation;
 
 namespace TimetableGenerator.Desktop.Tests;
 
@@ -49,19 +48,13 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     [Fact]
     public void PngExportLayoutEndsAtTheFirstWholeHourAfterContent()
     {
-        ScheduleEntry entry = createScheduleEntry(
-            EDay.Monday,
-            new AcademicPeriod(1));
+        ScheduleEntry entry = createScheduleEntry(EDay.Monday, new AcademicPeriod(1));
 
         ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForPngExport(
             new ScheduleEntry[] { entry });
 
-        Assert.Equal(
-            new ScheduleBoardTimeBoundary(510),
-            layout.TimeAxis.Start);
-        Assert.Equal(
-            new ScheduleBoardTimeBoundary(660),
-            layout.TimeAxis.End);
+        Assert.Equal(new ScheduleBoardTimeBoundary(510), layout.TimeAxis.Start);
+        Assert.Equal(new ScheduleBoardTimeBoundary(660), layout.TimeAxis.End);
         Assert.Equal(30, layout.TimeAxis.IncrementCount);
         Assert.Equal(4, layout.TimeAxis.GuideTimes.Count);
         Assert.Equal("10:30", layout.TimeAxis.GuideTimes[^1].ToString());
@@ -75,19 +68,13 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     [Fact]
     public void PngExportLayoutKeepsHalfHourContextWhenEntriesBeginLater()
     {
-        ScheduleEntry entry = createScheduleEntry(
-            EDay.Monday,
-            new AcademicPeriod(5));
+        ScheduleEntry entry = createScheduleEntry(EDay.Monday, new AcademicPeriod(5));
 
         ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForPngExport(
             new ScheduleEntry[] { entry });
 
-        Assert.Equal(
-            new ScheduleBoardTimeBoundary(870),
-            layout.TimeAxis.Start);
-        Assert.Equal(
-            new ScheduleBoardTimeBoundary(1_020),
-            layout.TimeAxis.End);
+        Assert.Equal(new ScheduleBoardTimeBoundary(870), layout.TimeAxis.Start);
+        Assert.Equal(new ScheduleBoardTimeBoundary(1_020), layout.TimeAxis.End);
         Assert.Equal(30, layout.TimeAxis.IncrementCount);
         Assert.Equal(4, layout.TimeAxis.GuideTimes.Count);
         Assert.Equal(2, layout.TimeAxis.LabelTimes.Count);
@@ -98,16 +85,12 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     [Fact]
     public void PngExportLayoutExtendsSixthPeriodToNextWholeHourBoundary()
     {
-        ScheduleEntry entry = createScheduleEntry(
-            EDay.Thursday,
-            new AcademicPeriod(6));
+        ScheduleEntry entry = createScheduleEntry(EDay.Thursday, new AcademicPeriod(6));
 
         ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForPngExport(
             new ScheduleEntry[] { entry });
 
-        Assert.Equal(
-            new ScheduleBoardTimeBoundary(1_080),
-            layout.TimeAxis.End);
+        Assert.Equal(new ScheduleBoardTimeBoundary(1_080), layout.TimeAxis.End);
         Assert.Equal("17:30", layout.TimeAxis.GuideTimes[^1].ToString());
         Assert.Equal("17:00", layout.TimeAxis.LabelTimes[^1].ToString());
         Assert.Equal(
@@ -119,9 +102,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     [Fact]
     public void PngExportLayoutExtendsTenthPeriodThroughMidnightBoundary()
     {
-        ScheduleEntry entry = createScheduleEntry(
-            EDay.Monday,
-            new AcademicPeriod(10));
+        ScheduleEntry entry = createScheduleEntry(EDay.Monday, new AcademicPeriod(10));
 
         ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForPngExport(
             new ScheduleEntry[] { entry });
@@ -131,12 +112,8 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 new ScheduleTime(22, 30),
                 new ScheduleTime(23, 45)),
             entry.TimeRange);
-        Assert.Equal(
-            new ScheduleBoardTimeBoundary(1_290),
-            layout.TimeAxis.Start);
-        Assert.Equal(
-            new ScheduleBoardTimeBoundary(1_440),
-            layout.TimeAxis.End);
+        Assert.Equal(new ScheduleBoardTimeBoundary(1_290), layout.TimeAxis.Start);
+        Assert.Equal(new ScheduleBoardTimeBoundary(1_440), layout.TimeAxis.End);
         Assert.Equal("23:30", layout.TimeAxis.GuideTimes[^1].ToString());
         Assert.Equal("23:00", layout.TimeAxis.LabelTimes[^1].ToString());
         Assert.Equal(
@@ -148,9 +125,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     [Fact]
     public void PngExportLayoutIncludesSaturdayWhenSundayIsTheOnlyWeekendEntry()
     {
-        ScheduleEntry sundayEntry = createScheduleEntry(
-            EDay.Sunday,
-            new AcademicPeriod(2));
+        ScheduleEntry sundayEntry = createScheduleEntry(EDay.Sunday, new AcademicPeriod(2));
 
         ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForPngExport(
             new ScheduleEntry[] { sundayEntry });
@@ -165,12 +140,8 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     [AvaloniaFact]
     public void PngSnapshotRecalculatesFromScheduleInsteadOfUsingSourceLayout()
     {
-        ScheduleEntry earlierAlternative = createScheduleEntry(
-            EDay.Monday,
-            new AcademicPeriod(1));
-        ScheduleEntry currentEntry = createScheduleEntry(
-            EDay.Tuesday,
-            new AcademicPeriod(3));
+        ScheduleEntry earlierAlternative = createScheduleEntry(EDay.Monday, new AcademicPeriod(1));
+        ScheduleEntry currentEntry = createScheduleEntry(EDay.Tuesday, new AcademicPeriod(3));
         ScheduleRecommendation currentSchedule = new ScheduleRecommendation(
             new ScheduleEntry[] { currentEntry });
         ScheduleBoardLayout sourceLayoutWithAlternative =
@@ -197,34 +168,25 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            Assert.Equal(
-                new ScheduleBoardTimeBoundary(510),
-                sourceBoard.RenderedLayout.TimeAxis.Start);
+            Assert.Equal(new ScheduleBoardTimeBoundary(510), sourceBoard.RenderedLayout.TimeAxis.Start);
             using (ScheduleBoardPngExportSnapshot snapshot =
                 ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
             {
                 Dispatcher.UIThread.RunJobs();
 
-                Assert.Equal(
-                    new ScheduleBoardTimeBoundary(690),
-                    snapshot.Layout.TimeAxis.Start);
-                Assert.Equal(
-                    new ScheduleBoardTimeBoundary(840),
-                    snapshot.Layout.TimeAxis.End);
+                Assert.Equal(new ScheduleBoardTimeBoundary(690), snapshot.Layout.TimeAxis.Start);
+                Assert.Equal(new ScheduleBoardTimeBoundary(840), snapshot.Layout.TimeAxis.End);
                 Assert.Equal(30, snapshot.Layout.TimeAxis.IncrementCount);
                 Assert.Equal(4, snapshot.Layout.TimeAxis.GuideTimes.Count);
                 Assert.Equal(2, snapshot.Layout.TimeAxis.LabelTimes.Count);
-                Assert.DoesNotContain(
-                    snapshot.Layout.TimeAxis.End,
-                    snapshot.Layout.TimeAxis.LabelTimes);
+                Assert.DoesNotContain(snapshot.Layout.TimeAxis.End, snapshot.Layout.TimeAxis.LabelTimes);
                 Assert.Single(findBoardGrid(snapshot.Surface).Children.OfType<Button>());
 
                 Border exportHeader = snapshot.Surface.GetVisualDescendants()
                     .OfType<Border>()
                     .Single(border => border.Name == "BoardContextHeader");
                 Assert.True(exportHeader.IsVisible);
-                TextBlock title = Assert.Single(
-                    exportHeader.GetVisualDescendants().OfType<TextBlock>());
+                TextBlock title = Assert.Single(exportHeader.GetVisualDescendants().OfType<TextBlock>());
                 Assert.Equal("PNG 내보내기 테스트", title.Text);
             }
 
@@ -239,12 +201,8 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     [AvaloniaFact]
     public void PngSnapshotCanRenderAnotherCandidateWithoutChangingTheBoard()
     {
-        ScheduleEntry displayedEntry = createScheduleEntry(
-            EDay.Monday,
-            new AcademicPeriod(1));
-        ScheduleEntry exportedEntry = createScheduleEntry(
-            EDay.Sunday,
-            new AcademicPeriod(2));
+        ScheduleEntry displayedEntry = createScheduleEntry(EDay.Monday, new AcademicPeriod(1));
+        ScheduleEntry exportedEntry = createScheduleEntry(EDay.Sunday, new AcademicPeriod(2));
         ScheduleBoardView sourceBoard = createSourceBoard(
             new ScheduleEntry[] { displayedEntry });
         ScheduleBoardPresentation exportedPresentation =
@@ -277,9 +235,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 Dispatcher.UIThread.RunJobs();
 
                 Assert.Equal(7, snapshot.Layout.DayRange.DayCount);
-                Assert.Equal(
-                    new ScheduleBoardTimeBoundary(570),
-                    snapshot.Layout.TimeAxis.Start);
+                Assert.Equal(new ScheduleBoardTimeBoundary(570), snapshot.Layout.TimeAxis.Start);
                 Assert.Same(
                     displayedEntry,
                     Assert.Single(
@@ -298,16 +254,11 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     [AvaloniaFact]
     public void PngSnapshotUpdateRecalculatesLayoutForEachCandidate()
     {
-        ScheduleEntry firstCandidateEntry = createScheduleEntry(
-            EDay.Monday,
-            new AcademicPeriod(1));
-        ScheduleEntry secondCandidateEntry = createScheduleEntry(
-            EDay.Sunday,
-            new AcademicPeriod(5));
+        ScheduleEntry firstCandidateEntry = createScheduleEntry(EDay.Monday, new AcademicPeriod(1));
+        ScheduleEntry secondCandidateEntry = createScheduleEntry(EDay.Sunday, new AcademicPeriod(5));
         ScheduleBoardView sourceBoard = createSourceBoard(
             new ScheduleEntry[] { firstCandidateEntry });
-        ScheduleBoardPresentation displayedPresentation =
-            Assert.IsType<ScheduleBoardPresentation>(sourceBoard.DataContext);
+        ScheduleBoardPresentation displayedPresentation = Assert.IsType<ScheduleBoardPresentation>(sourceBoard.DataContext);
         ScheduleBoardPresentation secondCandidate =
             new ScheduleBoardPresentation(
                 new ScheduleRecommendation(
@@ -338,12 +289,8 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 Dispatcher.UIThread.RunJobs();
 
                 Assert.Equal(5, snapshot.Layout.DayRange.DayCount);
-                Assert.Equal(
-                    new ScheduleBoardTimeBoundary(510),
-                    snapshot.Layout.TimeAxis.Start);
-                Assert.Equal(
-                    new ScheduleBoardTimeBoundary(660),
-                    snapshot.Layout.TimeAxis.End);
+                Assert.Equal(new ScheduleBoardTimeBoundary(510), snapshot.Layout.TimeAxis.Start);
+                Assert.Equal(new ScheduleBoardTimeBoundary(660), snapshot.Layout.TimeAxis.End);
                 Assert.Equal(
                     new string[] { "09:00", "10:00" },
                     findPngTimeLabelTexts(snapshot.Surface));
@@ -352,12 +299,8 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 Dispatcher.UIThread.RunJobs();
 
                 Assert.Equal(7, snapshot.Layout.DayRange.DayCount);
-                Assert.Equal(
-                    new ScheduleBoardTimeBoundary(870),
-                    snapshot.Layout.TimeAxis.Start);
-                Assert.Equal(
-                    new ScheduleBoardTimeBoundary(1_020),
-                    snapshot.Layout.TimeAxis.End);
+                Assert.Equal(new ScheduleBoardTimeBoundary(870), snapshot.Layout.TimeAxis.Start);
+                Assert.Equal(new ScheduleBoardTimeBoundary(1_020), snapshot.Layout.TimeAxis.End);
                 Assert.Equal(
                     new string[] { "15:00", "16:00" },
                     findPngTimeLabelTexts(snapshot.Surface));
@@ -378,9 +321,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     [AvaloniaFact]
     public async Task PngSnapshotUsesTheWednesdayFirstPeriodTimeAsync()
     {
-        ScheduleEntry wednesdayEntry = createScheduleEntry(
-            EDay.Wednesday,
-            new AcademicPeriod(1));
+        ScheduleEntry wednesdayEntry = createScheduleEntry(EDay.Wednesday, new AcademicPeriod(1));
         ScheduleBoardView sourceBoard = createSourceBoard(
             new ScheduleEntry[] { wednesdayEntry });
         Canvas exportHost = new Canvas();
@@ -402,23 +343,14 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             {
                 Dispatcher.UIThread.RunJobs();
 
-                Assert.Equal(
-                    new ScheduleBoardTimeBoundary(450),
-                    snapshot.Layout.TimeAxis.Start);
-                Button exportCard = Assert.Single(
-                    findBoardGrid(snapshot.Surface).Children.OfType<Button>());
-                Assert.Contains(
-                    "수요일 08:30–09:45",
-                    AutomationProperties.GetName(exportCard));
+                Assert.Equal(new ScheduleBoardTimeBoundary(450), snapshot.Layout.TimeAxis.Start);
+                Button exportCard = Assert.Single(findBoardGrid(snapshot.Surface).Children.OfType<Button>());
+                Assert.Contains("수요일 08:30–09:45", AutomationProperties.GetName(exportCard));
 
-                AvaloniaControlPngExporter exporter =
-                    new AvaloniaControlPngExporter(PngExportScale.Create(1.0));
+                AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(PngExportScale.Create(1.0));
                 using (MemoryStream destinationStream = new MemoryStream())
                 {
-                    await exporter.ExportControlAsync(
-                        snapshot.Surface,
-                        destinationStream,
-                        CancellationToken.None);
+                    await exporter.ExportControlAsync(snapshot.Surface, destinationStream, CancellationToken.None);
                     destinationStream.Position = 0L;
                     using (Bitmap bitmap = new Bitmap(destinationStream))
                     {
@@ -438,9 +370,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     [AvaloniaFact]
     public async Task NarrowSundayBoardExportsEveryWeekendColumnAtReadableWidthAsync()
     {
-        ScheduleEntry sundayEntry = createScheduleEntry(
-            EDay.Sunday,
-            new AcademicPeriod(2));
+        ScheduleEntry sundayEntry = createScheduleEntry(EDay.Sunday, new AcademicPeriod(2));
         ScheduleBoardView sourceBoard = createSourceBoard(
             new ScheduleEntry[] { sundayEntry });
         sourceBoard.Width = 320.0;
@@ -464,21 +394,16 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 Dispatcher.UIThread.RunJobs();
 
                 Assert.Equal(7, snapshot.Layout.DayRange.DayCount);
-                Assert.True(
-                    snapshot.Surface.Bounds.Width
-                        >= EXPECTED_WEEKEND_EXPORT_SURFACE_MINIMUM_WIDTH);
+                Assert.True(snapshot.Surface.Bounds.Width >= EXPECTED_WEEKEND_EXPORT_SURFACE_MINIMUM_WIDTH);
 
                 Grid boardGrid = findBoardGrid(snapshot.Surface);
                 Assert.Equal(8, boardGrid.ColumnDefinitions.Count);
                 assertWeekendHeadersArePresent(boardGrid);
                 assertDayColumnsMeetMinimumWidth(boardGrid, 132.0);
 
-                Button exportCard = Assert.Single(
-                    boardGrid.Children.OfType<Button>());
+                Button exportCard = Assert.Single(boardGrid.Children.OfType<Button>());
                 Grid exportCardContent = Assert.IsType<Grid>(exportCard.Content);
-                List<TextBlock> exportCardTexts = exportCardContent.Children
-                    .OfType<TextBlock>()
-                    .ToList();
+                List<TextBlock> exportCardTexts = exportCardContent.Children.OfType<TextBlock>().ToList();
                 Assert.Equal(
                     new string[]
                     {
@@ -508,23 +433,15 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 Assert.Equal(2.0, exportCardTexts[2].Margin.Top);
                 Assert.Equal(12.0, exportCardTexts[2].LineHeight);
 
-                AvaloniaControlPngExporter exporter =
-                    new AvaloniaControlPngExporter(PngExportScale.Create(1.0));
+                AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(PngExportScale.Create(1.0));
                 using (MemoryStream destinationStream = new MemoryStream())
                 {
-                    await exporter.ExportControlAsync(
-                        snapshot.Surface,
-                        destinationStream,
-                        CancellationToken.None);
+                    await exporter.ExportControlAsync(snapshot.Surface, destinationStream, CancellationToken.None);
                     destinationStream.Position = 0L;
                     using (Bitmap bitmap = new Bitmap(destinationStream))
                     {
-                        Assert.True(
-                            bitmap.PixelSize.Width
-                                >= EXPECTED_WEEKEND_EXPORT_SURFACE_MINIMUM_WIDTH);
-                        Assert.Equal(
-                            (int)Math.Ceiling(snapshot.Surface.Bounds.Height),
-                            bitmap.PixelSize.Height);
+                        Assert.True(bitmap.PixelSize.Width >= EXPECTED_WEEKEND_EXPORT_SURFACE_MINIMUM_WIDTH);
+                        Assert.Equal((int)Math.Ceiling(snapshot.Surface.Bounds.Height), bitmap.PixelSize.Height);
                         assertBitmapContainsOpaqueContent(bitmap);
                     }
                 }
@@ -552,8 +469,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             ScheduleRecommendationProjector.Project(
                 recommendation,
                 catalogProjection);
-        ScheduleBoardView sourceBoard = createSourceBoard(
-            projectedRecommendation.Entries);
+        ScheduleBoardView sourceBoard = createSourceBoard(projectedRecommendation.Entries);
         Canvas exportHost = new Canvas();
         exportHost.IsHitTestVisible = false;
         exportHost.Opacity = 0.0;
@@ -574,12 +490,9 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 Dispatcher.UIThread.RunJobs();
 
                 Grid boardGrid = findBoardGrid(snapshot.Surface);
-                Button exportCard = Assert.Single(
-                    boardGrid.Children.OfType<Button>());
+                Button exportCard = Assert.Single(boardGrid.Children.OfType<Button>());
                 Grid exportCardContent = Assert.IsType<Grid>(exportCard.Content);
-                List<TextBlock> exportCardTexts = exportCardContent.Children
-                    .OfType<TextBlock>()
-                    .ToList();
+                List<TextBlock> exportCardTexts = exportCardContent.Children.OfType<TextBlock>().ToList();
                 Assert.Equal(
                     new string[] { "프로그래밍 I" },
                     exportCardTexts.Select(textBlock => textBlock.Text));
@@ -592,14 +505,10 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                     exportCardTexts,
                     textBlock => textBlock.Text == "강의실 미정");
 
-                AvaloniaControlPngExporter exporter =
-                    new AvaloniaControlPngExporter(PngExportScale.Create(1.0));
+                AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(PngExportScale.Create(1.0));
                 using (MemoryStream destinationStream = new MemoryStream())
                 {
-                    await exporter.ExportControlAsync(
-                        snapshot.Surface,
-                        destinationStream,
-                        CancellationToken.None);
+                    await exporter.ExportControlAsync(snapshot.Surface, destinationStream, CancellationToken.None);
                     destinationStream.Position = 0L;
                     using (Bitmap bitmap = new Bitmap(destinationStream))
                     {
@@ -619,9 +528,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     [AvaloniaFact]
     public void ScheduleCardsUseSubtleInteractionFeedbackInBothModes()
     {
-        ScheduleEntry courseEntry = createScheduleEntry(
-            EDay.Monday,
-            new AcademicPeriod(1));
+        ScheduleEntry courseEntry = createScheduleEntry(EDay.Monday, new AcademicPeriod(1));
         ScheduleEntry personalScheduleEntry = createPersonalScheduleEntry();
         ScheduleBoardView scheduleBoard = createSourceBoard(
             new ScheduleEntry[] { courseEntry, personalScheduleEntry });
@@ -657,8 +564,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
         }
     }
 
-    private static ScheduleBoardView createSourceBoard(
-        IReadOnlyList<ScheduleEntry> entries)
+    private static ScheduleBoardView createSourceBoard(IReadOnlyList<ScheduleEntry> entries)
     {
         ScheduleBoardView sourceBoard = new ScheduleBoardView();
         sourceBoard.DataContext = new ScheduleBoardPresentation(
@@ -669,9 +575,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
         return sourceBoard;
     }
 
-    private static Window createWindow(
-        Control content,
-        ThemeVariant themeVariant)
+    private static Window createWindow(Control content, ThemeVariant themeVariant)
     {
         Window window = new Window();
         window.Width = 900.0;
@@ -681,9 +585,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
         return window;
     }
 
-    private static ScheduleEntry createScheduleEntry(
-        EDay day,
-        AcademicPeriod period)
+    private static ScheduleEntry createScheduleEntry(EDay day, AcademicPeriod period)
     {
         return new CourseScheduleEntry(
             new CourseId("course-tst00100"),
@@ -706,12 +608,8 @@ public sealed class ScheduleBoardPngExportSnapshotTests
 
     private static ScheduleEntry createPersonalScheduleEntry()
     {
-        DailyTimeRange timeRange = new DailyTimeRange(
-            new ScheduleTime(8, 30),
-            new ScheduleTime(9, 45));
-        WeeklyTimeRange weeklyTimeRange = new WeeklyTimeRange(
-            EDay.Tuesday,
-            timeRange);
+        DailyTimeRange timeRange = new DailyTimeRange(new ScheduleTime(8, 30), new ScheduleTime(9, 45));
+        WeeklyTimeRange weeklyTimeRange = new WeeklyTimeRange(EDay.Tuesday, timeRange);
         PersonalSchedule personalSchedule = new PersonalSchedule(
             PersonalScheduleId.CreateNew(),
             new PersonalScheduleTitle("상호작용 피드백 검증"),
@@ -728,8 +626,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
         Assert.NotNull(boardGridOrNull);
         if (boardGridOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The PNG snapshot schedule grid was not rendered.");
+            throw new InvalidOperationException("The PNG snapshot schedule grid was not rendered.");
         }
 
         return boardGridOrNull;
@@ -741,9 +638,19 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             .OfType<TextBlock>()
             .Where(textBlock =>
                 textBlock.Classes.Contains("schedule-time-label"))
-            .Select(textBlock => textBlock.Text ?? string.Empty)
+            .Select(getTextOrEmpty)
             .ToList()
             .AsReadOnly();
+    }
+
+    private static string getTextOrEmpty(TextBlock textBlock)
+    {
+        if (textBlock.Text == null)
+        {
+            return string.Empty;
+        }
+
+        return textBlock.Text;
     }
 
     private static void assertWeekendHeadersArePresent(Grid boardGrid)
@@ -757,9 +664,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
         Assert.Contains("일", headerTexts);
     }
 
-    private static void assertDayColumnsMeetMinimumWidth(
-        Grid boardGrid,
-        double minimumWidth)
+    private static void assertDayColumnsMeetMinimumWidth(Grid boardGrid, double minimumWidth)
     {
         for (int columnIndex = 1;
             columnIndex < boardGrid.ColumnDefinitions.Count;
@@ -796,10 +701,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 backgroundResourceKey = "PersonalScheduleBackgroundBrush";
                 break;
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(cardKind),
-                    cardKind,
-                    "Unknown schedule card kind.");
+                throw new ArgumentOutOfRangeException(nameof(cardKind), cardKind, "Unknown schedule card kind.");
         }
 
         Button scheduleCard = boardGrid.Children
@@ -814,32 +716,20 @@ public sealed class ScheduleBoardPngExportSnapshotTests
         ContentPresenter contentPresenter = scheduleCard.GetVisualDescendants()
             .OfType<ContentPresenter>()
             .Single(candidate => candidate.Name == "PART_ContentPresenter");
-        Color expectedBackground = findRequiredThemeColor(
-            backgroundResourceKey,
-            themeVariant);
-        Color expectedOverlayColor = findRequiredThemeColor(
-            "TextPrimaryBrush",
-            themeVariant);
+        Color expectedBackground = findRequiredThemeColor(backgroundResourceKey, themeVariant);
+        Color expectedOverlayColor = findRequiredThemeColor("TextPrimaryBrush", themeVariant);
 
-        Assert.Equal(
-            expectedBackground,
-            getRequiredSolidColor(scheduleCard.Background));
-        Assert.Equal(
-            expectedBackground,
-            getRequiredSolidColor(scheduleCardSurface.Background));
+        Assert.Equal(expectedBackground, getRequiredSolidColor(scheduleCard.Background));
+        Assert.Equal(expectedBackground, getRequiredSolidColor(scheduleCardSurface.Background));
         Assert.Null(contentPresenter.Background);
-        Assert.Equal(expectedOverlayColor, getRequiredSolidColor(
-            interactionOverlay.Background));
+        Assert.Equal(expectedOverlayColor, getRequiredSolidColor(interactionOverlay.Background));
         Assert.Equal(0.0, interactionOverlay.Opacity);
 
-        Point? cardOriginOrNull = scheduleCard.TranslatePoint(
-            new Point(0.0, 0.0),
-            window);
+        Point? cardOriginOrNull = scheduleCard.TranslatePoint(new Point(0.0, 0.0), window);
         Assert.NotNull(cardOriginOrNull);
         if (cardOriginOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The schedule card position could not be resolved.");
+            throw new InvalidOperationException("The schedule card position could not be resolved.");
         }
 
         Point cardCenter = cardOriginOrNull.Value
@@ -850,33 +740,21 @@ public sealed class ScheduleBoardPngExportSnapshotTests
         Dispatcher.UIThread.RunJobs();
 
         Assert.True(scheduleCard.IsPointerOver);
-        Assert.Equal(
-            expectedBackground,
-            getRequiredSolidColor(scheduleCard.Background));
-        Assert.Equal(
-            expectedBackground,
-            getRequiredSolidColor(scheduleCardSurface.Background));
+        Assert.Equal(expectedBackground, getRequiredSolidColor(scheduleCard.Background));
+        Assert.Equal(expectedBackground, getRequiredSolidColor(scheduleCardSurface.Background));
         Assert.Equal(0.04, interactionOverlay.Opacity);
 
-        window.MouseDown(
-            cardCenter,
-            MouseButton.Left,
-            RawInputModifiers.None);
+        window.MouseDown(cardCenter, MouseButton.Left, RawInputModifiers.None);
         Dispatcher.UIThread.RunJobs();
 
-        Assert.Equal(
-            expectedBackground,
-            getRequiredSolidColor(scheduleCard.Background));
-        Assert.Equal(
-            expectedBackground,
-            getRequiredSolidColor(scheduleCardSurface.Background));
+        Assert.Equal(expectedBackground, getRequiredSolidColor(scheduleCard.Background));
+        Assert.Equal(expectedBackground, getRequiredSolidColor(scheduleCardSurface.Background));
         Assert.Equal(0.08, interactionOverlay.Opacity);
         ITransform? pressedTransformOrNull = scheduleCard.RenderTransform;
         Assert.NotNull(pressedTransformOrNull);
         if (pressedTransformOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The pressed schedule card transform was not applied.");
+            throw new InvalidOperationException("The pressed schedule card transform was not applied.");
         }
 
         Assert.Equal(0.99, pressedTransformOrNull.Value.M11, 3);
@@ -884,30 +762,21 @@ public sealed class ScheduleBoardPngExportSnapshotTests
 
         Point outsideCard = new Point(2.0, 2.0);
         window.MouseMove(outsideCard, RawInputModifiers.None);
-        window.MouseUp(
-            outsideCard,
-            MouseButton.Left,
-            RawInputModifiers.None);
+        window.MouseUp(outsideCard, MouseButton.Left, RawInputModifiers.None);
         Dispatcher.UIThread.RunJobs();
     }
 
-    private static Color findRequiredThemeColor(
-        string resourceKey,
-        ThemeVariant themeVariant)
+    private static Color findRequiredThemeColor(string resourceKey, ThemeVariant themeVariant)
     {
         Avalonia.Application? applicationOrNull = Avalonia.Application.Current;
         Assert.NotNull(applicationOrNull);
         if (applicationOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The Avalonia test application was not initialized.");
+            throw new InvalidOperationException("The Avalonia test application was not initialized.");
         }
 
         object? resourceOrNull;
-        bool hasResource = applicationOrNull.TryGetResource(
-            resourceKey,
-            themeVariant,
-            out resourceOrNull);
+        bool hasResource = applicationOrNull.TryGetResource(resourceKey, themeVariant, out resourceOrNull);
         Assert.True(hasResource, "Missing theme brush: " + resourceKey);
         return getRequiredSolidColor(resourceOrNull as IBrush);
     }
@@ -938,8 +807,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
         Assert.NotNull(solidBrushOrNull);
         if (solidBrushOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The tested background was not a solid color brush.");
+            throw new InvalidOperationException("The tested background was not a solid color brush.");
         }
 
         return solidBrushOrNull.Color;

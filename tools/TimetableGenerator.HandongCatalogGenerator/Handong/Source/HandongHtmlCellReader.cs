@@ -27,9 +27,7 @@ internal static class HandongHtmlCellReader
         return copyMeaningfulLineRange(normalizedLines);
     }
 
-    private static void appendNodeTextRecursive(
-        INode node,
-        List<StringBuilder> lineTextBuilders)
+    private static void appendNodeTextRecursive(INode node, List<StringBuilder> lineTextBuilders)
     {
         if (node is IElement element
             && string.Equals(
@@ -79,8 +77,7 @@ internal static class HandongHtmlCellReader
         return normalizedLineTextBuilder.ToString();
     }
 
-    private static IReadOnlyList<string> copyMeaningfulLineRange(
-        IReadOnlyList<string> normalizedLines)
+    private static IReadOnlyList<string> copyMeaningfulLineRange(IReadOnlyList<string> normalizedLines)
     {
         int firstMeaningfulLineIndex = findFirstMeaningfulLineIndex(normalizedLines);
         if (firstMeaningfulLineIndex < 0)

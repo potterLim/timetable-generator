@@ -15,25 +15,11 @@ public sealed class CourseChoiceRecommendationTests
     [TestMethod]
     public void GroupChoosesOneCourseAndOneEligibleOffering()
     {
-        CatalogCourse firstCourse =
-            ScheduleRecommendationTestData.CreateCourse("AAA10001");
-        CatalogCourse secondCourse =
-            ScheduleRecommendationTestData.CreateCourse("BBB10001");
-        CatalogOffering preferredOffering = createOffering(
-            "AAA10001",
-            "01",
-            EDay.Monday,
-            1);
-        CatalogOffering excludedOffering = createOffering(
-            "AAA10001",
-            "02",
-            EDay.Tuesday,
-            1);
-        CatalogOffering acceptableOffering = createOffering(
-            "BBB10001",
-            "01",
-            EDay.Wednesday,
-            1);
+        CatalogCourse firstCourse = ScheduleRecommendationTestData.CreateCourse("AAA10001");
+        CatalogCourse secondCourse = ScheduleRecommendationTestData.CreateCourse("BBB10001");
+        CatalogOffering preferredOffering = createOffering("AAA10001", "01", EDay.Monday, 1);
+        CatalogOffering excludedOffering = createOffering("AAA10001", "02", EDay.Tuesday, 1);
+        CatalogOffering acceptableOffering = createOffering("BBB10001", "01", EDay.Wednesday, 1);
         CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(
             new CatalogCourse[] { firstCourse, secondCourse },
             new CatalogOffering[]
@@ -104,18 +90,9 @@ public sealed class CourseChoiceRecommendationTests
             ++courseIndex)
         {
             string courseCode = courseCodes[courseIndex];
-            CatalogCourse course = ScheduleRecommendationTestData.CreateCourse(
-                courseCode);
-            CatalogOffering preferredOffering = createOffering(
-                courseCode,
-                "01",
-                courseDays[courseIndex],
-                1);
-            CatalogOffering acceptableOffering = createOffering(
-                courseCode,
-                "02",
-                courseDays[courseIndex],
-                2);
+            CatalogCourse course = ScheduleRecommendationTestData.CreateCourse(courseCode);
+            CatalogOffering preferredOffering = createOffering(courseCode, "01", courseDays[courseIndex], 1);
+            CatalogOffering acceptableOffering = createOffering(courseCode, "02", courseDays[courseIndex], 2);
             courses.Add(course);
             offerings.Add(preferredOffering);
             offerings.Add(acceptableOffering);
@@ -136,9 +113,7 @@ public sealed class CourseChoiceRecommendationTests
                 new CourseCandidate[] { courseCandidate }));
         }
 
-        CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(
-            courses,
-            offerings);
+        CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(courses, offerings);
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
             catalog,
             groups,
@@ -199,9 +174,7 @@ public sealed class CourseChoiceRecommendationTests
         ScheduleRecommendationResult result,
         int recommendationIndex)
     {
-        return result.Recommendations[recommendationIndex]
-            .ScheduledOfferings[0]
-            .OfferingId;
+        return result.Recommendations[recommendationIndex].ScheduledOfferings[0].OfferingId;
     }
 
     private static int[] getScoreValues(ScheduleRecommendationResult result)

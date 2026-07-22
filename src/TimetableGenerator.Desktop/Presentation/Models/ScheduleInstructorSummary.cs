@@ -19,8 +19,7 @@ internal sealed record ScheduleInstructorSummary
         }
     }
 
-    public ScheduleInstructorSummary(
-        InstructorAssignmentMetadata instructorAssignment)
+    public ScheduleInstructorSummary(InstructorAssignmentMetadata instructorAssignment)
     {
         if (instructorAssignment == null)
         {

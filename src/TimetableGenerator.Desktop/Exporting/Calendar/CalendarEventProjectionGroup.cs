@@ -18,12 +18,9 @@ internal sealed class CalendarEventProjectionGroup
         CalendarEventProjectionGroupKey key,
         CalendarEventContent content)
     {
-        if (key.SourceIdentity.IsValid == false
-            || key.TimeRange.IsValid == false)
+        if (key.SourceIdentity.IsValid == false || key.TimeRange.IsValid == false)
         {
-            throw new ArgumentException(
-                "Calendar projection groups require a valid key.",
-                nameof(key));
+            throw new ArgumentException("Calendar projection groups require a valid key.", nameof(key));
         }
 
         if (content == null)
@@ -60,15 +57,8 @@ internal sealed class CalendarEventProjectionGroup
 
     public RecurringCalendarEvent CreateEvent(PlanId planId)
     {
-        CalendarEventUid uid = CalendarEventUidFactory.Create(
-            planId,
-            Key.SourceIdentity,
-            Key.TimeRange);
-        return new RecurringCalendarEvent(
-            uid,
-            Content,
-            Key.TimeRange,
-            mDays);
+        CalendarEventUid uid = CalendarEventUidFactory.Create(planId, Key.SourceIdentity, Key.TimeRange);
+        return new RecurringCalendarEvent(uid, Content, Key.TimeRange, mDays);
     }
 
     private bool hasSameContent(CalendarEventContent content)

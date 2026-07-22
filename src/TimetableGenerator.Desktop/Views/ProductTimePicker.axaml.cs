@@ -18,36 +18,17 @@ internal sealed partial class ProductTimePicker : UserControl
 
     private const string DEFAULT_ACCESSIBLE_CONTEXT_NAME = "시간";
 
-    [SuppressMessage(
-        "Style",
-        "IDE1006:Naming Styles",
-        Justification = "Avalonia requires the {PropertyName}Property field convention.")]
-    public static readonly StyledProperty<ScheduleTime?>
-        SelectedTimeOrNullProperty = AvaloniaProperty.Register<
-            ProductTimePicker,
-            ScheduleTime?>(
-                nameof(SelectedTimeOrNull),
-                defaultBindingMode: BindingMode.TwoWay);
+    [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Avalonia requires the {PropertyName}Property field convention.")]
+    public static readonly StyledProperty<ScheduleTime?> SelectedTimeOrNullProperty = AvaloniaProperty.Register<ProductTimePicker, ScheduleTime?>(nameof(SelectedTimeOrNull), defaultBindingMode: BindingMode.TwoWay);
 
-    [SuppressMessage(
-        "Style",
-        "IDE1006:Naming Styles",
-        Justification = "Avalonia requires the {PropertyName}Property field convention.")]
-    public static readonly StyledProperty<string>
-        AccessibleContextNameProperty = AvaloniaProperty.Register<
-            ProductTimePicker,
-            string>(
-                nameof(AccessibleContextName),
-                DEFAULT_ACCESSIBLE_CONTEXT_NAME);
+    [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Avalonia requires the {PropertyName}Property field convention.")]
+    public static readonly StyledProperty<string> AccessibleContextNameProperty = AvaloniaProperty.Register<ProductTimePicker, string>(nameof(AccessibleContextName), DEFAULT_ACCESSIBLE_CONTEXT_NAME);
 
-    private static readonly IReadOnlyList<TimePickerMeridiemOption>
-        MERIDIEM_OPTIONS = createMeridiemOptions();
+    private static readonly IReadOnlyList<TimePickerMeridiemOption> MERIDIEM_OPTIONS = createMeridiemOptions();
 
-    private static readonly IReadOnlyList<TimePickerHourOption>
-        HOUR_OPTIONS = createHourOptions();
+    private static readonly IReadOnlyList<TimePickerHourOption> HOUR_OPTIONS = createHourOptions();
 
-    private static readonly IReadOnlyList<TimePickerMinuteOption>
-        MINUTE_OPTIONS = createMinuteOptions();
+    private static readonly IReadOnlyList<TimePickerMinuteOption> MINUTE_OPTIONS = createMinuteOptions();
 
     private readonly ComboBox mMeridiemInput;
 
@@ -79,9 +60,7 @@ internal sealed partial class ProductTimePicker : UserControl
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                throw new ArgumentException(
-                    "Time picker accessibility context cannot be empty.",
-                    nameof(value));
+                throw new ArgumentException("Time picker accessibility context cannot be empty.", nameof(value));
             }
 
             SetValue(AccessibleContextNameProperty, value.Trim());
@@ -120,21 +99,16 @@ internal sealed partial class ProductTimePicker : UserControl
         }
     }
 
-    private void onSelectionChanged(
-        object? senderOrNull,
-        SelectionChangedEventArgs eventArguments)
+    private void onSelectionChanged(object? senderOrNull, SelectionChangedEventArgs eventArguments)
     {
         if (mIsSynchronizingSelection)
         {
             return;
         }
 
-        TimePickerMeridiemOption? meridiemOrNull =
-            mMeridiemInput.SelectedItem as TimePickerMeridiemOption;
-        TimePickerHourOption? hourOrNull =
-            mHourInput.SelectedItem as TimePickerHourOption;
-        TimePickerMinuteOption? minuteOrNull =
-            mMinuteInput.SelectedItem as TimePickerMinuteOption;
+        TimePickerMeridiemOption? meridiemOrNull = mMeridiemInput.SelectedItem as TimePickerMeridiemOption;
+        TimePickerHourOption? hourOrNull = mHourInput.SelectedItem as TimePickerHourOption;
+        TimePickerMinuteOption? minuteOrNull = mMinuteInput.SelectedItem as TimePickerMinuteOption;
         if (meridiemOrNull == null || hourOrNull == null || minuteOrNull == null)
         {
             SetCurrentValue(SelectedTimeOrNullProperty, null);
@@ -142,9 +116,7 @@ internal sealed partial class ProductTimePicker : UserControl
         }
 
         int hour = findTwentyFourHourValue(meridiemOrNull, hourOrNull);
-        SetCurrentValue(
-            SelectedTimeOrNullProperty,
-            new ScheduleTime(hour, minuteOrNull.Value));
+        SetCurrentValue(SelectedTimeOrNullProperty, new ScheduleTime(hour, minuteOrNull.Value));
     }
 
     private void applySelectedTime(ScheduleTime? selectedTimeOrNull)
@@ -198,9 +170,7 @@ internal sealed partial class ProductTimePicker : UserControl
         }
 
         string contextName = AccessibleContextName;
-        AutomationProperties.SetName(
-            mMeridiemInput,
-            contextName + " 오전 또는 오후");
+        AutomationProperties.SetName(mMeridiemInput, contextName + " 오전 또는 오후");
         AutomationProperties.SetName(mHourInput, contextName + " 시");
         AutomationProperties.SetName(mMinuteInput, contextName + " 분");
     }
@@ -224,8 +194,7 @@ internal sealed partial class ProductTimePicker : UserControl
         }
     }
 
-    private static TimePickerMeridiemOption findMeridiemOption(
-        ETimePickerMeridiem meridiem)
+    private static TimePickerMeridiemOption findMeridiemOption(ETimePickerMeridiem meridiem)
     {
         foreach (TimePickerMeridiemOption option in MERIDIEM_OPTIONS)
         {
@@ -308,8 +277,7 @@ internal sealed partial class ProductTimePicker : UserControl
         TControl? controlOrNull = this.FindControl<TControl>(name);
         if (controlOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The product time picker control was not found: " + name);
+            throw new InvalidOperationException("The product time picker control was not found: " + name);
         }
 
         return controlOrNull;

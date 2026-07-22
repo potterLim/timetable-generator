@@ -18,8 +18,7 @@ internal sealed partial class MainWindow
         mAppearanceButtonOrNull = this.FindControl<Button>("AppearanceButton");
         if (mAppearanceButtonOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The appearance button could not be resolved.");
+            throw new InvalidOperationException("The appearance button could not be resolved.");
         }
 
         connectWorkspaceInteraction();
@@ -27,8 +26,7 @@ internal sealed partial class MainWindow
 
     private void connectWorkspaceInteraction()
     {
-        PlannerWorkspaceViewModel? workspaceOrNull =
-            mProductShellViewModel.WorkspaceOrNull;
+        PlannerWorkspaceViewModel? workspaceOrNull = mProductShellViewModel.WorkspaceOrNull;
         if (ReferenceEquals(mInteractionWorkspaceOrNull, workspaceOrNull))
         {
             updateAppearanceInteraction();
@@ -39,8 +37,7 @@ internal sealed partial class MainWindow
         mInteractionWorkspaceOrNull = workspaceOrNull;
         if (mInteractionWorkspaceOrNull != null)
         {
-            mInteractionWorkspaceOrNull.PropertyChanged +=
-                onInteractionWorkspacePropertyChanged;
+            mInteractionWorkspaceOrNull.PropertyChanged += onInteractionWorkspacePropertyChanged;
         }
 
         updateAppearanceInteraction();
@@ -53,8 +50,7 @@ internal sealed partial class MainWindow
             return;
         }
 
-        mInteractionWorkspaceOrNull.PropertyChanged -=
-            onInteractionWorkspacePropertyChanged;
+        mInteractionWorkspaceOrNull.PropertyChanged -= onInteractionWorkspacePropertyChanged;
         mInteractionWorkspaceOrNull = null;
     }
 
@@ -62,8 +58,7 @@ internal sealed partial class MainWindow
         object? senderOrNull,
         PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName
-            == nameof(PlannerWorkspaceViewModel.IsWorkspaceInteractionEnabled))
+        if (eventArgs.PropertyName == nameof(PlannerWorkspaceViewModel.IsWorkspaceInteractionEnabled))
         {
             updateAppearanceInteraction();
         }
@@ -79,8 +74,7 @@ internal sealed partial class MainWindow
         bool isWorkspaceInteractionEnabled = true;
         if (mInteractionWorkspaceOrNull != null)
         {
-            isWorkspaceInteractionEnabled =
-                mInteractionWorkspaceOrNull.IsWorkspaceInteractionEnabled;
+            isWorkspaceInteractionEnabled = mInteractionWorkspaceOrNull.IsWorkspaceInteractionEnabled;
         }
 
         bool isAppearanceInteractionEnabled =

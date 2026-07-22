@@ -11,20 +11,16 @@ public sealed class CatalogValueTests
     public void TextValuesNormalizeAndPreserveTheirMeanings()
     {
         InstitutionId institutionId = new InstitutionId("  handong-global-university  ");
-        CatalogId catalogId = new CatalogId(
-            "  handong-global-university:2026-2:r0001  ");
+        CatalogId catalogId = new CatalogId("  handong-global-university:2026-2:r0001  ");
         CourseId courseId = new CourseId("  handong-global-university:CSE30001  ");
-        OfferingId offeringId = new OfferingId(
-            "  handong-global-university:2026-2:CSE30001:01  ");
+        OfferingId offeringId = new OfferingId("  handong-global-university:2026-2:CSE30001:01  ");
         KoreanCourseName koreanName = new KoreanCourseName("  자료구조  ");
         EnglishCourseName englishName = new EnglishCourseName("  Data Structures  ");
 
         Assert.AreEqual("handong-global-university", institutionId.Value);
         Assert.AreEqual("handong-global-university:2026-2:r0001", catalogId.Value);
         Assert.AreEqual("handong-global-university:CSE30001", courseId.Value);
-        Assert.AreEqual(
-            "handong-global-university:2026-2:CSE30001:01",
-            offeringId.Value);
+        Assert.AreEqual("handong-global-university:2026-2:CSE30001:01", offeringId.Value);
         Assert.AreEqual("자료구조", koreanName.Value);
         Assert.AreEqual("Data Structures", englishName.Value);
     }

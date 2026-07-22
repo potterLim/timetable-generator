@@ -6,15 +6,13 @@ namespace TimetableGenerator.Desktop.Integrations.GoogleCalendar;
 internal sealed class NoOpGoogleCalendarExportLeaseProvider
     : IGoogleCalendarExportLeaseProvider
 {
-    public static NoOpGoogleCalendarExportLeaseProvider Instance { get; } =
-        new NoOpGoogleCalendarExportLeaseProvider();
+    public static NoOpGoogleCalendarExportLeaseProvider Instance { get; } = new NoOpGoogleCalendarExportLeaseProvider();
 
     private NoOpGoogleCalendarExportLeaseProvider()
     {
     }
 
-    public Task<IGoogleCalendarExportLease> AcquireAsync(
-        CancellationToken cancellationToken)
+    public Task<IGoogleCalendarExportLease> AcquireAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         return Task.FromResult<IGoogleCalendarExportLease>(NoOpLease.Instance);

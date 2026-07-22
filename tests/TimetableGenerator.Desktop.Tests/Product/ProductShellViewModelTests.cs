@@ -21,22 +21,17 @@ public sealed class ProductShellViewModelTests
     [AvaloniaFact]
     public async Task StartTransitionsFromLoadingToReadyAsync()
     {
-        PlannerWorkspaceViewModel expectedWorkspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel expectedWorkspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         QueueProductWorkspaceLoader loader = createLoader(
             delegate
             {
-                ProductWorkspacePresentation presentation =
-                    PlannerWorkspaceTestFactory.CreatePresentation(
-                        expectedWorkspace);
+                ProductWorkspacePresentation presentation = PlannerWorkspaceTestFactory.CreatePresentation(expectedWorkspace);
                 return Task.FromResult(presentation);
             });
         using (ProductShellViewModel shell = createShell(loader))
         {
             Assert.True(shell.IsLoading);
-            Assert.Equal(
-                "Timetable Generator",
-                shell.AccessibleWindowName);
+            Assert.Equal("Timetable Generator", shell.AccessibleWindowName);
 
             await shell.StartAsync();
 
@@ -44,23 +39,18 @@ public sealed class ProductShellViewModelTests
             Assert.False(shell.IsLoading);
             Assert.False(shell.HasError);
             Assert.Same(expectedWorkspace, shell.WorkspaceOrNull);
-            Assert.Equal(
-                "Timetable Generator - 한동대학교",
-                shell.AccessibleWindowName);
+            Assert.Equal("Timetable Generator - 한동대학교", shell.AccessibleWindowName);
         }
     }
 
     [AvaloniaFact]
     public async Task StagedCatalogUpdateShowsAndDismissesNoticeAsync()
     {
-        PlannerWorkspaceViewModel expectedWorkspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel expectedWorkspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         QueueProductWorkspaceLoader loader = createLoader(
             delegate
             {
-                ProductWorkspacePresentation presentation =
-                    PlannerWorkspaceTestFactory.CreatePresentation(
-                        expectedWorkspace);
+                ProductWorkspacePresentation presentation = PlannerWorkspaceTestFactory.CreatePresentation(expectedWorkspace);
                 return Task.FromResult(presentation);
             });
         QueueProductCatalogUpdateService catalogUpdateService =
@@ -85,9 +75,7 @@ public sealed class ProductShellViewModelTests
             Assert.Equal(1, catalogUpdateService.CheckCount);
             Assert.True(shell.HasCatalogUpdateNotice);
             Assert.True(shell.HasProductNotice);
-            Assert.Equal(
-                "과목 데이터 r0002 준비됨: 다음 실행에서 확인 후 적용",
-                shell.CatalogUpdateNotice);
+            Assert.Equal("과목 데이터 r0002 준비됨: 다음 실행에서 확인 후 적용", shell.CatalogUpdateNotice);
 
             shell.DismissProductNoticeCommand.Execute(null);
 
@@ -100,8 +88,7 @@ public sealed class ProductShellViewModelTests
     [AvaloniaFact]
     public async Task RecoveryNoticePrecedesAndThenRevealsCatalogUpdateAsync()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         QueueProductWorkspaceLoader loader = createLoader(
             delegate
             {
@@ -156,8 +143,7 @@ public sealed class ProductShellViewModelTests
     [AvaloniaFact]
     public async Task NormalWorkspaceSetupDoesNotShowRecoveryNoticeAsync()
     {
-        await assertRecoveryFlagsDoNotShowNoticeAsync(
-            EProductWorkspaceRecoveryFlags.WorkspaceCreated);
+        await assertRecoveryFlagsDoNotShowNoticeAsync(EProductWorkspaceRecoveryFlags.WorkspaceCreated);
         await assertRecoveryFlagsDoNotShowNoticeAsync(
             EProductWorkspaceRecoveryFlags.WorkspaceCatalogRebound);
     }
@@ -165,14 +151,11 @@ public sealed class ProductShellViewModelTests
     [AvaloniaFact]
     public async Task CatalogUpdateFailureKeepsLoadedWorkspaceReadyAsync()
     {
-        PlannerWorkspaceViewModel expectedWorkspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel expectedWorkspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         QueueProductWorkspaceLoader loader = createLoader(
             delegate
             {
-                ProductWorkspacePresentation presentation =
-                    PlannerWorkspaceTestFactory.CreatePresentation(
-                        expectedWorkspace);
+                ProductWorkspacePresentation presentation = PlannerWorkspaceTestFactory.CreatePresentation(expectedWorkspace);
                 return Task.FromResult(presentation);
             });
         QueueProductCatalogUpdateService catalogUpdateService =
@@ -200,14 +183,10 @@ public sealed class ProductShellViewModelTests
     [AvaloniaFact]
     public async Task RetryIgnoresCatalogUpdateFromPreviousWorkspaceAsync()
     {
-        PlannerWorkspaceViewModel staleWorkspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
-        PlannerWorkspaceViewModel expectedWorkspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
-        ProductWorkspacePresentation stalePresentation =
-            PlannerWorkspaceTestFactory.CreatePresentation(staleWorkspace);
-        ProductWorkspacePresentation expectedPresentation =
-            PlannerWorkspaceTestFactory.CreatePresentation(expectedWorkspace);
+        PlannerWorkspaceViewModel staleWorkspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel expectedWorkspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+        ProductWorkspacePresentation stalePresentation = PlannerWorkspaceTestFactory.CreatePresentation(staleWorkspace);
+        ProductWorkspacePresentation expectedPresentation = PlannerWorkspaceTestFactory.CreatePresentation(expectedWorkspace);
         QueueProductWorkspaceLoader loader = new QueueProductWorkspaceLoader(
             new Func<CancellationToken, Task<ProductWorkspacePresentation>>[]
             {
@@ -220,9 +199,7 @@ public sealed class ProductShellViewModelTests
                     return Task.FromResult(expectedPresentation);
                 },
             });
-        TaskCompletionSource<ProductCatalogUpdateResult> staleUpdateCompletion =
-            new TaskCompletionSource<ProductCatalogUpdateResult>(
-                TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCompletionSource<ProductCatalogUpdateResult> staleUpdateCompletion = new TaskCompletionSource<ProductCatalogUpdateResult>(TaskCreationOptions.RunContinuationsAsynchronously);
         QueueProductCatalogUpdateService catalogUpdateService =
             new QueueProductCatalogUpdateService(
                 new Func<
@@ -269,27 +246,21 @@ public sealed class ProductShellViewModelTests
     [AvaloniaFact]
     public async Task DisposedShellIgnoresLateCatalogUpdateAsync()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         QueueProductWorkspaceLoader loader = createLoader(
             delegate
             {
-                ProductWorkspacePresentation presentation =
-                    PlannerWorkspaceTestFactory.CreatePresentation(workspace);
+                ProductWorkspacePresentation presentation = PlannerWorkspaceTestFactory.CreatePresentation(workspace);
                 return Task.FromResult(presentation);
             });
-        TaskCompletionSource<ProductCatalogUpdateResult> updateCompletion =
-            new TaskCompletionSource<ProductCatalogUpdateResult>(
-                TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCompletionSource<ProductCatalogUpdateResult> updateCompletion = new TaskCompletionSource<ProductCatalogUpdateResult>(TaskCreationOptions.RunContinuationsAsynchronously);
         QueueProductCatalogUpdateService catalogUpdateService =
             createCatalogUpdateService(
                 delegate
                 {
                     return updateCompletion.Task;
                 });
-        ProductShellViewModel shell = new ProductShellViewModel(
-            loader,
-            catalogUpdateService);
+        ProductShellViewModel shell = new ProductShellViewModel(loader, catalogUpdateService);
         await shell.StartAsync();
         Task updateTask = shell.CatalogUpdateTask;
 
@@ -307,8 +278,7 @@ public sealed class ProductShellViewModelTests
     [AvaloniaFact]
     public async Task RemoteStartupDoesNotImmediatelyDownloadCatalogAgainAsync()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         QueueProductWorkspaceLoader loader = createLoader(
             delegate
             {
@@ -318,13 +288,7 @@ public sealed class ProductShellViewModelTests
                         EProductCatalogOrigin.RemoteDownload);
                 return Task.FromResult(presentation);
             });
-        QueueProductCatalogUpdateService catalogUpdateService =
-            new QueueProductCatalogUpdateService(
-                Array.Empty<Func<
-                    VerifiedCatalogPackage,
-                    PlanningWorkspace,
-                    CancellationToken,
-                    Task<ProductCatalogUpdateResult>>>());
+        QueueProductCatalogUpdateService catalogUpdateService = new QueueProductCatalogUpdateService(Array.Empty<Func<VerifiedCatalogPackage, PlanningWorkspace, CancellationToken, Task<ProductCatalogUpdateResult>>>());
         using (ProductShellViewModel shell = new ProductShellViewModel(
             loader,
             catalogUpdateService))
@@ -382,8 +346,7 @@ public sealed class ProductShellViewModelTests
     [AvaloniaFact]
     public async Task RetryCommandLoadsAWorkspaceAfterFailureAsync()
     {
-        PlannerWorkspaceViewModel expectedWorkspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel expectedWorkspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         QueueProductWorkspaceLoader loader = new QueueProductWorkspaceLoader(
             new Func<CancellationToken, Task<ProductWorkspacePresentation>>[]
             {
@@ -394,9 +357,7 @@ public sealed class ProductShellViewModelTests
                 },
                 delegate
                 {
-                    ProductWorkspacePresentation presentation =
-                        PlannerWorkspaceTestFactory.CreatePresentation(
-                            expectedWorkspace);
+ProductWorkspacePresentation presentation = PlannerWorkspaceTestFactory.CreatePresentation(expectedWorkspace);
                     return Task.FromResult(presentation);
                 },
             });
@@ -404,8 +365,7 @@ public sealed class ProductShellViewModelTests
         {
             await shell.StartAsync();
             Assert.True(shell.HasError);
-            AsyncDelegateCommand retryCommand = Assert.IsType<AsyncDelegateCommand>(
-                shell.RetryCommand);
+            AsyncDelegateCommand retryCommand = Assert.IsType<AsyncDelegateCommand>(shell.RetryCommand);
 
             retryCommand.Execute(null);
             await retryCommand.ExecutionTask;
@@ -419,9 +379,7 @@ public sealed class ProductShellViewModelTests
     [AvaloniaFact]
     public async Task DisposingShellCancelsAnActiveLoadAsync()
     {
-        TaskCompletionSource<bool> cancellationObserved =
-            new TaskCompletionSource<bool>(
-                TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCompletionSource<bool> cancellationObserved = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         QueueProductWorkspaceLoader loader = createLoader(
             async delegate (CancellationToken cancellationToken)
             {
@@ -449,13 +407,9 @@ public sealed class ProductShellViewModelTests
     [AvaloniaFact]
     public async Task StaleLoadResultIsDisposedAfterANewerLoadCompletesAsync()
     {
-        PlannerWorkspaceViewModel staleWorkspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
-        PlannerWorkspaceViewModel expectedWorkspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
-        TaskCompletionSource<ProductWorkspacePresentation> firstLoadCompletion =
-            new TaskCompletionSource<ProductWorkspacePresentation>(
-                TaskCreationOptions.RunContinuationsAsynchronously);
+        PlannerWorkspaceViewModel staleWorkspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel expectedWorkspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+        TaskCompletionSource<ProductWorkspacePresentation> firstLoadCompletion = new TaskCompletionSource<ProductWorkspacePresentation>(TaskCreationOptions.RunContinuationsAsynchronously);
         QueueProductWorkspaceLoader loader = new QueueProductWorkspaceLoader(
             new Func<CancellationToken, Task<ProductWorkspacePresentation>>[]
             {
@@ -465,9 +419,7 @@ public sealed class ProductShellViewModelTests
                 },
                 delegate
                 {
-                    ProductWorkspacePresentation presentation =
-                        PlannerWorkspaceTestFactory.CreatePresentation(
-                            expectedWorkspace);
+ProductWorkspacePresentation presentation = PlannerWorkspaceTestFactory.CreatePresentation(expectedWorkspace);
                     return Task.FromResult(presentation);
                 },
             });
@@ -476,8 +428,7 @@ public sealed class ProductShellViewModelTests
             Task staleLoadTask = shell.StartAsync();
 
             await shell.StartAsync();
-            ProductWorkspacePresentation stalePresentation =
-                PlannerWorkspaceTestFactory.CreatePresentation(staleWorkspace);
+            ProductWorkspacePresentation stalePresentation = PlannerWorkspaceTestFactory.CreatePresentation(staleWorkspace);
             firstLoadCompletion.SetResult(stalePresentation);
             await staleLoadTask;
 
@@ -485,8 +436,7 @@ public sealed class ProductShellViewModelTests
             await Assert.ThrowsAsync<ObjectDisposedException>(
                 delegate
                 {
-                    return staleWorkspace.FlushAutosaveAsync(
-                        CancellationToken.None);
+                    return staleWorkspace.FlushAutosaveAsync(CancellationToken.None);
                 });
         }
     }
@@ -498,16 +448,13 @@ public sealed class ProductShellViewModelTests
         QueueProductWorkspaceLoader loader = createLoader(
             delegate
             {
-                ProductWorkspacePresentation presentation =
-                    PlannerWorkspaceTestFactory.CreatePresentation(workspace);
+                ProductWorkspacePresentation presentation = PlannerWorkspaceTestFactory.CreatePresentation(workspace);
                 return Task.FromResult(presentation);
             });
         using (ProductShellViewModel shell = createShell(loader))
         {
             await shell.StartAsync();
-            Assert.Equal(
-                "Timetable Generator - 한동대학교",
-                shell.AccessibleWindowName);
+            Assert.Equal("Timetable Generator - 한동대학교", shell.AccessibleWindowName);
 
             shell.beginShutdown();
 
@@ -515,8 +462,7 @@ public sealed class ProductShellViewModelTests
             Assert.True(shell.IsShutdownOverlayVisible);
             Assert.False(shell.IsProductInteractionEnabled);
 
-            shell.showShutdownFailure(
-                new InvalidOperationException("Expected save failure."));
+            shell.showShutdownFailure(new InvalidOperationException("Expected save failure."));
 
             Assert.True(shell.HasShutdownError);
             Assert.False(shell.IsProductInteractionEnabled);
@@ -599,8 +545,7 @@ public sealed class ProductShellViewModelTests
             });
     }
 
-    private static ProductShellViewModel createShell(
-        QueueProductWorkspaceLoader loader)
+    private static ProductShellViewModel createShell(QueueProductWorkspaceLoader loader)
     {
         QueueProductCatalogUpdateService catalogUpdateService =
             createCatalogUpdateService(
@@ -618,8 +563,7 @@ public sealed class ProductShellViewModelTests
     private static async Task assertRecoveryFlagsDoNotShowNoticeAsync(
         EProductWorkspaceRecoveryFlags recoveryFlags)
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         QueueProductWorkspaceLoader loader = createLoader(
             delegate
             {

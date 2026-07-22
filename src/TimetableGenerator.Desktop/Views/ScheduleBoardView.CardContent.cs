@@ -25,10 +25,7 @@ internal sealed partial class ScheduleBoardView
         content.VerticalAlignment = VerticalAlignment.Center;
         content.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
 
-        TextBlock title = createCardText(
-            cardContent.Title,
-            SCHEDULE_CARD_TITLE_FONT_SIZE,
-            FontWeight.Bold);
+        TextBlock title = createCardText(cardContent.Title, SCHEDULE_CARD_TITLE_FONT_SIZE, FontWeight.Bold);
         title.HorizontalAlignment = HorizontalAlignment.Stretch;
         title.LineHeight = SCHEDULE_CARD_TITLE_LINE_HEIGHT;
         title.MaxLines = 2;
@@ -46,11 +43,7 @@ internal sealed partial class ScheduleBoardView
                 locationOrNull,
                 SCHEDULE_CARD_LOCATION_FONT_SIZE,
                 FontWeight.SemiBold);
-            location.Margin = new Thickness(
-                0.0,
-                SCHEDULE_CARD_PRIMARY_GAP,
-                0.0,
-                0.0);
+            location.Margin = new Thickness(0.0, SCHEDULE_CARD_PRIMARY_GAP, 0.0, 0.0);
             location.HorizontalAlignment = HorizontalAlignment.Stretch;
             location.Foreground = findBrush("TextPrimaryBrush");
             location.LineHeight = SCHEDULE_CARD_LOCATION_LINE_HEIGHT;
@@ -73,11 +66,7 @@ internal sealed partial class ScheduleBoardView
             double responsiblePersonTopMargin = locationOrNull != null
                 ? SCHEDULE_CARD_SECONDARY_GAP
                 : SCHEDULE_CARD_PRIMARY_GAP;
-            responsiblePerson.Margin = new Thickness(
-                0.0,
-                responsiblePersonTopMargin,
-                0.0,
-                0.0);
+            responsiblePerson.Margin = new Thickness(0.0, responsiblePersonTopMargin, 0.0, 0.0);
             responsiblePerson.HorizontalAlignment = HorizontalAlignment.Stretch;
             responsiblePerson.Foreground = findBrush("TextSecondaryBrush");
             responsiblePerson.LineHeight = SCHEDULE_CARD_RESPONSIBLE_PERSON_LINE_HEIGHT;
@@ -91,13 +80,9 @@ internal sealed partial class ScheduleBoardView
         return content;
     }
 
-    private static TextBlock createCompactScheduleCardContent(
-        ScheduleCardContent cardContent)
+    private static TextBlock createCompactScheduleCardContent(ScheduleCardContent cardContent)
     {
-        TextBlock title = createCardText(
-            cardContent.Title,
-            SCHEDULE_CARD_TITLE_FONT_SIZE,
-            FontWeight.Bold);
+        TextBlock title = createCardText(cardContent.Title, SCHEDULE_CARD_TITLE_FONT_SIZE, FontWeight.Bold);
         title.HorizontalAlignment = HorizontalAlignment.Stretch;
         title.VerticalAlignment = VerticalAlignment.Center;
         title.LineHeight = SCHEDULE_CARD_TITLE_LINE_HEIGHT;

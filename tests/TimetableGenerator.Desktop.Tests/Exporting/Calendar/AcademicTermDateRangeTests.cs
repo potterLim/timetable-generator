@@ -14,8 +14,7 @@ public sealed class AcademicTermDateRangeTests
         DateOnly startDate = new DateOnly(2026, 8, 31);
         DateOnly endDate = new DateOnly(2026, 12, 20);
 
-        AcademicTermDateRange dateRange =
-            new AcademicTermDateRange(startDate, endDate);
+        AcademicTermDateRange dateRange = new AcademicTermDateRange(startDate, endDate);
 
         Assert.True(dateRange.IsValid);
         Assert.Equal(startDate, dateRange.StartDate);
@@ -27,8 +26,7 @@ public sealed class AcademicTermDateRangeTests
     {
         DateOnly classDate = new DateOnly(2026, 8, 31);
 
-        AcademicTermDateRange dateRange =
-            new AcademicTermDateRange(classDate, classDate);
+        AcademicTermDateRange dateRange = new AcademicTermDateRange(classDate, classDate);
 
         Assert.True(dateRange.IsValid);
     }

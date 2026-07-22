@@ -125,10 +125,7 @@ internal sealed class CourseChoiceDraftCourseItem : ObservableObject
         }
 
         Projection = projection;
-        Offerings = createOfferings(
-            projection,
-            savedPreferences,
-            defaultPreference);
+        Offerings = createOfferings(projection, savedPreferences, defaultPreference);
         if (Offerings.Count == 0)
         {
             throw new ArgumentException(
@@ -142,8 +139,7 @@ internal sealed class CourseChoiceDraftCourseItem : ObservableObject
         }
     }
 
-    public static CourseChoiceDraftCourseItem CreateNew(
-        CatalogCourseProjection projection)
+    public static CourseChoiceDraftCourseItem CreateNew(CatalogCourseProjection projection)
     {
         return new CourseChoiceDraftCourseItem(
             projection,
@@ -192,8 +188,7 @@ internal sealed class CourseChoiceDraftCourseItem : ObservableObject
         IReadOnlyDictionary<OfferingId, EOfferingPreference> savedPreferences,
         EOfferingPreference defaultPreference)
     {
-        ObservableCollection<CourseOfferingPreferenceItem> offerings =
-            new ObservableCollection<CourseOfferingPreferenceItem>();
+        ObservableCollection<CourseOfferingPreferenceItem> offerings = new ObservableCollection<CourseOfferingPreferenceItem>();
         foreach (CatalogOfferingProjection offering in projection.Offerings)
         {
             EOfferingPreference preference = defaultPreference;
@@ -203,10 +198,7 @@ internal sealed class CourseChoiceDraftCourseItem : ObservableObject
                 preference = savedPreference;
             }
 
-            offerings.Add(new CourseOfferingPreferenceItem(
-                projection,
-                offering,
-                preference));
+            offerings.Add(new CourseOfferingPreferenceItem(projection, offering, preference));
         }
 
         return offerings;
@@ -215,8 +207,7 @@ internal sealed class CourseChoiceDraftCourseItem : ObservableObject
     private static Dictionary<OfferingId, EOfferingPreference> createSavedPreferences(
         IEnumerable<OfferingCandidate> savedCandidates)
     {
-        Dictionary<OfferingId, EOfferingPreference> preferences =
-            new Dictionary<OfferingId, EOfferingPreference>();
+        Dictionary<OfferingId, EOfferingPreference> preferences = new Dictionary<OfferingId, EOfferingPreference>();
         foreach (OfferingCandidate candidate in savedCandidates)
         {
             preferences.Add(candidate.OfferingId, candidate.Preference);
@@ -225,9 +216,7 @@ internal sealed class CourseChoiceDraftCourseItem : ObservableObject
         return preferences;
     }
 
-    private void onOfferingPreferenceChanged(
-        object? senderOrNull,
-        EventArgs eventArgs)
+    private void onOfferingPreferenceChanged(object? senderOrNull, EventArgs eventArgs)
     {
         raisePropertyChanged(nameof(HasEligibleOffering));
         raisePropertyChanged(nameof(SelectionSummary));

@@ -14,16 +14,12 @@ public sealed class CatalogSourceConfigurationTests
     [AvaloniaFact]
     public void JsonReaderCreatesStrictLocalFileConfiguration()
     {
-        byte[] content = Encoding.UTF8.GetBytes(
-            "{\"schemaVersion\":1,\"indexUri\":\"https://catalog.example/v1/index.json\"}");
+        byte[] content = Encoding.UTF8.GetBytes("{\"schemaVersion\":1,\"indexUri\":\"https://catalog.example/v1/index.json\"}");
 
-        CatalogSourceConfiguration configuration =
-            CatalogSourceConfigurationJsonReader.Read(content);
+        CatalogSourceConfiguration configuration = CatalogSourceConfigurationJsonReader.Read(content);
 
         Assert.Equal(ECatalogSourceOrigin.LocalFile, configuration.Origin);
-        Assert.Equal(
-            "https://catalog.example/v1/index.json",
-            configuration.Endpoint.Value.AbsoluteUri);
+        Assert.Equal("https://catalog.example/v1/index.json", configuration.Endpoint.Value.AbsoluteUri);
     }
 
     [Theory]
@@ -46,8 +42,7 @@ public sealed class CatalogSourceConfigurationTests
     [AvaloniaFact]
     public async Task LoaderUsesEnvironmentConfigurationBeforeLocalFileAsync()
     {
-        CatalogSourceConfigurationPath missingPath =
-            createConfigurationPath("missing.json");
+        CatalogSourceConfigurationPath missingPath = createConfigurationPath("missing.json");
         CatalogSourceConfigurationLoader loader = new CatalogSourceConfigurationLoader(
             missingPath,
             delegate
@@ -55,13 +50,10 @@ public sealed class CatalogSourceConfigurationTests
                 return "https://environment.example/v1/index.json";
             });
 
-        CatalogSourceConfiguration configuration = await loader.LoadAsync(
-            CancellationToken.None);
+        CatalogSourceConfiguration configuration = await loader.LoadAsync(CancellationToken.None);
 
         Assert.Equal(ECatalogSourceOrigin.Environment, configuration.Origin);
-        Assert.Equal(
-            "https://environment.example/v1/index.json",
-            configuration.Endpoint.Value.AbsoluteUri);
+        Assert.Equal("https://environment.example/v1/index.json", configuration.Endpoint.Value.AbsoluteUri);
     }
 
     [AvaloniaFact]
@@ -82,13 +74,10 @@ public sealed class CatalogSourceConfigurationTests
 
         try
         {
-            CatalogSourceConfiguration configuration = await loader.LoadAsync(
-                CancellationToken.None);
+            CatalogSourceConfiguration configuration = await loader.LoadAsync(CancellationToken.None);
 
             Assert.Equal(ECatalogSourceOrigin.LocalFile, configuration.Origin);
-            Assert.Equal(
-                "https://file.example/v1/index.json",
-                configuration.Endpoint.Value.AbsoluteUri);
+            Assert.Equal("https://file.example/v1/index.json", configuration.Endpoint.Value.AbsoluteUri);
         }
         finally
         {
@@ -99,8 +88,7 @@ public sealed class CatalogSourceConfigurationTests
     [AvaloniaFact]
     public async Task LoaderReportsMissingProductConfigurationAsync()
     {
-        CatalogSourceConfigurationPath missingPath =
-            createConfigurationPath("not-found.json");
+        CatalogSourceConfigurationPath missingPath = createConfigurationPath("not-found.json");
         CatalogSourceConfigurationLoader loader = new CatalogSourceConfigurationLoader(
             missingPath,
             delegate
@@ -115,8 +103,7 @@ public sealed class CatalogSourceConfigurationTests
             });
     }
 
-    private static CatalogSourceConfigurationPath createConfigurationPath(
-        string fileName)
+    private static CatalogSourceConfigurationPath createConfigurationPath(string fileName)
     {
         string directoryPath = Path.Combine(
             Path.GetTempPath(),
@@ -130,8 +117,7 @@ public sealed class CatalogSourceConfigurationTests
         string? directoryPathOrNull = Path.GetDirectoryName(path.Value);
         if (directoryPathOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The test configuration path does not contain a directory.");
+            throw new InvalidOperationException("The test configuration path does not contain a directory.");
         }
 
         return directoryPathOrNull;

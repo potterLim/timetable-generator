@@ -48,24 +48,19 @@ internal sealed partial class ScheduleWorkspaceView
 
         try
         {
-            CancellationToken cancellationToken =
-                mLifetimeCancellationSource.Token;
+            CancellationToken cancellationToken = mLifetimeCancellationSource.Token;
             cancellationToken.ThrowIfCancellationRequested();
             PlannerWorkspaceViewModel workspace = getRequiredWorkspace();
-            ScheduleBoardPresentation? exportPresentationOrNull =
-                workspace.DisplayedScheduleBoard;
+            ScheduleBoardPresentation? exportPresentationOrNull = workspace.DisplayedScheduleBoard;
             if (exportPresentationOrNull == null)
             {
-                throw new InvalidOperationException(
-                    "PNG export requires an active timetable presentation.");
+                throw new InvalidOperationException("PNG export requires an active timetable presentation.");
             }
 
             ScheduleBoardView scheduleBoard = getRequiredScheduleBoard();
             Canvas pngExportHost = getRequiredPngExportHost();
             TopLevel topLevel = getRequiredExportTopLevel();
-            IStorageFile? destinationFileOrNull =
-                await topLevel.StorageProvider.SaveFilePickerAsync(
-                    createPngSaveOptions(exportPresentationOrNull.PlanName));
+            IStorageFile? destinationFileOrNull = await topLevel.StorageProvider.SaveFilePickerAsync(createPngSaveOptions(exportPresentationOrNull.PlanName));
             if (destinationFileOrNull == null)
             {
                 return;
@@ -78,18 +73,12 @@ internal sealed partial class ScheduleWorkspaceView
                     pngExportHost,
                     exportPresentationOrNull,
                     scheduleBoard))
-            using (Stream destinationStream =
-                await destinationFileOrNull.OpenWriteAsync())
+            using (Stream destinationStream = await destinationFileOrNull.OpenWriteAsync())
             {
-                await exportSnapshotAsync(
-                    snapshot,
-                    destinationStream,
-                    cancellationToken);
+                await exportSnapshotAsync(snapshot, destinationStream, cancellationToken);
             }
 
-            showTransientExportStatus(
-                "PNG 이미지로 저장했습니다.",
-                EExportStatus.Success);
+            showTransientExportStatus("PNG 이미지로 저장했습니다.", EExportStatus.Success);
         }
         finally
         {
@@ -106,8 +95,7 @@ internal sealed partial class ScheduleWorkspaceView
 
         try
         {
-            CancellationToken cancellationToken =
-                mLifetimeCancellationSource.Token;
+            CancellationToken cancellationToken = mLifetimeCancellationSource.Token;
             cancellationToken.ThrowIfCancellationRequested();
             PlannerWorkspaceViewModel workspace = getRequiredWorkspace();
             if (workspace.CanExportAllPngCandidates == false)
@@ -115,14 +103,10 @@ internal sealed partial class ScheduleWorkspaceView
                 return;
             }
 
-            SchedulePngExportBatch exportBatch =
-                new SchedulePngExportBatch(workspace.PngExportCandidates);
+            SchedulePngExportBatch exportBatch = new SchedulePngExportBatch(workspace.PngExportCandidates);
 
             TopLevel topLevel = getRequiredExportTopLevel();
-            System.Collections.Generic.IReadOnlyList<IStorageFolder>
-                selectedFolders =
-                await topLevel.StorageProvider.OpenFolderPickerAsync(
-                    createPngBatchFolderPickerOptions());
+            System.Collections.Generic.IReadOnlyList<IStorageFolder> selectedFolders = await topLevel.StorageProvider.OpenFolderPickerAsync(createPngBatchFolderPickerOptions());
             if (selectedFolders.Count == 0)
             {
                 return;
@@ -132,12 +116,10 @@ internal sealed partial class ScheduleWorkspaceView
             using (IStorageFolder selectedFolder = selectedFolders[0])
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                string? parentDirectoryPathOrNull =
-                    selectedFolder.TryGetLocalPath();
+                string? parentDirectoryPathOrNull = selectedFolder.TryGetLocalPath();
                 if (parentDirectoryPathOrNull == null)
                 {
-                    throw new NotSupportedException(
-                        "Batch PNG export requires a local desktop folder.");
+                    throw new NotSupportedException("Batch PNG export requires a local desktop folder.");
                 }
 
                 using (SchedulePngBatchDirectory batchDirectory =
@@ -146,8 +128,7 @@ internal sealed partial class ScheduleWorkspaceView
                         exportBatch.PlanName,
                         cancellationToken))
                 {
-                    SchedulePngBatchWriter writer =
-                        new SchedulePngBatchWriter(mPngExporter);
+                    SchedulePngBatchWriter writer = new SchedulePngBatchWriter(mPngExporter);
                     await writer.exportAsync(
                         exportBatch,
                         batchDirectory,
@@ -176,10 +157,7 @@ internal sealed partial class ScheduleWorkspaceView
         Stream destinationStream,
         CancellationToken cancellationToken)
     {
-        await mPngExporter.ExportControlAsync(
-            snapshot.Surface,
-            destinationStream,
-            cancellationToken);
+        await mPngExporter.ExportControlAsync(snapshot.Surface, destinationStream, cancellationToken);
         await destinationStream.FlushAsync(cancellationToken);
     }
 
@@ -197,12 +175,10 @@ internal sealed partial class ScheduleWorkspaceView
 
     private ScheduleBoardView getRequiredScheduleBoard()
     {
-        ScheduleBoardView? scheduleBoardOrNull =
-            this.FindControl<ScheduleBoardView>("ScheduleBoard");
+        ScheduleBoardView? scheduleBoardOrNull = this.FindControl<ScheduleBoardView>("ScheduleBoard");
         if (scheduleBoardOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The schedule board export surface could not be prepared.");
+            throw new InvalidOperationException("The schedule board export surface could not be prepared.");
         }
 
         return scheduleBoardOrNull;
@@ -210,12 +186,10 @@ internal sealed partial class ScheduleWorkspaceView
 
     private Canvas getRequiredPngExportHost()
     {
-        Canvas? pngExportHostOrNull =
-            this.FindControl<Canvas>("PngExportHost");
+        Canvas? pngExportHostOrNull = this.FindControl<Canvas>("PngExportHost");
         if (pngExportHostOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The PNG export host could not be prepared.");
+            throw new InvalidOperationException("The PNG export host could not be prepared.");
         }
 
         return pngExportHostOrNull;
@@ -259,8 +233,6 @@ internal sealed partial class ScheduleWorkspaceView
 
     private void showPngExportFailure(Exception exception)
     {
-        showExportFailure(
-            exception,
-            "PNG 이미지를 저장하지 못했습니다. 다시 시도해 주세요.");
+        showExportFailure(exception, "PNG 이미지를 저장하지 못했습니다. 다시 시도해 주세요.");
     }
 }

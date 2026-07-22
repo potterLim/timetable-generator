@@ -100,24 +100,18 @@ internal static class CatalogJsonWriter
         writer.WriteEndObject();
     }
 
-    private static void writeDataQuality(
-        Utf8JsonWriter writer,
-        CatalogDataQuality dataQuality)
+    private static void writeDataQuality(Utf8JsonWriter writer, CatalogDataQuality dataQuality)
     {
         writer.WriteStartObject("dataQuality");
         writer.WriteString(
             "scheduleNormalizationSource",
             getScheduleNormalizationSourceName(dataQuality.ScheduleNormalizationSource));
-        writer.WriteNumber(
-            "sourceEnglishScheduleMismatch",
-            dataQuality.EnglishScheduleMismatchCount.Value);
+        writer.WriteNumber("sourceEnglishScheduleMismatch", dataQuality.EnglishScheduleMismatchCount.Value);
         writer.WriteNumber("roomNotProvided", dataQuality.RoomNotProvidedCount.Value);
         writer.WriteNumber("enrollmentNotProvided", dataQuality.EnrollmentNotProvidedCount.Value);
         writer.WriteNumber("instructorUnconfirmed", dataQuality.InstructorUnconfirmedCount.Value);
         writer.WriteNumber("multiInstructorDisplay", dataQuality.MultiInstructorDisplayCount.Value);
-        writer.WriteNumber(
-            "sourceRemarkLookupOnly",
-            dataQuality.SourceRemarkLookupOnlyCount.Value);
+        writer.WriteNumber("sourceRemarkLookupOnly", dataQuality.SourceRemarkLookupOnlyCount.Value);
         writer.WriteStartArray("manualReview");
         foreach (CatalogManualReview manualReview in dataQuality.ManualReviews)
         {
@@ -128,9 +122,7 @@ internal static class CatalogJsonWriter
         writer.WriteEndObject();
     }
 
-    private static void writeManualReview(
-        Utf8JsonWriter writer,
-        CatalogManualReview manualReview)
+    private static void writeManualReview(Utf8JsonWriter writer, CatalogManualReview manualReview)
     {
         writer.WriteStartObject();
         writer.WriteString("courseId", CatalogFileLayout.GetCourseId(manualReview.CourseCode));
@@ -220,9 +212,7 @@ internal static class CatalogJsonWriter
         if (assignment.Status == EInstructorAssignmentStatus.Confirmed)
         {
             writer.WriteString("displayText", assignment.GetDisplayText().Value);
-            writer.WriteNumber(
-                "additionalInstructorCount",
-                assignment.GetAdditionalInstructorCount().Value);
+            writer.WriteNumber("additionalInstructorCount", assignment.GetAdditionalInstructorCount().Value);
         }
         else
         {
@@ -305,8 +295,7 @@ internal static class CatalogJsonWriter
     {
         if (gradingPolicy.PassFailOptionAvailability == EPassFailOptionAvailability.NotProvided)
         {
-            throw new InvalidOperationException(
-                "The catalog schema requires pass/fail option availability.");
+            throw new InvalidOperationException("The catalog schema requires pass/fail option availability.");
         }
 
         writer.WriteStartObject("grading");
@@ -321,8 +310,7 @@ internal static class CatalogJsonWriter
     {
         if (details.SyllabusAvailability == ESyllabusAvailability.Available)
         {
-            throw new InvalidOperationException(
-                "The source does not expose a safe public syllabus URL.");
+            throw new InvalidOperationException("The source does not expose a safe public syllabus URL.");
         }
 
         writer.WriteStartObject("details");

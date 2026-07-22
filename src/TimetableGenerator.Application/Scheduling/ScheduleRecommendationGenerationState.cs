@@ -9,8 +9,7 @@ internal sealed class ScheduleRecommendationGenerationState
 {
     private readonly IReadOnlyList<RecommendationScore> mRemainingMinimumScores;
 
-    private readonly PriorityQueue<ScheduleSearchNode, ScheduleSearchPriority>
-        mPendingNodes;
+    private readonly PriorityQueue<ScheduleSearchNode, ScheduleSearchPriority> mPendingNodes;
 
     private long mNextSequence;
 
@@ -73,8 +72,7 @@ internal sealed class ScheduleRecommendationGenerationState
         Recommendations = new List<ScheduleRecommendation>();
         Completion = EScheduleRecommendationCompletion.Completed;
         mRemainingMinimumScores = createRemainingMinimumScores(courseChoiceGroups);
-        mPendingNodes =
-            new PriorityQueue<ScheduleSearchNode, ScheduleSearchPriority>();
+        mPendingNodes = new PriorityQueue<ScheduleSearchNode, ScheduleSearchPriority>();
         mNextSequence = 0L;
         EnqueueNode(ScheduleSearchNode.CreateRoot());
     }
@@ -96,8 +94,7 @@ internal sealed class ScheduleRecommendationGenerationState
             throw new ArgumentNullException(nameof(node));
         }
 
-        RecommendationScore remainingMinimumScore =
-            mRemainingMinimumScores[node.NextGroupIndex];
+        RecommendationScore remainingMinimumScore = mRemainingMinimumScores[node.NextGroupIndex];
         RecommendationScore optimisticScore = node.Score.Add(remainingMinimumScore);
         int remainingGroupCount = CourseChoiceGroups.Count - node.NextGroupIndex;
         ScheduleSearchPriority priority = new ScheduleSearchPriority(
@@ -118,8 +115,7 @@ internal sealed class ScheduleRecommendationGenerationState
         Completion = EScheduleRecommendationCompletion.MaximumRecommendationCountReached;
     }
 
-    public IReadOnlyList<UnscheduledOfferingSelection>
-        CombineUnscheduledSelections(
+    public IReadOnlyList<UnscheduledOfferingSelection> CombineUnscheduledSelections(
             IReadOnlyList<UnscheduledOfferingSelection> selectedByGroups)
     {
         if (selectedByGroups == null)
@@ -138,8 +134,7 @@ internal sealed class ScheduleRecommendationGenerationState
     private static IReadOnlyList<RecommendationScore> createRemainingMinimumScores(
         IReadOnlyList<ValidatedCourseChoiceGroup> courseChoiceGroups)
     {
-        RecommendationScore[] remainingMinimumScores =
-            new RecommendationScore[courseChoiceGroups.Count + 1];
+        RecommendationScore[] remainingMinimumScores = new RecommendationScore[courseChoiceGroups.Count + 1];
         remainingMinimumScores[courseChoiceGroups.Count] = RecommendationScore.ZERO;
         for (int groupIndex = courseChoiceGroups.Count - 1;
             groupIndex >= 0;

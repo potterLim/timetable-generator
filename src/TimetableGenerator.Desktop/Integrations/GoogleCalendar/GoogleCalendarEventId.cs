@@ -16,15 +16,11 @@ internal sealed record GoogleCalendarEventId
         Value = value;
     }
 
-    public static GoogleCalendarEventId Create(
-        PlanId planId,
-        GoogleCalendarSourceEventId sourceEventId)
+    public static GoogleCalendarEventId Create(PlanId planId, GoogleCalendarSourceEventId sourceEventId)
     {
         if (planId.IsValid == false)
         {
-            throw new ArgumentException(
-                "Google Calendar event IDs require a valid plan ID.",
-                nameof(planId));
+            throw new ArgumentException("Google Calendar event IDs require a valid plan ID.", nameof(planId));
         }
 
         if (sourceEventId == null)
@@ -59,8 +55,7 @@ internal sealed record GoogleCalendarEventId
 
         foreach (char character in normalizedValue)
         {
-            bool isValid = character is >= 'a' and <= 'v'
-                || character is >= '0' and <= '9';
+            bool isValid = character is >= 'a' and <= 'v' || character is >= '0' and <= '9';
             if (isValid == false)
             {
                 throw new ArgumentException(

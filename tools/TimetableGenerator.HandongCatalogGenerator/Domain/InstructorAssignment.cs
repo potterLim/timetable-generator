@@ -45,12 +45,10 @@ internal sealed class InstructorAssignment
             throw new ArgumentOutOfRangeException(nameof(status));
         }
 
-        bool hasConfirmedValues =
-            displayTextOrNull != null && additionalInstructorCountOrNull.HasValue;
+        bool hasConfirmedValues = displayTextOrNull != null && additionalInstructorCountOrNull.HasValue;
         if ((status == EInstructorAssignmentStatus.Confirmed) != hasConfirmedValues)
         {
-            throw new ArgumentException(
-                "Only confirmed instructor assignments can contain instructor values.");
+            throw new ArgumentException("Only confirmed instructor assignments can contain instructor values.");
         }
 
         Status = status;

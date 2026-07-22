@@ -35,16 +35,13 @@ internal static class ScheduleRecommendationConflictChecker
                 return false;
             }
 
-            WeeklyTimeRange offeringTimeRange =
-                AcademicPeriodTimeTable.GetWeeklyTimeRange(slot);
+            WeeklyTimeRange offeringTimeRange = AcademicPeriodTimeTable.GetWeeklyTimeRange(slot);
             foreach (PersonalSchedule personalSchedule in personalSchedules)
             {
                 foreach (WeeklyTimeRange personalTimeRange
                     in personalSchedule.TimeRanges)
                 {
-                    if (ScheduleConflictDetector.HasConflict(
-                        offeringTimeRange,
-                        personalTimeRange))
+                    if (ScheduleConflictDetector.HasConflict(offeringTimeRange, personalTimeRange))
                     {
                         return false;
                     }

@@ -43,8 +43,7 @@ internal sealed class PlanCourseChoiceGroupItem
         {
             if (IsSingleCourseGroup == false)
             {
-                throw new InvalidOperationException(
-                    "Only singleton course choice groups have a single course.");
+                throw new InvalidOperationException("Only singleton course choice groups have a single course.");
             }
 
             return Courses[0];
@@ -70,8 +69,7 @@ internal sealed class PlanCourseChoiceGroupItem
         {
             if (IsAlternativeGroup)
             {
-                return Courses.Count
-                    + "개 과목 중 1개를 선택하는 수강 선택";
+                return Courses.Count + "개 과목 중 1개를 선택하는 수강 선택";
             }
 
             return SingleCourse.Name + " 수강 선택";
@@ -108,9 +106,7 @@ internal sealed class PlanCourseChoiceGroupItem
 
     public CourseCredits MaximumCredits { get; }
 
-    public PlanCourseChoiceGroupItem(
-        CourseChoiceGroup group,
-        CourseCatalogProjection catalogProjection)
+    public PlanCourseChoiceGroupItem(CourseChoiceGroup group, CourseCatalogProjection catalogProjection)
     {
         if (group == null)
         {
@@ -128,11 +124,8 @@ internal sealed class PlanCourseChoiceGroupItem
         decimal maximumCreditValue = decimal.MinValue;
         foreach (CourseCandidate courseCandidate in group.CourseCandidates)
         {
-            CatalogCourseProjection projection = catalogProjection.FindCourseById(
-                courseCandidate.CourseId);
-            PlanCourseChoiceCandidateItem item = new PlanCourseChoiceCandidateItem(
-                projection,
-                courseCandidate);
+            CatalogCourseProjection projection = catalogProjection.FindCourseById(courseCandidate.CourseId);
+            PlanCourseChoiceCandidateItem item = new PlanCourseChoiceCandidateItem(projection, courseCandidate);
             Courses.Add(item);
             minimumCreditValue = Math.Min(minimumCreditValue, item.Credits.Value);
             maximumCreditValue = Math.Max(maximumCreditValue, item.Credits.Value);

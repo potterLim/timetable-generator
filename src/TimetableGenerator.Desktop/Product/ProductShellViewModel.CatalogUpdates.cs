@@ -15,9 +15,7 @@ namespace TimetableGenerator.Desktop.Product;
 
 internal sealed partial class ProductShellViewModel
 {
-    private const EProductWorkspaceRecoveryFlags RECOVERY_NOTICE_FLAGS =
-        EProductWorkspaceRecoveryFlags.CatalogPreviousGeneration
-        | EProductWorkspaceRecoveryFlags.WorkspacePreviousGeneration;
+    private const EProductWorkspaceRecoveryFlags RECOVERY_NOTICE_FLAGS = EProductWorkspaceRecoveryFlags.CatalogPreviousGeneration | EProductWorkspaceRecoveryFlags.WorkspacePreviousGeneration;
 
     private readonly IProductCatalogUpdateService mCatalogUpdateService;
 
@@ -135,9 +133,7 @@ internal sealed partial class ProductShellViewModel
             return;
         }
 
-        mCatalogUpdateTask = checkCatalogUpdateAsync(
-            presentation,
-            cancellationSource);
+        mCatalogUpdateTask = checkCatalogUpdateAsync(presentation, cancellationSource);
     }
 
     private async Task checkCatalogUpdateAsync(
@@ -177,8 +173,7 @@ internal sealed partial class ProductShellViewModel
         }
     }
 
-    private bool canApplyCatalogUpdateResult(
-        CancellationTokenSource cancellationSource)
+    private bool canApplyCatalogUpdateResult(CancellationTokenSource cancellationSource)
     {
         return mIsDisposed == false
             && cancellationSource.IsCancellationRequested == false
@@ -203,12 +198,10 @@ internal sealed partial class ProductShellViewModel
                     + " 준비됨: 다음 실행에서 확인 후 적용";
                 break;
             case EProductCatalogUpdateStatus.WorkspaceIncompatible:
-                mCatalogUpdateNotice =
-                    "새 과목 데이터가 현재 시간표와 맞지 않아 기존 버전을 유지합니다.";
+                mCatalogUpdateNotice = "새 과목 데이터가 현재 시간표와 맞지 않아 기존 버전을 유지합니다.";
                 break;
             case EProductCatalogUpdateStatus.RevisionArtifactChanged:
-                mCatalogUpdateNotice =
-                    "같은 버전의 서버 데이터가 변경되어 안전을 위해 무시했습니다.";
+                mCatalogUpdateNotice = "같은 버전의 서버 데이터가 변경되어 안전을 위해 무시했습니다.";
                 break;
             default:
                 throw new ArgumentOutOfRangeException(
@@ -220,11 +213,9 @@ internal sealed partial class ProductShellViewModel
         raiseProductNoticePropertiesChanged();
     }
 
-    private static string createStartupRecoveryNotice(
-        EProductWorkspaceRecoveryFlags recoveryFlags)
+    private static string createStartupRecoveryNotice(EProductWorkspaceRecoveryFlags recoveryFlags)
     {
-        EProductWorkspaceRecoveryFlags noticeFlags =
-            recoveryFlags & RECOVERY_NOTICE_FLAGS;
+        EProductWorkspaceRecoveryFlags noticeFlags = recoveryFlags & RECOVERY_NOTICE_FLAGS;
         switch (noticeFlags)
         {
             case EProductWorkspaceRecoveryFlags.None:

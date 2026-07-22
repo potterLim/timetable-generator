@@ -65,10 +65,7 @@ public sealed class PlanningWorkspaceEditorTests
             new PlanningPlan[] { plan });
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
 
-        PlanningWorkspace result = editor.RenamePlan(
-            workspace,
-            plan.Id,
-            new PlanName("변경 후"));
+        PlanningWorkspace result = editor.RenamePlan(workspace, plan.Id, new PlanName("변경 후"));
 
         PlanningPlan renamedPlan = result.GetActivePlan();
         Assert.AreEqual("변경 후", renamedPlan.Name.Value);
@@ -92,10 +89,7 @@ public sealed class PlanningWorkspaceEditorTests
                 "01",
                 "02");
 
-        PlanningWorkspace result = editor.AddCourseChoiceGroup(
-            workspace,
-            firstPlan.Id,
-            addedChoiceGroup);
+        PlanningWorkspace result = editor.AddCourseChoiceGroup(workspace, firstPlan.Id, addedChoiceGroup);
 
         Assert.HasCount(1, result.Plans[0].CourseChoiceGroups);
         Assert.AreSame(addedChoiceGroup, result.Plans[0].CourseChoiceGroups[0]);
@@ -116,10 +110,7 @@ public sealed class PlanningWorkspaceEditorTests
                 "AAA10001",
                 "01");
 
-        PlanningWorkspace result = editor.AddUnscheduledOfferingSelection(
-            workspace,
-            plan.Id,
-            selection);
+        PlanningWorkspace result = editor.AddUnscheduledOfferingSelection(workspace, plan.Id, selection);
 
         PlanningPlan updatedPlan = result.GetActivePlan();
         Assert.IsEmpty(updatedPlan.CourseChoiceGroups);
@@ -178,17 +169,10 @@ public sealed class PlanningWorkspaceEditorTests
             secondPlan.Id,
             new PlanningPlan[] { firstPlan, secondPlan });
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
-        PersonalSchedule addedSchedule = createPersonalSchedule(
-            PersonalScheduleId.CreateNew(),
-            "랩 미팅");
+        PersonalSchedule addedSchedule = createPersonalSchedule(PersonalScheduleId.CreateNew(), "랩 미팅");
 
-        PlanningWorkspace withSchedule = editor.AddPersonalSchedule(
-            workspace,
-            firstPlan.Id,
-            addedSchedule);
-        PersonalSchedule updatedSchedule = createPersonalSchedule(
-            addedSchedule.Id,
-            "연구실 주간 회의");
+        PlanningWorkspace withSchedule = editor.AddPersonalSchedule(workspace, firstPlan.Id, addedSchedule);
+        PersonalSchedule updatedSchedule = createPersonalSchedule(addedSchedule.Id, "연구실 주간 회의");
         PlanningWorkspace withUpdate = editor.UpdatePersonalSchedule(
             withSchedule,
             firstPlan.Id,
@@ -200,21 +184,15 @@ public sealed class PlanningWorkspaceEditorTests
 
         Assert.HasCount(1, withSchedule.Plans[0].PersonalSchedules);
         Assert.AreSame(addedSchedule, withSchedule.Plans[0].PersonalSchedules[0]);
-        Assert.AreSame(
-            existingChoiceGroup,
-            withSchedule.Plans[0].CourseChoiceGroups[0]);
+        Assert.AreSame(existingChoiceGroup, withSchedule.Plans[0].CourseChoiceGroups[0]);
         Assert.AreSame(secondPlan, withSchedule.Plans[1]);
         Assert.AreEqual(secondPlan.Id, withSchedule.ActivePlanIdOrNull);
         Assert.AreSame(updatedSchedule, withUpdate.Plans[0].PersonalSchedules[0]);
-        Assert.AreSame(
-            existingChoiceGroup,
-            withUpdate.Plans[0].CourseChoiceGroups[0]);
+        Assert.AreSame(existingChoiceGroup, withUpdate.Plans[0].CourseChoiceGroups[0]);
         Assert.AreSame(secondPlan, withUpdate.Plans[1]);
         Assert.AreEqual(secondPlan.Id, withUpdate.ActivePlanIdOrNull);
         Assert.IsEmpty(withoutSchedule.Plans[0].PersonalSchedules);
-        Assert.AreSame(
-            existingChoiceGroup,
-            withoutSchedule.Plans[0].CourseChoiceGroups[0]);
+        Assert.AreSame(existingChoiceGroup, withoutSchedule.Plans[0].CourseChoiceGroups[0]);
         Assert.AreSame(secondPlan, withoutSchedule.Plans[1]);
         Assert.AreEqual(secondPlan.Id, withoutSchedule.ActivePlanIdOrNull);
     }
@@ -222,9 +200,7 @@ public sealed class PlanningWorkspaceEditorTests
     [TestMethod]
     public void CourseAndPlanEditsPreservePersonalSchedules()
     {
-        PersonalSchedule existingSchedule = createPersonalSchedule(
-            PersonalScheduleId.CreateNew(),
-            "고정 일정");
+        PersonalSchedule existingSchedule = createPersonalSchedule(PersonalScheduleId.CreateNew(), "고정 일정");
         PlanningPlan plan = createPlan(
             "기본 계획",
             Array.Empty<CourseChoiceGroup>(),
@@ -240,28 +216,16 @@ public sealed class PlanningWorkspaceEditorTests
                 "AAA10001",
                 "01");
 
-        PlanningWorkspace withCourse = editor.AddCourseChoiceGroup(
-            workspace,
-            plan.Id,
-            choiceGroup);
-        PlanningWorkspace renamed = editor.RenamePlan(
-            withCourse,
-            plan.Id,
-            new PlanName("이름 변경"));
+        PlanningWorkspace withCourse = editor.AddCourseChoiceGroup(workspace, plan.Id, choiceGroup);
+        PlanningWorkspace renamed = editor.RenamePlan(withCourse, plan.Id, new PlanName("이름 변경"));
         PlanningWorkspace withoutCourse = editor.RemoveCourse(
             renamed,
             plan.Id,
             choiceGroup.CourseCandidates[0].CourseId);
 
-        Assert.AreSame(
-            existingSchedule,
-            withCourse.GetActivePlan().PersonalSchedules[0]);
-        Assert.AreSame(
-            existingSchedule,
-            renamed.GetActivePlan().PersonalSchedules[0]);
-        Assert.AreSame(
-            existingSchedule,
-            withoutCourse.GetActivePlan().PersonalSchedules[0]);
+        Assert.AreSame(existingSchedule, withCourse.GetActivePlan().PersonalSchedules[0]);
+        Assert.AreSame(existingSchedule, renamed.GetActivePlan().PersonalSchedules[0]);
+        Assert.AreSame(existingSchedule, withoutCourse.GetActivePlan().PersonalSchedules[0]);
     }
 
     [TestMethod]
@@ -282,8 +246,7 @@ public sealed class PlanningWorkspaceEditorTests
             secondPlan.Id,
             new PlanningPlan[] { firstPlan, secondPlan });
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
-        OfferingId selectedOfferingId =
-            choiceGroup.CourseCandidates[0].OfferingCandidates[1].OfferingId;
+        OfferingId selectedOfferingId = choiceGroup.CourseCandidates[0].OfferingCandidates[1].OfferingId;
         ScheduleRecommendationBookmark bookmark =
             new ScheduleRecommendationBookmark(
                 new OfferingId[] { selectedOfferingId });
@@ -292,25 +255,17 @@ public sealed class PlanningWorkspaceEditorTests
             workspace,
             firstPlan.Id,
             bookmark);
-        PlanningWorkspace renamed = editor.RenamePlan(
-            remembered,
-            firstPlan.Id,
-            new PlanName("이름 변경"));
+        PlanningWorkspace renamed = editor.RenamePlan(remembered, firstPlan.Id, new PlanName("이름 변경"));
         PlanningWorkspace withPersonalSchedule = editor.AddPersonalSchedule(
             renamed,
             firstPlan.Id,
             createPersonalSchedule(PersonalScheduleId.CreateNew(), "고정 일정"));
 
         Assert.AreEqual(secondPlan.Id, remembered.ActivePlanIdOrNull);
-        Assert.AreSame(
-            bookmark,
-            remembered.Plans[0].LastViewedRecommendationOrNull);
+        Assert.AreSame(bookmark, remembered.Plans[0].LastViewedRecommendationOrNull);
         Assert.IsNull(remembered.Plans[1].LastViewedRecommendationOrNull);
-        Assert.AreSame(
-            bookmark,
-            renamed.Plans[0].LastViewedRecommendationOrNull);
-        Assert.IsNull(
-            withPersonalSchedule.Plans[0].LastViewedRecommendationOrNull);
+        Assert.AreSame(bookmark, renamed.Plans[0].LastViewedRecommendationOrNull);
+        Assert.IsNull(withPersonalSchedule.Plans[0].LastViewedRecommendationOrNull);
     }
 
     [TestMethod]
@@ -325,16 +280,13 @@ public sealed class PlanningWorkspaceEditorTests
             ScheduleRecommendationTestData.CreateUnscheduledSelection(
                 "BBB10001",
                 "01");
-        PersonalSchedule personalSchedule = createPersonalSchedule(
-            PersonalScheduleId.CreateNew(),
-            "고정 일정");
+        PersonalSchedule personalSchedule = createPersonalSchedule(PersonalScheduleId.CreateNew(), "고정 일정");
         PlanningPlan populatedPlan = createPlan(
             "유지할 계획 이름",
             new CourseChoiceGroup[] { choiceGroup },
             new UnscheduledOfferingSelection[] { unscheduledSelection },
             new PersonalSchedule[] { personalSchedule });
-        OfferingId bookmarkedOfferingId =
-            choiceGroup.CourseCandidates[0].OfferingCandidates[1].OfferingId;
+        OfferingId bookmarkedOfferingId = choiceGroup.CourseCandidates[0].OfferingCandidates[1].OfferingId;
         PlanningPlan bookmarkedPlan = new PlanningPlan(
             populatedPlan.Id,
             populatedPlan.Name,
@@ -349,14 +301,10 @@ public sealed class PlanningWorkspaceEditorTests
             new PlanningPlan[] { bookmarkedPlan, untouchedPlan });
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
 
-        PlanningWorkspace result = editor.ClearPlanContent(
-            workspace,
-            bookmarkedPlan.Id);
+        PlanningWorkspace result = editor.ClearPlanContent(workspace, bookmarkedPlan.Id);
 
         PlanningPlan clearedPlan = result.GetActivePlan();
-        Assert.AreEqual(
-            workspace.ActivePlanIdOrNull,
-            result.ActivePlanIdOrNull);
+        Assert.AreEqual(workspace.ActivePlanIdOrNull, result.ActivePlanIdOrNull);
         Assert.HasCount(2, result.Plans);
         Assert.AreEqual(bookmarkedPlan.Id, clearedPlan.Id);
         Assert.AreSame(bookmarkedPlan.Name, clearedPlan.Name);
@@ -439,11 +387,7 @@ public sealed class PlanningWorkspaceEditorTests
         CourseChoiceGroup[] courseChoiceGroups,
         UnscheduledOfferingSelection[] unscheduledSelections)
     {
-        return createPlan(
-            name,
-            courseChoiceGroups,
-            unscheduledSelections,
-            Array.Empty<PersonalSchedule>());
+        return createPlan(name, courseChoiceGroups, unscheduledSelections, Array.Empty<PersonalSchedule>());
     }
 
     private static PlanningPlan createPlan(
@@ -468,9 +412,7 @@ public sealed class PlanningWorkspaceEditorTests
                 personalSchedules));
     }
 
-    private static PersonalSchedule createPersonalSchedule(
-        PersonalScheduleId id,
-        string title)
+    private static PersonalSchedule createPersonalSchedule(PersonalScheduleId id, string title)
     {
         WeeklyTimeRange timeRange = new WeeklyTimeRange(
             EDay.Wednesday,

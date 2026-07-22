@@ -17,21 +17,16 @@ public sealed class CatalogGenerationServiceTests
     [TestMethod]
     public async Task GenerateAsync_ValidSourceTwice_ProducesIdenticalPackageBytesAsync()
     {
-        using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(
-            HandongExportTestHtml.Create()))
+        using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(HandongExportTestHtml.Create()))
         using (TemporaryCatalogOutputRoot outputRoot = new TemporaryCatalogOutputRoot())
         {
             CatalogGenerationRequest request = createRequest(sourceFile, outputRoot, 1);
             CatalogGenerationService service = new CatalogGenerationService();
 
-            CatalogGenerationResult firstResult = await service.GenerateAsync(
-                request,
-                CancellationToken.None);
+            CatalogGenerationResult firstResult = await service.GenerateAsync(request, CancellationToken.None);
             byte[] firstCatalog = await File.ReadAllBytesAsync(firstResult.CatalogPath.Value);
             byte[] firstIndex = await File.ReadAllBytesAsync(firstResult.IndexPath.Value);
-            CatalogGenerationResult secondResult = await service.GenerateAsync(
-                request,
-                CancellationToken.None);
+            CatalogGenerationResult secondResult = await service.GenerateAsync(request, CancellationToken.None);
             byte[] secondCatalog = await File.ReadAllBytesAsync(secondResult.CatalogPath.Value);
             byte[] secondIndex = await File.ReadAllBytesAsync(secondResult.IndexPath.Value);
 
@@ -66,8 +61,7 @@ public sealed class CatalogGenerationServiceTests
             CatalogGenerationResult result = await service.GenerateAsync(
                 createRequest(sourceFile, outputRoot, 1),
                 CancellationToken.None);
-            using (JsonDocument document = JsonDocument.Parse(
-                await File.ReadAllBytesAsync(result.CatalogPath.Value)))
+            using (JsonDocument document = JsonDocument.Parse(await File.ReadAllBytesAsync(result.CatalogPath.Value)))
             {
                 JsonElement offering = document.RootElement.GetProperty("offerings")[0];
                 JsonElement instructor = offering.GetProperty("instructorAssignment");
@@ -102,8 +96,7 @@ public sealed class CatalogGenerationServiceTests
             CatalogGenerationResult result = await service.GenerateAsync(
                 createRequest(sourceFile, outputRoot, 1),
                 CancellationToken.None);
-            using (JsonDocument document = JsonDocument.Parse(
-                await File.ReadAllBytesAsync(result.CatalogPath.Value)))
+            using (JsonDocument document = JsonDocument.Parse(await File.ReadAllBytesAsync(result.CatalogPath.Value)))
             {
                 JsonElement root = document.RootElement;
                 JsonElement course = root.GetProperty("courses")[0];
@@ -114,9 +107,7 @@ public sealed class CatalogGenerationServiceTests
                 Assert.AreEqual(0.5m, course.GetProperty("credits").GetDecimal());
                 Assert.AreEqual("화5,금5", schedule.GetProperty("sourceTextKo").GetString());
                 Assert.HasCount(2, schedule.GetProperty("slots").EnumerateArray());
-                Assert.AreEqual(
-                    "테스트 담당자 외 2명",
-                    instructor.GetProperty("displayText").GetString());
+                Assert.AreEqual("테스트 담당자 외 2명", instructor.GetProperty("displayText").GetString());
                 Assert.AreEqual(2, instructor.GetProperty("additionalInstructorCount").GetInt32());
             }
 
@@ -127,8 +118,7 @@ public sealed class CatalogGenerationServiceTests
     [TestMethod]
     public async Task GenerateAsync_ExistingRevisionHasDifferentBytes_RejectsOverwriteAsync()
     {
-        using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(
-            HandongExportTestHtml.Create()))
+        using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(HandongExportTestHtml.Create()))
         using (TemporaryCatalogOutputRoot outputRoot = new TemporaryCatalogOutputRoot())
         {
             CatalogGenerationRequest request = createRequest(sourceFile, outputRoot, 1);
@@ -144,9 +134,7 @@ public sealed class CatalogGenerationServiceTests
 
             Assert.AreEqual(ECatalogGenerationErrorCode.OutputConflict, exception.ErrorCode);
             Assert.AreEqual(ECatalogGeneratorExitCode.OutputFailure, exception.ExitCode);
-            Assert.AreEqual(
-                "different content",
-                await File.ReadAllTextAsync(initialResult.CatalogPath.Value));
+            Assert.AreEqual("different content", await File.ReadAllTextAsync(initialResult.CatalogPath.Value));
         }
     }
 

@@ -10,14 +10,11 @@ namespace TimetableGenerator.Desktop.Presentation.ViewModels;
 
 internal sealed partial class PlannerWorkspaceViewModel
 {
-    private static readonly ScheduleTime DEFAULT_PERSONAL_SCHEDULE_START_TIME =
-        new ScheduleTime(12, 0);
+    private static readonly ScheduleTime DEFAULT_PERSONAL_SCHEDULE_START_TIME = new ScheduleTime(12, 0);
 
-    private static readonly ScheduleTime DEFAULT_PERSONAL_SCHEDULE_END_TIME =
-        new ScheduleTime(13, 0);
+    private static readonly ScheduleTime DEFAULT_PERSONAL_SCHEDULE_END_TIME = new ScheduleTime(13, 0);
 
-    private readonly IReadOnlyList<PersonalScheduleDayOption>
-        mPersonalScheduleDayOptions;
+    private readonly IReadOnlyList<PersonalScheduleDayOption> mPersonalScheduleDayOptions;
 
     private PersonalScheduleId? mEditingPersonalScheduleIdOrNull;
 
@@ -61,8 +58,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return IsPersonalScheduleEditorVisible
-                || IsDeletePersonalScheduleConfirmationVisible;
+            return IsPersonalScheduleEditorVisible || IsDeletePersonalScheduleConfirmationVisible;
         }
     }
 
@@ -70,9 +66,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return mEditingPersonalScheduleIdOrNull.HasValue
-                ? "개인 일정 수정"
-                : "개인 일정 추가";
+            return mEditingPersonalScheduleIdOrNull.HasValue ? "개인 일정 수정" : "개인 일정 추가";
         }
     }
 
@@ -80,9 +74,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return mEditingPersonalScheduleIdOrNull.HasValue
-                ? "변경 저장"
-                : "추가";
+            return mEditingPersonalScheduleIdOrNull.HasValue ? "변경 저장" : "추가";
         }
     }
 
@@ -95,10 +87,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
         set
         {
-            setDraftString(
-                ref mPersonalScheduleTitleDraft,
-                value,
-                nameof(PersonalScheduleTitleDraft));
+            setDraftString(ref mPersonalScheduleTitleDraft, value, nameof(PersonalScheduleTitleDraft));
         }
     }
 
@@ -111,10 +100,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
         set
         {
-            setDraftString(
-                ref mPersonalScheduleSectionDraft,
-                value,
-                nameof(PersonalScheduleSectionDraft));
+            setDraftString(ref mPersonalScheduleSectionDraft, value, nameof(PersonalScheduleSectionDraft));
         }
     }
 
@@ -143,10 +129,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
         set
         {
-            setDraftString(
-                ref mPersonalScheduleLocationDraft,
-                value,
-                nameof(PersonalScheduleLocationDraft));
+            setDraftString(ref mPersonalScheduleLocationDraft, value, nameof(PersonalScheduleLocationDraft));
         }
     }
 
@@ -192,8 +175,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return getPersonalScheduleValidationMessage(
-                mPersonalScheduleValidationError);
+            return getPersonalScheduleValidationMessage(mPersonalScheduleValidationError);
         }
     }
 
@@ -209,8 +191,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return PersonalScheduleValidationError
-                != EPersonalScheduleDraftValidationError.None;
+            return PersonalScheduleValidationError != EPersonalScheduleDraftValidationError.None;
         }
     }
 
@@ -285,8 +266,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     private void savePersonalSchedule()
     {
         throwIfDisposed();
-        EPersonalScheduleDraftValidationError validationError =
-            validatePersonalScheduleDraft();
+        EPersonalScheduleDraftValidationError validationError = validatePersonalScheduleDraft();
         if (validationError != EPersonalScheduleDraftValidationError.None)
         {
             showPersonalScheduleValidationError(validationError);
@@ -296,8 +276,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         PersonalSchedule personalSchedule = createPersonalScheduleFromDraft();
         if (hasPersonalScheduleOverlap(personalSchedule))
         {
-            showPersonalScheduleValidationError(
-                EPersonalScheduleDraftValidationError.Overlap);
+            showPersonalScheduleValidationError(EPersonalScheduleDraftValidationError.Overlap);
             return;
         }
 
@@ -336,8 +315,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     private void confirmDeletePersonalSchedule()
     {
         throwIfDisposed();
-        PersonalScheduleItem? scheduleItemOrNull =
-            mPersonalSchedulePendingDeletionOrNull;
+        PersonalScheduleItem? scheduleItemOrNull = mPersonalSchedulePendingDeletionOrNull;
         if (scheduleItemOrNull == null)
         {
             return;
@@ -370,8 +348,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             }
         }
 
-        throw new KeyNotFoundException(
-            "The active plan does not contain the personal schedule.");
+        throw new KeyNotFoundException("The active plan does not contain the personal schedule.");
     }
 
     private void closePersonalScheduleEditor()
@@ -416,14 +393,12 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private void rememberInspectorPaneStateBeforePersonalScheduleEditing()
     {
-        mWasInspectorPaneOpenBeforePersonalScheduleEditing =
-            IsInspectorPaneOpen;
+        mWasInspectorPaneOpenBeforePersonalScheduleEditing = IsInspectorPaneOpen;
     }
 
     private void restoreInspectorPaneStateAfterPersonalScheduleEditing()
     {
-        IsInspectorPaneOpen =
-            mWasInspectorPaneOpenBeforePersonalScheduleEditing;
+        IsInspectorPaneOpen = mWasInspectorPaneOpenBeforePersonalScheduleEditing;
     }
 
 }

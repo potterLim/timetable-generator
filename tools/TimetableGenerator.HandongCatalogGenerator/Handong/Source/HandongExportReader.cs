@@ -64,9 +64,7 @@ internal static class HandongExportReader
         return Convert.ToHexString(sourceHashBytes).ToLowerInvariant();
     }
 
-    private static string decodeSourceHtml(
-        byte[] sourceBytes,
-        CatalogSourceFilePath sourceFilePath)
+    private static string decodeSourceHtml(byte[] sourceBytes, CatalogSourceFilePath sourceFilePath)
     {
         try
         {
@@ -91,9 +89,7 @@ internal static class HandongExportReader
         HtmlParser htmlParser = new HtmlParser(parserOptions);
         try
         {
-            return await htmlParser.ParseDocumentAsync(
-                sourceHtml,
-                cancellationToken).ConfigureAwait(false);
+            return await htmlParser.ParseDocumentAsync(sourceHtml, cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -112,8 +108,7 @@ internal static class HandongExportReader
         string? declaredCharsetOrNull = findDeclaredCharsetOrNull(htmlDocument);
         if (declaredCharsetOrNull == null)
         {
-            throw new HandongSourceFormatException(
-                "The Handong export does not declare an HTML charset.");
+            throw new HandongSourceFormatException("The Handong export does not declare an HTML charset.");
         }
 
         if (string.Equals(
@@ -160,9 +155,7 @@ internal static class HandongExportReader
     {
         const string CHARSET_TOKEN = "charset";
 
-        int charsetTokenIndex = metadataContent.IndexOf(
-            CHARSET_TOKEN,
-            StringComparison.OrdinalIgnoreCase);
+        int charsetTokenIndex = metadataContent.IndexOf(CHARSET_TOKEN, StringComparison.OrdinalIgnoreCase);
         if (charsetTokenIndex < 0)
         {
             return null;
@@ -175,8 +168,7 @@ internal static class HandongExportReader
             ++separatorIndex;
         }
 
-        if (separatorIndex >= metadataContent.Length
-            || metadataContent[separatorIndex] != '=')
+        if (separatorIndex >= metadataContent.Length || metadataContent[separatorIndex] != '=')
         {
             return null;
         }
@@ -205,9 +197,7 @@ internal static class HandongExportReader
             return null;
         }
 
-        return metadataContent.Substring(
-            charsetValueIndex,
-            charsetValueEndIndex - charsetValueIndex);
+        return metadataContent.Substring(charsetValueIndex, charsetValueEndIndex - charsetValueIndex);
     }
 
     private static IElement findCatalogTable(IHtmlDocument htmlDocument)
@@ -215,8 +205,7 @@ internal static class HandongExportReader
         IHtmlCollection<IElement> tableElements = htmlDocument.QuerySelectorAll("table");
         if (tableElements.Length == 0)
         {
-            throw new HandongSourceFormatException(
-                "The Handong export does not contain an HTML table.");
+            throw new HandongSourceFormatException("The Handong export does not contain an HTML table.");
         }
 
         List<IElement> matchingTableElements = new List<IElement>();
@@ -286,10 +275,7 @@ internal static class HandongExportReader
 
     private static bool isElementNamed(IElement element, string expectedLocalName)
     {
-        return string.Equals(
-            element.LocalName,
-            expectedLocalName,
-            StringComparison.OrdinalIgnoreCase);
+        return string.Equals(element.LocalName, expectedLocalName, StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool hasExpectedHeader(IElement headerRowElement)
@@ -303,8 +289,7 @@ internal static class HandongExportReader
         foreach (EHandongColumn column in HandongExportSchema.Columns)
         {
             int columnIndex = HandongExportSchema.GetColumnIndex(column);
-            IReadOnlyList<string> headerLines = HandongHtmlCellReader.ReadLines(
-                headerCellElements[columnIndex]);
+            IReadOnlyList<string> headerLines = HandongHtmlCellReader.ReadLines(headerCellElements[columnIndex]);
             if (HandongExportSchema.IsExpectedHeader(column, headerLines) == false)
             {
                 return false;
@@ -319,8 +304,7 @@ internal static class HandongExportReader
         List<IElement> cellElements = new List<IElement>();
         foreach (IElement rowChildElement in rowElement.Children)
         {
-            if (isElementNamed(rowChildElement, "td")
-                || isElementNamed(rowChildElement, "th"))
+            if (isElementNamed(rowChildElement, "td") || isElementNamed(rowChildElement, "th"))
             {
                 cellElements.Add(rowChildElement);
             }
@@ -348,8 +332,7 @@ internal static class HandongExportReader
                     + cellElements.Count + " columns; exactly 16 are required.");
             }
 
-            List<IReadOnlyList<string>> cellLinesByColumn =
-                new List<IReadOnlyList<string>>(HandongExportSchema.COLUMN_COUNT);
+            List<IReadOnlyList<string>> cellLinesByColumn = new List<IReadOnlyList<string>>(HandongExportSchema.COLUMN_COUNT);
             foreach (IElement cellElement in cellElements)
             {
                 cellLinesByColumn.Add(HandongHtmlCellReader.ReadLines(cellElement));
@@ -386,8 +369,7 @@ internal static class HandongExportReader
         AcademicTerm leftAcademicTerm,
         AcademicTerm rightAcademicTerm)
     {
-        int academicYearComparison = leftAcademicTerm.AcademicYear.Value.CompareTo(
-            rightAcademicTerm.AcademicYear.Value);
+        int academicYearComparison = leftAcademicTerm.AcademicYear.Value.CompareTo(rightAcademicTerm.AcademicYear.Value);
         if (academicYearComparison != 0)
         {
             return academicYearComparison;

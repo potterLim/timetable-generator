@@ -34,9 +34,7 @@ public sealed class PersonalSchedule
     {
         if (id.IsValid == false)
         {
-            throw new ArgumentException(
-                "Personal schedules require a valid ID.",
-                nameof(id));
+            throw new ArgumentException("Personal schedules require a valid ID.", nameof(id));
         }
 
         if (title == null)
@@ -54,8 +52,7 @@ public sealed class PersonalSchedule
             throw new ArgumentNullException(nameof(details));
         }
 
-        IReadOnlyList<WeeklyTimeRange> copiedTimeRanges =
-            copyAndValidateTimeRanges(timeRanges);
+        IReadOnlyList<WeeklyTimeRange> copiedTimeRanges = copyAndValidateTimeRanges(timeRanges);
 
         Id = id;
         Title = title;
@@ -88,9 +85,7 @@ public sealed class PersonalSchedule
                         nameof(timeRanges));
                 }
 
-                if (ScheduleConflictDetector.HasConflict(
-                    copiedTimeRange,
-                    timeRange))
+                if (ScheduleConflictDetector.HasConflict(copiedTimeRange, timeRange))
                 {
                     throw new ArgumentException(
                         "A personal schedule cannot contain overlapping time ranges.",
@@ -116,10 +111,8 @@ public sealed class PersonalSchedule
         WeeklyTimeRange timeRange,
         IEnumerable<WeeklyTimeRange> timeRanges)
     {
-        bool hasSupportedStartMinute =
-            timeRange.TimeRange.Start.Minute % TIME_INCREMENT_MINUTES == 0;
-        bool hasSupportedEndMinute =
-            timeRange.TimeRange.End.Minute % TIME_INCREMENT_MINUTES == 0;
+        bool hasSupportedStartMinute = timeRange.TimeRange.Start.Minute % TIME_INCREMENT_MINUTES == 0;
+        bool hasSupportedEndMinute = timeRange.TimeRange.End.Minute % TIME_INCREMENT_MINUTES == 0;
         if (hasSupportedStartMinute == false || hasSupportedEndMinute == false)
         {
             throw new ArgumentException(
@@ -135,9 +128,7 @@ public sealed class PersonalSchedule
         }
     }
 
-    private static void ensureSupportedDay(
-        EDay day,
-        IEnumerable<WeeklyTimeRange> timeRanges)
+    private static void ensureSupportedDay(EDay day, IEnumerable<WeeklyTimeRange> timeRanges)
     {
         switch (day)
         {
@@ -156,9 +147,7 @@ public sealed class PersonalSchedule
         }
     }
 
-    private static int compareTimeRanges(
-        WeeklyTimeRange left,
-        WeeklyTimeRange right)
+    private static int compareTimeRanges(WeeklyTimeRange left, WeeklyTimeRange right)
     {
         int dayComparison = left.Day.CompareTo(right.Day);
         if (dayComparison != 0)

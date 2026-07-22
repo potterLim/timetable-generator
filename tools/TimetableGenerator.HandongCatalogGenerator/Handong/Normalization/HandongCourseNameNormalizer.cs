@@ -6,8 +6,7 @@ namespace TimetableGenerator.HandongCatalogGenerator.Handong.Normalization;
 
 internal sealed class HandongCourseNameNormalizer
 {
-    public HandongCourseNameNormalizationResult NormalizeCourseName(
-        HandongRawOfferingRow row)
+    public HandongCourseNameNormalizationResult NormalizeCourseName(HandongRawOfferingRow row)
     {
         IReadOnlyList<string> lines = HandongCellValueReader.getNonEmptyLines(
             row,

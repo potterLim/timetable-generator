@@ -10,24 +10,16 @@ namespace TimetableGenerator.Desktop.Tests.Product.Loading;
 
 internal static class ProductWorkspaceLoaderTestData
 {
-    private static readonly InstitutionId DEFAULT_INSTITUTION_ID =
-        new InstitutionId("handong-global-university");
+    private static readonly InstitutionId DEFAULT_INSTITUTION_ID = new InstitutionId("handong-global-university");
     private static readonly AcademicTerm DEFAULT_TERM = AcademicTerm.Parse("2026-2");
-    private static readonly CourseCode DEFAULT_COURSE_CODE =
-        new CourseCode("CSE00001");
+    private static readonly CourseCode DEFAULT_COURSE_CODE = new CourseCode("CSE00001");
 
     private const string COURSE_ID = "handong-global-university:CSE00001";
-    private const string OFFERING_ID =
-        "handong-global-university:2026-2:CSE00001:01";
+    private const string OFFERING_ID = "handong-global-university:2026-2:CSE00001:01";
 
-    public static VerifiedCatalogPackage CreateCatalogPackage(
-        CatalogRevision revision)
+    public static VerifiedCatalogPackage CreateCatalogPackage(CatalogRevision revision)
     {
-        return createCatalogPackage(
-            revision,
-            DEFAULT_INSTITUTION_ID,
-            DEFAULT_TERM,
-            DEFAULT_COURSE_CODE);
+        return createCatalogPackage(revision, DEFAULT_INSTITUTION_ID, DEFAULT_TERM, DEFAULT_COURSE_CODE);
     }
 
     public static VerifiedCatalogPackage CreateCatalogPackage(
@@ -35,11 +27,7 @@ internal static class ProductWorkspaceLoaderTestData
         InstitutionId institutionId,
         AcademicTerm term)
     {
-        return createCatalogPackage(
-            revision,
-            institutionId,
-            term,
-            DEFAULT_COURSE_CODE);
+        return createCatalogPackage(revision, institutionId, term, DEFAULT_COURSE_CODE);
     }
 
     public static VerifiedCatalogPackage CreateCatalogPackageWithoutSavedCourse(
@@ -54,38 +42,28 @@ internal static class ProductWorkspaceLoaderTestData
 
     public static PlanningWorkspace CreateEmptyWorkspace(CatalogRevision revision)
     {
-        return createWorkspace(
-            revision,
-            Array.Empty<CourseChoiceGroup>());
+        return createWorkspace(revision, Array.Empty<CourseChoiceGroup>());
     }
 
-    public static PlanningWorkspace CreateWorkspaceWithValidSelection(
-        CatalogRevision revision)
+    public static PlanningWorkspace CreateWorkspaceWithValidSelection(CatalogRevision revision)
     {
-        CourseChoiceGroup choiceGroup = createCourseChoiceGroup(
-            new OfferingId(OFFERING_ID));
+        CourseChoiceGroup choiceGroup = createCourseChoiceGroup(new OfferingId(OFFERING_ID));
         return createWorkspace(
             revision,
             new CourseChoiceGroup[] { choiceGroup });
     }
 
-    public static PlanningWorkspace CreateWorkspaceWithMissingOffering(
-        CatalogRevision revision)
+    public static PlanningWorkspace CreateWorkspaceWithMissingOffering(CatalogRevision revision)
     {
-        CourseChoiceGroup choiceGroup = createCourseChoiceGroup(
-            new OfferingId("missing-offering"));
+        CourseChoiceGroup choiceGroup = createCourseChoiceGroup(new OfferingId("missing-offering"));
         return createWorkspace(
             revision,
             new CourseChoiceGroup[] { choiceGroup });
     }
 
-    public static PlanningWorkspace CreateWorkspaceWithoutPlans(
-        CatalogRevision revision)
+    public static PlanningWorkspace CreateWorkspaceWithoutPlans(CatalogRevision revision)
     {
-        return new PlanningWorkspace(
-            createCatalogBinding(revision),
-            null,
-            Array.Empty<PlanningPlan>());
+        return new PlanningWorkspace(createCatalogBinding(revision), null, Array.Empty<PlanningPlan>());
     }
 
     private static VerifiedCatalogPackage createCatalogPackage(
@@ -96,9 +74,7 @@ internal static class ProductWorkspaceLoaderTestData
     {
         if (revision.IsValid == false)
         {
-            throw new ArgumentException(
-                "Test catalogs require a valid revision.",
-                nameof(revision));
+            throw new ArgumentException("Test catalogs require a valid revision.", nameof(revision));
         }
 
         if (institutionId == null)
@@ -108,9 +84,7 @@ internal static class ProductWorkspaceLoaderTestData
 
         if (term.IsValid == false)
         {
-            throw new ArgumentException(
-                "Test catalogs require a valid academic term.",
-                nameof(term));
+            throw new ArgumentException("Test catalogs require a valid academic term.", nameof(term));
         }
 
         if (courseCode == null)
@@ -118,16 +92,8 @@ internal static class ProductWorkspaceLoaderTestData
             throw new ArgumentNullException(nameof(courseCode));
         }
 
-        byte[] catalogBytes = createCatalogBytes(
-            revision,
-            institutionId,
-            term,
-            courseCode);
-        byte[] indexBytes = createIndexBytes(
-            revision,
-            institutionId,
-            term,
-            catalogBytes);
+        byte[] catalogBytes = createCatalogBytes(revision, institutionId, term, courseCode);
+        byte[] indexBytes = createIndexBytes(revision, institutionId, term, catalogBytes);
         return VerifiedCatalogPackage.ReadAndVerify(indexBytes, catalogBytes);
     }
 
@@ -146,10 +112,8 @@ internal static class ProductWorkspaceLoaderTestData
             + courseCode.Value
             + ":01";
         string revisionText = revision.Value.ToString(CultureInfo.InvariantCulture);
-        string academicYearText = term.AcademicYear.Value.ToString(
-            CultureInfo.InvariantCulture);
-        string semesterText = term.Semester.Value.ToString(
-            CultureInfo.InvariantCulture);
+        string academicYearText = term.AcademicYear.Value.ToString(CultureInfo.InvariantCulture);
+        string semesterText = term.Semester.Value.ToString(CultureInfo.InvariantCulture);
         string json = $$"""
             {
               "documentType": "courseCatalog",
@@ -264,10 +228,8 @@ internal static class ProductWorkspaceLoaderTestData
     {
         string catalogId = createCatalogId(revision, institutionId, term);
         string revisionText = revision.Value.ToString(CultureInfo.InvariantCulture);
-        string academicYearText = term.AcademicYear.Value.ToString(
-            CultureInfo.InvariantCulture);
-        string semesterText = term.Semester.Value.ToString(
-            CultureInfo.InvariantCulture);
+        string academicYearText = term.AcademicYear.Value.ToString(CultureInfo.InvariantCulture);
+        string semesterText = term.Semester.Value.ToString(CultureInfo.InvariantCulture);
         CatalogFileSize fileSize = new CatalogFileSize(catalogBytes.LongLength);
         Sha256Digest sha256 = Sha256Digest.Compute(catalogBytes);
         string json = $$"""
@@ -330,8 +292,7 @@ internal static class ProductWorkspaceLoaderTestData
             new PlanningPlan[] { plan });
     }
 
-    private static CourseChoiceGroup createCourseChoiceGroup(
-        OfferingId offeringId)
+    private static CourseChoiceGroup createCourseChoiceGroup(OfferingId offeringId)
     {
         return CourseChoiceGroup.CreateWithAcceptableOfferings(
             CourseChoiceGroupId.CreateNew(),

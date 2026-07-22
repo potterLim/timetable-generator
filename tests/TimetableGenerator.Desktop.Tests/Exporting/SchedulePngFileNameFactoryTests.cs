@@ -50,8 +50,7 @@ public sealed class SchedulePngFileNameFactoryTests
         string planNameValue,
         string expectedFileName)
     {
-        string fileName = SchedulePngFileNameFactory.Create(
-            new PlanName(planNameValue));
+        string fileName = SchedulePngFileNameFactory.Create(new PlanName(planNameValue));
 
         Assert.Equal(expectedFileName, fileName);
     }
@@ -67,8 +66,7 @@ public sealed class SchedulePngFileNameFactoryTests
     [Fact]
     public void DotOnlyPlanNameUsesTheFallbackFileName()
     {
-        string fileName = SchedulePngFileNameFactory.Create(
-            new PlanName("..."));
+        string fileName = SchedulePngFileNameFactory.Create(new PlanName("..."));
 
         Assert.Equal("시간표.png", fileName);
     }
@@ -78,8 +76,7 @@ public sealed class SchedulePngFileNameFactoryTests
     {
         PlanName planName = new PlanName("2026-2/야간");
 
-        string folderName =
-            SchedulePngFileNameFactory.CreateBatchFolderName(planName);
+        string folderName = SchedulePngFileNameFactory.CreateBatchFolderName(planName);
 
         Assert.Equal("2026-2-야간", folderName);
     }
@@ -93,8 +90,7 @@ public sealed class SchedulePngFileNameFactoryTests
         int total,
         string expectedFileName)
     {
-        SchedulePngCandidateNumber candidateNumber =
-            new SchedulePngCandidateNumber(value, total);
+        SchedulePngCandidateNumber candidateNumber = new SchedulePngCandidateNumber(value, total);
 
         string fileName = SchedulePngFileNameFactory.CreateBatchCandidate(
             new PlanName("2026-2학기 시간표"),
@@ -107,9 +103,7 @@ public sealed class SchedulePngFileNameFactoryTests
     [InlineData(0, 1)]
     [InlineData(2, 1)]
     [InlineData(1, 0)]
-    public void BatchCandidateNumberRejectsValuesOutsideTheBatch(
-        int value,
-        int total)
+    public void BatchCandidateNumberRejectsValuesOutsideTheBatch(int value, int total)
     {
         Assert.Throws<ArgumentOutOfRangeException>(
             delegate
@@ -123,8 +117,7 @@ public sealed class SchedulePngFileNameFactoryTests
     {
         PlanName planName = new PlanName(new string('한', 80));
 
-        string folderName =
-            SchedulePngFileNameFactory.CreateBatchFolderName(planName);
+        string folderName = SchedulePngFileNameFactory.CreateBatchFolderName(planName);
         string candidateFileName =
             SchedulePngFileNameFactory.CreateBatchCandidate(
                 planName,
@@ -141,8 +134,7 @@ public sealed class SchedulePngFileNameFactoryTests
     {
         PlanName planName = new PlanName(new string('한', 80));
 
-        string folderName =
-            SchedulePngFileNameFactory.CreateBatchFolderName(planName, 2);
+        string folderName = SchedulePngFileNameFactory.CreateBatchFolderName(planName, 2);
 
         Assert.True(Encoding.UTF8.GetByteCount(folderName) <= 255);
         Assert.Equal(planName.Value + " (2)", folderName);

@@ -17,9 +17,7 @@ public sealed class OfferingCandidate
         }
     }
 
-    public OfferingCandidate(
-        OfferingId offeringId,
-        EOfferingPreference preference)
+    public OfferingCandidate(OfferingId offeringId, EOfferingPreference preference)
     {
         if (offeringId == null)
         {

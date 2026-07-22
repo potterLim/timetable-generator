@@ -122,9 +122,7 @@ internal sealed class GoogleCalendarExportEvent
             ensureSupportedDay(day);
             if (uniqueDays.Add(day) == false)
             {
-                throw new ArgumentException(
-                    "Google Calendar events cannot repeat a weekday.",
-                    nameof(days));
+                throw new ArgumentException("Google Calendar events cannot repeat a weekday.", nameof(days));
             }
 
             daySnapshot.Add(day);
@@ -132,14 +130,11 @@ internal sealed class GoogleCalendarExportEvent
 
         if (daySnapshot.Count == 0)
         {
-            throw new ArgumentException(
-                "Google Calendar events require at least one weekday.",
-                nameof(days));
+            throw new ArgumentException("Google Calendar events require at least one weekday.", nameof(days));
         }
 
         daySnapshot.Sort();
-        EDay firstOccurrenceDay = convertToDay(
-            recurrenceDateRange.FirstOccurrenceDate.DayOfWeek);
+        EDay firstOccurrenceDay = convertToDay(recurrenceDateRange.FirstOccurrenceDate.DayOfWeek);
         if (uniqueDays.Contains(firstOccurrenceDay) == false)
         {
             throw new ArgumentException(
