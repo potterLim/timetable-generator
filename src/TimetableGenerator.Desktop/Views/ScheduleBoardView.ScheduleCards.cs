@@ -3,9 +3,11 @@ using System;
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Media;
 
 using TimetableGenerator.Desktop.Presentation.Models;
+using TimetableGenerator.Domain.Scheduling;
 
 namespace TimetableGenerator.Desktop.Views;
 
@@ -79,7 +81,10 @@ internal sealed partial class ScheduleBoardView
         return separator;
     }
 
-    private static Flyout createDetailsFlyout(StackPanel details, string accessibleName)
+    private Flyout createDetailsFlyout(
+        StackPanel details,
+        string accessibleName,
+        EDay day)
     {
         Border detailsSurface = new Border();
         detailsSurface.Padding = new Thickness(6.0);
@@ -88,7 +93,18 @@ internal sealed partial class ScheduleBoardView
 
         Flyout detailsFlyout = new Flyout();
         detailsFlyout.Content = detailsSurface;
+        detailsFlyout.Placement = findDetailsFlyoutPlacement(day);
+        detailsFlyout.PlacementConstraintAdjustment = PopupPositionerConstraintAdjustment.All;
         return detailsFlyout;
+    }
+
+    private PlacementMode findDetailsFlyoutPlacement(EDay day)
+    {
+        ScheduleBoardDay boardDay = mRenderedLayout.DayRange.FindDay(day);
+        bool isInRightHalf = (boardDay.ColumnIndex * 2) >= mRenderedLayout.DayRange.TotalColumnCount;
+        return isInRightHalf
+            ? PlacementMode.BottomEdgeAlignedRight
+            : PlacementMode.BottomEdgeAlignedLeft;
     }
 
     private static Grid createDetailRow(string label, string value)

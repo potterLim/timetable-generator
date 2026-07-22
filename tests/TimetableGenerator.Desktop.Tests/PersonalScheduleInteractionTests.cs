@@ -8,6 +8,7 @@ using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
@@ -1038,6 +1039,50 @@ public sealed class PersonalScheduleInteractionTests
     }
 
     [AvaloniaFact]
+    public void PersonalScheduleDetailsStayInsideTheWindowAcrossWeekdayAndWeekendColumns()
+    {
+        DailyTimeRange timeRange = new DailyTimeRange(new ScheduleTime(20, 0), new ScheduleTime(21, 0));
+        PersonalSchedule schedule = new PersonalSchedule(
+            PersonalScheduleId.CreateNew(),
+            new PersonalScheduleTitle("저녁 고정 일정"),
+            new WeeklyTimeRange[]
+            {
+                new WeeklyTimeRange(EDay.Monday, timeRange),
+                new WeeklyTimeRange(EDay.Saturday, timeRange),
+                new WeeklyTimeRange(EDay.Sunday, timeRange),
+            },
+            PersonalScheduleDetails.CreateEmpty());
+        ScheduleEntry[] entries = schedule.TimeRanges
+            .Select(range => (ScheduleEntry)new PersonalScheduleEntry(schedule, range))
+            .ToArray();
+        ScheduleBoardView scheduleBoard = new ScheduleBoardView();
+        scheduleBoard.DataContext = createScheduleBoardPresentation(new ScheduleRecommendation(entries));
+        Window window = new Window();
+        window.Width = 800.0;
+        window.Height = 520.0;
+        window.Content = scheduleBoard;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Button[] cards = findRequiredControl<Grid>(scheduleBoard, "BoardGrid")
+                .Children
+                .OfType<Button>()
+                .ToArray();
+            Assert.Equal(3, cards.Length);
+            assertDetailsFlyoutFitsWindow(cards[0], PlacementMode.BottomEdgeAlignedLeft, window);
+            assertDetailsFlyoutFitsWindow(cards[1], PlacementMode.BottomEdgeAlignedRight, window);
+            assertDetailsFlyoutFitsWindow(cards[2], PlacementMode.BottomEdgeAlignedRight, window);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void EarlyShortScheduleShowsAClockLabelAndUsableTarget()
     {
         DailyTimeRange timeRange = new DailyTimeRange(new ScheduleTime(7, 40), new ScheduleTime(7, 55));
@@ -1312,6 +1357,33 @@ public sealed class PersonalScheduleInteractionTests
         }
 
         return controlOrNull;
+    }
+
+    private static void assertDetailsFlyoutFitsWindow(
+        Button scheduleCard,
+        PlacementMode expectedPlacement,
+        Window window)
+    {
+        Flyout detailsFlyout = Assert.IsType<Flyout>(scheduleCard.Flyout);
+        Assert.Equal(expectedPlacement, detailsFlyout.Placement);
+        Assert.Equal(
+            PopupPositionerConstraintAdjustment.All,
+            detailsFlyout.PlacementConstraintAdjustment);
+        detailsFlyout.ShowAt(scheduleCard);
+        Dispatcher.UIThread.RunJobs();
+
+        Control detailsContent = Assert.IsAssignableFrom<Control>(detailsFlyout.Content);
+        PixelPoint windowOrigin = window.PointToScreen(default);
+        PixelPoint contentOrigin = detailsContent.PointToScreen(default);
+        TopLevel detailsTopLevel = Assert.IsAssignableFrom<TopLevel>(TopLevel.GetTopLevel(detailsContent));
+
+        double windowRight = windowOrigin.X + (window.ClientSize.Width * window.RenderScaling);
+        double contentRight = contentOrigin.X + (detailsContent.Bounds.Width * detailsTopLevel.RenderScaling);
+        Assert.InRange((double)contentOrigin.X, windowOrigin.X, windowRight);
+        Assert.InRange(contentRight, windowOrigin.X, windowRight);
+
+        detailsFlyout.Hide();
+        Dispatcher.UIThread.RunJobs();
     }
 
     private static string getTextOrEmpty(TextBlock textBlock)

@@ -110,7 +110,7 @@ internal sealed partial class ScheduleBoardView
             details.Children.Add(createDetailRow("담당", entry.InstructorDisplayText));
         }
 
-        Flyout detailsFlyout = createDetailsFlyout(details, entry.Title + " 개인 일정 상세 정보");
+        Flyout detailsFlyout = createDetailsFlyout(details, entry.Title + " 개인 일정 상세 정보", entry.Day);
         Button editButton = createPersonalScheduleEditButton(scheduleCard, entry, detailsFlyout);
         Grid.SetColumn(editButton, 1);
         heading.Children.Add(editButton);

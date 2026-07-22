@@ -55,6 +55,6 @@ internal sealed partial class ScheduleBoardView
         details.Children.Add(createDetailRow("시간", scheduleSummary));
         details.Children.Add(createDetailRow("장소", entry.LocationDisplayText));
         details.Children.Add(createDetailRow("교수", entry.InstructorDisplayText));
-        return createDetailsFlyout(details, entry.Name + " 과목 상세 정보");
+        return createDetailsFlyout(details, entry.Name + " 과목 상세 정보", entry.Day);
     }
 }
