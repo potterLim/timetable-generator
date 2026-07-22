@@ -636,7 +636,7 @@
             x:Name="ExportStatusText"
             Classes="caption export-status"
             VerticalAlignment="Center"
-            AutomationProperties.LiveSetting="Polite" />
+            AutomationProperties.LiveSetting="Off" />
         <Button
             x:Name="DismissExportStatusButton"
             Classes="subtle icon"

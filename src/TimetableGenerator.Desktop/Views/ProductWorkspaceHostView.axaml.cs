@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -63,11 +64,13 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
     {
         if (ReferenceEquals(mWorkspaceOrNull, workspaceOrNull))
         {
+            updatePlanNameValidationMessage(workspaceOrNull);
             return;
         }
 
         disconnectWorkspace();
         mWorkspaceOrNull = workspaceOrNull;
+        updatePlanNameValidationMessage(mWorkspaceOrNull);
         if (mWorkspaceOrNull == null)
         {
             return;
@@ -99,6 +102,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         }
         else if (eventArgs.PropertyName == nameof(PlannerWorkspaceViewModel.PlanNameValidationMessage))
         {
+            updatePlanNameValidationMessage(mWorkspaceOrNull);
             focusPlanNameValidationControlWhenRequired();
         }
         else if (eventArgs.PropertyName == nameof(PlannerWorkspaceViewModel.IsPersonalScheduleEditorVisible))
@@ -259,6 +263,23 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         }
 
         Dispatcher.UIThread.Post(focusPlanNameValidationControl, DispatcherPriority.Input);
+    }
+
+    private void updatePlanNameValidationMessage(PlannerWorkspaceViewModel? workspaceOrNull)
+    {
+        TextBlock? validationMessageOrNull =
+            this.FindControl<TextBlock>("PlanNameValidationMessage");
+        if (validationMessageOrNull == null)
+        {
+            return;
+        }
+
+        string message = workspaceOrNull?.PlanNameValidationMessage ?? string.Empty;
+        AutomationLiveSetting liveSetting = string.IsNullOrEmpty(message)
+            ? AutomationLiveSetting.Off
+            : AutomationLiveSetting.Assertive;
+        AutomationProperties.SetLiveSetting(validationMessageOrNull, liveSetting);
+        validationMessageOrNull.Text = message;
     }
 
     private void focusPlanNameValidationControl()

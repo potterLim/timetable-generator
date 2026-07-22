@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
@@ -405,6 +406,9 @@ internal sealed partial class ScheduleWorkspaceView
             return;
         }
 
+        AutomationProperties.SetLiveSetting(
+            statusTextOrNull,
+            AutomationLiveSetting.Off);
         statusTextOrNull.Text = string.Empty;
         setExportStatusClasses(statusTextOrNull, null);
         setExportStatusClasses(statusToastOrNull, null);
@@ -472,6 +476,9 @@ internal sealed partial class ScheduleWorkspaceView
         dismissButtonOrNull.IsVisible = status == EExportStatus.Failure;
         statusToastOrNull.IsHitTestVisible = status == EExportStatus.Failure;
         statusToastOrNull.IsVisible = true;
+        AutomationProperties.SetLiveSetting(
+            statusTextOrNull,
+            AutomationLiveSetting.Polite);
         statusTextOrNull.Text = message;
     }
 

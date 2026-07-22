@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -887,17 +888,36 @@ public sealed class ProductWorkspaceInteractionTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
+            TextBlock validationMessage = findRequiredControl<TextBlock>(host, "PlanNameValidationMessage");
+            Assert.True(string.IsNullOrEmpty(validationMessage.Text));
+            Assert.Equal(
+                AutomationLiveSetting.Off,
+                AutomationProperties.GetLiveSetting(validationMessage));
+            List<(string? Text, AutomationLiveSetting LiveSetting)> liveRegionTransitions = new();
+            validationMessage.PropertyChanged +=
+                (object? senderOrNull, AvaloniaPropertyChangedEventArgs eventArgs) =>
+                {
+                    if (eventArgs.Property == TextBlock.TextProperty)
+                    {
+                        liveRegionTransitions.Add(
+                            (
+                                validationMessage.Text,
+                                AutomationProperties.GetLiveSetting(validationMessage)));
+                    }
+                };
+
             workspace.BeginRenamePlanCommand.Execute(null);
-            workspace.PlanNameDraft = workspace.Plans
+            string duplicatePlanName = workspace.Plans
                 .Single(plan => plan.PlanId != workspace.ActivePlan.PlanId)
                 .DisplayName;
+            workspace.PlanNameDraft = duplicatePlanName;
             workspace.ConfirmPlanNameCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
 
             TextBox editor = findRequiredControl<TextBox>(host, "PlanNameEditor");
-            TextBlock validationMessage = findRequiredControl<TextBlock>(host, "PlanNameValidationMessage");
 
             Assert.True(workspace.HasPlanNameValidationMessage);
+            Assert.Equal(workspace.PlanNameValidationMessage, validationMessage.Text);
             Assert.True(editor.IsKeyboardFocusWithin);
             Assert.Equal(0, editor.SelectionStart);
             int editorTextLength = 0;
@@ -912,6 +932,33 @@ public sealed class ProductWorkspaceInteractionTests
             Assert.Equal(
                 AutomationLiveSetting.Assertive,
                 AutomationProperties.GetLiveSetting(validationMessage));
+
+            workspace.PlanNameDraft = "고유한 시간표 이름";
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(workspace.HasPlanNameValidationMessage);
+            Assert.Equal(string.Empty, validationMessage.Text);
+            Assert.Equal(
+                AutomationLiveSetting.Off,
+                AutomationProperties.GetLiveSetting(validationMessage));
+
+            workspace.PlanNameDraft = duplicatePlanName;
+            workspace.ConfirmPlanNameCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(workspace.HasPlanNameValidationMessage);
+            Assert.Equal(workspace.PlanNameValidationMessage, validationMessage.Text);
+            Assert.Equal(
+                AutomationLiveSetting.Assertive,
+                AutomationProperties.GetLiveSetting(validationMessage));
+            Assert.NotEmpty(liveRegionTransitions);
+            Assert.All(
+                liveRegionTransitions,
+                static transition => Assert.Equal(
+                    string.IsNullOrEmpty(transition.Text)
+                        ? AutomationLiveSetting.Off
+                        : AutomationLiveSetting.Assertive,
+                    transition.LiveSetting));
         }
         finally
         {

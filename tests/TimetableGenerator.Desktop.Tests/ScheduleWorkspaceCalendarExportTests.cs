@@ -291,16 +291,34 @@ public sealed class ScheduleWorkspaceCalendarExportTests
 
         try
         {
+            TextBlock statusText = findRequiredTextBlock(workspaceView, "ExportStatusText");
+            List<(string? Text, AutomationLiveSetting LiveSetting)> liveRegionTransitions = new();
+            statusText.PropertyChanged +=
+                (object? senderOrNull, AvaloniaPropertyChangedEventArgs eventArgs) =>
+                {
+                    if (eventArgs.Property == TextBlock.TextProperty)
+                    {
+                        liveRegionTransitions.Add(
+                            (statusText.Text, AutomationProperties.GetLiveSetting(statusText)));
+                    }
+                };
+            Assert.True(string.IsNullOrEmpty(statusText.Text));
+            Assert.Equal(
+                AutomationLiveSetting.Off,
+                AutomationProperties.GetLiveSetting(statusText));
+
             AsyncDelegateCommand command = Assert.IsType<AsyncDelegateCommand>(workspaceView.ExportGoogleCalendarCommand);
             command.Execute(null);
             await googleExporter.ExportStartedTask;
 
             Border statusToast = findRequiredControl<Border>(workspaceView, "ExportStatusToast");
-            TextBlock statusText = findRequiredTextBlock(workspaceView, "ExportStatusText");
             Button dismissButton = findRequiredButton(workspaceView, "DismissExportStatusButton");
             Assert.True(statusToast.IsVisible);
             Assert.False(statusToast.IsHitTestVisible);
             Assert.Equal("Google 캘린더로 내보내는 중입니다.", statusText.Text);
+            Assert.Equal(
+                AutomationLiveSetting.Polite,
+                AutomationProperties.GetLiveSetting(statusText));
             Assert.Contains("information", statusToast.Classes);
             Assert.False(dismissButton.IsVisible);
 
@@ -317,6 +335,9 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.True(statusToast.IsVisible);
             Assert.False(statusToast.IsHitTestVisible);
             Assert.Equal("Google 캘린더로 내보냈습니다.", statusText.Text);
+            Assert.Equal(
+                AutomationLiveSetting.Polite,
+                AutomationProperties.GetLiveSetting(statusText));
             Assert.Contains("success", statusToast.Classes);
             Assert.False(dismissButton.IsVisible);
 
@@ -325,6 +346,17 @@ public sealed class ScheduleWorkspaceCalendarExportTests
 
             Assert.False(statusToast.IsVisible);
             Assert.Equal(string.Empty, statusText.Text);
+            Assert.Equal(
+                AutomationLiveSetting.Off,
+                AutomationProperties.GetLiveSetting(statusText));
+            Assert.NotEmpty(liveRegionTransitions);
+            Assert.All(
+                liveRegionTransitions,
+                static transition => Assert.Equal(
+                    string.IsNullOrEmpty(transition.Text)
+                        ? AutomationLiveSetting.Off
+                        : AutomationLiveSetting.Polite,
+                    transition.LiveSetting));
         }
         finally
         {
