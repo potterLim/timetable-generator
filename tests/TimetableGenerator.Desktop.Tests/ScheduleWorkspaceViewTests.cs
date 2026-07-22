@@ -278,11 +278,14 @@ public sealed class ScheduleWorkspaceViewTests
                     border.Classes.Contains("schedule-half-hour-guide"))
                 .ToList();
 
-            Assert.Equal(10, timeLabels.Count);
-            Assert.Equal(10, hourGuides.Count);
-            Assert.Equal(10, halfHourGuides.Count);
+            Assert.Equal(2, timeLabels.Count);
+            Assert.Equal(2, hourGuides.Count);
+            Assert.Equal(2, halfHourGuides.Count);
             Assert.Contains(timeLabels, textBlock => textBlock.Text == "09:00");
-            Assert.Contains(timeLabels, textBlock => textBlock.Text == "18:00");
+            Assert.Contains(timeLabels, textBlock => textBlock.Text == "10:00");
+            Assert.DoesNotContain(
+                timeLabels,
+                textBlock => textBlock.Text == "11:00");
             Assert.DoesNotContain(
                 timeLabels,
                 textBlock => textBlock.Text?.EndsWith(
@@ -292,10 +295,10 @@ public sealed class ScheduleWorkspaceViewTests
                 new ScheduleBoardTimeBoundary(510),
                 scheduleBoard.RenderedLayout.TimeAxis.Start);
             Assert.Equal(
-                new ScheduleBoardTimeBoundary(1_140),
+                new ScheduleBoardTimeBoundary(660),
                 scheduleBoard.RenderedLayout.TimeAxis.End);
-            Assert.Equal(126, scheduleBoard.RenderedLayout.TimeAxis.IncrementCount);
-            Assert.Equal(20, scheduleBoard.RenderedLayout.TimeAxis.GuideTimes.Count);
+            Assert.Equal(30, scheduleBoard.RenderedLayout.TimeAxis.IncrementCount);
+            Assert.Equal(4, scheduleBoard.RenderedLayout.TimeAxis.GuideTimes.Count);
             Assert.DoesNotContain(
                 timeLabels,
                 textBlock => textBlock.Text?.Contains(
@@ -328,7 +331,7 @@ public sealed class ScheduleWorkspaceViewTests
                     Assert.Equal(1, Grid.GetColumn(halfHourGuide));
                     Assert.Equal(new Thickness(0.0), halfHourGuide.Margin);
                 });
-            Assert.Equal(127, boardGridOrNull.RowDefinitions.Count);
+            Assert.Equal(31, boardGridOrNull.RowDefinitions.Count);
         }
         finally
         {

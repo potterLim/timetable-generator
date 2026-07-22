@@ -7,9 +7,8 @@ namespace TimetableGenerator.Desktop.Presentation.Models;
 
 internal sealed class ScheduleBoardTimeAxis
 {
-    private const int DEFAULT_FIRST_LABEL_MINUTE = 660;
-    private const int DEFAULT_END_MINUTE = 1_140;
-    private const int PNG_EXPORT_DEFAULT_END_MINUTE = 960;
+    private const int EMPTY_FALLBACK_START_MINUTE = 0;
+    private const int EMPTY_FALLBACK_END_MINUTE = 60;
     private const int LAYOUT_INCREMENT_MINUTES = 5;
     private const int GUIDE_INTERVAL_MINUTES = 30;
     private const int LABEL_INTERVAL_MINUTES = 60;
@@ -70,13 +69,13 @@ internal sealed class ScheduleBoardTimeAxis
     public static ScheduleBoardTimeAxis CreateForEntries(
         IReadOnlyList<ScheduleEntry> entries)
     {
-        return createForEntries(entries, DEFAULT_END_MINUTE);
+        return createForEntries(entries);
     }
 
     public static ScheduleBoardTimeAxis CreateForPngExport(
         IReadOnlyList<ScheduleEntry> entries)
     {
-        return createForEntries(entries, PNG_EXPORT_DEFAULT_END_MINUTE);
+        return createForEntries(entries);
     }
 
     public int FindStartingRowOffset(ScheduleTime time)
@@ -110,49 +109,42 @@ internal sealed class ScheduleBoardTimeAxis
     }
 
     private static ScheduleBoardTimeAxis createForEntries(
-        IReadOnlyList<ScheduleEntry> entries,
-        int defaultEndMinute)
+        IReadOnlyList<ScheduleEntry> entries)
     {
         ArgumentNullException.ThrowIfNull(entries);
 
-        int startMinute = findStartMinute(entries);
-        int latestMinute = defaultEndMinute;
-        foreach (ScheduleEntry entry in entries)
-        {
-            latestMinute = Math.Max(
-                latestMinute,
-                entry.TimeRange.End.MinutesFromMidnight);
-        }
-
-        int endMinute = Math.Min(
-            MINUTES_PER_DAY,
-            roundUp(latestMinute, GUIDE_INTERVAL_MINUTES));
-        return new ScheduleBoardTimeAxis(
-            new ScheduleBoardTimeBoundary(startMinute),
-            new ScheduleBoardTimeBoundary(endMinute));
-    }
-
-    private static int findStartMinute(IReadOnlyList<ScheduleEntry> entries)
-    {
         if (entries.Count == 0)
         {
-            return DEFAULT_FIRST_LABEL_MINUTE - START_CONTEXT_MINUTES;
+            return new ScheduleBoardTimeAxis(
+                new ScheduleBoardTimeBoundary(
+                    EMPTY_FALLBACK_START_MINUTE),
+                new ScheduleBoardTimeBoundary(
+                    EMPTY_FALLBACK_END_MINUTE));
         }
 
         int earliestMinute = entries[0].TimeRange.Start.MinutesFromMidnight;
+        int latestMinute = entries[0].TimeRange.End.MinutesFromMidnight;
         foreach (ScheduleEntry entry in entries)
         {
             earliestMinute = Math.Min(
                 earliestMinute,
                 entry.TimeRange.Start.MinutesFromMidnight);
+            latestMinute = Math.Max(
+                latestMinute,
+                entry.TimeRange.End.MinutesFromMidnight);
         }
 
-        int earliestHourMinute = roundDown(
-            earliestMinute,
-            MINUTES_PER_HOUR);
-        return Math.Max(
+        int startMinute = Math.Max(
             0,
-            earliestHourMinute - START_CONTEXT_MINUTES);
+            roundDown(earliestMinute, MINUTES_PER_HOUR)
+                - START_CONTEXT_MINUTES);
+        int endMinute = Math.Min(
+            MINUTES_PER_DAY,
+            roundDown(latestMinute, MINUTES_PER_HOUR)
+                + MINUTES_PER_HOUR);
+        return new ScheduleBoardTimeAxis(
+            new ScheduleBoardTimeBoundary(startMinute),
+            new ScheduleBoardTimeBoundary(endMinute));
     }
 
     private static IReadOnlyList<ScheduleBoardTimeBoundary> createGuideTimes(
@@ -178,9 +170,11 @@ internal sealed class ScheduleBoardTimeAxis
     {
         List<ScheduleBoardTimeBoundary> labelTimes =
             new List<ScheduleBoardTimeBoundary>();
-        int firstLabelMinute = roundUp(
-            start.MinutesFromMidnight + 1,
-            LABEL_INTERVAL_MINUTES);
+        int firstLabelMinute = start.IsFullHour
+            ? start.MinutesFromMidnight
+            : roundUp(
+                start.MinutesFromMidnight + 1,
+                LABEL_INTERVAL_MINUTES);
         for (int labelMinute = firstLabelMinute;
             labelMinute < end.MinutesFromMidnight;
             labelMinute += LABEL_INTERVAL_MINUTES)

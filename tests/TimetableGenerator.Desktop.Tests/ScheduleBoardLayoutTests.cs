@@ -11,25 +11,24 @@ namespace TimetableGenerator.Desktop.Tests;
 public sealed class ScheduleBoardLayoutTests
 {
     [Fact]
-    public void DefaultLayoutShowsWeekdaysWithContextBeforeElevenAm()
+    public void EmptyLayoutProvidesAStableInternalFallback()
     {
         ScheduleBoardLayout layout = ScheduleBoardLayout.Default;
 
         Assert.Equal(5, layout.DayRange.DayCount);
         Assert.Equal(EDay.Monday, layout.DayRange.Days[0].Day);
         Assert.Equal(EDay.Friday, layout.DayRange.Days[4].Day);
-        Assert.Equal(new ScheduleBoardTimeBoundary(630), layout.TimeAxis.Start);
-        Assert.Equal(new ScheduleBoardTimeBoundary(1_140), layout.TimeAxis.End);
-        Assert.Equal(102, layout.TimeAxis.IncrementCount);
-        Assert.Equal(16, layout.TimeAxis.GuideTimes.Count);
-        Assert.Equal("11:00", layout.TimeAxis.GuideTimes[0].ToString());
-        Assert.Equal("18:30", layout.TimeAxis.GuideTimes[^1].ToString());
-        Assert.Equal(8, layout.TimeAxis.LabelTimes.Count);
-        Assert.Equal("11:00", layout.TimeAxis.LabelTimes[0].ToString());
-        Assert.Equal("18:00", layout.TimeAxis.LabelTimes[^1].ToString());
+        Assert.Equal(new ScheduleBoardTimeBoundary(0), layout.TimeAxis.Start);
+        Assert.Equal(new ScheduleBoardTimeBoundary(60), layout.TimeAxis.End);
+        Assert.Equal(12, layout.TimeAxis.IncrementCount);
+        Assert.Single(layout.TimeAxis.GuideTimes);
+        Assert.Single(layout.TimeAxis.LabelTimes);
         Assert.All(
             layout.TimeAxis.LabelTimes,
             labelTime => Assert.True(labelTime.IsFullHour));
+        Assert.DoesNotContain(
+            layout.TimeAxis.End,
+            layout.TimeAxis.LabelTimes);
     }
 
     [Fact]
@@ -87,7 +86,7 @@ public sealed class ScheduleBoardLayoutTests
     }
 
     [Fact]
-    public void TimeAxisExpandsContinuouslyToHalfHourBoundaries()
+    public void TimeAxisUsesOnlyTheEntriesForItsVisibleRange()
     {
         List<ScheduleEntry> entries = new List<ScheduleEntry>();
         entries.Add(createEntry(
@@ -102,9 +101,9 @@ public sealed class ScheduleBoardLayoutTests
         ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForEntries(entries);
 
         Assert.Equal(new ScheduleBoardTimeBoundary(390), layout.TimeAxis.Start);
-        Assert.Equal(new ScheduleBoardTimeBoundary(1_230), layout.TimeAxis.End);
-        Assert.Equal(168, layout.TimeAxis.IncrementCount);
-        Assert.Equal(27, layout.TimeAxis.GuideTimes.Count);
+        Assert.Equal(new ScheduleBoardTimeBoundary(1_260), layout.TimeAxis.End);
+        Assert.Equal(174, layout.TimeAxis.IncrementCount);
+        Assert.Equal(28, layout.TimeAxis.GuideTimes.Count);
         Assert.Equal("07:00", layout.TimeAxis.GuideTimes[0].ToString());
         Assert.Equal("07:00", layout.TimeAxis.LabelTimes[0].ToString());
         Assert.Equal(
@@ -129,6 +128,12 @@ public sealed class ScheduleBoardLayoutTests
         Assert.Equal("09:30", layout.TimeAxis.GuideTimes[1].ToString());
         Assert.Equal("09:00", layout.TimeAxis.LabelTimes[0].ToString());
         Assert.Equal("10:00", layout.TimeAxis.LabelTimes[1].ToString());
+        Assert.Equal(
+            new ScheduleBoardTimeBoundary(660),
+            layout.TimeAxis.End);
+        Assert.DoesNotContain(
+            layout.TimeAxis.End,
+            layout.TimeAxis.LabelTimes);
         for (int guideIndex = 1;
             guideIndex < layout.TimeAxis.GuideTimes.Count;
             ++guideIndex)
@@ -176,6 +181,59 @@ public sealed class ScheduleBoardLayoutTests
             layout.TimeAxis.GuideTimes.Count - 1].ToString());
         Assert.Equal("23:00", layout.TimeAxis.LabelTimes[
             layout.TimeAxis.LabelTimes.Count - 1].ToString());
+    }
+
+    [Fact]
+    public void TimeAxisKeepsAMidnightLabelWhenEarlierContextIsImpossible()
+    {
+        ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForEntries(
+            new ScheduleEntry[]
+            {
+                createEntry(
+                    EDay.Monday,
+                    new ScheduleTime(0, 15),
+                    new ScheduleTime(0, 45)),
+            });
+
+        Assert.Equal(
+            new ScheduleBoardTimeBoundary(0),
+            layout.TimeAxis.Start);
+        Assert.Equal(
+            new ScheduleBoardTimeBoundary(60),
+            layout.TimeAxis.End);
+        Assert.Single(layout.TimeAxis.LabelTimes);
+        Assert.Equal("00:00", layout.TimeAxis.LabelTimes[0].ToString());
+        Assert.DoesNotContain(
+            layout.TimeAxis.End,
+            layout.TimeAxis.LabelTimes);
+    }
+
+    [Theory]
+    [InlineData(10, 0, 660)]
+    [InlineData(10, 1, 660)]
+    [InlineData(10, 59, 660)]
+    [InlineData(23, 0, 1_440)]
+    [InlineData(23, 59, 1_440)]
+    public void TimeAxisEndsAtTheFirstWholeHourStrictlyAfterTheLatestEntry(
+        int endHour,
+        int endMinute,
+        int expectedEndMinute)
+    {
+        ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForEntries(
+            new ScheduleEntry[]
+            {
+                createEntry(
+                    EDay.Monday,
+                    new ScheduleTime(9, 0),
+                    new ScheduleTime(endHour, endMinute)),
+            });
+
+        Assert.Equal(
+            new ScheduleBoardTimeBoundary(expectedEndMinute),
+            layout.TimeAxis.End);
+        Assert.DoesNotContain(
+            layout.TimeAxis.End,
+            layout.TimeAxis.LabelTimes);
     }
 
     [Theory]

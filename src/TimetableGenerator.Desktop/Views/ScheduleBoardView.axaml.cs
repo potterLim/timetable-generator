@@ -42,6 +42,8 @@ internal sealed partial class ScheduleBoardView : UserControl
 
     private readonly Grid mBoardStickyDayHeaderGrid;
 
+    private readonly ScrollViewer mScheduleScrollViewer;
+
     private bool mIsPngExport;
 
     private ScheduleBoardLayout mRenderedLayout;
@@ -85,11 +87,14 @@ internal sealed partial class ScheduleBoardView : UserControl
             "BoardStickyHeaderContainer");
         Grid? boardStickyDayHeaderGridOrNull = this.FindControl<Grid>(
             "BoardStickyDayHeaderGrid");
+        ScrollViewer? scheduleScrollViewerOrNull = this.FindControl<ScrollViewer>(
+            "ScheduleScrollViewer");
         Grid? boardGridOrNull = this.FindControl<Grid>("BoardGrid");
         if (boardExportSurfaceOrNull == null
             || boardContextHeaderOrNull == null
             || boardStickyHeaderContainerOrNull == null
             || boardStickyDayHeaderGridOrNull == null
+            || scheduleScrollViewerOrNull == null
             || boardGridOrNull == null)
         {
             throw new InvalidOperationException(
@@ -101,6 +106,7 @@ internal sealed partial class ScheduleBoardView : UserControl
         mBoardContextHeader.IsVisible = false;
         mBoardStickyHeaderContainer = boardStickyHeaderContainerOrNull;
         mBoardStickyDayHeaderGrid = boardStickyDayHeaderGridOrNull;
+        mScheduleScrollViewer = scheduleScrollViewerOrNull;
         mBoardGrid = boardGridOrNull;
         mRenderedLayout = ScheduleBoardLayout.Default;
         DataContextChanged += onDataContextChanged;
@@ -134,6 +140,7 @@ internal sealed partial class ScheduleBoardView : UserControl
 
     private void onDataContextChanged(object? senderOrNull, EventArgs eventArgs)
     {
+        mScheduleScrollViewer.Offset = default;
         if (VisualRoot == null)
         {
             return;
@@ -404,7 +411,10 @@ internal sealed partial class ScheduleBoardView : UserControl
             timeHeader.IsHitTestVisible = false;
             int boundaryRowIndex = 1
                 + mRenderedLayout.TimeAxis.FindBoundaryRowOffset(labelTime);
-            Grid.SetRow(timeHeader, boundaryRowIndex - 1);
+            int labelRowIndex = labelTime == mRenderedLayout.TimeAxis.Start
+                ? boundaryRowIndex
+                : boundaryRowIndex - 1;
+            Grid.SetRow(timeHeader, labelRowIndex);
             Grid.SetRowSpan(timeHeader, 2);
             Grid.SetColumn(timeHeader, 0);
             mBoardGrid.Children.Add(timeHeader);

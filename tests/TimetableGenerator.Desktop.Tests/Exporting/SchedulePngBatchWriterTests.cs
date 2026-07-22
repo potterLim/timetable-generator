@@ -18,7 +18,9 @@ using TimetableGenerator.Desktop.Exporting;
 using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Desktop.Views;
+using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Planning;
+using TimetableGenerator.Domain.Scheduling;
 
 using Xunit;
 
@@ -253,6 +255,104 @@ public sealed class SchedulePngBatchWriterTests
     }
 
     [AvaloniaFact]
+    public async Task BatchWriterRecalculatesTheLayoutForEveryCandidateAsync()
+    {
+        string parentDirectoryPath = createTemporaryDirectory();
+        try
+        {
+            PlanName planName = new PlanName("후보별 PNG 축 테스트");
+            ScheduleBoardPresentation firstCandidate =
+                createCandidatePresentation(
+                    planName,
+                    "오전 후보",
+                    EDay.Monday,
+                    new ScheduleTime(9, 0),
+                    new ScheduleTime(10, 15));
+            ScheduleBoardPresentation secondCandidate =
+                createCandidatePresentation(
+                    planName,
+                    "주말 오후 후보",
+                    EDay.Sunday,
+                    new ScheduleTime(15, 0),
+                    new ScheduleTime(16, 15));
+            SchedulePngExportBatch exportBatch = new SchedulePngExportBatch(
+                new ScheduleBoardPresentation[]
+                {
+                    firstCandidate,
+                    secondCandidate,
+                });
+            ScheduleBoardView sourceBoard = new ScheduleBoardView();
+            sourceBoard.Width = 960.0;
+            sourceBoard.DataContext = firstCandidate;
+            Canvas exportHost = new Canvas();
+            Grid root = new Grid();
+            root.Children.Add(exportHost);
+            root.Children.Add(sourceBoard);
+            Window window = new Window();
+            window.Width = 1_000.0;
+            window.Height = 720.0;
+            window.Content = root;
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            try
+            {
+                RecordingPngExporter exporter = new RecordingPngExporter();
+                SchedulePngBatchWriter writer =
+                    new SchedulePngBatchWriter(exporter);
+                using (SchedulePngBatchDirectory directory =
+                    SchedulePngBatchDirectoryAllocator.createUnique(
+                        parentDirectoryPath,
+                        exportBatch.PlanName,
+                        CancellationToken.None))
+                {
+                    await writer.exportAsync(
+                        exportBatch,
+                        directory,
+                        sourceBoard,
+                        exportHost,
+                        CancellationToken.None);
+                }
+
+                Assert.Equal(2, exporter.Layouts.Count);
+                ScheduleBoardLayout firstLayout = exporter.Layouts[0];
+                Assert.Equal(5, firstLayout.DayRange.DayCount);
+                Assert.Equal(
+                    new ScheduleBoardTimeBoundary(510),
+                    firstLayout.TimeAxis.Start);
+                Assert.Equal(
+                    new ScheduleBoardTimeBoundary(660),
+                    firstLayout.TimeAxis.End);
+                Assert.DoesNotContain(
+                    firstLayout.TimeAxis.End,
+                    firstLayout.TimeAxis.LabelTimes);
+
+                ScheduleBoardLayout secondLayout = exporter.Layouts[1];
+                Assert.Equal(7, secondLayout.DayRange.DayCount);
+                Assert.Equal(
+                    new ScheduleBoardTimeBoundary(870),
+                    secondLayout.TimeAxis.Start);
+                Assert.Equal(
+                    new ScheduleBoardTimeBoundary(1_020),
+                    secondLayout.TimeAxis.End);
+                Assert.DoesNotContain(
+                    secondLayout.TimeAxis.End,
+                    secondLayout.TimeAxis.LabelTimes);
+                Assert.Same(firstCandidate, sourceBoard.DataContext);
+                Assert.Empty(exportHost.Children);
+            }
+            finally
+            {
+                window.Close();
+            }
+        }
+        finally
+        {
+            Directory.Delete(parentDirectoryPath, true);
+        }
+    }
+
+    [AvaloniaFact]
     public async Task BatchWriterRendersEveryCandidateWithoutChangingTheViewAsync()
     {
         string parentDirectoryPath = createTemporaryDirectory();
@@ -355,6 +455,32 @@ public sealed class SchedulePngBatchWriterTests
         return path;
     }
 
+    private static ScheduleBoardPresentation createCandidatePresentation(
+        PlanName planName,
+        string title,
+        EDay day,
+        ScheduleTime start,
+        ScheduleTime end)
+    {
+        DailyTimeRange dailyTimeRange = new DailyTimeRange(start, end);
+        WeeklyTimeRange weeklyTimeRange = new WeeklyTimeRange(
+            day,
+            dailyTimeRange);
+        PersonalSchedule personalSchedule = new PersonalSchedule(
+            PersonalScheduleId.CreateNew(),
+            new PersonalScheduleTitle(title),
+            new WeeklyTimeRange[] { weeklyTimeRange },
+            PersonalScheduleDetails.CreateEmpty());
+        PersonalScheduleEntry entry = new PersonalScheduleEntry(
+            personalSchedule,
+            weeklyTimeRange);
+        return new ScheduleBoardPresentation(
+            new ScheduleRecommendation(new ScheduleEntry[] { entry }),
+            planName,
+            new InstitutionName("한동대학교"),
+            AcademicTerm.Parse("2026-2"));
+    }
+
     private static void assertPngContainsRenderedBoard(string filePath)
     {
         using (FileStream stream = File.OpenRead(filePath))
@@ -396,11 +522,22 @@ public sealed class SchedulePngBatchWriterTests
     {
         private readonly List<Control> mSurfaces = new List<Control>();
 
+        private readonly List<ScheduleBoardLayout> mLayouts =
+            new List<ScheduleBoardLayout>();
+
         public IReadOnlyList<Control> Surfaces
         {
             get
             {
                 return mSurfaces.AsReadOnly();
+            }
+        }
+
+        public IReadOnlyList<ScheduleBoardLayout> Layouts
+        {
+            get
+            {
+                return mLayouts.AsReadOnly();
             }
         }
 
@@ -411,6 +548,10 @@ public sealed class SchedulePngBatchWriterTests
         {
             cancellationToken.ThrowIfCancellationRequested();
             mSurfaces.Add(sourceControl);
+            ScheduleBoardPresentation presentation =
+                Assert.IsType<ScheduleBoardPresentation>(
+                    sourceControl.DataContext);
+            mLayouts.Add(presentation.Layout);
             destinationStream.WriteByte(1);
             return Task.CompletedTask;
         }

@@ -47,7 +47,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     }
 
     [Fact]
-    public void PngExportLayoutDefaultsToFourPm()
+    public void PngExportLayoutEndsAtTheFirstWholeHourAfterContent()
     {
         ScheduleEntry entry = createScheduleEntry(
             EDay.Monday,
@@ -60,33 +60,16 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             new ScheduleBoardTimeBoundary(510),
             layout.TimeAxis.Start);
         Assert.Equal(
-            new ScheduleBoardTimeBoundary(960),
+            new ScheduleBoardTimeBoundary(660),
             layout.TimeAxis.End);
-        Assert.Equal(90, layout.TimeAxis.IncrementCount);
-        Assert.Equal(14, layout.TimeAxis.GuideTimes.Count);
-        Assert.Equal("15:30", layout.TimeAxis.GuideTimes[^1].ToString());
-        Assert.Equal(7, layout.TimeAxis.LabelTimes.Count);
-        Assert.Equal("15:00", layout.TimeAxis.LabelTimes[^1].ToString());
+        Assert.Equal(30, layout.TimeAxis.IncrementCount);
+        Assert.Equal(4, layout.TimeAxis.GuideTimes.Count);
+        Assert.Equal("10:30", layout.TimeAxis.GuideTimes[^1].ToString());
+        Assert.Equal(2, layout.TimeAxis.LabelTimes.Count);
+        Assert.Equal("10:00", layout.TimeAxis.LabelTimes[^1].ToString());
         Assert.DoesNotContain(
             layout.TimeAxis.LabelTimes,
-            boundary => boundary.ToString() == "16:00");
-    }
-
-    [Fact]
-    public void EmptyPngExportLayoutKeepsContextBeforeElevenAmThroughFourPm()
-    {
-        ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForPngExport(
-            Array.Empty<ScheduleEntry>());
-
-        Assert.Equal(
-            new ScheduleBoardTimeBoundary(630),
-            layout.TimeAxis.Start);
-        Assert.Equal(
-            new ScheduleBoardTimeBoundary(960),
-            layout.TimeAxis.End);
-        Assert.Equal(66, layout.TimeAxis.IncrementCount);
-        Assert.Equal(10, layout.TimeAxis.GuideTimes.Count);
-        Assert.Equal(5, layout.TimeAxis.LabelTimes.Count);
+            boundary => boundary.ToString() == "11:00");
     }
 
     [Fact]
@@ -103,17 +86,17 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             new ScheduleBoardTimeBoundary(870),
             layout.TimeAxis.Start);
         Assert.Equal(
-            new ScheduleBoardTimeBoundary(990),
+            new ScheduleBoardTimeBoundary(1_020),
             layout.TimeAxis.End);
-        Assert.Equal(24, layout.TimeAxis.IncrementCount);
-        Assert.Equal(3, layout.TimeAxis.GuideTimes.Count);
+        Assert.Equal(30, layout.TimeAxis.IncrementCount);
+        Assert.Equal(4, layout.TimeAxis.GuideTimes.Count);
         Assert.Equal(2, layout.TimeAxis.LabelTimes.Count);
         Assert.Equal("15:00", layout.TimeAxis.LabelTimes[0].ToString());
         Assert.Equal("16:00", layout.TimeAxis.LabelTimes[^1].ToString());
     }
 
     [Fact]
-    public void PngExportLayoutExtendsSixthPeriodToNextHalfHourBoundary()
+    public void PngExportLayoutExtendsSixthPeriodToNextWholeHourBoundary()
     {
         ScheduleEntry entry = createScheduleEntry(
             EDay.Thursday,
@@ -180,7 +163,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     }
 
     [AvaloniaFact]
-    public void PngSnapshotUsesTheCurrentScheduleInsteadOfTheSharedScreenAxis()
+    public void PngSnapshotRecalculatesFromScheduleInsteadOfUsingSourceLayout()
     {
         ScheduleEntry earlierAlternative = createScheduleEntry(
             EDay.Monday,
@@ -190,12 +173,13 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             new AcademicPeriod(3));
         ScheduleRecommendation currentSchedule = new ScheduleRecommendation(
             new ScheduleEntry[] { currentEntry });
-        ScheduleBoardLayout sharedScreenLayout = ScheduleBoardLayout.CreateForEntries(
-            new ScheduleEntry[] { earlierAlternative, currentEntry });
+        ScheduleBoardLayout sourceLayoutWithAlternative =
+            ScheduleBoardLayout.CreateForEntries(
+                new ScheduleEntry[] { earlierAlternative, currentEntry });
         ScheduleBoardView sourceBoard = new ScheduleBoardView();
         sourceBoard.DataContext = new ScheduleBoardPresentation(
             currentSchedule,
-            sharedScreenLayout,
+            sourceLayoutWithAlternative,
             new PlanName("PNG 내보내기 테스트"),
             new InstitutionName("한동대학교"),
             AcademicTerm.Parse("2026-2"));
@@ -225,11 +209,14 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                     new ScheduleBoardTimeBoundary(690),
                     snapshot.Layout.TimeAxis.Start);
                 Assert.Equal(
-                    new ScheduleBoardTimeBoundary(960),
+                    new ScheduleBoardTimeBoundary(840),
                     snapshot.Layout.TimeAxis.End);
-                Assert.Equal(54, snapshot.Layout.TimeAxis.IncrementCount);
-                Assert.Equal(8, snapshot.Layout.TimeAxis.GuideTimes.Count);
-                Assert.Equal(4, snapshot.Layout.TimeAxis.LabelTimes.Count);
+                Assert.Equal(30, snapshot.Layout.TimeAxis.IncrementCount);
+                Assert.Equal(4, snapshot.Layout.TimeAxis.GuideTimes.Count);
+                Assert.Equal(2, snapshot.Layout.TimeAxis.LabelTimes.Count);
+                Assert.DoesNotContain(
+                    snapshot.Layout.TimeAxis.End,
+                    snapshot.Layout.TimeAxis.LabelTimes);
                 Assert.Single(findBoardGrid(snapshot.Surface).Children.OfType<Button>());
 
                 Border exportHeader = snapshot.Surface.GetVisualDescendants()
@@ -298,6 +285,86 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                     Assert.Single(
                         Assert.IsType<ScheduleBoardPresentation>(
                             sourceBoard.DataContext).Schedule.Entries));
+            }
+
+            Assert.Empty(exportHost.Children);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void PngSnapshotUpdateRecalculatesLayoutForEachCandidate()
+    {
+        ScheduleEntry firstCandidateEntry = createScheduleEntry(
+            EDay.Monday,
+            new AcademicPeriod(1));
+        ScheduleEntry secondCandidateEntry = createScheduleEntry(
+            EDay.Sunday,
+            new AcademicPeriod(5));
+        ScheduleBoardView sourceBoard = createSourceBoard(
+            new ScheduleEntry[] { firstCandidateEntry });
+        ScheduleBoardPresentation displayedPresentation =
+            Assert.IsType<ScheduleBoardPresentation>(sourceBoard.DataContext);
+        ScheduleBoardPresentation secondCandidate =
+            new ScheduleBoardPresentation(
+                new ScheduleRecommendation(
+                    new ScheduleEntry[] { secondCandidateEntry }),
+                new PlanName("PNG 후보별 축 테스트"),
+                new InstitutionName("한동대학교"),
+                AcademicTerm.Parse("2026-2"));
+        Canvas exportHost = new Canvas();
+        exportHost.IsHitTestVisible = false;
+        exportHost.Opacity = 0.0;
+        exportHost.ZIndex = -1;
+        Grid root = new Grid();
+        root.Children.Add(exportHost);
+        root.Children.Add(sourceBoard);
+        Window window = createWindow(root, ThemeVariant.Light);
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            using (ScheduleBoardPngExportSnapshot snapshot =
+                ScheduleBoardPngExportSnapshot.create(
+                    exportHost,
+                    displayedPresentation,
+                    sourceBoard))
+            {
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.Equal(5, snapshot.Layout.DayRange.DayCount);
+                Assert.Equal(
+                    new ScheduleBoardTimeBoundary(510),
+                    snapshot.Layout.TimeAxis.Start);
+                Assert.Equal(
+                    new ScheduleBoardTimeBoundary(660),
+                    snapshot.Layout.TimeAxis.End);
+                Assert.Equal(
+                    new string[] { "09:00", "10:00" },
+                    findPngTimeLabelTexts(snapshot.Surface));
+
+                snapshot.update(secondCandidate, sourceBoard);
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.Equal(7, snapshot.Layout.DayRange.DayCount);
+                Assert.Equal(
+                    new ScheduleBoardTimeBoundary(870),
+                    snapshot.Layout.TimeAxis.Start);
+                Assert.Equal(
+                    new ScheduleBoardTimeBoundary(1_020),
+                    snapshot.Layout.TimeAxis.End);
+                Assert.Equal(
+                    new string[] { "15:00", "16:00" },
+                    findPngTimeLabelTexts(snapshot.Surface));
+                Assert.DoesNotContain(
+                    snapshot.Layout.TimeAxis.End.ToString(),
+                    findPngTimeLabelTexts(snapshot.Surface));
+                Assert.Same(displayedPresentation, sourceBoard.DataContext);
             }
 
             Assert.Empty(exportHost.Children);
@@ -666,6 +733,17 @@ public sealed class ScheduleBoardPngExportSnapshotTests
         }
 
         return boardGridOrNull;
+    }
+
+    private static IReadOnlyList<string> findPngTimeLabelTexts(Control surface)
+    {
+        return findBoardGrid(surface).Children
+            .OfType<TextBlock>()
+            .Where(textBlock =>
+                textBlock.Classes.Contains("schedule-time-label"))
+            .Select(textBlock => textBlock.Text ?? string.Empty)
+            .ToList()
+            .AsReadOnly();
     }
 
     private static void assertWeekendHeadersArePresent(Grid boardGrid)

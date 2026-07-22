@@ -550,7 +550,11 @@ internal sealed partial class PlannerWorkspaceViewModel
             layoutEntries.AddRange(recommendation.Schedule.Entries);
         }
 
-        return ScheduleBoardLayout.CreateForEntries(layoutEntries);
+        ScheduleBoardDayRange sharedDayRange =
+            ScheduleBoardDayRange.CreateForEntries(layoutEntries);
+        return ScheduleBoardLayout.CreateForEntries(
+            DisplayedSchedule.Entries,
+            sharedDayRange);
     }
 
     private static ScheduleRecommendationBookmark? createRecommendationBookmarkOrNull(

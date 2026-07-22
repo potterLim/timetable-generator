@@ -1213,11 +1213,11 @@ public sealed class PersonalScheduleInteractionTests
                 new ScheduleBoardTimeBoundary(390),
                 scheduleBoard.RenderedLayout.TimeAxis.Start);
             Assert.Equal(
-                new ScheduleBoardTimeBoundary(1_140),
+                new ScheduleBoardTimeBoundary(480),
                 scheduleBoard.RenderedLayout.TimeAxis.End);
-            Assert.Equal(150, scheduleBoard.RenderedLayout.TimeAxis.IncrementCount);
-            Assert.Equal(24, scheduleBoard.RenderedLayout.TimeAxis.GuideTimes.Count);
-            Assert.Equal(12, scheduleBoard.RenderedLayout.TimeAxis.LabelTimes.Count);
+            Assert.Equal(18, scheduleBoard.RenderedLayout.TimeAxis.IncrementCount);
+            Assert.Equal(2, scheduleBoard.RenderedLayout.TimeAxis.GuideTimes.Count);
+            Assert.Single(scheduleBoard.RenderedLayout.TimeAxis.LabelTimes);
         }
         finally
         {
