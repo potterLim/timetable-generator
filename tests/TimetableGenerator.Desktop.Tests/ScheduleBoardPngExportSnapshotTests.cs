@@ -286,8 +286,6 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                     displayedPresentation,
                     sourceBoard))
             {
-                Dispatcher.UIThread.RunJobs();
-
                 Assert.Equal(5, snapshot.Layout.DayRange.DayCount);
                 Assert.Equal(new ScheduleBoardTimeBoundary(510), snapshot.Layout.TimeAxis.Start);
                 Assert.Equal(new ScheduleBoardTimeBoundary(660), snapshot.Layout.TimeAxis.End);
@@ -296,7 +294,6 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                     findPngTimeLabelTexts(snapshot.Surface));
 
                 snapshot.update(secondCandidate, sourceBoard);
-                Dispatcher.UIThread.RunJobs();
 
                 Assert.Equal(7, snapshot.Layout.DayRange.DayCount);
                 Assert.Equal(new ScheduleBoardTimeBoundary(870), snapshot.Layout.TimeAxis.Start);
@@ -341,10 +338,21 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             using (ScheduleBoardPngExportSnapshot snapshot =
                 ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
             {
-                Dispatcher.UIThread.RunJobs();
-
                 Assert.Equal(new ScheduleBoardTimeBoundary(450), snapshot.Layout.TimeAxis.Start);
-                Button exportCard = Assert.Single(findBoardGrid(snapshot.Surface).Children.OfType<Button>());
+                Grid exportBoardGrid = findBoardGrid(snapshot.Surface);
+                Button exportCard = Assert.Single(exportBoardGrid.Children.OfType<Button>());
+                Assert.True(exportBoardGrid.Bounds.Width > 0.0);
+                Assert.True(exportBoardGrid.Bounds.Height > 0.0);
+                Assert.True(exportCard.Bounds.Width > 0.0);
+                Assert.True(exportCard.Bounds.Height > 0.0);
+                Grid exportCardContent = Assert.IsType<Grid>(exportCard.Content);
+                TextBlock exportCardTitle = Assert.IsType<TextBlock>(exportCardContent.Children[0]);
+                Assert.True(exportCardTitle.Bounds.Width > 0.0);
+                Assert.True(exportCardTitle.Bounds.Height > 0.0);
+                Assert.DoesNotContain(
+                    snapshot.Surface.GetVisualDescendants().OfType<Control>(),
+                    descendant => descendant.IsMeasureValid == false
+                        || descendant.IsArrangeValid == false);
                 Assert.Contains("수요일 08:30–09:45", AutomationProperties.GetName(exportCard));
 
                 AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(PngExportScale.Create(1.0));

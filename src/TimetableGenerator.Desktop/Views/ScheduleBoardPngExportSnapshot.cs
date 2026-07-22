@@ -127,6 +127,7 @@ internal sealed class ScheduleBoardPngExportSnapshot : IDisposable
         }
 
         mScheduleBoard.Arrange(new Rect(0.0, 0.0, exportWidth, exportHeight));
+        mScheduleBoard.UpdateLayout();
     }
 
 }
