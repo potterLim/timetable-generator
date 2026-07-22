@@ -246,6 +246,7 @@
           x:Name="SavePersonalScheduleButton"
           Classes="accent"
           MinWidth="104"
+          Click="onSavePersonalScheduleButtonClick"
           Command="{Binding SavePersonalScheduleCommand}"
           Content="{Binding PersonalScheduleSaveButtonText}"
           AutomationProperties.Name="개인 일정 저장" />

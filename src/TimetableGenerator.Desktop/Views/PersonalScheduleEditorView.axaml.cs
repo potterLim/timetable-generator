@@ -3,6 +3,8 @@ using System.Linq;
 
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
 
@@ -88,6 +90,14 @@ internal sealed partial class PersonalScheduleEditorView : UserControl
         focusControl(target);
     }
 
+    private void onSavePersonalScheduleButtonClick(object? senderOrNull, RoutedEventArgs eventArguments)
+    {
+        commitTextInput(mNameInput);
+        commitTextInput(mSectionInput);
+        commitTextInput(mInstructorInput);
+        commitTextInput(mLocationInput);
+    }
+
     private void onDayOptionContainerPrepared(
         object? senderOrNull,
         ContainerPreparedEventArgs eventArgs)
@@ -118,6 +128,19 @@ internal sealed partial class PersonalScheduleEditorView : UserControl
                     && candidate.IsVisible
                     && candidate.IsEnabled);
         focusableDescendantOrNull?.Focus();
+    }
+
+    private static void commitTextInput(TextBox input)
+    {
+        BindingExpressionBase? bindingOrNull = BindingOperations.GetBindingExpressionBase(
+            input,
+            TextBox.TextProperty);
+        if (bindingOrNull == null)
+        {
+            throw new InvalidOperationException("The personal schedule text input requires a two-way binding: " + input.Name);
+        }
+
+        bindingOrNull.UpdateSource();
     }
 
     private ToggleButton findDayInput(EDay day)
