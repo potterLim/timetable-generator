@@ -47,9 +47,9 @@
             Grid.Column="0"
             Classes="plan-title-action"
             AutomationProperties.Name="{Binding ActivePlanOrNull.DisplayName}"
-            AutomationProperties.HelpText="시간표 관리"
+            AutomationProperties.HelpText="시간표 구성"
             AutomationProperties.HeadingLevel="2"
-            ToolTip.Tip="시간표 관리">
+            ToolTip.Tip="시간표 구성">
           <TextBlock
               x:Name="PlanManagementTitle"
               Classes="title"
@@ -106,8 +106,8 @@
             Classes="icon"
             IsVisible="{Binding IsInspectorPaneDismissActionVisible}"
             Command="{Binding CloseInspectorPaneCommand}"
-            AutomationProperties.Name="시간표 관리 패널 닫기"
-            ToolTip.Tip="시간표 관리 닫기">
+            AutomationProperties.Name="시간표 구성 패널 닫기"
+            ToolTip.Tip="시간표 구성 닫기">
           <icons:FluentIcon Icon="Dismiss" IconVariant="Regular" FontSize="17" />
         </Button>
       </Grid>

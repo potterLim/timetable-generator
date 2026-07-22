@@ -130,8 +130,8 @@ public sealed class WorkspacePanelAccessibilityTests
             TextBlock managementTitle = findRequiredControl<TextBlock>(inspector, "PlanManagementTitle");
             Assert.Equal(workspace.ActivePlan.DisplayName, managementTitle.Text);
             Assert.Equal(workspace.ActivePlan.DisplayName, AutomationProperties.GetName(managementButton));
-            Assert.Equal("시간표 관리", AutomationProperties.GetHelpText(managementButton));
-            Assert.Equal("시간표 관리", ToolTip.GetTip(managementButton));
+            Assert.Equal("시간표 구성", AutomationProperties.GetHelpText(managementButton));
+            Assert.Equal("시간표 구성", ToolTip.GetTip(managementButton));
             Assert.Equal(2, (int)AutomationProperties.GetHeadingLevel(managementButton));
             Flyout managementFlyout = Assert.IsType<Flyout>(managementButton.Flyout);
             managementFlyout.ShowAt(managementButton);
@@ -410,8 +410,8 @@ public sealed class WorkspacePanelAccessibilityTests
             Assert.True(workspace.IsInspectorPaneOpen);
             Assert.True(closeInspectorPane.IsEffectivelyVisible);
             Assert.True(closeInspectorPane.IsKeyboardFocusWithin);
-            Assert.Equal("시간표 관리 패널 닫기", AutomationProperties.GetName(closeInspectorPane));
-            Assert.Equal("시간표 관리 닫기", ToolTip.GetTip(closeInspectorPane));
+            Assert.Equal("시간표 구성 패널 닫기", AutomationProperties.GetName(closeInspectorPane));
+            Assert.Equal("시간표 구성 닫기", ToolTip.GetTip(closeInspectorPane));
 
             closeInspectorPane.Command?.Execute(null);
             Dispatcher.UIThread.RunJobs();

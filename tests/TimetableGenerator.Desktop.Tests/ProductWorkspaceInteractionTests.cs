@@ -967,12 +967,12 @@ public sealed class ProductWorkspaceInteractionTests
             assertCompoundHeaderButtonAlignment(openInspector);
             assertCompoundHeaderButtonAlignment(export);
             Assert.Same(workspace.OpenInspectorPaneCommand, openInspector.Command);
-            Assert.Equal("시간표 관리 패널 열기", AutomationProperties.GetName(openInspector));
+            Assert.Equal("시간표 구성 패널 열기", AutomationProperties.GetName(openInspector));
             Assert.Equal("OpenInspectorPane", AutomationProperties.GetAutomationId(openInspector));
-            Assert.Equal("시간표 관리", ToolTip.GetTip(openInspector));
+            Assert.Equal("시간표 구성", ToolTip.GetTip(openInspector));
             Assert.Contains(
                 openInspector.GetVisualDescendants().OfType<TextBlock>(),
-                candidate => candidate.Text == "시간표 관리");
+                candidate => candidate.Text == "시간표 구성");
             Assert.True(openInspector.Focusable);
             Assert.True(openInspector.IsTabStop);
             Assert.DoesNotContain(

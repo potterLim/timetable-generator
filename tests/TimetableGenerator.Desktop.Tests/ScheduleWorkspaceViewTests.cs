@@ -880,8 +880,9 @@ public sealed class ScheduleWorkspaceViewTests
 
             Assert.False(boardOrNull.IsVisible);
             Assert.True(listOrNull.IsVisible);
-            Assert.Equal("시간표 보기", modeTextOrNull.Text);
-            Assert.Equal("시간표를 주간 표로 보기", AutomationProperties.GetName(modeButtonOrNull));
+            Assert.Equal("주간 시간표", modeTextOrNull.Text);
+            Assert.Equal("주간 시간표로 보기", AutomationProperties.GetName(modeButtonOrNull));
+            Assert.Equal("주간 시간표로 보기", ToolTip.GetTip(modeButtonOrNull));
             Assert.Equal(workspace.DisplayedScheduleBoard!.ListGroups.Count, listItemsOrNull.ItemCount);
             ListBoxItem semanticListEntry = listItemsOrNull.GetVisualDescendants().OfType<ListBoxItem>().First();
             Assert.False(string.IsNullOrWhiteSpace(AutomationProperties.GetName(semanticListEntry)));
@@ -921,7 +922,9 @@ public sealed class ScheduleWorkspaceViewTests
 
             Assert.True(boardOrNull.IsVisible);
             Assert.False(listOrNull.IsVisible);
-            Assert.Equal("목록 보기", modeTextOrNull.Text);
+            Assert.Equal("일정 목록", modeTextOrNull.Text);
+            Assert.Equal("일정 목록으로 보기", AutomationProperties.GetName(modeButtonOrNull));
+            Assert.Equal("일정 목록으로 보기", ToolTip.GetTip(modeButtonOrNull));
         }
         finally
         {

@@ -65,9 +65,9 @@ internal sealed partial class ScheduleWorkspaceView :
         scheduleBoardOrNull.IsVisible = isListMode == false;
         scheduleListOrNull.IsVisible = isListMode;
         modeIconOrNull.Icon = isListMode ? Icon.CalendarWeekStart : Icon.List;
-        modeTextOrNull.Text = isListMode ? "시간표 보기" : "목록 보기";
-        string automationName = isListMode ? "시간표를 주간 표로 보기" : "시간표를 목록으로 보기";
-        string toolTip = isListMode ? "시간표로 보기" : "목록으로 보기";
+        modeTextOrNull.Text = isListMode ? "주간 시간표" : "일정 목록";
+        string automationName = isListMode ? "주간 시간표로 보기" : "일정 목록으로 보기";
+        string toolTip = automationName;
         Avalonia.Automation.AutomationProperties.SetName(modeButtonOrNull, automationName);
         ToolTip.SetTip(modeButtonOrNull, toolTip);
         mPresentationMode = presentationMode;

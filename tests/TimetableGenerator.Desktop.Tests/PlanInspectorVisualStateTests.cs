@@ -96,9 +96,9 @@ public sealed class PlanInspectorVisualStateTests
                             + ", arranged title width: "
                             + planTitle.Bounds.Width + ".");
                     Assert.Equal(TERM_PLAN_NAME, AutomationProperties.GetName(managementButton));
-                    Assert.Equal("시간표 관리", AutomationProperties.GetHelpText(managementButton));
+                    Assert.Equal("시간표 구성", AutomationProperties.GetHelpText(managementButton));
                     Assert.Equal(2, (int)AutomationProperties.GetHeadingLevel(managementButton));
-                    Assert.Equal("시간표 관리", ToolTip.GetTip(managementButton));
+                    Assert.Equal("시간표 구성", ToolTip.GetTip(managementButton));
                     Assert.Empty(managementButton.GetVisualDescendants().OfType<FluentIcon>());
                 }
                 finally
