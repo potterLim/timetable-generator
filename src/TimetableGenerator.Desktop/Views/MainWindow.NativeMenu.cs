@@ -284,6 +284,17 @@ internal sealed partial class MainWindow
         return CanMaximize && WindowState != WindowState.FullScreen;
     }
 
+    private void recordWindowStateBeforeFullScreen(
+        WindowState previousWindowState,
+        WindowState currentWindowState)
+    {
+        if (previousWindowState != WindowState.FullScreen
+            && currentWindowState == WindowState.FullScreen)
+        {
+            mWindowStateBeforeFullScreen = previousWindowState;
+        }
+    }
+
     private void toggleFullScreen()
     {
         if (WindowState == WindowState.FullScreen)
