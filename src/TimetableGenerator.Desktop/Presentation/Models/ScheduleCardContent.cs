@@ -17,7 +17,7 @@ internal sealed class ScheduleCardContent
             throw new ArgumentNullException(nameof(entry));
         }
 
-        Title = entry.Name;
+        Title = entry.NameWithSection;
         LocationOrNull = entry.HasAssignedLocation ? entry.LocationDisplayText : null;
         ResponsiblePersonOrNull = entry.HasConfirmedInstructor ? entry.InstructorDisplayText : null;
     }

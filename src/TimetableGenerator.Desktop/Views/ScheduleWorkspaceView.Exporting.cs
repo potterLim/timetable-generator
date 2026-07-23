@@ -159,7 +159,8 @@ internal sealed partial class ScheduleWorkspaceView
         {
             CancellationToken cancellationToken = mLifetimeCancellationSource.Token;
             cancellationToken.ThrowIfCancellationRequested();
-            CalendarExportDocument document = createCalendarExportDocument();
+            CalendarExportDocument document = createCalendarExportDocument(
+                ECalendarExportProvider.Google);
             GoogleCalendarExportPlan exportPlan = GoogleCalendarExportPlan.CreateFromDocument(document);
             showPersistentExportStatus("Google 캘린더로 내보내는 중입니다.", EExportStatus.Information);
             GoogleCalendarExportResult result =
@@ -190,7 +191,8 @@ internal sealed partial class ScheduleWorkspaceView
         {
             CancellationToken cancellationToken = mLifetimeCancellationSource.Token;
             cancellationToken.ThrowIfCancellationRequested();
-            CalendarExportDocument document = createCalendarExportDocument();
+            CalendarExportDocument document = createCalendarExportDocument(
+                ECalendarExportProvider.Apple);
             showPersistentExportStatus("Apple 캘린더로 내보내는 중입니다.", EExportStatus.Information);
             AppleCalendarExportResult result =
                 await mAppleCalendarExporter.ExportAsync(
@@ -205,7 +207,8 @@ internal sealed partial class ScheduleWorkspaceView
         }
     }
 
-    private CalendarExportDocument createCalendarExportDocument()
+    private CalendarExportDocument createCalendarExportDocument(
+        ECalendarExportProvider provider)
     {
         PlannerWorkspaceViewModel workspace = getRequiredWorkspace();
         PlanTabItem? activePlanOrNull = workspace.ActivePlanOrNull;
@@ -219,11 +222,27 @@ internal sealed partial class ScheduleWorkspaceView
             AcademicTermCalendarMetadataRegistry.findByTerm(
                 scheduleBoardOrNull.AcademicTerm,
                 mCalendarTimeZoneProvider.GetTimeZoneId());
-        return ScheduleCalendarProjector.Project(
-            activePlanOrNull.PlanId,
-            activePlanOrNull.Name,
-            workspace.DisplayedSchedule,
-            academicCalendar);
+        switch (provider)
+        {
+            case ECalendarExportProvider.Google:
+                return ScheduleCalendarProjector.ProjectForGoogleCalendar(
+                    activePlanOrNull.PlanId,
+                    activePlanOrNull.Name,
+                    workspace.DisplayedSchedule,
+                    academicCalendar);
+            case ECalendarExportProvider.Apple:
+                return ScheduleCalendarProjector.ProjectForAppleCalendar(
+                    activePlanOrNull.PlanId,
+                    activePlanOrNull.Name,
+                    workspace.DisplayedSchedule,
+                    academicCalendar);
+            case ECalendarExportProvider.None:
+            default:
+                throw new ArgumentOutOfRangeException(
+                    nameof(provider),
+                    provider,
+                    "Schedule exports require a supported calendar provider.");
+        }
     }
 
     private PlannerWorkspaceViewModel getRequiredWorkspace()

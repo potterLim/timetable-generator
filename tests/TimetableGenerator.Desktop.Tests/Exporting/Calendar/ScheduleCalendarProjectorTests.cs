@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 
 using TimetableGenerator.CatalogJson;
+using TimetableGenerator.Desktop.Exporting.AppleCalendar;
 using TimetableGenerator.Desktop.Exporting.Calendar;
+using TimetableGenerator.Desktop.Integrations.GoogleCalendar;
 using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Planning;
@@ -41,7 +44,7 @@ public sealed class ScheduleCalendarProjectorTests
                     new AcademicPeriod(3)),
             });
 
-        CalendarExportDocument document = ScheduleCalendarProjector.Project(
+        CalendarExportDocument document = ScheduleCalendarProjector.ProjectForGoogleCalendar(
             planId,
             new PlanName("2026-2학기 시간표"),
             displayedSchedule,
@@ -60,6 +63,47 @@ public sealed class ScheduleCalendarProjectorTests
                 || character >= 'a' && character <= 'f';
             Assert.True(isLowercaseHexadecimal);
         }
+    }
+
+    [Fact]
+    public void CourseTitleUsesNoSpaceSectionSuffixOnlyForAppleCalendar()
+    {
+        ScheduleRecommendation displayedSchedule = new ScheduleRecommendation(
+            new ScheduleEntry[]
+            {
+                createCourseEntry(
+                    new CourseId("course-1"),
+                    new OfferingId("offering-1"),
+                    EDay.Monday,
+                    new AcademicPeriod(3)),
+            });
+        PlanId planId = PlanId.CreateNew();
+        PlanName planName = new PlanName("시간표");
+        AcademicTermCalendarMetadata academicCalendar = getAcademicCalendar();
+
+        CalendarExportDocument appleDocument =
+            ScheduleCalendarProjector.ProjectForAppleCalendar(
+                planId,
+                planName,
+                displayedSchedule,
+                academicCalendar);
+        IReadOnlyList<AppleCalendarAutomationEvent> appleEvents =
+            AppleCalendarEventOccurrenceProjector.Project(appleDocument);
+        CalendarExportDocument googleDocument =
+            ScheduleCalendarProjector.ProjectForGoogleCalendar(
+                planId,
+                planName,
+                displayedSchedule,
+                academicCalendar);
+        GoogleCalendarExportPlan googleExportPlan =
+            GoogleCalendarExportPlan.CreateFromDocument(googleDocument);
+
+        Assert.NotEmpty(appleEvents);
+        Assert.All(
+            appleEvents,
+            appleEvent => Assert.Equal("전자기학(01)", appleEvent.Summary));
+        GoogleCalendarExportEvent googleEvent = Assert.Single(googleExportPlan.Events);
+        Assert.Equal("전자기학", googleEvent.Title);
     }
 
     [Fact]
@@ -82,7 +126,7 @@ public sealed class ScheduleCalendarProjectorTests
                     new AcademicPeriod(2)),
             });
 
-        CalendarExportDocument document = ScheduleCalendarProjector.Project(
+        CalendarExportDocument document = ScheduleCalendarProjector.ProjectForGoogleCalendar(
             PlanId.CreateNew(),
             new PlanName("시간표"),
             displayedSchedule,
@@ -131,7 +175,7 @@ public sealed class ScheduleCalendarProjectorTests
                     new AcademicPeriod(4)),
             });
 
-        CalendarExportDocument document = ScheduleCalendarProjector.Project(
+        CalendarExportDocument document = ScheduleCalendarProjector.ProjectForGoogleCalendar(
             PlanId.CreateNew(),
             new PlanName("시간표"),
             displayedSchedule,
@@ -163,7 +207,7 @@ public sealed class ScheduleCalendarProjectorTests
                 new PersonalScheduleEntry(personalSchedule, fridayRange),
             });
 
-        CalendarExportDocument document = ScheduleCalendarProjector.Project(
+        CalendarExportDocument document = ScheduleCalendarProjector.ProjectForGoogleCalendar(
             PlanId.CreateNew(),
             new PlanName("연구 일정"),
             displayedSchedule,
@@ -193,13 +237,13 @@ public sealed class ScheduleCalendarProjectorTests
             EDay.Thursday,
             new AcademicPeriod(3));
 
-        CalendarExportDocument firstDocument = ScheduleCalendarProjector.Project(
+        CalendarExportDocument firstDocument = ScheduleCalendarProjector.ProjectForGoogleCalendar(
             planId,
             new PlanName("이름 변경 전"),
             new ScheduleRecommendation(
                 new ScheduleEntry[] { mondayEntry, thursdayEntry }),
             getAcademicCalendar());
-        CalendarExportDocument secondDocument = ScheduleCalendarProjector.Project(
+        CalendarExportDocument secondDocument = ScheduleCalendarProjector.ProjectForGoogleCalendar(
             planId,
             new PlanName("이름 변경 후"),
             new ScheduleRecommendation(
@@ -217,7 +261,7 @@ public sealed class ScheduleCalendarProjectorTests
         OfferingId offeringId = new OfferingId("offering-1");
 
         CalendarExportDocument thirdPeriodDocument =
-            ScheduleCalendarProjector.Project(
+            ScheduleCalendarProjector.ProjectForGoogleCalendar(
                 planId,
                 new PlanName("시간표"),
                 new ScheduleRecommendation(
@@ -231,7 +275,7 @@ public sealed class ScheduleCalendarProjectorTests
                     }),
                 getAcademicCalendar());
         CalendarExportDocument fourthPeriodDocument =
-            ScheduleCalendarProjector.Project(
+            ScheduleCalendarProjector.ProjectForGoogleCalendar(
                 planId,
                 new PlanName("시간표"),
                 new ScheduleRecommendation(
@@ -264,7 +308,7 @@ public sealed class ScheduleCalendarProjectorTests
             new ScheduleEntry[] { entry, entry });
 
         Assert.Throws<ArgumentException>(
-            () => ScheduleCalendarProjector.Project(
+            () => ScheduleCalendarProjector.ProjectForGoogleCalendar(
                 PlanId.CreateNew(),
                 new PlanName("시간표"),
                 displayedSchedule,

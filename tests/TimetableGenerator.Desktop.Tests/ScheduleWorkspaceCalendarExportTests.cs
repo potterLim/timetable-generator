@@ -157,6 +157,12 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                     planOrNull.Events[0].FirstOccurrenceDate,
                     planOrNull.Events[0].StartTime).Value);
             Assert.NotEmpty(planOrNull.Events);
+            Assert.Contains(
+                planOrNull.Events,
+                exportEvent => exportEvent.Title == "프로그래밍 I");
+            Assert.DoesNotContain(
+                planOrNull.Events,
+                exportEvent => exportEvent.Title == "프로그래밍 I(01)");
             TextBlock status = findRequiredTextBlock(workspaceView, "ExportStatusText");
             Assert.Equal("Google 캘린더로 내보냈습니다.", status.Text);
             Assert.Equal(1, googleCalendarNavigator.OpenAttemptCount);
@@ -626,6 +632,9 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.Equal(workspace.ActivePlan.Name, documentOrNull.CalendarName);
             Assert.Equal("Asia/Seoul", documentOrNull.AcademicCalendar.TimeZoneId.Value);
             Assert.NotEmpty(documentOrNull.Events);
+            Assert.Contains(
+                documentOrNull.Events,
+                calendarEvent => calendarEvent.Content.Summary == "프로그래밍 I(01)");
             TextBlock status = findRequiredTextBlock(workspaceView, "ExportStatusText");
             Assert.Equal("Apple 캘린더로 내보냈습니다.", status.Text);
         }

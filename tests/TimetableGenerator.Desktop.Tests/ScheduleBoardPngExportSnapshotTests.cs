@@ -415,7 +415,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 Assert.Equal(
                     new string[]
                     {
-                        "시간표 내보내기 검증",
+                        "시간표 내보내기 검증(01)",
                         "테스트 강의실",
                         "테스트 교수",
                     },
@@ -502,7 +502,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 Grid exportCardContent = Assert.IsType<Grid>(exportCard.Content);
                 List<TextBlock> exportCardTexts = exportCardContent.Children.OfType<TextBlock>().ToList();
                 Assert.Equal(
-                    new string[] { "프로그래밍 I" },
+                    new string[] { "프로그래밍 I(02)" },
                     exportCardTexts.Select(textBlock => textBlock.Text));
                 Assert.Single(exportCardContent.RowDefinitions);
                 Assert.Single(exportCardContent.Children);

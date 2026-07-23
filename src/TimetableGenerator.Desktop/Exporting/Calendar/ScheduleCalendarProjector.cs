@@ -10,11 +10,46 @@ internal static class ScheduleCalendarProjector
 {
     private const string DESCRIPTION_LINE_SEPARATOR = "\n";
 
-    public static CalendarExportDocument Project(
+    private enum ECourseSummaryStyle
+    {
+        NameOnly,
+        NameWithSection,
+    }
+
+    public static CalendarExportDocument ProjectForGoogleCalendar(
         PlanId planId,
         PlanName planName,
         ScheduleRecommendation displayedSchedule,
         AcademicTermCalendarMetadata academicCalendar)
+    {
+        return project(
+            planId,
+            planName,
+            displayedSchedule,
+            academicCalendar,
+            ECourseSummaryStyle.NameOnly);
+    }
+
+    public static CalendarExportDocument ProjectForAppleCalendar(
+        PlanId planId,
+        PlanName planName,
+        ScheduleRecommendation displayedSchedule,
+        AcademicTermCalendarMetadata academicCalendar)
+    {
+        return project(
+            planId,
+            planName,
+            displayedSchedule,
+            academicCalendar,
+            ECourseSummaryStyle.NameWithSection);
+    }
+
+    private static CalendarExportDocument project(
+        PlanId planId,
+        PlanName planName,
+        ScheduleRecommendation displayedSchedule,
+        AcademicTermCalendarMetadata academicCalendar,
+        ECourseSummaryStyle courseSummaryStyle)
     {
         if (planId.IsValid == false)
         {
@@ -46,7 +81,9 @@ internal static class ScheduleCalendarProjector
                 new CalendarEventProjectionGroupKey(
                     sourceIdentity,
                     scheduleEntry.TimeRange);
-            CalendarEventContent content = createEventContent(scheduleEntry);
+            CalendarEventContent content = createEventContent(
+                scheduleEntry,
+                courseSummaryStyle);
 
             CalendarEventProjectionGroup? existingGroupOrNull;
             bool hasExistingGroup = groupsByKey.TryGetValue(key, out existingGroupOrNull);
@@ -93,12 +130,16 @@ internal static class ScheduleCalendarProjector
         throw new ArgumentOutOfRangeException(nameof(entry), entry, "Unknown schedule entry type.");
     }
 
-    private static CalendarEventContent createEventContent(ScheduleEntry entry)
+    private static CalendarEventContent createEventContent(
+        ScheduleEntry entry,
+        ECourseSummaryStyle courseSummaryStyle)
     {
         CourseScheduleEntry? courseEntryOrNull = entry as CourseScheduleEntry;
         if (courseEntryOrNull != null)
         {
-            return createCourseEventContent(courseEntryOrNull);
+            return createCourseEventContent(
+                courseEntryOrNull,
+                courseSummaryStyle);
         }
 
         PersonalScheduleEntry? personalEntryOrNull = entry as PersonalScheduleEntry;
@@ -110,9 +151,11 @@ internal static class ScheduleCalendarProjector
         throw new ArgumentOutOfRangeException(nameof(entry), entry, "Unknown schedule entry type.");
     }
 
-    private static CalendarEventContent createCourseEventContent(CourseScheduleEntry entry)
+    private static CalendarEventContent createCourseEventContent(
+        CourseScheduleEntry entry,
+        ECourseSummaryStyle courseSummaryStyle)
     {
-        string summary = entry.Name;
+        string summary = findCourseSummary(entry, courseSummaryStyle);
         string location = entry.HasAssignedLocation ? entry.LocationDisplayText : string.Empty;
         List<string> descriptionLines = new List<string>
         {
@@ -128,6 +171,24 @@ internal static class ScheduleCalendarProjector
             summary,
             location,
             string.Join(DESCRIPTION_LINE_SEPARATOR, descriptionLines));
+    }
+
+    private static string findCourseSummary(
+        CourseScheduleEntry entry,
+        ECourseSummaryStyle courseSummaryStyle)
+    {
+        switch (courseSummaryStyle)
+        {
+            case ECourseSummaryStyle.NameOnly:
+                return entry.Name;
+            case ECourseSummaryStyle.NameWithSection:
+                return entry.NameWithSection;
+            default:
+                throw new ArgumentOutOfRangeException(
+                    nameof(courseSummaryStyle),
+                    courseSummaryStyle,
+                    "Unknown course calendar summary style.");
+        }
     }
 
     private static CalendarEventContent createPersonalEventContent(PersonalScheduleEntry entry)

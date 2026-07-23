@@ -401,7 +401,7 @@ public sealed class ScheduleWorkspaceViewTests
                 textBlock => textBlock.Text == "3학점");
             TextBlock courseName = Assert.Single(
                 cardTexts,
-                textBlock => textBlock.Text == LONG_NAME);
+                textBlock => textBlock.Text == LONG_NAME + "(01)");
             Assert.Equal(0, Grid.GetRow(courseName));
             Assert.Equal(TextAlignment.Center, courseName.TextAlignment);
             Assert.Equal(TextWrapping.Wrap, courseName.TextWrapping);
@@ -527,7 +527,7 @@ public sealed class ScheduleWorkspaceViewTests
             Button locationOnlyCard = findCourseCardByName(scheduleBoard, LOCATION_ONLY_NAME);
             assertVisualCourseCardTexts(
                 locationOnlyCard,
-                new string[] { LOCATION_ONLY_NAME, "오석관 301" });
+                new string[] { LOCATION_ONLY_NAME + "(01)", "오석관 301" });
             Grid locationOnlyContent = Assert.IsType<Grid>(locationOnlyCard.Content);
             TextBlock locationOnlyLocation = Assert.IsType<TextBlock>(locationOnlyContent.Children[1]);
             Assert.Equal(7.0, locationOnlyLocation.Margin.Top);
@@ -536,7 +536,7 @@ public sealed class ScheduleWorkspaceViewTests
             Button instructorOnlyCard = findCourseCardByName(scheduleBoard, INSTRUCTOR_ONLY_NAME);
             assertVisualCourseCardTexts(
                 instructorOnlyCard,
-                new string[] { INSTRUCTOR_ONLY_NAME, "김테스트" });
+                new string[] { INSTRUCTOR_ONLY_NAME + "(01)", "김테스트" });
             Grid instructorOnlyContent = Assert.IsType<Grid>(instructorOnlyCard.Content);
             TextBlock instructorOnlyInstructor = Assert.IsType<TextBlock>(instructorOnlyContent.Children[1]);
             Assert.Equal(7.0, instructorOnlyInstructor.Margin.Top);
@@ -545,7 +545,7 @@ public sealed class ScheduleWorkspaceViewTests
             Button titleOnlyCard = findCourseCardByName(scheduleBoard, TITLE_ONLY_NAME);
             assertVisualCourseCardTexts(
                 titleOnlyCard,
-                new string[] { TITLE_ONLY_NAME });
+                new string[] { TITLE_ONLY_NAME + "(01)" });
             Assert.Contains("교수 미정", AutomationProperties.GetName(titleOnlyCard));
             Assert.Contains("강의실 미정", AutomationProperties.GetName(titleOnlyCard));
         }
@@ -584,7 +584,7 @@ public sealed class ScheduleWorkspaceViewTests
             Button projectedCard = findCourseCardByName(scheduleBoard, "프로그래밍 I");
             assertVisualCourseCardTexts(
                 projectedCard,
-                new string[] { "프로그래밍 I" });
+                new string[] { "프로그래밍 I(02)" });
             Assert.Contains("교수 정보 없음", AutomationProperties.GetName(projectedCard));
             Assert.Contains("강의실 미정", AutomationProperties.GetName(projectedCard));
         }

@@ -31,6 +31,14 @@ internal sealed class CourseScheduleEntry : ScheduleEntry
         }
     }
 
+    public string NameWithSection
+    {
+        get
+        {
+            return Name + "(" + SectionCode.Value + ")";
+        }
+    }
+
     public string SectionDisplayText
     {
         get
