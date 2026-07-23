@@ -95,9 +95,15 @@ internal sealed partial class MainWindow
                 bringAllWindowsToFront));
 
         NativeMenu nativeMenu = new NativeMenu();
-        nativeMenu.Add(new NativeMenuItem("File") { Menu = fileMenu });
-        nativeMenu.Add(new NativeMenuItem("Edit") { Menu = editMenu });
-        nativeMenu.Add(new NativeMenuItem("Window") { Menu = windowMenu });
+        NativeMenuItem fileMenuItem = new NativeMenuItem("File");
+        fileMenuItem.Menu = fileMenu;
+        nativeMenu.Add(fileMenuItem);
+        NativeMenuItem editMenuItem = new NativeMenuItem("Edit");
+        editMenuItem.Menu = editMenu;
+        nativeMenu.Add(editMenuItem);
+        NativeMenuItem windowMenuItem = new NativeMenuItem("Window");
+        windowMenuItem.Menu = windowMenu;
+        nativeMenu.Add(windowMenuItem);
 
         mEditNativeMenuOrNull = editMenu;
         mWindowNativeMenuOrNull = windowMenu;
@@ -135,11 +141,10 @@ internal sealed partial class MainWindow
     {
         DelegateCommand command = new DelegateCommand(execute, canExecuteOrNull);
         mNativeMenuCommands.Add(command);
-        return new NativeMenuItem(header)
-        {
-            Command = command,
-            Gesture = gestureOrNull,
-        };
+        NativeMenuItem menuItem = new NativeMenuItem(header);
+        menuItem.Command = command;
+        menuItem.Gesture = gestureOrNull;
+        return menuItem;
     }
 
     private void onNativeMenuNeedsUpdate(object? senderOrNull, EventArgs eventArgs)

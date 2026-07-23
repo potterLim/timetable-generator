@@ -14,8 +14,13 @@ internal sealed partial class AboutWindow : Window
         AvaloniaXamlLoader.Load(this);
         TextBlock productVersionText = findRequiredControl<TextBlock>("ProductVersionText");
         Version? productVersionOrNull = typeof(AboutWindow).Assembly.GetName().Version;
-        productVersionText.Text = "Version "
-            + (productVersionOrNull?.ToString(3) ?? "1.0.0");
+        string productVersion = "1.0.0";
+        if (productVersionOrNull != null)
+        {
+            productVersion = productVersionOrNull.ToString(3);
+        }
+
+        productVersionText.Text = "Version " + productVersion;
         KeyDown += onKeyDown;
         Closed += onClosed;
     }

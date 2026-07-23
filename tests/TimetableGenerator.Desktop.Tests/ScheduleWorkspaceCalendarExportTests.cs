@@ -298,7 +298,8 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         try
         {
             TextBlock statusText = findRequiredTextBlock(workspaceView, "ExportStatusText");
-            List<(string? Text, AutomationLiveSetting LiveSetting)> liveRegionTransitions = new();
+            List<(string? Text, AutomationLiveSetting LiveSetting)> liveRegionTransitions =
+                new List<(string? Text, AutomationLiveSetting LiveSetting)>();
             statusText.PropertyChanged +=
                 (object? senderOrNull, AvaloniaPropertyChangedEventArgs eventArgs) =>
                 {

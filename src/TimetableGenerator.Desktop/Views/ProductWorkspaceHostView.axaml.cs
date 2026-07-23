@@ -274,7 +274,12 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
             return;
         }
 
-        string message = workspaceOrNull?.PlanNameValidationMessage ?? string.Empty;
+        string message = string.Empty;
+        if (workspaceOrNull != null)
+        {
+            message = workspaceOrNull.PlanNameValidationMessage;
+        }
+
         AutomationLiveSetting liveSetting = string.IsNullOrEmpty(message)
             ? AutomationLiveSetting.Off
             : AutomationLiveSetting.Assertive;

@@ -81,16 +81,14 @@ internal sealed class ProcessAppleCalendarAutomationCommand
                 nameof(requestPath));
         }
 
-        ProcessStartInfo startInfo = new ProcessStartInfo
-        {
-            FileName = OSASCRIPT_PATH,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            StandardOutputEncoding = new UTF8Encoding(false),
-            StandardErrorEncoding = new UTF8Encoding(false),
-        };
+        ProcessStartInfo startInfo = new ProcessStartInfo();
+        startInfo.FileName = OSASCRIPT_PATH;
+        startInfo.UseShellExecute = false;
+        startInfo.CreateNoWindow = true;
+        startInfo.RedirectStandardOutput = true;
+        startInfo.RedirectStandardError = true;
+        startInfo.StandardOutputEncoding = new UTF8Encoding(false);
+        startInfo.StandardErrorEncoding = new UTF8Encoding(false);
         startInfo.ArgumentList.Add("-l");
         startInfo.ArgumentList.Add("JavaScript");
         startInfo.ArgumentList.Add("-e");
@@ -102,14 +100,12 @@ internal sealed class ProcessAppleCalendarAutomationCommand
 
     internal static FileStreamOptions createPrivateRequestFileOptions()
     {
-        FileStreamOptions options = new FileStreamOptions
-        {
-            Mode = FileMode.CreateNew,
-            Access = FileAccess.Write,
-            Share = FileShare.None,
-            BufferSize = BUFFER_SIZE,
-            Options = FileOptions.Asynchronous | FileOptions.WriteThrough,
-        };
+        FileStreamOptions options = new FileStreamOptions();
+        options.Mode = FileMode.CreateNew;
+        options.Access = FileAccess.Write;
+        options.Share = FileShare.None;
+        options.BufferSize = BUFFER_SIZE;
+        options.Options = FileOptions.Asynchronous | FileOptions.WriteThrough;
         if (OperatingSystem.IsWindows())
         {
             return options;
