@@ -27,7 +27,9 @@ jobs:
 
       - name: Verify distribution script contracts
         shell: pwsh
-        run: ./tests/Distribution/MacOSIcon.Tests.ps1
+        run: |
+          ./tests/Distribution/MacOSIcon.Tests.ps1
+          ./tests/Distribution/PublishedContent.Tests.ps1
 
       - name: Install .NET SDK
         uses: actions/setup-dotnet@v6

@@ -87,6 +87,7 @@ Desktop 앱과 함께 배포되는 클라이언트 보안 비밀은 사용자가
 - `AppIcon.icns`에 16px부터 1024px까지 필요한 각 해상도의 PNG 또는 macOS `iconutil` ARGB 이미지 표현이 포함됨
 - 현재 잠금 파일과 배포 구성에 맞춰 저장소가 필수로 정의한 third-party 라이선스·notice 파일 세트가 운영체제별 고지 위치에 포함됨
 - 제품 archive에 PDB 디버그 심볼이 없음
+- 제품 게시 디렉터리와 archive에 관리형 어셈블리용 XML 개발 문서가 없음
 - macOS에서 실행할 때 `Info.plist`가 `plutil` 검사를 통과함
 
 이 검증은 코드 서명, Apple notarization, 악성 코드 검사, 운영체제별 실제 실행을 대신하지 않습니다. 현재 저장소에는 인증서나 Apple notarization 자격 증명을 포함하지 않으므로 게시 스크립트가 만든 macOS archive에는 의도적으로 `unsigned`가 표시됩니다.

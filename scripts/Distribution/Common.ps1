@@ -369,6 +369,62 @@ function Remove-DebugSymbols {
     }
 }
 
+function Test-IsXmlDocumentationFile {
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path
+    )
+
+    $directoryPath = [System.IO.Path]::GetDirectoryName($Path)
+    $assemblyName = [System.IO.Path]::GetFileNameWithoutExtension($Path)
+    $assemblyPath = Join-Path $directoryPath "$assemblyName.dll"
+    $executablePath = Join-Path $directoryPath "$assemblyName.exe"
+    if (-not (Test-Path -LiteralPath $assemblyPath -PathType Leaf) -and
+        -not (Test-Path -LiteralPath $executablePath -PathType Leaf)) {
+        return $false
+    }
+
+    $readerSettings = [System.Xml.XmlReaderSettings]::new()
+    $readerSettings.DtdProcessing = [System.Xml.DtdProcessing]::Prohibit
+    $readerSettings.XmlResolver = $null
+
+    $stream = $null
+    $reader = $null
+    try {
+        $stream = [System.IO.File]::OpenRead($Path)
+        $reader = [System.Xml.XmlReader]::Create($stream, $readerSettings)
+        $nodeType = $reader.MoveToContent()
+        return $nodeType -eq [System.Xml.XmlNodeType]::Element -and
+            $reader.LocalName.Equals("doc", [System.StringComparison]::Ordinal)
+    }
+    catch [System.Xml.XmlException] {
+        return $false
+    }
+    finally {
+        if ($null -ne $reader) {
+            $reader.Dispose()
+        }
+
+        if ($null -ne $stream) {
+            $stream.Dispose()
+        }
+    }
+}
+
+function Remove-PublishedXmlDocumentationFiles {
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path
+    )
+
+    $xmlFiles = @(Get-ChildItem -LiteralPath $Path -Filter "*.xml" -File -Recurse)
+    foreach ($xmlFile in $xmlFiles) {
+        if (Test-IsXmlDocumentationFile -Path $xmlFile.FullName) {
+            Remove-Item -LiteralPath $xmlFile.FullName -Force
+        }
+    }
+}
+
 function Invoke-SelfContainedPublish {
     param(
         [Parameter(Mandatory)]
@@ -415,4 +471,5 @@ function Invoke-SelfContainedPublish {
     )
 
     Invoke-DotNetCommand -Arguments $arguments
+    Remove-PublishedXmlDocumentationFiles -Path $DestinationPath
 }
