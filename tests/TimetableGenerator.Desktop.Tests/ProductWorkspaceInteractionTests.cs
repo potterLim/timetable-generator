@@ -234,7 +234,7 @@ public sealed class ProductWorkspaceInteractionTests
     }
 
     [AvaloniaFact]
-    public void WideWorkspaceReflowsForBothPersistentSidePanes()
+    public void WideWorkspaceKeepsInspectorOverlayFromReflowingSchedule()
     {
         const double WIDE_WIDTH = 1_300.0;
 
@@ -256,10 +256,9 @@ public sealed class ProductWorkspaceInteractionTests
             Dispatcher.UIThread.RunJobs();
 
             double widthWithBothPanes = scheduleWorkspace.Bounds.Width;
-            Assert.InRange(
-                widthWithCoursePane - widthWithBothPanes,
-                workspace.InspectorPaneWidth - 1.0,
-                workspace.InspectorPaneWidth + 1.0);
+            Border inspectorPaneHost = findRequiredControl<Border>(host, "InspectorPaneHost");
+            Assert.Contains("overlay", inspectorPaneHost.Classes);
+            Assert.Equal(widthWithCoursePane, widthWithBothPanes, 3);
 
             workspace.ToggleCoursePaneCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
@@ -274,10 +273,7 @@ public sealed class ProductWorkspaceInteractionTests
             Dispatcher.UIThread.RunJobs();
 
             double widthWithoutPanes = scheduleWorkspace.Bounds.Width;
-            Assert.InRange(
-                widthWithoutPanes - widthWithInspectorPane,
-                workspace.InspectorPaneWidth - 1.0,
-                workspace.InspectorPaneWidth + 1.0);
+            Assert.Equal(widthWithInspectorPane, widthWithoutPanes, 3);
         }
         finally
         {

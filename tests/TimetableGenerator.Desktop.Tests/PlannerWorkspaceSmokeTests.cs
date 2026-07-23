@@ -74,7 +74,7 @@ public sealed class PlannerWorkspaceSmokeTests
 
         Assert.Equal(EWorkspaceLayoutMode.Wide, workspace.LayoutMode);
         Assert.Equal(SplitViewDisplayMode.Inline, workspace.CoursePaneDisplayMode);
-        Assert.Equal(SplitViewDisplayMode.Inline, workspace.InspectorPaneDisplayMode);
+        Assert.Equal(SplitViewDisplayMode.Overlay, workspace.InspectorPaneDisplayMode);
         Assert.Equal(312.0, workspace.CoursePaneWidth);
         Assert.Equal(304.0, workspace.InspectorPaneWidth);
         Assert.False(workspace.IsCoursePaneOpen);

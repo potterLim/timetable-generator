@@ -257,7 +257,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                 break;
             case EWorkspaceLayoutMode.Wide:
                 setCoursePanePresentation(SplitViewDisplayMode.Inline, WIDE_COURSE_PANE_WIDTH);
-                setInspectorPanePresentation(SplitViewDisplayMode.Inline, WIDE_INSPECTOR_PANE_WIDTH);
+                setInspectorPanePresentation(SplitViewDisplayMode.Overlay, WIDE_INSPECTOR_PANE_WIDTH);
                 break;
             case EWorkspaceLayoutMode.Medium:
                 setCoursePanePresentation(SplitViewDisplayMode.Inline, COLLAPSED_COURSE_PANE_WIDTH);
