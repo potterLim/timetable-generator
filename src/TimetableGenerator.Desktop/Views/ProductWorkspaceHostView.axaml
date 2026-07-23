@@ -219,7 +219,7 @@
                 Width="34"
                 Height="3"
                 VerticalAlignment="Center"
-                IsIndeterminate="True" />
+                IsIndeterminate="{Binding IsAutosaveSaving}" />
             <TextBlock
                 Classes="secondary"
                 VerticalAlignment="Center"
@@ -354,7 +354,7 @@
               Width="34"
               Height="3"
               VerticalAlignment="Center"
-              IsIndeterminate="True" />
+              IsIndeterminate="{Binding IsAutosaveSaving}" />
           <TextBlock
               Classes="secondary"
               VerticalAlignment="Center"

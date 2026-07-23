@@ -212,7 +212,7 @@
                 <ProgressBar
                     Margin="0,12,0,0"
                     Height="4"
-                    IsIndeterminate="True"
+                    IsIndeterminate="{Binding IsLoading}"
                     AutomationProperties.Name="시간표 준비 진행 상태" />
               </StackPanel>
 
@@ -340,7 +340,7 @@
           <StackPanel Spacing="14">
             <ProgressBar
                 Height="4"
-                IsIndeterminate="True"
+                IsIndeterminate="{Binding IsShutdownInProgress}"
                 IsVisible="{Binding IsShutdownInProgress}" />
             <Border
                 Width="44"

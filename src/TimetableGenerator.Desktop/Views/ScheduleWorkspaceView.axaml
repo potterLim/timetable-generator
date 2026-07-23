@@ -557,7 +557,7 @@
           <ProgressBar
               Width="180"
               Height="4"
-              IsIndeterminate="True" />
+              IsIndeterminate="{Binding IsRecommendationCalculating}" />
           <TextBlock
               FontSize="18"
               FontWeight="SemiBold"
