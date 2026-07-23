@@ -761,6 +761,13 @@ public sealed class ProductWorkspaceInteractionTests
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
+            StackPanel savedStatus = findRequiredControl<StackPanel>(
+                host,
+                "EmptyWorkspaceAutosaveSavedStatus");
+            Assert.True(savedStatus.IsEffectivelyVisible);
+            Assert.Contains(
+                savedStatus.GetVisualDescendants().OfType<TextBlock>(),
+                textBlock => textBlock.Text == "자동 저장됨");
             Button createFirstPlanButton = findRequiredControl<Button>(host, "CreateFirstPlanButton");
             createFirstPlanButton.Command?.Execute(null);
             workspace.ConfirmPlanNameCommand.Execute(null);
@@ -778,6 +785,7 @@ public sealed class ProductWorkspaceInteractionTests
             Button retryButton = findRequiredControl<Button>(host, "EmptyWorkspaceRetryAutosaveButton");
             Assert.True(workspace.IsWorkspaceEmpty);
             Assert.True(workspace.HasAutosaveError);
+            Assert.False(savedStatus.IsVisible);
             Assert.True(retryButton.IsEffectivelyVisible);
             Assert.True(retryButton.IsEnabled);
             Assert.Equal("저장 다시 시도", AutomationProperties.GetName(retryButton));
@@ -790,6 +798,10 @@ public sealed class ProductWorkspaceInteractionTests
 
             Assert.False(workspace.HasAutosaveError);
             Assert.False(retryButton.IsVisible);
+            Assert.True(savedStatus.IsEffectivelyVisible);
+            Assert.Contains(
+                savedStatus.GetVisualDescendants().OfType<TextBlock>(),
+                textBlock => textBlock.Text == "자동 저장됨");
         }
         finally
         {
