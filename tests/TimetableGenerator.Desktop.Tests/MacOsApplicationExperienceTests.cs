@@ -187,6 +187,15 @@ public sealed class MacOsApplicationExperienceTests
             fullScreenCommand.Execute(null);
             Assert.Equal(WindowState.Normal, hostWindow.WindowState);
             Assert.Equal("Enter Full Screen", fullScreenMenuItem.Header);
+
+            zoomCommand.Execute(null);
+            Assert.Equal(WindowState.Maximized, hostWindow.WindowState);
+            fullScreenCommand.Execute(null);
+            Assert.Equal(WindowState.FullScreen, hostWindow.WindowState);
+            fullScreenCommand.Execute(null);
+            Assert.Equal(WindowState.Maximized, hostWindow.WindowState);
+            zoomCommand.Execute(null);
+            Assert.Equal(WindowState.Normal, hostWindow.WindowState);
         }
         finally
         {

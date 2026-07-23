@@ -19,6 +19,8 @@ internal sealed partial class MainWindow
 
     private NativeMenuItem? mFullScreenNativeMenuItemOrNull;
 
+    private WindowState mWindowStateBeforeFullScreen = WindowState.Normal;
+
     private void initializeNativeMenu()
     {
         NativeMenu fileMenu = new NativeMenu();
@@ -284,9 +286,16 @@ internal sealed partial class MainWindow
 
     private void toggleFullScreen()
     {
-        WindowState = WindowState == WindowState.FullScreen
-            ? WindowState.Normal
-            : WindowState.FullScreen;
+        if (WindowState == WindowState.FullScreen)
+        {
+            WindowState = mWindowStateBeforeFullScreen;
+        }
+        else
+        {
+            mWindowStateBeforeFullScreen = WindowState;
+            WindowState = WindowState.FullScreen;
+        }
+
         synchronizeNativeMenuCommandState();
     }
 
