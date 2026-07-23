@@ -147,10 +147,7 @@ function Publish-MacOSTarget {
     Remove-DebugSymbols -Path $bundlePath
 
     if ($IsMacOS) {
-        & chmod +x -- $executablePath
-        if ($LASTEXITCODE -ne 0) {
-            throw "macOS 앱 실행 권한을 설정할 수 없습니다."
-        }
+        Set-UnixExecutableFileMode -Path $executablePath
     }
 
     $archiveFileName = "TimetableGenerator-$ProductVersion-$RuntimeIdentifier-unsigned.zip"

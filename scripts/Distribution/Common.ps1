@@ -425,6 +425,19 @@ function Remove-PublishedXmlDocumentationFiles {
     }
 }
 
+function Set-UnixExecutableFileMode {
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path
+    )
+
+    $currentMode = [System.IO.File]::GetUnixFileMode($Path)
+    $executeMode = [System.IO.UnixFileMode]::UserExecute `
+        -bor [System.IO.UnixFileMode]::GroupExecute `
+        -bor [System.IO.UnixFileMode]::OtherExecute
+    [System.IO.File]::SetUnixFileMode($Path, $currentMode -bor $executeMode)
+}
+
 function Invoke-SelfContainedPublish {
     param(
         [Parameter(Mandatory)]

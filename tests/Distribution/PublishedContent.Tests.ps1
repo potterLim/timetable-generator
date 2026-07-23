@@ -101,6 +101,31 @@ try {
         Assert-PathExists -Path $applicationDataPath
         Assert-PathExists -Path $noticePath
     }
+
+    Invoke-TestCase -Name "Unix executable mode preserves access bits" -Action {
+        if ($IsWindows) {
+            return
+        }
+
+        $executablePath = Join-Path $testRoot "TimetableGenerator"
+        [System.IO.File]::WriteAllBytes($executablePath, [byte[]] @(1))
+        $initialMode = [System.IO.UnixFileMode]::UserRead `
+            -bor [System.IO.UnixFileMode]::UserWrite `
+            -bor [System.IO.UnixFileMode]::GroupRead `
+            -bor [System.IO.UnixFileMode]::OtherRead
+        [System.IO.File]::SetUnixFileMode($executablePath, $initialMode)
+
+        Set-UnixExecutableFileMode -Path $executablePath
+
+        $expectedMode = $initialMode `
+            -bor [System.IO.UnixFileMode]::UserExecute `
+            -bor [System.IO.UnixFileMode]::GroupExecute `
+            -bor [System.IO.UnixFileMode]::OtherExecute
+        $actualMode = [System.IO.File]::GetUnixFileMode($executablePath)
+        if ($actualMode -ne $expectedMode) {
+            throw "실행 권한이 보존된 access mode에 추가되지 않았습니다: $actualMode"
+        }
+    }
 }
 finally {
     Remove-Item -LiteralPath $testRoot -Recurse -Force
