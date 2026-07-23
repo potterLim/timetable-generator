@@ -100,6 +100,25 @@ internal sealed class ProcessAppleCalendarAutomationCommand
         return startInfo;
     }
 
+    internal static FileStreamOptions createPrivateRequestFileOptions()
+    {
+        FileStreamOptions options = new FileStreamOptions
+        {
+            Mode = FileMode.CreateNew,
+            Access = FileAccess.Write,
+            Share = FileShare.None,
+            BufferSize = BUFFER_SIZE,
+            Options = FileOptions.Asynchronous | FileOptions.WriteThrough,
+        };
+        if (OperatingSystem.IsWindows())
+        {
+            return options;
+        }
+
+        options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+        return options;
+    }
+
     private static async Task<string> executeProcessAsync(
         EAppleCalendarAutomationOperation operation,
         string requestPath,
@@ -164,19 +183,8 @@ internal sealed class ProcessAppleCalendarAutomationCommand
         byte[] requestBytes = new UTF8Encoding(false).GetBytes(requestJson);
         await using (FileStream requestStream = new FileStream(
                 requestPath,
-                FileMode.CreateNew,
-                FileAccess.Write,
-                FileShare.None,
-                BUFFER_SIZE,
-                FileOptions.Asynchronous | FileOptions.WriteThrough))
+                createPrivateRequestFileOptions()))
         {
-            if (OperatingSystem.IsMacOS())
-            {
-                File.SetUnixFileMode(
-                    requestPath,
-                    UnixFileMode.UserRead | UnixFileMode.UserWrite);
-            }
-
             await requestStream.WriteAsync(requestBytes, cancellationToken).ConfigureAwait(false);
             await requestStream.FlushAsync(cancellationToken).ConfigureAwait(false);
         }
