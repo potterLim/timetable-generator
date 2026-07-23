@@ -83,8 +83,10 @@ internal sealed partial class MainWindow : Window
             return;
         }
 
-        workspaceOrNull.closeTransientWorkspaceOverlays();
-        eventArgs.Handled = true;
+        if (workspaceOrNull.tryCloseTopmostTransientWorkspaceOverlay())
+        {
+            eventArgs.Handled = true;
+        }
     }
 
     private void onClosed(object? senderOrNull, EventArgs eventArgs)

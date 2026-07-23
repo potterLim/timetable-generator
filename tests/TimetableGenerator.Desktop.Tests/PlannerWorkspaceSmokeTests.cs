@@ -150,7 +150,7 @@ public sealed class PlannerWorkspaceSmokeTests
         workspace.applyWorkspaceWidth(new WorkspaceWidth(1_300.0));
 
         workspace.OpenInspectorPaneCommand.Execute(null);
-        workspace.closeTransientWorkspaceOverlays();
+        workspace.tryCloseTopmostTransientWorkspaceOverlay();
 
         Assert.True(workspace.IsCoursePaneOpen);
         Assert.False(workspace.IsInspectorPaneOpen);
@@ -158,25 +158,25 @@ public sealed class PlannerWorkspaceSmokeTests
         workspace.applyWorkspaceWidth(new WorkspaceWidth(960.0));
 
         workspace.ToggleCoursePaneCommand.Execute(null);
-        workspace.closeTransientWorkspaceOverlays();
+        workspace.tryCloseTopmostTransientWorkspaceOverlay();
 
         Assert.False(workspace.IsCoursePaneOpen);
         Assert.False(workspace.IsInspectorPaneOpen);
 
         workspace.OpenInspectorPaneCommand.Execute(null);
-        workspace.closeTransientWorkspaceOverlays();
+        workspace.tryCloseTopmostTransientWorkspaceOverlay();
 
         Assert.False(workspace.IsCoursePaneOpen);
         Assert.False(workspace.IsInspectorPaneOpen);
 
         workspace.OpenInspectorPaneCommand.Execute(null);
         workspace.ToggleCoursePaneCommand.Execute(null);
-        workspace.closeTransientWorkspaceOverlays();
+        workspace.tryCloseTopmostTransientWorkspaceOverlay();
 
         Assert.False(workspace.IsCoursePaneOpen);
         Assert.True(workspace.IsInspectorPaneOpen);
 
-        workspace.closeTransientWorkspaceOverlays();
+        workspace.tryCloseTopmostTransientWorkspaceOverlay();
 
         Assert.False(workspace.IsCoursePaneOpen);
         Assert.False(workspace.IsInspectorPaneOpen);
@@ -184,7 +184,7 @@ public sealed class PlannerWorkspaceSmokeTests
         workspace.applyWorkspaceWidth(new WorkspaceWidth(1_600.0));
         workspace.ToggleCoursePaneCommand.Execute(null);
         workspace.OpenInspectorPaneCommand.Execute(null);
-        workspace.closeTransientWorkspaceOverlays();
+        workspace.tryCloseTopmostTransientWorkspaceOverlay();
 
         Assert.True(workspace.IsCoursePaneOpen);
         Assert.True(workspace.IsInspectorPaneOpen);
@@ -679,7 +679,7 @@ public sealed class PlannerWorkspaceSmokeTests
             workspace.BeginRenamePlanCommand.Execute(null);
             Assert.True(workspace.IsPlanEditingOverlayVisible);
 
-            workspace.closeTransientWorkspaceOverlays();
+            workspace.tryCloseTopmostTransientWorkspaceOverlay();
 
             Assert.False(workspace.IsRenamingPlan);
             Assert.False(workspace.IsPlanEditingOverlayVisible);

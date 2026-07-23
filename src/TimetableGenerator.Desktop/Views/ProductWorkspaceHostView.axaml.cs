@@ -7,6 +7,7 @@ using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -40,7 +41,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         DataContextChanged += onDataContextChanged;
         AttachedToVisualTree += onAttachedToVisualTree;
         DetachedFromVisualTree += onDetachedFromVisualTree;
-        KeyDown += onKeyDown;
+        AddHandler(KeyDownEvent, onKeyDown, RoutingStrategies.Tunnel);
     }
 
     private void onDataContextChanged(object? senderOrNull, EventArgs eventArgs)
@@ -582,14 +583,19 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
 
     private void onKeyDown(object? senderOrNull, KeyEventArgs eventArgs)
     {
-        if (mWorkspaceOrNull != null && mWorkspaceOrNull.IsWorkspaceInteractionEnabled == false)
+        if (mWorkspaceOrNull == null)
         {
-            if (eventArgs.Key == Key.Escape)
-            {
-                mWorkspaceOrNull.closeTransientWorkspaceOverlays();
-                eventArgs.Handled = true;
-            }
+            return;
+        }
 
+        if (eventArgs.Key == Key.Escape)
+        {
+            eventArgs.Handled = mWorkspaceOrNull.tryCloseTopmostTransientWorkspaceOverlay();
+            return;
+        }
+
+        if (mWorkspaceOrNull.IsWorkspaceInteractionEnabled == false)
+        {
             return;
         }
 
@@ -601,12 +607,9 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
             return;
         }
 
-        if (mWorkspaceOrNull != null)
+        if (mWorkspaceOrNull.IsCoursePaneOpen == false)
         {
-            if (mWorkspaceOrNull.IsCoursePaneOpen == false)
-            {
-                mWorkspaceOrNull.ToggleCoursePaneCommand.Execute(null);
-            }
+            mWorkspaceOrNull.ToggleCoursePaneCommand.Execute(null);
         }
 
         Dispatcher.UIThread.Post(focusCourseSearchBox, DispatcherPriority.Input);

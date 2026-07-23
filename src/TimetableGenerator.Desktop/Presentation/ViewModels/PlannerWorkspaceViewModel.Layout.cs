@@ -178,38 +178,41 @@ internal sealed partial class PlannerWorkspaceViewModel
         raisePropertyChanged(nameof(LayoutMode));
     }
 
-    internal void closeTransientWorkspaceOverlays()
+    internal bool tryCloseTopmostTransientWorkspaceOverlay()
     {
         if (IsCourseChoiceEditorVisible)
         {
             closeCourseChoiceEditingState();
-            return;
+            return true;
         }
 
         if (IsPersonalScheduleOverlayVisible)
         {
             closePersonalScheduleEditingState();
-            return;
+            return true;
         }
 
         if (IsPlanEditingOverlayVisible)
         {
             closePlanEditingState();
-            return;
+            return true;
         }
 
         if (CoursePaneDisplayMode == SplitViewDisplayMode.Overlay
             && IsCoursePaneOpen)
         {
             IsCoursePaneOpen = false;
-            return;
+            return true;
         }
 
         if (InspectorPaneDisplayMode == SplitViewDisplayMode.Overlay
             && IsInspectorPaneOpen)
         {
             IsInspectorPaneOpen = false;
+            return true;
         }
+
+        return false;
     }
 
     private void toggleCoursePane()

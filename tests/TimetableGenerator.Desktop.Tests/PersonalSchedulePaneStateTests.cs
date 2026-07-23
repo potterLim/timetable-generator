@@ -105,7 +105,7 @@ public sealed class PersonalSchedulePaneStateTests
 
             workspace.BeginAddPersonalScheduleCommand.Execute(null);
             workspace.IsInspectorPaneOpen = false;
-            workspace.closeTransientWorkspaceOverlays();
+            workspace.tryCloseTopmostTransientWorkspaceOverlay();
 
             Assert.True(workspace.IsInspectorPaneOpen);
         }

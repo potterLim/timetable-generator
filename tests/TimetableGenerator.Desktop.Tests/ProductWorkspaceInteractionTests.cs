@@ -283,6 +283,49 @@ public sealed class ProductWorkspaceInteractionTests
     }
 
     [AvaloniaFact]
+    public void EscapeClosesWideInspectorOverlayAndReturnsFocusToItsAction()
+    {
+        const double WIDE_WIDTH = 1_300.0;
+
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+        workspace.applyWorkspaceWidth(new WorkspaceWidth(WIDE_WIDTH));
+        ProductWorkspaceHostView host = new ProductWorkspaceHostView();
+        host.DataContext = workspace;
+        Window window = createWindow(host, WIDE_WIDTH);
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            ScheduleWorkspaceView scheduleWorkspace = host.GetVisualDescendants()
+                .OfType<ScheduleWorkspaceView>()
+                .Single();
+            Button openInspector = findRequiredControl<Button>(
+                scheduleWorkspace,
+                "OpenInspectorPaneButton");
+            workspace.OpenInspectorPaneCommand.Execute(null);
+            Dispatcher.UIThread.RunJobs();
+
+            Button closeInspector = host.GetVisualDescendants()
+                .OfType<Button>()
+                .Single(candidate => candidate.Name == "CloseInspectorPaneButton");
+            Assert.True(closeInspector.IsKeyboardFocusWithin);
+
+            window.KeyPress(Key.Escape, RawInputModifiers.None, PhysicalKey.Escape, string.Empty);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(workspace.IsInspectorPaneOpen);
+            Assert.True(openInspector.IsKeyboardFocusWithin);
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
     public void CompactToolbarActionOpensCoursePaneWithoutDismissingInspector()
     {
         const double COMPACT_WIDTH = 900.0;
