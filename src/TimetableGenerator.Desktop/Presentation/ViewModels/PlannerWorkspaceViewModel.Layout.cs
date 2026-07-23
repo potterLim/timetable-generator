@@ -198,9 +198,17 @@ internal sealed partial class PlannerWorkspaceViewModel
             return;
         }
 
-        if (CoursePaneDisplayMode == SplitViewDisplayMode.Overlay)
+        if (CoursePaneDisplayMode == SplitViewDisplayMode.Overlay
+            && IsCoursePaneOpen)
         {
             IsCoursePaneOpen = false;
+            return;
+        }
+
+        if (InspectorPaneDisplayMode == SplitViewDisplayMode.Overlay
+            && IsInspectorPaneOpen)
+        {
+            IsInspectorPaneOpen = false;
         }
     }
 

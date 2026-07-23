@@ -144,9 +144,17 @@ public sealed class PlannerWorkspaceSmokeTests
     }
 
     [AvaloniaFact]
-    public void EscapeClosesTransientOverlayWithoutDiscardingInspectorChoice()
+    public void EscapeClosesTheTopmostResponsiveOverlay()
     {
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+        workspace.applyWorkspaceWidth(new WorkspaceWidth(1_300.0));
+
+        workspace.OpenInspectorPaneCommand.Execute(null);
+        workspace.closeTransientWorkspaceOverlays();
+
+        Assert.True(workspace.IsCoursePaneOpen);
+        Assert.False(workspace.IsInspectorPaneOpen);
+
         workspace.applyWorkspaceWidth(new WorkspaceWidth(960.0));
 
         workspace.ToggleCoursePaneCommand.Execute(null);
@@ -159,10 +167,23 @@ public sealed class PlannerWorkspaceSmokeTests
         workspace.closeTransientWorkspaceOverlays();
 
         Assert.False(workspace.IsCoursePaneOpen);
+        Assert.False(workspace.IsInspectorPaneOpen);
+
+        workspace.OpenInspectorPaneCommand.Execute(null);
+        workspace.ToggleCoursePaneCommand.Execute(null);
+        workspace.closeTransientWorkspaceOverlays();
+
+        Assert.False(workspace.IsCoursePaneOpen);
         Assert.True(workspace.IsInspectorPaneOpen);
+
+        workspace.closeTransientWorkspaceOverlays();
+
+        Assert.False(workspace.IsCoursePaneOpen);
+        Assert.False(workspace.IsInspectorPaneOpen);
 
         workspace.applyWorkspaceWidth(new WorkspaceWidth(1_600.0));
         workspace.ToggleCoursePaneCommand.Execute(null);
+        workspace.OpenInspectorPaneCommand.Execute(null);
         workspace.closeTransientWorkspaceOverlays();
 
         Assert.True(workspace.IsCoursePaneOpen);
