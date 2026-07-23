@@ -1,0 +1,57 @@
+<Window
+    x:Class="TimetableGenerator.Desktop.Views.AboutWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Width="420"
+    SizeToContent="Height"
+    Title="About Timetable Generator"
+    Icon="/Assets/AppIcon.png"
+    CanResize="False"
+    ShowInTaskbar="False"
+    WindowStartupLocation="CenterOwner"
+    AutomationProperties.Name="About Timetable Generator">
+  <Border
+      Padding="32"
+      Background="{DynamicResource ElevatedSurfaceBrush}">
+    <StackPanel
+        HorizontalAlignment="Center"
+        Spacing="10">
+      <Image
+          Width="72"
+          Height="72"
+          Source="/Assets/AppIcon.png"
+          Stretch="Uniform"
+          AutomationProperties.AccessibilityView="Raw"
+          IsHitTestVisible="False" />
+      <TextBlock
+          HorizontalAlignment="Center"
+          AutomationProperties.HeadingLevel="1"
+          FontSize="24"
+          FontWeight="SemiBold"
+          Text="Timetable Generator" />
+      <TextBlock
+          x:Name="ProductVersionText"
+          HorizontalAlignment="Center"
+          Classes="secondary"
+          AutomationProperties.AutomationId="ProductVersionText" />
+      <TextBlock
+          MaxWidth="330"
+          Margin="0,6,0,4"
+          HorizontalAlignment="Center"
+          Classes="secondary"
+          LineHeight="21"
+          Text="과목을 조합하고 가능한 시간표를 비교하는 데스크톱 앱입니다."
+          TextAlignment="Center"
+          TextWrapping="Wrap" />
+      <Button
+          x:Name="CloseAboutButton"
+          Margin="0,8,0,0"
+          HorizontalAlignment="Center"
+          Classes="accent"
+          Content="닫기"
+          Click="onCloseButtonClick"
+          AutomationProperties.AutomationId="CloseAboutButton"
+          AutomationProperties.Name="정보 창 닫기" />
+    </StackPanel>
+  </Border>
+</Window>

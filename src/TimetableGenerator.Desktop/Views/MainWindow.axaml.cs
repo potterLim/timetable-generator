@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
@@ -30,6 +31,8 @@ internal sealed partial class MainWindow : Window
 
     private bool mIsCloseAuthorized;
 
+    private bool mShouldExitApplicationAfterClose;
+
     public ProductAppearanceViewModel Appearance { get; }
 
     public bool UsesProductCaptionControls { get; }
@@ -49,6 +52,7 @@ internal sealed partial class MainWindow : Window
         AvaloniaXamlLoader.Load(this);
         DataContext = mProductShellViewModel;
         initializeProductCaptionControls();
+        initializeNativeMenu();
         initializeWorkspaceInteraction();
         applyInitialWindowPlacement();
 
@@ -91,6 +95,7 @@ internal sealed partial class MainWindow : Window
         Closed -= onClosed;
         mProductShellViewModel.PropertyChanged -= onProductShellPropertyChanged;
         disposeWorkspaceInteraction();
+        disposeNativeMenu();
         disposeProductCaptionControls();
         mProductShellViewModel.Dispose();
         GC.KeepAlive(mStartupTask);
@@ -99,6 +104,12 @@ internal sealed partial class MainWindow : Window
 
     private void onClosing(object? senderOrNull, WindowClosingEventArgs eventArgs)
     {
+        if (eventArgs.CloseReason == WindowCloseReason.ApplicationShutdown
+            || eventArgs.CloseReason == WindowCloseReason.OSShutdown)
+        {
+            mShouldExitApplicationAfterClose = true;
+        }
+
         if (mIsCloseAuthorized)
         {
             return;
@@ -126,17 +137,41 @@ internal sealed partial class MainWindow : Window
 
             await Appearance.CompletePersistenceAsync();
 
+            bool shouldExitApplication = mShouldExitApplicationAfterClose;
             mIsCloseAuthorized = true;
             Close();
+            if (shouldExitApplication)
+            {
+                requestExplicitApplicationShutdown();
+            }
         }
         catch (Exception exception)
         {
             mIsShutdownStarted = false;
+            mShouldExitApplicationAfterClose = false;
             mProductShellViewModel.showShutdownFailure(exception);
             Trace.TraceError(
                 "The product window remained open because autosave completion failed: {0}",
                 exception);
         }
+    }
+
+    private static void requestExplicitApplicationShutdown()
+    {
+        IClassicDesktopStyleApplicationLifetime? desktopLifetimeOrNull =
+            Avalonia.Application.Current?.ApplicationLifetime
+                as IClassicDesktopStyleApplicationLifetime;
+        if (desktopLifetimeOrNull == null
+            || desktopLifetimeOrNull.ShutdownMode != ShutdownMode.OnExplicitShutdown)
+        {
+            return;
+        }
+
+        Dispatcher.UIThread.Post(
+            delegate
+            {
+                desktopLifetimeOrNull.TryShutdown();
+            });
     }
 
     private void onProductShellPropertyChanged(object? senderOrNull, PropertyChangedEventArgs eventArgs)

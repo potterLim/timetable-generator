@@ -2,6 +2,7 @@ using System;
 using System.IO;
 
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
@@ -19,6 +20,14 @@ internal sealed class App : Avalonia.Application
     private const string CATALOG_CONFIGURATION_FILE_NAME = "catalog-source.local.json";
 
     private const string TITLE_BAR_CONTENT_PADDING_RESOURCE_KEY = "WindowTitleBarContentPadding";
+
+    private ProductDataPaths? mDataPathsOrNull;
+
+    private IClassicDesktopStyleApplicationLifetime? mDesktopLifetimeOrNull;
+
+    private IActivatableLifetime? mActivatableLifetimeOrNull;
+
+    private AboutWindow? mAboutWindowOrNull;
 
     public override void Initialize()
     {
@@ -39,12 +48,146 @@ internal sealed class App : Avalonia.Application
         if (desktopLifetimeOrNull != null)
         {
             ProductDataPaths dataPaths = new ProductDataPaths(ProductDataRootPath.CreateDefault());
-            ProductShellViewModel productShell = createProductShell(dataPaths);
-            ProductAppearanceViewModel appearance = createProductAppearance(dataPaths);
-            desktopLifetimeOrNull.MainWindow = new MainWindow(productShell, appearance);
+            mDataPathsOrNull = dataPaths;
+            mDesktopLifetimeOrNull = desktopLifetimeOrNull;
+            desktopLifetimeOrNull.MainWindow = createMainWindow(dataPaths);
+
+            if (OperatingSystem.IsMacOS())
+            {
+                desktopLifetimeOrNull.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+                mActivatableLifetimeOrNull = this.TryGetFeature<IActivatableLifetime>();
+                if (mActivatableLifetimeOrNull != null)
+                {
+                    mActivatableLifetimeOrNull.Activated += onApplicationActivated;
+                }
+
+                desktopLifetimeOrNull.Exit += onDesktopLifetimeExit;
+            }
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private MainWindow createMainWindow(ProductDataPaths dataPaths)
+    {
+        ProductShellViewModel productShell = createProductShell(dataPaths);
+        ProductAppearanceViewModel appearance = createProductAppearance(dataPaths);
+        return new MainWindow(productShell, appearance);
+    }
+
+    private void onApplicationActivated(object? senderOrNull, ActivatedEventArgs eventArgs)
+    {
+        if (eventArgs.Kind != ActivationKind.Reopen)
+        {
+            return;
+        }
+
+        IClassicDesktopStyleApplicationLifetime? desktopLifetimeOrNull = mDesktopLifetimeOrNull;
+        ProductDataPaths? dataPathsOrNull = mDataPathsOrNull;
+        if (desktopLifetimeOrNull == null || dataPathsOrNull == null)
+        {
+            return;
+        }
+
+        Window? mainWindowOrNull = desktopLifetimeOrNull.MainWindow;
+        if (mainWindowOrNull == null || isOpenWindow(desktopLifetimeOrNull, mainWindowOrNull) == false)
+        {
+            mainWindowOrNull = createMainWindow(dataPathsOrNull);
+            desktopLifetimeOrNull.MainWindow = mainWindowOrNull;
+            mainWindowOrNull.Show();
+        }
+        else
+        {
+            if (mainWindowOrNull.WindowState == WindowState.Minimized)
+            {
+                mainWindowOrNull.WindowState = WindowState.Normal;
+            }
+
+            if (mainWindowOrNull.IsVisible == false)
+            {
+                mainWindowOrNull.Show();
+            }
+        }
+
+        mainWindowOrNull.Activate();
+    }
+
+    private void onDesktopLifetimeExit(
+        object? senderOrNull,
+        ControlledApplicationLifetimeExitEventArgs eventArgs)
+    {
+        if (mActivatableLifetimeOrNull != null)
+        {
+            mActivatableLifetimeOrNull.Activated -= onApplicationActivated;
+            mActivatableLifetimeOrNull = null;
+        }
+
+        if (mDesktopLifetimeOrNull != null)
+        {
+            mDesktopLifetimeOrNull.Exit -= onDesktopLifetimeExit;
+            mDesktopLifetimeOrNull = null;
+        }
+
+        mDataPathsOrNull = null;
+    }
+
+    private void onAboutMenuItemClick(object? senderOrNull, EventArgs eventArgs)
+    {
+        AboutWindow? aboutWindowOrNull = mAboutWindowOrNull;
+        if (aboutWindowOrNull != null)
+        {
+            if (aboutWindowOrNull.WindowState == WindowState.Minimized)
+            {
+                aboutWindowOrNull.WindowState = WindowState.Normal;
+            }
+
+            aboutWindowOrNull.Activate();
+            return;
+        }
+
+        aboutWindowOrNull = new AboutWindow();
+        mAboutWindowOrNull = aboutWindowOrNull;
+        aboutWindowOrNull.Closed += onAboutWindowClosed;
+
+        IClassicDesktopStyleApplicationLifetime? desktopLifetimeOrNull = mDesktopLifetimeOrNull;
+        Window? mainWindowOrNull = desktopLifetimeOrNull?.MainWindow;
+        if (desktopLifetimeOrNull != null
+            && mainWindowOrNull != null
+            && mainWindowOrNull.IsVisible
+            && isOpenWindow(desktopLifetimeOrNull, mainWindowOrNull))
+        {
+            _ = aboutWindowOrNull.ShowDialog(mainWindowOrNull);
+            return;
+        }
+
+        aboutWindowOrNull.Show();
+    }
+
+    private void onAboutWindowClosed(object? senderOrNull, EventArgs eventArgs)
+    {
+        if (senderOrNull is AboutWindow aboutWindow)
+        {
+            aboutWindow.Closed -= onAboutWindowClosed;
+            if (ReferenceEquals(mAboutWindowOrNull, aboutWindow))
+            {
+                mAboutWindowOrNull = null;
+            }
+        }
+    }
+
+    private static bool isOpenWindow(
+        IClassicDesktopStyleApplicationLifetime desktopLifetime,
+        Window window)
+    {
+        foreach (Window openWindow in desktopLifetime.Windows)
+        {
+            if (ReferenceEquals(openWindow, window))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private ProductAppearanceViewModel createProductAppearance(ProductDataPaths dataPaths)
