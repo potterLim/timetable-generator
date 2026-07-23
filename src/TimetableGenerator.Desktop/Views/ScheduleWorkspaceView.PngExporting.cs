@@ -66,16 +66,26 @@ internal sealed partial class ScheduleWorkspaceView
                 return;
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
             using (destinationFileOrNull)
-            using (ScheduleBoardPngExportSnapshot snapshot =
-                ScheduleBoardPngExportSnapshot.create(
-                    pngExportHost,
-                    exportPresentationOrNull,
-                    scheduleBoard))
-            using (Stream destinationStream = await destinationFileOrNull.OpenWriteAsync())
             {
-                await exportSnapshotAsync(snapshot, destinationStream, cancellationToken);
+                if (hasPngFileNameExtension(destinationFileOrNull.Name) == false)
+                {
+                    showPersistentExportStatus(
+                        "파일 이름을 .png로 끝내 주세요.",
+                        EExportStatus.Failure);
+                    return;
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+                using (ScheduleBoardPngExportSnapshot snapshot =
+                    ScheduleBoardPngExportSnapshot.create(
+                        pngExportHost,
+                        exportPresentationOrNull,
+                        scheduleBoard))
+                using (Stream destinationStream = await destinationFileOrNull.OpenWriteAsync())
+                {
+                    await exportSnapshotAsync(snapshot, destinationStream, cancellationToken);
+                }
             }
 
             showTransientExportStatus("PNG 이미지로 저장했습니다.", EExportStatus.Success);
@@ -195,7 +205,14 @@ internal sealed partial class ScheduleWorkspaceView
         return pngExportHostOrNull;
     }
 
-    private FilePickerSaveOptions createPngSaveOptions(PlanName planName)
+    private static FilePickerSaveOptions createPngSaveOptions(PlanName planName)
+    {
+        return createPngSaveOptions(planName, OperatingSystem.IsMacOS());
+    }
+
+    internal static FilePickerSaveOptions createPngSaveOptions(
+        PlanName planName,
+        bool isMacOS)
     {
         ArgumentNullException.ThrowIfNull(planName);
         FilePickerSaveOptions options = new FilePickerSaveOptions();
@@ -203,13 +220,30 @@ internal sealed partial class ScheduleWorkspaceView
         options.DefaultExtension = "png";
         options.ShowOverwritePrompt = true;
         options.SuggestedFileName = SchedulePngFileNameFactory.Create(planName);
-        FilePickerFileType pngFileType = new FilePickerFileType("PNG 이미지");
-        pngFileType.Patterns = new string[] { "*.png" };
-        pngFileType.MimeTypes = new string[] { "image/png" };
-        pngFileType.AppleUniformTypeIdentifiers = new string[] { "public.png" };
-        options.FileTypeChoices = new FilePickerFileType[] { pngFileType };
-        options.SuggestedFileType = pngFileType;
+
+        // Avalonia 12.1.0 leaves its NSSavePanel file-type accessory view active
+        // after dismissal. The suggested name and post-pick validation retain the
+        // PNG contract without installing that native view on macOS.
+        if (isMacOS == false)
+        {
+            FilePickerFileType pngFileType = new FilePickerFileType("PNG 이미지");
+            pngFileType.Patterns = new string[] { "*.png" };
+            pngFileType.MimeTypes = new string[] { "image/png" };
+            pngFileType.AppleUniformTypeIdentifiers = new string[] { "public.png" };
+            options.FileTypeChoices = new FilePickerFileType[] { pngFileType };
+            options.SuggestedFileType = pngFileType;
+        }
+
         return options;
+    }
+
+    internal static bool hasPngFileNameExtension(string fileName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
+        return string.Equals(
+            Path.GetExtension(fileName),
+            ".png",
+            StringComparison.OrdinalIgnoreCase);
     }
 
     private static FolderPickerOpenOptions createPngBatchFolderPickerOptions()
