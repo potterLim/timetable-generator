@@ -135,7 +135,7 @@
           <Border
               x:Name="BoardExportSurface"
               Grid.Column="0"
-              BorderBrush="{DynamicResource BorderBrush}"
+              BorderBrush="{DynamicResource StrongBorderBrush}"
               BorderThickness="0"
               Background="{DynamicResource ElevatedSurfaceBrush}">
             <StackPanel Background="{DynamicResource ElevatedSurfaceBrush}">

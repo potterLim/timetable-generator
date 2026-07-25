@@ -125,8 +125,8 @@ internal sealed class ScheduleBoardTimeAxis
         int startMinute = Math.Max(0, roundDown(earliestMinute, MINUTES_PER_HOUR) - START_CONTEXT_MINUTES);
         int endMinute = Math.Min(
             MINUTES_PER_DAY,
-            roundDown(latestMinute, MINUTES_PER_HOUR)
-                + MINUTES_PER_HOUR);
+            roundDown(latestMinute, GUIDE_INTERVAL_MINUTES)
+                + GUIDE_INTERVAL_MINUTES);
         return new ScheduleBoardTimeAxis(
             new ScheduleBoardTimeBoundary(startMinute),
             new ScheduleBoardTimeBoundary(endMinute));

@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
@@ -108,7 +109,8 @@ internal sealed partial class ScheduleBoardView : UserControl
         scheduleBoard.mIsPngExport = true;
         scheduleBoard.mBoardContextHeader.IsVisible = true;
         scheduleBoard.mBoardStickyHeaderContainer.IsVisible = false;
-        scheduleBoard.mBoardExportSurface.BorderThickness = new Thickness(1.0);
+        scheduleBoard.mBoardExportSurface.BorderThickness =
+            new Thickness(1.0, 1.0, 1.0, 0.0);
         return scheduleBoard;
     }
 
@@ -189,11 +191,14 @@ internal sealed partial class ScheduleBoardView : UserControl
         addDayHeaders();
         addTimeHeaders();
 
-        if (recommendationOrNull == null)
+        bool hasScheduleEntries = recommendationOrNull != null
+            && recommendationOrNull.Entries.Count > 0;
+        if (hasScheduleEntries == false || recommendationOrNull == null)
         {
             return;
         }
 
+        addScheduleEndBoundary();
         foreach (ScheduleEntry entry in recommendationOrNull.Entries)
         {
             addScheduleEntry(entry);
@@ -284,6 +289,29 @@ internal sealed partial class ScheduleBoardView : UserControl
             Grid.SetRow(timeGuide, rowIndex);
             mBoardGrid.Children.Add(timeGuide);
         }
+    }
+
+    private void addScheduleEndBoundary()
+    {
+        Border endBoundary = createBottomBoundary("schedule-end-boundary");
+        Grid.SetRow(endBoundary, mRenderedLayout.TimeAxis.IncrementCount);
+        Grid.SetColumn(endBoundary, 1);
+        Grid.SetColumnSpan(
+            endBoundary,
+            mRenderedLayout.DayRange.TotalColumnCount - 1);
+        mBoardGrid.Children.Add(endBoundary);
+    }
+
+    private Border createBottomBoundary(string className)
+    {
+        Border boundary = new Border();
+        boundary.Classes.Add(className);
+        boundary.BorderBrush = findBrush("StrongBorderBrush");
+        boundary.BorderThickness = new Thickness(0.0, 0.0, 0.0, 1.0);
+        boundary.IsHitTestVisible = false;
+        boundary.ZIndex = 3;
+        AutomationProperties.SetAccessibilityView(boundary, AccessibilityView.Raw);
+        return boundary;
     }
 
     private void addDayHeaders()

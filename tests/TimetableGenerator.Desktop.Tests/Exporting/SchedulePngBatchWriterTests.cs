@@ -277,13 +277,13 @@ public sealed class SchedulePngBatchWriterTests
                 ScheduleBoardLayout firstLayout = exporter.Layouts[0];
                 Assert.Equal(5, firstLayout.DayRange.DayCount);
                 Assert.Equal(new ScheduleBoardTimeBoundary(510), firstLayout.TimeAxis.Start);
-                Assert.Equal(new ScheduleBoardTimeBoundary(660), firstLayout.TimeAxis.End);
+                Assert.Equal(new ScheduleBoardTimeBoundary(630), firstLayout.TimeAxis.End);
                 Assert.DoesNotContain(firstLayout.TimeAxis.End, firstLayout.TimeAxis.LabelTimes);
 
                 ScheduleBoardLayout secondLayout = exporter.Layouts[1];
                 Assert.Equal(7, secondLayout.DayRange.DayCount);
                 Assert.Equal(new ScheduleBoardTimeBoundary(870), secondLayout.TimeAxis.Start);
-                Assert.Equal(new ScheduleBoardTimeBoundary(1_020), secondLayout.TimeAxis.End);
+                Assert.Equal(new ScheduleBoardTimeBoundary(990), secondLayout.TimeAxis.End);
                 Assert.DoesNotContain(secondLayout.TimeAxis.End, secondLayout.TimeAxis.LabelTimes);
                 Assert.Same(firstCandidate, sourceBoard.DataContext);
                 Assert.Empty(exportHost.Children);

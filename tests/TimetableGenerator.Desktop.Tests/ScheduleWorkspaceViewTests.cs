@@ -106,6 +106,7 @@ public sealed class ScheduleWorkspaceViewTests
             Assert.Contains("목요일 22:30–23:45", latestScheduleAccessibleNameOrNull);
             Assert.DoesNotContain("교시", latestScheduleAccessibleNameOrNull);
             Assert.True(scrollViewer.Extent.Height > scrollViewer.Viewport.Height);
+            assertScheduleEndBoundary(scheduleBoard, boardGrid, 5);
             assertBoardReservesScrollbarGutter(scheduleBoard, boardGrid, scrollViewer);
             assertStickyHeaderMatchesBoardSurface(scheduleBoard);
             assertDayColumnsAreEqual(boardGrid);
@@ -164,6 +165,7 @@ public sealed class ScheduleWorkspaceViewTests
             Assert.Equal(7, Grid.GetColumn(scheduleCard));
             Assert.Contains("일요일 10:30–11:45", AutomationProperties.GetName(scheduleCard));
             Assert.Contains(boardGridOrNull, scheduleBoard.PngExportSurface.GetVisualDescendants());
+            assertScheduleEndBoundary(scheduleBoard, boardGridOrNull, 7);
             assertStickyHeaderMatchesBoardSurface(scheduleBoard);
         }
         finally
@@ -191,6 +193,9 @@ public sealed class ScheduleWorkspaceViewTests
             Dispatcher.UIThread.RunJobs();
 
             Assert.Equal(6, scheduleBoard.RenderedLayout.DayRange.DayCount);
+            Grid boardGrid = Assert.IsType<Grid>(
+                scheduleBoard.FindControl<Grid>("BoardGrid"));
+            assertScheduleEndBoundary(scheduleBoard, boardGrid, 6);
             assertStickyHeaderMatchesBoardSurface(scheduleBoard);
         }
         finally
@@ -242,7 +247,7 @@ public sealed class ScheduleWorkspaceViewTests
 
             Assert.Equal(2, timeLabels.Count);
             Assert.Equal(2, hourGuides.Count);
-            Assert.Equal(2, halfHourGuides.Count);
+            Assert.Single(halfHourGuides);
             Assert.Contains(timeLabels, textBlock => textBlock.Text == "09:00");
             Assert.Contains(timeLabels, textBlock => textBlock.Text == "10:00");
             Assert.DoesNotContain(
@@ -254,9 +259,9 @@ public sealed class ScheduleWorkspaceViewTests
                     ":30",
                     StringComparison.Ordinal) == true);
             Assert.Equal(new ScheduleBoardTimeBoundary(510), scheduleBoard.RenderedLayout.TimeAxis.Start);
-            Assert.Equal(new ScheduleBoardTimeBoundary(660), scheduleBoard.RenderedLayout.TimeAxis.End);
-            Assert.Equal(30, scheduleBoard.RenderedLayout.TimeAxis.IncrementCount);
-            Assert.Equal(4, scheduleBoard.RenderedLayout.TimeAxis.GuideTimes.Count);
+            Assert.Equal(new ScheduleBoardTimeBoundary(630), scheduleBoard.RenderedLayout.TimeAxis.End);
+            Assert.Equal(24, scheduleBoard.RenderedLayout.TimeAxis.IncrementCount);
+            Assert.Equal(3, scheduleBoard.RenderedLayout.TimeAxis.GuideTimes.Count);
             Assert.DoesNotContain(
                 timeLabels,
                 textBlock => textBlock.Text?.Contains(
@@ -286,7 +291,8 @@ public sealed class ScheduleWorkspaceViewTests
                     Assert.Equal(1, Grid.GetColumn(halfHourGuide));
                     Assert.Equal(new Thickness(0.0), halfHourGuide.Margin);
                 });
-            Assert.Equal(31, boardGridOrNull.RowDefinitions.Count);
+            Assert.Equal(25, boardGridOrNull.RowDefinitions.Count);
+            assertScheduleEndBoundary(scheduleBoard, boardGridOrNull, 5);
         }
         finally
         {
@@ -663,6 +669,11 @@ public sealed class ScheduleWorkspaceViewTests
             Assert.True(boardFrameOrNull.UseLayoutRounding);
             Assert.Equal(new Thickness(1.0), boardFrameOrNull.BorderThickness);
             Assert.Equal(new CornerRadius(7.0), boardFrameOrNull.CornerRadius);
+            Grid boardGrid = Assert.IsType<Grid>(
+                scheduleBoard.FindControl<Grid>("BoardGrid"));
+            Assert.DoesNotContain(
+                boardGrid.Children.OfType<Border>(),
+                border => border.Classes.Contains("schedule-end-boundary"));
 
             ThemeVariant[] themeVariants = new ThemeVariant[]
             {
@@ -688,12 +699,14 @@ public sealed class ScheduleWorkspaceViewTests
     }
 
     [AvaloniaFact]
-    public void PngExportSurfaceRetainsACompleteOuterFrame()
+    public void PngExportSurfaceLeavesItsBottomEdgeForTheScheduleBoundary()
     {
         ScheduleBoardView scheduleBoard = ScheduleBoardView.createForPngExport();
         Border exportSurface = Assert.IsType<Border>(scheduleBoard.PngExportSurface);
 
-        Assert.Equal(new Thickness(1.0), exportSurface.BorderThickness);
+        Assert.Equal(
+            new Thickness(1.0, 1.0, 1.0, 0.0),
+            exportSurface.BorderThickness);
     }
 
     [AvaloniaFact]
@@ -1203,7 +1216,22 @@ public sealed class ScheduleWorkspaceViewTests
         }
 
         double exportRight = exportOriginOrNull.Value.X + exportSurface.Bounds.Width;
+        Border endBoundary = findScheduleEndBoundary(boardGrid);
+        Point? endBoundaryOriginOrNull = endBoundary.TranslatePoint(
+            new Point(0.0, 0.0),
+            scheduleBoard);
+        Assert.NotNull(endBoundaryOriginOrNull);
+        if (endBoundaryOriginOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The timetable end boundary position was not available.");
+        }
+
+        double endBoundaryRight = endBoundaryOriginOrNull.Value.X
+            + endBoundary.Bounds.Width;
         Assert.True(exportRight <= scrollBarOriginOrNull.Value.X + 0.5);
+        Assert.True(endBoundaryRight <= scrollBarOriginOrNull.Value.X + 0.5);
+        Assert.Equal(exportRight, endBoundaryRight, 3);
         Assert.Equal(exportSurface.Bounds.Width, boardGrid.Bounds.Width, 3);
     }
 
@@ -1268,6 +1296,68 @@ public sealed class ScheduleWorkspaceViewTests
             double dayWidth = boardGrid.ColumnDefinitions[columnIndex].ActualWidth;
             Assert.InRange(Math.Abs(firstDayWidth - dayWidth), 0.0, 1.0);
         }
+    }
+
+    private static void assertScheduleEndBoundary(
+        ScheduleBoardView scheduleBoard,
+        Grid boardGrid,
+        int expectedDayCount)
+    {
+        Border endBoundary = findScheduleEndBoundary(boardGrid);
+        Assert.Equal(
+            new Thickness(0.0, 0.0, 0.0, 1.0),
+            endBoundary.BorderThickness);
+        Assert.Equal(
+            scheduleBoard.RenderedLayout.TimeAxis.IncrementCount,
+            Grid.GetRow(endBoundary));
+        Assert.Equal(
+            boardGrid.RowDefinitions.Count - 1,
+            Grid.GetRow(endBoundary));
+        Assert.Equal(1, Grid.GetColumn(endBoundary));
+        Assert.Equal(expectedDayCount, Grid.GetColumnSpan(endBoundary));
+        Assert.Equal(
+            scheduleBoard.RenderedLayout.DayRange.TotalColumnCount - 1,
+            Grid.GetColumnSpan(endBoundary));
+        Assert.False(endBoundary.IsHitTestVisible);
+        Assert.Equal(3, endBoundary.ZIndex);
+        Assert.Equal(
+            AccessibilityView.Raw,
+            AutomationProperties.GetAccessibilityView(endBoundary));
+        Assert.Null(AutomationProperties.GetName(endBoundary));
+        Assert.DoesNotContain(
+            scheduleBoard.RenderedLayout.TimeAxis.End,
+            scheduleBoard.RenderedLayout.TimeAxis.GuideTimes);
+        Assert.DoesNotContain(
+            scheduleBoard.RenderedLayout.TimeAxis.End,
+            scheduleBoard.RenderedLayout.TimeAxis.LabelTimes);
+
+        Point? endBoundaryOriginOrNull = endBoundary.TranslatePoint(
+            new Point(0.0, 0.0),
+            boardGrid);
+        Assert.NotNull(endBoundaryOriginOrNull);
+        if (endBoundaryOriginOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The timetable end boundary geometry was not available.");
+        }
+
+        Point endBoundaryOrigin = endBoundaryOriginOrNull.Value;
+        Assert.Equal(72.0, endBoundaryOrigin.X, 3);
+        Assert.Equal(
+            boardGrid.Bounds.Width,
+            endBoundaryOrigin.X + endBoundary.Bounds.Width,
+            3);
+        Assert.Equal(
+            boardGrid.Bounds.Height,
+            endBoundaryOrigin.Y + endBoundary.Bounds.Height,
+            3);
+    }
+
+    private static Border findScheduleEndBoundary(Grid boardGrid)
+    {
+        return Assert.Single(
+            boardGrid.Children.OfType<Border>(),
+            border => border.Classes.Contains("schedule-end-boundary"));
     }
 
     private static void assertTimeLabelIsCenteredOnGuide(

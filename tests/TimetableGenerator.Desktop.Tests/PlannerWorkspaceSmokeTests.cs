@@ -221,7 +221,7 @@ public sealed class PlannerWorkspaceSmokeTests
         Assert.Same(firstRecommendation, workspace.PngExportCandidates[0].Schedule);
         ScheduleBoardPresentation firstBoard = Assert.IsType<ScheduleBoardPresentation>(workspace.DisplayedScheduleBoard);
         Assert.Equal(new ScheduleBoardTimeBoundary(510), firstBoard.Layout.TimeAxis.Start);
-        Assert.Equal(new ScheduleBoardTimeBoundary(720), firstBoard.Layout.TimeAxis.End);
+        Assert.Equal(new ScheduleBoardTimeBoundary(690), firstBoard.Layout.TimeAxis.End);
         int sharedDayCount = firstBoard.Layout.DayRange.DayCount;
 
         workspace.NextRecommendationCommand.Execute(null);
@@ -234,7 +234,7 @@ public sealed class PlannerWorkspaceSmokeTests
                 entry.TimeRange.Start.MinutesFromMidnight >= 600));
         ScheduleBoardPresentation secondBoard = Assert.IsType<ScheduleBoardPresentation>(workspace.DisplayedScheduleBoard);
         Assert.Equal(new ScheduleBoardTimeBoundary(690), secondBoard.Layout.TimeAxis.Start);
-        Assert.Equal(new ScheduleBoardTimeBoundary(840), secondBoard.Layout.TimeAxis.End);
+        Assert.Equal(new ScheduleBoardTimeBoundary(810), secondBoard.Layout.TimeAxis.End);
         Assert.Equal(sharedDayCount, secondBoard.Layout.DayRange.DayCount);
 
         workspace.PreviousRecommendationCommand.Execute(null);

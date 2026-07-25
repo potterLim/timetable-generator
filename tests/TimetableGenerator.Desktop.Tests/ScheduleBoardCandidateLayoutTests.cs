@@ -41,6 +41,7 @@ public sealed class ScheduleBoardCandidateLayoutTests
             sharedDayRange);
 
         Assert.Equal(new ScheduleBoardTimeBoundary(690), layout.TimeAxis.Start);
+        Assert.Equal(new ScheduleBoardTimeBoundary(810), layout.TimeAxis.End);
         Assert.Equal(7, layout.DayRange.DayCount);
         Assert.Equal(EDay.Sunday, layout.DayRange.Days[^1].Day);
     }

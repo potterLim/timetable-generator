@@ -91,9 +91,9 @@ public sealed class ScheduleBoardLayoutTests
         ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForEntries(entries);
 
         Assert.Equal(new ScheduleBoardTimeBoundary(390), layout.TimeAxis.Start);
-        Assert.Equal(new ScheduleBoardTimeBoundary(1_260), layout.TimeAxis.End);
-        Assert.Equal(174, layout.TimeAxis.IncrementCount);
-        Assert.Equal(28, layout.TimeAxis.GuideTimes.Count);
+        Assert.Equal(new ScheduleBoardTimeBoundary(1_230), layout.TimeAxis.End);
+        Assert.Equal(168, layout.TimeAxis.IncrementCount);
+        Assert.Equal(27, layout.TimeAxis.GuideTimes.Count);
         Assert.Equal("07:00", layout.TimeAxis.GuideTimes[0].ToString());
         Assert.Equal("07:00", layout.TimeAxis.LabelTimes[0].ToString());
         Assert.Equal("20:00", layout.TimeAxis.LabelTimes[layout.TimeAxis.LabelTimes.Count - 1].ToString());
@@ -115,7 +115,7 @@ public sealed class ScheduleBoardLayoutTests
         Assert.Equal("09:30", layout.TimeAxis.GuideTimes[1].ToString());
         Assert.Equal("09:00", layout.TimeAxis.LabelTimes[0].ToString());
         Assert.Equal("10:00", layout.TimeAxis.LabelTimes[1].ToString());
-        Assert.Equal(new ScheduleBoardTimeBoundary(660), layout.TimeAxis.End);
+        Assert.Equal(new ScheduleBoardTimeBoundary(630), layout.TimeAxis.End);
         Assert.DoesNotContain(layout.TimeAxis.End, layout.TimeAxis.LabelTimes);
         for (int guideIndex = 1;
             guideIndex < layout.TimeAxis.GuideTimes.Count;
@@ -183,12 +183,23 @@ public sealed class ScheduleBoardLayoutTests
     }
 
     [Theory]
-    [InlineData(10, 0, 660)]
-    [InlineData(10, 1, 660)]
+    [InlineData(10, 0, 630)]
+    [InlineData(10, 1, 630)]
+    [InlineData(10, 29, 630)]
+    [InlineData(10, 30, 660)]
+    [InlineData(10, 31, 660)]
     [InlineData(10, 59, 660)]
-    [InlineData(23, 0, 1_440)]
+    [InlineData(15, 45, 960)]
+    [InlineData(16, 0, 990)]
+    [InlineData(16, 1, 990)]
+    [InlineData(16, 29, 990)]
+    [InlineData(16, 30, 1_020)]
+    [InlineData(16, 31, 1_020)]
+    [InlineData(16, 59, 1_020)]
+    [InlineData(23, 0, 1_410)]
+    [InlineData(23, 30, 1_440)]
     [InlineData(23, 59, 1_440)]
-    public void TimeAxisEndsAtTheFirstWholeHourStrictlyAfterTheLatestEntry(
+    public void TimeAxisEndsAtTheFirstHalfHourStrictlyAfterTheLatestEntry(
         int endHour,
         int endMinute,
         int expectedEndMinute)
@@ -208,7 +219,10 @@ public sealed class ScheduleBoardLayoutTests
 
     [Theory]
     [InlineData(0, 15, 1, 0, 0)]
+    [InlineData(9, 0, 9, 30, 510)]
     [InlineData(9, 45, 10, 15, 510)]
+    [InlineData(10, 0, 10, 30, 570)]
+    [InlineData(10, 30, 11, 0, 570)]
     [InlineData(10, 5, 10, 35, 570)]
     [InlineData(11, 0, 11, 30, 630)]
     [InlineData(11, 30, 12, 0, 630)]
