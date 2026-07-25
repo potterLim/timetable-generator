@@ -7,7 +7,7 @@
     xmlns:viewModels="using:TimetableGenerator.Desktop.Presentation.ViewModels"
     x:DataType="viewModels:PlannerWorkspaceViewModel"
     AutomationProperties.LandmarkType="Complementary"
-    AutomationProperties.Name="{Binding ActivePlanOrNull.DisplayName}">
+    AutomationProperties.Name="시간표 편집">
   <UserControl.Styles>
     <Style Selector="Border.plan-course.blue">
       <Setter Property="BorderBrush" Value="{DynamicResource CourseBlueBorderBrush}" />
@@ -40,16 +40,28 @@
       <Grid
           Grid.Row="0"
           Margin="0,0,22,0"
+          RowDefinitions="Auto,8,Auto"
           ColumnDefinitions="*,Auto"
           ColumnSpacing="4">
+        <TextBlock
+            x:Name="InspectorPaneTitle"
+            Grid.Row="0"
+            Grid.Column="0"
+            Classes="title"
+            Height="24"
+            LineHeight="24"
+            VerticalAlignment="Center"
+            AutomationProperties.HeadingLevel="2"
+            Text="시간표 편집" />
         <Button
             x:Name="PlanManagementButton"
-            Grid.Column="0"
+            Grid.Row="2"
+            Grid.ColumnSpan="2"
             Classes="plan-title-action"
             AutomationProperties.Name="{Binding ActivePlanOrNull.DisplayName}"
-            AutomationProperties.HelpText="시간표 구성"
-            AutomationProperties.HeadingLevel="2"
-            ToolTip.Tip="시간표 구성">
+            AutomationProperties.HelpText="시간표 이름 관리"
+            AutomationProperties.HeadingLevel="3"
+            ToolTip.Tip="시간표 이름 관리">
           <TextBlock
               x:Name="PlanManagementTitle"
               Classes="title"
@@ -102,12 +114,13 @@
         </Button>
         <Button
             x:Name="CloseInspectorPaneButton"
+            Grid.Row="0"
             Grid.Column="1"
             Classes="icon"
             IsVisible="{Binding IsInspectorPaneDismissActionVisible}"
             Command="{Binding CloseInspectorPaneCommand}"
-            AutomationProperties.Name="시간표 구성 패널 닫기"
-            ToolTip.Tip="시간표 구성 닫기">
+            AutomationProperties.Name="시간표 편집 패널 닫기"
+            ToolTip.Tip="시간표 편집 닫기">
           <icons:FluentIcon Icon="Dismiss" IconVariant="Regular" FontSize="17" />
         </Button>
       </Grid>

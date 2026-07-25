@@ -136,11 +136,11 @@
             IsVisible="{Binding IsInspectorPaneToggleVisible}"
             Command="{Binding OpenInspectorPaneCommand}"
             AutomationProperties.AutomationId="OpenInspectorPane"
-            AutomationProperties.Name="시간표 구성 패널 열기"
-            ToolTip.Tip="시간표 구성">
+            AutomationProperties.Name="시간표 편집 패널 열기"
+            ToolTip.Tip="시간표 편집">
           <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="7">
             <icons:FluentIcon Icon="PanelRight" IconVariant="Regular" FontSize="17" />
-            <TextBlock VerticalAlignment="Center" Text="시간표 구성" />
+            <TextBlock VerticalAlignment="Center" Text="시간표 편집" />
           </StackPanel>
         </Button>
         <Button
@@ -309,7 +309,7 @@
               VerticalAlignment="Center"
               Command="{Binding OpenInspectorPaneCommand}"
               Content="선택 과목 확인"
-              AutomationProperties.Name="충돌한 과목 선택을 시간표 구성에서 확인" />
+              AutomationProperties.Name="충돌한 과목 선택을 시간표 편집에서 확인" />
         </Grid>
       </Border>
 
@@ -533,7 +533,7 @@
               Margin="0,6,0,0"
               HorizontalAlignment="Center"
               Command="{Binding OpenInspectorPaneCommand}"
-              AutomationProperties.Name="충돌한 과목 선택을 시간표 구성에서 확인">
+              AutomationProperties.Name="충돌한 과목 선택을 시간표 편집에서 확인">
             <StackPanel Classes="button-content" Orientation="Horizontal" Spacing="7">
               <icons:FluentIcon Icon="PanelRight" IconVariant="Regular" FontSize="17" />
               <TextBlock Text="선택 과목 확인" />

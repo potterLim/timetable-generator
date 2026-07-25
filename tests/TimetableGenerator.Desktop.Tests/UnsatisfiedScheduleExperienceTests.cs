@@ -69,7 +69,7 @@ public sealed class UnsatisfiedScheduleExperienceTests
                 Assert.Contains("현재 선택으로 만들 수 있는 시간표가 없습니다", recoveryTexts);
                 Assert.Contains("겹치는 개인 일정이나 제외한 분반을 확인해 보세요.", recoveryTexts);
                 Assert.True(openPlanButton.IsEffectivelyVisible);
-                Assert.Equal("충돌한 과목 선택을 시간표 구성에서 확인", AutomationProperties.GetName(openPlanButton));
+                Assert.Equal("충돌한 과목 선택을 시간표 편집에서 확인", AutomationProperties.GetName(openPlanButton));
                 Assert.Empty(ordinaryEmptyState.GetVisualDescendants().OfType<Button>());
                 Assert.False(exportButton.IsEffectivelyVisible);
                 Assert.False(exportButton.IsEnabled);
@@ -148,6 +148,9 @@ public sealed class UnsatisfiedScheduleExperienceTests
                 Assert.Contains("아래에는 개인 일정만 표시됩니다. 겹치는 개인 일정이나 분반 선택을 조정해 보세요.", warningTexts);
                 Assert.True(openPlanButton.IsEffectivelyVisible);
                 Assert.Equal("선택 과목 확인", openPlanButton.Content);
+                Assert.Equal(
+                    "충돌한 과목 선택을 시간표 편집에서 확인",
+                    AutomationProperties.GetName(openPlanButton));
                 Assert.False(exportButton.IsEffectivelyVisible);
                 Assert.False(exportButton.IsEnabled);
             }

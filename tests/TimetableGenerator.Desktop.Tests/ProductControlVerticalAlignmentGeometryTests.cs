@@ -601,7 +601,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
         iconBox.FontSize = 16.0;
 
         TextBlock label = new TextBlock();
-        label.Text = "시간표 구성";
+        label.Text = "시간표 편집";
         label.VerticalAlignment = VerticalAlignment.Center;
 
         StackPanel buttonContent = new StackPanel();
@@ -627,12 +627,12 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                 VerticalCenterMeasurement iconMeasurement = measureArrangedBounds(iconBox, button);
                 VerticalCenterMeasurement textMeasurement = measureTextLayout(label, button);
                 comparisons.Add(compareCenters(
-                    "Button icon versus '시간표 구성' [theme="
+                    "Button icon versus '시간표 편집' [theme="
                         + themeVariant.Key + "]",
                     iconMeasurement,
                     textMeasurement));
                 comparisons.Add(compareControlAndTextLayoutCenters(
-                    "Compound Button '시간표 구성' [theme="
+                    "Compound Button '시간표 편집' [theme="
                         + themeVariant.Key + "]",
                     button,
                     textMeasurement));

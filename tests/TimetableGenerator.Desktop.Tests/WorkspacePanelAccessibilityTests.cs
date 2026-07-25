@@ -4,6 +4,7 @@ using System.Windows.Input;
 
 using Avalonia;
 using Avalonia.Automation;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Headless;
@@ -127,12 +128,19 @@ public sealed class WorkspacePanelAccessibilityTests
             Assert.Equal("개인 일정 추가", AutomationProperties.GetName(addPersonalScheduleButton));
 
             Button managementButton = findRequiredControl<Button>(inspector, "PlanManagementButton");
+            TextBlock inspectorPaneTitle = findRequiredControl<TextBlock>(inspector, "InspectorPaneTitle");
             TextBlock managementTitle = findRequiredControl<TextBlock>(inspector, "PlanManagementTitle");
+            Assert.Equal("시간표 편집", AutomationProperties.GetName(inspector));
+            Assert.Equal(
+                AutomationLandmarkType.Complementary,
+                AutomationProperties.GetLandmarkType(inspector));
+            Assert.Equal("시간표 편집", inspectorPaneTitle.Text);
+            Assert.Equal(2, (int)AutomationProperties.GetHeadingLevel(inspectorPaneTitle));
             Assert.Equal(workspace.ActivePlan.DisplayName, managementTitle.Text);
             Assert.Equal(workspace.ActivePlan.DisplayName, AutomationProperties.GetName(managementButton));
-            Assert.Equal("시간표 구성", AutomationProperties.GetHelpText(managementButton));
-            Assert.Equal("시간표 구성", ToolTip.GetTip(managementButton));
-            Assert.Equal(2, (int)AutomationProperties.GetHeadingLevel(managementButton));
+            Assert.Equal("시간표 이름 관리", AutomationProperties.GetHelpText(managementButton));
+            Assert.Equal("시간표 이름 관리", ToolTip.GetTip(managementButton));
+            Assert.Equal(3, (int)AutomationProperties.GetHeadingLevel(managementButton));
             Flyout managementFlyout = Assert.IsType<Flyout>(managementButton.Flyout);
             managementFlyout.ShowAt(managementButton);
             Dispatcher.UIThread.RunJobs();
@@ -410,8 +418,8 @@ public sealed class WorkspacePanelAccessibilityTests
             Assert.True(workspace.IsInspectorPaneOpen);
             Assert.True(closeInspectorPane.IsEffectivelyVisible);
             Assert.True(closeInspectorPane.IsKeyboardFocusWithin);
-            Assert.Equal("시간표 구성 패널 닫기", AutomationProperties.GetName(closeInspectorPane));
-            Assert.Equal("시간표 구성 닫기", ToolTip.GetTip(closeInspectorPane));
+            Assert.Equal("시간표 편집 패널 닫기", AutomationProperties.GetName(closeInspectorPane));
+            Assert.Equal("시간표 편집 닫기", ToolTip.GetTip(closeInspectorPane));
 
             closeInspectorPane.Command?.Execute(null);
             Dispatcher.UIThread.RunJobs();
