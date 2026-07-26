@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 
 using Avalonia;
-using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
@@ -23,6 +22,7 @@ internal sealed partial class ScheduleBoardView : UserControl
     private const double TIME_LABEL_WIDTH = 48.0;
     private const double TIME_LABEL_HEIGHT = 16.0;
     private const double TIME_LABEL_GUIDE_GAP = 10.0;
+    private const double PNG_EXPORT_BOTTOM_PADDING = 8.0;
 
     [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Avalonia requires the {PropertyName}Property field convention.")]
     public static readonly StyledProperty<ICommand?> EditPersonalScheduleCommandProperty = AvaloniaProperty.Register<ScheduleBoardView, ICommand?>(nameof(EditPersonalScheduleCommand));
@@ -30,6 +30,8 @@ internal sealed partial class ScheduleBoardView : UserControl
     private readonly Grid mBoardGrid;
 
     private readonly Border mBoardExportSurface;
+
+    private readonly Border mPngExportCanvas;
 
     private readonly Border mBoardContextHeader;
 
@@ -55,7 +57,7 @@ internal sealed partial class ScheduleBoardView : UserControl
     {
         get
         {
-            return mBoardExportSurface;
+            return mIsPngExport ? mPngExportCanvas : mBoardExportSurface;
         }
     }
 
@@ -75,12 +77,14 @@ internal sealed partial class ScheduleBoardView : UserControl
     {
         AvaloniaXamlLoader.Load(this);
         Border? boardExportSurfaceOrNull = this.FindControl<Border>("BoardExportSurface");
+        Border? pngExportCanvasOrNull = this.FindControl<Border>("PngExportCanvas");
         Border? boardContextHeaderOrNull = this.FindControl<Border>("BoardContextHeader");
         Border? boardStickyHeaderContainerOrNull = this.FindControl<Border>("BoardStickyHeaderContainer");
         Grid? boardStickyDayHeaderGridOrNull = this.FindControl<Grid>("BoardStickyDayHeaderGrid");
         ScrollViewer? scheduleScrollViewerOrNull = this.FindControl<ScrollViewer>("ScheduleScrollViewer");
         Grid? boardGridOrNull = this.FindControl<Grid>("BoardGrid");
         if (boardExportSurfaceOrNull == null
+            || pngExportCanvasOrNull == null
             || boardContextHeaderOrNull == null
             || boardStickyHeaderContainerOrNull == null
             || boardStickyDayHeaderGridOrNull == null
@@ -91,6 +95,7 @@ internal sealed partial class ScheduleBoardView : UserControl
         }
 
         mBoardExportSurface = boardExportSurfaceOrNull;
+        mPngExportCanvas = pngExportCanvasOrNull;
         mBoardContextHeader = boardContextHeaderOrNull;
         mBoardContextHeader.IsVisible = false;
         mBoardStickyHeaderContainer = boardStickyHeaderContainerOrNull;
@@ -109,7 +114,8 @@ internal sealed partial class ScheduleBoardView : UserControl
         scheduleBoard.mIsPngExport = true;
         scheduleBoard.mBoardContextHeader.IsVisible = true;
         scheduleBoard.mBoardStickyHeaderContainer.IsVisible = false;
-        scheduleBoard.mBoardExportSurface.BorderThickness = new Thickness(1.0, 1.0, 1.0, 0.0);
+        scheduleBoard.mPngExportCanvas.Padding = new Thickness(0.0, 0.0, 0.0, PNG_EXPORT_BOTTOM_PADDING);
+        scheduleBoard.mBoardExportSurface.BorderThickness = new Thickness(1.0);
         return scheduleBoard;
     }
 
@@ -197,11 +203,6 @@ internal sealed partial class ScheduleBoardView : UserControl
             return;
         }
 
-        if (mIsPngExport)
-        {
-            addScheduleEndBoundary();
-        }
-
         foreach (ScheduleEntry entry in recommendationOrNull.Entries)
         {
             addScheduleEntry(entry);
@@ -286,27 +287,6 @@ internal sealed partial class ScheduleBoardView : UserControl
             Grid.SetRow(timeGuide, rowIndex);
             mBoardGrid.Children.Add(timeGuide);
         }
-    }
-
-    private void addScheduleEndBoundary()
-    {
-        Border endBoundary = createBottomBoundary("schedule-end-boundary");
-        Grid.SetRow(endBoundary, mRenderedLayout.TimeAxis.IncrementCount);
-        Grid.SetColumn(endBoundary, 1);
-        Grid.SetColumnSpan(endBoundary, mRenderedLayout.DayRange.TotalColumnCount - 1);
-        mBoardGrid.Children.Add(endBoundary);
-    }
-
-    private Border createBottomBoundary(string className)
-    {
-        Border boundary = new Border();
-        boundary.Classes.Add(className);
-        boundary.BorderBrush = findBrush("StrongBorderBrush");
-        boundary.BorderThickness = new Thickness(0.0, 0.0, 0.0, 1.0);
-        boundary.IsHitTestVisible = false;
-        boundary.ZIndex = 3;
-        AutomationProperties.SetAccessibilityView(boundary, AccessibilityView.Raw);
-        return boundary;
     }
 
     private void addDayHeaders()

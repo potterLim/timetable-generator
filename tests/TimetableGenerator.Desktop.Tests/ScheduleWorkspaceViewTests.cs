@@ -784,8 +784,14 @@ public sealed class ScheduleWorkspaceViewTests
             Assert.Equal(new CornerRadius(7.0), boardFrameOrNull.CornerRadius);
             Assert.Null(
                 scheduleBoard.FindControl<Border>("BoardContentRightBoundary"));
+            Border pngExportCanvas = Assert.IsType<Border>(
+                scheduleBoard.FindControl<Border>("PngExportCanvas"));
+            Border boardExportSurface = Assert.IsType<Border>(
+                scheduleBoard.FindControl<Border>("BoardExportSurface"));
             Grid boardGrid = Assert.IsType<Grid>(
                 scheduleBoard.FindControl<Grid>("BoardGrid"));
+            Assert.Equal(new Thickness(0.0), pngExportCanvas.Padding);
+            Assert.Same(boardExportSurface, scheduleBoard.PngExportSurface);
             Assert.DoesNotContain(
                 boardGrid.Children.OfType<Border>(),
                 border => border.Classes.Contains("schedule-end-boundary"));
@@ -812,14 +818,16 @@ public sealed class ScheduleWorkspaceViewTests
     }
 
     [AvaloniaFact]
-    public void PngExportSurfaceLeavesItsBottomEdgeForTheScheduleBoundary()
+    public void PngExportSurfaceUsesCompleteOutlineAndAddsCanvasPadding()
     {
         ScheduleBoardView scheduleBoard = ScheduleBoardView.createForPngExport();
-        Border exportSurface = Assert.IsType<Border>(scheduleBoard.PngExportSurface);
+        Border exportCanvas = Assert.IsType<Border>(scheduleBoard.PngExportSurface);
+        Border exportSurface = Assert.IsType<Border>(
+            scheduleBoard.FindControl<Border>("BoardExportSurface"));
 
-        Assert.Equal(
-            new Thickness(1.0, 1.0, 1.0, 0.0),
-            exportSurface.BorderThickness);
+        Assert.Equal(new Thickness(0.0), exportCanvas.BorderThickness);
+        Assert.Equal(new Thickness(0.0, 0.0, 0.0, 8.0), exportCanvas.Padding);
+        Assert.Equal(new Thickness(1.0), exportSurface.BorderThickness);
     }
 
     [AvaloniaFact]

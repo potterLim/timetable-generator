@@ -138,7 +138,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     }
 
     [AvaloniaFact]
-    public void PngSnapshotEndBoundaryStartsAfterTheTimeColumnWithoutADoubleOutline()
+    public async Task PngSnapshotUsesOneCompleteBottomOutlineWithProductPaddingAsync()
     {
         ScheduleEntry sundayEntry = createScheduleEntry(EDay.Sunday, new AcademicPeriod(2));
         ScheduleBoardView sourceBoard = createSourceBoard(
@@ -158,35 +158,52 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             {
                 Dispatcher.UIThread.RunJobs();
 
-                Border exportSurface = Assert.IsType<Border>(snapshot.Surface);
+                Border exportCanvas = Assert.IsType<Border>(snapshot.Surface);
+                Border exportSurface = Assert.IsType<Border>(
+                    exportCanvas.GetVisualDescendants()
+                        .Single(control => control.Name == "BoardExportSurface"));
                 Grid boardGrid = findBoardGrid(snapshot.Surface);
-                Border endBoundary = Assert.Single(
+                Assert.DoesNotContain(
                     boardGrid.Children.OfType<Border>(),
                     border => border.Classes.Contains("schedule-end-boundary"));
                 Color expectedBoundaryColor = findRequiredThemeColor(
                     "StrongBorderBrush",
                     ThemeVariant.Light);
+                Color expectedBackgroundColor = findRequiredThemeColor(
+                    "ElevatedSurfaceBrush",
+                    ThemeVariant.Light);
 
-                Assert.Equal(new Thickness(1.0, 1.0, 1.0, 0.0), exportSurface.BorderThickness);
+                Assert.Equal(new Thickness(0.0), exportCanvas.BorderThickness);
+                Assert.Equal(new Thickness(0.0, 0.0, 0.0, 8.0), exportCanvas.Padding);
+                Assert.Equal(new Thickness(1.0), exportSurface.BorderThickness);
                 Assert.Equal(
                     expectedBoundaryColor,
                     getRequiredSolidColor(exportSurface.BorderBrush));
-                Assert.Equal(
-                    expectedBoundaryColor,
-                    getRequiredSolidColor(endBoundary.BorderBrush));
-                assertBottomBoundary(
-                    endBoundary,
-                    snapshot.Layout.TimeAxis.IncrementCount,
-                    1,
-                    snapshot.Layout.DayRange.DayCount);
 
-                Point endOrigin = getRequiredOrigin(endBoundary, boardGrid);
-                Assert.Equal(72.0, endOrigin.X, 3);
-                Assert.Equal(boardGrid.Bounds.Width, endOrigin.X + endBoundary.Bounds.Width, 3);
+                Point exportSurfaceOrigin = getRequiredOrigin(exportSurface, exportCanvas);
                 Assert.Equal(
-                    boardGrid.Bounds.Height,
-                    endOrigin.Y + endBoundary.Bounds.Height,
+                    8.0,
+                    exportCanvas.Bounds.Height
+                        - exportSurfaceOrigin.Y
+                        - exportSurface.Bounds.Height,
                     3);
+
+                AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(PngExportScale.PRODUCT_QUALITY);
+                using (MemoryStream destinationStream = new MemoryStream())
+                {
+                    await exporter.ExportControlAsync(snapshot.Surface, destinationStream, CancellationToken.None);
+                    destinationStream.Position = 0L;
+                    using (Bitmap bitmap = new Bitmap(destinationStream))
+                    {
+                        assertBitmapUsesCompleteBottomOutlineAndPadding(
+                            bitmap,
+                            exportCanvas,
+                            exportSurface,
+                            boardGrid,
+                            expectedBoundaryColor,
+                            expectedBackgroundColor);
+                    }
+                }
             }
 
             Assert.Empty(exportHost.Children);
@@ -740,22 +757,6 @@ public sealed class ScheduleBoardPngExportSnapshotTests
         return textBlock.Text;
     }
 
-    private static void assertBottomBoundary(
-        Border boundary,
-        int expectedRow,
-        int expectedColumn,
-        int expectedColumnSpan)
-    {
-        Assert.Equal(new Thickness(0.0, 0.0, 0.0, 1.0), boundary.BorderThickness);
-        Assert.Equal(expectedRow, Grid.GetRow(boundary));
-        Assert.Equal(expectedColumn, Grid.GetColumn(boundary));
-        Assert.Equal(expectedColumnSpan, Grid.GetColumnSpan(boundary));
-        Assert.False(boundary.IsHitTestVisible);
-        Assert.Equal(3, boundary.ZIndex);
-        Assert.Equal(AccessibilityView.Raw, AutomationProperties.GetAccessibilityView(boundary));
-        Assert.Null(AutomationProperties.GetName(boundary));
-    }
-
     private static Point getRequiredOrigin(Control control, Visual relativeTo)
     {
         Point? originOrNull = control.TranslatePoint(new Point(0.0, 0.0), relativeTo);
@@ -766,6 +767,63 @@ public sealed class ScheduleBoardPngExportSnapshotTests
         }
 
         return originOrNull.Value;
+    }
+
+    private static void assertBitmapUsesCompleteBottomOutlineAndPadding(
+        Bitmap bitmap,
+        Border exportCanvas,
+        Border exportSurface,
+        Grid boardGrid,
+        Color expectedBoundaryColor,
+        Color expectedBackgroundColor)
+    {
+        const double EXPORT_SCALE = 2.0;
+
+        Point exportSurfaceOrigin = getRequiredOrigin(exportSurface, exportCanvas);
+        Point boardGridOrigin = getRequiredOrigin(boardGrid, exportCanvas);
+        int exportSurfaceBottom = (int)Math.Round(
+            (exportSurfaceOrigin.Y + exportSurface.Bounds.Height) * EXPORT_SCALE);
+        int expectedPaddingPixels = (int)Math.Round(exportCanvas.Padding.Bottom * EXPORT_SCALE);
+        int timeColumnX = (int)Math.Round(
+            (boardGridOrigin.X + (boardGrid.ColumnDefinitions[0].ActualWidth / 2.0)) * EXPORT_SCALE);
+        int firstDayColumnX = (int)Math.Round(
+            (boardGridOrigin.X
+                + boardGrid.ColumnDefinitions[0].ActualWidth
+                + (boardGrid.ColumnDefinitions[1].ActualWidth / 2.0))
+                * EXPORT_SCALE);
+
+        Assert.Equal(expectedPaddingPixels, bitmap.PixelSize.Height - exportSurfaceBottom);
+        using (WriteableBitmap pixelCopy = new WriteableBitmap(
+            bitmap.PixelSize,
+            new Vector(96.0, 96.0),
+            PixelFormat.Bgra8888,
+            AlphaFormat.Premul))
+        using (ILockedFramebuffer framebuffer = pixelCopy.Lock())
+        {
+            bitmap.CopyPixels(framebuffer);
+            Assert.Equal(
+                expectedBoundaryColor,
+                readPixelColor(framebuffer, timeColumnX, exportSurfaceBottom - 1));
+            Assert.Equal(
+                expectedBoundaryColor,
+                readPixelColor(framebuffer, firstDayColumnX, exportSurfaceBottom - 1));
+            Assert.Equal(
+                expectedBackgroundColor,
+                readPixelColor(framebuffer, timeColumnX, bitmap.PixelSize.Height - 1));
+            Assert.Equal(
+                expectedBackgroundColor,
+                readPixelColor(framebuffer, firstDayColumnX, bitmap.PixelSize.Height - 1));
+        }
+    }
+
+    private static Color readPixelColor(ILockedFramebuffer framebuffer, int x, int y)
+    {
+        int pixelOffset = (y * framebuffer.RowBytes) + (x * 4);
+        byte blue = Marshal.ReadByte(framebuffer.Address, pixelOffset);
+        byte green = Marshal.ReadByte(framebuffer.Address, pixelOffset + 1);
+        byte red = Marshal.ReadByte(framebuffer.Address, pixelOffset + 2);
+        byte alpha = Marshal.ReadByte(framebuffer.Address, pixelOffset + 3);
+        return Color.FromArgb(alpha, red, green, blue);
     }
 
     private static void assertWeekendHeadersArePresent(Grid boardGrid)

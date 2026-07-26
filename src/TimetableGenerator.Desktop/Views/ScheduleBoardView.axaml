@@ -133,27 +133,32 @@
           VerticalScrollBarVisibility="Auto"
           AutomationProperties.Name="시간표 시간 스크롤">
         <Border
-            x:Name="BoardExportSurface"
-            BorderBrush="{DynamicResource StrongBorderBrush}"
-            BorderThickness="0"
-            Background="{DynamicResource ElevatedSurfaceBrush}">
-          <StackPanel Background="{DynamicResource ElevatedSurfaceBrush}">
-            <Border
-                x:Name="BoardContextHeader"
-                Padding="18,15"
-                BorderBrush="{DynamicResource BorderBrush}"
-                BorderThickness="0,0,0,1"
-                Background="{DynamicResource ElevatedSurfaceBrush}">
-              <TextBlock
-                  FontSize="17"
-                  FontWeight="SemiBold"
-                  Text="{Binding PlanName.Value}"
-                  TextTrimming="CharacterEllipsis" />
-            </Border>
-            <Grid
-                x:Name="BoardGrid"
-                Background="{DynamicResource ElevatedSurfaceBrush}" />
-          </StackPanel>
+            x:Name="PngExportCanvas"
+            Background="{DynamicResource ElevatedSurfaceBrush}"
+            UseLayoutRounding="True">
+          <Border
+              x:Name="BoardExportSurface"
+              BorderBrush="{DynamicResource StrongBorderBrush}"
+              BorderThickness="0"
+              Background="{DynamicResource ElevatedSurfaceBrush}">
+            <StackPanel Background="{DynamicResource ElevatedSurfaceBrush}">
+              <Border
+                  x:Name="BoardContextHeader"
+                  Padding="18,15"
+                  BorderBrush="{DynamicResource BorderBrush}"
+                  BorderThickness="0,0,0,1"
+                  Background="{DynamicResource ElevatedSurfaceBrush}">
+                <TextBlock
+                    FontSize="17"
+                    FontWeight="SemiBold"
+                    Text="{Binding PlanName.Value}"
+                    TextTrimming="CharacterEllipsis" />
+              </Border>
+              <Grid
+                  x:Name="BoardGrid"
+                  Background="{DynamicResource ElevatedSurfaceBrush}" />
+            </StackPanel>
+          </Border>
         </Border>
       </ScrollViewer>
     </Grid>
