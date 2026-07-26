@@ -103,23 +103,23 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
         {
             await mExportGate.WaitAsync(linkedCancellationSource.Token).ConfigureAwait(false);
             gateWasAcquired = true;
-            GoogleOAuthAuthorizationResult authorizationResult = await mAccessTokenProvider.AuthorizeAsync(linkedCancellationSource.Token).ConfigureAwait(false);
-            if (authorizationResult.Status != EGoogleOAuthAuthorizationStatus.Completed)
-            {
-                return mapAuthorizationFailure(authorizationResult);
-            }
-
-            GoogleAccessToken? accessTokenOrNull = authorizationResult.AccessTokenOrNull;
-            if (accessTokenOrNull == null)
-            {
-                return GoogleCalendarExportResult.Fail(
-                    EGoogleCalendarExportStatus.AuthenticationFailed,
-                    "access_token_missing");
-            }
-
-            GoogleAccessToken accessToken = accessTokenOrNull;
             await using (IGoogleCalendarExportLease exportLease = await mExportLeaseProvider.AcquireAsync(linkedCancellationSource.Token).ConfigureAwait(false))
             {
+                GoogleOAuthAuthorizationResult authorizationResult = await mAccessTokenProvider.AuthorizeAsync(linkedCancellationSource.Token).ConfigureAwait(false);
+                if (authorizationResult.Status != EGoogleOAuthAuthorizationStatus.Completed)
+                {
+                    return mapAuthorizationFailure(authorizationResult);
+                }
+
+                GoogleAccessToken? accessTokenOrNull = authorizationResult.AccessTokenOrNull;
+                if (accessTokenOrNull == null)
+                {
+                    return GoogleCalendarExportResult.Fail(
+                        EGoogleCalendarExportStatus.AuthenticationFailed,
+                        "access_token_missing");
+                }
+
+                GoogleAccessToken accessToken = accessTokenOrNull;
                 GoogleCalendarDestination? destinationOrNull =
                     await selectDestinationAsync(
                     accessToken,

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
@@ -157,6 +158,96 @@ public sealed class GoogleCalendarOAuthTests
         Assert.Equal(EGoogleOAuthAuthorizationStatus.Failed, result.Status);
         Assert.Equal("oauth_state_mismatch", result.DiagnosticCodeOrNull);
         Assert.DoesNotContain("secret-code", result.DiagnosticCodeOrNull, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(
+        "POST /?code=authorization-code&state=expected HTTP/1.1",
+        "invalid_loopback_request")]
+    [InlineData(
+        "GET /unexpected?code=authorization-code&state=expected HTTP/1.1",
+        "invalid_callback_path")]
+    [InlineData(
+        "GET /?state=expected HTTP/1.1",
+        "authorization_code_missing")]
+    [InlineData(
+        "GET /?code=first&code=second&state=expected HTTP/1.1",
+        "invalid_loopback_request")]
+    [InlineData(
+        "GET /?code=authorization-code&state=expected&state=second HTTP/1.1",
+        "invalid_loopback_request")]
+    [InlineData(
+        "GET /?code=%ZZ&state=expected HTTP/1.1",
+        "invalid_loopback_request")]
+    [InlineData(
+        "GET /?code=authorization-code&state=expected",
+        "invalid_loopback_request")]
+    [InlineData(
+        "GET /?code=authorization-code&state=expected HTTP/1.1 extra",
+        "invalid_loopback_request")]
+    [InlineData(
+        "GET  /?code=authorization-code&state=expected HTTP/1.1",
+        "invalid_loopback_request")]
+    [InlineData(
+        "GET /?code=authorization-code&state=expected HTTP/2",
+        "invalid_loopback_request")]
+    [InlineData(
+        "GET /?code=authorization-code&state=expected HTTP/1.2",
+        "invalid_loopback_request")]
+    [InlineData(
+        "GET /?code=authorization-code&state=expected http/1.1",
+        "invalid_loopback_request")]
+    public void CallbackRejectsInvalidOrAmbiguousRequests(
+        string requestLine,
+        string expectedDiagnosticCode)
+    {
+        GoogleOAuthAuthorizationCodeResult result =
+            LoopbackGoogleOAuthAuthorizationCodeProvider.parseRequestLine(
+                requestLine,
+                new GoogleOAuthRedirectUri(
+                    new Uri(
+                        "http://127.0.0.1:53122/",
+                        UriKind.Absolute)),
+                new GoogleOAuthState("expected"));
+
+        Assert.Equal(EGoogleOAuthAuthorizationStatus.Failed, result.Status);
+        Assert.Equal(expectedDiagnosticCode, result.DiagnosticCodeOrNull);
+        Assert.Null(result.AuthorizationCodeOrNull);
+    }
+
+    [Theory]
+    [InlineData("HTTP/1.0")]
+    [InlineData("HTTP/1.1")]
+    public void CallbackAcceptsSupportedHttpVersions(string httpVersion)
+    {
+        GoogleOAuthAuthorizationCodeResult result =
+            LoopbackGoogleOAuthAuthorizationCodeProvider.parseRequestLine(
+                "GET /?code=authorization-code&state=expected " + httpVersion,
+                new GoogleOAuthRedirectUri(
+                    new Uri(
+                        "http://127.0.0.1:53122/",
+                        UriKind.Absolute)),
+                new GoogleOAuthState("expected"));
+
+        Assert.Equal(EGoogleOAuthAuthorizationStatus.Completed, result.Status);
+        Assert.Equal("authorization-code", result.AuthorizationCodeOrNull?.Value);
+    }
+
+    [Fact]
+    public async Task OversizedLoopbackRequestLineIsRejectedAsync()
+    {
+        byte[] requestBytes = Encoding.ASCII.GetBytes(new string('a', 16_385));
+        using (MemoryStream stream = new MemoryStream(requestBytes))
+        {
+            await Assert.ThrowsAsync<IOException>(
+                async delegate
+                {
+                    await LoopbackGoogleOAuthAuthorizationCodeProvider
+                        .readRequestLineAsync(
+                            stream,
+                            CancellationToken.None);
+                });
+        }
     }
 
     [Fact]
@@ -394,6 +485,51 @@ public sealed class GoogleCalendarOAuthTests
         Assert.Contains("lang=\"ko\"", launcher.ProbeBodyOrNull);
         Assert.Contains("올바른 Google 로그인 응답을 기다리고 있습니다.", launcher.ProbeBodyOrNull);
         Assert.Contains("default-src 'none'", launcher.ProbeContentSecurityPolicyOrNull);
+        string probeScript = extractInlineElement(
+            Assert.IsType<string>(launcher.ProbeBodyOrNull),
+            "script");
+        Assert.Contains("history.replaceState", probeScript);
+        Assert.DoesNotContain("window.close", probeScript);
+        string probeScriptHash = Convert.ToBase64String(
+            SHA256.HashData(Encoding.UTF8.GetBytes(probeScript)));
+        Assert.Contains(
+            "script-src 'sha256-" + probeScriptHash + "'",
+            launcher.ProbeContentSecurityPolicyOrNull);
+    }
+
+    [Fact]
+    public async Task AccessDeniedCallbackClearsSensitiveHistoryWithoutClosingPageAsync()
+    {
+        AccessDeniedCallbackBrowserLauncher launcher =
+            new AccessDeniedCallbackBrowserLauncher(
+                TestContext.Current.CancellationToken);
+        LoopbackGoogleOAuthAuthorizationCodeProvider provider =
+            new LoopbackGoogleOAuthAuthorizationCodeProvider(
+                launcher,
+                TimeSpan.FromSeconds(3.0));
+
+        GoogleOAuthAuthorizationCodeResult result = await provider.RequestCodeAsync(
+            new GoogleOAuthClientId("client.apps.googleusercontent.com"),
+            new GoogleOAuthState("opaque-state"),
+            new GooglePkceCodeChallenge("opaque-challenge"),
+            TestContext.Current.CancellationToken);
+        await launcher.CallbackTask.WaitAsync(
+            TimeSpan.FromSeconds(2.0),
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(EGoogleOAuthAuthorizationStatus.Cancelled, result.Status);
+        Assert.Equal("access_denied", result.DiagnosticCodeOrNull);
+        Assert.Equal(HttpStatusCode.OK, launcher.CallbackStatusCodeOrNull);
+        string callbackBody = Assert.IsType<string>(launcher.CallbackBodyOrNull);
+        Assert.DoesNotContain("opaque-state", callbackBody, StringComparison.Ordinal);
+        string callbackScript = extractInlineElement(callbackBody, "script");
+        Assert.Contains("history.replaceState", callbackScript);
+        Assert.DoesNotContain("window.close", callbackScript);
+        string callbackScriptHash = Convert.ToBase64String(
+            SHA256.HashData(Encoding.UTF8.GetBytes(callbackScript)));
+        Assert.Contains(
+            "script-src 'sha256-" + callbackScriptHash + "'",
+            launcher.CallbackContentSecurityPolicyOrNull);
     }
 
     private static string extractInlineElement(string html, string elementName)
@@ -772,6 +908,96 @@ public sealed class GoogleCalendarOAuthTests
         private static string getQueryParameter(Uri uri, string parameterName)
         {
             string query = uri.Query.StartsWith("?", StringComparison.Ordinal) ? uri.Query[1..] : uri.Query;
+            foreach (string pair in query.Split('&'))
+            {
+                string[] parts = pair.Split('=', 2);
+                if (parts.Length == 2
+                    && string.Equals(
+                        Uri.UnescapeDataString(parts[0]),
+                        parameterName,
+                        StringComparison.Ordinal))
+                {
+                    return Uri.UnescapeDataString(parts[1]);
+                }
+            }
+
+            throw new InvalidOperationException(
+                "The authorization URL does not contain the expected query parameter.");
+        }
+    }
+
+    private sealed class AccessDeniedCallbackBrowserLauncher
+        : IExternalBrowserLauncher
+    {
+        private readonly CancellationToken mCancellationToken;
+
+        public Task CallbackTask { get; private set; } = Task.CompletedTask;
+
+        public HttpStatusCode? CallbackStatusCodeOrNull { get; private set; }
+
+        public string? CallbackBodyOrNull { get; private set; }
+
+        public string? CallbackContentSecurityPolicyOrNull { get; private set; }
+
+        public AccessDeniedCallbackBrowserLauncher(
+            CancellationToken cancellationToken)
+        {
+            mCancellationToken = cancellationToken;
+        }
+
+        public void Launch(Uri uri)
+        {
+            CallbackTask = sendCallbackAsync(uri);
+        }
+
+        private async Task sendCallbackAsync(Uri authorizationUri)
+        {
+            string redirectUriValue = getQueryParameter(
+                authorizationUri,
+                "redirect_uri");
+            Uri redirectUri = new Uri(redirectUriValue, UriKind.Absolute);
+            Uri callbackUri = new Uri(
+                redirectUri.AbsoluteUri
+                    + "?error=access_denied&state=opaque-state",
+                UriKind.Absolute);
+            using (HttpClientHandler handler = new HttpClientHandler
+            {
+                AllowAutoRedirect = false,
+                UseProxy = false,
+            })
+            using (HttpClient client = new HttpClient(handler))
+            using (HttpResponseMessage callbackResponse = await client.GetAsync(
+                callbackUri,
+                mCancellationToken))
+            {
+                CallbackStatusCodeOrNull = callbackResponse.StatusCode;
+                CallbackBodyOrNull = await callbackResponse.Content
+                    .ReadAsStringAsync(mCancellationToken);
+                CallbackContentSecurityPolicyOrNull = getHeaderValueOrNull(
+                    callbackResponse,
+                    "Content-Security-Policy");
+            }
+        }
+
+        private static string? getHeaderValueOrNull(
+            HttpResponseMessage response,
+            string headerName)
+        {
+            IEnumerable<string>? values;
+            return response.Headers.TryGetValues(headerName, out values)
+                ? string.Join(", ", values)
+                : null;
+        }
+
+        private static string getQueryParameter(
+            Uri uri,
+            string parameterName)
+        {
+            string query = uri.Query.StartsWith(
+                "?",
+                StringComparison.Ordinal)
+                    ? uri.Query[1..]
+                    : uri.Query;
             foreach (string pair in query.Split('&'))
             {
                 string[] parts = pair.Split('=', 2);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -73,12 +74,15 @@ public sealed class GoogleCalendarExportServiceTests
                 false,
                 marker));
         GoogleCalendarEventId staleEventId = GoogleCalendarEventId.Create(
-            new PlanId(Guid.Parse("5c113dab-0fe8-4c86-a69f-ef657e21314b")),
+            plan.PlanId,
             new GoogleCalendarSourceEventId("stale-event"));
         string eventListJson = "{\"items\":["
             + "{\"id\":\"" + staleEventId.Value + "\","
             + "\"extendedProperties\":{\"private\":{"
-            + "\"timetableGeneratorManaged\":\"true\"}}},"
+            + "\"timetableGeneratorManaged\":\"true\","
+            + "\"timetableGeneratorPlanId\":\""
+            + plan.PlanId.Value.ToString("N")
+            + "\"}}},"
             + "{\"id\":\"manual-event\"}]}";
         CalendarExportHttpMessageHandler handler =
             new CalendarExportHttpMessageHandler(listJson, listJson)
@@ -490,16 +494,26 @@ public sealed class GoogleCalendarExportServiceTests
     }
 
     [Fact]
-    public async Task ReconciliationDeletesManagedEventsFromPreviousExportsOnlyAsync()
+    public async Task ReconciliationDeletesOnlyStaleEventsFromTheCurrentPlanAsync()
     {
         GoogleCalendarExportPlan plan = createPlan();
         GoogleCalendarEventId desiredId = GoogleCalendarEventId.Create(
             plan.PlanId,
             plan.Events[0].SourceId);
         GoogleCalendarEventId staleId = GoogleCalendarEventId.Create(
-            new PlanId(Guid.NewGuid()),
+            plan.PlanId,
             new GoogleCalendarSourceEventId("stale"));
-        ReconciliationHttpMessageHandler handler = new ReconciliationHttpMessageHandler(desiredId, staleId);
+        PlanId otherPlanId = PlanId.CreateNew();
+        GoogleCalendarEventId otherPlanEventId = GoogleCalendarEventId.Create(
+            otherPlanId,
+            new GoogleCalendarSourceEventId("other-plan"));
+        ReconciliationHttpMessageHandler handler =
+            new ReconciliationHttpMessageHandler(
+                plan.PlanId,
+                desiredId,
+                staleId,
+                otherPlanId,
+                otherPlanEventId);
         GoogleCalendarApiClient apiClient = new GoogleCalendarApiClient(new HttpClient(handler));
 
         GoogleCalendarReconciliationResult result = await apiClient.ReconcileEventsAsync(
@@ -516,10 +530,11 @@ public sealed class GoogleCalendarExportServiceTests
             request => request.Path.Contains(
                 "privateExtendedProperty=timetableGeneratorManaged%3Dtrue",
                 StringComparison.Ordinal));
-        Assert.DoesNotContain(
+        Assert.Contains(
             handler.Requests,
             request => request.Path.Contains(
-                "privateExtendedProperty=timetableGeneratorPlanId%3D",
+                "privateExtendedProperty=timetableGeneratorPlanId%3D"
+                    + plan.PlanId.Value.ToString("N"),
                 StringComparison.Ordinal));
         Assert.Single(
             handler.Requests,
@@ -528,6 +543,68 @@ public sealed class GoogleCalendarExportServiceTests
             handler.Requests,
             request => request.Method == HttpMethod.Delete
                 && request.Path.EndsWith(staleId.Value, StringComparison.Ordinal));
+        Assert.DoesNotContain(
+            handler.Requests,
+            request => request.Method == HttpMethod.Delete
+                && request.Path.EndsWith(
+                    otherPlanEventId.Value,
+                    StringComparison.Ordinal));
+        Assert.DoesNotContain(
+            handler.Requests,
+            request => request.Method == HttpMethod.Delete
+                && request.Path.EndsWith(
+                    "manual-event",
+                    StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("create", "event_create_failed", 1, 1, 0)]
+    [InlineData("update", "event_update_failed", 0, 2, 0)]
+    [InlineData("delete", "event_delete_failed", 0, 2, 1)]
+    public async Task PartialEventMutationFailureConvergesOnRetryWithoutTouchingProtectedEventsAsync(
+        string failureOperation,
+        string expectedDiagnosticCode,
+        int expectedCreatedCount,
+        int expectedUpdatedCount,
+        int expectedDeletedCount)
+    {
+        GoogleCalendarExportPlan plan = createPlanWithTwoEvents();
+        PartialFailureReconciliationHttpMessageHandler handler =
+            new PartialFailureReconciliationHttpMessageHandler(
+                plan,
+                failureOperation);
+        GoogleCalendarApiClient apiClient =
+            new GoogleCalendarApiClient(new HttpClient(handler));
+        GoogleAccessToken accessToken =
+            new GoogleAccessToken("access-secret");
+        GoogleCalendarId calendarId =
+            new GoogleCalendarId("calendar-id");
+
+        GoogleCalendarApiException firstFailure =
+            await Assert.ThrowsAsync<GoogleCalendarApiException>(
+                async delegate
+                {
+                    await apiClient.ReconcileEventsAsync(
+                        accessToken,
+                        calendarId,
+                        plan,
+                        CancellationToken.None);
+                });
+        GoogleCalendarReconciliationResult retryResult =
+            await apiClient.ReconcileEventsAsync(
+                accessToken,
+                calendarId,
+                plan,
+                CancellationToken.None);
+
+        Assert.Equal(expectedDiagnosticCode, firstFailure.DiagnosticCode);
+        Assert.Equal(expectedCreatedCount, retryResult.CreatedEventCount);
+        Assert.Equal(expectedUpdatedCount, retryResult.UpdatedEventCount);
+        Assert.Equal(expectedDeletedCount, retryResult.DeletedEventCount);
+        Assert.True(handler.HasConverged);
+        Assert.True(handler.OtherPlanEventRemains);
+        Assert.True(handler.UserEventRemains);
+        Assert.False(handler.ProtectedEventWasMutated);
     }
 
     [Fact]
@@ -627,6 +704,130 @@ public sealed class GoogleCalendarExportServiceTests
             });
 
         Assert.Equal("google_calendar_response_too_large", exception.DiagnosticCode);
+    }
+
+    [Fact]
+    public async Task ProcessLeaseIsAcquiredBeforeOAuthAcrossExporterInstancesAsync()
+    {
+        string directoryPath = Path.Combine(
+            Path.GetTempPath(),
+            "TimetableGenerator.Desktop.Tests",
+            Guid.NewGuid().ToString("N"));
+        GoogleCalendarExportLockFilePath lockFilePath =
+            new GoogleCalendarExportLockFilePath(
+                Path.Combine(
+                    directoryPath,
+                    "google-calendar-export.lock"));
+        BlockingAccessTokenProvider firstAccessTokenProvider =
+            new BlockingAccessTokenProvider();
+        CountingAccessTokenProvider secondAccessTokenProvider =
+            new CountingAccessTokenProvider();
+        using (GoogleCalendarExportService firstExporter =
+            new GoogleCalendarExportService(
+                firstAccessTokenProvider,
+                new GoogleCalendarApiClient(
+                    new HttpClient(new TimeoutHttpMessageHandler())),
+                new FileGoogleCalendarExportLeaseProvider(lockFilePath),
+                null))
+        using (GoogleCalendarExportService secondExporter =
+            new GoogleCalendarExportService(
+                secondAccessTokenProvider,
+                new GoogleCalendarApiClient(
+                    new HttpClient(new TimeoutHttpMessageHandler())),
+                new FileGoogleCalendarExportLeaseProvider(lockFilePath),
+                null))
+        using (CancellationTokenSource firstCancellationSource =
+            new CancellationTokenSource())
+        {
+            try
+            {
+                Task<GoogleCalendarExportResult> firstExportTask =
+                    firstExporter.ExportAsync(
+                        createPlan(),
+                        new RecordingConflictResolver(
+                            ECalendarNameConflictResolution.Cancel),
+                        firstCancellationSource.Token);
+                await firstAccessTokenProvider.Started.WaitAsync(
+                    TimeSpan.FromSeconds(2.0),
+                    TestContext.Current.CancellationToken);
+
+                Task<GoogleCalendarExportResult> secondExportTask =
+                    secondExporter.ExportAsync(
+                        createPlan(),
+                        new RecordingConflictResolver(
+                            ECalendarNameConflictResolution.Cancel),
+                        TestContext.Current.CancellationToken);
+                await Task.Delay(
+                    TimeSpan.FromMilliseconds(250.0),
+                    TestContext.Current.CancellationToken);
+
+                Assert.Equal(0, secondAccessTokenProvider.RequestCount);
+                Assert.False(secondExportTask.IsCompleted);
+
+                firstCancellationSource.Cancel();
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                    async delegate
+                    {
+                        await firstExportTask;
+                    });
+
+                GoogleCalendarExportResult secondResult =
+                    await secondExportTask.WaitAsync(
+                        TimeSpan.FromSeconds(2.0),
+                        TestContext.Current.CancellationToken);
+                Assert.Equal(
+                    EGoogleCalendarExportStatus.NotConfigured,
+                    secondResult.Status);
+                Assert.Equal(1, secondAccessTokenProvider.RequestCount);
+            }
+            finally
+            {
+                firstCancellationSource.Cancel();
+            }
+        }
+
+        if (Directory.Exists(directoryPath))
+        {
+            Directory.Delete(directoryPath, true);
+        }
+    }
+
+    [Fact]
+    public async Task AuthorizationExceptionReleasesProcessLeaseForRetryAsync()
+    {
+        SequencedAccessTokenProvider accessTokenProvider =
+            new SequencedAccessTokenProvider();
+        TrackingExportLeaseProvider exportLeaseProvider =
+            new TrackingExportLeaseProvider();
+        using (GoogleCalendarExportService exporter =
+            new GoogleCalendarExportService(
+                accessTokenProvider,
+                new GoogleCalendarApiClient(
+                    new HttpClient(new TimeoutHttpMessageHandler())),
+                exportLeaseProvider,
+                null))
+        {
+            GoogleCalendarExportResult firstResult = await exporter.ExportAsync(
+                createPlan(),
+                new RecordingConflictResolver(
+                    ECalendarNameConflictResolution.Cancel),
+                CancellationToken.None);
+            GoogleCalendarExportResult secondResult = await exporter.ExportAsync(
+                createPlan(),
+                new RecordingConflictResolver(
+                    ECalendarNameConflictResolution.Cancel),
+                CancellationToken.None);
+
+            Assert.Equal(EGoogleCalendarExportStatus.Failed, firstResult.Status);
+            Assert.Equal(
+                "google_calendar_local_state_failed",
+                firstResult.DiagnosticCodeOrNull);
+            Assert.Equal(
+                EGoogleCalendarExportStatus.NotConfigured,
+                secondResult.Status);
+            Assert.Equal(2, exportLeaseProvider.AcquireCount);
+            Assert.Equal(2, exportLeaseProvider.ReleaseCount);
+        }
     }
 
     [Fact]
@@ -758,6 +959,34 @@ public sealed class GoogleCalendarExportServiceTests
             new GoogleCalendarExportEvent[] { exportEvent });
     }
 
+    private static GoogleCalendarExportPlan createPlanWithTwoEvents()
+    {
+        GoogleCalendarExportPlan firstEventPlan = createPlan();
+        GoogleCalendarExportEvent secondEvent =
+            new GoogleCalendarExportEvent(
+                new GoogleCalendarSourceEventId("course:ITP30004"),
+                new CalendarEventContent(
+                    "운영체제(01)",
+                    "OH 402",
+                    "담당: 김교수"),
+                new GoogleCalendarRecurrenceDateRange(
+                    new DateOnly(2026, 8, 31),
+                    new DateOnly(2026, 12, 20)),
+                new DailyTimeRange(
+                    new ScheduleTime(14, 0),
+                    new ScheduleTime(15, 15)),
+                new EDay[] { EDay.Monday, EDay.Friday });
+        return new GoogleCalendarExportPlan(
+            firstEventPlan.PlanId,
+            firstEventPlan.CalendarName,
+            firstEventPlan.TimeZoneId,
+            new GoogleCalendarExportEvent[]
+            {
+                firstEventPlan.Events[0],
+                secondEvent,
+            });
+    }
+
     private static string createCalendarListJson(params string[] items)
     {
         return "{\"items\":[" + string.Join(',', items) + "]}";
@@ -811,6 +1040,108 @@ public sealed class GoogleCalendarExportServiceTests
             return Task.FromResult(
                 GoogleOAuthAuthorizationResult.Complete(
                     new GoogleAccessToken("access-secret")));
+        }
+    }
+
+    private sealed class CountingAccessTokenProvider : IGoogleAccessTokenProvider
+    {
+        private int mRequestCount;
+
+        public int RequestCount
+        {
+            get
+            {
+                return Volatile.Read(ref mRequestCount);
+            }
+        }
+
+        public Task<GoogleOAuthAuthorizationResult> AuthorizeAsync(
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            Interlocked.Increment(ref mRequestCount);
+            return Task.FromResult(
+                GoogleOAuthAuthorizationResult.Fail(
+                    EGoogleOAuthAuthorizationStatus.NotConfigured,
+                    "oauth_client_not_configured"));
+        }
+    }
+
+    private sealed class SequencedAccessTokenProvider : IGoogleAccessTokenProvider
+    {
+        private int mRequestCount;
+
+        public Task<GoogleOAuthAuthorizationResult> AuthorizeAsync(
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            int requestCount = Interlocked.Increment(ref mRequestCount);
+            if (requestCount == 1)
+            {
+                return Task.FromException<GoogleOAuthAuthorizationResult>(
+                    new InvalidOperationException(
+                        "Simulated authorization infrastructure failure."));
+            }
+
+            return Task.FromResult(
+                GoogleOAuthAuthorizationResult.Fail(
+                    EGoogleOAuthAuthorizationStatus.NotConfigured,
+                    "oauth_client_not_configured"));
+        }
+    }
+
+    private sealed class TrackingExportLeaseProvider
+        : IGoogleCalendarExportLeaseProvider
+    {
+        private int mAcquireCount;
+        private int mReleaseCount;
+
+        public int AcquireCount
+        {
+            get
+            {
+                return Volatile.Read(ref mAcquireCount);
+            }
+        }
+
+        public int ReleaseCount
+        {
+            get
+            {
+                return Volatile.Read(ref mReleaseCount);
+            }
+        }
+
+        public Task<IGoogleCalendarExportLease> AcquireAsync(
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            Interlocked.Increment(ref mAcquireCount);
+            return Task.FromResult<IGoogleCalendarExportLease>(
+                new TrackingExportLease(this));
+        }
+
+        private sealed class TrackingExportLease : IGoogleCalendarExportLease
+        {
+            private TrackingExportLeaseProvider? mOwnerOrNull;
+
+            public TrackingExportLease(
+                TrackingExportLeaseProvider owner)
+            {
+                mOwnerOrNull = owner;
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                TrackingExportLeaseProvider? ownerOrNull =
+                    Interlocked.Exchange(ref mOwnerOrNull, null);
+                if (ownerOrNull != null)
+                {
+                    Interlocked.Increment(ref ownerOrNull.mReleaseCount);
+                }
+
+                return ValueTask.CompletedTask;
+            }
         }
     }
 
@@ -1019,17 +1350,261 @@ public sealed class GoogleCalendarExportServiceTests
         }
     }
 
+    private sealed class PartialFailureReconciliationHttpMessageHandler
+        : RecordingHttpMessageHandler
+    {
+        private readonly PlanId mPlanId;
+        private readonly PlanId mOtherPlanId;
+        private readonly HashSet<string> mDesiredEventIds;
+        private readonly HashSet<string> mCurrentPlanEventIds;
+        private readonly string mOtherPlanEventId;
+        private readonly HttpMethod mFailureMethod;
+        private int mSuccessfulFailureMethodMutationCount;
+        private bool mFailureWasReturned;
+
+        public bool OtherPlanEventRemains { get; private set; } = true;
+
+        public bool UserEventRemains { get; private set; } = true;
+
+        public bool ProtectedEventWasMutated { get; private set; }
+
+        public bool HasConverged
+        {
+            get
+            {
+                if (mCurrentPlanEventIds.Count != mDesiredEventIds.Count)
+                {
+                    return false;
+                }
+
+                foreach (string desiredEventId in mDesiredEventIds)
+                {
+                    if (mCurrentPlanEventIds.Contains(desiredEventId) == false)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        public PartialFailureReconciliationHttpMessageHandler(
+            GoogleCalendarExportPlan plan,
+            string failureOperation)
+        {
+            mPlanId = plan.PlanId;
+            mOtherPlanId = PlanId.CreateNew();
+            mDesiredEventIds = new HashSet<string>(StringComparer.Ordinal);
+            foreach (GoogleCalendarExportEvent exportEvent in plan.Events)
+            {
+                mDesiredEventIds.Add(
+                    GoogleCalendarEventId.Create(
+                        plan.PlanId,
+                        exportEvent.SourceId).Value);
+            }
+
+            mCurrentPlanEventIds =
+                new HashSet<string>(StringComparer.Ordinal);
+            mOtherPlanEventId =
+                GoogleCalendarEventId.Create(
+                    mOtherPlanId,
+                    new GoogleCalendarSourceEventId(
+                        "protected-other-plan")).Value;
+            switch (failureOperation)
+            {
+                case "create":
+                    mFailureMethod = HttpMethod.Post;
+                    break;
+                case "update":
+                    mFailureMethod = HttpMethod.Put;
+                    mCurrentPlanEventIds.UnionWith(mDesiredEventIds);
+                    break;
+                case "delete":
+                    mFailureMethod = HttpMethod.Delete;
+                    mCurrentPlanEventIds.UnionWith(mDesiredEventIds);
+                    mCurrentPlanEventIds.Add(
+                        GoogleCalendarEventId.Create(
+                            plan.PlanId,
+                            new GoogleCalendarSourceEventId(
+                                "stale-first")).Value);
+                    mCurrentPlanEventIds.Add(
+                        GoogleCalendarEventId.Create(
+                            plan.PlanId,
+                            new GoogleCalendarSourceEventId(
+                                "stale-second")).Value);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(
+                        nameof(failureOperation),
+                        failureOperation,
+                        "Unknown partial-failure operation.");
+            }
+        }
+
+        protected override HttpResponseMessage createResponse(
+            RequestRecord request)
+        {
+            if (request.Method == HttpMethod.Get
+                && request.Path.Contains(
+                    "/events?",
+                    StringComparison.Ordinal))
+            {
+                return jsonResponse(createEventListJson());
+            }
+
+            if (isEventMutation(request) == false)
+            {
+                return jsonResponse("{}");
+            }
+
+            if (request.Method == mFailureMethod
+                && mFailureWasReturned == false
+                && mSuccessfulFailureMethodMutationCount == 1)
+            {
+                mFailureWasReturned = true;
+                return new HttpResponseMessage(
+                    HttpStatusCode.ServiceUnavailable)
+                {
+                    Content = new StringContent(
+                        "{}",
+                        Encoding.UTF8,
+                        "application/json"),
+                };
+            }
+
+            applyMutation(request);
+            if (request.Method == mFailureMethod
+                && mFailureWasReturned == false)
+            {
+                mSuccessfulFailureMethodMutationCount++;
+            }
+
+            return jsonResponse("{}");
+        }
+
+        private bool isEventMutation(RequestRecord request)
+        {
+            return request.Path.Contains(
+                    "/events",
+                    StringComparison.Ordinal)
+                && (request.Method == HttpMethod.Post
+                    || request.Method == HttpMethod.Put
+                    || request.Method == HttpMethod.Delete);
+        }
+
+        private void applyMutation(RequestRecord request)
+        {
+            string eventId;
+            if (request.Method == HttpMethod.Post)
+            {
+                using (JsonDocument document =
+                    JsonDocument.Parse(request.Body))
+                {
+                    eventId = document.RootElement
+                        .GetProperty("id")
+                        .GetString()!;
+                }
+
+                mCurrentPlanEventIds.Add(eventId);
+                return;
+            }
+
+            int finalPathSeparatorIndex =
+                request.Path.LastIndexOf(
+                    '/');
+            eventId = request.Path[(finalPathSeparatorIndex + 1)..];
+            if (string.Equals(
+                    eventId,
+                    mOtherPlanEventId,
+                    StringComparison.Ordinal))
+            {
+                ProtectedEventWasMutated = true;
+                if (request.Method == HttpMethod.Delete)
+                {
+                    OtherPlanEventRemains = false;
+                }
+
+                return;
+            }
+
+            if (string.Equals(
+                    eventId,
+                    "manual-event",
+                    StringComparison.Ordinal))
+            {
+                ProtectedEventWasMutated = true;
+                if (request.Method == HttpMethod.Delete)
+                {
+                    UserEventRemains = false;
+                }
+
+                return;
+            }
+
+            if (request.Method == HttpMethod.Delete)
+            {
+                mCurrentPlanEventIds.Remove(eventId);
+            }
+        }
+
+        private string createEventListJson()
+        {
+            List<string> items = new List<string>();
+            foreach (string eventId in mCurrentPlanEventIds)
+            {
+                items.Add(
+                    createManagedEventJson(
+                        eventId,
+                        mPlanId));
+            }
+
+            items.Add(
+                createManagedEventJson(
+                    mOtherPlanEventId,
+                    mOtherPlanId));
+            items.Add("{\"id\":\"manual-event\"}");
+            return "{\"items\":[" + string.Join(',', items) + "]}";
+        }
+
+        private static string createManagedEventJson(
+            string eventId,
+            PlanId planId)
+        {
+            return "{\"id\":\""
+                + eventId
+                + "\",\"extendedProperties\":{\"private\":{"
+                + "\"timetableGeneratorManaged\":\"true\","
+                + "\"timetableGeneratorPlanId\":\""
+                + planId.Value.ToString("N")
+                + "\"}}}";
+        }
+    }
+
     private sealed class ReconciliationHttpMessageHandler : RecordingHttpMessageHandler
     {
+        private readonly PlanId mPlanId;
+
         private readonly GoogleCalendarEventId mDesiredId;
+
         private readonly GoogleCalendarEventId mStaleId;
 
+        private readonly PlanId mOtherPlanId;
+
+        private readonly GoogleCalendarEventId mOtherPlanEventId;
+
         public ReconciliationHttpMessageHandler(
+            PlanId planId,
             GoogleCalendarEventId desiredId,
-            GoogleCalendarEventId staleId)
+            GoogleCalendarEventId staleId,
+            PlanId otherPlanId,
+            GoogleCalendarEventId otherPlanEventId)
         {
+            mPlanId = planId;
             mDesiredId = desiredId;
             mStaleId = staleId;
+            mOtherPlanId = otherPlanId;
+            mOtherPlanEventId = otherPlanEventId;
         }
 
         protected override HttpResponseMessage createResponse(RequestRecord request)
@@ -1040,10 +1615,22 @@ public sealed class GoogleCalendarExportServiceTests
                     "{\"items\":[{\"id\":\""
                         + mDesiredId.Value
                         + "\",\"extendedProperties\":{\"private\":{"
-                        + "\"timetableGeneratorManaged\":\"true\"}}},{\"id\":\""
+                        + "\"timetableGeneratorManaged\":\"true\","
+                        + "\"timetableGeneratorPlanId\":\""
+                        + mPlanId.Value.ToString("N")
+                        + "\"}}},{\"id\":\""
                         + mStaleId.Value
                         + "\",\"extendedProperties\":{\"private\":{"
-                        + "\"timetableGeneratorManaged\":\"true\"}}},"
+                        + "\"timetableGeneratorManaged\":\"true\","
+                        + "\"timetableGeneratorPlanId\":\""
+                        + mPlanId.Value.ToString("N")
+                        + "\"}}},{\"id\":\""
+                        + mOtherPlanEventId.Value
+                        + "\",\"extendedProperties\":{\"private\":{"
+                        + "\"timetableGeneratorManaged\":\"true\","
+                        + "\"timetableGeneratorPlanId\":\""
+                        + mOtherPlanId.Value.ToString("N")
+                        + "\"}}},"
                         + "{\"id\":\"manual-event\"}]}");
             }
 

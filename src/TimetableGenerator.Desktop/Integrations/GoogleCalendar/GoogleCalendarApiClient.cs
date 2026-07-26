@@ -189,6 +189,7 @@ internal sealed class GoogleCalendarApiClient
         HashSet<GoogleCalendarEventId> existingEventIds = await listManagedEventIdsAsync(
             accessToken,
             calendarId,
+            plan.PlanId,
             cancellationToken).ConfigureAwait(false);
         HashSet<GoogleCalendarEventId> desiredEventIds = new HashSet<GoogleCalendarEventId>();
         int createdEventCount = 0;
@@ -253,6 +254,7 @@ internal sealed class GoogleCalendarApiClient
     private async Task<HashSet<GoogleCalendarEventId>> listManagedEventIdsAsync(
         GoogleAccessToken accessToken,
         GoogleCalendarId calendarId,
+        PlanId planId,
         CancellationToken cancellationToken)
     {
         HashSet<GoogleCalendarEventId> eventIds = new HashSet<GoogleCalendarEventId>();
@@ -270,7 +272,11 @@ internal sealed class GoogleCalendarApiClient
                 + MAXIMUM_EVENT_LIST_PAGE_SIZE.ToString(CultureInfo.InvariantCulture)
                 + "&showDeleted=false&singleEvents=false&privateExtendedProperty="
                 + Uri.EscapeDataString(
-                    GoogleCalendarEventResourceFactory.CreateManagedPropertyFilter());
+                    GoogleCalendarEventResourceFactory.CreateManagedPropertyFilter())
+                + "&privateExtendedProperty="
+                + Uri.EscapeDataString(
+                    GoogleCalendarEventResourceFactory.CreatePlanPropertyFilter(
+                        planId));
             if (pageTokenOrNull != null)
             {
                 relativeUri += "&pageToken=" + Uri.EscapeDataString(pageTokenOrNull);
@@ -296,7 +302,9 @@ internal sealed class GoogleCalendarApiClient
                         {
                             foreach (JsonElement item in items.EnumerateArray())
                             {
-                                if (GoogleCalendarEventResourceFactory.isManaged(item) == false)
+                                if (GoogleCalendarEventResourceFactory.isManagedByPlan(
+                                        item,
+                                        planId) == false)
                                 {
                                     continue;
                                 }

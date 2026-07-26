@@ -20,7 +20,11 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
     private const string CALLBACK_PATH = "/";
     private const string GOOGLE_CALENDAR_SCOPES = "https://www.googleapis.com/auth/calendar.app.created " + "https://www.googleapis.com/auth/calendar.calendarlist.readonly";
 
-    private const string SUCCESS_PAGE_SCRIPT = "history.replaceState(null,document.title,'/');" + "window.setTimeout(function(){window.close();},800);";
+    private const string CALLBACK_PAGE_HISTORY_SCRIPT =
+        "history.replaceState(null,document.title,'/');";
+
+    private const string SUCCESS_PAGE_CLOSE_SCRIPT =
+        "window.setTimeout(function(){window.close();},800);";
 
     internal static readonly TimeSpan DEFAULT_AUTHORIZATION_TIMEOUT = TimeSpan.FromMinutes(10.0);
 
@@ -230,8 +234,14 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
         GoogleOAuthRedirectUri redirectUri,
         GoogleOAuthState expectedState)
     {
-        string[] parts = requestLine.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length < 2 || string.Equals(parts[0], "GET", StringComparison.Ordinal) == false)
+        string[] parts = requestLine.Split(' ', StringSplitOptions.None);
+        bool hasSupportedHttpVersion =
+            parts.Length == 3
+            && parts[1].Length > 0
+            && (string.Equals(parts[2], "HTTP/1.0", StringComparison.Ordinal)
+                || string.Equals(parts[2], "HTTP/1.1", StringComparison.Ordinal));
+        if (hasSupportedHttpVersion == false
+            || string.Equals(parts[0], "GET", StringComparison.Ordinal) == false)
         {
             return GoogleOAuthAuthorizationCodeResult.Fail(
                 EGoogleOAuthAuthorizationStatus.Failed,
@@ -239,7 +249,29 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
                 "invalid_loopback_request");
         }
 
-        Uri requestUri = new Uri("http://127.0.0.1" + parts[1], UriKind.Absolute);
+        if (hasMalformedPercentEncoding(parts[1]))
+        {
+            return GoogleOAuthAuthorizationCodeResult.Fail(
+                EGoogleOAuthAuthorizationStatus.Failed,
+                redirectUri,
+                "invalid_loopback_request");
+        }
+
+        Uri requestUri;
+        try
+        {
+            requestUri = new Uri(
+                "http://127.0.0.1" + parts[1],
+                UriKind.Absolute);
+        }
+        catch (UriFormatException)
+        {
+            return GoogleOAuthAuthorizationCodeResult.Fail(
+                EGoogleOAuthAuthorizationStatus.Failed,
+                redirectUri,
+                "invalid_loopback_request");
+        }
+
         if (string.Equals(requestUri.AbsolutePath, CALLBACK_PATH, StringComparison.Ordinal) == false)
         {
             return GoogleOAuthAuthorizationCodeResult.Fail(
@@ -248,7 +280,17 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
                 "invalid_callback_path");
         }
 
-        IReadOnlyDictionary<string, string> query = parseQuery(requestUri.Query);
+        IReadOnlyDictionary<string, string>? queryOrNull =
+            tryParseQueryOrNull(requestUri.Query);
+        if (queryOrNull == null)
+        {
+            return GoogleOAuthAuthorizationCodeResult.Fail(
+                EGoogleOAuthAuthorizationStatus.Failed,
+                redirectUri,
+                "invalid_loopback_request");
+        }
+
+        IReadOnlyDictionary<string, string> query = queryOrNull;
         string? returnedState;
         if (query.TryGetValue("state", out returnedState) == false
             || fixedTimeEquals(returnedState, expectedState.Value) == false)
@@ -283,7 +325,8 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
             redirectUri);
     }
 
-    private static IReadOnlyDictionary<string, string> parseQuery(string query)
+    private static IReadOnlyDictionary<string, string>?
+        tryParseQueryOrNull(string query)
     {
         Dictionary<string, string> values = new Dictionary<string, string>(StringComparer.Ordinal);
         string queryWithoutPrefix = query.StartsWith("?", StringComparison.Ordinal) ? query[1..] : query;
@@ -292,12 +335,60 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
             int separatorIndex = part.IndexOf('=', StringComparison.Ordinal);
             string encodedName = separatorIndex < 0 ? part : part[..separatorIndex];
             string encodedValue = separatorIndex < 0 ? string.Empty : part[(separatorIndex + 1)..];
-            string name = Uri.UnescapeDataString(encodedName.Replace('+', ' '));
-            string value = Uri.UnescapeDataString(encodedValue.Replace('+', ' '));
-            values[name] = value;
+            if (hasMalformedPercentEncoding(encodedName)
+                || hasMalformedPercentEncoding(encodedValue))
+            {
+                return null;
+            }
+
+            string name;
+            string value;
+            try
+            {
+                name = Uri.UnescapeDataString(encodedName.Replace('+', ' '));
+                value = Uri.UnescapeDataString(encodedValue.Replace('+', ' '));
+            }
+            catch (UriFormatException)
+            {
+                return null;
+            }
+
+            if (name.Length == 0 || values.TryAdd(name, value) == false)
+            {
+                return null;
+            }
         }
 
         return values;
+    }
+
+    private static bool hasMalformedPercentEncoding(string value)
+    {
+        for (int index = 0; index < value.Length; ++index)
+        {
+            if (value[index] != '%')
+            {
+                continue;
+            }
+
+            if (index + 2 >= value.Length
+                || isHexadecimalDigit(value[index + 1]) == false
+                || isHexadecimalDigit(value[index + 2]) == false)
+            {
+                return true;
+            }
+
+            index += 2;
+        }
+
+        return false;
+    }
+
+    private static bool isHexadecimalDigit(char value)
+    {
+        return value is >= '0' and <= '9'
+            || value is >= 'A' and <= 'F'
+            || value is >= 'a' and <= 'f';
     }
 
     private static bool fixedTimeEquals(string left, string right)
@@ -308,7 +399,7 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
             && CryptographicOperations.FixedTimeEquals(leftBytes, rightBytes);
     }
 
-    private static async Task<string> readRequestLineAsync(
+    internal static async Task<string> readRequestLineAsync(
         Stream stream,
         CancellationToken cancellationToken)
     {
@@ -359,9 +450,10 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
                 ? "올바른 Google 로그인 응답을 기다리고 있습니다."
                 : "Timetable Generator로 돌아가 다시 시도해 주세요.";
         string supportingMessage = isSuccess ? "이 창은 닫아도 됩니다." : "";
-        string scriptElement = isSuccess
-            ? "<script>" + SUCCESS_PAGE_SCRIPT + "</script>"
-            : "";
+        string callbackPageScript = isSuccess
+            ? CALLBACK_PAGE_HISTORY_SCRIPT + SUCCESS_PAGE_CLOSE_SCRIPT
+            : CALLBACK_PAGE_HISTORY_SCRIPT;
+        string scriptElement = "<script>" + callbackPageScript + "</script>";
         string body = "<!doctype html><html lang=\"ko\"><head><meta charset=\"utf-8\">"
             + "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
             + "<meta name=\"color-scheme\" content=\"light dark\">"
@@ -389,12 +481,10 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
         string statusLine = responseKind == EGoogleLoopbackResponseKind.InvalidRequest
             ? "HTTP/1.1 400 Bad Request\r\n"
             : "HTTP/1.1 200 OK\r\n";
-        string scriptPolicy = isSuccess
-            ? " script-src 'sha256-"
-                + Convert.ToBase64String(
-                    SHA256.HashData(Encoding.UTF8.GetBytes(SUCCESS_PAGE_SCRIPT)))
-                + "';"
-            : " script-src 'none';";
+        string scriptPolicy = " script-src 'sha256-"
+            + Convert.ToBase64String(
+                SHA256.HashData(Encoding.UTF8.GetBytes(callbackPageScript)))
+            + "';";
         string header = statusLine
             + "Content-Type: text/html; charset=utf-8\r\n"
             + "Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline';"
