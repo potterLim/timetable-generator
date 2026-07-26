@@ -6,10 +6,7 @@ internal sealed class GeneralEducationCategoryAssignment
 {
     private readonly GeneralEducationCategoryName? mCategoryNameOrNull;
 
-    public static GeneralEducationCategoryAssignment NotProvided { get; } =
-        new GeneralEducationCategoryAssignment(
-            EGeneralEducationCategoryStatus.NotProvided,
-            null);
+    public static GeneralEducationCategoryAssignment NotProvided { get; } = new GeneralEducationCategoryAssignment(EGeneralEducationCategoryStatus.NotProvided, null);
 
     public EGeneralEducationCategoryStatus Status { get; }
 
@@ -48,9 +45,7 @@ internal sealed class GeneralEducationCategoryAssignment
             throw new ArgumentNullException(nameof(categoryName));
         }
 
-        return new GeneralEducationCategoryAssignment(
-            EGeneralEducationCategoryStatus.Provided,
-            categoryName);
+        return new GeneralEducationCategoryAssignment(EGeneralEducationCategoryStatus.Provided, categoryName);
     }
 
     public GeneralEducationCategoryName GetCategoryName()

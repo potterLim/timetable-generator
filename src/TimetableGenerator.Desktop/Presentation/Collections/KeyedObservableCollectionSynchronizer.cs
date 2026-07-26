@@ -40,9 +40,7 @@ internal static class KeyedObservableCollectionSynchronizer
         removeItemsNotInDesiredCollection(currentItems, desiredKeys, findKey);
 
         EqualityComparer<TKey> keyComparer = EqualityComparer<TKey>.Default;
-        for (int desiredIndex = 0;
-            desiredIndex < desiredItems.Count;
-            ++desiredIndex)
+        for (int desiredIndex = 0; desiredIndex < desiredItems.Count; ++desiredIndex)
         {
             TItem desiredItem = desiredItems[desiredIndex];
             TKey desiredKey = findKey(desiredItem);

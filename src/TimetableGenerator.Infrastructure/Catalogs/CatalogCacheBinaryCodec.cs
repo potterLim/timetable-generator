@@ -51,18 +51,10 @@ internal sealed class CatalogCacheBinaryCodec
         int contentLength = checked(HEADER_LENGTH + indexBytes.Length + catalogBytes.Length);
         byte[] content = new byte[contentLength];
         CACHE_MAGIC.CopyTo(content, 0);
-        BinaryPrimitives.WriteInt32LittleEndian(
-            content.AsSpan(CACHE_SCHEMA_VERSION_OFFSET, sizeof(int)),
-            CACHE_SCHEMA_VERSION);
-        BinaryPrimitives.WriteInt64LittleEndian(
-            content.AsSpan(GENERATION_OFFSET, sizeof(long)),
-            document.Generation.Value);
-        BinaryPrimitives.WriteInt32LittleEndian(
-            content.AsSpan(INDEX_LENGTH_OFFSET, sizeof(int)),
-            indexBytes.Length);
-        BinaryPrimitives.WriteInt32LittleEndian(
-            content.AsSpan(CATALOG_LENGTH_OFFSET, sizeof(int)),
-            catalogBytes.Length);
+        BinaryPrimitives.WriteInt32LittleEndian(content.AsSpan(CACHE_SCHEMA_VERSION_OFFSET, sizeof(int)), CACHE_SCHEMA_VERSION);
+        BinaryPrimitives.WriteInt64LittleEndian(content.AsSpan(GENERATION_OFFSET, sizeof(long)), document.Generation.Value);
+        BinaryPrimitives.WriteInt32LittleEndian(content.AsSpan(INDEX_LENGTH_OFFSET, sizeof(int)), indexBytes.Length);
+        BinaryPrimitives.WriteInt32LittleEndian(content.AsSpan(CATALOG_LENGTH_OFFSET, sizeof(int)), catalogBytes.Length);
         indexBytes.Span.CopyTo(content.AsSpan(HEADER_LENGTH, indexBytes.Length));
         catalogBytes.Span.CopyTo(content.AsSpan(HEADER_LENGTH + indexBytes.Length, catalogBytes.Length));
         return content;

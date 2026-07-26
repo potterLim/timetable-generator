@@ -122,10 +122,7 @@ public sealed class PlanningWorkspaceSession
                     courseChoiceGroup);
                 break;
             case EPlanningCourseSelectionKind.TimeNotProvidedOffering:
-                UnscheduledOfferingSelection unscheduledSelection =
-                    new UnscheduledOfferingSelection(
-                        selection.CourseId,
-                        selection.GetTimeNotProvidedOfferingId());
+                UnscheduledOfferingSelection unscheduledSelection = new UnscheduledOfferingSelection(selection.CourseId, selection.GetTimeNotProvidedOfferingId());
                 editedWorkspace = mEditor.AddUnscheduledOfferingSelection(
                     mWorkspace,
                     getRequiredActivePlanId(),

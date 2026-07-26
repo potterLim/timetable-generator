@@ -32,10 +32,7 @@ internal sealed class ProductWorkspaceViewModelLoader : IProductWorkspaceLoader
         PlanningWorkspaceSession session = new PlanningWorkspaceSession(
             loadResult.CatalogPackage.Document.Catalog,
             loadResult.Workspace);
-        PlanningWorkspaceAutosaveQueue autosaveQueue =
-            new PlanningWorkspaceAutosaveQueue(
-                loadResult.WorkspaceStore,
-                loadResult.WorkspaceConcurrencyToken);
+        PlanningWorkspaceAutosaveQueue autosaveQueue = new PlanningWorkspaceAutosaveQueue(loadResult.WorkspaceStore, loadResult.WorkspaceConcurrencyToken);
         IScheduleRecommendationProvider recommendationProvider = new CatalogScheduleRecommendationProvider(loadResult.CatalogPackage.Document.Catalog);
         PlannerWorkspaceViewModel workspace = new PlannerWorkspaceViewModel(
             catalogProjection,

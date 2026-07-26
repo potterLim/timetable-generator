@@ -74,16 +74,9 @@ public sealed class ScheduleRecommendationProjectorTests
     {
         CourseCatalogDocument notProvidedDocument = CatalogProjectionTestFixture.CreateDocument();
         CourseCatalogProjection notProvidedCatalog = CourseCatalogProjector.Project(notProvidedDocument);
-        ApplicationScheduleRecommendation notProvidedRecommendation =
-            CatalogProjectionTestFixture.CreateScheduledRecommendation(
-                notProvidedDocument,
-                new CourseId("course-programming"),
-                new OfferingId("offering-programming-alternative"));
+        ApplicationScheduleRecommendation notProvidedRecommendation = CatalogProjectionTestFixture.CreateScheduledRecommendation(notProvidedDocument, new CourseId("course-programming"), new OfferingId("offering-programming-alternative"));
 
-        PresentationScheduleRecommendation notProvidedProjection =
-            ScheduleRecommendationProjector.Project(
-                notProvidedRecommendation,
-                notProvidedCatalog);
+        PresentationScheduleRecommendation notProvidedProjection = ScheduleRecommendationProjector.Project(notProvidedRecommendation, notProvidedCatalog);
 
         CourseScheduleEntry notProvidedEntry = Assert.IsType<CourseScheduleEntry>(Assert.Single(notProvidedProjection.Entries));
         Assert.False(notProvidedEntry.HasConfirmedInstructor);
@@ -99,16 +92,9 @@ public sealed class ScheduleRecommendationProjectorTests
 
         CourseCatalogDocument unconfirmedDocument = CatalogProjectionTestFixture.CreateDocumentWithScheduledAlternativeCourse();
         CourseCatalogProjection unconfirmedCatalog = CourseCatalogProjector.Project(unconfirmedDocument);
-        ApplicationScheduleRecommendation unconfirmedRecommendation =
-            CatalogProjectionTestFixture.CreateScheduledRecommendation(
-                unconfirmedDocument,
-                new CourseId("course-seminar"),
-                new OfferingId("offering-seminar-unscheduled"));
+        ApplicationScheduleRecommendation unconfirmedRecommendation = CatalogProjectionTestFixture.CreateScheduledRecommendation(unconfirmedDocument, new CourseId("course-seminar"), new OfferingId("offering-seminar-unscheduled"));
 
-        PresentationScheduleRecommendation unconfirmedProjection =
-            ScheduleRecommendationProjector.Project(
-                unconfirmedRecommendation,
-                unconfirmedCatalog);
+        PresentationScheduleRecommendation unconfirmedProjection = ScheduleRecommendationProjector.Project(unconfirmedRecommendation, unconfirmedCatalog);
 
         CourseScheduleEntry unconfirmedEntry = Assert.IsType<CourseScheduleEntry>(Assert.Single(unconfirmedProjection.Entries));
         Assert.False(unconfirmedEntry.HasConfirmedInstructor);

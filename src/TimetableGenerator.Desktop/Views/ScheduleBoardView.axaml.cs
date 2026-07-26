@@ -109,8 +109,7 @@ internal sealed partial class ScheduleBoardView : UserControl
         scheduleBoard.mIsPngExport = true;
         scheduleBoard.mBoardContextHeader.IsVisible = true;
         scheduleBoard.mBoardStickyHeaderContainer.IsVisible = false;
-        scheduleBoard.mBoardExportSurface.BorderThickness =
-            new Thickness(1.0, 1.0, 1.0, 0.0);
+        scheduleBoard.mBoardExportSurface.BorderThickness = new Thickness(1.0, 1.0, 1.0, 0.0);
         return scheduleBoard;
     }
 
@@ -211,9 +210,7 @@ internal sealed partial class ScheduleBoardView : UserControl
         timeColumn.Width = new GridLength(TIME_COLUMN_WIDTH, GridUnitType.Pixel);
         mBoardGrid.ColumnDefinitions.Add(timeColumn);
 
-        for (int dayIndex = 0;
-            dayIndex < mRenderedLayout.DayRange.DayCount;
-            ++dayIndex)
+        for (int dayIndex = 0; dayIndex < mRenderedLayout.DayRange.DayCount; ++dayIndex)
         {
             ColumnDefinition dayColumn = new ColumnDefinition();
             dayColumn.Width = new GridLength(1.0, GridUnitType.Star);
@@ -224,9 +221,7 @@ internal sealed partial class ScheduleBoardView : UserControl
         headerRow.Height = new GridLength(findBoardGridHeaderRowHeight(), GridUnitType.Pixel);
         mBoardGrid.RowDefinitions.Add(headerRow);
 
-        for (int incrementIndex = 0;
-            incrementIndex < mRenderedLayout.TimeAxis.IncrementCount;
-            ++incrementIndex)
+        for (int incrementIndex = 0; incrementIndex < mRenderedLayout.TimeAxis.IncrementCount; ++incrementIndex)
         {
             RowDefinition timeRow = new RowDefinition();
             timeRow.Height = new GridLength(TIME_INCREMENT_ROW_HEIGHT, GridUnitType.Pixel);
@@ -237,9 +232,7 @@ internal sealed partial class ScheduleBoardView : UserControl
     private void addGridGuides()
     {
         int totalColumnCount = mRenderedLayout.DayRange.TotalColumnCount;
-        for (int columnIndex = 0;
-            columnIndex < totalColumnCount;
-            ++columnIndex)
+        for (int columnIndex = 0; columnIndex < totalColumnCount; ++columnIndex)
         {
             Border columnGuide = new Border();
             columnGuide.BorderBrush = findBrush("BorderBrush");
@@ -296,9 +289,7 @@ internal sealed partial class ScheduleBoardView : UserControl
         Border endBoundary = createBottomBoundary("schedule-end-boundary");
         Grid.SetRow(endBoundary, mRenderedLayout.TimeAxis.IncrementCount);
         Grid.SetColumn(endBoundary, 1);
-        Grid.SetColumnSpan(
-            endBoundary,
-            mRenderedLayout.DayRange.TotalColumnCount - 1);
+        Grid.SetColumnSpan(endBoundary, mRenderedLayout.DayRange.TotalColumnCount - 1);
         mBoardGrid.Children.Add(endBoundary);
     }
 
@@ -342,9 +333,7 @@ internal sealed partial class ScheduleBoardView : UserControl
         timeColumn.Width = new GridLength(TIME_COLUMN_WIDTH, GridUnitType.Pixel);
         mBoardStickyDayHeaderGrid.ColumnDefinitions.Add(timeColumn);
 
-        for (int dayIndex = 0;
-            dayIndex < mRenderedLayout.DayRange.DayCount;
-            ++dayIndex)
+        for (int dayIndex = 0; dayIndex < mRenderedLayout.DayRange.DayCount; ++dayIndex)
         {
             ColumnDefinition dayColumn = new ColumnDefinition();
             dayColumn.Width = new GridLength(1.0, GridUnitType.Star);
@@ -352,9 +341,7 @@ internal sealed partial class ScheduleBoardView : UserControl
         }
 
         int totalColumnCount = mRenderedLayout.DayRange.TotalColumnCount;
-        for (int columnIndex = 0;
-            columnIndex < totalColumnCount;
-            ++columnIndex)
+        for (int columnIndex = 0; columnIndex < totalColumnCount; ++columnIndex)
         {
             Border columnGuide = new Border();
             columnGuide.BorderBrush = findBrush("BorderBrush");

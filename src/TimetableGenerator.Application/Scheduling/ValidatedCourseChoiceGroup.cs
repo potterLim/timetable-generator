@@ -54,9 +54,7 @@ internal sealed class ValidatedCourseChoiceGroup
                 nameof(offeringCandidates));
         }
 
-        List<ValidatedOfferingCandidate> copiedCandidates =
-            new List<ValidatedOfferingCandidate>(
-                preferredCandidates.Count + acceptableCandidates.Count);
+        List<ValidatedOfferingCandidate> copiedCandidates = new List<ValidatedOfferingCandidate>(preferredCandidates.Count + acceptableCandidates.Count);
         copiedCandidates.AddRange(preferredCandidates);
         copiedCandidates.AddRange(acceptableCandidates);
         mOfferingCandidates = copiedCandidates.AsReadOnly();

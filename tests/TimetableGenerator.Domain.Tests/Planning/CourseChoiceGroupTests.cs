@@ -138,8 +138,7 @@ public sealed class CourseChoiceGroupTests
         EOfferingPreference preference)
     {
         CourseId courseId = new CourseId("institution:" + courseCode);
-        OfferingId offeringId = new OfferingId(
-            "institution:term:" + courseCode + ":" + sectionCode);
+        OfferingId offeringId = new OfferingId("institution:term:" + courseCode + ":" + sectionCode);
         return new CourseCandidate(
             courseId,
             new OfferingCandidate[]

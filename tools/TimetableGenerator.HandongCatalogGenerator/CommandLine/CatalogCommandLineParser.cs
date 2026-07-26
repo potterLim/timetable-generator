@@ -174,11 +174,7 @@ internal static class CatalogCommandLineParser
     private static CatalogRevision parseRevision(string value)
     {
         int revisionValue;
-        bool isParsed = int.TryParse(
-            value,
-            NumberStyles.None,
-            CultureInfo.InvariantCulture,
-            out revisionValue);
+        bool isParsed = int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out revisionValue);
         if (isParsed == false)
         {
             throw createInvalidOptionValueException(

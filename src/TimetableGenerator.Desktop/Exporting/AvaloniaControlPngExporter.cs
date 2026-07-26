@@ -73,9 +73,7 @@ public sealed class AvaloniaControlPngExporter : IControlPngExporter
                 delegate
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    renderedBitmap.Save(
-                        destinationStream,
-                        PngBitmapEncoderOptions.Default);
+                    renderedBitmap.Save(destinationStream, PngBitmapEncoderOptions.Default);
                     cancellationToken.ThrowIfCancellationRequested();
                 },
                 cancellationToken).ConfigureAwait(false);

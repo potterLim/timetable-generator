@@ -81,22 +81,10 @@ public sealed class ScheduleCalendarProjectorTests
         PlanName planName = new PlanName("시간표");
         AcademicTermCalendarMetadata academicCalendar = getAcademicCalendar();
 
-        CalendarExportDocument appleDocument =
-            ScheduleCalendarProjector.ProjectForAppleCalendar(
-                planId,
-                planName,
-                displayedSchedule,
-                academicCalendar);
-        IReadOnlyList<AppleCalendarAutomationEvent> appleEvents =
-            AppleCalendarEventOccurrenceProjector.Project(appleDocument);
-        CalendarExportDocument googleDocument =
-            ScheduleCalendarProjector.ProjectForGoogleCalendar(
-                planId,
-                planName,
-                displayedSchedule,
-                academicCalendar);
-        GoogleCalendarExportPlan googleExportPlan =
-            GoogleCalendarExportPlan.CreateFromDocument(googleDocument);
+        CalendarExportDocument appleDocument = ScheduleCalendarProjector.ProjectForAppleCalendar(planId, planName, displayedSchedule, academicCalendar);
+        IReadOnlyList<AppleCalendarAutomationEvent> appleEvents = AppleCalendarEventOccurrenceProjector.Project(appleDocument);
+        CalendarExportDocument googleDocument = ScheduleCalendarProjector.ProjectForGoogleCalendar(planId, planName, displayedSchedule, academicCalendar);
+        GoogleCalendarExportPlan googleExportPlan = GoogleCalendarExportPlan.CreateFromDocument(googleDocument);
 
         Assert.NotEmpty(appleEvents);
         Assert.All(

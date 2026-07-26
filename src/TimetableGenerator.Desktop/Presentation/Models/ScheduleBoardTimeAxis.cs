@@ -137,9 +137,7 @@ internal sealed class ScheduleBoardTimeAxis
         ScheduleBoardTimeBoundary end)
     {
         List<ScheduleBoardTimeBoundary> guideTimes = new List<ScheduleBoardTimeBoundary>();
-        for (int guideMinute = start.MinutesFromMidnight + GUIDE_INTERVAL_MINUTES;
-            guideMinute < end.MinutesFromMidnight;
-            guideMinute += GUIDE_INTERVAL_MINUTES)
+        for (int guideMinute = start.MinutesFromMidnight + GUIDE_INTERVAL_MINUTES; guideMinute < end.MinutesFromMidnight; guideMinute += GUIDE_INTERVAL_MINUTES)
         {
             guideTimes.Add(new ScheduleBoardTimeBoundary(guideMinute));
         }
@@ -157,9 +155,7 @@ internal sealed class ScheduleBoardTimeAxis
             : roundUp(
                 start.MinutesFromMidnight + 1,
                 LABEL_INTERVAL_MINUTES);
-        for (int labelMinute = firstLabelMinute;
-            labelMinute < end.MinutesFromMidnight;
-            labelMinute += LABEL_INTERVAL_MINUTES)
+        for (int labelMinute = firstLabelMinute; labelMinute < end.MinutesFromMidnight; labelMinute += LABEL_INTERVAL_MINUTES)
         {
             labelTimes.Add(new ScheduleBoardTimeBoundary(labelMinute));
         }

@@ -127,11 +127,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
         VerifiedCatalogPackage catalogPackage,
         PlanningWorkspace workspace)
     {
-        PlanningWorkspaceCatalogRebindResult rebindResult =
-            PlanningWorkspaceCatalogRebinder.TryRebind(
-                catalogPackage.Document.Catalog,
-                catalogPackage.CreatePlanCatalogBinding(),
-                workspace);
+        PlanningWorkspaceCatalogRebindResult rebindResult = PlanningWorkspaceCatalogRebinder.TryRebind(catalogPackage.Document.Catalog, catalogPackage.CreatePlanCatalogBinding(), workspace);
         if (rebindResult.IsRebound == false)
         {
             throw new ProductWorkspaceCatalogCompatibilityException(rebindResult.Status);
@@ -142,11 +138,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
         VerifiedCatalogPackage catalogPackage,
         PlanningWorkspace workspace)
     {
-        PlanningWorkspaceCatalogRebindResult rebindResult =
-            PlanningWorkspaceCatalogRebinder.TryRebind(
-                catalogPackage.Document.Catalog,
-                catalogPackage.CreatePlanCatalogBinding(),
-                workspace);
+        PlanningWorkspaceCatalogRebindResult rebindResult = PlanningWorkspaceCatalogRebinder.TryRebind(catalogPackage.Document.Catalog, catalogPackage.CreatePlanCatalogBinding(), workspace);
         if (rebindResult.IsRebound == false || rebindResult.ReboundWorkspaceOrNull == null)
         {
             throw new ProductWorkspaceCatalogCompatibilityException(rebindResult.Status);
@@ -256,10 +248,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
                 recoveryFlags);
         }
 
-        EPlanningCatalogTransitionStatus transitionStatus =
-            PlanningCatalogTransitionPolicy.EvaluateTransition(
-                savedBinding,
-                latestCatalogPackage.CreatePlanCatalogBinding());
+        EPlanningCatalogTransitionStatus transitionStatus = PlanningCatalogTransitionPolicy.EvaluateTransition(savedBinding, latestCatalogPackage.CreatePlanCatalogBinding());
         PlanningWorkspaceCatalogRebindResult? rebindResultOrNull = null;
         if (transitionStatus == EPlanningCatalogTransitionStatus.UpgradeEligible)
         {
@@ -286,10 +275,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
             }
         }
 
-        CatalogCacheLoadResult matchingCacheLoadResult =
-            await mCatalogCacheStore.LoadMatchingAsync(
-                savedBinding,
-                cancellationToken).ConfigureAwait(false);
+        CatalogCacheLoadResult matchingCacheLoadResult = await mCatalogCacheStore.LoadMatchingAsync(savedBinding, cancellationToken).ConfigureAwait(false);
         if (matchingCacheLoadResult.IsFound)
         {
             VerifiedCatalogPackage matchingCatalogPackage = matchingCacheLoadResult.GetPackage();
@@ -323,10 +309,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
         VerifiedCatalogPackage downloadedCatalogPackage = await mCatalogDownloader.DownloadDefaultCatalogAsync(cancellationToken).ConfigureAwait(false);
         PlanningWorkspace compatibleWorkspace = workspace;
         bool shouldSaveWorkspace = false;
-        EPlanningCatalogTransitionStatus transitionStatus =
-            PlanningCatalogTransitionPolicy.EvaluateTransition(
-                savedBinding,
-                downloadedCatalogPackage.CreatePlanCatalogBinding());
+        EPlanningCatalogTransitionStatus transitionStatus = PlanningCatalogTransitionPolicy.EvaluateTransition(savedBinding, downloadedCatalogPackage.CreatePlanCatalogBinding());
         if (transitionStatus == EPlanningCatalogTransitionStatus.ExactMatch)
         {
             requireCompatibleWorkspace(downloadedCatalogPackage, workspace);

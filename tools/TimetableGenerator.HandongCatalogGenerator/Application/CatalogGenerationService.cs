@@ -18,17 +18,11 @@ internal sealed class CatalogGenerationService
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        HandongExportDocument sourceDocument = await readSourceAsync(
-            request.SourceFilePath,
-            cancellationToken).ConfigureAwait(false);
+        HandongExportDocument sourceDocument = await readSourceAsync(request.SourceFilePath, cancellationToken).ConfigureAwait(false);
         validateAcademicTerm(sourceDocument, request.Term);
         CourseCatalog catalog = normalizeCatalog(sourceDocument);
         byte[] catalogContent = serializeCatalog(catalog, request.Term, request.Revision, sourceDocument);
-        CatalogPackageWriteResult package = await publishCatalogAsync(
-            request,
-            catalog,
-            catalogContent,
-            cancellationToken).ConfigureAwait(false);
+        CatalogPackageWriteResult package = await publishCatalogAsync(request, catalog, catalogContent, cancellationToken).ConfigureAwait(false);
 
         return new CatalogGenerationResult(
             new CatalogArtifactPath(package.CatalogPath),

@@ -84,13 +84,8 @@ public static partial class CourseCatalogJsonReader
                 "courses",
                 "offerings",
             });
-        CatalogJsonValueParser.RequireExactString(
-            rootObject.GetString("documentType"),
-            CatalogJsonSchema.CATALOG_DOCUMENT_TYPE,
-            rootObject.GetPropertyPath("documentType"));
-        CatalogJsonValueParser.RequireSchemaVersion(
-            rootObject.GetInt32("schemaVersion"),
-            rootObject.GetPropertyPath("schemaVersion"));
+        CatalogJsonValueParser.RequireExactString(rootObject.GetString("documentType"), CatalogJsonSchema.CATALOG_DOCUMENT_TYPE, rootObject.GetPropertyPath("documentType"));
+        CatalogJsonValueParser.RequireSchemaVersion(rootObject.GetInt32("schemaVersion"), rootObject.GetPropertyPath("schemaVersion"));
 
         CatalogId catalogId = new CatalogId(rootObject.GetString("catalogId"));
         CatalogRevision revision = new CatalogRevision(rootObject.GetInt32("revision"));
@@ -101,10 +96,7 @@ public static partial class CourseCatalogJsonReader
             rootObject.GetElement("term"),
             rootObject.GetPropertyPath("term"));
         string expectedCatalogId = CatalogJsonValueParser.BuildCatalogId(institution.Id, term, revision);
-        CatalogJsonValueParser.RequireExactString(
-            catalogId.Value,
-            expectedCatalogId,
-            rootObject.GetPropertyPath("catalogId"));
+        CatalogJsonValueParser.RequireExactString(catalogId.Value, expectedCatalogId, rootObject.GetPropertyPath("catalogId"));
 
         CatalogSourceMetadata source = parseSource(
             rootObject.GetElement("source"),

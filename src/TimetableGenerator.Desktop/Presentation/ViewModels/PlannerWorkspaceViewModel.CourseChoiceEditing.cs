@@ -418,10 +418,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     private void refreshAlternativeCourseSearchResults()
     {
         IReadOnlyList<CourseChoiceAlternativeSearchItem> searchResults = findAlternativeCourseSearchResults();
-        KeyedObservableCollectionSynchronizer.Synchronize(
-            AlternativeCourseSearchResults,
-            searchResults,
-            findAlternativeCourseSearchItemId);
+        KeyedObservableCollectionSynchronizer.Synchronize(AlternativeCourseSearchResults, searchResults, findAlternativeCourseSearchItemId);
         raiseAlternativeSearchStateChanged();
     }
 
@@ -445,8 +442,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                 continue;
             }
 
-            searchResults.Add(
-                mAlternativeCourseSearchItemsByCourseId[course.CourseId]);
+            searchResults.Add(mAlternativeCourseSearchItemsByCourseId[course.CourseId]);
             if (searchResults.Count >= MAXIMUM_ALTERNATIVE_SEARCH_RESULT_COUNT)
             {
                 break;

@@ -53,12 +53,7 @@ internal static class CalendarTimeZoneObservanceResolver
                     precedingSampleUtc,
                     currentSampleUtc,
                     precedingOffset);
-                observances.Add(
-                    createTransitionObservance(
-                        timeZone,
-                        transitionUtc,
-                        precedingOffset,
-                        currentOffset));
+                observances.Add(createTransitionObservance(timeZone, transitionUtc, precedingOffset, currentOffset));
                 precedingOffset = currentOffset;
             }
 
@@ -73,10 +68,7 @@ internal static class CalendarTimeZoneObservanceResolver
         DateTimeOffset baselineUtc,
         CalendarUtcOffset utcOffset)
     {
-        ECalendarTimeZoneObservanceKind kind =
-            timeZone.IsDaylightSavingTime(baselineUtc)
-                ? ECalendarTimeZoneObservanceKind.Daylight
-                : ECalendarTimeZoneObservanceKind.Standard;
+        ECalendarTimeZoneObservanceKind kind = timeZone.IsDaylightSavingTime(baselineUtc) ? ECalendarTimeZoneObservanceKind.Daylight : ECalendarTimeZoneObservanceKind.Standard;
         DateTime localStart = convertToUnspecifiedLocalDateTime(baselineUtc, utcOffset);
         return new CalendarTimeZoneObservance(kind, localStart, utcOffset, utcOffset);
     }
@@ -87,10 +79,7 @@ internal static class CalendarTimeZoneObservanceResolver
         CalendarUtcOffset offsetFrom,
         CalendarUtcOffset offsetTo)
     {
-        ECalendarTimeZoneObservanceKind kind =
-            timeZone.IsDaylightSavingTime(transitionUtc)
-                ? ECalendarTimeZoneObservanceKind.Daylight
-                : ECalendarTimeZoneObservanceKind.Standard;
+        ECalendarTimeZoneObservanceKind kind = timeZone.IsDaylightSavingTime(transitionUtc) ? ECalendarTimeZoneObservanceKind.Daylight : ECalendarTimeZoneObservanceKind.Standard;
         DateTime localStart = convertToUnspecifiedLocalDateTime(transitionUtc, offsetFrom);
         return new CalendarTimeZoneObservance(kind, localStart, offsetFrom, offsetTo);
     }

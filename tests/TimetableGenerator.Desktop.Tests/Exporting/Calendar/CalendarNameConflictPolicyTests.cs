@@ -36,10 +36,7 @@ public sealed class CalendarNameConflictPolicyTests
             new PlanName("Cafe\u0301 timetable (3)"),
         };
 
-        PlanName nextAvailableName =
-            CalendarNameConflictPolicy.FindNextAvailableName(
-                requestedName,
-                existingNames);
+        PlanName nextAvailableName = CalendarNameConflictPolicy.FindNextAvailableName(requestedName, existingNames);
 
         Assert.Equal("Caf\u00E9 timetable (4)", nextAvailableName.Value);
     }
@@ -105,10 +102,7 @@ public sealed class CalendarNameConflictPolicyTests
                     + suffix));
         }
 
-        PlanName nextAvailableName =
-            CalendarNameConflictPolicy.FindNextAvailableName(
-                requestedName,
-                existingNames);
+        PlanName nextAvailableName = CalendarNameConflictPolicy.FindNextAvailableName(requestedName, existingNames);
 
         Assert.Equal(
             new string('a', PlanName.MAXIMUM_LENGTH - " (11)".Length)

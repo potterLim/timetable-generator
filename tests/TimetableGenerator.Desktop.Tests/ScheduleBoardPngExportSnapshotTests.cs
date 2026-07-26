@@ -154,8 +154,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            using (ScheduleBoardPngExportSnapshot snapshot =
-                ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
+            using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
             {
                 Dispatcher.UIThread.RunJobs();
 
@@ -213,8 +212,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            using (ScheduleBoardPngExportSnapshot snapshot =
-                ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
+            using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
             {
                 Dispatcher.UIThread.RunJobs();
 
@@ -264,8 +262,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             Dispatcher.UIThread.RunJobs();
 
             Assert.Equal(new ScheduleBoardTimeBoundary(510), sourceBoard.RenderedLayout.TimeAxis.Start);
-            using (ScheduleBoardPngExportSnapshot snapshot =
-                ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
+            using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
             {
                 Dispatcher.UIThread.RunJobs();
 
@@ -321,11 +318,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            using (ScheduleBoardPngExportSnapshot snapshot =
-                ScheduleBoardPngExportSnapshot.create(
-                    exportHost,
-                    exportedPresentation,
-                    sourceBoard))
+            using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.create(exportHost, exportedPresentation, sourceBoard))
             {
                 Dispatcher.UIThread.RunJobs();
 
@@ -375,11 +368,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            using (ScheduleBoardPngExportSnapshot snapshot =
-                ScheduleBoardPngExportSnapshot.create(
-                    exportHost,
-                    displayedPresentation,
-                    sourceBoard))
+            using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.create(exportHost, displayedPresentation, sourceBoard))
             {
                 Assert.Equal(5, snapshot.Layout.DayRange.DayCount);
                 Assert.Equal(new ScheduleBoardTimeBoundary(510), snapshot.Layout.TimeAxis.Start);
@@ -430,8 +419,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            using (ScheduleBoardPngExportSnapshot snapshot =
-                ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
+            using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
             {
                 Assert.Equal(new ScheduleBoardTimeBoundary(450), snapshot.Layout.TimeAxis.Start);
                 Grid exportBoardGrid = findBoardGrid(snapshot.Surface);
@@ -496,8 +484,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            using (ScheduleBoardPngExportSnapshot snapshot =
-                ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
+            using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
             {
                 Dispatcher.UIThread.RunJobs();
 
@@ -568,15 +555,8 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     {
         CourseCatalogDocument document = CatalogProjectionTestFixture.CreateDocument();
         CourseCatalogProjection catalogProjection = CourseCatalogProjector.Project(document);
-        ApplicationScheduleRecommendation recommendation =
-            CatalogProjectionTestFixture.CreateScheduledRecommendation(
-                document,
-                new CourseId("course-programming"),
-                new OfferingId("offering-programming-alternative"));
-        ScheduleRecommendation projectedRecommendation =
-            ScheduleRecommendationProjector.Project(
-                recommendation,
-                catalogProjection);
+        ApplicationScheduleRecommendation recommendation = CatalogProjectionTestFixture.CreateScheduledRecommendation(document, new CourseId("course-programming"), new OfferingId("offering-programming-alternative"));
+        ScheduleRecommendation projectedRecommendation = ScheduleRecommendationProjector.Project(recommendation, catalogProjection);
         ScheduleBoardView sourceBoard = createSourceBoard(projectedRecommendation.Entries);
         Canvas exportHost = new Canvas();
         exportHost.IsHitTestVisible = false;
@@ -592,8 +572,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            using (ScheduleBoardPngExportSnapshot snapshot =
-                ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
+            using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
             {
                 Dispatcher.UIThread.RunJobs();
 
@@ -802,14 +781,9 @@ public sealed class ScheduleBoardPngExportSnapshotTests
 
     private static void assertDayColumnsMeetMinimumWidth(Grid boardGrid, double minimumWidth)
     {
-        for (int columnIndex = 1;
-            columnIndex < boardGrid.ColumnDefinitions.Count;
-            ++columnIndex)
+        for (int columnIndex = 1; columnIndex < boardGrid.ColumnDefinitions.Count; ++columnIndex)
         {
-            Assert.True(
-                boardGrid.ColumnDefinitions[columnIndex].ActualWidth
-                    >= minimumWidth,
-                "The PNG export day column was narrower than its readable minimum.");
+            Assert.True(boardGrid.ColumnDefinitions[columnIndex].ActualWidth >= minimumWidth, "The PNG export day column was narrower than its readable minimum.");
         }
     }
 
@@ -949,13 +923,9 @@ public sealed class ScheduleBoardPngExportSnapshotTests
         using (ILockedFramebuffer framebuffer = pixelCopy.Lock())
         {
             bitmap.CopyPixels(framebuffer);
-            for (int y = 0;
-                y < bitmap.PixelSize.Height;
-                ++y)
+            for (int y = 0; y < bitmap.PixelSize.Height; ++y)
             {
-                for (int x = 0;
-                    x < bitmap.PixelSize.Width;
-                    ++x)
+                for (int x = 0; x < bitmap.PixelSize.Width; ++x)
                 {
                     int pixelOffset = (y * framebuffer.RowBytes) + (x * 4);
                     byte blue = Marshal.ReadByte(

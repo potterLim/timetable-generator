@@ -15,9 +15,7 @@ internal static class Program
         {
             CatalogGenerationRequest request = CatalogCommandLineParser.Parse(arguments);
             CatalogGenerationService generationService = new CatalogGenerationService();
-            CatalogGenerationResult result = await generationService.GenerateAsync(
-                request,
-                CancellationToken.None);
+            CatalogGenerationResult result = await generationService.GenerateAsync(request, CancellationToken.None);
 
             writeResult(result);
             return (int)ECatalogGeneratorExitCode.Succeeded;

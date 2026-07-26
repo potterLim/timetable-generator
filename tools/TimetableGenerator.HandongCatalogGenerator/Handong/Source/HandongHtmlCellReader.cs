@@ -89,9 +89,7 @@ internal static class HandongHtmlCellReader
         int meaningfulLineCount = lastMeaningfulLineIndex - firstMeaningfulLineIndex + 1;
         List<string> meaningfulLines = new List<string>(meaningfulLineCount);
 
-        for (int lineIndex = firstMeaningfulLineIndex;
-            lineIndex <= lastMeaningfulLineIndex;
-            ++lineIndex)
+        for (int lineIndex = firstMeaningfulLineIndex; lineIndex <= lastMeaningfulLineIndex; ++lineIndex)
         {
             meaningfulLines.Add(normalizedLines[lineIndex]);
         }

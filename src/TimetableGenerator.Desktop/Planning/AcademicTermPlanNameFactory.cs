@@ -50,16 +50,8 @@ internal static class AcademicTermPlanNameFactory
         while (true)
         {
             string planNumberText = planNumber.ToString(CultureInfo.InvariantCulture);
-            string candidateNameValue =
-                initialPlanName.Value
-                + " ("
-                + planNumberText
-                + ")";
-            string legacyCandidateNameValue =
-                initialPlanName.Value
-                + "("
-                + planNumberText
-                + ")";
+            string candidateNameValue = initialPlanName.Value + " (" + planNumberText + ")";
+            string legacyCandidateNameValue = initialPlanName.Value + "(" + planNumberText + ")";
             if (existingPlanNames.Contains(candidateNameValue) == false
                 && existingPlanNames.Contains(legacyCandidateNameValue) == false)
             {

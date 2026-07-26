@@ -20,9 +20,7 @@ internal static class AtomicFileWriter
         }
 
         Directory.CreateDirectory(directoryPathOrNull);
-        string temporaryPath = Path.Combine(
-            directoryPathOrNull,
-            "." + Path.GetFileName(destinationPath) + "." + Guid.NewGuid().ToString("N") + ".tmp");
+        string temporaryPath = Path.Combine(directoryPathOrNull, "." + Path.GetFileName(destinationPath) + "." + Guid.NewGuid().ToString("N") + ".tmp");
 
         try
         {

@@ -27,13 +27,7 @@ internal static class GoogleCalendarIntegrationFactory
             configurationProvider,
             codeProvider);
         GoogleCalendarApiClient apiClient = new GoogleCalendarApiClient(httpClient);
-        FileGoogleCalendarExportLeaseProvider exportLeaseProvider =
-            new FileGoogleCalendarExportLeaseProvider(
-                new GoogleCalendarExportLockFilePath(
-                    Path.Combine(
-                        dataRootPath.Value,
-                        "Integrations",
-                        EXPORT_LOCK_FILE_NAME)));
+        FileGoogleCalendarExportLeaseProvider exportLeaseProvider = new FileGoogleCalendarExportLeaseProvider(new GoogleCalendarExportLockFilePath(Path.Combine(dataRootPath.Value, "Integrations", EXPORT_LOCK_FILE_NAME)));
         GoogleCalendarIntegrationResources resources = new GoogleCalendarIntegrationResources(httpClient);
         return new GoogleCalendarExportService(oauthClient, apiClient, exportLeaseProvider, resources);
     }

@@ -511,23 +511,14 @@ internal sealed class CourseSearchItem : ObservableObject
         List<CourseSelectionOption> options = new List<CourseSelectionOption>();
         if (projection.ScheduledOfferingIds.Count > 0)
         {
-            PlanningCourseSelection scheduledSelection =
-                PlanningCourseSelection.CreateScheduledAlternatives(
-                    projection.Course.Id,
-                    projection.ScheduledOfferingIds);
+            PlanningCourseSelection scheduledSelection = PlanningCourseSelection.CreateScheduledAlternatives(projection.Course.Id, projection.ScheduledOfferingIds);
             if (projection.ScheduledOfferingIds.Count == 1)
             {
                 CatalogOfferingProjection scheduledOffering = findOffering(
                     projection,
                     projection.ScheduledOfferingIds[0]);
-                string scheduledDisplayName =
-                    scheduledOffering.Offering.SectionCode.Value
-                    + "분반 · " + scheduledOffering.ScheduleSummary;
-                options.Add(CourseSelectionOption.CreateDirectAdd(
-                    scheduledSelection,
-                    EMeetingScheduleStatus.Scheduled,
-                    scheduledDisplayName,
-                    scheduledOffering.EnglishInstructionPercentage));
+                string scheduledDisplayName = scheduledOffering.Offering.SectionCode.Value + "분반 · " + scheduledOffering.ScheduleSummary;
+                options.Add(CourseSelectionOption.CreateDirectAdd(scheduledSelection, EMeetingScheduleStatus.Scheduled, scheduledDisplayName, scheduledOffering.EnglishInstructionPercentage));
             }
             else
             {
@@ -541,18 +532,11 @@ internal sealed class CourseSearchItem : ObservableObject
         foreach (OfferingId offeringId in projection.TimeNotProvidedOfferingIds)
         {
             CatalogOfferingProjection offering = findOffering(projection, offeringId);
-            PlanningCourseSelection selection =
-                PlanningCourseSelection.CreateTimeNotProvidedOffering(
-                    projection.Course.Id,
-                    offeringId);
+            PlanningCourseSelection selection = PlanningCourseSelection.CreateTimeNotProvidedOffering(projection.Course.Id, offeringId);
             string displayName = offering.Offering.SectionCode.Value
                 + "분반 · 시간 미정 · "
                 + offering.InstructorSummary;
-            options.Add(CourseSelectionOption.CreateDirectAdd(
-                selection,
-                EMeetingScheduleStatus.NotProvided,
-                displayName,
-                offering.EnglishInstructionPercentage));
+            options.Add(CourseSelectionOption.CreateDirectAdd(selection, EMeetingScheduleStatus.NotProvided, displayName, offering.EnglishInstructionPercentage));
         }
 
         return options;

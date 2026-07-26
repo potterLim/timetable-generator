@@ -73,9 +73,7 @@ internal static class HandongExportTestHtml
         }
 
         List<string> offeringCells = new List<string>(offeringColumnCount);
-        for (int columnIndex = 0;
-            columnIndex < offeringColumnCount;
-            ++columnIndex)
+        for (int columnIndex = 0; columnIndex < offeringColumnCount; ++columnIndex)
         {
             offeringCells.Add(OFFERING_CELLS[columnIndex]);
         }

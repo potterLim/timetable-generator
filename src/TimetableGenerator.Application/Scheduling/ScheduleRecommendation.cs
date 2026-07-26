@@ -71,11 +71,7 @@ public sealed class ScheduleRecommendation
         IReadOnlyList<ScheduledOffering> copiedScheduledOfferings = copyAndValidateScheduledOfferings(scheduledOfferings);
         IReadOnlyList<UnscheduledOfferingSelection> copiedUnscheduledSelections = copyUnscheduledSelections(unscheduledSelections);
         IReadOnlyList<PersonalSchedule> copiedPersonalSchedules = copyPersonalSchedules(personalSchedules);
-        validateUniqueCourseAndOfferingSelections(
-            copiedScheduledOfferings,
-            copiedUnscheduledSelections,
-            nameof(scheduledOfferings),
-            nameof(unscheduledSelections));
+        validateUniqueCourseAndOfferingSelections(copiedScheduledOfferings, copiedUnscheduledSelections, nameof(scheduledOfferings), nameof(unscheduledSelections));
         validateFixedScheduleConflicts(copiedScheduledOfferings, copiedPersonalSchedules);
         if (copiedScheduledOfferings.Count == 0
             && copiedUnscheduledSelections.Count == 0

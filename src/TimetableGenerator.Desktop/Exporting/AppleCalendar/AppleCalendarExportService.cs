@@ -74,9 +74,7 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
 
         try
         {
-            await using (IAppleCalendarExportLease exportLease =
-                await mExportLeaseProvider.AcquireAsync(cancellationToken)
-                    .ConfigureAwait(false))
+            await using (IAppleCalendarExportLease exportLease = await mExportLeaseProvider.AcquireAsync(cancellationToken).ConfigureAwait(false))
             {
                 return await exportWithConflictResolutionAsync(
                         document,
@@ -155,10 +153,7 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
         }
 
         AppleCalendarDescriptor? replaceableCalendarOrNull = findSoleReplaceableCalendarOrNull(matchingCalendars);
-        ECalendarReplacementAvailability replacementAvailability =
-            replaceableCalendarOrNull == null
-                ? ECalendarReplacementAvailability.Unavailable
-                : ECalendarReplacementAvailability.Available;
+        ECalendarReplacementAvailability replacementAvailability = replaceableCalendarOrNull == null ? ECalendarReplacementAvailability.Unavailable : ECalendarReplacementAvailability.Available;
         PlanName nextAvailableName = CalendarNameConflictPolicy.FindNextAvailableName(
             document.CalendarName,
             getCalendarNames(calendars));
@@ -168,9 +163,7 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
             nextAvailableName,
             replacementAvailability);
         ECalendarNameConflictResolution resolution = await conflictResolver.ResolveAsync(conflict, cancellationToken);
-        CalendarNameConflictPolicy.EnsureResolutionIsSupported(
-            conflict,
-            resolution);
+        CalendarNameConflictPolicy.EnsureResolutionIsSupported(conflict, resolution);
 
         switch (resolution)
         {

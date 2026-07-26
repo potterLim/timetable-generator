@@ -85,34 +85,13 @@ public static partial class CourseCatalogJsonReader
             }
         }
 
-        requireCount(
-            counts.ScheduledOfferingCount.Value,
-            scheduledOfferingCount,
-            "$.counts.scheduledOfferings");
-        requireCount(
-            counts.MeetingNotProvidedCount.Value,
-            meetingNotProvidedCount,
-            "$.counts.meetingNotProvided");
-        requireCount(
-            dataQuality.RoomNotProvidedCount.Value,
-            roomNotProvidedCount,
-            "$.dataQuality.roomNotProvided");
-        requireCount(
-            dataQuality.EnrollmentNotProvidedCount.Value,
-            enrollmentNotProvidedCount,
-            "$.dataQuality.enrollmentNotProvided");
-        requireCount(
-            dataQuality.InstructorUnconfirmedCount.Value,
-            instructorUnconfirmedCount,
-            "$.dataQuality.instructorUnconfirmed");
-        requireCount(
-            dataQuality.MultiInstructorDisplayCount.Value,
-            multiInstructorDisplayCount,
-            "$.dataQuality.multiInstructorDisplay");
-        requireCount(
-            dataQuality.SourceRemarkLookupOnlyCount.Value,
-            sourceRemarkLookupOnlyCount,
-            "$.dataQuality.sourceRemarkLookupOnly");
+        requireCount(counts.ScheduledOfferingCount.Value, scheduledOfferingCount, "$.counts.scheduledOfferings");
+        requireCount(counts.MeetingNotProvidedCount.Value, meetingNotProvidedCount, "$.counts.meetingNotProvided");
+        requireCount(dataQuality.RoomNotProvidedCount.Value, roomNotProvidedCount, "$.dataQuality.roomNotProvided");
+        requireCount(dataQuality.EnrollmentNotProvidedCount.Value, enrollmentNotProvidedCount, "$.dataQuality.enrollmentNotProvided");
+        requireCount(dataQuality.InstructorUnconfirmedCount.Value, instructorUnconfirmedCount, "$.dataQuality.instructorUnconfirmed");
+        requireCount(dataQuality.MultiInstructorDisplayCount.Value, multiInstructorDisplayCount, "$.dataQuality.multiInstructorDisplay");
+        requireCount(dataQuality.SourceRemarkLookupOnlyCount.Value, sourceRemarkLookupOnlyCount, "$.dataQuality.sourceRemarkLookupOnly");
     }
 
     private static void validateOfferingMetadataPair(

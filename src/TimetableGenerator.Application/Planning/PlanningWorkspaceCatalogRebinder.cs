@@ -30,10 +30,7 @@ public static class PlanningWorkspaceCatalogRebinder
         requireBindingMatchesCatalog(newCatalog, newBinding);
 
         PlanCatalogBinding currentBinding = workspace.CatalogBinding;
-        EPlanningCatalogTransitionStatus transitionStatus =
-            PlanningCatalogTransitionPolicy.EvaluateTransition(
-                currentBinding,
-                newBinding);
+        EPlanningCatalogTransitionStatus transitionStatus = PlanningCatalogTransitionPolicy.EvaluateTransition(currentBinding, newBinding);
         EPlanningWorkspaceCatalogRebindStatus? transitionFailureOrNull = getTransitionFailureOrNull(transitionStatus);
         if (transitionFailureOrNull.HasValue)
         {
@@ -143,11 +140,7 @@ public static class PlanningWorkspaceCatalogRebinder
     {
         foreach (CourseChoiceGroup courseChoiceGroup in plan.CourseChoiceGroups)
         {
-            EPlanningWorkspaceCatalogRebindStatus choiceStatus =
-                validateCourseChoiceGroup(
-                    courseChoiceGroup,
-                    coursesById,
-                    offeringsById);
+            EPlanningWorkspaceCatalogRebindStatus choiceStatus = validateCourseChoiceGroup(courseChoiceGroup, coursesById, offeringsById);
             if (choiceStatus != EPlanningWorkspaceCatalogRebindStatus.Rebound)
             {
                 return choiceStatus;
@@ -157,11 +150,7 @@ public static class PlanningWorkspaceCatalogRebinder
         foreach (UnscheduledOfferingSelection selection
             in plan.UnscheduledOfferingSelections)
         {
-            EPlanningWorkspaceCatalogRebindStatus selectionStatus =
-                validateUnscheduledSelection(
-                    selection,
-                    coursesById,
-                    offeringsById);
+            EPlanningWorkspaceCatalogRebindStatus selectionStatus = validateUnscheduledSelection(selection, coursesById, offeringsById);
             if (selectionStatus != EPlanningWorkspaceCatalogRebindStatus.Rebound)
             {
                 return selectionStatus;

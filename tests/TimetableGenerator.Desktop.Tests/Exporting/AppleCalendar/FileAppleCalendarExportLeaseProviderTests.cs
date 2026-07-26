@@ -15,31 +15,21 @@ public sealed class FileAppleCalendarExportLeaseProviderTests
     public async Task SeparateProvidersSerializeOnTheSameProcessWideFileAsync()
     {
         string directoryPath = createDirectoryPath();
-        FileAppleCalendarExportLeaseProvider firstProvider =
-            createProvider(directoryPath);
-        FileAppleCalendarExportLeaseProvider secondProvider =
-            createProvider(directoryPath);
+        FileAppleCalendarExportLeaseProvider firstProvider = createProvider(directoryPath);
+        FileAppleCalendarExportLeaseProvider secondProvider = createProvider(directoryPath);
 
         try
         {
-            IAppleCalendarExportLease firstLease =
-                await firstProvider.AcquireAsync(
-                    TestContext.Current.CancellationToken);
+            IAppleCalendarExportLease firstLease = await firstProvider.AcquireAsync(TestContext.Current.CancellationToken);
             Task<IAppleCalendarExportLease> secondLeaseTask;
             await using (firstLease)
             {
-                secondLeaseTask = secondProvider.AcquireAsync(
-                    TestContext.Current.CancellationToken);
-                await Task.Delay(
-                    TimeSpan.FromMilliseconds(200.0),
-                    TestContext.Current.CancellationToken);
+                secondLeaseTask = secondProvider.AcquireAsync(TestContext.Current.CancellationToken);
+                await Task.Delay(TimeSpan.FromMilliseconds(200.0), TestContext.Current.CancellationToken);
                 Assert.False(secondLeaseTask.IsCompleted);
             }
 
-            IAppleCalendarExportLease secondLease =
-                await secondLeaseTask.WaitAsync(
-                    TimeSpan.FromSeconds(2.0),
-                    TestContext.Current.CancellationToken);
+            IAppleCalendarExportLease secondLease = await secondLeaseTask.WaitAsync(TimeSpan.FromSeconds(2.0), TestContext.Current.CancellationToken);
             await using (secondLease)
             {
             }
@@ -54,27 +44,18 @@ public sealed class FileAppleCalendarExportLeaseProviderTests
     public async Task CancelledWaitLeavesTheFileAvailableAfterOwnerReleasesAsync()
     {
         string directoryPath = createDirectoryPath();
-        FileAppleCalendarExportLeaseProvider ownerProvider =
-            createProvider(directoryPath);
-        FileAppleCalendarExportLeaseProvider waitingProvider =
-            createProvider(directoryPath);
+        FileAppleCalendarExportLeaseProvider ownerProvider = createProvider(directoryPath);
+        FileAppleCalendarExportLeaseProvider waitingProvider = createProvider(directoryPath);
 
         try
         {
-            IAppleCalendarExportLease ownerLease =
-                await ownerProvider.AcquireAsync(
-                    TestContext.Current.CancellationToken);
+            IAppleCalendarExportLease ownerLease = await ownerProvider.AcquireAsync(TestContext.Current.CancellationToken);
             await using (ownerLease)
             {
-                using (CancellationTokenSource cancellationSource =
-                    new CancellationTokenSource())
+                using (CancellationTokenSource cancellationSource = new CancellationTokenSource())
                 {
-                    Task<IAppleCalendarExportLease> waitingLeaseTask =
-                        waitingProvider.AcquireAsync(
-                            cancellationSource.Token);
-                    await Task.Delay(
-                        TimeSpan.FromMilliseconds(200.0),
-                        TestContext.Current.CancellationToken);
+                    Task<IAppleCalendarExportLease> waitingLeaseTask = waitingProvider.AcquireAsync(cancellationSource.Token);
+                    await Task.Delay(TimeSpan.FromMilliseconds(200.0), TestContext.Current.CancellationToken);
                     cancellationSource.Cancel();
 
                     await Assert.ThrowsAnyAsync<OperationCanceledException>(
@@ -85,9 +66,7 @@ public sealed class FileAppleCalendarExportLeaseProviderTests
                 }
             }
 
-            IAppleCalendarExportLease nextLease =
-                await waitingProvider.AcquireAsync(
-                    TestContext.Current.CancellationToken);
+            IAppleCalendarExportLease nextLease = await waitingProvider.AcquireAsync(TestContext.Current.CancellationToken);
             await using (nextLease)
             {
             }

@@ -90,10 +90,7 @@ public static partial class CourseCatalogJsonReader
             term,
             courseCodeOrNull,
             sectionCode);
-        CatalogJsonValueParser.RequireExactString(
-            offeringId.Value,
-            expectedOfferingId,
-            offeringObject.GetPropertyPath("offeringId"));
+        CatalogJsonValueParser.RequireExactString(offeringId.Value, expectedOfferingId, offeringObject.GetPropertyPath("offeringId"));
 
         CatalogOfferingClassificationMetadata classification = parseClassification(offeringObject);
         InstructorAssignmentMetadata instructorAssignment = parseInstructorAssignment(
@@ -103,11 +100,7 @@ public static partial class CourseCatalogJsonReader
             offeringObject.GetElement("grading"),
             offeringObject.GetPropertyPath("grading"));
         EnglishInstructionPercentage englishInstructionPercentage = new EnglishInstructionPercentage(offeringObject.GetDecimal("englishInstructionPercentage"));
-        CatalogOfferingInstructionMetadata instruction =
-            new CatalogOfferingInstructionMetadata(
-                instructorAssignment,
-                englishInstructionPercentage,
-                grading);
+        CatalogOfferingInstructionMetadata instruction = new CatalogOfferingInstructionMetadata(instructorAssignment, englishInstructionPercentage, grading);
 
         KoreanScheduleSourceText? scheduleSourceTextOrNull;
         MeetingSchedule meetingSchedule = parseMeetingSchedule(

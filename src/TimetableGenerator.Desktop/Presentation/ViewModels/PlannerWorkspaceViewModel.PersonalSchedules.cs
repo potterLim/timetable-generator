@@ -113,10 +113,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
         set
         {
-            setDraftString(
-                ref mPersonalScheduleInstructorDraft,
-                value,
-                nameof(PersonalScheduleInstructorDraft));
+            setDraftString(ref mPersonalScheduleInstructorDraft, value, nameof(PersonalScheduleInstructorDraft));
         }
     }
 

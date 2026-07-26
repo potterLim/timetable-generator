@@ -173,10 +173,7 @@ internal static class PlannerWorkspaceTestFactory
                 {
                     delegate
                     {
-                        ProductCatalogUpdateResult updateResult =
-                            new ProductCatalogUpdateResult(
-                                EProductCatalogUpdateStatus.Current,
-                                new CatalogRevision(1));
+                        ProductCatalogUpdateResult updateResult = new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.Current, new CatalogRevision(1));
                         return Task.FromResult(updateResult);
                     },
                 });
@@ -249,10 +246,7 @@ internal static class PlannerWorkspaceTestFactory
         IPlanningWorkspaceStore planningWorkspaceStore)
     {
         PlanningWorkspaceSession session = new PlanningWorkspaceSession(document.Catalog, workspace);
-        PlanningWorkspaceAutosaveQueue autosaveQueue =
-            new PlanningWorkspaceAutosaveQueue(
-                planningWorkspaceStore,
-                PlanningWorkspaceConcurrencyToken.MissingWorkspace);
+        PlanningWorkspaceAutosaveQueue autosaveQueue = new PlanningWorkspaceAutosaveQueue(planningWorkspaceStore, PlanningWorkspaceConcurrencyToken.MissingWorkspace);
         return new PlannerWorkspaceViewModel(
             CourseCatalogProjector.Project(document),
             session,

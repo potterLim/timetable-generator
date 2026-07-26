@@ -98,12 +98,7 @@ public sealed class GoogleCalendarOAuthTests
     {
         Uri redirectUri = new Uri("http://127.0.0.1:53122/", UriKind.Absolute);
 
-        Uri authorizationUri =
-            LoopbackGoogleOAuthAuthorizationCodeProvider.createAuthorizationUri(
-                new GoogleOAuthClientId("client.apps.googleusercontent.com"),
-                new GoogleOAuthRedirectUri(redirectUri),
-                new GoogleOAuthState("state-value"),
-                new GooglePkceCodeChallenge("challenge-value"));
+        Uri authorizationUri = LoopbackGoogleOAuthAuthorizationCodeProvider.createAuthorizationUri(new GoogleOAuthClientId("client.apps.googleusercontent.com"), new GoogleOAuthRedirectUri(redirectUri), new GoogleOAuthState("state-value"), new GooglePkceCodeChallenge("challenge-value"));
 
         Assert.Contains("redirect_uri=http%3A%2F%2F127.0.0.1%3A53122", authorizationUri.Query);
         Assert.Contains("code_challenge_method=S256", authorizationUri.Query);
@@ -149,11 +144,7 @@ public sealed class GoogleCalendarOAuthTests
     {
         Uri redirectUri = new Uri("http://127.0.0.1:53122/", UriKind.Absolute);
 
-        GoogleOAuthAuthorizationCodeResult result =
-            LoopbackGoogleOAuthAuthorizationCodeProvider.parseRequestLine(
-                "GET /?code=secret-code&state=wrong HTTP/1.1",
-                new GoogleOAuthRedirectUri(redirectUri),
-                new GoogleOAuthState("expected"));
+        GoogleOAuthAuthorizationCodeResult result = LoopbackGoogleOAuthAuthorizationCodeProvider.parseRequestLine("GET /?code=secret-code&state=wrong HTTP/1.1", new GoogleOAuthRedirectUri(redirectUri), new GoogleOAuthState("expected"));
 
         Assert.Equal(EGoogleOAuthAuthorizationStatus.Failed, result.Status);
         Assert.Equal("oauth_state_mismatch", result.DiagnosticCodeOrNull);
@@ -201,14 +192,7 @@ public sealed class GoogleCalendarOAuthTests
         string requestLine,
         string expectedDiagnosticCode)
     {
-        GoogleOAuthAuthorizationCodeResult result =
-            LoopbackGoogleOAuthAuthorizationCodeProvider.parseRequestLine(
-                requestLine,
-                new GoogleOAuthRedirectUri(
-                    new Uri(
-                        "http://127.0.0.1:53122/",
-                        UriKind.Absolute)),
-                new GoogleOAuthState("expected"));
+        GoogleOAuthAuthorizationCodeResult result = LoopbackGoogleOAuthAuthorizationCodeProvider.parseRequestLine(requestLine, new GoogleOAuthRedirectUri(new Uri("http://127.0.0.1:53122/", UriKind.Absolute)), new GoogleOAuthState("expected"));
 
         Assert.Equal(EGoogleOAuthAuthorizationStatus.Failed, result.Status);
         Assert.Equal(expectedDiagnosticCode, result.DiagnosticCodeOrNull);
@@ -220,14 +204,7 @@ public sealed class GoogleCalendarOAuthTests
     [InlineData("HTTP/1.1")]
     public void CallbackAcceptsSupportedHttpVersions(string httpVersion)
     {
-        GoogleOAuthAuthorizationCodeResult result =
-            LoopbackGoogleOAuthAuthorizationCodeProvider.parseRequestLine(
-                "GET /?code=authorization-code&state=expected " + httpVersion,
-                new GoogleOAuthRedirectUri(
-                    new Uri(
-                        "http://127.0.0.1:53122/",
-                        UriKind.Absolute)),
-                new GoogleOAuthState("expected"));
+        GoogleOAuthAuthorizationCodeResult result = LoopbackGoogleOAuthAuthorizationCodeProvider.parseRequestLine("GET /?code=authorization-code&state=expected " + httpVersion, new GoogleOAuthRedirectUri(new Uri("http://127.0.0.1:53122/", UriKind.Absolute)), new GoogleOAuthState("expected"));
 
         Assert.Equal(EGoogleOAuthAuthorizationStatus.Completed, result.Status);
         Assert.Equal("authorization-code", result.AuthorizationCodeOrNull?.Value);
@@ -253,10 +230,7 @@ public sealed class GoogleCalendarOAuthTests
     [Fact]
     public async Task BrowserLaunchFailureReturnsSanitizedFailureAsync()
     {
-        LoopbackGoogleOAuthAuthorizationCodeProvider provider =
-            new LoopbackGoogleOAuthAuthorizationCodeProvider(
-                new FailingBrowserLauncher(),
-                TimeSpan.FromSeconds(1.0));
+        LoopbackGoogleOAuthAuthorizationCodeProvider provider = new LoopbackGoogleOAuthAuthorizationCodeProvider(new FailingBrowserLauncher(), TimeSpan.FromSeconds(1.0));
 
         GoogleOAuthAuthorizationCodeResult result = await provider.RequestCodeAsync(
             new GoogleOAuthClientId("client.apps.googleusercontent.com"),
@@ -324,10 +298,7 @@ public sealed class GoogleCalendarOAuthTests
             {
                 return null;
             });
-        LoopbackGoogleOAuthAuthorizationCodeProvider provider =
-            new LoopbackGoogleOAuthAuthorizationCodeProvider(
-                launcher,
-                TimeSpan.FromMinutes(5.0));
+        LoopbackGoogleOAuthAuthorizationCodeProvider provider = new LoopbackGoogleOAuthAuthorizationCodeProvider(launcher, TimeSpan.FromMinutes(5.0));
 
         GoogleOAuthAuthorizationCodeResult result = await provider.RequestCodeAsync(
             new GoogleOAuthClientId("client.apps.googleusercontent.com"),
@@ -422,10 +393,7 @@ public sealed class GoogleCalendarOAuthTests
     [Fact]
     public async Task LoopbackWaitHonorsProductTimeoutAsync()
     {
-        LoopbackGoogleOAuthAuthorizationCodeProvider provider =
-            new LoopbackGoogleOAuthAuthorizationCodeProvider(
-                new RecordingBrowserLauncher(),
-                TimeSpan.FromMilliseconds(25.0));
+        LoopbackGoogleOAuthAuthorizationCodeProvider provider = new LoopbackGoogleOAuthAuthorizationCodeProvider(new RecordingBrowserLauncher(), TimeSpan.FromMilliseconds(25.0));
 
         GoogleOAuthAuthorizationCodeResult result = await provider.RequestCodeAsync(
             new GoogleOAuthClientId("client.apps.googleusercontent.com"),
@@ -441,10 +409,7 @@ public sealed class GoogleCalendarOAuthTests
     public async Task LoopbackIgnoresProbeAndReturnsSanitizedApprovalPageAsync()
     {
         ProbeThenCallbackBrowserLauncher launcher = new ProbeThenCallbackBrowserLauncher(TestContext.Current.CancellationToken);
-        LoopbackGoogleOAuthAuthorizationCodeProvider provider =
-            new LoopbackGoogleOAuthAuthorizationCodeProvider(
-                launcher,
-                TimeSpan.FromSeconds(3.0));
+        LoopbackGoogleOAuthAuthorizationCodeProvider provider = new LoopbackGoogleOAuthAuthorizationCodeProvider(launcher, TimeSpan.FromSeconds(3.0));
 
         GoogleOAuthAuthorizationCodeResult result = await provider.RequestCodeAsync(
             new GoogleOAuthClientId("client.apps.googleusercontent.com"),
@@ -500,13 +465,8 @@ public sealed class GoogleCalendarOAuthTests
     [Fact]
     public async Task AccessDeniedCallbackClearsSensitiveHistoryWithoutClosingPageAsync()
     {
-        AccessDeniedCallbackBrowserLauncher launcher =
-            new AccessDeniedCallbackBrowserLauncher(
-                TestContext.Current.CancellationToken);
-        LoopbackGoogleOAuthAuthorizationCodeProvider provider =
-            new LoopbackGoogleOAuthAuthorizationCodeProvider(
-                launcher,
-                TimeSpan.FromSeconds(3.0));
+        AccessDeniedCallbackBrowserLauncher launcher = new AccessDeniedCallbackBrowserLauncher(TestContext.Current.CancellationToken);
+        LoopbackGoogleOAuthAuthorizationCodeProvider provider = new LoopbackGoogleOAuthAuthorizationCodeProvider(launcher, TimeSpan.FromSeconds(3.0));
 
         GoogleOAuthAuthorizationCodeResult result = await provider.RequestCodeAsync(
             new GoogleOAuthClientId("client.apps.googleusercontent.com"),

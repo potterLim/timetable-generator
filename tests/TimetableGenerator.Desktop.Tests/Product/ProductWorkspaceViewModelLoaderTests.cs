@@ -20,14 +20,9 @@ public sealed class ProductWorkspaceViewModelLoaderTests
         CatalogRevision revision = new CatalogRevision(1);
         VerifiedCatalogPackage catalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(revision);
         PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateEmptyWorkspace(revision);
-        PlanningWorkspaceLoadResult persistedWorkspaceLoadResult =
-            PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(
-                workspace,
-                new PlanningWorkspaceConcurrencyToken(1L));
+        PlanningWorkspaceLoadResult persistedWorkspaceLoadResult = PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(workspace, new PlanningWorkspaceConcurrencyToken(1L));
         RecordingPlanningWorkspaceStore workspaceStore = new RecordingPlanningWorkspaceStore(persistedWorkspaceLoadResult);
-        EProductWorkspaceRecoveryFlags recoveryFlags =
-            EProductWorkspaceRecoveryFlags.CatalogPreviousGeneration
-            | EProductWorkspaceRecoveryFlags.WorkspacePreviousGeneration;
+        EProductWorkspaceRecoveryFlags recoveryFlags = EProductWorkspaceRecoveryFlags.CatalogPreviousGeneration | EProductWorkspaceRecoveryFlags.WorkspacePreviousGeneration;
         ProductWorkspaceLoadResult dataLoadResult =
             new ProductWorkspaceLoadResult(
                 catalogPackage,

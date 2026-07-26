@@ -17,8 +17,7 @@ public sealed class ProcessAppleCalendarAutomationCommandTests
     [Fact]
     public void PrivateRequestOptionsCreateAWriteOnlyExclusiveFile()
     {
-        FileStreamOptions options =
-            ProcessAppleCalendarAutomationCommand.createPrivateRequestFileOptions();
+        FileStreamOptions options = ProcessAppleCalendarAutomationCommand.createPrivateRequestFileOptions();
 
         Assert.Equal(FileMode.CreateNew, options.Mode);
         Assert.Equal(FileAccess.Write, options.Access);
@@ -52,8 +51,7 @@ public sealed class ProcessAppleCalendarAutomationCommandTests
                 + ".json");
         try
         {
-            FileStreamOptions options =
-                ProcessAppleCalendarAutomationCommand.createPrivateRequestFileOptions();
+            FileStreamOptions options = ProcessAppleCalendarAutomationCommand.createPrivateRequestFileOptions();
             using (FileStream requestStream = new FileStream(requestPath, options))
             {
                 UnixFileMode createdMode = File.GetUnixFileMode(requestPath);
@@ -88,8 +86,7 @@ public sealed class ProcessAppleCalendarAutomationCommandTests
             /usr/bin/stat -f '%Lp' "$1"
             """))
         {
-            ProcessAppleCalendarAutomationCommand automationCommand =
-                command.CreateAutomationCommand();
+            ProcessAppleCalendarAutomationCommand automationCommand = command.CreateAutomationCommand();
 
             string response = await automationCommand.ExecuteAsync(
                 EAppleCalendarAutomationOperation.ListCalendars,
@@ -117,8 +114,7 @@ public sealed class ProcessAppleCalendarAutomationCommandTests
             exit 1
             """))
         {
-            ProcessAppleCalendarAutomationCommand automationCommand =
-                command.CreateAutomationCommand(command.ModePath);
+            ProcessAppleCalendarAutomationCommand automationCommand = command.CreateAutomationCommand(command.ModePath);
 
             AppleCalendarNativeBridgeException exception =
                 await Assert.ThrowsAsync<AppleCalendarNativeBridgeException>(
@@ -163,13 +159,9 @@ public sealed class ProcessAppleCalendarAutomationCommandTests
             printf '%s\n' "$child_pid" > "$3"
             wait "$child_pid"
             """))
-        using (CancellationTokenSource cancellationSource =
-            new CancellationTokenSource())
+        using (CancellationTokenSource cancellationSource = new CancellationTokenSource())
         {
-            ProcessAppleCalendarAutomationCommand automationCommand =
-                command.CreateAutomationCommand(
-                    command.ModePath,
-                    command.ChildProcessIdPath);
+            ProcessAppleCalendarAutomationCommand automationCommand = command.CreateAutomationCommand(command.ModePath, command.ChildProcessIdPath);
             Task<string> executionTask = automationCommand.ExecuteAsync(
                 EAppleCalendarAutomationOperation.ApplyExport,
                 """{"operation":"apply"}""",
@@ -373,17 +365,14 @@ public sealed class ProcessAppleCalendarAutomationCommandTests
                     EAppleCalendarAutomationOperation operation,
                     string requestPath)
                 {
-                    ProcessStartInfo startInfo =
-                        new ProcessStartInfo();
+                    ProcessStartInfo startInfo = new ProcessStartInfo();
                     startInfo.FileName = ExecutablePath;
                     startInfo.UseShellExecute = false;
                     startInfo.CreateNoWindow = true;
                     startInfo.RedirectStandardOutput = true;
                     startInfo.RedirectStandardError = true;
-                    startInfo.StandardOutputEncoding =
-                        new UTF8Encoding(false);
-                    startInfo.StandardErrorEncoding =
-                        new UTF8Encoding(false);
+                    startInfo.StandardOutputEncoding = new UTF8Encoding(false);
+                    startInfo.StandardErrorEncoding = new UTF8Encoding(false);
                     startInfo.ArgumentList.Add(requestPath);
                     foreach (string argument in additionalArguments)
                     {

@@ -37,11 +37,7 @@ public sealed class SchedulePngBatchWriterTests
             Directory.CreateDirectory(Path.Combine(parentDirectoryPath, "2026-2학기 시간표"));
             Directory.CreateDirectory(Path.Combine(parentDirectoryPath, "2026-2학기 시간표 (2)"));
 
-            using (SchedulePngBatchDirectory directory =
-                SchedulePngBatchDirectoryAllocator.createUnique(
-                    parentDirectoryPath,
-                    new PlanName("2026-2학기 시간표"),
-                    CancellationToken.None))
+            using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createUnique(parentDirectoryPath, new PlanName("2026-2학기 시간표"), CancellationToken.None))
             {
                 Assert.Equal("2026-2학기 시간표 (3)", Path.GetFileName(directory.DirectoryPath));
             }
@@ -60,11 +56,7 @@ public sealed class SchedulePngBatchWriterTests
         {
             File.WriteAllText(Path.Combine(parentDirectoryPath, "2026-2학기 시간표"), "preserve");
 
-            using (SchedulePngBatchDirectory directory =
-                SchedulePngBatchDirectoryAllocator.createUnique(
-                    parentDirectoryPath,
-                    new PlanName("2026-2학기 시간표"),
-                    CancellationToken.None))
+            using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createUnique(parentDirectoryPath, new PlanName("2026-2학기 시간표"), CancellationToken.None))
             {
                 Assert.Equal("2026-2학기 시간표 (2)", Path.GetFileName(directory.DirectoryPath));
             }
@@ -85,11 +77,7 @@ public sealed class SchedulePngBatchWriterTests
             string firstFolderName = SchedulePngFileNameFactory.CreateBatchFolderName(planName);
             Directory.CreateDirectory(Path.Combine(parentDirectoryPath, firstFolderName));
 
-            using (SchedulePngBatchDirectory directory =
-                SchedulePngBatchDirectoryAllocator.createUnique(
-                    parentDirectoryPath,
-                    planName,
-                    CancellationToken.None))
+            using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createUnique(parentDirectoryPath, planName, CancellationToken.None))
             {
                 string folderName = Path.GetFileName(directory.DirectoryPath);
                 Assert.True(System.Text.Encoding.UTF8.GetByteCount(folderName) <= 255);
@@ -108,11 +96,7 @@ public sealed class SchedulePngBatchWriterTests
         string parentDirectoryPath = createTemporaryDirectory();
         try
         {
-            using (SchedulePngBatchDirectory directory =
-                SchedulePngBatchDirectoryAllocator.createUnique(
-                    parentDirectoryPath,
-                    new PlanName("2026-2학기 시간표"),
-                    CancellationToken.None))
+            using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createUnique(parentDirectoryPath, new PlanName("2026-2학기 시간표"), CancellationToken.None))
             {
                 using (Stream stream = directory.createFile("후보.png"))
                 {
@@ -141,11 +125,7 @@ public sealed class SchedulePngBatchWriterTests
         string directoryPath;
         try
         {
-            using (SchedulePngBatchDirectory directory =
-                SchedulePngBatchDirectoryAllocator.createUnique(
-                    parentDirectoryPath,
-                    new PlanName("2026-2학기 시간표"),
-                    CancellationToken.None))
+            using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createUnique(parentDirectoryPath, new PlanName("2026-2학기 시간표"), CancellationToken.None))
             {
                 directoryPath = directory.DirectoryPath;
                 using (Stream stream = directory.createFile("후보.png"))
@@ -174,10 +154,7 @@ public sealed class SchedulePngBatchWriterTests
         {
             PlanName planName = new PlanName("2026-2학기 시간표");
             string stagingDirectoryPath;
-            using (SchedulePngBatchDirectory directory =
-                SchedulePngBatchDirectoryAllocator.createStaging(
-                    parentDirectoryPath,
-                    CancellationToken.None))
+            using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createStaging(parentDirectoryPath, CancellationToken.None))
             {
                 stagingDirectoryPath = directory.DirectoryPath;
                 Assert.StartsWith(
@@ -228,10 +205,7 @@ public sealed class SchedulePngBatchWriterTests
         string stagingDirectoryPath;
         try
         {
-            using (SchedulePngBatchDirectory directory =
-                SchedulePngBatchDirectoryAllocator.createStaging(
-                    parentDirectoryPath,
-                    CancellationToken.None))
+            using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createStaging(parentDirectoryPath, CancellationToken.None))
             {
                 stagingDirectoryPath = directory.DirectoryPath;
                 using (Stream stream = directory.createFile("부분 결과.png"))
@@ -281,11 +255,7 @@ public sealed class SchedulePngBatchWriterTests
                 {
                     RecordingPngExporter exporter = new RecordingPngExporter();
                     SchedulePngBatchWriter writer = new SchedulePngBatchWriter(exporter);
-                    using (SchedulePngBatchDirectory directory =
-                        SchedulePngBatchDirectoryAllocator.createUnique(
-                            parentDirectoryPath,
-                            exportBatch.PlanName,
-                            CancellationToken.None))
+                    using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createUnique(parentDirectoryPath, exportBatch.PlanName, CancellationToken.None))
                     {
                         await writer.exportAsync(exportBatch, directory, sourceBoard, exportHost, CancellationToken.None);
                     }
@@ -351,11 +321,7 @@ public sealed class SchedulePngBatchWriterTests
             {
                 RecordingPngExporter exporter = new RecordingPngExporter();
                 SchedulePngBatchWriter writer = new SchedulePngBatchWriter(exporter);
-                using (SchedulePngBatchDirectory directory =
-                    SchedulePngBatchDirectoryAllocator.createUnique(
-                        parentDirectoryPath,
-                        exportBatch.PlanName,
-                        CancellationToken.None))
+                using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createUnique(parentDirectoryPath, exportBatch.PlanName, CancellationToken.None))
                 {
                     await writer.exportAsync(exportBatch, directory, sourceBoard, exportHost, CancellationToken.None);
                 }
@@ -393,14 +359,11 @@ public sealed class SchedulePngBatchWriterTests
         string? stagingDirectoryPathOrNull = null;
         try
         {
-            using (PlannerWorkspaceViewModel workspace =
-                PlannerWorkspaceTestFactory.CreateWorkspace())
+            using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
             {
                 await workspace.RecommendationRefreshTask;
-                ScheduleBoardPresentation firstCandidate =
-                    workspace.PngExportCandidates[0];
-                ScheduleBoardPresentation secondCandidate =
-                    workspace.PngExportCandidates[1];
+                ScheduleBoardPresentation firstCandidate = workspace.PngExportCandidates[0];
+                ScheduleBoardPresentation secondCandidate = workspace.PngExportCandidates[1];
                 SchedulePngExportBatch exportBatch =
                     new SchedulePngExportBatch(
                         new ScheduleBoardPresentation[]
@@ -425,17 +388,11 @@ public sealed class SchedulePngBatchWriterTests
 
                 try
                 {
-                    FailingCandidatePngExporter exporter =
-                        new FailingCandidatePngExporter(2);
-                    SchedulePngBatchWriter writer =
-                        new SchedulePngBatchWriter(exporter);
-                    using (SchedulePngBatchDirectory directory =
-                        SchedulePngBatchDirectoryAllocator.createStaging(
-                            parentDirectoryPath,
-                            CancellationToken.None))
+                    FailingCandidatePngExporter exporter = new FailingCandidatePngExporter(2);
+                    SchedulePngBatchWriter writer = new SchedulePngBatchWriter(exporter);
+                    using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createStaging(parentDirectoryPath, CancellationToken.None))
                     {
-                        stagingDirectoryPathOrNull =
-                            directory.DirectoryPath;
+                        stagingDirectoryPathOrNull = directory.DirectoryPath;
                         SchedulePngBatchExportException exception =
                             await Assert.ThrowsAsync<
                                 SchedulePngBatchExportException>(
@@ -490,19 +447,13 @@ public sealed class SchedulePngBatchWriterTests
         string parentDirectoryPath = createTemporaryDirectory();
         try
         {
-            using (PlannerWorkspaceViewModel workspace =
-                PlannerWorkspaceTestFactory.CreateWorkspace())
+            using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
             {
                 await workspace.RecommendationRefreshTask;
-                ScheduleBoardPresentation firstCandidate =
-                    workspace.PngExportCandidates[0];
-                ScheduleBoardPresentation secondCandidate =
-                    workspace.PngExportCandidates[1];
-                List<ScheduleBoardPresentation> candidates =
-                    new List<ScheduleBoardPresentation>();
-                for (int candidateIndex = 0;
-                    candidateIndex < 64;
-                    ++candidateIndex)
+                ScheduleBoardPresentation firstCandidate = workspace.PngExportCandidates[0];
+                ScheduleBoardPresentation secondCandidate = workspace.PngExportCandidates[1];
+                List<ScheduleBoardPresentation> candidates = new List<ScheduleBoardPresentation>();
+                for (int candidateIndex = 0; candidateIndex < 64; ++candidateIndex)
                 {
                     candidates.Add(
                         candidateIndex % 2 == 0
@@ -510,8 +461,7 @@ public sealed class SchedulePngBatchWriterTests
                             : secondCandidate);
                 }
 
-                SchedulePngExportBatch exportBatch =
-                    new SchedulePngExportBatch(candidates);
+                SchedulePngExportBatch exportBatch = new SchedulePngExportBatch(candidates);
                 ScheduleBoardView sourceBoard = new ScheduleBoardView();
                 sourceBoard.Width = 960.0;
                 sourceBoard.DataContext = firstCandidate;
@@ -541,12 +491,8 @@ public sealed class SchedulePngBatchWriterTests
                             {
                                 return inputCallbackRan;
                             });
-                    SchedulePngBatchWriter writer =
-                        new SchedulePngBatchWriter(exporter);
-                    using (SchedulePngBatchDirectory directory =
-                        SchedulePngBatchDirectoryAllocator.createStaging(
-                            parentDirectoryPath,
-                            CancellationToken.None))
+                    SchedulePngBatchWriter writer = new SchedulePngBatchWriter(exporter);
+                    using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createStaging(parentDirectoryPath, CancellationToken.None))
                     {
                         await writer.exportAsync(
                             exportBatch,
@@ -582,17 +528,13 @@ public sealed class SchedulePngBatchWriterTests
         string? stagingDirectoryPathOrNull = null;
         try
         {
-            using (PlannerWorkspaceViewModel workspace =
-                PlannerWorkspaceTestFactory.CreateWorkspace())
+            using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace())
             {
                 await workspace.RecommendationRefreshTask;
-                SchedulePngExportBatch exportBatch =
-                    new SchedulePngExportBatch(
-                        workspace.PngExportCandidates);
+                SchedulePngExportBatch exportBatch = new SchedulePngExportBatch(workspace.PngExportCandidates);
                 ScheduleBoardView sourceBoard = new ScheduleBoardView();
                 sourceBoard.Width = 960.0;
-                sourceBoard.DataContext =
-                    workspace.PngExportCandidates[0];
+                sourceBoard.DataContext = workspace.PngExportCandidates[0];
                 Canvas exportHost = new Canvas();
                 Grid root = new Grid();
                 root.Children.Add(exportHost);
@@ -606,21 +548,13 @@ public sealed class SchedulePngBatchWriterTests
 
                 try
                 {
-                    using (CancellationTokenSource cancellationSource =
-                        new CancellationTokenSource())
+                    using (CancellationTokenSource cancellationSource = new CancellationTokenSource())
                     {
-                        CancellingPngExporter exporter =
-                            new CancellingPngExporter(
-                                cancellationSource);
-                        SchedulePngBatchWriter writer =
-                            new SchedulePngBatchWriter(exporter);
-                        using (SchedulePngBatchDirectory directory =
-                            SchedulePngBatchDirectoryAllocator.createStaging(
-                                parentDirectoryPath,
-                                cancellationSource.Token))
+                        CancellingPngExporter exporter = new CancellingPngExporter(cancellationSource);
+                        SchedulePngBatchWriter writer = new SchedulePngBatchWriter(exporter);
+                        using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createStaging(parentDirectoryPath, cancellationSource.Token))
                         {
-                            stagingDirectoryPathOrNull =
-                                directory.DirectoryPath;
+                            stagingDirectoryPathOrNull = directory.DirectoryPath;
                             await Assert.ThrowsAnyAsync<
                                 OperationCanceledException>(
                                     delegate
@@ -687,11 +621,7 @@ public sealed class SchedulePngBatchWriterTests
 
                 try
                 {
-                    using (SchedulePngBatchDirectory destinationDirectory =
-                        SchedulePngBatchDirectoryAllocator.createUnique(
-                            parentDirectoryPath,
-                            exportBatch.PlanName,
-                            CancellationToken.None))
+                    using (SchedulePngBatchDirectory destinationDirectory = SchedulePngBatchDirectoryAllocator.createUnique(parentDirectoryPath, exportBatch.PlanName, CancellationToken.None))
                     {
                         SchedulePngBatchWriter writer = new SchedulePngBatchWriter(new AvaloniaControlPngExporter(PngExportScale.Create(1.0)));
 
@@ -784,13 +714,9 @@ public sealed class SchedulePngBatchWriterTests
             HashSet<int> sampledColors = new HashSet<int>();
             int horizontalStep = Math.Max(1, bitmap.PixelSize.Width / 96);
             int verticalStep = Math.Max(1, bitmap.PixelSize.Height / 96);
-            for (int y = 0;
-                y < bitmap.PixelSize.Height;
-                y += verticalStep)
+            for (int y = 0; y < bitmap.PixelSize.Height; y += verticalStep)
             {
-                for (int x = 0;
-                    x < bitmap.PixelSize.Width;
-                    x += horizontalStep)
+                for (int x = 0; x < bitmap.PixelSize.Width; x += horizontalStep)
                 {
                     int pixelOffset = (y * framebuffer.RowBytes) + (x * 4);
                     sampledColors.Add(Marshal.ReadInt32(framebuffer.Address, pixelOffset));
@@ -845,10 +771,7 @@ public sealed class SchedulePngBatchWriterTests
         public ResponsiveRecordingPngExporter(
             Func<bool> readInputResponsiveness)
         {
-            mReadInputResponsiveness =
-                readInputResponsiveness
-                ?? throw new ArgumentNullException(
-                    nameof(readInputResponsiveness));
+            mReadInputResponsiveness = readInputResponsiveness ?? throw new ArgumentNullException(nameof(readInputResponsiveness));
         }
 
         public Task ExportControlAsync(
@@ -858,8 +781,7 @@ public sealed class SchedulePngBatchWriterTests
         {
             cancellationToken.ThrowIfCancellationRequested();
             ExportCallCount++;
-            InputWasResponsiveDuringBatch |=
-                mReadInputResponsiveness();
+            InputWasResponsiveDuringBatch |= mReadInputResponsiveness();
 
             destinationStream.WriteByte(1);
             return Task.CompletedTask;
@@ -873,10 +795,7 @@ public sealed class SchedulePngBatchWriterTests
         public CancellingPngExporter(
             CancellationTokenSource cancellationSource)
         {
-            mCancellationSource =
-                cancellationSource
-                ?? throw new ArgumentNullException(
-                    nameof(cancellationSource));
+            mCancellationSource = cancellationSource ?? throw new ArgumentNullException(nameof(cancellationSource));
         }
 
         public Task ExportControlAsync(

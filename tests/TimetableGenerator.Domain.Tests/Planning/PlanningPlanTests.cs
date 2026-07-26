@@ -62,10 +62,7 @@ public sealed class PlanningPlanTests
     public void PlanKeepsUnscheduledSelectionsOutsideCourseChoiceGroups()
     {
         CourseChoiceGroup courseChoiceGroup = createCourseChoiceGroup("CSE30001", "01");
-        UnscheduledOfferingSelection unscheduledSelection =
-            new UnscheduledOfferingSelection(
-                createCourseId("CSE30002"),
-                createOfferingId("CSE30002", "01"));
+        UnscheduledOfferingSelection unscheduledSelection = new UnscheduledOfferingSelection(createCourseId("CSE30002"), createOfferingId("CSE30002", "01"));
 
         PlanningPlan plan = createPlan(
             PlanId.CreateNew(),

@@ -9,11 +9,7 @@ namespace TimetableGenerator.Desktop.Product;
 
 internal sealed class ProductWorkspacePresentation
 {
-    private const EProductWorkspaceRecoveryFlags ALL_RECOVERY_FLAGS =
-        EProductWorkspaceRecoveryFlags.CatalogPreviousGeneration
-        | EProductWorkspaceRecoveryFlags.WorkspacePreviousGeneration
-        | EProductWorkspaceRecoveryFlags.WorkspaceCatalogRebound
-        | EProductWorkspaceRecoveryFlags.WorkspaceCreated;
+    private const EProductWorkspaceRecoveryFlags ALL_RECOVERY_FLAGS = EProductWorkspaceRecoveryFlags.CatalogPreviousGeneration | EProductWorkspaceRecoveryFlags.WorkspacePreviousGeneration | EProductWorkspaceRecoveryFlags.WorkspaceCatalogRebound | EProductWorkspaceRecoveryFlags.WorkspaceCreated;
 
     public PlannerWorkspaceViewModel Workspace { get; }
 

@@ -38,22 +38,13 @@ public static partial class CourseCatalogJsonReader
 
         string logicalFileNameText = sourceObject.GetString("logicalFileName");
         string expectedLogicalFileName = "hgu-" + term.Id + "-source.xls";
-        CatalogJsonValueParser.RequireExactString(
-            logicalFileNameText,
-            expectedLogicalFileName,
-            sourceObject.GetPropertyPath("logicalFileName"));
+        CatalogJsonValueParser.RequireExactString(logicalFileNameText, expectedLogicalFileName, sourceObject.GetPropertyPath("logicalFileName"));
         string declaredExtensionText = sourceObject.GetString("declaredExtension");
         string detectedMediaTypeText = sourceObject.GetString("detectedMediaType");
         string declaredCharsetText = sourceObject.GetString("declaredCharset");
         string decodedWithText = sourceObject.GetString("decodedWith");
-        CatalogJsonValueParser.RequireExactString(
-            declaredExtensionText,
-            "xls",
-            sourceObject.GetPropertyPath("declaredExtension"));
-        CatalogJsonValueParser.RequireExactString(
-            detectedMediaTypeText,
-            "text/html",
-            sourceObject.GetPropertyPath("detectedMediaType"));
+        CatalogJsonValueParser.RequireExactString(declaredExtensionText, "xls", sourceObject.GetPropertyPath("declaredExtension"));
+        CatalogJsonValueParser.RequireExactString(detectedMediaTypeText, "text/html", sourceObject.GetPropertyPath("detectedMediaType"));
         if (string.IsNullOrWhiteSpace(declaredCharsetText))
         {
             throw new CatalogJsonFormatException(
@@ -61,10 +52,7 @@ public static partial class CourseCatalogJsonReader
                 "the declared source charset cannot be empty.");
         }
 
-        CatalogJsonValueParser.RequireExactString(
-            decodedWithText,
-            "windows-949",
-            sourceObject.GetPropertyPath("decodedWith"));
+        CatalogJsonValueParser.RequireExactString(decodedWithText, "windows-949", sourceObject.GetPropertyPath("decodedWith"));
         CatalogSourceLogicalFileName logicalFileName = new CatalogSourceLogicalFileName(logicalFileNameText);
         CatalogFileExtension declaredExtension = new CatalogFileExtension(declaredExtensionText);
         CatalogMediaType detectedMediaType = new CatalogMediaType(detectedMediaTypeText);
@@ -94,10 +82,7 @@ public static partial class CourseCatalogJsonReader
                 "version",
             });
         string converterIdText = converterObject.GetString("id");
-        CatalogJsonValueParser.RequireExactString(
-            converterIdText,
-            "handong-course-catalog-importer",
-            converterObject.GetPropertyPath("id"));
+        CatalogJsonValueParser.RequireExactString(converterIdText, "handong-course-catalog-importer", converterObject.GetPropertyPath("id"));
         CatalogConverterId converterId = new CatalogConverterId(converterIdText);
         string converterVersionText = converterObject.GetString("version");
         Version? parsedVersionOrNull;
@@ -207,11 +192,7 @@ public static partial class CourseCatalogJsonReader
             EManualReviewReason reason = parseManualReviewReason(
                 reviewObject.GetString("reason"),
                 reviewObject.GetPropertyPath("reason"));
-            manualReviews.Add(new CatalogManualReview(
-                courseId,
-                field,
-                reason,
-                new CatalogManualReviewSourceValue(reviewObject.GetString("sourceValue"))));
+            manualReviews.Add(new CatalogManualReview(courseId, field, reason, new CatalogManualReviewSourceValue(reviewObject.GetString("sourceValue"))));
             ++reviewIndex;
         }
 

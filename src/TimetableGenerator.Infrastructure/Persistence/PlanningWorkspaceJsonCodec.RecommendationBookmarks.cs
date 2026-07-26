@@ -43,10 +43,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
             "plan.lastViewedRecommendation",
             new string[] { "scheduledOfferingIds" });
         JsonElement offeringIdsElement = properties["scheduledOfferingIds"];
-        requireValueKind(
-            offeringIdsElement,
-            JsonValueKind.Array,
-            "plan.lastViewedRecommendation.scheduledOfferingIds");
+        requireValueKind(offeringIdsElement, JsonValueKind.Array, "plan.lastViewedRecommendation.scheduledOfferingIds");
         List<OfferingId> offeringIds = new List<OfferingId>();
         foreach (JsonElement offeringIdElement
             in offeringIdsElement.EnumerateArray())

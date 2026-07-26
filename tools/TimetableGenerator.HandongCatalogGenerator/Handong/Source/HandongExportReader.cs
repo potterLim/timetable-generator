@@ -27,14 +27,10 @@ internal static class HandongExportReader
     {
         ArgumentNullException.ThrowIfNull(sourceFilePath);
 
-        byte[] sourceBytes = await File.ReadAllBytesAsync(
-            sourceFilePath.Value,
-            cancellationToken).ConfigureAwait(false);
+        byte[] sourceBytes = await File.ReadAllBytesAsync(sourceFilePath.Value, cancellationToken).ConfigureAwait(false);
         string sourceSha256Hex = calculateSha256Hex(sourceBytes);
         string sourceHtml = decodeSourceHtml(sourceBytes, sourceFilePath);
-        IHtmlDocument htmlDocument = await parseSourceHtmlAsync(
-            sourceHtml,
-            cancellationToken).ConfigureAwait(false);
+        IHtmlDocument htmlDocument = await parseSourceHtmlAsync(sourceHtml, cancellationToken).ConfigureAwait(false);
 
         string declaredCharset = readDeclaredCharset(htmlDocument);
         IElement catalogTable = findCatalogTable(htmlDocument);
@@ -52,10 +48,7 @@ internal static class HandongExportReader
     private static Encoding createCp949Encoding()
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-        return Encoding.GetEncoding(
-            CP949_CODE_PAGE,
-            EncoderFallback.ExceptionFallback,
-            DecoderFallback.ExceptionFallback);
+        return Encoding.GetEncoding(CP949_CODE_PAGE, EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback);
     }
 
     private static string calculateSha256Hex(byte[] sourceBytes)
@@ -72,9 +65,7 @@ internal static class HandongExportReader
         }
         catch (DecoderFallbackException exception)
         {
-            throw new HandongSourceFormatException(
-                "The Handong export is not valid CP949 text: " + sourceFilePath.Value,
-                exception);
+            throw new HandongSourceFormatException("The Handong export is not valid CP949 text: " + sourceFilePath.Value, exception);
         }
     }
 
@@ -97,9 +88,7 @@ internal static class HandongExportReader
         }
         catch (HtmlParseException exception)
         {
-            throw new HandongSourceFormatException(
-                "The Handong export could not be parsed as HTML.",
-                exception);
+            throw new HandongSourceFormatException("The Handong export could not be parsed as HTML.", exception);
         }
     }
 
@@ -111,15 +100,9 @@ internal static class HandongExportReader
             throw new HandongSourceFormatException("The Handong export does not declare an HTML charset.");
         }
 
-        if (string.Equals(
-            declaredCharsetOrNull,
-            HandongExportSchema.DECLARED_CHARSET,
-            StringComparison.OrdinalIgnoreCase) == false)
+        if (string.Equals(declaredCharsetOrNull, HandongExportSchema.DECLARED_CHARSET, StringComparison.OrdinalIgnoreCase) == false)
         {
-            throw new HandongSourceFormatException(
-                "The Handong export declares unsupported charset '"
-                + declaredCharsetOrNull + "'. Expected '"
-                + HandongExportSchema.DECLARED_CHARSET + "'.");
+            throw new HandongSourceFormatException("The Handong export declares unsupported charset '" + declaredCharsetOrNull + "'. Expected '" + HandongExportSchema.DECLARED_CHARSET + "'.");
         }
 
         return declaredCharsetOrNull;
@@ -225,14 +208,12 @@ internal static class HandongExportReader
 
         if (matchingTableElements.Count == 0)
         {
-            throw new HandongSourceFormatException(
-                "No HTML table has the exact 16-column Handong export header.");
+            throw new HandongSourceFormatException("No HTML table has the exact 16-column Handong export header.");
         }
 
         if (matchingTableElements.Count > 1)
         {
-            throw new HandongSourceFormatException(
-                "The Handong export contains more than one matching catalog table.");
+            throw new HandongSourceFormatException("The Handong export contains more than one matching catalog table.");
         }
 
         return matchingTableElements[0];
@@ -318,18 +299,14 @@ internal static class HandongExportReader
         List<HandongRawOfferingRow> offeringRows = new List<HandongRawOfferingRow>();
         HashSet<AcademicTerm> academicTermSet = new HashSet<AcademicTerm>();
 
-        for (int tableRowIndex = FIRST_DATA_ROW_INDEX;
-            tableRowIndex < tableRows.Count;
-            ++tableRowIndex)
+        for (int tableRowIndex = FIRST_DATA_ROW_INDEX; tableRowIndex < tableRows.Count; ++tableRowIndex)
         {
             SourceRecordNumber sourceRecordNumber = new SourceRecordNumber(tableRowIndex + 1);
             IElement rowElement = tableRows[tableRowIndex];
             IReadOnlyList<IElement> cellElements = getRowCells(rowElement);
             if (cellElements.Count != HandongExportSchema.COLUMN_COUNT)
             {
-                throw new HandongSourceFormatException(
-                    "Source record " + sourceRecordNumber + " contains "
-                    + cellElements.Count + " columns; exactly 16 are required.");
+                throw new HandongSourceFormatException("Source record " + sourceRecordNumber + " contains " + cellElements.Count + " columns; exactly 16 are required.");
             }
 
             List<IReadOnlyList<string>> cellLinesByColumn = new List<IReadOnlyList<string>>(HandongExportSchema.COLUMN_COUNT);
@@ -338,26 +315,18 @@ internal static class HandongExportReader
                 cellLinesByColumn.Add(HandongHtmlCellReader.ReadLines(cellElement));
             }
 
-            HandongSourceLinkMetadata? sourceLinkMetadataOrNull =
-                HandongSourceLinkMetadataReader.ReadMetadataOrNull(
-                    rowElement,
-                    sourceRecordNumber);
+            HandongSourceLinkMetadata? sourceLinkMetadataOrNull = HandongSourceLinkMetadataReader.ReadMetadataOrNull(rowElement, sourceRecordNumber);
             if (sourceLinkMetadataOrNull != null)
             {
                 academicTermSet.Add(sourceLinkMetadataOrNull.AcademicTerm);
             }
 
-            offeringRows.Add(
-                new HandongRawOfferingRow(
-                    sourceRecordNumber,
-                    cellLinesByColumn,
-                    sourceLinkMetadataOrNull));
+            offeringRows.Add(new HandongRawOfferingRow(sourceRecordNumber, cellLinesByColumn, sourceLinkMetadataOrNull));
         }
 
         if (offeringRows.Count == 0)
         {
-            throw new HandongSourceFormatException(
-                "The Handong export catalog table does not contain offering rows.");
+            throw new HandongSourceFormatException("The Handong export catalog table does not contain offering rows.");
         }
 
         List<AcademicTerm> academicTerms = new List<AcademicTerm>(academicTermSet);

@@ -104,11 +104,7 @@ internal sealed class HandongScheduleNormalizer
     private static AcademicPeriod parsePeriod(string sourceValue, HandongRawOfferingRow row)
     {
         int periodValue;
-        bool isPeriodParsed = int.TryParse(
-            sourceValue,
-            NumberStyles.None,
-            CultureInfo.InvariantCulture,
-            out periodValue);
+        bool isPeriodParsed = int.TryParse(sourceValue, NumberStyles.None, CultureInfo.InvariantCulture, out periodValue);
         if (isPeriodParsed == false)
         {
             throw new InvalidHandongSourceRecordException(
@@ -180,11 +176,7 @@ internal sealed class HandongScheduleNormalizer
             EDay day;
             bool isDayParsed = tryParseEnglishDay(slotMatch.Groups["day"].Value, out day);
             int periodValue;
-            bool isPeriodParsed = int.TryParse(
-                slotMatch.Groups["period"].Value,
-                NumberStyles.None,
-                CultureInfo.InvariantCulture,
-                out periodValue);
+            bool isPeriodParsed = int.TryParse(slotMatch.Groups["period"].Value, NumberStyles.None, CultureInfo.InvariantCulture, out periodValue);
             if (isDayParsed == false || isPeriodParsed == false || periodValue < 1 || periodValue > 10)
             {
                 return false;

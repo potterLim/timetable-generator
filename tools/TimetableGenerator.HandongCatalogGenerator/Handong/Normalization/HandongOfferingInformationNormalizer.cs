@@ -16,9 +16,7 @@ internal sealed class HandongOfferingInformationNormalizer
     public HandongOfferingInformationNormalizationResult NormalizeOfferingInformation(
         HandongRawOfferingRow row)
     {
-        IReadOnlyList<string> lines = HandongCellValueReader.getNonEmptyLines(
-            row,
-            EHandongColumn.OfferingInformation);
+        IReadOnlyList<string> lines = HandongCellValueReader.getNonEmptyLines(row, EHandongColumn.OfferingInformation);
         if (lines.Count == 0)
         {
             throw new InvalidHandongSourceRecordException(
@@ -37,9 +35,7 @@ internal sealed class HandongOfferingInformationNormalizer
         }
 
         OfferingUnitName offeringUnitName = new OfferingUnitName(offeringInformationMatch.Groups["unit"].Value);
-        EInstructionSession instructionSession = parseInstructionSession(
-            offeringInformationMatch.Groups["session"].Value,
-            row);
+        EInstructionSession instructionSession = parseInstructionSession(offeringInformationMatch.Groups["session"].Value, row);
         InstructorAssignment instructorAssignment = normalizeInstructorAssignment(lines, row);
 
         return new HandongOfferingInformationNormalizationResult(
@@ -85,11 +81,7 @@ internal sealed class HandongOfferingInformationNormalizer
         int additionalInstructorCountValue = 0;
         if (additionalInstructorMatch.Success)
         {
-            bool isCountParsed = int.TryParse(
-                additionalInstructorMatch.Groups["count"].Value,
-                NumberStyles.None,
-                CultureInfo.InvariantCulture,
-                out additionalInstructorCountValue);
+            bool isCountParsed = int.TryParse(additionalInstructorMatch.Groups["count"].Value, NumberStyles.None, CultureInfo.InvariantCulture, out additionalInstructorCountValue);
             if (isCountParsed == false)
             {
                 throw new InvalidHandongSourceRecordException(

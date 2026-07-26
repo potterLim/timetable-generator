@@ -295,11 +295,7 @@ public sealed class UnsatisfiedScheduleExperienceTests
                     plan.CourseChoiceGroups,
                     plan.UnscheduledOfferingSelections,
                     blockingSchedules));
-            ScheduleRecommendationRequest request =
-                new ScheduleRecommendationRequest(
-                    mCatalog,
-                    conflictingPlan,
-                    recommendationLimit);
+            ScheduleRecommendationRequest request = new ScheduleRecommendationRequest(mCatalog, conflictingPlan, recommendationLimit);
             return mGenerator.GenerateRecommendations(request, cancellationToken);
         }
 

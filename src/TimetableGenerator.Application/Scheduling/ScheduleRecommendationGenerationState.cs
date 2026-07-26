@@ -123,9 +123,7 @@ internal sealed class ScheduleRecommendationGenerationState
             throw new ArgumentNullException(nameof(selectedByGroups));
         }
 
-        List<UnscheduledOfferingSelection> combinedSelections =
-            new List<UnscheduledOfferingSelection>(
-                selectedByGroups.Count + UnscheduledSelections.Count);
+        List<UnscheduledOfferingSelection> combinedSelections = new List<UnscheduledOfferingSelection>(selectedByGroups.Count + UnscheduledSelections.Count);
         combinedSelections.AddRange(selectedByGroups);
         combinedSelections.AddRange(UnscheduledSelections);
         return combinedSelections.AsReadOnly();
@@ -136,13 +134,9 @@ internal sealed class ScheduleRecommendationGenerationState
     {
         RecommendationScore[] remainingMinimumScores = new RecommendationScore[courseChoiceGroups.Count + 1];
         remainingMinimumScores[courseChoiceGroups.Count] = RecommendationScore.ZERO;
-        for (int groupIndex = courseChoiceGroups.Count - 1;
-            groupIndex >= 0;
-            --groupIndex)
+        for (int groupIndex = courseChoiceGroups.Count - 1; groupIndex >= 0; --groupIndex)
         {
-            remainingMinimumScores[groupIndex] =
-                courseChoiceGroups[groupIndex].MinimumScore.Add(
-                    remainingMinimumScores[groupIndex + 1]);
+            remainingMinimumScores[groupIndex] = courseChoiceGroups[groupIndex].MinimumScore.Add(remainingMinimumScores[groupIndex + 1]);
         }
 
         return Array.AsReadOnly(remainingMinimumScores);

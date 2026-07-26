@@ -125,19 +125,11 @@ internal sealed class SchedulePngBatchDirectory : IDisposable
                 "The staged PNG export directory requires a parent directory.");
         }
 
-        for (int attempt = 1;
-            attempt <= MAXIMUM_SUFFIX_ATTEMPTS;
-            ++attempt)
+        for (int attempt = 1; attempt <= MAXIMUM_SUFFIX_ATTEMPTS; ++attempt)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            string folderName =
-                SchedulePngFileNameFactory.CreateBatchFolderName(
-                    planName,
-                    attempt);
-            string destinationDirectoryPath =
-                Path.Combine(
-                    parentDirectoryPathOrNull,
-                    folderName);
+            string folderName = SchedulePngFileNameFactory.CreateBatchFolderName(planName, attempt);
+            string destinationDirectoryPath = Path.Combine(parentDirectoryPathOrNull, folderName);
             if (Directory.Exists(destinationDirectoryPath)
                 || File.Exists(destinationDirectoryPath))
             {
@@ -146,9 +138,7 @@ internal sealed class SchedulePngBatchDirectory : IDisposable
 
             try
             {
-                Directory.Move(
-                    mDirectoryPath,
-                    destinationDirectoryPath);
+                Directory.Move(mDirectoryPath, destinationDirectoryPath);
                 mDirectoryPath = destinationDirectoryPath;
                 deleteOwnershipMarker();
                 mIsCommitted = true;

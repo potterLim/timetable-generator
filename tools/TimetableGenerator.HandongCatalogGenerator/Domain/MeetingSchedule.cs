@@ -8,10 +8,7 @@ internal sealed class MeetingSchedule
     private readonly KoreanScheduleText? mSourceTextOrNull;
     private readonly IReadOnlyList<MeetingSlot> mSlots;
 
-    public static MeetingSchedule NotProvided { get; } = new MeetingSchedule(
-        EMeetingScheduleStatus.NotProvided,
-        null,
-        Array.Empty<MeetingSlot>());
+    public static MeetingSchedule NotProvided { get; } = new MeetingSchedule(EMeetingScheduleStatus.NotProvided, null, Array.Empty<MeetingSlot>());
 
     public EMeetingScheduleStatus Status { get; }
 

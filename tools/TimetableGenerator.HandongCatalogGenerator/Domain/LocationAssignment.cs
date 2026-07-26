@@ -6,9 +6,7 @@ internal sealed class LocationAssignment
 {
     private readonly ClassroomDisplayText? mDisplayTextOrNull;
 
-    public static LocationAssignment NotProvided { get; } = new LocationAssignment(
-        ELocationAssignmentStatus.NotProvided,
-        null);
+    public static LocationAssignment NotProvided { get; } = new LocationAssignment(ELocationAssignmentStatus.NotProvided, null);
 
     public ELocationAssignmentStatus Status { get; }
 

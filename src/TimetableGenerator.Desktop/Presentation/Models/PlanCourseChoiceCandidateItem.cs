@@ -123,14 +123,8 @@ internal sealed class PlanCourseChoiceCandidateItem : ObservableObject
             displayText = selectedOfferingOrNull.Offering.SectionCode.Value + "분반: 시간 미정";
         }
 
-        setProperty(
-            ref mSelectedTimeNotProvidedOfferingDisplayText,
-            displayText,
-            nameof(SelectedTimeNotProvidedOfferingDisplayText));
-        setProperty(
-            ref mHasSelectedTimeNotProvidedOffering,
-            hasTimeNotProvidedSelection,
-            nameof(HasSelectedTimeNotProvidedOffering));
+        setProperty(ref mSelectedTimeNotProvidedOfferingDisplayText, displayText, nameof(SelectedTimeNotProvidedOfferingDisplayText));
+        setProperty(ref mHasSelectedTimeNotProvidedOffering, hasTimeNotProvidedSelection, nameof(HasSelectedTimeNotProvidedOffering));
     }
 
     private CatalogOfferingProjection? findSelectedOfferingOrNull(

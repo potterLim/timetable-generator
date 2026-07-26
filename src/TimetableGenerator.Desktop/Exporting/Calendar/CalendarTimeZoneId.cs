@@ -26,10 +26,7 @@ internal readonly record struct CalendarTimeZoneId
 
         string normalizedValue = value.Trim();
         string? windowsTimeZoneIdOrNull;
-        bool hasWindowsTimeZoneEquivalent =
-            TimeZoneInfo.TryConvertIanaIdToWindowsId(
-                normalizedValue,
-                out windowsTimeZoneIdOrNull);
+        bool hasWindowsTimeZoneEquivalent = TimeZoneInfo.TryConvertIanaIdToWindowsId(normalizedValue, out windowsTimeZoneIdOrNull);
         if (hasWindowsTimeZoneEquivalent == false || string.IsNullOrWhiteSpace(windowsTimeZoneIdOrNull))
         {
             throw new ArgumentException(

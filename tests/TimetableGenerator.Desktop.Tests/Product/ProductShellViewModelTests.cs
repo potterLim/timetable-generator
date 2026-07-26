@@ -57,10 +57,7 @@ public sealed class ProductShellViewModelTests
             createCatalogUpdateService(
                 delegate
                 {
-                    ProductCatalogUpdateResult updateResult =
-                        new ProductCatalogUpdateResult(
-                            EProductCatalogUpdateStatus.Staged,
-                            new CatalogRevision(2));
+                    ProductCatalogUpdateResult updateResult = new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.Staged, new CatalogRevision(2));
                     return Task.FromResult(updateResult);
                 });
         using (ProductShellViewModel shell = new ProductShellViewModel(
@@ -92,23 +89,15 @@ public sealed class ProductShellViewModelTests
         QueueProductWorkspaceLoader loader = createLoader(
             delegate
             {
-                EProductWorkspaceRecoveryFlags recoveryFlags =
-                    EProductWorkspaceRecoveryFlags.CatalogPreviousGeneration
-                    | EProductWorkspaceRecoveryFlags.WorkspacePreviousGeneration;
-                ProductWorkspacePresentation presentation =
-                    PlannerWorkspaceTestFactory.CreatePresentationWithRecoveryFlags(
-                        workspace,
-                        recoveryFlags);
+                EProductWorkspaceRecoveryFlags recoveryFlags = EProductWorkspaceRecoveryFlags.CatalogPreviousGeneration | EProductWorkspaceRecoveryFlags.WorkspacePreviousGeneration;
+                ProductWorkspacePresentation presentation = PlannerWorkspaceTestFactory.CreatePresentationWithRecoveryFlags(workspace, recoveryFlags);
                 return Task.FromResult(presentation);
             });
         QueueProductCatalogUpdateService catalogUpdateService =
             createCatalogUpdateService(
                 delegate
                 {
-                    ProductCatalogUpdateResult updateResult =
-                        new ProductCatalogUpdateResult(
-                            EProductCatalogUpdateStatus.Staged,
-                            new CatalogRevision(2));
+                    ProductCatalogUpdateResult updateResult = new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.Staged, new CatalogRevision(2));
                     return Task.FromResult(updateResult);
                 });
         using (ProductShellViewModel shell = new ProductShellViewModel(
@@ -214,10 +203,7 @@ public sealed class ProductShellViewModelTests
                     },
                     delegate
                     {
-                        ProductCatalogUpdateResult updateResult =
-                            new ProductCatalogUpdateResult(
-                                EProductCatalogUpdateStatus.Current,
-                                new CatalogRevision(1));
+                        ProductCatalogUpdateResult updateResult = new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.Current, new CatalogRevision(1));
                         return Task.FromResult(updateResult);
                     },
                 });
@@ -282,10 +268,7 @@ public sealed class ProductShellViewModelTests
         QueueProductWorkspaceLoader loader = createLoader(
             delegate
             {
-                ProductWorkspacePresentation presentation =
-                    PlannerWorkspaceTestFactory.CreatePresentation(
-                        workspace,
-                        EProductCatalogOrigin.RemoteDownload);
+                ProductWorkspacePresentation presentation = PlannerWorkspaceTestFactory.CreatePresentation(workspace, EProductCatalogOrigin.RemoteDownload);
                 return Task.FromResult(presentation);
             });
         QueueProductCatalogUpdateService catalogUpdateService = new QueueProductCatalogUpdateService(Array.Empty<Func<VerifiedCatalogPackage, PlanningWorkspace, CancellationToken, Task<ProductCatalogUpdateResult>>>());
@@ -327,10 +310,7 @@ public sealed class ProductShellViewModelTests
         QueueProductWorkspaceLoader loader = createLoader(
             delegate
             {
-                PlanningWorkspaceConcurrencyException failure =
-                    new PlanningWorkspaceConcurrencyException(
-                        new PlanningWorkspaceConcurrencyToken(1L),
-                        new PlanningWorkspaceConcurrencyToken(2L));
+                PlanningWorkspaceConcurrencyException failure = new PlanningWorkspaceConcurrencyException(new PlanningWorkspaceConcurrencyToken(1L), new PlanningWorkspaceConcurrencyToken(2L));
                 return Task.FromException<ProductWorkspacePresentation>(failure);
             });
         using (ProductShellViewModel shell = createShell(loader))
@@ -551,10 +531,7 @@ ProductWorkspacePresentation presentation = PlannerWorkspaceTestFactory.CreatePr
             createCatalogUpdateService(
                 delegate
                 {
-                    ProductCatalogUpdateResult updateResult =
-                        new ProductCatalogUpdateResult(
-                            EProductCatalogUpdateStatus.Current,
-                            new CatalogRevision(1));
+                    ProductCatalogUpdateResult updateResult = new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.Current, new CatalogRevision(1));
                     return Task.FromResult(updateResult);
                 });
         return new ProductShellViewModel(loader, catalogUpdateService);
@@ -567,10 +544,7 @@ ProductWorkspacePresentation presentation = PlannerWorkspaceTestFactory.CreatePr
         QueueProductWorkspaceLoader loader = createLoader(
             delegate
             {
-                ProductWorkspacePresentation presentation =
-                    PlannerWorkspaceTestFactory.CreatePresentationWithRecoveryFlags(
-                        workspace,
-                        recoveryFlags);
+                ProductWorkspacePresentation presentation = PlannerWorkspaceTestFactory.CreatePresentationWithRecoveryFlags(workspace, recoveryFlags);
                 return Task.FromResult(presentation);
             });
         using (ProductShellViewModel shell = createShell(loader))

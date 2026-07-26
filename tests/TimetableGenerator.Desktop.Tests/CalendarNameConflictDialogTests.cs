@@ -111,25 +111,16 @@ public sealed class CalendarNameConflictDialogTests
 
         foreach (ThemeVariant theme in themes)
         {
-            CalendarNameConflictDialog dialog =
-                new CalendarNameConflictDialog(conflict);
+            CalendarNameConflictDialog dialog = new CalendarNameConflictDialog(conflict);
             dialog.RequestedThemeVariant = theme;
             dialog.Show();
             Dispatcher.UIThread.RunJobs();
 
             try
             {
-                TextBlock currentNameDescription =
-                    findRequiredControl<TextBlock>(
-                        dialog,
-                        "CurrentNameDescription");
-                TextBlock availableNameDescription =
-                    findRequiredControl<TextBlock>(
-                        dialog,
-                        "AvailableNameDescription");
-                Button createButton = findRequiredControl<Button>(
-                    dialog,
-                    "CreateButton");
+                TextBlock currentNameDescription = findRequiredControl<TextBlock>(dialog, "CurrentNameDescription");
+                TextBlock availableNameDescription = findRequiredControl<TextBlock>(dialog, "AvailableNameDescription");
+                Button createButton = findRequiredControl<Button>(dialog, "CreateButton");
 
                 Assert.True(dialog.ClientSize.Width <= 460.0);
                 Assert.True(
@@ -161,8 +152,7 @@ public sealed class CalendarNameConflictDialogTests
 
         try
         {
-            Task<ECalendarNameConflictResolution> resultTask =
-                dialog.ShowDialog<ECalendarNameConflictResolution>(owner);
+            Task<ECalendarNameConflictResolution> resultTask = dialog.ShowDialog<ECalendarNameConflictResolution>(owner);
             Dispatcher.UIThread.RunJobs();
             KeyEventArgs escapeEvent = new KeyEventArgs
             {

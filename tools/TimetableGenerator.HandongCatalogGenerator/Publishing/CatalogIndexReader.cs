@@ -75,9 +75,7 @@ internal static class CatalogIndexReader
         requireString(institutionName, "en", CatalogFileLayout.INSTITUTION_NAME_EN);
 
         JsonElement termElement = element.GetProperty("term");
-        AcademicTerm term = new AcademicTerm(
-            new AcademicYear(getRequiredInt32(termElement, "academicYear")),
-            new AcademicSemester(getRequiredInt32(termElement, "semester")));
+        AcademicTerm term = new AcademicTerm(new AcademicYear(getRequiredInt32(termElement, "academicYear")), new AcademicSemester(getRequiredInt32(termElement, "semester")));
         requireString(termElement, "id", term.Id);
 
         CatalogRevision revision = new CatalogRevision(getRequiredInt32(element, "revision"));

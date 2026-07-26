@@ -36,23 +36,12 @@ internal sealed partial class ScheduleBoardView
         }
 
         scheduleCard.Flyout = createPersonalScheduleEntryFlyout(scheduleCard, entry);
-        AutomationProperties.SetAutomationId(
-            scheduleCard,
-            "PersonalScheduleCard:"
-            + entry.ScheduleId
-            + ":"
-            + entry.Day
-            + ":"
-            + entry.TimeRange.Start);
+        AutomationProperties.SetAutomationId(scheduleCard, "PersonalScheduleCard:" + entry.ScheduleId + ":" + entry.Day + ":" + entry.TimeRange.Start);
 
         string accessibleName = createPersonalScheduleAccessibleName(entry);
         AutomationProperties.SetName(scheduleCard, accessibleName);
         AutomationProperties.SetHelpText(scheduleCard, "선택하면 개인 일정의 시간과 세부 정보를 엽니다.");
-        ToolTip.SetTip(
-            scheduleCard,
-            entry.Title
-                + Environment.NewLine
-                + "선택하여 개인 일정 상세 정보 보기");
+        ToolTip.SetTip(scheduleCard, entry.Title + Environment.NewLine + "선택하여 개인 일정 상세 정보 보기");
         ToolTip.SetShowDelay(scheduleCard, 650);
     }
 
@@ -61,10 +50,7 @@ internal sealed partial class ScheduleBoardView
         List<string> details = new List<string>();
         details.Add("개인 일정");
         details.Add(entry.Title);
-        details.Add(
-            ScheduleBoardDayRange.FindFullDayDisplayName(entry.Day)
-            + " "
-            + entry.TimeRange);
+        details.Add(ScheduleBoardDayRange.FindFullDayDisplayName(entry.Day) + " " + entry.TimeRange);
         if (entry.HasSection)
         {
             details.Add("분반 " + entry.SectionDisplayText);
@@ -90,11 +76,7 @@ internal sealed partial class ScheduleBoardView
         details.Children.Add(heading);
         details.Children.Add(createFlyoutTitle(entry.Title));
         details.Children.Add(createFlyoutSeparator());
-        details.Children.Add(createDetailRow(
-            "시간",
-            ScheduleBoardDayRange.CreateFullDayTimeDisplayText(
-                entry.Day,
-                entry.TimeRange)));
+        details.Children.Add(createDetailRow("시간", ScheduleBoardDayRange.CreateFullDayTimeDisplayText(entry.Day, entry.TimeRange)));
         if (entry.HasSection)
         {
             details.Children.Add(createDetailRow("분반", entry.SectionDisplayText));

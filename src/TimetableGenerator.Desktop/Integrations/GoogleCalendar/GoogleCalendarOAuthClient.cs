@@ -81,8 +81,7 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
             exception is HttpRequestException
             || exception is IOException)
         {
-            Trace.TraceError(
-                $"Google Calendar authorization transport failed.{Environment.NewLine}{exception}");
+            Trace.TraceError($"Google Calendar authorization transport failed.{Environment.NewLine}{exception}");
 
             return GoogleOAuthAuthorizationResult.Fail(
                 EGoogleOAuthAuthorizationStatus.NetworkFailed,
@@ -93,8 +92,7 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
             || exception is PlatformNotSupportedException
             || exception is InvalidOperationException)
         {
-            Trace.TraceError(
-                $"Google Calendar authorization infrastructure failed.{Environment.NewLine}{exception}");
+            Trace.TraceError($"Google Calendar authorization infrastructure failed.{Environment.NewLine}{exception}");
 
             return GoogleOAuthAuthorizationResult.Fail(
                 EGoogleOAuthAuthorizationStatus.Failed,
@@ -110,12 +108,7 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
         GooglePkceCodeVerifier codeVerifier = new GooglePkceCodeVerifier(createRandomBase64UrlValue(64));
         byte[] challengeDigest = SHA256.HashData(Encoding.ASCII.GetBytes(codeVerifier.Value));
         GooglePkceCodeChallenge codeChallenge = new GooglePkceCodeChallenge(encodeBase64Url(challengeDigest));
-        GoogleOAuthAuthorizationCodeResult codeResult =
-            await mAuthorizationCodeProvider.RequestCodeAsync(
-                configuration.ClientId,
-                state,
-                codeChallenge,
-                cancellationToken).ConfigureAwait(false);
+        GoogleOAuthAuthorizationCodeResult codeResult = await mAuthorizationCodeProvider.RequestCodeAsync(configuration.ClientId, state, codeChallenge, cancellationToken).ConfigureAwait(false);
         if (codeResult.Status != EGoogleOAuthAuthorizationStatus.Completed)
         {
             return GoogleOAuthAuthorizationResult.Fail(codeResult.Status, codeResult.DiagnosticCodeOrNull);

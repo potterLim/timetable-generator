@@ -85,9 +85,7 @@ public sealed class CourseChoiceRecommendationTests
             EDay.Tuesday,
             EDay.Wednesday,
         };
-        for (int courseIndex = 0;
-            courseIndex < courseCodes.Length;
-            ++courseIndex)
+        for (int courseIndex = 0; courseIndex < courseCodes.Length; ++courseIndex)
         {
             string courseCode = courseCodes[courseIndex];
             CatalogCourse course = ScheduleRecommendationTestData.CreateCourse(courseCode);

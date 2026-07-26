@@ -115,17 +115,11 @@ internal sealed class PlanCatalogValidator
                 {
                     if (catalogOfferingOrNull.MeetingSchedule.IsScheduled)
                     {
-                        validatedCandidates.Add(new ValidatedOfferingCandidate(
-                            new ScheduledOffering(catalogOfferingOrNull),
-                            offeringCandidate.Preference));
+                        validatedCandidates.Add(new ValidatedOfferingCandidate(new ScheduledOffering(catalogOfferingOrNull), offeringCandidate.Preference));
                     }
                     else
                     {
-                        validatedCandidates.Add(new ValidatedOfferingCandidate(
-                            new UnscheduledOfferingSelection(
-                                courseCandidate.CourseId,
-                                offeringCandidate.OfferingId),
-                            offeringCandidate.Preference));
+                        validatedCandidates.Add(new ValidatedOfferingCandidate(new UnscheduledOfferingSelection(courseCandidate.CourseId, offeringCandidate.OfferingId), offeringCandidate.Preference));
                     }
                 }
             }

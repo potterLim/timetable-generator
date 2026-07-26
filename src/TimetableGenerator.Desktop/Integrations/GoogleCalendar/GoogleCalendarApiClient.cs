@@ -41,10 +41,7 @@ internal sealed class GoogleCalendarApiClient
         CancellationToken cancellationToken)
     {
         List<GoogleCalendarDescriptor> calendars = new List<GoogleCalendarDescriptor>();
-        GoogleCalendarPaginationGuard paginationGuard =
-            new GoogleCalendarPaginationGuard(
-                MAXIMUM_CALENDAR_LIST_PAGE_COUNT,
-                "calendar_list_invalid_pagination");
+        GoogleCalendarPaginationGuard paginationGuard = new GoogleCalendarPaginationGuard(MAXIMUM_CALENDAR_LIST_PAGE_COUNT, "calendar_list_invalid_pagination");
         string? pageTokenOrNull = null;
         do
         {
@@ -86,10 +83,7 @@ internal sealed class GoogleCalendarApiClient
                                 string? idOrNull = getStringOrNull(item, "id");
                                 string? summaryOverrideOrNull = getStringOrNull(item, "summaryOverride");
                                 string? summaryOrNull = getStringOrNull(item, "summary");
-                                string? displayNameOrNull =
-                                    string.IsNullOrWhiteSpace(summaryOverrideOrNull)
-                                        ? summaryOrNull
-                                        : summaryOverrideOrNull;
+                                string? displayNameOrNull = string.IsNullOrWhiteSpace(summaryOverrideOrNull) ? summaryOrNull : summaryOverrideOrNull;
                                 if (string.IsNullOrWhiteSpace(idOrNull) || string.IsNullOrWhiteSpace(displayNameOrNull))
                                 {
                                     continue;
@@ -258,10 +252,7 @@ internal sealed class GoogleCalendarApiClient
         CancellationToken cancellationToken)
     {
         HashSet<GoogleCalendarEventId> eventIds = new HashSet<GoogleCalendarEventId>();
-        GoogleCalendarPaginationGuard paginationGuard =
-            new GoogleCalendarPaginationGuard(
-                MAXIMUM_EVENT_LIST_PAGE_COUNT,
-                "event_list_invalid_pagination");
+        GoogleCalendarPaginationGuard paginationGuard = new GoogleCalendarPaginationGuard(MAXIMUM_EVENT_LIST_PAGE_COUNT, "event_list_invalid_pagination");
         string? pageTokenOrNull = null;
         do
         {

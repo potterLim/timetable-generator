@@ -22,9 +22,7 @@ internal static class CatalogPackageWriter
 
         string catalogPath = CatalogFileLayout.GetCatalogPath(outputRootPath, term, revision);
         string indexPath = CatalogFileLayout.GetIndexPath(outputRootPath);
-        IReadOnlyList<CatalogIndexEntry> existingEntries = await readExistingEntriesAsync(
-            indexPath,
-            cancellationToken).ConfigureAwait(false);
+        IReadOnlyList<CatalogIndexEntry> existingEntries = await readExistingEntriesAsync(indexPath, cancellationToken).ConfigureAwait(false);
 
         await ensureImmutableCatalogAsync(
             catalogPath,
@@ -40,9 +38,7 @@ internal static class CatalogPackageWriter
             catalogSha256,
             catalog.CourseCount,
             catalog.OfferingCount);
-        CatalogIndexDocument indexDocument = CatalogIndexDocument.CreateWithUpsertedEntry(
-            currentEntry,
-            existingEntries);
+        CatalogIndexDocument indexDocument = CatalogIndexDocument.CreateWithUpsertedEntry(currentEntry, existingEntries);
         byte[] indexContent = CatalogIndexJsonWriter.Write(indexDocument);
         await AtomicFileWriter.WriteAsync(
             indexPath,
@@ -67,9 +63,7 @@ internal static class CatalogPackageWriter
             return Array.Empty<CatalogIndexEntry>();
         }
 
-        byte[] existingContent = await File.ReadAllBytesAsync(
-            indexPath,
-            cancellationToken).ConfigureAwait(false);
+        byte[] existingContent = await File.ReadAllBytesAsync(indexPath, cancellationToken).ConfigureAwait(false);
         CatalogIndexDocument existingDocument = CatalogIndexReader.Read(existingContent);
 
         return existingDocument.Entries;
@@ -111,9 +105,7 @@ internal static class CatalogPackageWriter
         ReadOnlyMemory<byte> expectedContent,
         CancellationToken cancellationToken)
     {
-        byte[] existingContent = await File.ReadAllBytesAsync(
-            catalogPath,
-            cancellationToken).ConfigureAwait(false);
+        byte[] existingContent = await File.ReadAllBytesAsync(catalogPath, cancellationToken).ConfigureAwait(false);
         if (expectedContent.Span.SequenceEqual(existingContent) == false)
         {
             throw new CatalogOutputConflictException(catalogPath);

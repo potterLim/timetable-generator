@@ -77,10 +77,7 @@ public sealed class CatalogCacheFileStoreTests
         {
             CatalogCacheFileStore store = createStore(testDirectoryPath);
             VerifiedCatalogPackage boundPackage = CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithKoreanName("계획에 연결된 자료구조");
-            VerifiedCatalogPackage latestPackage =
-                CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithRevision(
-                    new CatalogRevision(2),
-                    "새 개설 자료구조");
+            VerifiedCatalogPackage latestPackage = CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithRevision(new CatalogRevision(2), "새 개설 자료구조");
             await store.SaveAsync(boundPackage, CancellationToken.None);
             await store.SaveAsync(latestPackage, CancellationToken.None);
             PlanCatalogBinding catalogBinding = createBinding(boundPackage);
@@ -178,10 +175,7 @@ public sealed class CatalogCacheFileStoreTests
         {
             CatalogCacheFileStore store = createStore(testDirectoryPath);
             VerifiedCatalogPackage boundPackage = CatalogSynchronizationTestDocuments.CreateVerifiedPackage();
-            VerifiedCatalogPackage corruptPackage =
-                CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithRevision(
-                    new CatalogRevision(2),
-                    "손상될 자료구조");
+            VerifiedCatalogPackage corruptPackage = CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithRevision(new CatalogRevision(2), "손상될 자료구조");
             await store.SaveAsync(boundPackage, CancellationToken.None);
             await store.SaveAsync(corruptPackage, CancellationToken.None);
             await File.WriteAllBytesAsync(
@@ -210,10 +204,7 @@ public sealed class CatalogCacheFileStoreTests
         {
             CatalogCacheFileStore store = createStore(testDirectoryPath);
             VerifiedCatalogPackage previousPackage = CatalogSynchronizationTestDocuments.CreateVerifiedPackage();
-            VerifiedCatalogPackage latestPackage =
-                CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithRevision(
-                    new CatalogRevision(2),
-                    "최신 자료구조");
+            VerifiedCatalogPackage latestPackage = CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithRevision(new CatalogRevision(2), "최신 자료구조");
             await store.SaveAsync(previousPackage, CancellationToken.None);
             await store.SaveAsync(latestPackage, CancellationToken.None);
             await writeSchemaVersionAsync(getGenerationPath(testDirectoryPath, 1L), 2);
@@ -394,9 +385,7 @@ public sealed class CatalogCacheFileStoreTests
             CatalogCacheFileStore store = createStore(testDirectoryPath);
             for (int saveCount = 0; saveCount < 7; ++saveCount)
             {
-                VerifiedCatalogPackage package =
-                    CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithKoreanName(
-                        "자료구조 " + saveCount);
+                VerifiedCatalogPackage package = CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithKoreanName("자료구조 " + saveCount);
                 await store.SaveAsync(package, CancellationToken.None);
             }
 
@@ -425,10 +414,7 @@ public sealed class CatalogCacheFileStoreTests
             await store.SaveAsync(protectedPackage, CancellationToken.None);
             for (int revisionValue = 2; revisionValue <= 7; ++revisionValue)
             {
-                VerifiedCatalogPackage stagedPackage =
-                    CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithRevision(
-                        new CatalogRevision(revisionValue),
-                        "새 자료구조 " + revisionValue);
+                VerifiedCatalogPackage stagedPackage = CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithRevision(new CatalogRevision(revisionValue), "새 자료구조 " + revisionValue);
                 await store.SaveRetainingAsync(stagedPackage, protectedBinding, CancellationToken.None);
             }
 

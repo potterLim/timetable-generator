@@ -33,10 +33,7 @@ internal sealed partial class ScheduleWorkspaceView
                 try
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    ECalendarNameConflictResolution resolution =
-                        await showCalendarNameConflictAsync(
-                            conflict,
-                            cancellationToken);
+                    ECalendarNameConflictResolution resolution = await showCalendarNameConflictAsync(conflict, cancellationToken);
                     completionSource.TrySetResult(resolution);
                 }
                 catch (OperationCanceledException)

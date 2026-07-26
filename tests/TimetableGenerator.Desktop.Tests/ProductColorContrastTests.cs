@@ -638,12 +638,7 @@ public sealed class ProductColorContrastTests
         Assert.Equal(byte.MaxValue, backgroundBrush.Color.A);
 
         ContrastRatio actualContrast = calculateContrastRatio(foregroundBrush.Color, backgroundBrush.Color);
-        string failureMessage =
-            contrastRequirement.ThemeVariant + " theme " +
-            contrastRequirement.Foreground.Value + " on " +
-            contrastRequirement.Background.Value + " has contrast " +
-            actualContrast.Value.ToString("F2") + ":1; required " +
-            contrastRequirement.Minimum.Value.ToString("F2") + ":1 or greater.";
+        string failureMessage = contrastRequirement.ThemeVariant + " theme " + contrastRequirement.Foreground.Value + " on " + contrastRequirement.Background.Value + " has contrast " + actualContrast.Value.ToString("F2") + ":1; required " + contrastRequirement.Minimum.Value.ToString("F2") + ":1 or greater.";
 
         Assert.True(actualContrast.IsAtLeast(contrastRequirement.Minimum), failureMessage);
     }
@@ -704,9 +699,7 @@ public sealed class ProductColorContrastTests
         double backgroundLuminance = calculateRelativeLuminance(backgroundColor);
         double lighterLuminance = Math.Max(foregroundLuminance, backgroundLuminance);
         double darkerLuminance = Math.Min(foregroundLuminance, backgroundLuminance);
-        double contrastValue =
-            (lighterLuminance + CONTRAST_LUMINANCE_OFFSET) /
-            (darkerLuminance + CONTRAST_LUMINANCE_OFFSET);
+        double contrastValue = (lighterLuminance + CONTRAST_LUMINANCE_OFFSET) / (darkerLuminance + CONTRAST_LUMINANCE_OFFSET);
 
         return new ContrastRatio(contrastValue);
     }
@@ -730,9 +723,7 @@ public sealed class ProductColorContrastTests
             return normalizedChannel / SRGB_LINEAR_DIVISOR;
         }
 
-        double adjustedChannel =
-            (normalizedChannel + SRGB_CURVE_OFFSET) /
-            SRGB_CURVE_DIVISOR;
+        double adjustedChannel = (normalizedChannel + SRGB_CURVE_OFFSET) / SRGB_CURVE_DIVISOR;
         return Math.Pow(adjustedChannel, SRGB_CURVE_EXPONENT);
     }
 

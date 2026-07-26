@@ -142,11 +142,7 @@ internal sealed partial class ProductShellViewModel
     {
         try
         {
-            ProductCatalogUpdateResult result =
-                await mCatalogUpdateService.CheckAndStageAsync(
-                    presentation.ActiveCatalogPackage,
-                    presentation.WorkspaceSnapshot,
-                    cancellationSource.Token).ConfigureAwait(false);
+            ProductCatalogUpdateResult result = await mCatalogUpdateService.CheckAndStageAsync(presentation.ActiveCatalogPackage, presentation.WorkspaceSnapshot, cancellationSource.Token).ConfigureAwait(false);
             if (cancellationSource.IsCancellationRequested)
             {
                 return;
@@ -167,9 +163,7 @@ internal sealed partial class ProductShellViewModel
         }
         catch (Exception exception)
         {
-            Trace.TraceWarning(
-                "The background catalog update check failed while the active cache remained available: {0}",
-                exception);
+            Trace.TraceWarning("The background catalog update check failed while the active cache remained available: {0}", exception);
         }
     }
 

@@ -120,12 +120,7 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
                 }
 
                 GoogleAccessToken accessToken = accessTokenOrNull;
-                GoogleCalendarDestination? destinationOrNull =
-                    await selectDestinationAsync(
-                    accessToken,
-                    plan,
-                    conflictResolver,
-                    linkedCancellationSource.Token).ConfigureAwait(false);
+                GoogleCalendarDestination? destinationOrNull = await selectDestinationAsync(accessToken, plan, conflictResolver, linkedCancellationSource.Token).ConfigureAwait(false);
                 if (destinationOrNull == null)
                 {
                     return GoogleCalendarExportResult.Fail(
@@ -151,12 +146,7 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
                         destination.Plan,
                         linkedCancellationSource.Token).ConfigureAwait(false);
                 }
-                GoogleCalendarReconciliationResult reconciliation =
-                    await mApiClient.ReconcileEventsAsync(
-                        accessToken,
-                        calendarId,
-                        destination.Plan,
-                        linkedCancellationSource.Token).ConfigureAwait(false);
+                GoogleCalendarReconciliationResult reconciliation = await mApiClient.ReconcileEventsAsync(accessToken, calendarId, destination.Plan, linkedCancellationSource.Token).ConfigureAwait(false);
                 return GoogleCalendarExportResult.Complete(
                     calendarId,
                     destination.Plan.CalendarName,
@@ -177,10 +167,7 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
         }
         catch (GoogleCalendarApiException exception)
         {
-            Trace.TraceError(
-                "Google Calendar export failed with diagnostic code '{0}': {1}",
-                exception.DiagnosticCode,
-                exception);
+            Trace.TraceError("Google Calendar export failed with diagnostic code '{0}': {1}", exception.DiagnosticCode, exception);
             return GoogleCalendarExportResult.Fail(
                 exception.FailureKind == EGoogleCalendarApiFailureKind.Transient
                     ? EGoogleCalendarExportStatus.NetworkFailed
@@ -252,13 +239,8 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
         ICalendarNameConflictResolver conflictResolver,
         CancellationToken cancellationToken)
     {
-        IReadOnlyList<GoogleCalendarDescriptor> calendars =
-            await mApiClient.ListCalendarsAsync(
-                accessToken,
-                cancellationToken).ConfigureAwait(false);
-        for (int attempt = 0;
-            attempt < MAXIMUM_DESTINATION_SELECTION_ATTEMPTS;
-            ++attempt)
+        IReadOnlyList<GoogleCalendarDescriptor> calendars = await mApiClient.ListCalendarsAsync(accessToken, cancellationToken).ConfigureAwait(false);
+        for (int attempt = 0; attempt < MAXIMUM_DESTINATION_SELECTION_ATTEMPTS; ++attempt)
         {
             IReadOnlyList<GoogleCalendarDescriptor> matches = findNameMatches(plan.CalendarName, calendars);
             if (matches.Count == 0)
@@ -273,23 +255,14 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
             }
 
             GoogleCalendarDescriptor? replaceableCalendarOrNull = findSoleReplaceableCalendarOrNull(matches);
-            ECalendarReplacementAvailability replacementAvailability =
-                replaceableCalendarOrNull == null
-                    ? ECalendarReplacementAvailability.Unavailable
-                    : ECalendarReplacementAvailability.Available;
-            PlanName nextAvailableName =
-                CalendarNameConflictPolicy.FindNextAvailableName(
-                    plan.CalendarName,
-                    getExistingNames(calendars));
+            ECalendarReplacementAvailability replacementAvailability = replaceableCalendarOrNull == null ? ECalendarReplacementAvailability.Unavailable : ECalendarReplacementAvailability.Available;
+            PlanName nextAvailableName = CalendarNameConflictPolicy.FindNextAvailableName(plan.CalendarName, getExistingNames(calendars));
             CalendarNameConflict conflict = new CalendarNameConflict(
                 ECalendarExportProvider.Google,
                 plan.CalendarName,
                 nextAvailableName,
                 replacementAvailability);
-            ECalendarNameConflictResolution resolution =
-                await conflictResolver.ResolveAsync(
-                    conflict,
-                    cancellationToken).ConfigureAwait(false);
+            ECalendarNameConflictResolution resolution = await conflictResolver.ResolveAsync(conflict, cancellationToken).ConfigureAwait(false);
             CalendarNameConflictPolicy.EnsureResolutionIsSupported(conflict, resolution);
 
             if (resolution == ECalendarNameConflictResolution.Cancel)
@@ -297,10 +270,7 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
                 return null;
             }
 
-            IReadOnlyList<GoogleCalendarDescriptor> currentCalendars =
-                await mApiClient.ListCalendarsAsync(
-                    accessToken,
-                    cancellationToken).ConfigureAwait(false);
+            IReadOnlyList<GoogleCalendarDescriptor> currentCalendars = await mApiClient.ListCalendarsAsync(accessToken, cancellationToken).ConfigureAwait(false);
             if (resolution == ECalendarNameConflictResolution.CreateWithAvailableName)
             {
                 if (CalendarNameConflictPolicy.IsNameInUse(
@@ -314,10 +284,7 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
                 continue;
             }
 
-            GoogleCalendarDescriptor? currentCalendarOrNull =
-                findCalendarByIdOrNull(
-                    replaceableCalendarOrNull!.CalendarId,
-                    currentCalendars);
+            GoogleCalendarDescriptor? currentCalendarOrNull = findCalendarByIdOrNull(replaceableCalendarOrNull!.CalendarId, currentCalendars);
             if (currentCalendarOrNull == null
                 || isSafeReplacementTarget(
                     currentCalendarOrNull,

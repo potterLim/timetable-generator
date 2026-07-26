@@ -7,15 +7,9 @@ internal sealed class InstructorAssignment
     private readonly InstructorDisplayText? mDisplayTextOrNull;
     private readonly AdditionalInstructorCount? mAdditionalInstructorCountOrNull;
 
-    public static InstructorAssignment Unconfirmed { get; } = new InstructorAssignment(
-        EInstructorAssignmentStatus.Unconfirmed,
-        null,
-        null);
+    public static InstructorAssignment Unconfirmed { get; } = new InstructorAssignment(EInstructorAssignmentStatus.Unconfirmed, null, null);
 
-    public static InstructorAssignment NotProvided { get; } = new InstructorAssignment(
-        EInstructorAssignmentStatus.NotProvided,
-        null,
-        null);
+    public static InstructorAssignment NotProvided { get; } = new InstructorAssignment(EInstructorAssignmentStatus.NotProvided, null, null);
 
     public EInstructorAssignmentStatus Status { get; }
 
@@ -75,8 +69,7 @@ internal sealed class InstructorAssignment
     {
         if (mDisplayTextOrNull == null)
         {
-            throw new InvalidOperationException(
-                "An unconfirmed or missing instructor assignment has no display text.");
+            throw new InvalidOperationException("An unconfirmed or missing instructor assignment has no display text.");
         }
 
         return mDisplayTextOrNull;
@@ -86,8 +79,7 @@ internal sealed class InstructorAssignment
     {
         if (mAdditionalInstructorCountOrNull.HasValue == false)
         {
-            throw new InvalidOperationException(
-                "An unconfirmed or missing instructor assignment has no instructor count.");
+            throw new InvalidOperationException("An unconfirmed or missing instructor assignment has no instructor count.");
         }
 
         return mAdditionalInstructorCountOrNull.Value;

@@ -13,21 +13,15 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
-using Avalonia.Media.Imaging;
-using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-
-using FluentIcons.Avalonia;
-using FluentIcons.Common;
 
 using TimetableGenerator.Desktop.Exporting;
 using TimetableGenerator.Desktop.Exporting.AppleCalendar;
 using TimetableGenerator.Desktop.Exporting.Calendar;
 using TimetableGenerator.Desktop.Integrations.GoogleCalendar;
 using TimetableGenerator.Desktop.Presentation;
-using TimetableGenerator.Desktop.Presentation.Icons;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Desktop.Tests.Exporting;
 using TimetableGenerator.Desktop.Views;
@@ -52,13 +46,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         await workspace.RecommendationRefreshTask;
         RecordingGoogleCalendarExporter googleExporter = createSuccessfulGoogleExporter();
         RecordingAppleCalendarExporter appleExporter = createUnavailableAppleExporter();
-        RecordingInstalledApplicationIconProvider iconProvider =
-            new RecordingInstalledApplicationIconProvider(null);
-        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
-            createServices(
-                googleExporter,
-                appleExporter),
-            iconProvider);
+        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(createServices(googleExporter, appleExporter));
         workspaceView.DataContext = workspace;
         Window window = showInWindow(workspaceView);
 
@@ -95,7 +83,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                     24.0,
                     24.0,
                     null);
-                assertAppleCalendarFallbackIconPresentation(appleAction);
+                assertAppleCalendarIconPresentation(appleAction);
                 assertExportRasterLogoPresentation(
                     googleAction,
                     "ExportGoogleCalendarLogoSlot",
@@ -109,15 +97,12 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.Equal("ExportAllPngImages", AutomationProperties.GetAutomationId(allPngAction));
             Assert.Equal("모든 가능한 시간표 PNG로 저장", allPngAction.Header);
             Assert.Equal("모든 가능한 시간표 PNG로 저장", AutomationProperties.GetName(allPngAction));
-            Assert.Equal(
-                "현재 조건으로 만든 가능한 시간표를 각각 번호가 붙은 PNG 이미지로 저장합니다.",
-                AutomationProperties.GetHelpText(allPngAction));
+            Assert.Equal("현재 조건으로 만든 가능한 시간표를 각각 번호가 붙은 PNG 이미지로 저장합니다.", AutomationProperties.GetHelpText(allPngAction));
             Assert.Equal("ExportGoogleCalendar", AutomationProperties.GetAutomationId(googleAction));
             Assert.Same(workspaceView.ExportPngCommand, pngAction.Command);
             Assert.Same(workspaceView.ExportAllPngCommand, allPngAction.Command);
             Assert.Same(workspaceView.ExportGoogleCalendarCommand, googleAction.Command);
             Assert.Equal("Google Calendar로 내보내기", AutomationProperties.GetName(googleAction));
-            assertAppleCalendarIconRequest(iconProvider);
         }
         finally
         {
@@ -133,11 +118,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         RecordingGoogleCalendarExporter googleExporter = createSuccessfulGoogleExporter();
         RecordingGoogleCalendarWebNavigator googleCalendarNavigator = new RecordingGoogleCalendarWebNavigator(true);
         RecordingAppleCalendarExporter appleExporter = createUnavailableAppleExporter();
-        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
-            createServices(
-                googleExporter,
-                appleExporter,
-                googleCalendarNavigator));
+        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(createServices(googleExporter, appleExporter, googleCalendarNavigator));
         workspaceView.DataContext = workspace;
         Window window = showInWindow(workspaceView);
 
@@ -157,18 +138,10 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.Equal(workspace.ActivePlan.PlanId, planOrNull.PlanId);
             Assert.Equal(workspace.ActivePlan.Name, planOrNull.CalendarName);
             Assert.Equal("Asia/Seoul", planOrNull.TimeZoneId.Value);
-            Assert.Equal(
-                TimeSpan.FromHours(9.0),
-                planOrNull.TimeZoneId.FindUtcOffset(
-                    planOrNull.Events[0].FirstOccurrenceDate,
-                    planOrNull.Events[0].StartTime).Value);
+            Assert.Equal(TimeSpan.FromHours(9.0), planOrNull.TimeZoneId.FindUtcOffset(planOrNull.Events[0].FirstOccurrenceDate, planOrNull.Events[0].StartTime).Value);
             Assert.NotEmpty(planOrNull.Events);
-            Assert.Contains(
-                planOrNull.Events,
-                exportEvent => exportEvent.Title == "프로그래밍 I");
-            Assert.DoesNotContain(
-                planOrNull.Events,
-                exportEvent => exportEvent.Title == "프로그래밍 I(01)");
+            Assert.Contains(planOrNull.Events, exportEvent => exportEvent.Title == "프로그래밍 I");
+            Assert.DoesNotContain(planOrNull.Events, exportEvent => exportEvent.Title == "프로그래밍 I(01)");
             TextBlock status = findRequiredTextBlock(workspaceView, "ExportStatusText");
             Assert.Equal("Google 캘린더로 내보냈습니다.", status.Text);
             Assert.Equal(1, googleCalendarNavigator.OpenAttemptCount);
@@ -185,11 +158,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         await workspace.RecommendationRefreshTask;
         RecordingGoogleCalendarWebNavigator googleCalendarNavigator = new RecordingGoogleCalendarWebNavigator(false);
-        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
-            createServices(
-                createSuccessfulGoogleExporter(),
-                createUnavailableAppleExporter(),
-                googleCalendarNavigator));
+        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(createServices(createSuccessfulGoogleExporter(), createUnavailableAppleExporter(), googleCalendarNavigator));
         workspaceView.DataContext = workspace;
         Window window = showInWindow(workspaceView);
 
@@ -227,16 +196,8 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
             await workspace.RecommendationRefreshTask;
             RecordingGoogleCalendarWebNavigator googleCalendarNavigator = new RecordingGoogleCalendarWebNavigator(true);
-            RecordingGoogleCalendarExporter googleExporter =
-                new RecordingGoogleCalendarExporter(
-                    GoogleCalendarExportResult.Fail(
-                        exportStatus,
-                        "test_export_failure"));
-            ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
-                createServices(
-                    googleExporter,
-                    createUnavailableAppleExporter(),
-                    googleCalendarNavigator));
+            RecordingGoogleCalendarExporter googleExporter = new RecordingGoogleCalendarExporter(GoogleCalendarExportResult.Fail(exportStatus, "test_export_failure"));
+            ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(createServices(googleExporter, createUnavailableAppleExporter(), googleCalendarNavigator));
             workspaceView.DataContext = workspace;
             Window window = showInWindow(workspaceView);
 
@@ -260,15 +221,8 @@ public sealed class ScheduleWorkspaceCalendarExportTests
     {
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         await workspace.RecommendationRefreshTask;
-        RecordingGoogleCalendarExporter googleExporter =
-            new RecordingGoogleCalendarExporter(
-                GoogleCalendarExportResult.Fail(
-                    EGoogleCalendarExportStatus.AuthenticationFailed,
-                    "authorization_timeout"));
-        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
-            createServices(
-                googleExporter,
-                createUnavailableAppleExporter()));
+        RecordingGoogleCalendarExporter googleExporter = new RecordingGoogleCalendarExporter(GoogleCalendarExportResult.Fail(EGoogleCalendarExportStatus.AuthenticationFailed, "authorization_timeout"));
+        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(createServices(googleExporter, createUnavailableAppleExporter()));
         workspaceView.DataContext = workspace;
         Window window = showInWindow(workspaceView);
 
@@ -293,19 +247,14 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         await workspace.RecommendationRefreshTask;
         ControlledGoogleCalendarExporter googleExporter = new ControlledGoogleCalendarExporter();
-        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
-            createServices(
-                googleExporter,
-                createUnavailableAppleExporter()),
-            TEST_EXPORT_STATUS_DURATION);
+        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(createServices(googleExporter, createUnavailableAppleExporter()), TEST_EXPORT_STATUS_DURATION);
         workspaceView.DataContext = workspace;
         Window window = showInWindow(workspaceView);
 
         try
         {
             TextBlock statusText = findRequiredTextBlock(workspaceView, "ExportStatusText");
-            List<(string? Text, AutomationLiveSetting LiveSetting)> liveRegionTransitions =
-                new List<(string? Text, AutomationLiveSetting LiveSetting)>();
+            List<(string? Text, AutomationLiveSetting LiveSetting)> liveRegionTransitions = new List<(string? Text, AutomationLiveSetting LiveSetting)>();
             statusText.PropertyChanged +=
                 (object? senderOrNull, AvaloniaPropertyChangedEventArgs eventArgs) =>
                 {
@@ -316,9 +265,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                     }
                 };
             Assert.True(string.IsNullOrEmpty(statusText.Text));
-            Assert.Equal(
-                AutomationLiveSetting.Off,
-                AutomationProperties.GetLiveSetting(statusText));
+            Assert.Equal(AutomationLiveSetting.Off, AutomationProperties.GetLiveSetting(statusText));
 
             AsyncDelegateCommand command = Assert.IsType<AsyncDelegateCommand>(workspaceView.ExportGoogleCalendarCommand);
             command.Execute(null);
@@ -329,9 +276,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.True(statusToast.IsVisible);
             Assert.False(statusToast.IsHitTestVisible);
             Assert.Equal("Google 캘린더로 내보내는 중입니다.", statusText.Text);
-            Assert.Equal(
-                AutomationLiveSetting.Polite,
-                AutomationProperties.GetLiveSetting(statusText));
+            Assert.Equal(AutomationLiveSetting.Polite, AutomationProperties.GetLiveSetting(statusText));
             Assert.Contains("information", statusToast.Classes);
             Assert.False(dismissButton.IsVisible);
 
@@ -348,9 +293,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.True(statusToast.IsVisible);
             Assert.False(statusToast.IsHitTestVisible);
             Assert.Equal("Google 캘린더로 내보냈습니다.", statusText.Text);
-            Assert.Equal(
-                AutomationLiveSetting.Polite,
-                AutomationProperties.GetLiveSetting(statusText));
+            Assert.Equal(AutomationLiveSetting.Polite, AutomationProperties.GetLiveSetting(statusText));
             Assert.Contains("success", statusToast.Classes);
             Assert.False(dismissButton.IsVisible);
 
@@ -359,9 +302,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
 
             Assert.False(statusToast.IsVisible);
             Assert.Equal(string.Empty, statusText.Text);
-            Assert.Equal(
-                AutomationLiveSetting.Off,
-                AutomationProperties.GetLiveSetting(statusText));
+            Assert.Equal(AutomationLiveSetting.Off, AutomationProperties.GetLiveSetting(statusText));
             Assert.NotEmpty(liveRegionTransitions);
             Assert.All(
                 liveRegionTransitions,
@@ -381,65 +322,43 @@ public sealed class ScheduleWorkspaceCalendarExportTests
     [AvaloniaFact]
     public async Task AppleCalendarPermissionProgressPersistsAndPreventsDuplicateExportAsync()
     {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         await workspace.RecommendationRefreshTask;
-        ControlledAppleCalendarExporter appleExporter =
-            new ControlledAppleCalendarExporter();
-        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
-            createServices(
-                createSuccessfulGoogleExporter(),
-                appleExporter),
-            TEST_EXPORT_STATUS_DURATION);
+        ControlledAppleCalendarExporter appleExporter = new ControlledAppleCalendarExporter();
+        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(createServices(createSuccessfulGoogleExporter(), appleExporter), TEST_EXPORT_STATUS_DURATION);
         workspaceView.DataContext = workspace;
         Window window = showInWindow(workspaceView);
 
         try
         {
-            AsyncDelegateCommand command =
-                Assert.IsType<AsyncDelegateCommand>(
-                    workspaceView.ExportAppleCalendarCommand);
+            AsyncDelegateCommand command = Assert.IsType<AsyncDelegateCommand>(workspaceView.ExportAppleCalendarCommand);
             command.Execute(null);
             await appleExporter.ExportStartedTask;
 
-            Button exportButton = findRequiredButton(
-                workspaceView,
-                "ExportScheduleButton");
-            Border statusToast = findRequiredControl<Border>(
-                workspaceView,
-                "ExportStatusToast");
-            TextBlock statusText = findRequiredTextBlock(
-                workspaceView,
-                "ExportStatusText");
+            Button exportButton = findRequiredButton(workspaceView, "ExportScheduleButton");
+            Border statusToast = findRequiredControl<Border>(workspaceView, "ExportStatusToast");
+            TextBlock statusText = findRequiredTextBlock(workspaceView, "ExportStatusText");
             Assert.False(exportButton.IsEnabled);
             Assert.False(command.CanExecute(null));
             Assert.True(statusToast.IsVisible);
             Assert.False(statusToast.IsHitTestVisible);
-            Assert.Equal(
-                "Apple 캘린더로 내보내는 중입니다.",
-                statusText.Text);
+            Assert.Equal("Apple 캘린더로 내보내는 중입니다.", statusText.Text);
             Assert.Contains("information", statusToast.Classes);
 
             command.Execute(null);
-            await Task.Delay(
-                TEST_EXPORT_STATUS_WAIT,
-                TestContext.Current.CancellationToken);
+            await Task.Delay(TEST_EXPORT_STATUS_WAIT, TestContext.Current.CancellationToken);
             Dispatcher.UIThread.RunJobs();
 
             Assert.Equal(1, appleExporter.ExportCallCount);
             Assert.True(statusToast.IsVisible);
-            Assert.Equal(
-                "Apple 캘린더로 내보내는 중입니다.",
-                statusText.Text);
+            Assert.Equal("Apple 캘린더로 내보내는 중입니다.", statusText.Text);
 
             appleExporter.Complete(createSuccessfulAppleResult());
             await command.ExecutionTask;
             Dispatcher.UIThread.RunJobs();
 
             Assert.True(exportButton.IsEnabled);
-            Assert.Equal(
-                "Apple 캘린더로 내보냈습니다.",
-                statusText.Text);
+            Assert.Equal("Apple 캘린더로 내보냈습니다.", statusText.Text);
             Assert.Contains("success", statusToast.Classes);
         }
         finally
@@ -458,11 +377,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             EGoogleCalendarExportStatus.NotConfigured,
             "test_not_configured");
         RecordingGoogleCalendarExporter googleExporter = new RecordingGoogleCalendarExporter(result);
-        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
-            createServices(
-                googleExporter,
-                createUnavailableAppleExporter()),
-            TEST_EXPORT_STATUS_DURATION);
+        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(createServices(googleExporter, createUnavailableAppleExporter()), TEST_EXPORT_STATUS_DURATION);
         workspaceView.DataContext = workspace;
         Window window = showInWindow(workspaceView);
 
@@ -498,16 +413,8 @@ public sealed class ScheduleWorkspaceCalendarExportTests
     {
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         await workspace.RecommendationRefreshTask;
-        QueueGoogleCalendarExporter googleExporter = new QueueGoogleCalendarExporter(
-            createSuccessfulGoogleResult(),
-            GoogleCalendarExportResult.Fail(
-                EGoogleCalendarExportStatus.NetworkFailed,
-                "test_network_failure"));
-        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
-            createServices(
-                googleExporter,
-                createUnavailableAppleExporter()),
-            TEST_EXPORT_STATUS_DURATION);
+        QueueGoogleCalendarExporter googleExporter = new QueueGoogleCalendarExporter(createSuccessfulGoogleResult(), GoogleCalendarExportResult.Fail(EGoogleCalendarExportStatus.NetworkFailed, "test_network_failure"));
+        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(createServices(googleExporter, createUnavailableAppleExporter()), TEST_EXPORT_STATUS_DURATION);
         workspaceView.DataContext = workspace;
         Window window = showInWindow(workspaceView);
 
@@ -516,9 +423,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             AsyncDelegateCommand command = Assert.IsType<AsyncDelegateCommand>(workspaceView.ExportGoogleCalendarCommand);
             command.Execute(null);
             await command.ExecutionTask;
-            Assert.Equal(
-                "Google 캘린더로 내보냈습니다.",
-                findRequiredTextBlock(workspaceView, "ExportStatusText").Text);
+            Assert.Equal("Google 캘린더로 내보냈습니다.", findRequiredTextBlock(workspaceView, "ExportStatusText").Text);
 
             command.Execute(null);
             await command.ExecutionTask;
@@ -528,9 +433,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Button dismissButton = findRequiredButton(workspaceView, "DismissExportStatusButton");
             Assert.True(statusToast.IsVisible);
             Assert.True(statusToast.IsHitTestVisible);
-            Assert.Equal(
-                "Google 캘린더에 연결하지 못했습니다. 네트워크를 확인해 주세요.",
-                statusText.Text);
+            Assert.Equal("Google 캘린더에 연결하지 못했습니다. 네트워크를 확인해 주세요.", statusText.Text);
             Assert.Contains("error", statusToast.Classes);
             Assert.True(dismissButton.IsVisible);
             Assert.Equal("내보내기 오류 닫기", AutomationProperties.GetName(dismissButton));
@@ -539,9 +442,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Dispatcher.UIThread.RunJobs();
 
             Assert.True(statusToast.IsVisible);
-            Assert.Equal(
-                "Google 캘린더에 연결하지 못했습니다. 네트워크를 확인해 주세요.",
-                statusText.Text);
+            Assert.Equal("Google 캘린더에 연결하지 못했습니다. 네트워크를 확인해 주세요.", statusText.Text);
 
             Assert.True(dismissButton.Focus());
             Assert.True(dismissButton.IsFocused);
@@ -553,10 +454,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.Equal(string.Empty, statusText.Text);
             Assert.False(dismissButton.IsVisible);
             Assert.DoesNotContain("error", statusToast.Classes);
-            Assert.True(
-                findRequiredButton(
-                    workspaceView,
-                    "ExportScheduleButton").IsFocused);
+            Assert.True(findRequiredButton(workspaceView, "ExportScheduleButton").IsFocused);
         }
         finally
         {
@@ -573,11 +471,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             EGoogleCalendarExportStatus.Failed,
             "test_export_failure");
         RecordingGoogleCalendarExporter googleExporter = new RecordingGoogleCalendarExporter(result);
-        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
-            createServices(
-                googleExporter,
-                createUnavailableAppleExporter()),
-            TEST_EXPORT_STATUS_DURATION);
+        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(createServices(googleExporter, createUnavailableAppleExporter()), TEST_EXPORT_STATUS_DURATION);
         workspaceView.DataContext = workspace;
         Window window = showInWindow(workspaceView);
 
@@ -600,18 +494,14 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Point? scheduleSurfaceOriginOrNull = scheduleSurface.TranslatePoint(new Point(0.0, 0.0), window);
             Assert.NotNull(scheduleSurfaceOriginOrNull);
             Point scheduleSurfaceOrigin = scheduleSurfaceOriginOrNull ?? default;
-            Point emptyClickPosition = new Point(
-                scheduleSurfaceOrigin.X + 8.0,
-                scheduleSurfaceOrigin.Y + scheduleSurface.Bounds.Height - 8.0);
+            Point emptyClickPosition = new Point(scheduleSurfaceOrigin.X + 8.0, scheduleSurfaceOrigin.Y + scheduleSurface.Bounds.Height - 8.0);
             window.MouseMove(emptyClickPosition, RawInputModifiers.None);
             window.MouseDown(emptyClickPosition, MouseButton.Left, RawInputModifiers.None);
             window.MouseUp(emptyClickPosition, MouseButton.Left, RawInputModifiers.None);
             Dispatcher.UIThread.RunJobs();
 
             Assert.True(statusToast.IsVisible);
-            Assert.Equal(
-                "Google 캘린더에 반영하지 못했습니다. 다시 시도해 주세요.",
-                statusText.Text);
+            Assert.Equal("Google 캘린더에 반영하지 못했습니다. 다시 시도해 주세요.", statusText.Text);
 
             workspace.ActivePlan = workspace.Plans[1];
             Dispatcher.UIThread.RunJobs();
@@ -644,15 +534,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         await workspace.RecommendationRefreshTask;
         RecordingGoogleCalendarExporter googleExporter = createSuccessfulGoogleExporter();
         RecordingAppleCalendarExporter appleExporter = createSuccessfulAppleExporter();
-        Bitmap appleCalendarIcon = createTestAppleCalendarIcon();
-        RecordingInstalledApplicationIconProvider iconProvider =
-            new RecordingInstalledApplicationIconProvider(
-                appleCalendarIcon);
-        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
-            createServices(
-                googleExporter,
-                appleExporter),
-            iconProvider);
+        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(createServices(googleExporter, appleExporter));
         workspaceView.DataContext = workspace;
         Window window = showInWindow(workspaceView);
 
@@ -695,9 +577,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                     24.0,
                     24.0,
                     null);
-                assertAppleCalendarNativeIconPresentation(
-                    appleAction,
-                    appleCalendarIcon);
+                assertAppleCalendarIconPresentation(appleAction);
                 assertExportRasterLogoPresentation(
                     googleAction,
                     "ExportGoogleCalendarLogoSlot",
@@ -707,8 +587,6 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                     0.5);
                 menu.Hide();
             }
-            assertAppleCalendarIconRequest(iconProvider);
-
             AsyncDelegateCommand command = Assert.IsType<AsyncDelegateCommand>(workspaceView.ExportAppleCalendarCommand);
             command.Execute(null);
             await command.ExecutionTask;
@@ -724,9 +602,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.Equal(workspace.ActivePlan.Name, documentOrNull.CalendarName);
             Assert.Equal("Asia/Seoul", documentOrNull.AcademicCalendar.TimeZoneId.Value);
             Assert.NotEmpty(documentOrNull.Events);
-            Assert.Contains(
-                documentOrNull.Events,
-                calendarEvent => calendarEvent.Content.Summary == "프로그래밍 I(01)");
+            Assert.Contains(documentOrNull.Events, calendarEvent => calendarEvent.Content.Summary == "프로그래밍 I(01)");
             TextBlock status = findRequiredTextBlock(workspaceView, "ExportStatusText");
             Assert.Equal("Apple 캘린더로 내보냈습니다.", status.Text);
         }
@@ -736,52 +612,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         }
     }
 
-    [AvaloniaFact]
-    public async Task AppleCalendarIconFailureKeepsTheExportActionAvailableAsync()
-    {
-        PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace();
-        await workspace.RecommendationRefreshTask;
-        RecordingInstalledApplicationIconProvider iconProvider =
-            new RecordingInstalledApplicationIconProvider(
-                null,
-                shouldThrow: true);
-        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
-            createServices(
-                createSuccessfulGoogleExporter(),
-                createSuccessfulAppleExporter()),
-            iconProvider);
-        workspaceView.DataContext = workspace;
-        Window window = showInWindow(workspaceView);
-
-        try
-        {
-            Button exportButton =
-                findRequiredButton(workspaceView, "ExportScheduleButton");
-            MenuFlyout menu = Assert.IsType<MenuFlyout>(exportButton.Flyout);
-            MenuItem appleAction =
-                findRequiredMenuItem(menu, "ExportAppleCalendarAction");
-
-            Assert.True(appleAction.IsVisible);
-            Assert.Same(
-                workspaceView.ExportAppleCalendarCommand,
-                appleAction.Command);
-            menu.ShowAt(exportButton);
-            Dispatcher.UIThread.RunJobs();
-            assertAppleCalendarFallbackIconPresentation(appleAction);
-            menu.Hide();
-            assertAppleCalendarIconRequest(iconProvider);
-        }
-        finally
-        {
-            await closeWindowAsync(window, workspaceView);
-        }
-    }
-
-    private static ScheduleExportServices createServices(
-        IGoogleCalendarExporter googleExporter,
-        IAppleCalendarExporter appleExporter,
-        RecordingGoogleCalendarWebNavigator? googleCalendarNavigatorOrNull = null)
+    private static ScheduleExportServices createServices(IGoogleCalendarExporter googleExporter, IAppleCalendarExporter appleExporter, RecordingGoogleCalendarWebNavigator? googleCalendarNavigatorOrNull = null)
     {
         RecordingGoogleCalendarWebNavigator googleCalendarNavigator;
         if (googleCalendarNavigatorOrNull == null)
@@ -798,12 +629,10 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             googleExporter,
             googleCalendarNavigator,
             appleExporter,
-            new FixedCalendarTimeZoneProvider(
-                new CalendarTimeZoneId("Asia/Seoul")));
+            new FixedCalendarTimeZoneProvider(new CalendarTimeZoneId("Asia/Seoul")));
     }
 
-    private sealed class RecordingGoogleCalendarWebNavigator
-        : IGoogleCalendarWebNavigator
+    private sealed class RecordingGoogleCalendarWebNavigator : IGoogleCalendarWebNavigator
     {
         private readonly bool mOpenResult;
 
@@ -823,28 +652,17 @@ public sealed class ScheduleWorkspaceCalendarExportTests
 
     private static RecordingAppleCalendarExporter createUnavailableAppleExporter()
     {
-        return new RecordingAppleCalendarExporter(
-            false,
-            AppleCalendarExportResult.Fail(
-                EAppleCalendarExportStatus.Unavailable,
-                "test_unavailable"));
+        return new RecordingAppleCalendarExporter(false, AppleCalendarExportResult.Fail(EAppleCalendarExportStatus.Unavailable, "test_unavailable"));
     }
 
     private static RecordingAppleCalendarExporter createSuccessfulAppleExporter()
     {
-        return new RecordingAppleCalendarExporter(
-            true,
-            createSuccessfulAppleResult());
+        return new RecordingAppleCalendarExporter(true, createSuccessfulAppleResult());
     }
 
     private static AppleCalendarExportResult createSuccessfulAppleResult()
     {
-        AppleCalendarNativeExportResult nativeResult =
-            new AppleCalendarNativeExportResult(
-                new AppleCalendarId("test-apple-calendar"),
-                new PlanName("2026-2학기 시간표"),
-                1,
-                0);
+        AppleCalendarNativeExportResult nativeResult = new AppleCalendarNativeExportResult(new AppleCalendarId("test-apple-calendar"), new PlanName("2026-2학기 시간표"), 1, 0);
         return AppleCalendarExportResult.Complete(nativeResult);
     }
 
@@ -870,27 +688,6 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         window.Show();
         Dispatcher.UIThread.RunJobs();
         return window;
-    }
-
-    private static Bitmap createTestAppleCalendarIcon()
-    {
-        return new WriteableBitmap(
-            new PixelSize(48, 48),
-            new Vector(96.0, 96.0),
-            PixelFormat.Bgra8888,
-            AlphaFormat.Premul);
-    }
-
-    private static void assertAppleCalendarIconRequest(
-        RecordingInstalledApplicationIconProvider iconProvider)
-    {
-        Assert.Equal(1, iconProvider.CallCount);
-        Assert.Equal(
-            "com.apple.iCal",
-            iconProvider.RequestedBundleIdentifierOrNull);
-        Assert.Equal(
-            new PixelSize(48, 48),
-            iconProvider.RequestedPixelSizeOrNull);
     }
 
     private static Button findRequiredButton(Control root, string controlName)
@@ -931,11 +728,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
     {
         MenuItem? menuItemOrNull = menu.Items
             .OfType<MenuItem>()
-            .SingleOrDefault(
-                menuItem => string.Equals(
-                    menuItem.Name,
-                    controlName,
-                    StringComparison.Ordinal));
+            .SingleOrDefault(menuItem => string.Equals(menuItem.Name, controlName, StringComparison.Ordinal));
         if (menuItemOrNull == null)
         {
             throw new InvalidOperationException("The export menu action was not found: " + controlName);
@@ -1001,8 +794,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         return logoSlot;
     }
 
-    private static void assertAppleCalendarFallbackIconPresentation(
-        MenuItem menuItem)
+    private static void assertAppleCalendarIconPresentation(MenuItem menuItem)
     {
         Assert.Contains("export-menu-item", menuItem.Classes);
         if (menuItem.IsVisible)
@@ -1011,79 +803,30 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         }
 
         Grid logoSlot = Assert.IsType<Grid>(menuItem.Icon);
-        Assert.Equal("ExportAppleCalendarLogoSlot", logoSlot.Name);
+        Assert.Equal("ExportAppleCalendarIconSlot", logoSlot.Name);
         Assert.Equal(24.0, logoSlot.Width);
         Assert.Equal(24.0, logoSlot.Height);
         Assert.Equal(HorizontalAlignment.Center, logoSlot.HorizontalAlignment);
         Assert.Equal(VerticalAlignment.Center, logoSlot.VerticalAlignment);
         Assert.Contains("export-menu-logo-slot", logoSlot.Classes);
 
-        Image? logoImageOrNull =
-            logoSlot.FindControl<Image>("ExportAppleCalendarLogoImage");
-        FluentIcon? fallbackIconOrNull =
-            logoSlot.FindControl<FluentIcon>("ExportAppleCalendarFallbackIcon");
-        Assert.NotNull(logoImageOrNull);
-        Assert.NotNull(fallbackIconOrNull);
-        if (logoImageOrNull == null || fallbackIconOrNull == null)
+        Image? iconImageOrNull = logoSlot.FindControl<Image>("ExportAppleCalendarIconImage");
+        Assert.NotNull(iconImageOrNull);
+        if (iconImageOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The Apple Calendar icon presentation was incomplete.");
+            throw new InvalidOperationException("The Apple Calendar icon image was not found.");
         }
 
-        Assert.Null(logoImageOrNull.Source);
-        Assert.False(logoImageOrNull.IsVisible);
-        Assert.True(fallbackIconOrNull.IsVisible);
-        Assert.Equal(Icon.CalendarMonth, fallbackIconOrNull.Icon);
-        Assert.Equal(IconVariant.Regular, fallbackIconOrNull.IconVariant);
-        Assert.Equal(IconSize.Size20, fallbackIconOrNull.IconSize);
-        Assert.Equal(20.0, fallbackIconOrNull.FontSize);
-        Assert.Equal(20.0, fallbackIconOrNull.Width);
-        Assert.Equal(20.0, fallbackIconOrNull.Height);
-        Assert.Contains("export-menu-icon", fallbackIconOrNull.Classes);
-        Assert.Equal(2, logoSlot.Children.Count);
-    }
-
-    private static void assertAppleCalendarNativeIconPresentation(
-        MenuItem menuItem,
-        Bitmap expectedIcon)
-    {
-        assertExportMenuItemPresentation(menuItem);
-        Grid logoSlot = Assert.IsType<Grid>(menuItem.Icon);
-        Assert.Equal("ExportAppleCalendarLogoSlot", logoSlot.Name);
-        Assert.Equal(24.0, logoSlot.Width);
-        Assert.Equal(24.0, logoSlot.Height);
-        Assert.Equal(HorizontalAlignment.Center, logoSlot.HorizontalAlignment);
-        Assert.Equal(VerticalAlignment.Center, logoSlot.VerticalAlignment);
-        Assert.Contains("export-menu-logo-slot", logoSlot.Classes);
-
-        Image? logoImageOrNull =
-            logoSlot.FindControl<Image>("ExportAppleCalendarLogoImage");
-        FluentIcon? fallbackIconOrNull =
-            logoSlot.FindControl<FluentIcon>(
-                "ExportAppleCalendarFallbackIcon");
-        Assert.NotNull(logoImageOrNull);
-        Assert.NotNull(fallbackIconOrNull);
-        if (logoImageOrNull == null || fallbackIconOrNull == null)
-        {
-            throw new InvalidOperationException(
-                "The Apple Calendar icon presentation was incomplete.");
-        }
-
-        Assert.Same(expectedIcon, logoImageOrNull.Source);
-        Assert.True(logoImageOrNull.IsVisible);
-        Assert.False(fallbackIconOrNull.IsVisible);
-        Assert.Equal(24.0, logoImageOrNull.Width);
-        Assert.Equal(24.0, logoImageOrNull.Height);
-        Assert.Equal(Stretch.Uniform, logoImageOrNull.Stretch);
-        Assert.Equal(
-            HorizontalAlignment.Center,
-            logoImageOrNull.HorizontalAlignment);
-        Assert.Equal(
-            VerticalAlignment.Center,
-            logoImageOrNull.VerticalAlignment);
-        Assert.Contains("export-menu-logo", logoImageOrNull.Classes);
-        Assert.Null(logoImageOrNull.RenderTransform);
-        Assert.Equal(2, logoSlot.Children.Count);
+        Assert.NotNull(iconImageOrNull.Source);
+        Assert.True(iconImageOrNull.IsVisible);
+        Assert.Equal(24.0, iconImageOrNull.Width);
+        Assert.Equal(24.0, iconImageOrNull.Height);
+        Assert.Equal(Stretch.Uniform, iconImageOrNull.Stretch);
+        Assert.Equal(HorizontalAlignment.Center, iconImageOrNull.HorizontalAlignment);
+        Assert.Equal(VerticalAlignment.Center, iconImageOrNull.VerticalAlignment);
+        Assert.Contains("export-menu-logo", iconImageOrNull.Classes);
+        Assert.Null(iconImageOrNull.RenderTransform);
+        Assert.Same(iconImageOrNull, Assert.Single(logoSlot.Children));
     }
 
     private static void assertExportMenuItemPresentation(MenuItem menuItem)
@@ -1153,44 +896,6 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         };
     }
 
-    private sealed class RecordingInstalledApplicationIconProvider
-        : IInstalledApplicationIconProvider
-    {
-        private readonly Bitmap? mIconOrNull;
-
-        private readonly bool mShouldThrow;
-
-        public int CallCount { get; private set; }
-
-        public string? RequestedBundleIdentifierOrNull { get; private set; }
-
-        public PixelSize? RequestedPixelSizeOrNull { get; private set; }
-
-        public RecordingInstalledApplicationIconProvider(
-            Bitmap? iconOrNull,
-            bool shouldThrow = false)
-        {
-            mIconOrNull = iconOrNull;
-            mShouldThrow = shouldThrow;
-        }
-
-        public Bitmap? TryLoad(
-            string bundleIdentifier,
-            PixelSize pixelSize)
-        {
-            CallCount++;
-            RequestedBundleIdentifierOrNull = bundleIdentifier;
-            RequestedPixelSizeOrNull = pixelSize;
-            if (mShouldThrow)
-            {
-                throw new InvalidOperationException(
-                    "Controlled installed application icon failure.");
-            }
-
-            return mIconOrNull;
-        }
-    }
-
     private sealed class ControlledGoogleCalendarExporter : IGoogleCalendarExporter
     {
         private readonly TaskCompletionSource mExportStartedSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -1236,17 +941,11 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         }
     }
 
-    private sealed class ControlledAppleCalendarExporter
-        : IAppleCalendarExporter
+    private sealed class ControlledAppleCalendarExporter : IAppleCalendarExporter
     {
-        private readonly TaskCompletionSource mExportStartedSource =
-            new TaskCompletionSource(
-                TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource mExportStartedSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        private readonly TaskCompletionSource<AppleCalendarExportResult>
-            mCompletionSource =
-                new TaskCompletionSource<AppleCalendarExportResult>(
-                    TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource<AppleCalendarExportResult> mCompletionSource = new TaskCompletionSource<AppleCalendarExportResult>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public bool IsAvailable
         {
@@ -1276,8 +975,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             cancellationToken.ThrowIfCancellationRequested();
             ExportCallCount++;
             mExportStartedSource.TrySetResult();
-            return await mCompletionSource.Task.WaitAsync(
-                cancellationToken);
+            return await mCompletionSource.Task.WaitAsync(cancellationToken);
         }
 
         public void Complete(AppleCalendarExportResult result)
@@ -1285,8 +983,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             ArgumentNullException.ThrowIfNull(result);
             if (mCompletionSource.TrySetResult(result) == false)
             {
-                throw new InvalidOperationException(
-                    "The controlled export already completed.");
+                throw new InvalidOperationException("The controlled export already completed.");
             }
         }
 

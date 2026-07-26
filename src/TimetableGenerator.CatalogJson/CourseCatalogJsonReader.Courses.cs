@@ -55,10 +55,7 @@ public static partial class CourseCatalogJsonReader
         CourseId courseId = new CourseId(courseObject.GetString("courseId"));
         CourseCode courseCode = new CourseCode(courseObject.GetString("code"));
         string expectedCourseId = CatalogJsonValueParser.BuildCourseId(institutionId, courseCode);
-        CatalogJsonValueParser.RequireExactString(
-            courseId.Value,
-            expectedCourseId,
-            courseObject.GetPropertyPath("courseId"));
+        CatalogJsonValueParser.RequireExactString(courseId.Value, expectedCourseId, courseObject.GetPropertyPath("courseId"));
         KoreanCourseName koreanName = new KoreanCourseName(nameObject.GetString("ko"));
         EnglishCourseName englishName = new EnglishCourseName(nameObject.GetString("en"));
         CourseCredits credits = new CourseCredits(courseObject.GetDecimal("credits"));

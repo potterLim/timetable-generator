@@ -152,17 +152,13 @@ internal sealed partial class MainWindow : Window
             mIsShutdownStarted = false;
             mShouldExitApplicationAfterClose = false;
             mProductShellViewModel.showShutdownFailure(exception);
-            Trace.TraceError(
-                "The product window remained open because autosave completion failed: {0}",
-                exception);
+            Trace.TraceError("The product window remained open because autosave completion failed: {0}", exception);
         }
     }
 
     private static void requestExplicitApplicationShutdown()
     {
-        IClassicDesktopStyleApplicationLifetime? desktopLifetimeOrNull =
-            Avalonia.Application.Current?.ApplicationLifetime
-                as IClassicDesktopStyleApplicationLifetime;
+        IClassicDesktopStyleApplicationLifetime? desktopLifetimeOrNull = Avalonia.Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
         if (desktopLifetimeOrNull == null
             || desktopLifetimeOrNull.ShutdownMode != ShutdownMode.OnExplicitShutdown)
         {

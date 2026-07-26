@@ -35,10 +35,7 @@ public sealed class ProductCatalogUpdateServiceTests
                 workspace,
                 CancellationToken.None);
             CatalogCacheLoadResult latestLoad = await context.CatalogCacheStore.LoadAsync(CancellationToken.None);
-            CatalogCacheLoadResult protectedLoad =
-                await context.CatalogCacheStore.LoadMatchingAsync(
-                    workspace.Plans[0].CatalogBinding,
-                    CancellationToken.None);
+            CatalogCacheLoadResult protectedLoad = await context.CatalogCacheStore.LoadMatchingAsync(workspace.Plans[0].CatalogBinding, CancellationToken.None);
 
             Assert.Equal(EProductCatalogUpdateStatus.Staged, result.Status);
             Assert.Equal(candidateRevision, result.CandidateRevision);

@@ -246,10 +246,7 @@ internal sealed partial class ProductTimePicker : UserControl
     private static IReadOnlyList<TimePickerHourOption> createHourOptions()
     {
         List<TimePickerHourOption> options = new List<TimePickerHourOption>();
-        for (
-            int hour = TimePickerHourOption.MINIMUM_VALUE;
-            hour <= TimePickerHourOption.MAXIMUM_VALUE;
-            ++hour)
+        for (int hour = TimePickerHourOption.MINIMUM_VALUE; hour <= TimePickerHourOption.MAXIMUM_VALUE; ++hour)
         {
             options.Add(new TimePickerHourOption(hour));
         }
@@ -260,10 +257,7 @@ internal sealed partial class ProductTimePicker : UserControl
     private static IReadOnlyList<TimePickerMinuteOption> createMinuteOptions()
     {
         List<TimePickerMinuteOption> options = new List<TimePickerMinuteOption>();
-        for (
-            int minute = 0;
-            minute < TimePickerMinuteOption.MINUTES_PER_HOUR;
-            minute += TimePickerMinuteOption.MINUTE_INCREMENT_MINUTES)
+        for (int minute = 0; minute < TimePickerMinuteOption.MINUTES_PER_HOUR; minute += TimePickerMinuteOption.MINUTE_INCREMENT_MINUTES)
         {
             options.Add(new TimePickerMinuteOption(minute));
         }

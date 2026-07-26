@@ -6,8 +6,7 @@ namespace TimetableGenerator.Desktop.Exporting.AppleCalendar;
 
 internal static class AppleCalendarEventOwnershipMarker
 {
-    public const string PREFIX =
-        "timetable-generator://managed-event/v1/";
+    public const string PREFIX = "timetable-generator://managed-event/v1/";
 
     private const int SHA256_HEX_LENGTH = 64;
 

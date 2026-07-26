@@ -41,9 +41,7 @@ internal sealed partial class CalendarNameConflictDialog : Window
             "CurrentNameDescription");
         TextBlock availableNameDescription = findRequiredControl<TextBlock>(
             "AvailableNameDescription");
-        TextBlock replacementUnavailableDescription =
-            findRequiredControl<TextBlock>(
-                "ReplacementUnavailableDescription");
+        TextBlock replacementUnavailableDescription = findRequiredControl<TextBlock>("ReplacementUnavailableDescription");
         Button replaceButton = findRequiredControl<Button>("ReplaceButton");
         currentNameDescription.Text = "현재 이름: \""
             + conflict.RequestedName.Value

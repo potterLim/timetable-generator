@@ -153,10 +153,7 @@ public sealed partial class PlanningWorkspaceEditor
                 continue;
             }
 
-            courseChoiceGroups.Add(new CourseChoiceGroup(
-                courseChoiceGroup.Id,
-                courseChoiceGroup.Cardinality,
-                remainingCandidates));
+            courseChoiceGroups.Add(new CourseChoiceGroup(courseChoiceGroup.Id, courseChoiceGroup.Cardinality, remainingCandidates));
         }
 
         return courseChoiceGroups;

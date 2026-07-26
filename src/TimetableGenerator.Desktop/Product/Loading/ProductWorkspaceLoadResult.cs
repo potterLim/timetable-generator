@@ -7,11 +7,7 @@ namespace TimetableGenerator.Desktop.Product.Loading;
 
 internal sealed class ProductWorkspaceLoadResult
 {
-    private const EProductWorkspaceRecoveryFlags ALL_RECOVERY_FLAGS =
-        EProductWorkspaceRecoveryFlags.CatalogPreviousGeneration
-        | EProductWorkspaceRecoveryFlags.WorkspacePreviousGeneration
-        | EProductWorkspaceRecoveryFlags.WorkspaceCatalogRebound
-        | EProductWorkspaceRecoveryFlags.WorkspaceCreated;
+    private const EProductWorkspaceRecoveryFlags ALL_RECOVERY_FLAGS = EProductWorkspaceRecoveryFlags.CatalogPreviousGeneration | EProductWorkspaceRecoveryFlags.WorkspacePreviousGeneration | EProductWorkspaceRecoveryFlags.WorkspaceCatalogRebound | EProductWorkspaceRecoveryFlags.WorkspaceCreated;
 
     public VerifiedCatalogPackage CatalogPackage { get; }
 

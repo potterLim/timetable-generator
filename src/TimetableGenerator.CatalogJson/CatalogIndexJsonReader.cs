@@ -55,13 +55,8 @@ public static class CatalogIndexJsonReader
                 "defaultCatalogId",
                 "catalogs",
             });
-        CatalogJsonValueParser.RequireExactString(
-            rootObject.GetString("documentType"),
-            CatalogJsonSchema.INDEX_DOCUMENT_TYPE,
-            rootObject.GetPropertyPath("documentType"));
-        CatalogJsonValueParser.RequireSchemaVersion(
-            rootObject.GetInt32("schemaVersion"),
-            rootObject.GetPropertyPath("schemaVersion"));
+        CatalogJsonValueParser.RequireExactString(rootObject.GetString("documentType"), CatalogJsonSchema.INDEX_DOCUMENT_TYPE, rootObject.GetPropertyPath("documentType"));
+        CatalogJsonValueParser.RequireSchemaVersion(rootObject.GetInt32("schemaVersion"), rootObject.GetPropertyPath("schemaVersion"));
 
         CatalogId defaultCatalogId = new CatalogId(rootObject.GetString("defaultCatalogId"));
         JsonElement catalogsElement = rootObject.GetArray("catalogs");
@@ -98,9 +93,7 @@ public static class CatalogIndexJsonReader
                 "counts",
             });
         CatalogId catalogId = new CatalogId(entryObject.GetString("catalogId"));
-        CatalogJsonValueParser.RequireSchemaVersion(
-            entryObject.GetInt32("catalogSchemaVersion"),
-            entryObject.GetPropertyPath("catalogSchemaVersion"));
+        CatalogJsonValueParser.RequireSchemaVersion(entryObject.GetInt32("catalogSchemaVersion"), entryObject.GetPropertyPath("catalogSchemaVersion"));
         InstitutionMetadata institution = CatalogJsonValueParser.ParseInstitution(
             entryObject.GetElement("institution"),
             entryObject.GetPropertyPath("institution"));
@@ -116,18 +109,12 @@ public static class CatalogIndexJsonReader
             entryObject.GetPropertyPath("counts"));
 
         string expectedCatalogId = CatalogJsonValueParser.BuildCatalogId(institution.Id, term, revision);
-        CatalogJsonValueParser.RequireExactString(
-            catalogId.Value,
-            expectedCatalogId,
-            entryObject.GetPropertyPath("catalogId"));
+        CatalogJsonValueParser.RequireExactString(catalogId.Value, expectedCatalogId, entryObject.GetPropertyPath("catalogId"));
         string expectedRelativePath = CatalogJsonValueParser.BuildCatalogRelativePath(
             institution.Id,
             term,
             revision);
-        CatalogJsonValueParser.RequireExactString(
-            file.RelativePath.Value,
-            expectedRelativePath,
-            entryObject.GetPropertyPath("file") + ".relativePath");
+        CatalogJsonValueParser.RequireExactString(file.RelativePath.Value, expectedRelativePath, entryObject.GetPropertyPath("file") + ".relativePath");
 
         return new CatalogIndexEntry(catalogId, institution, term, revision, file, counts);
     }
@@ -150,18 +137,9 @@ public static class CatalogIndexJsonReader
         string mediaTypeText = fileObject.GetString("mediaType");
         string charsetText = fileObject.GetString("charset");
         string contentEncodingText = fileObject.GetString("contentEncoding");
-        CatalogJsonValueParser.RequireExactString(
-            mediaTypeText,
-            CatalogJsonSchema.JSON_MEDIA_TYPE,
-            fileObject.GetPropertyPath("mediaType"));
-        CatalogJsonValueParser.RequireExactString(
-            charsetText,
-            CatalogJsonSchema.UTF8_CHARSET,
-            fileObject.GetPropertyPath("charset"));
-        CatalogJsonValueParser.RequireExactString(
-            contentEncodingText,
-            CatalogJsonSchema.IDENTITY_CONTENT_ENCODING,
-            fileObject.GetPropertyPath("contentEncoding"));
+        CatalogJsonValueParser.RequireExactString(mediaTypeText, CatalogJsonSchema.JSON_MEDIA_TYPE, fileObject.GetPropertyPath("mediaType"));
+        CatalogJsonValueParser.RequireExactString(charsetText, CatalogJsonSchema.UTF8_CHARSET, fileObject.GetPropertyPath("charset"));
+        CatalogJsonValueParser.RequireExactString(contentEncodingText, CatalogJsonSchema.IDENTITY_CONTENT_ENCODING, fileObject.GetPropertyPath("contentEncoding"));
         CatalogMediaType mediaType = new CatalogMediaType(mediaTypeText);
         CatalogCharset charset = new CatalogCharset(charsetText);
         CatalogContentEncoding contentEncoding = new CatalogContentEncoding(contentEncodingText);

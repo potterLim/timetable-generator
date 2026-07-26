@@ -146,11 +146,7 @@ public sealed class PlanningWorkspaceAutosaveQueue
 
             try
             {
-                PlanningWorkspaceConcurrencyToken savedConcurrencyToken =
-                    await mWorkspaceStore.SaveAsync(
-                        workspaceOrNull,
-                        mConcurrencyToken,
-                        CancellationToken.None).ConfigureAwait(false);
+                PlanningWorkspaceConcurrencyToken savedConcurrencyToken = await mWorkspaceStore.SaveAsync(workspaceOrNull, mConcurrencyToken, CancellationToken.None).ConfigureAwait(false);
                 mConcurrencyToken = savedConcurrencyToken;
                 publishState(new PlanningWorkspaceAutosaveSavedState(workspaceOrNull));
             }

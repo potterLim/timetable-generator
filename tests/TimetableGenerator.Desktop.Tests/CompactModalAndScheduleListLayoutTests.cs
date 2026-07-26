@@ -147,10 +147,7 @@ public sealed class CompactModalAndScheduleListLayoutTests
             Dispatcher.UIThread.RunJobs();
 
             Border dialog = findRequiredControl<Border>(host, "PersonalScheduleEditorDialog");
-            PersonalScheduleEditorView editor =
-                findRequiredControl<PersonalScheduleEditorView>(
-                    host,
-                    "PersonalScheduleEditor");
+            PersonalScheduleEditorView editor = findRequiredControl<PersonalScheduleEditorView>(host, "PersonalScheduleEditor");
             ScrollViewer editorScrollViewer = editor.GetVisualDescendants()
                 .OfType<ScrollViewer>()
                 .Single(candidate => Grid.GetRow(candidate) == 2);

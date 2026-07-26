@@ -10,8 +10,7 @@ internal static class SchedulePngBatchDirectoryAllocator
 {
     private const int MAXIMUM_SUFFIX_ATTEMPTS = 10_000;
 
-    private const string STAGING_DIRECTORY_PREFIX =
-        ".timetable-generator-png-staging-";
+    private const string STAGING_DIRECTORY_PREFIX = ".timetable-generator-png-staging-";
 
     internal static SchedulePngBatchDirectory createUnique(
         string parentDirectoryPath,
@@ -32,9 +31,7 @@ internal static class SchedulePngBatchDirectoryAllocator
             throw new DirectoryNotFoundException("The selected PNG export directory does not exist.");
         }
 
-        for (int attempt = 1;
-            attempt <= MAXIMUM_SUFFIX_ATTEMPTS;
-            ++attempt)
+        for (int attempt = 1; attempt <= MAXIMUM_SUFFIX_ATTEMPTS; ++attempt)
         {
             cancellationToken.ThrowIfCancellationRequested();
             string folderName = SchedulePngFileNameFactory.CreateBatchFolderName(planName, attempt);
@@ -76,9 +73,7 @@ internal static class SchedulePngBatchDirectoryAllocator
                 "The selected PNG export directory does not exist.");
         }
 
-        for (int attempt = 1;
-            attempt <= MAXIMUM_SUFFIX_ATTEMPTS;
-            ++attempt)
+        for (int attempt = 1; attempt <= MAXIMUM_SUFFIX_ATTEMPTS; ++attempt)
         {
             cancellationToken.ThrowIfCancellationRequested();
             string directoryPath = Path.Combine(

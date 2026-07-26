@@ -6,8 +6,7 @@ namespace TimetableGenerator.Desktop.Exporting.AppleCalendar;
 internal sealed class NoOpAppleCalendarExportLeaseProvider
     : IAppleCalendarExportLeaseProvider
 {
-    public static NoOpAppleCalendarExportLeaseProvider Instance { get; } =
-        new NoOpAppleCalendarExportLeaseProvider();
+    public static NoOpAppleCalendarExportLeaseProvider Instance { get; } = new NoOpAppleCalendarExportLeaseProvider();
 
     private NoOpAppleCalendarExportLeaseProvider()
     {

@@ -117,31 +117,19 @@ public sealed class ScheduleBoardLayoutTests
         Assert.Equal("10:00", layout.TimeAxis.LabelTimes[1].ToString());
         Assert.Equal(new ScheduleBoardTimeBoundary(630), layout.TimeAxis.End);
         Assert.DoesNotContain(layout.TimeAxis.End, layout.TimeAxis.LabelTimes);
-        for (int guideIndex = 1;
-            guideIndex < layout.TimeAxis.GuideTimes.Count;
-            ++guideIndex)
+        for (int guideIndex = 1; guideIndex < layout.TimeAxis.GuideTimes.Count; ++guideIndex)
         {
-            Assert.Equal(
-                30,
-                layout.TimeAxis.GuideTimes[guideIndex].MinutesFromMidnight
-                    - layout.TimeAxis.GuideTimes[guideIndex - 1]
-                        .MinutesFromMidnight);
+            Assert.Equal(30, layout.TimeAxis.GuideTimes[guideIndex].MinutesFromMidnight - layout.TimeAxis.GuideTimes[guideIndex - 1].MinutesFromMidnight);
         }
 
-        for (int labelIndex = 0;
-            labelIndex < layout.TimeAxis.LabelTimes.Count;
-            ++labelIndex)
+        for (int labelIndex = 0; labelIndex < layout.TimeAxis.LabelTimes.Count; ++labelIndex)
         {
             ScheduleBoardTimeBoundary labelTime = layout.TimeAxis.LabelTimes[labelIndex];
             Assert.True(labelTime.IsFullHour);
             Assert.Contains(labelTime, layout.TimeAxis.GuideTimes);
             if (labelIndex > 0)
             {
-                Assert.Equal(
-                    60,
-                    labelTime.MinutesFromMidnight
-                        - layout.TimeAxis.LabelTimes[labelIndex - 1]
-                            .MinutesFromMidnight);
+                Assert.Equal(60, labelTime.MinutesFromMidnight - layout.TimeAxis.LabelTimes[labelIndex - 1].MinutesFromMidnight);
             }
         }
     }

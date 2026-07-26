@@ -21,10 +21,7 @@ public sealed class PlanningCatalogTransitionPolicyTests
             new CatalogRevision(1));
         PlanCatalogBinding binding = createBinding(catalog);
 
-        EPlanningCatalogTransitionStatus status =
-            PlanningCatalogTransitionPolicy.EvaluateTransition(
-                binding,
-                createBinding(catalog));
+        EPlanningCatalogTransitionStatus status = PlanningCatalogTransitionPolicy.EvaluateTransition(binding, createBinding(catalog));
 
         Assert.AreEqual(EPlanningCatalogTransitionStatus.ExactMatch, status);
     }
@@ -43,10 +40,7 @@ public sealed class PlanningCatalogTransitionPolicyTests
             currentCatalog.Term,
             new CatalogRevision(2));
 
-        EPlanningCatalogTransitionStatus status =
-            PlanningCatalogTransitionPolicy.EvaluateTransition(
-                createBinding(currentCatalog),
-                createBinding(candidateCatalog));
+        EPlanningCatalogTransitionStatus status = PlanningCatalogTransitionPolicy.EvaluateTransition(createBinding(currentCatalog), createBinding(candidateCatalog));
 
         Assert.AreEqual(EPlanningCatalogTransitionStatus.UpgradeEligible, status);
     }
@@ -61,10 +55,7 @@ public sealed class PlanningCatalogTransitionPolicyTests
             currentCatalog.Term,
             new CatalogRevision(2));
 
-        EPlanningCatalogTransitionStatus status =
-            PlanningCatalogTransitionPolicy.EvaluateTransition(
-                createBinding(currentCatalog),
-                createBinding(candidateCatalog));
+        EPlanningCatalogTransitionStatus status = PlanningCatalogTransitionPolicy.EvaluateTransition(createBinding(currentCatalog), createBinding(candidateCatalog));
 
         Assert.AreEqual(EPlanningCatalogTransitionStatus.InstitutionMismatch, status);
     }
@@ -79,10 +70,7 @@ public sealed class PlanningCatalogTransitionPolicyTests
             AcademicTerm.Parse("2027-1"),
             new CatalogRevision(2));
 
-        EPlanningCatalogTransitionStatus status =
-            PlanningCatalogTransitionPolicy.EvaluateTransition(
-                createBinding(currentCatalog),
-                createBinding(candidateCatalog));
+        EPlanningCatalogTransitionStatus status = PlanningCatalogTransitionPolicy.EvaluateTransition(createBinding(currentCatalog), createBinding(candidateCatalog));
 
         Assert.AreEqual(EPlanningCatalogTransitionStatus.AcademicTermMismatch, status);
     }
@@ -107,14 +95,8 @@ public sealed class PlanningCatalogTransitionPolicyTests
             new CatalogRevision(1));
         PlanCatalogBinding binding = createBinding(currentCatalog);
 
-        EPlanningCatalogTransitionStatus sameRevisionStatus =
-            PlanningCatalogTransitionPolicy.EvaluateTransition(
-                binding,
-                createBinding(sameRevisionCatalog));
-        EPlanningCatalogTransitionStatus lowerRevisionStatus =
-            PlanningCatalogTransitionPolicy.EvaluateTransition(
-                binding,
-                createBinding(lowerRevisionCatalog));
+        EPlanningCatalogTransitionStatus sameRevisionStatus = PlanningCatalogTransitionPolicy.EvaluateTransition(binding, createBinding(sameRevisionCatalog));
+        EPlanningCatalogTransitionStatus lowerRevisionStatus = PlanningCatalogTransitionPolicy.EvaluateTransition(binding, createBinding(lowerRevisionCatalog));
 
         Assert.AreEqual(EPlanningCatalogTransitionStatus.RevisionNotNewer, sameRevisionStatus);
         Assert.AreEqual(EPlanningCatalogTransitionStatus.RevisionNotNewer, lowerRevisionStatus);
@@ -132,10 +114,7 @@ public sealed class PlanningCatalogTransitionPolicyTests
             catalog.Revision,
             new CatalogArtifactSha256(new string('b', 64)));
 
-        EPlanningCatalogTransitionStatus status =
-            PlanningCatalogTransitionPolicy.EvaluateTransition(
-                currentBinding,
-                changedArtifactBinding);
+        EPlanningCatalogTransitionStatus status = PlanningCatalogTransitionPolicy.EvaluateTransition(currentBinding, changedArtifactBinding);
 
         Assert.AreEqual(EPlanningCatalogTransitionStatus.ArtifactSha256Mismatch, status);
     }

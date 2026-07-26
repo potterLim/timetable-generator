@@ -678,15 +678,8 @@ public sealed class ScheduleWorkspaceViewTests
     {
         CourseCatalogDocument document = CatalogProjectionTestFixture.CreateDocument();
         CourseCatalogProjection catalogProjection = CourseCatalogProjector.Project(document);
-        ApplicationScheduleRecommendation recommendation =
-            CatalogProjectionTestFixture.CreateScheduledRecommendation(
-                document,
-                new CourseId("course-programming"),
-                new OfferingId("offering-programming-alternative"));
-        ScheduleRecommendation projectedRecommendation =
-            ScheduleRecommendationProjector.Project(
-                recommendation,
-                catalogProjection);
+        ApplicationScheduleRecommendation recommendation = CatalogProjectionTestFixture.CreateScheduledRecommendation(document, new CourseId("course-programming"), new OfferingId("offering-programming-alternative"));
+        ScheduleRecommendation projectedRecommendation = ScheduleRecommendationProjector.Project(recommendation, catalogProjection);
         ScheduleBoardView scheduleBoard = new ScheduleBoardView();
         scheduleBoard.DataContext = createScheduleBoardPresentation(projectedRecommendation);
         Window window = new Window();
@@ -1358,9 +1351,7 @@ public sealed class ScheduleWorkspaceViewTests
     {
         Assert.True(boardGrid.ColumnDefinitions.Count > 1);
         double firstDayWidth = boardGrid.ColumnDefinitions[1].ActualWidth;
-        for (int columnIndex = 2;
-            columnIndex < boardGrid.ColumnDefinitions.Count;
-            ++columnIndex)
+        for (int columnIndex = 2; columnIndex < boardGrid.ColumnDefinitions.Count; ++columnIndex)
         {
             double dayWidth = boardGrid.ColumnDefinitions[columnIndex].ActualWidth;
             Assert.InRange(Math.Abs(firstDayWidth - dayWidth), 0.0, 1.0);

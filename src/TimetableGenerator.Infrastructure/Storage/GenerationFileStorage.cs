@@ -114,9 +114,7 @@ internal sealed class GenerationFileStorage
         try
         {
             IReadOnlyList<GenerationFile> generationFiles = GetGenerationFiles();
-            for (int index = MAXIMUM_RETAINED_GENERATIONS;
-                index < generationFiles.Count;
-                ++index)
+            for (int index = MAXIMUM_RETAINED_GENERATIONS; index < generationFiles.Count; ++index)
             {
                 GenerationFile generationFile = generationFiles[index];
                 if (additionallyRetainedGenerations.ShouldRetain(generationFile) == false)

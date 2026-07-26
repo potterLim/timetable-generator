@@ -27,11 +27,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         AcademicTerm term = AcademicTerm.Parse(readString(properties["term"], context + ".term"));
         CatalogRevision revision = new CatalogRevision(
             readInt32(properties["revision"], context + ".revision"));
-        CatalogArtifactSha256 artifactSha256 =
-            new CatalogArtifactSha256(
-                readString(
-                    properties["artifactSha256"],
-                    context + ".artifactSha256"));
+        CatalogArtifactSha256 artifactSha256 = new CatalogArtifactSha256(readString(properties["artifactSha256"], context + ".artifactSha256"));
         return new PlanCatalogBinding(catalogId, institutionId, term, revision, artifactSha256);
     }
 

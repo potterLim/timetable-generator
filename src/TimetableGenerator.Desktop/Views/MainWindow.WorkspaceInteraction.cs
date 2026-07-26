@@ -77,9 +77,7 @@ internal sealed partial class MainWindow
             isWorkspaceInteractionEnabled = mInteractionWorkspaceOrNull.IsWorkspaceInteractionEnabled;
         }
 
-        bool isAppearanceInteractionEnabled =
-            mProductShellViewModel.IsProductInteractionEnabled
-                && isWorkspaceInteractionEnabled;
+        bool isAppearanceInteractionEnabled = mProductShellViewModel.IsProductInteractionEnabled && isWorkspaceInteractionEnabled;
         mAppearanceButtonOrNull.IsEnabled = isAppearanceInteractionEnabled;
         if (isAppearanceInteractionEnabled == false)
         {

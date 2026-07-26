@@ -91,9 +91,7 @@ internal static class AppleCalendarAutomationScript
             const result = [];
             for (let index = 0; index < ids.length; index += 1) {
                 let duplicateCount = 0;
-                for (let candidateIndex = 0;
-                    candidateIndex < ids.length;
-                    candidateIndex += 1) {
+                for (let candidateIndex = 0; candidateIndex < ids.length; candidateIndex += 1) {
                     if (ids[candidateIndex] === ids[index]) {
                         duplicateCount += 1;
                     }
@@ -261,12 +259,9 @@ internal static class AppleCalendarAutomationScript
             }
 
             const expectedCounts = Object.create(null);
-            for (let urlIndex = 0;
-                urlIndex < expectedUrls.length;
-                urlIndex += 1) {
+            for (let urlIndex = 0; urlIndex < expectedUrls.length; urlIndex += 1) {
                 const url = expectedUrls[urlIndex];
-                expectedCounts[url] =
-                    (expectedCounts[url] || 0) + 1;
+                expectedCounts[url] = (expectedCounts[url] || 0) + 1;
             }
 
             for (const url in expectedCounts) {
@@ -415,9 +410,7 @@ internal static class AppleCalendarAutomationScript
         }
 
         function replacementEventsAreCurrent(eventIndex, mappings) {
-            for (let mappingIndex = 0;
-                mappingIndex < mappings.length;
-                mappingIndex += 1) {
+            for (let mappingIndex = 0; mappingIndex < mappings.length; mappingIndex += 1) {
                 if (uniqueManagedEvent(
                         eventIndex,
                         mappings[mappingIndex].operationUrl) === null) {
@@ -441,8 +434,7 @@ internal static class AppleCalendarAutomationScript
             index,
             canaryUrl,
             replacementMappings) {
-            const replacementUrls =
-                createReplacementUrlSet(replacementMappings);
+            const replacementUrls = createReplacementUrlSet(replacementMappings);
             return index.entries
                 .filter(function (event) {
                     return event.url !== canaryUrl
@@ -598,15 +590,12 @@ internal static class AppleCalendarAutomationScript
             }
 
             const expectedCreatedEventUrls = [];
-            for (let index = 0;
-                index < request.events.length;
-                index += 1) {
+            for (let index = 0; index < request.events.length; index += 1) {
                 expectedCreatedEventUrls.push(
                     request.events[index].ownershipUrl);
             }
 
-            const expectedManagedEventUrls =
-                [operationUrl].concat(expectedCreatedEventUrls);
+            const expectedManagedEventUrls = [operationUrl].concat(expectedCreatedEventUrls);
             if (managedEventIndexMatchesExpectedUrls(
                     operationProof.eventIndex,
                     expectedManagedEventUrls) === false) {
@@ -710,9 +699,7 @@ internal static class AppleCalendarAutomationScript
             }
 
             const expectedTemporaryUrls = [operationUrl];
-            for (let index = 0;
-                index < replacementMappings.length;
-                index += 1) {
+            for (let index = 0; index < replacementMappings.length; index += 1) {
                 expectedTemporaryUrls.push(
                     replacementMappings[index].operationUrl);
             }
@@ -737,9 +724,7 @@ internal static class AppleCalendarAutomationScript
                 request.existingCalendarId,
                 request);
             const expectedReplacementUrls = [];
-            for (let index = 0;
-                index < replacementMappings.length;
-                index += 1) {
+            for (let index = 0; index < replacementMappings.length; index += 1) {
                 expectedReplacementUrls.push(
                     replacementMappings[index].finalUrl);
             }

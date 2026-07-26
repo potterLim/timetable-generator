@@ -268,8 +268,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
 
     private void updatePlanNameValidationMessage(PlannerWorkspaceViewModel? workspaceOrNull)
     {
-        TextBlock? validationMessageOrNull =
-            this.FindControl<TextBlock>("PlanNameValidationMessage");
+        TextBlock? validationMessageOrNull = this.FindControl<TextBlock>("PlanNameValidationMessage");
         if (validationMessageOrNull == null)
         {
             return;

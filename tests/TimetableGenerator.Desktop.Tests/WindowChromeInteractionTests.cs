@@ -72,14 +72,9 @@ public sealed class WindowChromeInteractionTests
             Button appearanceButton = findRequiredControl<Button>(hostWindow, "AppearanceButton");
             StackPanel captionButtons = findRequiredControl<StackPanel>(hostWindow, "ProductCaptionButtons");
             Button minimizeButton = findRequiredControl<Button>(hostWindow, "WindowMinimizeButton");
-            Button maximizeRestoreButton = findRequiredControl<Button>(
-                hostWindow,
-                "WindowMaximizeRestoreButton");
+            Button maximizeRestoreButton = findRequiredControl<Button>(hostWindow, "WindowMaximizeRestoreButton");
             Button closeButton = findRequiredControl<Button>(hostWindow, "WindowCloseButton");
-            FluentIcon maximizeRestoreIcon =
-                findRequiredControl<FluentIcon>(
-                    hostWindow,
-                    "WindowMaximizeRestoreIcon");
+            FluentIcon maximizeRestoreIcon = findRequiredControl<FluentIcon>(hostWindow, "WindowMaximizeRestoreIcon");
 
             Assert.Equal(
                 WindowDecorationsElementRole.TitleBar,

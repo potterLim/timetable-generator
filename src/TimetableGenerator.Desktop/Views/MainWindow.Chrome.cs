@@ -39,9 +39,7 @@ internal sealed partial class MainWindow
     {
         if (eventArgs.Property == WindowStateProperty)
         {
-            recordWindowStateBeforeFullScreen(
-                eventArgs.GetOldValue<WindowState>(),
-                eventArgs.GetNewValue<WindowState>());
+            recordWindowStateBeforeFullScreen(eventArgs.GetOldValue<WindowState>(), eventArgs.GetNewValue<WindowState>());
             synchronizeMaximizeRestoreAction();
         }
     }

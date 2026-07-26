@@ -29,10 +29,7 @@ public sealed class AppearanceSettingsInteractionTests
     public async Task ThemeOptionsReflectAndApplyTheSelectedPreferenceAsync()
     {
         ControlledProductAppearanceSettingsStore settingsStore = new ControlledProductAppearanceSettingsStore(ProductAppearanceSettings.CreateDefault());
-        ProductAppearanceViewModel appearance =
-            new ProductAppearanceViewModel(
-                settingsStore,
-                new RecordingProductThemeVariantService());
+        ProductAppearanceViewModel appearance = new ProductAppearanceViewModel(settingsStore, new RecordingProductThemeVariantService());
         AppearanceSettingsView view = new AppearanceSettingsView();
         view.DataContext = appearance;
         Window window = new Window();
@@ -125,10 +122,7 @@ public sealed class AppearanceSettingsInteractionTests
     public void ThemeOptionLabelsShareOneHorizontalOriginAcrossVisualStates()
     {
         ControlledProductAppearanceSettingsStore settingsStore = new ControlledProductAppearanceSettingsStore(ProductAppearanceSettings.CreateDefault());
-        ProductAppearanceViewModel appearance =
-            new ProductAppearanceViewModel(
-                settingsStore,
-                new RecordingProductThemeVariantService());
+        ProductAppearanceViewModel appearance = new ProductAppearanceViewModel(settingsStore, new RecordingProductThemeVariantService());
         AppearanceSettingsView view = new AppearanceSettingsView();
         view.DataContext = appearance;
         Window window = new Window();
@@ -174,10 +168,7 @@ public sealed class AppearanceSettingsInteractionTests
     public void ThemeOptionsUseCompleteVisualStatesAcrossThemes()
     {
         ControlledProductAppearanceSettingsStore settingsStore = new ControlledProductAppearanceSettingsStore(ProductAppearanceSettings.CreateDefault());
-        ProductAppearanceViewModel appearance =
-            new ProductAppearanceViewModel(
-                settingsStore,
-                new RecordingProductThemeVariantService());
+        ProductAppearanceViewModel appearance = new ProductAppearanceViewModel(settingsStore, new RecordingProductThemeVariantService());
         AppearanceSettingsView view = new AppearanceSettingsView();
         view.DataContext = appearance;
         Window window = new Window();
@@ -271,10 +262,7 @@ public sealed class AppearanceSettingsInteractionTests
     {
         ControlledProductAppearanceSettingsStore settingsStore = new ControlledProductAppearanceSettingsStore(ProductAppearanceSettings.CreateDefault());
         settingsStore.FailSaves(new ProductAppearanceSettingsException("Controlled failure."));
-        ProductAppearanceViewModel appearance =
-            new ProductAppearanceViewModel(
-                settingsStore,
-                new RecordingProductThemeVariantService());
+        ProductAppearanceViewModel appearance = new ProductAppearanceViewModel(settingsStore, new RecordingProductThemeVariantService());
         AppearanceSettingsView view = new AppearanceSettingsView();
         view.DataContext = appearance;
         Window window = new Window();

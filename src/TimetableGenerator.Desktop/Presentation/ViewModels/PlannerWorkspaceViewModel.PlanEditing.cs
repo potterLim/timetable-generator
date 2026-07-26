@@ -359,10 +359,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     private void beginCreatePlan()
     {
         throwIfDisposed();
-        PlanName availablePlanName =
-            AcademicTermPlanNameFactory.FindAvailablePlanName(
-                mCatalogProjection.Document.Catalog.Term,
-                mSession.Workspace.Plans);
+        PlanName availablePlanName = AcademicTermPlanNameFactory.FindAvailablePlanName(mCatalogProjection.Document.Catalog.Term, mSession.Workspace.Plans);
         PlanNameDraft = availablePlanName.Value;
         clearPlanNameValidationMessage();
         clearPlanPendingDeletion();

@@ -437,10 +437,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         CourseSearchQuery query = CourseSearchQuery.Create(SearchText);
         IReadOnlyList<CourseSearchItem> visibleCourses = findVisibleCourses(query);
-        KeyedObservableCollectionSynchronizer.Synchronize(
-            VisibleCourses,
-            visibleCourses,
-            findCourseSearchItemId);
+        KeyedObservableCollectionSynchronizer.Synchronize(VisibleCourses, visibleCourses, findCourseSearchItemId);
 
         raisePropertyChanged(nameof(VisibleCourseHeading));
         raisePropertyChanged(nameof(CourseSearchResultState));

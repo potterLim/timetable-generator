@@ -85,15 +85,9 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
     {
         for (int firstIndex = 0; firstIndex < offerings.Count; ++firstIndex)
         {
-            for (int secondIndex = firstIndex + 1;
-                secondIndex < offerings.Count;
-                ++secondIndex)
+            for (int secondIndex = firstIndex + 1; secondIndex < offerings.Count; ++secondIndex)
             {
-                Assert.IsFalse(
-                    ScheduleConflictDetector.HasConflict(
-                        offerings[firstIndex],
-                        offerings[secondIndex]),
-                    "The generator returned overlapping offerings.");
+                Assert.IsFalse(ScheduleConflictDetector.HasConflict(offerings[firstIndex], offerings[secondIndex]), "The generator returned overlapping offerings.");
             }
         }
     }
@@ -187,9 +181,7 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
             List<CourseCandidate> courseCandidates = new List<CourseCandidate>();
             List<OracleCandidate> oracleCandidates = new List<OracleCandidate>();
 
-            for (int courseIndex = 0;
-                courseIndex < courseCandidateCount;
-                ++courseIndex)
+            for (int courseIndex = 0; courseIndex < courseCandidateCount; ++courseIndex)
             {
                 string courseCodeValue = createCourseCode(groupIndex, courseIndex);
                 CatalogCourse course = ScheduleRecommendationTestData.CreateCourse(courseCodeValue);
@@ -250,11 +242,7 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
         ICollection<OfferingCandidate> candidateOfferings,
         ICollection<OracleCandidate> oracleCandidates)
     {
-        CatalogOffering catalogOffering =
-            ScheduleRecommendationTestData.CreateScheduledOffering(
-                courseCodeValue,
-                sectionCodeValue,
-                createMeetingSlots(random, groupIndex, sectionCodeValue));
+        CatalogOffering catalogOffering = ScheduleRecommendationTestData.CreateScheduledOffering(courseCodeValue, sectionCodeValue, createMeetingSlots(random, groupIndex, sectionCodeValue));
         catalogOfferings.Add(catalogOffering);
         candidateOfferings.Add(new OfferingCandidate(catalogOffering.Id, preference));
         if (preference != EOfferingPreference.Excluded)
@@ -272,10 +260,7 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
         {
             MeetingSlot sharedConflict = ScheduleRecommendationTestData.CreateMeetingSlot(EDay.Monday, 1);
             EDay supplementaryDay = (EDay)random.Next((int)EDay.Tuesday, (int)EDay.Friday + 1);
-            MeetingSlot supplementarySlot =
-                ScheduleRecommendationTestData.CreateMeetingSlot(
-                    supplementaryDay,
-                    random.Next(2, 7));
+            MeetingSlot supplementarySlot = ScheduleRecommendationTestData.CreateMeetingSlot(supplementaryDay, random.Next(2, 7));
             return new MeetingSlot[] { sharedConflict, supplementarySlot };
         }
 

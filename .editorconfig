@@ -40,6 +40,9 @@ csharp_style_namespace_declarations = file_scoped:error
 csharp_style_prefer_top_level_statements = false:error
 
 # 포맷
+# 단순 대입, 반복문 헤더, 짧은 호출은 줄 길이만으로 나누지 않는다.
+# 매개변수가 많거나 표현식의 의미 단위를 드러낼 때만 여러 줄을 사용한다.
+max_line_length = off
 csharp_indent_case_contents = true
 csharp_indent_switch_labels = true
 csharp_new_line_before_open_brace = all

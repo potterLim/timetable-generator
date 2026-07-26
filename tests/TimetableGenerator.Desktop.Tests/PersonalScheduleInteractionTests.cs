@@ -378,9 +378,7 @@ public sealed class PersonalScheduleInteractionTests
             Assert.InRange(leadingMargin, 0.0, 0.5);
             Assert.InRange(trailingMargin, 0.0, 0.5);
             Assert.InRange(Math.Abs(leadingMargin - trailingMargin), 0.0, 1.0);
-            for (int dayIndex = 0;
-                dayIndex < dayInputGeometry.Length - 1;
-                ++dayIndex)
+            for (int dayIndex = 0; dayIndex < dayInputGeometry.Length - 1; ++dayIndex)
             {
                 (double Left, double Width) currentDay = dayInputGeometry[dayIndex];
                 (double Left, double Width) nextDay = dayInputGeometry[dayIndex + 1];
@@ -394,13 +392,8 @@ public sealed class PersonalScheduleInteractionTests
                 .Single(
                     candidate => candidate.Name
                         == "PersonalScheduleNameInput");
-            Avalonia.Point? dayOptionsPositionOrNull = dayOptions.TranslatePoint(
-                new Avalonia.Point(0.0, 0.0),
-                host);
-            Avalonia.Point? nameInputPositionOrNull =
-                scheduleNameInput.TranslatePoint(
-                    new Avalonia.Point(0.0, 0.0),
-                    host);
+            Avalonia.Point? dayOptionsPositionOrNull = dayOptions.TranslatePoint(new Avalonia.Point(0.0, 0.0), host);
+            Avalonia.Point? nameInputPositionOrNull = scheduleNameInput.TranslatePoint(new Avalonia.Point(0.0, 0.0), host);
             Assert.NotNull(dayOptionsPositionOrNull);
             Assert.NotNull(nameInputPositionOrNull);
             if (dayOptionsPositionOrNull == null || nameInputPositionOrNull == null)

@@ -12,11 +12,9 @@ internal sealed class FileAppleCalendarExportLeaseProvider
     private const int WINDOWS_ERROR_SHARING_VIOLATION = 32;
     private const int WINDOWS_ERROR_LOCK_VIOLATION = 33;
 
-    private static readonly TimeSpan RETRY_DELAY =
-        TimeSpan.FromMilliseconds(100.0);
+    private static readonly TimeSpan RETRY_DELAY = TimeSpan.FromMilliseconds(100.0);
 
-    private static readonly TimeSpan MAXIMUM_WAIT =
-        TimeSpan.FromSeconds(30.0);
+    private static readonly TimeSpan MAXIMUM_WAIT = TimeSpan.FromSeconds(30.0);
 
     private readonly AppleCalendarExportLockFilePath mPath;
 

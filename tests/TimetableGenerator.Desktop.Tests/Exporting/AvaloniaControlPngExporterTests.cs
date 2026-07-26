@@ -62,20 +62,12 @@ public sealed class AvaloniaControlPngExporterTests
     public async Task PngEncodingDoesNotBlockTheUiDispatcherAsync()
     {
         Border sourceControl = createArrangedControl();
-        AvaloniaControlPngExporter exporter =
-            new AvaloniaControlPngExporter(
-                PngExportScale.PRODUCT_QUALITY);
+        AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(PngExportScale.PRODUCT_QUALITY);
 
-        using (BlockingWriteStream destinationStream =
-            new BlockingWriteStream())
+        using (BlockingWriteStream destinationStream = new BlockingWriteStream())
         {
-            Task exportTask = exporter.ExportControlAsync(
-                sourceControl,
-                destinationStream,
-                TestContext.Current.CancellationToken);
-            await destinationStream.WriteStartedTask.WaitAsync(
-                TimeSpan.FromSeconds(5.0),
-                TestContext.Current.CancellationToken);
+            Task exportTask = exporter.ExportControlAsync(sourceControl, destinationStream, TestContext.Current.CancellationToken);
+            await destinationStream.WriteStartedTask.WaitAsync(TimeSpan.FromSeconds(5.0), TestContext.Current.CancellationToken);
 
             bool dispatcherCallbackRan = false;
             await Dispatcher.UIThread.InvokeAsync(
@@ -110,8 +102,7 @@ public sealed class AvaloniaControlPngExporterTests
         try
         {
             Border lateChild = new Border();
-            lateChild.Background =
-                new SolidColorBrush(expectedChildColor);
+            lateChild.Background = new SolidColorBrush(expectedChildColor);
             Dispatcher.UIThread.Post(
                 delegate
                 {
@@ -119,25 +110,16 @@ public sealed class AvaloniaControlPngExporterTests
                 },
                 DispatcherPriority.Render);
 
-            AvaloniaControlPngExporter exporter =
-                new AvaloniaControlPngExporter(
-                    PngExportScale.Create(1.0));
-            using (MemoryStream destinationStream =
-                new MemoryStream())
+            AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(PngExportScale.Create(1.0));
+            using (MemoryStream destinationStream = new MemoryStream())
             {
-                await exporter.ExportControlAsync(
-                    sourceControl,
-                    destinationStream,
-                    TestContext.Current.CancellationToken);
+                await exporter.ExportControlAsync(sourceControl, destinationStream, TestContext.Current.CancellationToken);
 
                 Assert.True(lateChild.IsArrangeValid);
                 destinationStream.Position = 0L;
-                using (Bitmap bitmap = new Bitmap(
-                    destinationStream))
+                using (Bitmap bitmap = new Bitmap(destinationStream))
                 {
-                    assertBitmapContainsColor(
-                        bitmap,
-                        expectedChildColor);
+                    assertBitmapContainsColor(bitmap, expectedChildColor);
                 }
             }
         }
@@ -258,36 +240,19 @@ public sealed class AvaloniaControlPngExporterTests
         Bitmap bitmap,
         Color expectedColor)
     {
-        using (WriteableBitmap pixelCopy = new WriteableBitmap(
-            bitmap.PixelSize,
-            new Vector(96.0, 96.0),
-            PixelFormat.Bgra8888,
-            AlphaFormat.Premul))
+        using (WriteableBitmap pixelCopy = new WriteableBitmap(bitmap.PixelSize, new Vector(96.0, 96.0), PixelFormat.Bgra8888, AlphaFormat.Premul))
         using (ILockedFramebuffer framebuffer = pixelCopy.Lock())
         {
             bitmap.CopyPixels(framebuffer);
-            for (int y = 0;
-                y < bitmap.PixelSize.Height;
-                ++y)
+            for (int y = 0; y < bitmap.PixelSize.Height; ++y)
             {
-                for (int x = 0;
-                    x < bitmap.PixelSize.Width;
-                    ++x)
+                for (int x = 0; x < bitmap.PixelSize.Width; ++x)
                 {
-                    int pixelOffset =
-                        (y * framebuffer.RowBytes) + (x * 4);
-                    byte blue = Marshal.ReadByte(
-                        framebuffer.Address,
-                        pixelOffset);
-                    byte green = Marshal.ReadByte(
-                        framebuffer.Address,
-                        pixelOffset + 1);
-                    byte red = Marshal.ReadByte(
-                        framebuffer.Address,
-                        pixelOffset + 2);
-                    byte alpha = Marshal.ReadByte(
-                        framebuffer.Address,
-                        pixelOffset + 3);
+                    int pixelOffset = (y * framebuffer.RowBytes) + (x * 4);
+                    byte blue = Marshal.ReadByte(framebuffer.Address, pixelOffset);
+                    byte green = Marshal.ReadByte(framebuffer.Address, pixelOffset + 1);
+                    byte red = Marshal.ReadByte(framebuffer.Address, pixelOffset + 2);
+                    byte alpha = Marshal.ReadByte(framebuffer.Address, pixelOffset + 3);
                     if (blue == expectedColor.B
                         && green == expectedColor.G
                         && red == expectedColor.R
@@ -299,20 +264,16 @@ public sealed class AvaloniaControlPngExporterTests
             }
         }
 
-        Assert.Fail(
-            "The exported PNG did not contain the pending child layout.");
+        Assert.Fail("The exported PNG did not contain the pending child layout.");
     }
 
     private sealed class BlockingWriteStream : Stream
     {
         private readonly MemoryStream mInnerStream = new MemoryStream();
 
-        private readonly ManualResetEventSlim mReleaseEvent =
-            new ManualResetEventSlim(false);
+        private readonly ManualResetEventSlim mReleaseEvent = new ManualResetEventSlim(false);
 
-        private readonly TaskCompletionSource mWriteStartedSource =
-            new TaskCompletionSource(
-                TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource mWriteStartedSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         private int mHasBlocked;
 
@@ -433,8 +394,7 @@ public sealed class AvaloniaControlPngExporterTests
             mWriteStartedSource.TrySetResult();
             if (mReleaseEvent.Wait(TimeSpan.FromSeconds(5.0)) == false)
             {
-                throw new TimeoutException(
-                    "The PNG encoder did not release the test stream.");
+                throw new TimeoutException("The PNG encoder did not release the test stream.");
             }
         }
     }

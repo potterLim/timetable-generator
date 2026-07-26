@@ -34,20 +34,13 @@ internal static class ProductCompositionRoot
             new PlanningWorkspaceJsonCodec(),
             WorkspaceDocumentSizeLimit.ProductDefault);
         CatalogSourceConfigurationLoader configurationLoader = new CatalogSourceConfigurationLoader(configurationPath);
-        ConfiguredProductCatalogDownloader catalogDownloader =
-            new ConfiguredProductCatalogDownloader(
-                configurationLoader,
-                synchronizationLimits,
-                catalogCacheStore);
+        ConfiguredProductCatalogDownloader catalogDownloader = new ConfiguredProductCatalogDownloader(configurationLoader, synchronizationLimits, catalogCacheStore);
         ProductWorkspaceLoader dataLoader = new ProductWorkspaceLoader(
             catalogCacheStore,
             workspaceStore,
             catalogDownloader);
         ProductWorkspaceViewModelLoader viewModelLoader = new ProductWorkspaceViewModelLoader(dataLoader);
-        ProductCatalogUpdateService catalogUpdateService =
-            new ProductCatalogUpdateService(
-                catalogDownloader,
-                catalogCacheStore);
+        ProductCatalogUpdateService catalogUpdateService = new ProductCatalogUpdateService(catalogDownloader, catalogCacheStore);
         return new ProductShellViewModel(viewModelLoader, catalogUpdateService);
     }
 }

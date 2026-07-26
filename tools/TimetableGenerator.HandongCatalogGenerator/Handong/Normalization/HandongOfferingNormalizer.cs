@@ -26,10 +26,8 @@ internal sealed class HandongOfferingNormalizer
             throw new ArgumentNullException(nameof(row));
         }
 
-        CourseCode courseCode = new CourseCode(
-            HandongCellValueReader.getRequiredSingleLine(row, EHandongColumn.CourseCode));
-        CourseSectionCode sectionCode = new CourseSectionCode(
-            HandongCellValueReader.getRequiredSingleLine(row, EHandongColumn.Section));
+        CourseCode courseCode = new CourseCode(HandongCellValueReader.getRequiredSingleLine(row, EHandongColumn.CourseCode));
+        CourseSectionCode sectionCode = new CourseSectionCode(HandongCellValueReader.getRequiredSingleLine(row, EHandongColumn.Section));
         validateSourceLinkIdentity(row, courseCode, sectionCode);
         HandongCourseNameNormalizationResult courseNames = mCourseNameNormalizer.NormalizeCourseName(row);
         CourseCredits credits = parseCredits(row);
@@ -80,11 +78,7 @@ internal sealed class HandongOfferingNormalizer
     {
         string sourceValue = HandongCellValueReader.getRequiredSingleLine(row, EHandongColumn.Credits);
         decimal creditValue;
-        bool isCreditParsed = decimal.TryParse(
-            sourceValue,
-            NumberStyles.AllowDecimalPoint,
-            CultureInfo.InvariantCulture,
-            out creditValue);
+        bool isCreditParsed = decimal.TryParse(sourceValue, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out creditValue);
         if (isCreditParsed == false)
         {
             throw new InvalidHandongSourceRecordException(
@@ -136,9 +130,7 @@ internal sealed class HandongOfferingNormalizer
 
     private static ERequirementType parseRequirementType(HandongRawOfferingRow row)
     {
-        string sourceValue = HandongCellValueReader.getRequiredSingleLine(
-            row,
-            EHandongColumn.Classification);
+        string sourceValue = HandongCellValueReader.getRequiredSingleLine(row, EHandongColumn.Classification);
         switch (sourceValue)
         {
             case "교필":
@@ -163,9 +155,7 @@ internal sealed class HandongOfferingNormalizer
 
     private static LocationAssignment normalizeLocation(HandongRawOfferingRow row)
     {
-        IReadOnlyList<string> lines = HandongCellValueReader.getNonEmptyLines(
-            row,
-            EHandongColumn.Classroom);
+        IReadOnlyList<string> lines = HandongCellValueReader.getNonEmptyLines(row, EHandongColumn.Classroom);
         if (lines.Count == 0)
         {
             return LocationAssignment.NotProvided;
@@ -185,19 +175,13 @@ internal sealed class HandongOfferingNormalizer
     private static SeatCapacity parseSeatCapacity(HandongRawOfferingRow row)
     {
         string sourceValue = HandongCellValueReader.getRequiredSingleLine(row, EHandongColumn.Capacity);
-        int capacityValue = parseNonnegativeInteger(
-            sourceValue,
-            row,
-            EHandongColumn.Capacity,
-            "seat capacity");
+        int capacityValue = parseNonnegativeInteger(sourceValue, row, EHandongColumn.Capacity, "seat capacity");
         return new SeatCapacity(capacityValue);
     }
 
     private static EnrollmentSnapshot normalizeEnrollment(HandongRawOfferingRow row)
     {
-        IReadOnlyList<string> lines = HandongCellValueReader.getNonEmptyLines(
-            row,
-            EHandongColumn.Enrollment);
+        IReadOnlyList<string> lines = HandongCellValueReader.getNonEmptyLines(row, EHandongColumn.Enrollment);
         if (lines.Count == 0)
         {
             return EnrollmentSnapshot.NotProvided;
@@ -211,20 +195,14 @@ internal sealed class HandongOfferingNormalizer
                 "Enrollment must contain at most one line.");
         }
 
-        int enrollmentValue = parseNonnegativeInteger(
-            lines[0],
-            row,
-            EHandongColumn.Enrollment,
-            "enrollment count");
+        int enrollmentValue = parseNonnegativeInteger(lines[0], row, EHandongColumn.Enrollment, "enrollment count");
         return EnrollmentSnapshot.CreateProvided(new EnrollmentCount(enrollmentValue));
     }
 
     private static EnglishInstructionPercentage parseEnglishInstructionPercentage(
         HandongRawOfferingRow row)
     {
-        string sourceValue = HandongCellValueReader.getRequiredSingleLine(
-            row,
-            EHandongColumn.EnglishInstruction);
+        string sourceValue = HandongCellValueReader.getRequiredSingleLine(row, EHandongColumn.EnglishInstruction);
         if (sourceValue.EndsWith('%') == false)
         {
             throw new InvalidHandongSourceRecordException(
@@ -234,11 +212,7 @@ internal sealed class HandongOfferingNormalizer
         }
 
         string numericValue = sourceValue.Substring(0, sourceValue.Length - 1).Trim();
-        int percentageValue = parseNonnegativeInteger(
-            numericValue,
-            row,
-            EHandongColumn.EnglishInstruction,
-            "English instruction percentage");
+        int percentageValue = parseNonnegativeInteger(numericValue, row, EHandongColumn.EnglishInstruction, "English instruction percentage");
         try
         {
             return new EnglishInstructionPercentage(percentageValue);
@@ -255,9 +229,7 @@ internal sealed class HandongOfferingNormalizer
     private static GeneralEducationCategoryAssignment normalizeGeneralEducationCategory(
         HandongRawOfferingRow row)
     {
-        IReadOnlyList<string> lines = HandongCellValueReader.getNonEmptyLines(
-            row,
-            EHandongColumn.GeneralEducationPractical);
+        IReadOnlyList<string> lines = HandongCellValueReader.getNonEmptyLines(row, EHandongColumn.GeneralEducationPractical);
         if (lines.Count == 0)
         {
             return GeneralEducationCategoryAssignment.NotProvided;
@@ -302,9 +274,7 @@ internal sealed class HandongOfferingNormalizer
     private static EPassFailOptionAvailability parsePassFailOptionAvailability(
         HandongRawOfferingRow row)
     {
-        IReadOnlyList<string> lines = HandongCellValueReader.getNonEmptyLines(
-            row,
-            EHandongColumn.PassFailAvailable);
+        IReadOnlyList<string> lines = HandongCellValueReader.getNonEmptyLines(row, EHandongColumn.PassFailAvailable);
         if (lines.Count == 0)
         {
             throw new InvalidHandongSourceRecordException(
@@ -337,9 +307,7 @@ internal sealed class HandongOfferingNormalizer
 
     private static OfferingDetails normalizeOfferingDetails(HandongRawOfferingRow row)
     {
-        IReadOnlyList<string> syllabusLines = HandongCellValueReader.getNonEmptyLines(
-            row,
-            EHandongColumn.Syllabus);
+        IReadOnlyList<string> syllabusLines = HandongCellValueReader.getNonEmptyLines(row, EHandongColumn.Syllabus);
         if (syllabusLines.Count != 0)
         {
             throw new InvalidHandongSourceRecordException(
@@ -348,9 +316,7 @@ internal sealed class HandongOfferingNormalizer
                 "The export unexpectedly contains syllabus data that cannot be published safely.");
         }
 
-        IReadOnlyList<string> noteLines = HandongCellValueReader.getNonEmptyLines(
-            row,
-            EHandongColumn.Notes);
+        IReadOnlyList<string> noteLines = HandongCellValueReader.getNonEmptyLines(row, EHandongColumn.Notes);
         ERemarksAvailability remarksAvailability;
         if (noteLines.Count == 0)
         {
@@ -378,11 +344,7 @@ internal sealed class HandongOfferingNormalizer
         string valueDescription)
     {
         int parsedValue;
-        bool isParsed = int.TryParse(
-            sourceValue,
-            NumberStyles.None,
-            CultureInfo.InvariantCulture,
-            out parsedValue);
+        bool isParsed = int.TryParse(sourceValue, NumberStyles.None, CultureInfo.InvariantCulture, out parsedValue);
         if (isParsed == false || parsedValue < 0)
         {
             throw new InvalidHandongSourceRecordException(

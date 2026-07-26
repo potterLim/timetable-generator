@@ -94,18 +94,12 @@ public sealed class ProductModalAndTabVisualStateTests
                 {
                     Assert.False(planTabCloseButton.IsEffectivelyEnabled);
                     Assert.Equal(1.0, planTabCloseButton.Opacity);
-                    ContentPresenter planTabClosePresenter =
-                        findRequiredTemplateControl<ContentPresenter>(
-                            planTabCloseButton,
-                            "PART_ContentPresenter");
+                    ContentPresenter planTabClosePresenter = findRequiredTemplateControl<ContentPresenter>(planTabCloseButton, "PART_ContentPresenter");
                     assertTransparent(planTabClosePresenter.Background);
                     assertTransparent(planTabClosePresenter.BorderBrush);
                 }
 
-                ContentPresenter outlinePresenter =
-                    findRequiredTemplateControl<ContentPresenter>(
-                        outlineButton,
-                        "PART_ContentPresenter");
+                ContentPresenter outlinePresenter = findRequiredTemplateControl<ContentPresenter>(outlineButton, "PART_ContentPresenter");
                 Assert.Equal(1.0, outlineButton.Opacity);
                 Assert.Equal(1.0, outlinePresenter.Opacity);
                 assertBrushUsesToken(outlinePresenter.Background, CONTROL_SURFACE, themeVariant);
@@ -122,10 +116,7 @@ public sealed class ProductModalAndTabVisualStateTests
                 assertBrushUsesToken(comboBoxBorder.Background, CONTROL_SURFACE, themeVariant);
                 assertBrushUsesToken(comboBoxBorder.BorderBrush, CONTROL_BORDER, themeVariant);
 
-                ContentPresenter exportPresenter =
-                    findRequiredTemplateControl<ContentPresenter>(
-                        exportButton,
-                        "PART_ContentPresenter");
+                ContentPresenter exportPresenter = findRequiredTemplateControl<ContentPresenter>(exportButton, "PART_ContentPresenter");
                 Assert.Equal(1.0, exportPresenter.Opacity);
 
                 workspace.CancelPersonalScheduleEditCommand.Execute(null);
@@ -165,10 +156,7 @@ public sealed class ProductModalAndTabVisualStateTests
 
                 Assert.False(appearanceButton.IsEffectivelyEnabled);
                 Assert.Equal(0.62, appearanceButton.Opacity);
-                ContentPresenter presenter =
-                    findRequiredTemplateControl<ContentPresenter>(
-                        appearanceButton,
-                        "PART_ContentPresenter");
+                ContentPresenter presenter = findRequiredTemplateControl<ContentPresenter>(appearanceButton, "PART_ContentPresenter");
                 assertTransparent(presenter.Background);
                 assertTransparent(presenter.BorderBrush);
 

@@ -38,8 +38,7 @@ internal sealed class HandongCatalogNormalizer
             addOrValidateCourse(coursesByCode, normalizationResult.Course, manualReviews);
             addOffering(offeringsByKey, normalizationResult.Offering);
 
-            if (normalizationResult.EnglishScheduleComparison ==
-                EEnglishScheduleComparison.DiffersFromKoreanSchedule)
+            if (normalizationResult.EnglishScheduleComparison == EEnglishScheduleComparison.DiffersFromKoreanSchedule)
             {
                 ++englishScheduleMismatchCount;
             }
@@ -102,8 +101,7 @@ internal sealed class HandongCatalogNormalizer
         {
             if (existingCourseOrNull == null)
             {
-                throw new InvalidOperationException(
-                    "The course lookup returned a null course for an existing key.");
+                throw new InvalidOperationException("The course lookup returned a null course for an existing key.");
             }
 
             validateConsistentCourse(existingCourseOrNull, candidateCourse);
@@ -164,8 +162,7 @@ internal sealed class HandongCatalogNormalizer
         {
             if (existingOfferingOrNull == null)
             {
-                throw new InvalidOperationException(
-                    "The offering lookup returned a null offering for an existing key.");
+                throw new InvalidOperationException("The offering lookup returned a null offering for an existing key.");
             }
 
             throw new DuplicateCourseOfferingException(
@@ -184,27 +181,18 @@ internal sealed class HandongCatalogNormalizer
 
     private static int compareOfferings(CatalogOffering left, CatalogOffering right)
     {
-        int courseCodeComparison = string.Compare(
-            left.Key.CourseCode.Value,
-            right.Key.CourseCode.Value,
-            StringComparison.Ordinal);
+        int courseCodeComparison = string.Compare(left.Key.CourseCode.Value, right.Key.CourseCode.Value, StringComparison.Ordinal);
         if (courseCodeComparison != 0)
         {
             return courseCodeComparison;
         }
 
-        return string.Compare(
-            left.Key.SectionCode.Value,
-            right.Key.SectionCode.Value,
-            StringComparison.Ordinal);
+        return string.Compare(left.Key.SectionCode.Value, right.Key.SectionCode.Value, StringComparison.Ordinal);
     }
 
     private static int compareManualReviews(CatalogManualReview left, CatalogManualReview right)
     {
-        int courseCodeComparison = string.Compare(
-            left.CourseCode.Value,
-            right.CourseCode.Value,
-            StringComparison.Ordinal);
+        int courseCodeComparison = string.Compare(left.CourseCode.Value, right.CourseCode.Value, StringComparison.Ordinal);
         if (courseCodeComparison != 0)
         {
             return courseCodeComparison;

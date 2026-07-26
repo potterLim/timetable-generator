@@ -65,11 +65,7 @@ internal sealed class ProductGoogleCalendarOAuthConfigurationProvider
 
             try
             {
-                GoogleOAuthClientSecret? clientSecretOrNull =
-                    hasEnvironmentClientSecret
-                        ? new GoogleOAuthClientSecret(
-                            environmentValues.ClientSecretOrNull!)
-                        : null;
+                GoogleOAuthClientSecret? clientSecretOrNull = hasEnvironmentClientSecret ? new GoogleOAuthClientSecret(environmentValues.ClientSecretOrNull!) : null;
                 return new GoogleCalendarOAuthConfiguration(
                     new GoogleOAuthClientId(environmentValues.ClientIdOrNull!),
                     clientSecretOrNull);
@@ -158,10 +154,7 @@ internal sealed class ProductGoogleCalendarOAuthConfigurationProvider
                     return null;
                 }
 
-                GoogleOAuthClientSecret? parsedClientSecretOrNull =
-                    isSchemaVersionTwo
-                        ? new GoogleOAuthClientSecret(clientSecretOrNull!)
-                        : null;
+                GoogleOAuthClientSecret? parsedClientSecretOrNull = isSchemaVersionTwo ? new GoogleOAuthClientSecret(clientSecretOrNull!) : null;
                 return new GoogleCalendarOAuthConfiguration(
                     new GoogleOAuthClientId(clientIdOrNull),
                     parsedClientSecretOrNull);

@@ -16,14 +16,8 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
     public void TryRebindPreservesWorkspaceIdentityAndChoices()
     {
         CourseCatalog originalCatalog = createOriginalCatalog();
-        CourseChoiceGroup courseChoiceGroup =
-            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
-                "AAA10001",
-                "01");
-        UnscheduledOfferingSelection unscheduledSelection =
-            ScheduleRecommendationTestData.CreateUnscheduledSelection(
-                "BBB10001",
-                "01");
+        CourseChoiceGroup courseChoiceGroup = ScheduleRecommendationTestData.CreateCourseChoiceGroup("AAA10001", "01");
+        UnscheduledOfferingSelection unscheduledSelection = ScheduleRecommendationTestData.CreateUnscheduledSelection("BBB10001", "01");
         PlanningPlan firstPlanWithoutBookmark = createPlan(
             originalCatalog,
             "첫 계획",
@@ -71,11 +65,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
     {
         CatalogCourse firstCourse = ScheduleRecommendationTestData.CreateCourse("AAA10001");
         CatalogCourse secondCourse = ScheduleRecommendationTestData.CreateCourse("BBB10001");
-        CatalogOffering preferredOffering =
-            ScheduleRecommendationTestData.CreateScheduledOffering(
-                "AAA10001",
-                "01",
-                createMondaySlot());
+        CatalogOffering preferredOffering = ScheduleRecommendationTestData.CreateScheduledOffering("AAA10001", "01", createMondaySlot());
         CatalogOffering excludedOffering =
             ScheduleRecommendationTestData.CreateScheduledOffering(
                 "AAA10001",
@@ -267,11 +257,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             catalog.Revision,
             new CatalogArtifactSha256(new string('b', 64)));
 
-        PlanningWorkspaceCatalogRebindResult result =
-            PlanningWorkspaceCatalogRebinder.TryRebind(
-                catalog,
-                changedArtifactBinding,
-                workspace);
+        PlanningWorkspaceCatalogRebindResult result = PlanningWorkspaceCatalogRebinder.TryRebind(catalog, changedArtifactBinding, workspace);
 
         assertFailure(result, EPlanningWorkspaceCatalogRebindStatus.CatalogArtifactSha256Mismatch);
     }
@@ -279,17 +265,10 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
     [TestMethod]
     public void TryRebindRejectsMissingCourse()
     {
-        CourseChoiceGroup choiceGroup =
-            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
-                "AAA10001",
-                "01");
+        CourseChoiceGroup choiceGroup = ScheduleRecommendationTestData.CreateCourseChoiceGroup("AAA10001", "01");
         PlanningWorkspace workspace = createWorkspaceWithCourseChoiceGroup(choiceGroup);
         CatalogCourse otherCourse = ScheduleRecommendationTestData.CreateCourse("CCC10001");
-        CatalogOffering otherOffering =
-            ScheduleRecommendationTestData.CreateScheduledOffering(
-                "CCC10001",
-                "01",
-                createMondaySlot());
+        CatalogOffering otherOffering = ScheduleRecommendationTestData.CreateScheduledOffering("CCC10001", "01", createMondaySlot());
         CourseCatalog incompatibleCatalog = createCatalog(
             "handong-global-university:2026-2:r0002",
             "2026-2",
@@ -305,10 +284,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
     [TestMethod]
     public void TryRebindRejectsMissingOffering()
     {
-        CourseChoiceGroup choiceGroup =
-            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
-                "AAA10001",
-                "01");
+        CourseChoiceGroup choiceGroup = ScheduleRecommendationTestData.CreateCourseChoiceGroup("AAA10001", "01");
         PlanningWorkspace workspace = createWorkspaceWithCourseChoiceGroup(choiceGroup);
         OfferingId selectedOfferingId = choiceGroup.CourseCandidates[0].OfferingCandidates[0].OfferingId;
         CourseCatalog compatibleCatalog = createCompatibleCatalog();
@@ -336,10 +312,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
     [TestMethod]
     public void TryRebindRejectsOfferingOwnedByAnotherCourse()
     {
-        CourseChoiceGroup choiceGroup =
-            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
-                "AAA10001",
-                "01");
+        CourseChoiceGroup choiceGroup = ScheduleRecommendationTestData.CreateCourseChoiceGroup("AAA10001", "01");
         PlanningWorkspace workspace = createWorkspaceWithCourseChoiceGroup(choiceGroup);
         OfferingId selectedOfferingId = choiceGroup.CourseCandidates[0].OfferingCandidates[0].OfferingId;
         CatalogCourse expectedCourse = ScheduleRecommendationTestData.CreateCourse("AAA10001");
@@ -364,16 +337,10 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
     [TestMethod]
     public void TryRebindPreservesChoiceWhenOfferingTimeBecomesNotProvided()
     {
-        CourseChoiceGroup choiceGroup =
-            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
-                "AAA10001",
-                "01");
+        CourseChoiceGroup choiceGroup = ScheduleRecommendationTestData.CreateCourseChoiceGroup("AAA10001", "01");
         PlanningWorkspace workspace = createWorkspaceWithCourseChoiceGroup(choiceGroup);
         CatalogCourse course = ScheduleRecommendationTestData.CreateCourse("AAA10001");
-        CatalogOffering unscheduledOffering =
-            ScheduleRecommendationTestData.CreateUnscheduledOffering(
-                "AAA10001",
-                "01");
+        CatalogOffering unscheduledOffering = ScheduleRecommendationTestData.CreateUnscheduledOffering("AAA10001", "01");
         CourseCatalog updatedCatalog = createCatalog(
             "handong-global-university:2026-2:r0002",
             "2026-2",
@@ -393,10 +360,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
     public void TryRebindRejectsUnscheduledSelectionWhoseTimeBecameProvided()
     {
         CourseCatalog originalCatalog = createOriginalCatalog();
-        UnscheduledOfferingSelection selection =
-            ScheduleRecommendationTestData.CreateUnscheduledSelection(
-                "BBB10001",
-                "01");
+        UnscheduledOfferingSelection selection = ScheduleRecommendationTestData.CreateUnscheduledSelection("BBB10001", "01");
         PlanningPlan plan = createPlan(
             originalCatalog,
             "기본 계획",
@@ -407,11 +371,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             plan.Id,
             new PlanningPlan[] { plan });
         CatalogCourse course = ScheduleRecommendationTestData.CreateCourse("BBB10001");
-        CatalogOffering scheduledOffering =
-            ScheduleRecommendationTestData.CreateScheduledOffering(
-                "BBB10001",
-                "01",
-                createMondaySlot());
+        CatalogOffering scheduledOffering = ScheduleRecommendationTestData.CreateScheduledOffering("BBB10001", "01", createMondaySlot());
         CourseCatalog incompatibleCatalog = createCatalog(
             "handong-global-university:2026-2:r0002",
             "2026-2",

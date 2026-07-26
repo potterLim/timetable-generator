@@ -109,11 +109,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                     continue;
                 }
 
-                candidates.Add(new ScheduleBoardPresentation(
-                    recommendation.Schedule,
-                    activePlanOrNull.Name,
-                    catalog.InstitutionName,
-                    catalog.Term));
+                candidates.Add(new ScheduleBoardPresentation(recommendation.Schedule, activePlanOrNull.Name, catalog.InstitutionName, catalog.Term));
             }
 
             return candidates.AsReadOnly();
@@ -466,14 +462,8 @@ internal sealed partial class PlannerWorkspaceViewModel
         foreach (ApplicationScheduleRecommendation recommendation
             in result.Recommendations)
         {
-            PresentationScheduleRecommendation schedule =
-                ScheduleRecommendationProjector.Project(
-                    recommendation,
-                    mCatalogProjection);
-            ScheduleRecommendationBookmark? bookmarkOrNull =
-                createRecommendationBookmarkOrNull(
-                    recommendation,
-                    planSnapshot);
+            PresentationScheduleRecommendation schedule = ScheduleRecommendationProjector.Project(recommendation, mCatalogProjection);
+            ScheduleRecommendationBookmark? bookmarkOrNull = createRecommendationBookmarkOrNull(recommendation, planSnapshot);
             recommendations.Add(new ScheduleRecommendationViewItem(schedule, bookmarkOrNull));
         }
 
@@ -568,9 +558,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             return 0;
         }
 
-        for (int recommendationIndex = 0;
-            recommendationIndex < recommendations.Count;
-            ++recommendationIndex)
+        for (int recommendationIndex = 0; recommendationIndex < recommendations.Count; ++recommendationIndex)
         {
             ScheduleRecommendationBookmark? candidateBookmarkOrNull = recommendations[recommendationIndex].BookmarkOrNull;
             if (candidateBookmarkOrNull != null

@@ -77,10 +77,7 @@ internal static class ScheduleCalendarProjector
         foreach (ScheduleEntry scheduleEntry in displayedSchedule.Entries)
         {
             CalendarEventSourceIdentity sourceIdentity = createSourceIdentity(scheduleEntry);
-            CalendarEventProjectionGroupKey key =
-                new CalendarEventProjectionGroupKey(
-                    sourceIdentity,
-                    scheduleEntry.TimeRange);
+            CalendarEventProjectionGroupKey key = new CalendarEventProjectionGroupKey(sourceIdentity, scheduleEntry.TimeRange);
             CalendarEventContent content = createEventContent(
                 scheduleEntry,
                 courseSummaryStyle);

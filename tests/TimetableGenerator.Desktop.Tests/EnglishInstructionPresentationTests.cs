@@ -67,10 +67,7 @@ public sealed class EnglishInstructionPresentationTests
         {
             CultureInfo.CurrentCulture = new CultureInfo("de-DE");
             CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
-            EnglishInstructionPercentageRange range =
-                new EnglishInstructionPercentageRange(
-                    new EnglishInstructionPercentage(12.5m),
-                    new EnglishInstructionPercentage(37.5m));
+            EnglishInstructionPercentageRange range = new EnglishInstructionPercentageRange(new EnglishInstructionPercentage(12.5m), new EnglishInstructionPercentage(37.5m));
 
             Assert.Equal("영어 12.5–37.5%", range.DisplayText);
         }
@@ -341,11 +338,7 @@ public sealed class EnglishInstructionPresentationTests
             CatalogOfferingProjection sourceOffering = sourceCourse.Offerings[index];
             CatalogOfferingMetadata sourceMetadata = sourceOffering.Metadata;
             CatalogOfferingInstructionMetadata sourceInstruction = sourceMetadata.Instruction;
-            CatalogOfferingInstructionMetadata instruction =
-                new CatalogOfferingInstructionMetadata(
-                    sourceInstruction.InstructorAssignment,
-                    percentages[index],
-                    sourceInstruction.Grading);
+            CatalogOfferingInstructionMetadata instruction = new CatalogOfferingInstructionMetadata(sourceInstruction.InstructorAssignment, percentages[index], sourceInstruction.Grading);
             CatalogOfferingMetadata metadata = new CatalogOfferingMetadata(
                 sourceMetadata.OfferingId,
                 sourceMetadata.Classification,

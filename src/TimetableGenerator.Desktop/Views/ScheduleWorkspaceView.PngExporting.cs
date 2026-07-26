@@ -70,21 +70,13 @@ internal sealed partial class ScheduleWorkspaceView
             {
                 if (hasPngFileNameExtension(destinationFileOrNull.Name) == false)
                 {
-                    showPersistentExportStatus(
-                        "파일 이름을 .png로 끝내 주세요.",
-                        EExportStatus.Failure);
+                    showPersistentExportStatus("파일 이름을 .png로 끝내 주세요.", EExportStatus.Failure);
                     return;
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
-                showPersistentExportStatus(
-                    "현재 시간표 PNG를 저장하는 중입니다.",
-                    EExportStatus.Information);
-                using (ScheduleBoardPngExportSnapshot snapshot =
-                    ScheduleBoardPngExportSnapshot.create(
-                        pngExportHost,
-                        exportPresentationOrNull,
-                        scheduleBoard))
+                showPersistentExportStatus("현재 시간표 PNG를 저장하는 중입니다.", EExportStatus.Information);
+                using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.create(pngExportHost, exportPresentationOrNull, scheduleBoard))
                 using (Stream destinationStream = await destinationFileOrNull.OpenWriteAsync())
                 {
                     await exportSnapshotAsync(snapshot, destinationStream, cancellationToken);
@@ -129,19 +121,14 @@ internal sealed partial class ScheduleWorkspaceView
             using (IStorageFolder selectedFolder = selectedFolders[0])
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                showPersistentExportStatus(
-                    "모든 가능한 시간표 PNG를 저장하는 중입니다.",
-                    EExportStatus.Information);
+                showPersistentExportStatus("모든 가능한 시간표 PNG를 저장하는 중입니다.", EExportStatus.Information);
                 string? parentDirectoryPathOrNull = selectedFolder.TryGetLocalPath();
                 if (parentDirectoryPathOrNull == null)
                 {
                     throw new NotSupportedException("Batch PNG export requires a local desktop folder.");
                 }
 
-                using (SchedulePngBatchDirectory batchDirectory =
-                    SchedulePngBatchDirectoryAllocator.createStaging(
-                        parentDirectoryPathOrNull,
-                        cancellationToken))
+                using (SchedulePngBatchDirectory batchDirectory = SchedulePngBatchDirectoryAllocator.createStaging(parentDirectoryPathOrNull, cancellationToken))
                 {
                     SchedulePngBatchWriter writer = new SchedulePngBatchWriter(mPngExporter);
                     await writer.exportAsync(
@@ -151,17 +138,11 @@ internal sealed partial class ScheduleWorkspaceView
                         getRequiredPngExportHost(),
                         cancellationToken);
                     cancellationToken.ThrowIfCancellationRequested();
-                    batchDirectory.commitAsUniqueBatch(
-                        exportBatch.PlanName,
-                        cancellationToken);
+                    batchDirectory.commitAsUniqueBatch(exportBatch.PlanName, cancellationToken);
                 }
             }
 
-            showTransientExportStatus(
-                "가능한 시간표 "
-                    + exportBatch.Candidates.Count
-                    + "개를 PNG로 저장했습니다.",
-                EExportStatus.Success);
+            showTransientExportStatus("가능한 시간표 " + exportBatch.Candidates.Count + "개를 PNG로 저장했습니다.", EExportStatus.Success);
         }
         finally
         {
@@ -264,9 +245,7 @@ internal sealed partial class ScheduleWorkspaceView
     private static void disposeUnselectedFolders(
         System.Collections.Generic.IReadOnlyList<IStorageFolder> folders)
     {
-        for (int folderIndex = 1;
-            folderIndex < folders.Count;
-            ++folderIndex)
+        for (int folderIndex = 1; folderIndex < folders.Count; ++folderIndex)
         {
             folders[folderIndex].Dispose();
         }
@@ -276,9 +255,7 @@ internal sealed partial class ScheduleWorkspaceView
     {
         if (exception is SchedulePngBatchExportException batchException)
         {
-            showPersistentExportStatus(
-                formatPngBatchFailureMessage(batchException),
-                EExportStatus.Failure);
+            showPersistentExportStatus(formatPngBatchFailureMessage(batchException), EExportStatus.Failure);
             return;
         }
 

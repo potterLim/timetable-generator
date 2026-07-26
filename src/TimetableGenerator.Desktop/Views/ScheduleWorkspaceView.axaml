@@ -227,24 +227,16 @@
                   AutomationProperties.HelpText="Apple 캘린더에 현재 시간표를 한 번 내보냅니다.">
                 <MenuItem.Icon>
                   <Grid
-                      x:Name="ExportAppleCalendarLogoSlot"
+                      x:Name="ExportAppleCalendarIconSlot"
                       Classes="export-menu-logo-slot"
                       AutomationProperties.AccessibilityView="Raw"
                       IsHitTestVisible="False">
                     <Image
-                        x:Name="ExportAppleCalendarLogoImage"
+                        x:Name="ExportAppleCalendarIconImage"
                         Classes="export-menu-logo"
                         Width="24"
                         Height="24"
-                        IsVisible="False" />
-                    <icons:FluentIcon
-                        x:Name="ExportAppleCalendarFallbackIcon"
-                        Classes="export-menu-icon"
-                        AutomationProperties.AccessibilityView="Raw"
-                        Icon="CalendarMonth"
-                        IconVariant="Regular"
-                        IconSize="Size20"
-                        FontSize="20" />
+                        Source="/Assets/Export/CalendarExportIcon.png" />
                   </Grid>
                 </MenuItem.Icon>
               </MenuItem>

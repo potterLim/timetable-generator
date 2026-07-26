@@ -51,10 +51,7 @@ public sealed class PlanningWorkspaceEditorTests
     [TestMethod]
     public void RenamePlanPreservesItsCatalogAndChoices()
     {
-        CourseChoiceGroup choiceGroup =
-            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
-                "AAA10001",
-                "01");
+        CourseChoiceGroup choiceGroup = ScheduleRecommendationTestData.CreateCourseChoiceGroup("AAA10001", "01");
         PlanningPlan plan = createPlan(
             "변경 전",
             new CourseChoiceGroup[] { choiceGroup },
@@ -83,11 +80,7 @@ public sealed class PlanningWorkspaceEditorTests
             firstPlan.Id,
             new PlanningPlan[] { firstPlan, secondPlan });
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
-        CourseChoiceGroup addedChoiceGroup =
-            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
-                "AAA10001",
-                "01",
-                "02");
+        CourseChoiceGroup addedChoiceGroup = ScheduleRecommendationTestData.CreateCourseChoiceGroup("AAA10001", "01", "02");
 
         PlanningWorkspace result = editor.AddCourseChoiceGroup(workspace, firstPlan.Id, addedChoiceGroup);
 
@@ -105,10 +98,7 @@ public sealed class PlanningWorkspaceEditorTests
             plan.Id,
             new PlanningPlan[] { plan });
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
-        UnscheduledOfferingSelection selection =
-            ScheduleRecommendationTestData.CreateUnscheduledSelection(
-                "AAA10001",
-                "01");
+        UnscheduledOfferingSelection selection = ScheduleRecommendationTestData.CreateUnscheduledSelection("AAA10001", "01");
 
         PlanningWorkspace result = editor.AddUnscheduledOfferingSelection(workspace, plan.Id, selection);
 
@@ -121,14 +111,8 @@ public sealed class PlanningWorkspaceEditorTests
     [TestMethod]
     public void RemoveCourseRemovesEitherScheduleStatus()
     {
-        CourseChoiceGroup scheduledChoiceGroup =
-            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
-                "AAA10001",
-                "01");
-        UnscheduledOfferingSelection unscheduledSelection =
-            ScheduleRecommendationTestData.CreateUnscheduledSelection(
-                "BBB10001",
-                "01");
+        CourseChoiceGroup scheduledChoiceGroup = ScheduleRecommendationTestData.CreateCourseChoiceGroup("AAA10001", "01");
+        UnscheduledOfferingSelection unscheduledSelection = ScheduleRecommendationTestData.CreateUnscheduledSelection("BBB10001", "01");
         PlanningPlan plan = createPlan(
             "기본 계획",
             new CourseChoiceGroup[] { scheduledChoiceGroup },
@@ -155,10 +139,7 @@ public sealed class PlanningWorkspaceEditorTests
     [TestMethod]
     public void PersonalScheduleLifecycleUpdatesOnlyTheRequestedPlan()
     {
-        CourseChoiceGroup existingChoiceGroup =
-            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
-                "AAA10001",
-                "01");
+        CourseChoiceGroup existingChoiceGroup = ScheduleRecommendationTestData.CreateCourseChoiceGroup("AAA10001", "01");
         PlanningPlan firstPlan = createPlan(
             "첫 계획",
             new CourseChoiceGroup[] { existingChoiceGroup },
@@ -211,10 +192,7 @@ public sealed class PlanningWorkspaceEditorTests
             plan.Id,
             new PlanningPlan[] { plan });
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
-        CourseChoiceGroup choiceGroup =
-            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
-                "AAA10001",
-                "01");
+        CourseChoiceGroup choiceGroup = ScheduleRecommendationTestData.CreateCourseChoiceGroup("AAA10001", "01");
 
         PlanningWorkspace withCourse = editor.AddCourseChoiceGroup(workspace, plan.Id, choiceGroup);
         PlanningWorkspace renamed = editor.RenamePlan(withCourse, plan.Id, new PlanName("이름 변경"));
@@ -231,11 +209,7 @@ public sealed class PlanningWorkspaceEditorTests
     [TestMethod]
     public void RecommendationBookmarkIsPlanScopedAndClearedByContentChanges()
     {
-        CourseChoiceGroup choiceGroup =
-            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
-                "AAA10001",
-                "01",
-                "02");
+        CourseChoiceGroup choiceGroup = ScheduleRecommendationTestData.CreateCourseChoiceGroup("AAA10001", "01", "02");
         PlanningPlan firstPlan = createPlan(
             "첫 계획",
             new CourseChoiceGroup[] { choiceGroup },
@@ -247,9 +221,7 @@ public sealed class PlanningWorkspaceEditorTests
             new PlanningPlan[] { firstPlan, secondPlan });
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
         OfferingId selectedOfferingId = choiceGroup.CourseCandidates[0].OfferingCandidates[1].OfferingId;
-        ScheduleRecommendationBookmark bookmark =
-            new ScheduleRecommendationBookmark(
-                new OfferingId[] { selectedOfferingId });
+        ScheduleRecommendationBookmark bookmark = new ScheduleRecommendationBookmark(new OfferingId[] { selectedOfferingId });
 
         PlanningWorkspace remembered = editor.RememberLastViewedRecommendation(
             workspace,
@@ -271,15 +243,8 @@ public sealed class PlanningWorkspaceEditorTests
     [TestMethod]
     public void ClearPlanContentPreservesPlanIdentityAndClearsEveryContentKind()
     {
-        CourseChoiceGroup choiceGroup =
-            ScheduleRecommendationTestData.CreateCourseChoiceGroup(
-                "AAA10001",
-                "01",
-                "02");
-        UnscheduledOfferingSelection unscheduledSelection =
-            ScheduleRecommendationTestData.CreateUnscheduledSelection(
-                "BBB10001",
-                "01");
+        CourseChoiceGroup choiceGroup = ScheduleRecommendationTestData.CreateCourseChoiceGroup("AAA10001", "01", "02");
+        UnscheduledOfferingSelection unscheduledSelection = ScheduleRecommendationTestData.CreateUnscheduledSelection("BBB10001", "01");
         PersonalSchedule personalSchedule = createPersonalSchedule(PersonalScheduleId.CreateNew(), "고정 일정");
         PlanningPlan populatedPlan = createPlan(
             "유지할 계획 이름",

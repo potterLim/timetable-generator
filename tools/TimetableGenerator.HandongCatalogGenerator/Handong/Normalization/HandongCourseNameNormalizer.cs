@@ -8,9 +8,7 @@ internal sealed class HandongCourseNameNormalizer
 {
     public HandongCourseNameNormalizationResult NormalizeCourseName(HandongRawOfferingRow row)
     {
-        IReadOnlyList<string> lines = HandongCellValueReader.getNonEmptyLines(
-            row,
-            EHandongColumn.CourseName);
+        IReadOnlyList<string> lines = HandongCellValueReader.getNonEmptyLines(row, EHandongColumn.CourseName);
         if (lines.Count < 2)
         {
             throw new InvalidHandongSourceRecordException(

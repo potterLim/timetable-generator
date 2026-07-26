@@ -623,8 +623,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
 
         using (JsonDocument result = await executeAutomationSourceHarnessAsync(HARNESS))
         {
-            JsonElement success =
-                result.RootElement.GetProperty("success");
+            JsonElement success = result.RootElement.GetProperty("success");
             Assert.Equal(
                 "ok",
                 success.GetProperty("status").GetString());
@@ -657,8 +656,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                     .GetProperty("finalEventUrl")
                     .GetString());
 
-            JsonElement replacement =
-                result.RootElement.GetProperty("replacement");
+            JsonElement replacement = result.RootElement.GetProperty("replacement");
             Assert.True(
                 replacement
                     .GetProperty("operationFailed")
@@ -672,8 +670,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                     .GetProperty("previousEventPreserved")
                     .GetBoolean());
 
-            JsonElement lateReplacement =
-                result.RootElement.GetProperty("lateReplacement");
+            JsonElement lateReplacement = result.RootElement.GetProperty("lateReplacement");
             Assert.True(
                 lateReplacement
                     .GetProperty("operationFailed")
@@ -691,8 +688,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                     .GetProperty("previousEventPreserved")
                     .GetBoolean());
 
-            JsonElement postCommit =
-                result.RootElement.GetProperty("postCommit");
+            JsonElement postCommit = result.RootElement.GetProperty("postCommit");
             Assert.True(
                 postCommit
                     .GetProperty("operationFailed")
@@ -714,8 +710,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                     .GetProperty("createdEventMarkerPreserved")
                     .GetBoolean());
 
-            JsonElement uncertainCleanup =
-                result.RootElement.GetProperty("uncertainCleanup");
+            JsonElement uncertainCleanup = result.RootElement.GetProperty("uncertainCleanup");
             Assert.True(
                 uncertainCleanup
                     .GetProperty("operationFailed")
@@ -729,8 +724,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                     .GetProperty("previousEventPreserved")
                     .GetBoolean());
 
-            JsonElement creation =
-                result.RootElement.GetProperty("creation");
+            JsonElement creation = result.RootElement.GetProperty("creation");
             Assert.True(
                 creation
                     .GetProperty("operationFailed")
@@ -966,11 +960,9 @@ public sealed class JxaAppleCalendarNativeBridgeTests
             }
             """;
 
-        using (JsonDocument result =
-            await executeAutomationSourceHarnessAsync(HARNESS))
+        using (JsonDocument result = await executeAutomationSourceHarnessAsync(HARNESS))
         {
-            JsonElement replacement =
-                result.RootElement.GetProperty("replacement");
+            JsonElement replacement = result.RootElement.GetProperty("replacement");
             Assert.Equal(
                 "ok",
                 replacement.GetProperty("status").GetString());
@@ -993,8 +985,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                     .GetProperty("canaryDeleted")
                     .GetBoolean());
 
-            JsonElement postCommit =
-                result.RootElement.GetProperty("postCommit");
+            JsonElement postCommit = result.RootElement.GetProperty("postCommit");
             Assert.True(
                 postCommit
                     .GetProperty("operationFailed")
@@ -1008,8 +999,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                     .GetProperty("canaryPreserved")
                     .GetBoolean());
 
-            JsonElement creation =
-                result.RootElement.GetProperty("creation");
+            JsonElement creation = result.RootElement.GetProperty("creation");
             Assert.Equal(
                 "ok",
                 creation.GetProperty("status").GetString());
@@ -1027,15 +1017,12 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                     .GetProperty("calendarPreserved")
                     .GetBoolean());
 
-            JsonElement duplicate =
-                result.RootElement.GetProperty("duplicate");
+            JsonElement duplicate = result.RootElement.GetProperty("duplicate");
             Assert.Equal(
                 "ok",
                 duplicate.GetProperty("status").GetString());
-            string? firstIdOrNull =
-                duplicate.GetProperty("firstId").GetString();
-            string? secondIdOrNull =
-                duplicate.GetProperty("secondId").GetString();
+            string? firstIdOrNull = duplicate.GetProperty("firstId").GetString();
+            string? secondIdOrNull = duplicate.GetProperty("secondId").GetString();
             Assert.NotNull(firstIdOrNull);
             Assert.NotNull(secondIdOrNull);
             Assert.StartsWith(
@@ -1048,8 +1035,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                 StringComparison.Ordinal);
             Assert.NotEqual(firstIdOrNull, secondIdOrNull);
 
-            JsonElement invalidCreation =
-                result.RootElement.GetProperty("invalidCreation");
+            JsonElement invalidCreation = result.RootElement.GetProperty("invalidCreation");
             Assert.True(
                 invalidCreation
                     .GetProperty("operationFailed")
@@ -1120,8 +1106,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
             }
             """;
 
-        using (JsonDocument result =
-            await executeAutomationSourceHarnessAsync(HARNESS))
+        using (JsonDocument result = await executeAutomationSourceHarnessAsync(HARNESS))
         {
             Assert.True(
                 result.RootElement
@@ -1200,8 +1185,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
             }
             """;
 
-        using (JsonDocument result =
-            await executeAutomationSourceHarnessAsync(HARNESS))
+        using (JsonDocument result = await executeAutomationSourceHarnessAsync(HARNESS))
         {
             Assert.True(
                 result.RootElement
@@ -1356,9 +1340,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
         string responseStatus,
         int expectedFailureKindValue)
     {
-        RecordingAppleCalendarAutomationCommand command =
-            new RecordingAppleCalendarAutomationCommand(
-                "{\"status\":\"" + responseStatus + "\"}");
+        RecordingAppleCalendarAutomationCommand command = new RecordingAppleCalendarAutomationCommand("{\"status\":\"" + responseStatus + "\"}");
         JxaAppleCalendarNativeBridge bridge = new JxaAppleCalendarNativeBridge(command);
 
         AppleCalendarNativeBridgeException exception =
@@ -1395,10 +1377,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
         const string REQUEST_PATH = "/tmp/calendar-request-012345.json";
         const string USER_CONTENT = "민감한 일정 이름";
 
-        ProcessStartInfo startInfo =
-            ProcessAppleCalendarAutomationCommand.createStartInfo(
-                EAppleCalendarAutomationOperation.ApplyExport,
-                REQUEST_PATH);
+        ProcessStartInfo startInfo = ProcessAppleCalendarAutomationCommand.createStartInfo(EAppleCalendarAutomationOperation.ApplyExport, REQUEST_PATH);
 
         Assert.False(startInfo.UseShellExecute);
         Assert.Equal("/usr/bin/osascript", startInfo.FileName);
@@ -1435,14 +1414,9 @@ public sealed class JxaAppleCalendarNativeBridgeTests
         {
             process.StartInfo = startInfo;
             Assert.True(process.Start());
-            Task<string> standardOutputTask =
-                process.StandardOutput.ReadToEndAsync(
-                    TestContext.Current.CancellationToken);
-            Task<string> standardErrorTask =
-                process.StandardError.ReadToEndAsync(
-                    TestContext.Current.CancellationToken);
-            await process.WaitForExitAsync(
-                TestContext.Current.CancellationToken);
+            Task<string> standardOutputTask = process.StandardOutput.ReadToEndAsync(TestContext.Current.CancellationToken);
+            Task<string> standardErrorTask = process.StandardError.ReadToEndAsync(TestContext.Current.CancellationToken);
+            await process.WaitForExitAsync(TestContext.Current.CancellationToken);
             string standardOutput = await standardOutputTask;
             await standardErrorTask;
             Assert.True(

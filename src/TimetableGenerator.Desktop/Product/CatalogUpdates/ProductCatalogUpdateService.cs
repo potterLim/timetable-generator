@@ -50,10 +50,7 @@ internal sealed class ProductCatalogUpdateService : IProductCatalogUpdateService
 
         PlanCatalogBinding activeBinding = requireWorkspaceBinding(activePackage, workspaceSnapshot);
         VerifiedCatalogPackage candidatePackage = await mCatalogDownloader.DownloadDefaultCatalogAsync(cancellationToken).ConfigureAwait(false);
-        EPlanningCatalogTransitionStatus transitionStatus =
-            PlanningCatalogTransitionPolicy.EvaluateTransition(
-                activeBinding,
-                candidatePackage.CreatePlanCatalogBinding());
+        EPlanningCatalogTransitionStatus transitionStatus = PlanningCatalogTransitionPolicy.EvaluateTransition(activeBinding, candidatePackage.CreatePlanCatalogBinding());
         if (transitionStatus == EPlanningCatalogTransitionStatus.ExactMatch)
         {
             return new ProductCatalogUpdateResult(
@@ -75,11 +72,7 @@ internal sealed class ProductCatalogUpdateService : IProductCatalogUpdateService
                 candidatePackage.Entry.Revision);
         }
 
-        PlanningWorkspaceCatalogRebindResult rebindResult =
-            PlanningWorkspaceCatalogRebinder.TryRebind(
-                candidatePackage.Document.Catalog,
-                candidatePackage.CreatePlanCatalogBinding(),
-                workspaceSnapshot);
+        PlanningWorkspaceCatalogRebindResult rebindResult = PlanningWorkspaceCatalogRebinder.TryRebind(candidatePackage.Document.Catalog, candidatePackage.CreatePlanCatalogBinding(), workspaceSnapshot);
         if (rebindResult.IsRebound == false)
         {
             return new ProductCatalogUpdateResult(
@@ -102,10 +95,7 @@ internal sealed class ProductCatalogUpdateService : IProductCatalogUpdateService
     {
         PlanCatalogBinding activeBinding = workspaceSnapshot.CatalogBinding;
 
-        EPlanningCatalogTransitionStatus activeTransitionStatus =
-            PlanningCatalogTransitionPolicy.EvaluateTransition(
-                activeBinding,
-                activePackage.CreatePlanCatalogBinding());
+        EPlanningCatalogTransitionStatus activeTransitionStatus = PlanningCatalogTransitionPolicy.EvaluateTransition(activeBinding, activePackage.CreatePlanCatalogBinding());
         if (activeTransitionStatus != EPlanningCatalogTransitionStatus.ExactMatch)
         {
             throw new ArgumentException(

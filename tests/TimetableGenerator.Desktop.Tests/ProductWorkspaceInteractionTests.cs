@@ -944,8 +944,7 @@ public sealed class ProductWorkspaceInteractionTests
             Assert.Equal(
                 AutomationLiveSetting.Off,
                 AutomationProperties.GetLiveSetting(validationMessage));
-            List<(string? Text, AutomationLiveSetting LiveSetting)> liveRegionTransitions =
-                new List<(string? Text, AutomationLiveSetting LiveSetting)>();
+            List<(string? Text, AutomationLiveSetting LiveSetting)> liveRegionTransitions = new List<(string? Text, AutomationLiveSetting LiveSetting)>();
             validationMessage.PropertyChanged +=
                 (object? senderOrNull, AvaloniaPropertyChangedEventArgs eventArgs) =>
                 {

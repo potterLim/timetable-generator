@@ -20,11 +20,9 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
     private const string CALLBACK_PATH = "/";
     private const string GOOGLE_CALENDAR_SCOPES = "https://www.googleapis.com/auth/calendar.app.created " + "https://www.googleapis.com/auth/calendar.calendarlist.readonly";
 
-    private const string CALLBACK_PAGE_HISTORY_SCRIPT =
-        "history.replaceState(null,document.title,'/');";
+    private const string CALLBACK_PAGE_HISTORY_SCRIPT = "history.replaceState(null,document.title,'/');";
 
-    private const string SUCCESS_PAGE_CLOSE_SCRIPT =
-        "window.setTimeout(function(){window.close();},800);";
+    private const string SUCCESS_PAGE_CLOSE_SCRIPT = "window.setTimeout(function(){window.close();},800);";
 
     internal static readonly TimeSpan DEFAULT_AUTHORIZATION_TIMEOUT = TimeSpan.FromMinutes(10.0);
 
@@ -280,8 +278,7 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
                 "invalid_callback_path");
         }
 
-        IReadOnlyDictionary<string, string>? queryOrNull =
-            tryParseQueryOrNull(requestUri.Query);
+        IReadOnlyDictionary<string, string>? queryOrNull = tryParseQueryOrNull(requestUri.Query);
         if (queryOrNull == null)
         {
             return GoogleOAuthAuthorizationCodeResult.Fail(
@@ -304,10 +301,7 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
         string? error;
         if (query.TryGetValue("error", out error))
         {
-            EGoogleOAuthAuthorizationStatus status =
-                string.Equals(error, "access_denied", StringComparison.Ordinal)
-                    ? EGoogleOAuthAuthorizationStatus.Cancelled
-                    : EGoogleOAuthAuthorizationStatus.Failed;
+            EGoogleOAuthAuthorizationStatus status = string.Equals(error, "access_denied", StringComparison.Ordinal) ? EGoogleOAuthAuthorizationStatus.Cancelled : EGoogleOAuthAuthorizationStatus.Failed;
             return GoogleOAuthAuthorizationCodeResult.Fail(status, redirectUri, error);
         }
 

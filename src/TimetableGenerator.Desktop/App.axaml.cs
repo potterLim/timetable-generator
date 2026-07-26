@@ -192,21 +192,14 @@ internal sealed class App : Avalonia.Application
 
     private ProductAppearanceViewModel createProductAppearance(ProductDataPaths dataPaths)
     {
-        ProductAppearanceSettingsFileStore settingsStore =
-            new ProductAppearanceSettingsFileStore(
-                dataPaths.AppearanceSettings,
-                new ProductAppearanceSettingsJsonCodec());
+        ProductAppearanceSettingsFileStore settingsStore = new ProductAppearanceSettingsFileStore(dataPaths.AppearanceSettings, new ProductAppearanceSettingsJsonCodec());
         AvaloniaProductThemeVariantService themeVariantService = new AvaloniaProductThemeVariantService(this);
         return new ProductAppearanceViewModel(settingsStore, themeVariantService);
     }
 
     private static ProductShellViewModel createProductShell(ProductDataPaths dataPaths)
     {
-        CatalogSourceConfigurationPath configurationPath =
-            new CatalogSourceConfigurationPath(
-                Path.Combine(
-                    AppContext.BaseDirectory,
-                    CATALOG_CONFIGURATION_FILE_NAME));
+        CatalogSourceConfigurationPath configurationPath = new CatalogSourceConfigurationPath(Path.Combine(AppContext.BaseDirectory, CATALOG_CONFIGURATION_FILE_NAME));
         return ProductCompositionRoot.CreateShell(dataPaths, configurationPath);
     }
 }

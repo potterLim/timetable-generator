@@ -11,13 +11,8 @@ public sealed class FileGoogleCalendarExportLeaseProviderTests
     [Fact]
     public async Task SecondProviderWaitsUntilFirstProcessLeaseIsReleasedAsync()
     {
-        string directoryPath = Path.Combine(
-            Path.GetTempPath(),
-            "TimetableGenerator.Desktop.Tests",
-            Guid.NewGuid().ToString("N"));
-        GoogleCalendarExportLockFilePath path =
-            new GoogleCalendarExportLockFilePath(
-                Path.Combine(directoryPath, "google-calendar-export.lock"));
+        string directoryPath = Path.Combine(Path.GetTempPath(), "TimetableGenerator.Desktop.Tests", Guid.NewGuid().ToString("N"));
+        GoogleCalendarExportLockFilePath path = new GoogleCalendarExportLockFilePath(Path.Combine(directoryPath, "google-calendar-export.lock"));
         FileGoogleCalendarExportLeaseProvider firstProvider = new FileGoogleCalendarExportLeaseProvider(path);
         FileGoogleCalendarExportLeaseProvider secondProvider = new FileGoogleCalendarExportLeaseProvider(path);
 

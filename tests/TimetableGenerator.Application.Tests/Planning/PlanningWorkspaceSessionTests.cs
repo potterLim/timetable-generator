@@ -47,10 +47,7 @@ public sealed class PlanningWorkspaceSessionTests
     {
         CourseCatalog catalog = createCatalog();
         PlanningWorkspaceSession session = createEmptySession(catalog);
-        PlanningCourseSelection selection =
-            PlanningCourseSelection.CreateTimeNotProvidedOffering(
-                ScheduleRecommendationTestData.CreateCourseId("BBB10001"),
-                ScheduleRecommendationTestData.CreateOfferingId("BBB10001", "01"));
+        PlanningCourseSelection selection = PlanningCourseSelection.CreateTimeNotProvidedOffering(ScheduleRecommendationTestData.CreateCourseId("BBB10001"), ScheduleRecommendationTestData.CreateOfferingId("BBB10001", "01"));
 
         session.AddCourse(selection);
         ScheduleRecommendationResult result = session.GenerateRecommendations(
@@ -243,9 +240,7 @@ public sealed class PlanningWorkspaceSessionTests
         List<CatalogCourse> courses = new List<CatalogCourse>();
         List<CatalogOffering> offerings = new List<CatalogOffering>();
         List<CourseChoiceGroup> groups = new List<CourseChoiceGroup>();
-        for (int groupIndex = 0;
-            groupIndex < COMBINATORIAL_GROUP_COUNT;
-            ++groupIndex)
+        for (int groupIndex = 0; groupIndex < COMBINATORIAL_GROUP_COUNT; ++groupIndex)
         {
             string courseCodeValue = "AAA" + (groupIndex + 1).ToString("D5");
             EDay day = (EDay)((groupIndex / 10) + 1);
@@ -313,10 +308,7 @@ public sealed class PlanningWorkspaceSessionTests
                         EDay.Tuesday,
                         1),
                 });
-        CatalogOffering unscheduledOffering =
-            ScheduleRecommendationTestData.CreateUnscheduledOffering(
-                "BBB10001",
-                "01");
+        CatalogOffering unscheduledOffering = ScheduleRecommendationTestData.CreateUnscheduledOffering("BBB10001", "01");
         return ScheduleRecommendationTestData.CreateCatalog(
             new CatalogCourse[] { scheduledCourse, unscheduledCourse },
             new CatalogOffering[]

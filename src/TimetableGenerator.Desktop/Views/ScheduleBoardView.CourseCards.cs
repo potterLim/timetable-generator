@@ -25,13 +25,7 @@ internal sealed partial class ScheduleBoardView
             + entry.LocationDisplayText;
         AutomationProperties.SetName(scheduleCard, accessibleName);
         AutomationProperties.SetHelpText(scheduleCard, "선택하면 과목의 전체 시간, 교수, 강의실 정보를 엽니다.");
-        ToolTip.SetTip(
-            scheduleCard,
-            entry.Name
-                + " · "
-                + entry.SectionDisplayText
-                + Environment.NewLine
-                + "선택하여 과목 상세 정보 보기");
+        ToolTip.SetTip(scheduleCard, entry.Name + " · " + entry.SectionDisplayText + Environment.NewLine + "선택하여 과목 상세 정보 보기");
         ToolTip.SetShowDelay(scheduleCard, 650);
     }
 
@@ -48,10 +42,7 @@ internal sealed partial class ScheduleBoardView
         details.Children.Add(identity);
         details.Children.Add(createFlyoutTitle(entry.Name));
         details.Children.Add(createFlyoutSeparator());
-        string scheduleSummary =
-            ScheduleBoardDayRange.CreateFullDayTimeDisplayText(
-                entry.Day,
-                entry.TimeRange);
+        string scheduleSummary = ScheduleBoardDayRange.CreateFullDayTimeDisplayText(entry.Day, entry.TimeRange);
         details.Children.Add(createDetailRow("시간", scheduleSummary));
         details.Children.Add(createDetailRow("장소", entry.LocationDisplayText));
         details.Children.Add(createDetailRow("교수", entry.InstructorDisplayText));

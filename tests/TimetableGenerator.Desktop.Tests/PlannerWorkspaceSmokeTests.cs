@@ -36,9 +36,7 @@ public sealed class PlannerWorkspaceSmokeTests
         Assert.True(visibleCourse.IsAdded);
         Assert.Equal(originalCourseCount + 1, workspace.ActivePlan.CourseChoiceGroups.Count);
 
-        PlanCourseChoiceGroupItem addedCourse =
-            workspace.ActivePlan.CourseChoiceGroups[
-                workspace.ActivePlan.CourseChoiceGroups.Count - 1];
+        PlanCourseChoiceGroupItem addedCourse = workspace.ActivePlan.CourseChoiceGroups[workspace.ActivePlan.CourseChoiceGroups.Count - 1];
         workspace.RemoveCourseChoiceGroupCommand.Execute(addedCourse);
 
         Assert.False(visibleCourse.IsAdded);
@@ -278,10 +276,7 @@ public sealed class PlannerWorkspaceSmokeTests
                     new OfferingId("offering-programming-alternative"),
                 });
         ImmediatePlanningWorkspaceStore planningWorkspaceStore = new ImmediatePlanningWorkspaceStore();
-        using (PlannerWorkspaceViewModel workspace =
-            PlannerWorkspaceTestFactory.CreateWorkspace(
-                bookmark,
-                planningWorkspaceStore))
+        using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace(bookmark, planningWorkspaceStore))
         {
             await workspace.RecommendationRefreshTask;
 

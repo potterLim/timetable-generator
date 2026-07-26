@@ -14,8 +14,7 @@ internal sealed class ProcessAppleCalendarAutomationCommand
     private const string OSASCRIPT_PATH = "/usr/bin/osascript";
     private const int BUFFER_SIZE = 8192;
 
-    private static readonly TimeSpan PROCESS_TERMINATION_WAIT =
-        TimeSpan.FromSeconds(5.0);
+    private static readonly TimeSpan PROCESS_TERMINATION_WAIT = TimeSpan.FromSeconds(5.0);
 
     private readonly Func<
         EAppleCalendarAutomationOperation,
@@ -345,8 +344,7 @@ internal sealed class ProcessAppleCalendarAutomationCommand
 
     private static async Task waitForTerminatedProcessAsync(Process process)
     {
-        using (CancellationTokenSource waitCancellationSource =
-            new CancellationTokenSource(PROCESS_TERMINATION_WAIT))
+        using (CancellationTokenSource waitCancellationSource = new CancellationTokenSource(PROCESS_TERMINATION_WAIT))
         {
             try
             {

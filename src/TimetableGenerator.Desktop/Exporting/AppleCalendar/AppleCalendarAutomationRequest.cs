@@ -38,8 +38,7 @@ internal sealed class AppleCalendarAutomationRequest
         IReadOnlyList<AppleCalendarAutomationEvent> events)
     {
         OwnershipMarkerPrefix = AppleCalendarOwnershipMarker.PREFIX;
-        EventOwnershipMarkerPrefix =
-            AppleCalendarEventOwnershipMarker.PREFIX;
+        EventOwnershipMarkerPrefix = AppleCalendarEventOwnershipMarker.PREFIX;
         OwnershipDescription = ownershipDescription;
         MutationKind = mutationKind;
         DestinationName = destinationName;

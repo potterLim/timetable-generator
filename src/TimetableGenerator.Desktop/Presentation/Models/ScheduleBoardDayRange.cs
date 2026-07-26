@@ -63,11 +63,7 @@ internal sealed class ScheduleBoardDayRange
         for (int dayIndex = 0; dayIndex < visibleDayCount; ++dayIndex)
         {
             EDay day = ORDERED_DAYS[dayIndex];
-            days.Add(new ScheduleBoardDay(
-                day,
-                TIME_COLUMN_COUNT + dayIndex,
-                findShortDisplayName(day),
-                FindFullDayDisplayName(day)));
+            days.Add(new ScheduleBoardDay(day, TIME_COLUMN_COUNT + dayIndex, findShortDisplayName(day), FindFullDayDisplayName(day)));
         }
 
         return new ScheduleBoardDayRange(days.AsReadOnly());

@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -10,7 +9,6 @@ using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 
 using FluentIcons.Avalonia;
@@ -21,7 +19,6 @@ using TimetableGenerator.Desktop.Exporting.AppleCalendar;
 using TimetableGenerator.Desktop.Exporting.Calendar;
 using TimetableGenerator.Desktop.Integrations.GoogleCalendar;
 using TimetableGenerator.Desktop.Presentation;
-using TimetableGenerator.Desktop.Presentation.Icons;
 using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Domain.Planning;
@@ -30,13 +27,7 @@ namespace TimetableGenerator.Desktop.Views;
 
 internal sealed partial class ScheduleWorkspaceView
 {
-    private const string APPLE_CALENDAR_BUNDLE_IDENTIFIER =
-        "com.apple.iCal";
-
     private static readonly TimeSpan EXPORT_STATUS_DURATION = TimeSpan.FromSeconds(3.5);
-
-    private static readonly PixelSize APPLE_CALENDAR_ICON_PIXEL_SIZE =
-        new PixelSize(48, 48);
 
     private readonly IGoogleCalendarExporter mGoogleCalendarExporter;
 
@@ -61,8 +52,6 @@ internal sealed partial class ScheduleWorkspaceView
     private PlannerWorkspaceViewModel? mObservedWorkspaceOrNull;
 
     private EExportStatus? mActiveExportStatusOrNull;
-
-    private Bitmap? mAppleCalendarIconOrNull;
 
     private bool mIsExportInProgress;
 
@@ -109,45 +98,16 @@ internal sealed partial class ScheduleWorkspaceView
     }
 
     public ScheduleWorkspaceView()
-        : this(
-            ScheduleExportCompositionRoot.CreateDefault(),
-            EXPORT_STATUS_DURATION,
-            InstalledApplicationIconProviderFactory.CreateDefault())
+        : this(ScheduleExportCompositionRoot.CreateDefault(), EXPORT_STATUS_DURATION)
     {
     }
 
     internal ScheduleWorkspaceView(ScheduleExportServices exportServices)
-        : this(
-            exportServices,
-            EXPORT_STATUS_DURATION,
-            InstalledApplicationIconProviderFactory.CreateDefault())
+        : this(exportServices, EXPORT_STATUS_DURATION)
     {
     }
 
-    internal ScheduleWorkspaceView(
-        ScheduleExportServices exportServices,
-        TimeSpan exportStatusDuration)
-        : this(
-            exportServices,
-            exportStatusDuration,
-            InstalledApplicationIconProviderFactory.CreateDefault())
-    {
-    }
-
-    internal ScheduleWorkspaceView(
-        ScheduleExportServices exportServices,
-        IInstalledApplicationIconProvider installedApplicationIconProvider)
-        : this(
-            exportServices,
-            EXPORT_STATUS_DURATION,
-            installedApplicationIconProvider)
-    {
-    }
-
-    internal ScheduleWorkspaceView(
-        ScheduleExportServices exportServices,
-        TimeSpan exportStatusDuration,
-        IInstalledApplicationIconProvider installedApplicationIconProvider)
+    internal ScheduleWorkspaceView(ScheduleExportServices exportServices, TimeSpan exportStatusDuration)
     {
         if (exportServices == null)
         {
@@ -157,12 +117,6 @@ internal sealed partial class ScheduleWorkspaceView
         if (exportStatusDuration <= TimeSpan.Zero)
         {
             throw new ArgumentOutOfRangeException(nameof(exportStatusDuration));
-        }
-
-        if (installedApplicationIconProvider == null)
-        {
-            throw new ArgumentNullException(
-                nameof(installedApplicationIconProvider));
         }
 
         mPngExporter = exportServices.PngExporter;
@@ -178,52 +132,14 @@ internal sealed partial class ScheduleWorkspaceView
         mPresentationMode = EScheduleWorkspacePresentationMode.Board;
         mExportPngCommand = new AsyncDelegateCommand(exportPngAsync, showPngExportFailure);
         mExportAllPngCommand = new AsyncDelegateCommand(exportAllPngAsync, showPngExportFailure);
-        mExportGoogleCalendarCommand = new AsyncDelegateCommand(
-            exportGoogleCalendarAsync,
-            showGoogleCalendarExportFailure);
-        mExportAppleCalendarCommand = new AsyncDelegateCommand(
-            exportAppleCalendarAsync,
-            showAppleCalendarExportFailure);
+        mExportGoogleCalendarCommand = new AsyncDelegateCommand(exportGoogleCalendarAsync, showGoogleCalendarExportFailure);
+        mExportAppleCalendarCommand = new AsyncDelegateCommand(exportAppleCalendarAsync, showAppleCalendarExportFailure);
         mToggleSchedulePresentationCommand = new DelegateCommand(toggleSchedulePresentation);
         mEditPersonalScheduleCommand = new ParameterizedCommand<PersonalScheduleId>(beginEditPersonalSchedule);
         AvaloniaXamlLoader.Load(this);
-        configureAppleCalendarIcon(installedApplicationIconProvider);
         DataContextChanged += onDataContextChanged;
         observeWorkspace(DataContext as PlannerWorkspaceViewModel);
         DetachedFromVisualTree += onDetachedFromVisualTree;
-    }
-
-    private void configureAppleCalendarIcon(
-        IInstalledApplicationIconProvider installedApplicationIconProvider)
-    {
-        Image? logoImageOrNull =
-            this.FindControl<Image>("ExportAppleCalendarLogoImage");
-        FluentIcon? fallbackIconOrNull =
-            this.FindControl<FluentIcon>("ExportAppleCalendarFallbackIcon");
-        if (logoImageOrNull == null || fallbackIconOrNull == null)
-        {
-            throw new InvalidOperationException(
-                "The Apple Calendar export icon controls were not initialized.");
-        }
-
-        try
-        {
-            mAppleCalendarIconOrNull =
-                installedApplicationIconProvider.TryLoad(
-                    APPLE_CALENDAR_BUNDLE_IDENTIFIER,
-                    APPLE_CALENDAR_ICON_PIXEL_SIZE);
-        }
-        catch (Exception exception)
-        {
-            Trace.TraceWarning(
-                "Installed application icon provider failed: {0}",
-                exception.GetType().Name);
-            mAppleCalendarIconOrNull = null;
-        }
-
-        logoImageOrNull.Source = mAppleCalendarIconOrNull;
-        logoImageOrNull.IsVisible = mAppleCalendarIconOrNull != null;
-        fallbackIconOrNull.IsVisible = mAppleCalendarIconOrNull == null;
     }
 
     private async Task exportGoogleCalendarAsync()
@@ -237,15 +153,10 @@ internal sealed partial class ScheduleWorkspaceView
         {
             CancellationToken cancellationToken = mLifetimeCancellationSource.Token;
             cancellationToken.ThrowIfCancellationRequested();
-            CalendarExportDocument document = createCalendarExportDocument(
-                ECalendarExportProvider.Google);
+            CalendarExportDocument document = createCalendarExportDocument(ECalendarExportProvider.Google);
             GoogleCalendarExportPlan exportPlan = GoogleCalendarExportPlan.CreateFromDocument(document);
             showPersistentExportStatus("Google 캘린더로 내보내는 중입니다.", EExportStatus.Information);
-            GoogleCalendarExportResult result =
-                await mGoogleCalendarExporter.ExportAsync(
-                    exportPlan,
-                    this,
-                    cancellationToken);
+            GoogleCalendarExportResult result = await mGoogleCalendarExporter.ExportAsync(exportPlan, this, cancellationToken);
             showGoogleCalendarExportResult(result);
             if (result.Status == EGoogleCalendarExportStatus.Success)
             {
@@ -269,14 +180,9 @@ internal sealed partial class ScheduleWorkspaceView
         {
             CancellationToken cancellationToken = mLifetimeCancellationSource.Token;
             cancellationToken.ThrowIfCancellationRequested();
-            CalendarExportDocument document = createCalendarExportDocument(
-                ECalendarExportProvider.Apple);
+            CalendarExportDocument document = createCalendarExportDocument(ECalendarExportProvider.Apple);
             showPersistentExportStatus("Apple 캘린더로 내보내는 중입니다.", EExportStatus.Information);
-            AppleCalendarExportResult result =
-                await mAppleCalendarExporter.ExportAsync(
-                document,
-                this,
-                cancellationToken);
+            AppleCalendarExportResult result = await mAppleCalendarExporter.ExportAsync(document, this, cancellationToken);
             showAppleCalendarExportResult(result);
         }
         finally
@@ -285,8 +191,7 @@ internal sealed partial class ScheduleWorkspaceView
         }
     }
 
-    private CalendarExportDocument createCalendarExportDocument(
-        ECalendarExportProvider provider)
+    private CalendarExportDocument createCalendarExportDocument(ECalendarExportProvider provider)
     {
         PlannerWorkspaceViewModel workspace = getRequiredWorkspace();
         PlanTabItem? activePlanOrNull = workspace.ActivePlanOrNull;
@@ -296,30 +201,16 @@ internal sealed partial class ScheduleWorkspaceView
             throw new InvalidOperationException("Schedule export requires an active plan.");
         }
 
-        AcademicTermCalendarMetadata academicCalendar =
-            AcademicTermCalendarMetadataRegistry.findByTerm(
-                scheduleBoardOrNull.AcademicTerm,
-                mCalendarTimeZoneProvider.GetTimeZoneId());
+        AcademicTermCalendarMetadata academicCalendar = AcademicTermCalendarMetadataRegistry.findByTerm(scheduleBoardOrNull.AcademicTerm, mCalendarTimeZoneProvider.GetTimeZoneId());
         switch (provider)
         {
             case ECalendarExportProvider.Google:
-                return ScheduleCalendarProjector.ProjectForGoogleCalendar(
-                    activePlanOrNull.PlanId,
-                    activePlanOrNull.Name,
-                    workspace.DisplayedSchedule,
-                    academicCalendar);
+                return ScheduleCalendarProjector.ProjectForGoogleCalendar(activePlanOrNull.PlanId, activePlanOrNull.Name, workspace.DisplayedSchedule, academicCalendar);
             case ECalendarExportProvider.Apple:
-                return ScheduleCalendarProjector.ProjectForAppleCalendar(
-                    activePlanOrNull.PlanId,
-                    activePlanOrNull.Name,
-                    workspace.DisplayedSchedule,
-                    academicCalendar);
+                return ScheduleCalendarProjector.ProjectForAppleCalendar(activePlanOrNull.PlanId, activePlanOrNull.Name, workspace.DisplayedSchedule, academicCalendar);
             case ECalendarExportProvider.None:
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(provider),
-                    provider,
-                    "Schedule exports require a supported calendar provider.");
+                throw new ArgumentOutOfRangeException(nameof(provider), provider, "Schedule exports require a supported calendar provider.");
         }
     }
 
@@ -413,10 +304,7 @@ internal sealed partial class ScheduleWorkspaceView
                 break;
             case EGoogleCalendarExportStatus.None:
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(result),
-                    result.Status,
-                    "Unknown Google Calendar export status.");
+                throw new ArgumentOutOfRangeException(nameof(result), result.Status, "Unknown Google Calendar export status.");
         }
     }
 
@@ -451,10 +339,7 @@ internal sealed partial class ScheduleWorkspaceView
                 break;
             case EAppleCalendarExportStatus.None:
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(result),
-                    result.Status,
-                    "Unknown Apple Calendar export status.");
+                throw new ArgumentOutOfRangeException(nameof(result), result.Status, "Unknown Apple Calendar export status.");
         }
     }
 
@@ -503,9 +388,7 @@ internal sealed partial class ScheduleWorkspaceView
             return;
         }
 
-        AutomationProperties.SetLiveSetting(
-            statusTextOrNull,
-            AutomationLiveSetting.Off);
+        AutomationProperties.SetLiveSetting(statusTextOrNull, AutomationLiveSetting.Off);
         statusTextOrNull.Text = string.Empty;
         setExportStatusClasses(statusTextOrNull, null);
         setExportStatusClasses(statusToastOrNull, null);
@@ -573,9 +456,7 @@ internal sealed partial class ScheduleWorkspaceView
         dismissButtonOrNull.IsVisible = status == EExportStatus.Failure;
         statusToastOrNull.IsHitTestVisible = status == EExportStatus.Failure;
         statusToastOrNull.IsVisible = true;
-        AutomationProperties.SetLiveSetting(
-            statusTextOrNull,
-            AutomationLiveSetting.Polite);
+        AutomationProperties.SetLiveSetting(statusTextOrNull, AutomationLiveSetting.Polite);
         statusTextOrNull.Text = message;
     }
 
@@ -597,8 +478,7 @@ internal sealed partial class ScheduleWorkspaceView
     private void onDismissExportStatusButtonClick(object? senderOrNull, RoutedEventArgs eventArgs)
     {
         clearExportFailureStatus();
-        Button? exportButtonOrNull = this.FindControl<Button>(
-            "ExportScheduleButton");
+        Button? exportButtonOrNull = this.FindControl<Button>("ExportScheduleButton");
         exportButtonOrNull?.Focus();
         eventArgs.Handled = true;
     }
@@ -632,10 +512,7 @@ internal sealed partial class ScheduleWorkspaceView
     private void onWorkspacePropertyChanged(object? senderOrNull, PropertyChangedEventArgs eventArgs)
     {
         if (ReferenceEquals(senderOrNull, mObservedWorkspaceOrNull) == false
-            || string.Equals(
-                eventArgs.PropertyName,
-                nameof(PlannerWorkspaceViewModel.DisplayedScheduleBoard),
-                StringComparison.Ordinal) == false)
+            || string.Equals(eventArgs.PropertyName, nameof(PlannerWorkspaceViewModel.DisplayedScheduleBoard), StringComparison.Ordinal) == false)
         {
             return;
         }
@@ -659,32 +536,14 @@ internal sealed partial class ScheduleWorkspaceView
         mExportStatusTimer.Stop();
         mExportStatusTimer.Tick -= onExportStatusTimerTick;
         mLifetimeCancellationSource.Cancel();
-        releaseAppleCalendarIcon();
         mExportResourceReleaseTask = releaseExportResourcesAsync();
-    }
-
-    private void releaseAppleCalendarIcon()
-    {
-        Image? logoImageOrNull =
-            this.FindControl<Image>("ExportAppleCalendarLogoImage");
-        if (logoImageOrNull != null)
-        {
-            logoImageOrNull.Source = null;
-        }
-
-        mAppleCalendarIconOrNull?.Dispose();
-        mAppleCalendarIconOrNull = null;
     }
 
     private async Task releaseExportResourcesAsync()
     {
         try
         {
-            await Task.WhenAll(
-                mExportPngCommand.ExecutionTask,
-                mExportAllPngCommand.ExecutionTask,
-                mExportGoogleCalendarCommand.ExecutionTask,
-                mExportAppleCalendarCommand.ExecutionTask);
+            await Task.WhenAll(mExportPngCommand.ExecutionTask, mExportAllPngCommand.ExecutionTask, mExportGoogleCalendarCommand.ExecutionTask, mExportAppleCalendarCommand.ExecutionTask);
             mGoogleCalendarExporter.Dispose();
         }
         catch (Exception exception)

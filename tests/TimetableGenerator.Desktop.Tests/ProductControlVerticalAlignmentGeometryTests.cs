@@ -190,9 +190,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
             foreach (ThemeVariant themeVariant in getProductThemeVariants())
             {
                 window.RequestedThemeVariant = themeVariant;
-                for (int optionIndex = 0;
-                    optionIndex < preferenceInputs.Length;
-                    ++optionIndex)
+                for (int optionIndex = 0; optionIndex < preferenceInputs.Length; ++optionIndex)
                 {
                     RadioButton preferenceInput = preferenceInputs[optionIndex];
                     foreach (bool isSelected in new bool[] { false, true })

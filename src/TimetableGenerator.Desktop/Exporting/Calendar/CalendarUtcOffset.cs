@@ -24,9 +24,7 @@ internal readonly record struct CalendarUtcOffset
 
     public CalendarUtcOffset(TimeSpan value)
     {
-        bool isWithinSupportedRange =
-            value >= TimeSpan.FromHours(MINIMUM_OFFSET_HOURS)
-            && value <= TimeSpan.FromHours(MAXIMUM_OFFSET_HOURS);
+        bool isWithinSupportedRange = value >= TimeSpan.FromHours(MINIMUM_OFFSET_HOURS) && value <= TimeSpan.FromHours(MAXIMUM_OFFSET_HOURS);
         if (isWithinSupportedRange == false || value.Ticks % TimeSpan.TicksPerMinute != 0)
         {
             throw new ArgumentOutOfRangeException(

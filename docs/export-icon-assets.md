@@ -1,6 +1,6 @@
 # 내보내기 아이콘 자산
 
-내보내기 메뉴에는 사용자가 파일 형식과 캘린더 대상을 빠르게 구분할 수 있도록 아래 자산을 사용합니다. 두 자산은 2026년 7월 19일에 내려받았습니다.
+내보내기 메뉴에는 사용자가 파일 형식과 캘린더 대상을 빠르게 구분할 수 있도록 아래 자산을 사용합니다.
 
 ## PNG 이미지 아이콘
 
@@ -13,6 +13,18 @@
 - 라이선스: MIT
 
 원본의 비율과 알파 채널을 유지하면서 Sharp/libvips로 96×96 RGBA PNG를 렌더링했습니다. 화면에서는 24 DIP로 표시하여 고배율 환경에서도 선명하게 보입니다. Microsoft Photos 앱의 제품 로고가 아니라 이미지 파일을 뜻하는 Fluent Color 시스템 아이콘이므로, 특정 앱으로 전송하는 동작으로 오인되지 않습니다. MIT 고지문은 배포 결과물의 `ThirdPartyNotices` 디렉터리에 포함됩니다.
+
+## 캘린더 내보내기 아이콘
+
+- 원본 저장소: <https://github.com/microsoft/fluentui-system-icons>
+- 원본 자산: <https://github.com/microsoft/fluentui-system-icons/blob/16a524d18199ddaa81bef6628cafa48f70cbb4f4/assets/Calendar/SVG/ic_fluent_calendar_24_color.svg>
+- 원본: 24×24 SVG
+- 원본 SHA-256: `4cd6ce607b4e8c55b40485c31035585077e9d98fc20e31699fe5595c7e36bee1`
+- 배포 파일: `src/TimetableGenerator.Desktop/Assets/Export/CalendarExportIcon.png`
+- 배포 파일 SHA-256: `4b1b1c05fcd14fd324c4e8b2de706407db5c2180cf84376879559a7b7ed91e47`
+- 라이선스: MIT
+
+원본의 비율과 알파 채널을 유지하면서 Sharp/libvips로 96×96 RGBA PNG를 렌더링했습니다. 화면에서는 24 DIP로 표시합니다. 특정 제품 로고가 아닌 일반 Fluent Color 시스템 아이콘이며, Apple Calendar 내보내기 동작의 의미만 전달합니다. Apple의 로고나 Calendar 앱 아이콘을 포함하거나 모방하지 않습니다. 기존 Fluent UI System Icons MIT 고지문이 이 자산에도 적용됩니다.
 
 ## Google Calendar 로고
 

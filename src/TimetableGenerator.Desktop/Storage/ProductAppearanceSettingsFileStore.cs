@@ -47,9 +47,7 @@ internal sealed class ProductAppearanceSettingsFileStore
         }
         catch (Exception exception) when (canRecoverFromLoadFailure(exception))
         {
-            Trace.TraceWarning(
-                "The appearance settings could not be loaded and system theme was restored: {0}",
-                exception);
+            Trace.TraceWarning("The appearance settings could not be loaded and system theme was restored: {0}", exception);
             return ProductAppearanceSettings.CreateDefault();
         }
     }

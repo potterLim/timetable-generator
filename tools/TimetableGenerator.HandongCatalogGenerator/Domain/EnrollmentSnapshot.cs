@@ -6,9 +6,7 @@ internal sealed class EnrollmentSnapshot
 {
     private readonly EnrollmentCount? mCountOrNull;
 
-    public static EnrollmentSnapshot NotProvided { get; } = new EnrollmentSnapshot(
-        EEnrollmentStatus.NotProvided,
-        null);
+    public static EnrollmentSnapshot NotProvided { get; } = new EnrollmentSnapshot(EEnrollmentStatus.NotProvided, null);
 
     public EEnrollmentStatus Status { get; }
 

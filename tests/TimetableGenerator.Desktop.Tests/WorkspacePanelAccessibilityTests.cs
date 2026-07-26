@@ -81,10 +81,7 @@ public sealed class WorkspacePanelAccessibilityTests
             Assert.True(emptyStateTopLeft.Y >= 0.0);
             Assert.True(emptyStateBottom <= scrollViewer.Viewport.Height + 1.0);
 
-            Point? scrollableContentPositionOrNull =
-                scrollableContent.TranslatePoint(
-                    new Point(0.0, 0.0),
-                    scrollViewer);
+            Point? scrollableContentPositionOrNull = scrollableContent.TranslatePoint(new Point(0.0, 0.0), scrollViewer);
             Assert.NotNull(scrollableContentPositionOrNull);
             if (scrollableContentPositionOrNull == null)
             {

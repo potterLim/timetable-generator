@@ -24,64 +24,20 @@ internal sealed partial class MainWindow
     private void initializeNativeMenu()
     {
         NativeMenu fileMenu = new NativeMenu();
-        fileMenu.Add(
-            createNativeMenuAction(
-                "Close Window",
-                new KeyGesture(Key.W, KeyModifiers.Meta),
-                Close));
+        fileMenu.Add(createNativeMenuAction("Close Window", new KeyGesture(Key.W, KeyModifiers.Meta), Close));
 
         NativeMenu editMenu = new NativeMenu();
-        editMenu.Add(
-            createNativeMenuAction(
-                "Undo",
-                new KeyGesture(Key.Z, KeyModifiers.Meta),
-                undoFocusedText,
-                canUndoFocusedText));
-        editMenu.Add(
-            createNativeMenuAction(
-                "Redo",
-                new KeyGesture(Key.Z, KeyModifiers.Meta | KeyModifiers.Shift),
-                redoFocusedText,
-                canRedoFocusedText));
+        editMenu.Add(createNativeMenuAction("Undo", new KeyGesture(Key.Z, KeyModifiers.Meta), undoFocusedText, canUndoFocusedText));
+        editMenu.Add(createNativeMenuAction("Redo", new KeyGesture(Key.Z, KeyModifiers.Meta | KeyModifiers.Shift), redoFocusedText, canRedoFocusedText));
         editMenu.Add(new NativeMenuItemSeparator());
-        editMenu.Add(
-            createNativeMenuAction(
-                "Cut",
-                new KeyGesture(Key.X, KeyModifiers.Meta),
-                cutFocusedText,
-                canCutFocusedText));
-        editMenu.Add(
-            createNativeMenuAction(
-                "Copy",
-                new KeyGesture(Key.C, KeyModifiers.Meta),
-                copyFocusedText,
-                canCopyFocusedText));
-        editMenu.Add(
-            createNativeMenuAction(
-                "Paste",
-                new KeyGesture(Key.V, KeyModifiers.Meta),
-                pasteFocusedText,
-                canPasteFocusedText));
-        editMenu.Add(
-            createNativeMenuAction(
-                "Select All",
-                new KeyGesture(Key.A, KeyModifiers.Meta),
-                selectAllFocusedText,
-                canSelectAllFocusedText));
+        editMenu.Add(createNativeMenuAction("Cut", new KeyGesture(Key.X, KeyModifiers.Meta), cutFocusedText, canCutFocusedText));
+        editMenu.Add(createNativeMenuAction("Copy", new KeyGesture(Key.C, KeyModifiers.Meta), copyFocusedText, canCopyFocusedText));
+        editMenu.Add(createNativeMenuAction("Paste", new KeyGesture(Key.V, KeyModifiers.Meta), pasteFocusedText, canPasteFocusedText));
+        editMenu.Add(createNativeMenuAction("Select All", new KeyGesture(Key.A, KeyModifiers.Meta), selectAllFocusedText, canSelectAllFocusedText));
 
         NativeMenu windowMenu = new NativeMenu();
-        windowMenu.Add(
-            createNativeMenuAction(
-                "Minimize",
-                new KeyGesture(Key.M, KeyModifiers.Meta),
-                minimizeWindow,
-                canMinimizeWindow));
-        windowMenu.Add(
-            createNativeMenuAction(
-                "Zoom",
-                null,
-                toggleWindowZoom,
-                canZoomWindow));
+        windowMenu.Add(createNativeMenuAction("Minimize", new KeyGesture(Key.M, KeyModifiers.Meta), minimizeWindow, canMinimizeWindow));
+        windowMenu.Add(createNativeMenuAction("Zoom", null, toggleWindowZoom, canZoomWindow));
         windowMenu.Add(new NativeMenuItemSeparator());
         NativeMenuItem fullScreenMenuItem = createNativeMenuAction(
             "Enter Full Screen",
@@ -90,11 +46,7 @@ internal sealed partial class MainWindow
             canToggleFullScreen);
         windowMenu.Add(fullScreenMenuItem);
         windowMenu.Add(new NativeMenuItemSeparator());
-        windowMenu.Add(
-            createNativeMenuAction(
-                "Bring All to Front",
-                null,
-                bringAllWindowsToFront));
+        windowMenu.Add(createNativeMenuAction("Bring All to Front", null, bringAllWindowsToFront));
 
         NativeMenu nativeMenu = new NativeMenu();
         NativeMenuItem fileMenuItem = new NativeMenuItem("File");
@@ -317,9 +269,7 @@ internal sealed partial class MainWindow
 
     private void bringAllWindowsToFront()
     {
-        IClassicDesktopStyleApplicationLifetime? desktopLifetimeOrNull =
-            Avalonia.Application.Current?.ApplicationLifetime
-                as IClassicDesktopStyleApplicationLifetime;
+        IClassicDesktopStyleApplicationLifetime? desktopLifetimeOrNull = Avalonia.Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
         if (desktopLifetimeOrNull != null)
         {
             foreach (Window window in desktopLifetimeOrNull.Windows)

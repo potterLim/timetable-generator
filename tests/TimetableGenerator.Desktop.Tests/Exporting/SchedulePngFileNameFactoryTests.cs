@@ -118,10 +118,7 @@ public sealed class SchedulePngFileNameFactoryTests
         PlanName planName = new PlanName(new string('한', 80));
 
         string folderName = SchedulePngFileNameFactory.CreateBatchFolderName(planName);
-        string candidateFileName =
-            SchedulePngFileNameFactory.CreateBatchCandidate(
-                planName,
-                new SchedulePngCandidateNumber(24, 24));
+        string candidateFileName = SchedulePngFileNameFactory.CreateBatchCandidate(planName, new SchedulePngCandidateNumber(24, 24));
 
         Assert.True(Encoding.UTF8.GetByteCount(folderName) <= 255);
         Assert.True(Encoding.UTF8.GetByteCount(candidateFileName) <= 255);

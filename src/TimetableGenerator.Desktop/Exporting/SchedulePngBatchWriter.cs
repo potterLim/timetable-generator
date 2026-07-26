@@ -63,9 +63,7 @@ internal sealed class SchedulePngBatchWriter
         {
             int successfulCount = 0;
             List<Exception> failures = new List<Exception>();
-            for (int candidateIndex = 0;
-                candidateIndex < exportBatch.Candidates.Count;
-                ++candidateIndex)
+            for (int candidateIndex = 0; candidateIndex < exportBatch.Candidates.Count; ++candidateIndex)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 await Task.Yield();
@@ -74,21 +72,12 @@ internal sealed class SchedulePngBatchWriter
                 {
                     if (candidateIndex > 0)
                     {
-                        snapshot.update(
-                            exportBatch.Candidates[candidateIndex],
-                            sizingBoard);
+                        snapshot.update(exportBatch.Candidates[candidateIndex], sizingBoard);
                     }
 
-                    SchedulePngCandidateNumber candidateNumber =
-                        new SchedulePngCandidateNumber(
-                            candidateIndex + 1,
-                            exportBatch.Candidates.Count);
-                    string fileName =
-                        SchedulePngFileNameFactory.CreateBatchCandidate(
-                            exportBatch.PlanName,
-                            candidateNumber);
-                    using (Stream destinationStream =
-                        destinationDirectory.createFile(fileName))
+                    SchedulePngCandidateNumber candidateNumber = new SchedulePngCandidateNumber(candidateIndex + 1, exportBatch.Candidates.Count);
+                    string fileName = SchedulePngFileNameFactory.CreateBatchCandidate(exportBatch.PlanName, candidateNumber);
+                    using (Stream destinationStream = destinationDirectory.createFile(fileName))
                     {
                         await mPngExporter.ExportControlAsync(
                             snapshot.Surface,

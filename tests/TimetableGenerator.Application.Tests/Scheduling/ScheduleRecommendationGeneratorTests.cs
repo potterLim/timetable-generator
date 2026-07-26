@@ -194,14 +194,8 @@ public sealed class ScheduleRecommendationGeneratorTests
     public void TimeNotProvidedChoiceBookmarkRestoresTheExactOffering()
     {
         CatalogCourse course = ScheduleRecommendationTestData.CreateCourse("AAA10001");
-        CatalogOffering firstOffering =
-            ScheduleRecommendationTestData.CreateUnscheduledOffering(
-                "AAA10001",
-                "01");
-        CatalogOffering secondOffering =
-            ScheduleRecommendationTestData.CreateUnscheduledOffering(
-                "AAA10001",
-                "02");
+        CatalogOffering firstOffering = ScheduleRecommendationTestData.CreateUnscheduledOffering("AAA10001", "01");
+        CatalogOffering secondOffering = ScheduleRecommendationTestData.CreateUnscheduledOffering("AAA10001", "02");
         CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(
             new CatalogCourse[] { course },
             new CatalogOffering[] { firstOffering, secondOffering });
@@ -297,18 +291,9 @@ public sealed class ScheduleRecommendationGeneratorTests
     public void TimeNotProvidedChoiceGroupHonorsPreferencesAndExclusions()
     {
         CatalogCourse course = ScheduleRecommendationTestData.CreateCourse("AAA10001");
-        CatalogOffering preferredOffering =
-            ScheduleRecommendationTestData.CreateUnscheduledOffering(
-                "AAA10001",
-                "01");
-        CatalogOffering acceptableOffering =
-            ScheduleRecommendationTestData.CreateUnscheduledOffering(
-                "AAA10001",
-                "02");
-        CatalogOffering excludedOffering =
-            ScheduleRecommendationTestData.CreateUnscheduledOffering(
-                "AAA10001",
-                "03");
+        CatalogOffering preferredOffering = ScheduleRecommendationTestData.CreateUnscheduledOffering("AAA10001", "01");
+        CatalogOffering acceptableOffering = ScheduleRecommendationTestData.CreateUnscheduledOffering("AAA10001", "02");
+        CatalogOffering excludedOffering = ScheduleRecommendationTestData.CreateUnscheduledOffering("AAA10001", "03");
         CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(
             new CatalogCourse[] { course },
             new CatalogOffering[]
@@ -370,10 +355,7 @@ public sealed class ScheduleRecommendationGeneratorTests
                         EDay.Monday,
                         1),
                 });
-        CatalogOffering timeNotProvidedOffering =
-            ScheduleRecommendationTestData.CreateUnscheduledOffering(
-                "AAA10001",
-                "02");
+        CatalogOffering timeNotProvidedOffering = ScheduleRecommendationTestData.CreateUnscheduledOffering("AAA10001", "02");
         CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(
             new CatalogCourse[] { course },
             new CatalogOffering[]
@@ -617,10 +599,7 @@ public sealed class ScheduleRecommendationGeneratorTests
     public void PersonalOnlyPlanProducesAConfirmedRecommendation()
     {
         CatalogCourse catalogCourse = ScheduleRecommendationTestData.CreateCourse("AAA10001");
-        CatalogOffering catalogOffering =
-            ScheduleRecommendationTestData.CreateUnscheduledOffering(
-                "AAA10001",
-                "01");
+        CatalogOffering catalogOffering = ScheduleRecommendationTestData.CreateUnscheduledOffering("AAA10001", "01");
         CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(
             new CatalogCourse[] { catalogCourse },
             new CatalogOffering[] { catalogOffering });

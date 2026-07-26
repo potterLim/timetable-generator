@@ -50,9 +50,7 @@ internal static class HandongSourceLinkMetadataReader
             return false;
         }
 
-        return linkTargetOrNull.Contains(
-            COURSE_CODE_PARAMETER_NAME + "=",
-            StringComparison.OrdinalIgnoreCase);
+        return linkTargetOrNull.Contains(COURSE_CODE_PARAMETER_NAME + "=", StringComparison.OrdinalIgnoreCase);
     }
 
     private static HandongSourceLinkMetadata readMetadata(
@@ -61,40 +59,17 @@ internal static class HandongSourceLinkMetadataReader
     {
         try
         {
-            string courseCodeValue = readRequiredParameter(
-                linkTarget,
-                COURSE_CODE_PARAMETER_NAME,
-                sourceRecordNumber);
-            string courseSectionValue = readRequiredParameter(
-                linkTarget,
-                COURSE_SECTION_PARAMETER_NAME,
-                sourceRecordNumber);
-            string academicYearText = readRequiredParameter(
-                linkTarget,
-                ACADEMIC_YEAR_PARAMETER_NAME,
-                sourceRecordNumber);
-            string academicSemesterText = readRequiredParameter(
-                linkTarget,
-                ACADEMIC_SEMESTER_PARAMETER_NAME,
-                sourceRecordNumber);
+            string courseCodeValue = readRequiredParameter(linkTarget, COURSE_CODE_PARAMETER_NAME, sourceRecordNumber);
+            string courseSectionValue = readRequiredParameter(linkTarget, COURSE_SECTION_PARAMETER_NAME, sourceRecordNumber);
+            string academicYearText = readRequiredParameter(linkTarget, ACADEMIC_YEAR_PARAMETER_NAME, sourceRecordNumber);
+            string academicSemesterText = readRequiredParameter(linkTarget, ACADEMIC_SEMESTER_PARAMETER_NAME, sourceRecordNumber);
 
-            int academicYearValue = parseIntegerParameter(
-                academicYearText,
-                ACADEMIC_YEAR_PARAMETER_NAME,
-                sourceRecordNumber);
-            int academicSemesterValue = parseIntegerParameter(
-                academicSemesterText,
-                ACADEMIC_SEMESTER_PARAMETER_NAME,
-                sourceRecordNumber);
+            int academicYearValue = parseIntegerParameter(academicYearText, ACADEMIC_YEAR_PARAMETER_NAME, sourceRecordNumber);
+            int academicSemesterValue = parseIntegerParameter(academicSemesterText, ACADEMIC_SEMESTER_PARAMETER_NAME, sourceRecordNumber);
 
-            AcademicTerm academicTerm = new AcademicTerm(
-                new AcademicYear(academicYearValue),
-                new AcademicSemester(academicSemesterValue));
+            AcademicTerm academicTerm = new AcademicTerm(new AcademicYear(academicYearValue), new AcademicSemester(academicSemesterValue));
 
-            return new HandongSourceLinkMetadata(
-                academicTerm,
-                new CourseCode(courseCodeValue),
-                new CourseSectionCode(courseSectionValue));
+            return new HandongSourceLinkMetadata(academicTerm, new CourseCode(courseCodeValue), new CourseSectionCode(courseSectionValue));
         }
         catch (HandongSourceFormatException)
         {
@@ -137,9 +112,7 @@ internal static class HandongSourceLinkMetadataReader
         }
 
         int parameterValueEndIndex = findParameterValueEndIndex(linkTarget, parameterValueIndex);
-        string encodedParameterValue = linkTarget.Substring(
-            parameterValueIndex,
-            parameterValueEndIndex - parameterValueIndex);
+        string encodedParameterValue = linkTarget.Substring(parameterValueIndex, parameterValueEndIndex - parameterValueIndex);
         string decodedParameterValue = WebUtility.UrlDecode(encodedParameterValue).Trim();
         if (decodedParameterValue.Length == 0)
         {
@@ -153,9 +126,7 @@ internal static class HandongSourceLinkMetadataReader
 
     private static int findParameterValueEndIndex(string linkTarget, int parameterValueIndex)
     {
-        for (int characterIndex = parameterValueIndex;
-            characterIndex < linkTarget.Length;
-            ++characterIndex)
+        for (int characterIndex = parameterValueIndex; characterIndex < linkTarget.Length; ++characterIndex)
         {
             char character = linkTarget[characterIndex];
             if (character == '&' || character == '\'' || character == '"' || character == ')')
@@ -173,11 +144,7 @@ internal static class HandongSourceLinkMetadataReader
         SourceRecordNumber sourceRecordNumber)
     {
         int parameterValue;
-        bool isParameterParsed = int.TryParse(
-            parameterText,
-            NumberStyles.None,
-            CultureInfo.InvariantCulture,
-            out parameterValue);
+        bool isParameterParsed = int.TryParse(parameterText, NumberStyles.None, CultureInfo.InvariantCulture, out parameterValue);
         if (isParameterParsed == false)
         {
             throw new HandongSourceFormatException(

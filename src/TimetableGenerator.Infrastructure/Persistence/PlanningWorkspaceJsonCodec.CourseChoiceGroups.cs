@@ -136,20 +136,14 @@ public sealed partial class PlanningWorkspaceJsonCodec
             IReadOnlyList<LegacyScheduledCourseChoiceDocument> legacyChoiceDocuments)
     {
         List<CourseChoiceGroup> courseChoiceGroups = new List<CourseChoiceGroup>(legacyChoiceDocuments.Count);
-        for (int choiceIndex = 0;
-            choiceIndex < legacyChoiceDocuments.Count;
-            ++choiceIndex)
+        for (int choiceIndex = 0; choiceIndex < legacyChoiceDocuments.Count; ++choiceIndex)
         {
             LegacyScheduledCourseChoiceDocument legacyChoiceDocument = legacyChoiceDocuments[choiceIndex];
             CourseChoiceGroupId groupId = createLegacyCourseChoiceGroupId(
                 planId,
                 legacyChoiceDocument.CourseId,
                 choiceIndex);
-            courseChoiceGroups.Add(
-                CourseChoiceGroup.CreateWithAcceptableOfferings(
-                    groupId,
-                    legacyChoiceDocument.CourseId,
-                    legacyChoiceDocument.OfferingIds));
+            courseChoiceGroups.Add(CourseChoiceGroup.CreateWithAcceptableOfferings(groupId, legacyChoiceDocument.CourseId, legacyChoiceDocument.OfferingIds));
         }
 
         return courseChoiceGroups.AsReadOnly();

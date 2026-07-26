@@ -22,10 +22,7 @@ public sealed class AppleCalendarExportServiceTests
         RecordingCalendarNameConflictResolver conflictResolver = new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.Cancel);
         AppleCalendarExportService exporter = new AppleCalendarExportService(nativeBridge);
 
-        AppleCalendarExportResult result = await exporter.ExportAsync(
-            createDocument(),
-            conflictResolver,
-            TestContext.Current.CancellationToken);
+        AppleCalendarExportResult result = await exporter.ExportAsync(createDocument(), conflictResolver, TestContext.Current.CancellationToken);
 
         Assert.Equal(EAppleCalendarExportStatus.Success, result.Status);
         Assert.Equal("2026-2학기 시간표", result.CalendarNameOrNull?.Value);
@@ -51,11 +48,7 @@ public sealed class AppleCalendarExportServiceTests
                     EAppleCalendarContentAccess.Writable));
         RecordingCalendarNameConflictResolver conflictResolver = new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.ReplaceExisting);
 
-        AppleCalendarExportResult result =
-            await new AppleCalendarExportService(nativeBridge).ExportAsync(
-                createDocument(),
-                conflictResolver,
-                TestContext.Current.CancellationToken);
+        AppleCalendarExportResult result = await new AppleCalendarExportService(nativeBridge).ExportAsync(createDocument(), conflictResolver, TestContext.Current.CancellationToken);
 
         Assert.Equal(EAppleCalendarExportStatus.Success, result.Status);
         Assert.Equal(existingCalendarId, result.CalendarIdOrNull);
@@ -85,11 +78,7 @@ public sealed class AppleCalendarExportServiceTests
                     EAppleCalendarContentAccess.Writable));
         RecordingCalendarNameConflictResolver conflictResolver = new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.CreateWithAvailableName);
 
-        AppleCalendarExportResult result =
-            await new AppleCalendarExportService(nativeBridge).ExportAsync(
-                createDocument(),
-                conflictResolver,
-                TestContext.Current.CancellationToken);
+        AppleCalendarExportResult result = await new AppleCalendarExportService(nativeBridge).ExportAsync(createDocument(), conflictResolver, TestContext.Current.CancellationToken);
 
         Assert.Equal(EAppleCalendarExportStatus.Success, result.Status);
         Assert.Equal("2026-2학기 시간표 (3)", result.CalendarNameOrNull?.Value);
@@ -113,11 +102,7 @@ public sealed class AppleCalendarExportServiceTests
                     EAppleCalendarContentAccess.Writable));
         RecordingCalendarNameConflictResolver conflictResolver = new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.Cancel);
 
-        AppleCalendarExportResult result =
-            await new AppleCalendarExportService(nativeBridge).ExportAsync(
-                createDocument(),
-                conflictResolver,
-                TestContext.Current.CancellationToken);
+        AppleCalendarExportResult result = await new AppleCalendarExportService(nativeBridge).ExportAsync(createDocument(), conflictResolver, TestContext.Current.CancellationToken);
 
         Assert.Equal(EAppleCalendarExportStatus.Cancelled, result.Status);
         Assert.Null(result.DiagnosticCodeOrNull);
@@ -142,11 +127,7 @@ public sealed class AppleCalendarExportServiceTests
             EAppleCalendarContentAccess.Writable);
         RecordingCalendarNameConflictResolver conflictResolver = new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.CreateWithAvailableName);
 
-        AppleCalendarExportResult result =
-            await new AppleCalendarExportService(nativeBridge).ExportAsync(
-                createDocument(),
-                conflictResolver,
-                TestContext.Current.CancellationToken);
+        AppleCalendarExportResult result = await new AppleCalendarExportService(nativeBridge).ExportAsync(createDocument(), conflictResolver, TestContext.Current.CancellationToken);
 
         Assert.Equal(EAppleCalendarExportStatus.Success, result.Status);
         Assert.Equal("2026-2학기 시간표 (3)", result.CalendarNameOrNull?.Value);
@@ -163,11 +144,7 @@ public sealed class AppleCalendarExportServiceTests
         nativeBridge.IsAvailable = false;
         RecordingCalendarNameConflictResolver conflictResolver = new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.Cancel);
 
-        AppleCalendarExportResult result =
-            await new AppleCalendarExportService(nativeBridge).ExportAsync(
-                createDocument(),
-                conflictResolver,
-                TestContext.Current.CancellationToken);
+        AppleCalendarExportResult result = await new AppleCalendarExportService(nativeBridge).ExportAsync(createDocument(), conflictResolver, TestContext.Current.CancellationToken);
 
         Assert.Equal(EAppleCalendarExportStatus.Unavailable, result.Status);
         Assert.Equal("apple_calendar_native_bridge_unavailable", result.DiagnosticCodeOrNull);
@@ -179,17 +156,9 @@ public sealed class AppleCalendarExportServiceTests
     public async Task NativeAccessDenialReturnsTypedFailureAsync()
     {
         RecordingAppleCalendarNativeBridge nativeBridge = new RecordingAppleCalendarNativeBridge();
-        nativeBridge.FailureOnNextMutationOrNull =
-            new AppleCalendarNativeBridgeException(
-                EAppleCalendarNativeFailureKind.AccessDenied,
-                "apple_calendar_access_denied");
+        nativeBridge.FailureOnNextMutationOrNull = new AppleCalendarNativeBridgeException(EAppleCalendarNativeFailureKind.AccessDenied, "apple_calendar_access_denied");
 
-        AppleCalendarExportResult result =
-            await new AppleCalendarExportService(nativeBridge).ExportAsync(
-                createDocument(),
-                new RecordingCalendarNameConflictResolver(
-                    ECalendarNameConflictResolution.Cancel),
-                TestContext.Current.CancellationToken);
+        AppleCalendarExportResult result = await new AppleCalendarExportService(nativeBridge).ExportAsync(createDocument(), new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.Cancel), TestContext.Current.CancellationToken);
 
         Assert.Equal(EAppleCalendarExportStatus.AccessDenied, result.Status);
         Assert.Equal("apple_calendar_access_denied", result.DiagnosticCodeOrNull);
@@ -198,20 +167,11 @@ public sealed class AppleCalendarExportServiceTests
     [Fact]
     public async Task ProcessLeaseCoversSnapshotAndMutationThenReleasesAsync()
     {
-        RecordingAppleCalendarExportLeaseProvider leaseProvider =
-            new RecordingAppleCalendarExportLeaseProvider();
-        LeaseObservingAppleCalendarNativeBridge nativeBridge =
-            new LeaseObservingAppleCalendarNativeBridge(leaseProvider);
-        AppleCalendarExportService exporter =
-            new AppleCalendarExportService(
-                nativeBridge,
-                leaseProvider);
+        RecordingAppleCalendarExportLeaseProvider leaseProvider = new RecordingAppleCalendarExportLeaseProvider();
+        LeaseObservingAppleCalendarNativeBridge nativeBridge = new LeaseObservingAppleCalendarNativeBridge(leaseProvider);
+        AppleCalendarExportService exporter = new AppleCalendarExportService(nativeBridge, leaseProvider);
 
-        AppleCalendarExportResult result = await exporter.ExportAsync(
-            createDocument(),
-            new RecordingCalendarNameConflictResolver(
-                ECalendarNameConflictResolution.Cancel),
-            TestContext.Current.CancellationToken);
+        AppleCalendarExportResult result = await exporter.ExportAsync(createDocument(), new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.Cancel), TestContext.Current.CancellationToken);
 
         Assert.Equal(EAppleCalendarExportStatus.Success, result.Status);
         Assert.True(nativeBridge.SnapshotObservedLease);
@@ -223,24 +183,12 @@ public sealed class AppleCalendarExportServiceTests
     [Fact]
     public async Task NativeExceptionReleasesProcessLeaseAsync()
     {
-        RecordingAppleCalendarExportLeaseProvider leaseProvider =
-            new RecordingAppleCalendarExportLeaseProvider();
-        RecordingAppleCalendarNativeBridge nativeBridge =
-            new RecordingAppleCalendarNativeBridge();
-        nativeBridge.FailureOnNextMutationOrNull =
-            new AppleCalendarNativeBridgeException(
-                EAppleCalendarNativeFailureKind.AccessDenied,
-                "apple_calendar_access_denied");
-        AppleCalendarExportService exporter =
-            new AppleCalendarExportService(
-                nativeBridge,
-                leaseProvider);
+        RecordingAppleCalendarExportLeaseProvider leaseProvider = new RecordingAppleCalendarExportLeaseProvider();
+        RecordingAppleCalendarNativeBridge nativeBridge = new RecordingAppleCalendarNativeBridge();
+        nativeBridge.FailureOnNextMutationOrNull = new AppleCalendarNativeBridgeException(EAppleCalendarNativeFailureKind.AccessDenied, "apple_calendar_access_denied");
+        AppleCalendarExportService exporter = new AppleCalendarExportService(nativeBridge, leaseProvider);
 
-        AppleCalendarExportResult result = await exporter.ExportAsync(
-            createDocument(),
-            new RecordingCalendarNameConflictResolver(
-                ECalendarNameConflictResolution.Cancel),
-            TestContext.Current.CancellationToken);
+        AppleCalendarExportResult result = await exporter.ExportAsync(createDocument(), new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.Cancel), TestContext.Current.CancellationToken);
 
         Assert.Equal(
             EAppleCalendarExportStatus.AccessDenied,
@@ -252,27 +200,14 @@ public sealed class AppleCalendarExportServiceTests
     [Fact]
     public async Task CancellationReleasesProcessLeaseWithoutMutationAsync()
     {
-        RecordingAppleCalendarExportLeaseProvider leaseProvider =
-            new RecordingAppleCalendarExportLeaseProvider();
-        ControlledPermissionAppleCalendarNativeBridge nativeBridge =
-            new ControlledPermissionAppleCalendarNativeBridge(1);
-        AppleCalendarExportService exporter =
-            new AppleCalendarExportService(
-                nativeBridge,
-                leaseProvider);
+        RecordingAppleCalendarExportLeaseProvider leaseProvider = new RecordingAppleCalendarExportLeaseProvider();
+        ControlledPermissionAppleCalendarNativeBridge nativeBridge = new ControlledPermissionAppleCalendarNativeBridge(1);
+        AppleCalendarExportService exporter = new AppleCalendarExportService(nativeBridge, leaseProvider);
 
-        using (CancellationTokenSource cancellationSource =
-            new CancellationTokenSource())
+        using (CancellationTokenSource cancellationSource = new CancellationTokenSource())
         {
-            Task<AppleCalendarExportResult> exportTask =
-                exporter.ExportAsync(
-                    createDocument(),
-                    new RecordingCalendarNameConflictResolver(
-                        ECalendarNameConflictResolution.Cancel),
-                    cancellationSource.Token);
-            await nativeBridge.WaitForSnapshotRequestAsync(
-                0,
-                TestContext.Current.CancellationToken);
+            Task<AppleCalendarExportResult> exportTask = exporter.ExportAsync(createDocument(), new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.Cancel), cancellationSource.Token);
+            await nativeBridge.WaitForSnapshotRequestAsync(0, TestContext.Current.CancellationToken);
 
             Assert.Equal(1, leaseProvider.ActiveLeaseCount);
             cancellationSource.Cancel();
@@ -292,23 +227,13 @@ public sealed class AppleCalendarExportServiceTests
     [Fact]
     public async Task PendingPermissionContinuesTheSameExportAfterApprovalAsync()
     {
-        ControlledPermissionAppleCalendarNativeBridge nativeBridge =
-            new ControlledPermissionAppleCalendarNativeBridge(1);
-        AppleCalendarExportService exporter =
-            new AppleCalendarExportService(nativeBridge);
+        ControlledPermissionAppleCalendarNativeBridge nativeBridge = new ControlledPermissionAppleCalendarNativeBridge(1);
+        AppleCalendarExportService exporter = new AppleCalendarExportService(nativeBridge);
 
-        Task<AppleCalendarExportResult> exportTask = exporter.ExportAsync(
-            createDocument(),
-            new RecordingCalendarNameConflictResolver(
-                ECalendarNameConflictResolution.Cancel),
-            TestContext.Current.CancellationToken);
-        await nativeBridge.WaitForSnapshotRequestAsync(
-            0,
-            TestContext.Current.CancellationToken);
+        Task<AppleCalendarExportResult> exportTask = exporter.ExportAsync(createDocument(), new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.Cancel), TestContext.Current.CancellationToken);
+        await nativeBridge.WaitForSnapshotRequestAsync(0, TestContext.Current.CancellationToken);
 
-        await Task.Delay(
-            TimeSpan.FromMilliseconds(50.0),
-            TestContext.Current.CancellationToken);
+        await Task.Delay(TimeSpan.FromMilliseconds(50.0), TestContext.Current.CancellationToken);
 
         Assert.False(exportTask.IsCompleted);
         Assert.Equal(1, nativeBridge.CalendarSnapshotRequestCount);
@@ -325,38 +250,22 @@ public sealed class AppleCalendarExportServiceTests
     [Fact]
     public async Task DeniedPermissionDoesNotMutateAndAUserRetryCanSucceedAsync()
     {
-        ControlledPermissionAppleCalendarNativeBridge nativeBridge =
-            new ControlledPermissionAppleCalendarNativeBridge(2);
-        AppleCalendarExportService exporter =
-            new AppleCalendarExportService(nativeBridge);
+        ControlledPermissionAppleCalendarNativeBridge nativeBridge = new ControlledPermissionAppleCalendarNativeBridge(2);
+        AppleCalendarExportService exporter = new AppleCalendarExportService(nativeBridge);
 
-        Task<AppleCalendarExportResult> deniedExportTask =
-            exporter.ExportAsync(
-                createDocument(),
-                new RecordingCalendarNameConflictResolver(
-                    ECalendarNameConflictResolution.Cancel),
-                TestContext.Current.CancellationToken);
-        await nativeBridge.WaitForSnapshotRequestAsync(
-            0,
-            TestContext.Current.CancellationToken);
+        Task<AppleCalendarExportResult> deniedExportTask = exporter.ExportAsync(createDocument(), new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.Cancel), TestContext.Current.CancellationToken);
+        await nativeBridge.WaitForSnapshotRequestAsync(0, TestContext.Current.CancellationToken);
         nativeBridge.DenySnapshot(0);
 
-        AppleCalendarExportResult deniedResult =
-            await deniedExportTask;
+        AppleCalendarExportResult deniedResult = await deniedExportTask;
 
         Assert.Equal(
             EAppleCalendarExportStatus.AccessDenied,
             deniedResult.Status);
         Assert.Equal(0, nativeBridge.ApplyExportRequestCount);
 
-        Task<AppleCalendarExportResult> retryTask = exporter.ExportAsync(
-            createDocument(),
-            new RecordingCalendarNameConflictResolver(
-                ECalendarNameConflictResolution.Cancel),
-            TestContext.Current.CancellationToken);
-        await nativeBridge.WaitForSnapshotRequestAsync(
-            1,
-            TestContext.Current.CancellationToken);
+        Task<AppleCalendarExportResult> retryTask = exporter.ExportAsync(createDocument(), new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.Cancel), TestContext.Current.CancellationToken);
+        await nativeBridge.WaitForSnapshotRequestAsync(1, TestContext.Current.CancellationToken);
         nativeBridge.AllowSnapshot(1);
 
         AppleCalendarExportResult retryResult = await retryTask;
@@ -371,22 +280,12 @@ public sealed class AppleCalendarExportServiceTests
     [Fact]
     public async Task PendingPermissionHonorsCancellationWithoutMutationAsync()
     {
-        ControlledPermissionAppleCalendarNativeBridge nativeBridge =
-            new ControlledPermissionAppleCalendarNativeBridge(1);
-        AppleCalendarExportService exporter =
-            new AppleCalendarExportService(nativeBridge);
-        using (CancellationTokenSource cancellationSource =
-            new CancellationTokenSource())
+        ControlledPermissionAppleCalendarNativeBridge nativeBridge = new ControlledPermissionAppleCalendarNativeBridge(1);
+        AppleCalendarExportService exporter = new AppleCalendarExportService(nativeBridge);
+        using (CancellationTokenSource cancellationSource = new CancellationTokenSource())
         {
-            Task<AppleCalendarExportResult> exportTask =
-                exporter.ExportAsync(
-                    createDocument(),
-                    new RecordingCalendarNameConflictResolver(
-                        ECalendarNameConflictResolution.Cancel),
-                    cancellationSource.Token);
-            await nativeBridge.WaitForSnapshotRequestAsync(
-                0,
-                TestContext.Current.CancellationToken);
+            Task<AppleCalendarExportResult> exportTask = exporter.ExportAsync(createDocument(), new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.Cancel), cancellationSource.Token);
+            await nativeBridge.WaitForSnapshotRequestAsync(0, TestContext.Current.CancellationToken);
 
             cancellationSource.Cancel();
 
@@ -461,10 +360,7 @@ public sealed class AppleCalendarExportServiceTests
 
     private static CalendarExportDocument createDocument()
     {
-        AcademicTermCalendarMetadata academicCalendar =
-            AcademicTermCalendarMetadataRegistry.findByTerm(
-                AcademicTerm.Parse("2026-2"),
-                new CalendarTimeZoneId("Asia/Seoul"));
+        AcademicTermCalendarMetadata academicCalendar = AcademicTermCalendarMetadataRegistry.findByTerm(AcademicTerm.Parse("2026-2"), new CalendarTimeZoneId("Asia/Seoul"));
         RecurringCalendarEvent calendarEvent = new RecurringCalendarEvent(
             new CalendarEventUid("course:ITP30003:01"),
             new CalendarEventContent(
@@ -599,8 +495,7 @@ public sealed class AppleCalendarExportServiceTests
             GetCalendarsAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            SnapshotObservedLease =
-                mLeaseProvider.ActiveLeaseCount == 1;
+            SnapshotObservedLease = mLeaseProvider.ActiveLeaseCount == 1;
             return Task.FromResult<IReadOnlyList<
                 AppleCalendarDescriptor>>(
                     Array.Empty<AppleCalendarDescriptor>());
@@ -611,8 +506,7 @@ public sealed class AppleCalendarExportServiceTests
             CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            MutationObservedLease =
-                mLeaseProvider.ActiveLeaseCount == 1;
+            MutationObservedLease = mLeaseProvider.ActiveLeaseCount == 1;
             return Task.FromResult(
                 new AppleCalendarNativeExportResult(
                     new AppleCalendarId("lease-observed-calendar"),
@@ -748,16 +642,13 @@ public sealed class AppleCalendarExportServiceTests
 
             mSnapshotSources = new TaskCompletionSource<
                 IReadOnlyList<AppleCalendarDescriptor>>[snapshotCount];
-            mSnapshotRequestSources =
-                new TaskCompletionSource[snapshotCount];
+            mSnapshotRequestSources = new TaskCompletionSource[snapshotCount];
             for (int index = 0; index < snapshotCount; ++index)
             {
                 mSnapshotSources[index] = new TaskCompletionSource<
                     IReadOnlyList<AppleCalendarDescriptor>>(
                     TaskCreationOptions.RunContinuationsAsynchronously);
-                mSnapshotRequestSources[index] =
-                    new TaskCompletionSource(
-                        TaskCreationOptions.RunContinuationsAsynchronously);
+                mSnapshotRequestSources[index] = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             }
         }
 
