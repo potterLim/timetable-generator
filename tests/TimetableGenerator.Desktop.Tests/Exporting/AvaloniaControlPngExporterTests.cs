@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,6 +9,7 @@ using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.Threading;
 
 using TimetableGenerator.Desktop.Exporting;
@@ -87,6 +89,61 @@ public sealed class AvaloniaControlPngExporterTests
             destinationStream.Release();
             await exportTask;
             Assert.True(destinationStream.Length > PNG_SIGNATURE.Length);
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task ExportControlFinalizesPendingChildLayoutAsync()
+    {
+        Color expectedChildColor = Color.FromRgb(17, 34, 51);
+        Grid sourceControl = new Grid();
+        sourceControl.Background = Brushes.White;
+        sourceControl.Width = 120.0;
+        sourceControl.Height = 80.0;
+        Window window = new Window();
+        window.Width = 180.0;
+        window.Height = 140.0;
+        window.Content = sourceControl;
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        try
+        {
+            Border lateChild = new Border();
+            lateChild.Background =
+                new SolidColorBrush(expectedChildColor);
+            Dispatcher.UIThread.Post(
+                delegate
+                {
+                    sourceControl.Children.Add(lateChild);
+                },
+                DispatcherPriority.Render);
+
+            AvaloniaControlPngExporter exporter =
+                new AvaloniaControlPngExporter(
+                    PngExportScale.Create(1.0));
+            using (MemoryStream destinationStream =
+                new MemoryStream())
+            {
+                await exporter.ExportControlAsync(
+                    sourceControl,
+                    destinationStream,
+                    TestContext.Current.CancellationToken);
+
+                Assert.True(lateChild.IsArrangeValid);
+                destinationStream.Position = 0L;
+                using (Bitmap bitmap = new Bitmap(
+                    destinationStream))
+                {
+                    assertBitmapContainsColor(
+                        bitmap,
+                        expectedChildColor);
+                }
+            }
+        }
+        finally
+        {
+            window.Close();
         }
     }
 
@@ -195,6 +252,55 @@ public sealed class AvaloniaControlPngExporterTests
         sourceControl.Arrange(new Rect(0.0, 0.0, 120.0, 80.0));
         Dispatcher.UIThread.RunJobs();
         return sourceControl;
+    }
+
+    private static void assertBitmapContainsColor(
+        Bitmap bitmap,
+        Color expectedColor)
+    {
+        using (WriteableBitmap pixelCopy = new WriteableBitmap(
+            bitmap.PixelSize,
+            new Vector(96.0, 96.0),
+            PixelFormat.Bgra8888,
+            AlphaFormat.Premul))
+        using (ILockedFramebuffer framebuffer = pixelCopy.Lock())
+        {
+            bitmap.CopyPixels(framebuffer);
+            for (int y = 0;
+                y < bitmap.PixelSize.Height;
+                ++y)
+            {
+                for (int x = 0;
+                    x < bitmap.PixelSize.Width;
+                    ++x)
+                {
+                    int pixelOffset =
+                        (y * framebuffer.RowBytes) + (x * 4);
+                    byte blue = Marshal.ReadByte(
+                        framebuffer.Address,
+                        pixelOffset);
+                    byte green = Marshal.ReadByte(
+                        framebuffer.Address,
+                        pixelOffset + 1);
+                    byte red = Marshal.ReadByte(
+                        framebuffer.Address,
+                        pixelOffset + 2);
+                    byte alpha = Marshal.ReadByte(
+                        framebuffer.Address,
+                        pixelOffset + 3);
+                    if (blue == expectedColor.B
+                        && green == expectedColor.G
+                        && red == expectedColor.R
+                        && alpha == expectedColor.A)
+                    {
+                        return;
+                    }
+                }
+            }
+        }
+
+        Assert.Fail(
+            "The exported PNG did not contain the pending child layout.");
     }
 
     private sealed class BlockingWriteStream : Stream

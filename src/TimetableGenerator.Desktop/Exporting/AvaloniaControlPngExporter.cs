@@ -56,6 +56,7 @@ public sealed class AvaloniaControlPngExporter : IControlPngExporter
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
+                sourceControl.UpdateLayout();
                 PixelSize pixelSize = calculatePixelSize(sourceControl.Bounds.Size);
                 double exportDpi = STANDARD_DPI * mExportScale.Multiplier;
                 Vector dpi = new Vector(exportDpi, exportDpi);

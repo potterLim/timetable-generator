@@ -458,6 +458,11 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                     using (Bitmap bitmap = new Bitmap(destinationStream))
                     {
                         assertBitmapContainsOpaqueContent(bitmap);
+                        assertBitmapContainsColor(
+                            bitmap,
+                            findRequiredThemeColor(
+                                "CourseBlueBackgroundBrush",
+                                ThemeVariant.Light));
                     }
                 }
             }
@@ -930,6 +935,54 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             byte alpha = Marshal.ReadByte(framebuffer.Address, alphaOffset);
             Assert.Equal(byte.MaxValue, alpha);
         }
+    }
+
+    private static void assertBitmapContainsColor(
+        Bitmap bitmap,
+        Color expectedColor)
+    {
+        using (WriteableBitmap pixelCopy = new WriteableBitmap(
+            bitmap.PixelSize,
+            new Vector(96.0, 96.0),
+            PixelFormat.Bgra8888,
+            AlphaFormat.Premul))
+        using (ILockedFramebuffer framebuffer = pixelCopy.Lock())
+        {
+            bitmap.CopyPixels(framebuffer);
+            for (int y = 0;
+                y < bitmap.PixelSize.Height;
+                ++y)
+            {
+                for (int x = 0;
+                    x < bitmap.PixelSize.Width;
+                    ++x)
+                {
+                    int pixelOffset = (y * framebuffer.RowBytes) + (x * 4);
+                    byte blue = Marshal.ReadByte(
+                        framebuffer.Address,
+                        pixelOffset);
+                    byte green = Marshal.ReadByte(
+                        framebuffer.Address,
+                        pixelOffset + 1);
+                    byte red = Marshal.ReadByte(
+                        framebuffer.Address,
+                        pixelOffset + 2);
+                    byte alpha = Marshal.ReadByte(
+                        framebuffer.Address,
+                        pixelOffset + 3);
+                    if (blue == expectedColor.B
+                        && green == expectedColor.G
+                        && red == expectedColor.R
+                        && alpha == expectedColor.A)
+                    {
+                        return;
+                    }
+                }
+            }
+        }
+
+        Assert.Fail(
+            "The exported PNG did not contain the expected schedule-card color.");
     }
 
     private static Color getRequiredSolidColor(IBrush? brushOrNull)
