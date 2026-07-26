@@ -104,7 +104,7 @@ public sealed class ScheduleWorkspaceViewTests
             Assert.Contains("목요일 22:30–23:45", latestScheduleAccessibleNameOrNull);
             Assert.DoesNotContain("교시", latestScheduleAccessibleNameOrNull);
             Assert.True(scrollViewer.Extent.Height > scrollViewer.Viewport.Height);
-            assertScheduleEndBoundary(scheduleBoard, boardGrid, 5);
+            assertScheduleUsesOuterFrameWithoutEndBoundary(boardGrid);
             assertBoardUsesAutomaticVerticalScrolling(scheduleBoard, boardGrid, scrollViewer);
             assertStickyHeaderMatchesBoardSurface(scheduleBoard);
             assertDayColumnsAreEqual(boardGrid);
@@ -163,7 +163,7 @@ public sealed class ScheduleWorkspaceViewTests
             Assert.Equal(7, Grid.GetColumn(scheduleCard));
             Assert.Contains("일요일 10:30–11:45", AutomationProperties.GetName(scheduleCard));
             Assert.Contains(boardGridOrNull, scheduleBoard.PngExportSurface.GetVisualDescendants());
-            assertScheduleEndBoundary(scheduleBoard, boardGridOrNull, 7);
+            assertScheduleUsesOuterFrameWithoutEndBoundary(boardGridOrNull);
             assertStickyHeaderMatchesBoardSurface(scheduleBoard);
         }
         finally
@@ -193,7 +193,7 @@ public sealed class ScheduleWorkspaceViewTests
             Assert.Equal(6, scheduleBoard.RenderedLayout.DayRange.DayCount);
             Grid boardGrid = Assert.IsType<Grid>(
                 scheduleBoard.FindControl<Grid>("BoardGrid"));
-            assertScheduleEndBoundary(scheduleBoard, boardGrid, 6);
+            assertScheduleUsesOuterFrameWithoutEndBoundary(boardGrid);
             assertStickyHeaderMatchesBoardSurface(scheduleBoard);
         }
         finally
@@ -290,7 +290,7 @@ public sealed class ScheduleWorkspaceViewTests
                     Assert.Equal(new Thickness(0.0), halfHourGuide.Margin);
                 });
             Assert.Equal(25, boardGridOrNull.RowDefinitions.Count);
-            assertScheduleEndBoundary(scheduleBoard, boardGridOrNull, 5);
+            assertScheduleUsesOuterFrameWithoutEndBoundary(boardGridOrNull);
         }
         finally
         {
@@ -344,6 +344,7 @@ public sealed class ScheduleWorkspaceViewTests
                 boardFrame.Bounds.Height < window.ClientSize.Height,
                 "A short timetable should leave the remaining workspace outside its frame.");
             Assert.False(verticalScrollBar.IsEffectivelyVisible);
+            Assert.Equal(new Thickness(0.0, 6.0, 4.0, 6.0), verticalScrollBar.Margin);
             Assert.True(
                 scrollViewer.Extent.Height <= scrollViewer.Viewport.Height + 0.5);
             Assert.Equal(
@@ -394,8 +395,14 @@ public sealed class ScheduleWorkspaceViewTests
                 scrollBar => scrollBar.Orientation == Orientation.Vertical);
 
             Assert.True(verticalScrollBar.IsEffectivelyVisible);
+            Assert.Equal(new Thickness(0.0, 6.0, 4.0, 6.0), verticalScrollBar.Margin);
             Assert.True(scrollViewer.Extent.Height > scrollViewer.Viewport.Height);
             Assert.Equal(scheduleBoard.Bounds.Height, boardFrame.Bounds.Height, 3);
+
+            scrollViewer.ScrollToEnd();
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(scrollViewer.Offset.Y > 0.0);
 
             window.Height = 720.0;
             Dispatcher.UIThread.RunJobs();
@@ -751,7 +758,10 @@ public sealed class ScheduleWorkspaceViewTests
     [AvaloniaFact]
     public void ScheduleBoardUsesAContinuousOuterFrameInProductThemes()
     {
+        ScheduleEntry entry = createScheduleEntry(EDay.Monday, new AcademicPeriod(1));
         ScheduleBoardView scheduleBoard = new ScheduleBoardView();
+        scheduleBoard.DataContext = createScheduleBoardPresentation(
+            new ScheduleRecommendation(new ScheduleEntry[] { entry }));
         Window window = new Window();
         window.Width = 800.0;
         window.Height = 420.0;
@@ -1300,6 +1310,7 @@ public sealed class ScheduleWorkspaceViewTests
         ScrollBar verticalScrollBar = verticalScrollBarOrNull;
         Assert.True(scrollViewer.AllowAutoHide);
         Assert.True(verticalScrollBar.IsEffectivelyVisible);
+        Assert.Equal(new Thickness(0.0, 6.0, 4.0, 6.0), verticalScrollBar.Margin);
         Assert.Equal(new Thickness(0.0), exportSurface.BorderThickness);
         Assert.Equal(scrollViewer.Viewport.Width, exportSurface.Bounds.Width, 3);
         Assert.Equal(exportSurface.Bounds.Width, boardGrid.Bounds.Width, 3);
@@ -1358,64 +1369,9 @@ public sealed class ScheduleWorkspaceViewTests
         }
     }
 
-    private static void assertScheduleEndBoundary(
-        ScheduleBoardView scheduleBoard,
-        Grid boardGrid,
-        int expectedDayCount)
+    private static void assertScheduleUsesOuterFrameWithoutEndBoundary(Grid boardGrid)
     {
-        Border endBoundary = findScheduleEndBoundary(boardGrid);
-        Assert.Equal(
-            new Thickness(0.0, 0.0, 0.0, 1.0),
-            endBoundary.BorderThickness);
-        Assert.Equal(
-            scheduleBoard.RenderedLayout.TimeAxis.IncrementCount,
-            Grid.GetRow(endBoundary));
-        Assert.Equal(
-            boardGrid.RowDefinitions.Count - 1,
-            Grid.GetRow(endBoundary));
-        Assert.Equal(1, Grid.GetColumn(endBoundary));
-        Assert.Equal(expectedDayCount, Grid.GetColumnSpan(endBoundary));
-        Assert.Equal(
-            scheduleBoard.RenderedLayout.DayRange.TotalColumnCount - 1,
-            Grid.GetColumnSpan(endBoundary));
-        Assert.False(endBoundary.IsHitTestVisible);
-        Assert.Equal(3, endBoundary.ZIndex);
-        Assert.Equal(
-            AccessibilityView.Raw,
-            AutomationProperties.GetAccessibilityView(endBoundary));
-        Assert.Null(AutomationProperties.GetName(endBoundary));
         Assert.DoesNotContain(
-            scheduleBoard.RenderedLayout.TimeAxis.End,
-            scheduleBoard.RenderedLayout.TimeAxis.GuideTimes);
-        Assert.DoesNotContain(
-            scheduleBoard.RenderedLayout.TimeAxis.End,
-            scheduleBoard.RenderedLayout.TimeAxis.LabelTimes);
-
-        Point? endBoundaryOriginOrNull = endBoundary.TranslatePoint(
-            new Point(0.0, 0.0),
-            boardGrid);
-        Assert.NotNull(endBoundaryOriginOrNull);
-        if (endBoundaryOriginOrNull == null)
-        {
-            throw new InvalidOperationException(
-                "The timetable end boundary geometry was not available.");
-        }
-
-        Point endBoundaryOrigin = endBoundaryOriginOrNull.Value;
-        Assert.Equal(72.0, endBoundaryOrigin.X, 3);
-        Assert.Equal(
-            boardGrid.Bounds.Width,
-            endBoundaryOrigin.X + endBoundary.Bounds.Width,
-            3);
-        Assert.Equal(
-            boardGrid.Bounds.Height,
-            endBoundaryOrigin.Y + endBoundary.Bounds.Height,
-            3);
-    }
-
-    private static Border findScheduleEndBoundary(Grid boardGrid)
-    {
-        return Assert.Single(
             boardGrid.Children.OfType<Border>(),
             border => border.Classes.Contains("schedule-end-boundary"));
     }

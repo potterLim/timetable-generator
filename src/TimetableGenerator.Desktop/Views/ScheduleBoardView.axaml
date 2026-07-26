@@ -94,6 +94,9 @@
       <Setter Property="Padding" Value="5,0" />
       <Setter Property="CornerRadius" Value="4" />
     </Style>
+    <Style Selector="ScrollViewer#ScheduleScrollViewer /template/ ScrollBar#PART_VerticalScrollBar">
+      <Setter Property="Margin" Value="0,6,4,6" />
+    </Style>
   </UserControl.Styles>
 
   <Border

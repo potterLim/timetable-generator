@@ -197,7 +197,11 @@ internal sealed partial class ScheduleBoardView : UserControl
             return;
         }
 
-        addScheduleEndBoundary();
+        if (mIsPngExport)
+        {
+            addScheduleEndBoundary();
+        }
+
         foreach (ScheduleEntry entry in recommendationOrNull.Entries)
         {
             addScheduleEntry(entry);
