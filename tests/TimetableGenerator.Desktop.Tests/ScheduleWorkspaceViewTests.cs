@@ -38,8 +38,6 @@ namespace TimetableGenerator.Desktop.Tests;
 
 public sealed class ScheduleWorkspaceViewTests
 {
-    private const double SCROLLBAR_GUTTER_WIDTH = 16.0;
-
     private static readonly ColorToken BORDER = new ColorToken("BorderBrush");
     private static readonly ColorToken STRONG_BORDER = new ColorToken("StrongBorderBrush");
     private static readonly ColorToken TEXT_SECONDARY = new ColorToken("TextSecondaryBrush");
@@ -107,7 +105,7 @@ public sealed class ScheduleWorkspaceViewTests
             Assert.DoesNotContain("교시", latestScheduleAccessibleNameOrNull);
             Assert.True(scrollViewer.Extent.Height > scrollViewer.Viewport.Height);
             assertScheduleEndBoundary(scheduleBoard, boardGrid, 5);
-            assertBoardReservesScrollbarGutter(scheduleBoard, boardGrid, scrollViewer);
+            assertBoardUsesAutomaticVerticalScrolling(scheduleBoard, boardGrid, scrollViewer);
             assertStickyHeaderMatchesBoardSurface(scheduleBoard);
             assertDayColumnsAreEqual(boardGrid);
         }
@@ -293,6 +291,120 @@ public sealed class ScheduleWorkspaceViewTests
                 });
             Assert.Equal(25, boardGridOrNull.RowDefinitions.Count);
             assertScheduleEndBoundary(scheduleBoard, boardGridOrNull, 5);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void ShortScheduleBoardEndsWithItsActualTimeAxisAndHidesTheScrollbar()
+    {
+        ScheduleEntry entry = createScheduleEntry(EDay.Monday, new AcademicPeriod(1));
+        ScheduleBoardView scheduleBoard = new ScheduleBoardView();
+        scheduleBoard.DataContext = createScheduleBoardPresentation(
+            new ScheduleRecommendation(new ScheduleEntry[] { entry }));
+        Window window = new Window();
+        window.Width = 800.0;
+        window.Height = 620.0;
+        window.Content = scheduleBoard;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Border boardFrame = Assert.IsType<Border>(
+                scheduleBoard.FindControl<Border>("BoardFrame"));
+            Border stickyHeader = Assert.IsType<Border>(
+                scheduleBoard.FindControl<Border>("BoardStickyDayHeaderSurface"));
+            Border exportSurface = Assert.IsType<Border>(
+                scheduleBoard.FindControl<Border>("BoardExportSurface"));
+            Grid boardGrid = Assert.IsType<Grid>(
+                scheduleBoard.FindControl<Grid>("BoardGrid"));
+            ScrollViewer scrollViewer = Assert.IsType<ScrollViewer>(
+                scheduleBoard.FindControl<ScrollViewer>("ScheduleScrollViewer"));
+            ScrollBar verticalScrollBar = Assert.Single(
+                scrollViewer.GetVisualDescendants()
+                    .OfType<ScrollBar>(),
+                scrollBar => scrollBar.Orientation == Orientation.Vertical);
+
+            Assert.Equal(
+                boardFrame.Bounds.Height,
+                scheduleBoard.Bounds.Height,
+                3);
+            Assert.InRange(
+                boardFrame.Bounds.Height
+                    - stickyHeader.Bounds.Height
+                    - boardGrid.Bounds.Height,
+                1.5,
+                2.5);
+            Assert.True(
+                boardFrame.Bounds.Height < window.ClientSize.Height,
+                "A short timetable should leave the remaining workspace outside its frame.");
+            Assert.False(verticalScrollBar.IsEffectivelyVisible);
+            Assert.True(
+                scrollViewer.Extent.Height <= scrollViewer.Viewport.Height + 0.5);
+            Assert.Equal(
+                scrollViewer.Viewport.Width,
+                exportSurface.Bounds.Width,
+                3);
+            Assert.Equal(
+                exportSurface.Bounds.Width,
+                stickyHeader.Bounds.Width,
+                3);
+            Assert.Null(
+                scheduleBoard.FindControl<Border>("BoardContentRightBoundary"));
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void ScheduleBoardAddsAndRemovesScrollingAsTheWindowHeightChanges()
+    {
+        ScheduleBoardView scheduleBoard = new ScheduleBoardView();
+        scheduleBoard.DataContext = createScheduleBoardPresentation(
+            new ScheduleRecommendation(
+                new ScheduleEntry[]
+                {
+                    createScheduleEntry(EDay.Monday, new AcademicPeriod(1)),
+                    createScheduleEntry(EDay.Wednesday, new AcademicPeriod(3)),
+                }));
+        Window window = new Window();
+        window.Width = 800.0;
+        window.Height = 320.0;
+        window.Content = scheduleBoard;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Border boardFrame = Assert.IsType<Border>(
+                scheduleBoard.FindControl<Border>("BoardFrame"));
+            ScrollViewer scrollViewer = Assert.IsType<ScrollViewer>(
+                scheduleBoard.FindControl<ScrollViewer>("ScheduleScrollViewer"));
+            ScrollBar verticalScrollBar = Assert.Single(
+                scrollViewer.GetVisualDescendants()
+                    .OfType<ScrollBar>(),
+                scrollBar => scrollBar.Orientation == Orientation.Vertical);
+
+            Assert.True(verticalScrollBar.IsEffectivelyVisible);
+            Assert.True(scrollViewer.Extent.Height > scrollViewer.Viewport.Height);
+            Assert.Equal(scheduleBoard.Bounds.Height, boardFrame.Bounds.Height, 3);
+
+            window.Height = 720.0;
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.False(verticalScrollBar.IsEffectivelyVisible);
+            Assert.True(
+                scrollViewer.Extent.Height <= scrollViewer.Viewport.Height + 0.5);
+            Assert.True(boardFrame.Bounds.Height < window.ClientSize.Height);
+            Assert.Equal(scheduleBoard.Bounds.Height, boardFrame.Bounds.Height, 3);
         }
         finally
         {
@@ -658,10 +770,8 @@ public sealed class ScheduleWorkspaceViewTests
             Dispatcher.UIThread.RunJobs();
 
             Border? boardFrameOrNull = scheduleBoard.FindControl<Border>("BoardFrame");
-            Border? rightBoundaryOrNull = scheduleBoard.FindControl<Border>("BoardContentRightBoundary");
             Assert.NotNull(boardFrameOrNull);
-            Assert.NotNull(rightBoundaryOrNull);
-            if (boardFrameOrNull == null || rightBoundaryOrNull == null)
+            if (boardFrameOrNull == null)
             {
                 throw new InvalidOperationException("The timetable outer frame was not available.");
             }
@@ -669,6 +779,8 @@ public sealed class ScheduleWorkspaceViewTests
             Assert.True(boardFrameOrNull.UseLayoutRounding);
             Assert.Equal(new Thickness(1.0), boardFrameOrNull.BorderThickness);
             Assert.Equal(new CornerRadius(7.0), boardFrameOrNull.CornerRadius);
+            Assert.Null(
+                scheduleBoard.FindControl<Border>("BoardContentRightBoundary"));
             Grid boardGrid = Assert.IsType<Grid>(
                 scheduleBoard.FindControl<Grid>("BoardGrid"));
             Assert.DoesNotContain(
@@ -687,9 +799,7 @@ public sealed class ScheduleWorkspaceViewTests
 
                 SolidColorBrush expectedBrush = findRequiredThemeBrush(STRONG_BORDER, themeVariant);
                 SolidColorBrush frameBrush = Assert.IsType<SolidColorBrush>(boardFrameOrNull.BorderBrush);
-                SolidColorBrush rightBoundaryBrush = Assert.IsType<SolidColorBrush>(rightBoundaryOrNull.Background);
                 Assert.Equal(expectedBrush.Color, frameBrush.Color);
-                Assert.Equal(expectedBrush.Color, rightBoundaryBrush.Color);
             }
         }
         finally
@@ -1177,62 +1287,31 @@ public sealed class ScheduleWorkspaceViewTests
         return new RenderedScheduleBrushes(scheduleCardOrNull, cellBorder, timeLabel, detailAccent);
     }
 
-    private static void assertBoardReservesScrollbarGutter(
+    private static void assertBoardUsesAutomaticVerticalScrolling(
         ScheduleBoardView scheduleBoard,
         Grid boardGrid,
         ScrollViewer scrollViewer)
     {
         Border? exportSurfaceOrNull = scheduleBoard.FindControl<Border>("BoardExportSurface");
-        Border? rightBoundaryOrNull = scheduleBoard.FindControl<Border>("BoardContentRightBoundary");
         ScrollBar? verticalScrollBarOrNull = scrollViewer.GetVisualDescendants()
             .OfType<ScrollBar>()
             .SingleOrDefault(scrollBar => scrollBar.Orientation == Orientation.Vertical);
         Assert.NotNull(exportSurfaceOrNull);
-        Assert.NotNull(rightBoundaryOrNull);
         Assert.NotNull(verticalScrollBarOrNull);
-        if (exportSurfaceOrNull == null || rightBoundaryOrNull == null || verticalScrollBarOrNull == null)
+        if (exportSurfaceOrNull == null || verticalScrollBarOrNull == null)
         {
             throw new InvalidOperationException("The timetable scrollbar geometry was not available.");
         }
 
         Border exportSurface = exportSurfaceOrNull;
         ScrollBar verticalScrollBar = verticalScrollBarOrNull;
+        Assert.True(scrollViewer.AllowAutoHide);
         Assert.True(verticalScrollBar.IsEffectivelyVisible);
         Assert.Equal(new Thickness(0.0), exportSurface.BorderThickness);
-        Assert.Equal(1.0, rightBoundaryOrNull.Width);
-        Assert.Equal(new Thickness(0.0, 0.0, SCROLLBAR_GUTTER_WIDTH, 0.0), rightBoundaryOrNull.Margin);
-        Assert.InRange(
-            scrollViewer.Viewport.Width - exportSurface.Bounds.Width,
-            SCROLLBAR_GUTTER_WIDTH - 0.5,
-            SCROLLBAR_GUTTER_WIDTH + 0.5);
-
-        Point? exportOriginOrNull = exportSurface.TranslatePoint(new Point(0.0, 0.0), scheduleBoard);
-        Point? scrollBarOriginOrNull = verticalScrollBar.TranslatePoint(new Point(0.0, 0.0), scheduleBoard);
-        Assert.NotNull(exportOriginOrNull);
-        Assert.NotNull(scrollBarOriginOrNull);
-        if (exportOriginOrNull == null || scrollBarOriginOrNull == null)
-        {
-            throw new InvalidOperationException("The timetable surface position was not available.");
-        }
-
-        double exportRight = exportOriginOrNull.Value.X + exportSurface.Bounds.Width;
-        Border endBoundary = findScheduleEndBoundary(boardGrid);
-        Point? endBoundaryOriginOrNull = endBoundary.TranslatePoint(
-            new Point(0.0, 0.0),
-            scheduleBoard);
-        Assert.NotNull(endBoundaryOriginOrNull);
-        if (endBoundaryOriginOrNull == null)
-        {
-            throw new InvalidOperationException(
-                "The timetable end boundary position was not available.");
-        }
-
-        double endBoundaryRight = endBoundaryOriginOrNull.Value.X
-            + endBoundary.Bounds.Width;
-        Assert.True(exportRight <= scrollBarOriginOrNull.Value.X + 0.5);
-        Assert.True(endBoundaryRight <= scrollBarOriginOrNull.Value.X + 0.5);
-        Assert.Equal(exportRight, endBoundaryRight, 3);
+        Assert.Equal(scrollViewer.Viewport.Width, exportSurface.Bounds.Width, 3);
         Assert.Equal(exportSurface.Bounds.Width, boardGrid.Bounds.Width, 3);
+        Assert.Null(
+            scheduleBoard.FindControl<Border>("BoardContentRightBoundary"));
     }
 
     private static void assertStickyHeaderMatchesBoardSurface(ScheduleBoardView scheduleBoard)
@@ -1240,15 +1319,12 @@ public sealed class ScheduleWorkspaceViewTests
         Border? stickyHeaderContainerOrNull = scheduleBoard.FindControl<Border>("BoardStickyHeaderContainer");
         Border? stickyHeaderSurfaceOrNull = scheduleBoard.FindControl<Border>("BoardStickyDayHeaderSurface");
         Border? exportSurfaceOrNull = scheduleBoard.FindControl<Border>("BoardExportSurface");
-        Border? rightBoundaryOrNull = scheduleBoard.FindControl<Border>("BoardContentRightBoundary");
         Assert.NotNull(stickyHeaderContainerOrNull);
         Assert.NotNull(stickyHeaderSurfaceOrNull);
         Assert.NotNull(exportSurfaceOrNull);
-        Assert.NotNull(rightBoundaryOrNull);
         if (stickyHeaderContainerOrNull == null
             || stickyHeaderSurfaceOrNull == null
-            || exportSurfaceOrNull == null
-            || rightBoundaryOrNull == null)
+            || exportSurfaceOrNull == null)
         {
             throw new InvalidOperationException("The timetable header and board surfaces were not available.");
         }
@@ -1257,32 +1333,25 @@ public sealed class ScheduleWorkspaceViewTests
         Assert.Equal(new Thickness(0.0, 0.0, 0.0, 1.0), stickyHeaderSurfaceOrNull.BorderThickness);
         Assert.Equal(new Thickness(0.0), exportSurfaceOrNull.BorderThickness);
         Assert.Equal(exportSurfaceOrNull.Bounds.Width, stickyHeaderSurfaceOrNull.Bounds.Width, 3);
-        Assert.InRange(
-            stickyHeaderContainerOrNull.Bounds.Width
-                - stickyHeaderSurfaceOrNull.Bounds.Width,
-            SCROLLBAR_GUTTER_WIDTH - 0.5,
-            SCROLLBAR_GUTTER_WIDTH + 0.5);
+        Assert.Equal(
+            stickyHeaderContainerOrNull.Bounds.Width,
+            stickyHeaderSurfaceOrNull.Bounds.Width,
+            3);
 
         Point? headerOriginOrNull = stickyHeaderSurfaceOrNull.TranslatePoint(
             new Point(0.0, 0.0),
             scheduleBoard);
         Point? exportOriginOrNull = exportSurfaceOrNull.TranslatePoint(new Point(0.0, 0.0), scheduleBoard);
-        Point? rightBoundaryOriginOrNull = rightBoundaryOrNull.TranslatePoint(
-            new Point(0.0, 0.0),
-            scheduleBoard);
         Assert.NotNull(headerOriginOrNull);
         Assert.NotNull(exportOriginOrNull);
-        Assert.NotNull(rightBoundaryOriginOrNull);
-        if (headerOriginOrNull == null || exportOriginOrNull == null || rightBoundaryOriginOrNull == null)
+        if (headerOriginOrNull == null || exportOriginOrNull == null)
         {
             throw new InvalidOperationException("The timetable header and board positions were not available.");
         }
 
         double headerRight = headerOriginOrNull.Value.X + stickyHeaderSurfaceOrNull.Bounds.Width;
         double exportRight = exportOriginOrNull.Value.X + exportSurfaceOrNull.Bounds.Width;
-        double rightBoundaryRight = rightBoundaryOriginOrNull.Value.X + rightBoundaryOrNull.Bounds.Width;
         Assert.Equal(exportRight, headerRight, 3);
-        Assert.Equal(exportRight, rightBoundaryRight, 3);
     }
 
     private static void assertDayColumnsAreEqual(Grid boardGrid)

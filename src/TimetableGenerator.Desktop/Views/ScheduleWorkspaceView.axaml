@@ -193,6 +193,30 @@
                 </MenuItem.Icon>
               </MenuItem>
               <MenuItem
+                  x:Name="ExportAllPngAction"
+                  Classes="export-menu-item"
+                  Header="모든 가능한 시간표 PNG로 저장"
+                  IsVisible="{Binding CanExportAllPngCandidates}"
+                  Command="{Binding #WorkspaceRoot.ExportAllPngCommand}"
+                  AutomationProperties.AutomationId="ExportAllPngImages"
+                  AutomationProperties.Name="모든 가능한 시간표 PNG로 저장"
+                  AutomationProperties.HelpText="현재 조건으로 만든 가능한 시간표를 각각 번호가 붙은 PNG 이미지로 저장합니다.">
+                <MenuItem.Icon>
+                  <Grid
+                      x:Name="ExportAllPngLogoSlot"
+                      Classes="export-menu-logo-slot"
+                      AutomationProperties.AccessibilityView="Raw"
+                      IsHitTestVisible="False">
+                    <Image
+                        x:Name="ExportAllPngLogoImage"
+                        Classes="export-menu-logo"
+                        Width="24"
+                        Height="24"
+                        Source="/Assets/Export/PngImageIcon.png" />
+                  </Grid>
+                </MenuItem.Icon>
+              </MenuItem>
+              <MenuItem
                   x:Name="ExportAppleCalendarAction"
                   Classes="export-menu-item"
                   Header="Apple Calendar로 내보내기"
@@ -202,13 +226,26 @@
                   AutomationProperties.Name="Apple Calendar로 내보내기"
                   AutomationProperties.HelpText="Apple 캘린더에 현재 시간표를 한 번 내보냅니다.">
                 <MenuItem.Icon>
-                  <icons:FluentIcon
-                      Classes="export-menu-icon"
+                  <Grid
+                      x:Name="ExportAppleCalendarLogoSlot"
+                      Classes="export-menu-logo-slot"
                       AutomationProperties.AccessibilityView="Raw"
-                      Icon="CalendarMonth"
-                      IconVariant="Regular"
-                      IconSize="Size20"
-                      FontSize="20" />
+                      IsHitTestVisible="False">
+                    <Image
+                        x:Name="ExportAppleCalendarLogoImage"
+                        Classes="export-menu-logo"
+                        Width="24"
+                        Height="24"
+                        IsVisible="False" />
+                    <icons:FluentIcon
+                        x:Name="ExportAppleCalendarFallbackIcon"
+                        Classes="export-menu-icon"
+                        AutomationProperties.AccessibilityView="Raw"
+                        Icon="CalendarMonth"
+                        IconVariant="Regular"
+                        IconSize="Size20"
+                        FontSize="20" />
+                  </Grid>
                 </MenuItem.Icon>
               </MenuItem>
               <MenuItem
@@ -235,34 +272,6 @@
                         <TranslateTransform Y="0.5" />
                       </Image.RenderTransform>
                     </Image>
-                  </Grid>
-                </MenuItem.Icon>
-              </MenuItem>
-              <Separator
-                  x:Name="ExportAllPngSeparator"
-                  Margin="8,4"
-                  IsVisible="{Binding CanExportAllPngCandidates}" />
-              <MenuItem
-                  x:Name="ExportAllPngAction"
-                  Classes="export-menu-item"
-                  Header="모든 가능한 시간표 PNG로 저장"
-                  IsVisible="{Binding CanExportAllPngCandidates}"
-                  Command="{Binding #WorkspaceRoot.ExportAllPngCommand}"
-                  AutomationProperties.AutomationId="ExportAllPngImages"
-                  AutomationProperties.Name="모든 가능한 시간표 PNG로 저장"
-                  AutomationProperties.HelpText="현재 조건으로 만든 가능한 시간표를 각각 번호가 붙은 PNG 이미지로 저장합니다.">
-                <MenuItem.Icon>
-                  <Grid
-                      x:Name="ExportAllPngLogoSlot"
-                      Classes="export-menu-logo-slot"
-                      AutomationProperties.AccessibilityView="Raw"
-                      IsHitTestVisible="False">
-                    <Image
-                        x:Name="ExportAllPngLogoImage"
-                        Classes="export-menu-logo"
-                        Width="24"
-                        Height="24"
-                        Source="/Assets/Export/PngImageIcon.png" />
                   </Grid>
                 </MenuItem.Icon>
               </MenuItem>
@@ -319,6 +328,7 @@
           IsVisible="{Binding HasScheduleEntries}">
         <views:ScheduleBoardView
             x:Name="ScheduleBoard"
+            VerticalAlignment="Top"
             EditPersonalScheduleCommand="{Binding EditPersonalScheduleCommand, ElementName=WorkspaceRoot}"
             DataContext="{Binding DisplayedScheduleBoard}" />
         <Border

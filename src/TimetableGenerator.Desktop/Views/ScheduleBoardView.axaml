@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:models="using:TimetableGenerator.Desktop.Presentation.Models"
     x:DataType="models:ScheduleBoardPresentation"
-    MinHeight="260"
+    VerticalAlignment="Top"
     AutomationProperties.Name="주간 시간표">
   <UserControl.Resources>
     <ControlTheme x:Key="ProductScheduleCardButtonTheme" TargetType="Button">
@@ -112,61 +112,47 @@
           Background="{DynamicResource ElevatedSurfaceBrush}"
           BorderBrush="{DynamicResource BorderBrush}"
           BorderThickness="0">
-        <Grid ColumnDefinitions="*,16">
-          <Border
-              x:Name="BoardStickyDayHeaderSurface"
-              Grid.Column="0"
-              Background="{DynamicResource ElevatedSurfaceBrush}"
-              BorderBrush="{DynamicResource BorderBrush}"
-              BorderThickness="0,0,0,1">
-            <Grid x:Name="BoardStickyDayHeaderGrid" />
-          </Border>
-        </Grid>
+        <Border
+            x:Name="BoardStickyDayHeaderSurface"
+            Background="{DynamicResource ElevatedSurfaceBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="0,0,0,1">
+          <Grid x:Name="BoardStickyDayHeaderGrid" />
+        </Border>
       </Border>
 
       <ScrollViewer
           x:Name="ScheduleScrollViewer"
           Grid.Row="1"
+          AllowAutoHide="True"
           HorizontalContentAlignment="Stretch"
           HorizontalScrollBarVisibility="Disabled"
           VerticalScrollBarVisibility="Auto"
           AutomationProperties.Name="시간표 시간 스크롤">
-        <Grid x:Name="BoardViewportLayout" ColumnDefinitions="*,16">
-          <Border
-              x:Name="BoardExportSurface"
-              Grid.Column="0"
-              BorderBrush="{DynamicResource StrongBorderBrush}"
-              BorderThickness="0"
-              Background="{DynamicResource ElevatedSurfaceBrush}">
-            <StackPanel Background="{DynamicResource ElevatedSurfaceBrush}">
-              <Border
-                  x:Name="BoardContextHeader"
-                  Padding="18,15"
-                  BorderBrush="{DynamicResource BorderBrush}"
-                  BorderThickness="0,0,0,1"
-                  Background="{DynamicResource ElevatedSurfaceBrush}">
-                <TextBlock
-                    FontSize="17"
-                    FontWeight="SemiBold"
-                    Text="{Binding PlanName.Value}"
-                    TextTrimming="CharacterEllipsis" />
-              </Border>
-              <Grid
-                  x:Name="BoardGrid"
-                  Background="{DynamicResource ElevatedSurfaceBrush}" />
-            </StackPanel>
-          </Border>
-        </Grid>
+        <Border
+            x:Name="BoardExportSurface"
+            BorderBrush="{DynamicResource StrongBorderBrush}"
+            BorderThickness="0"
+            Background="{DynamicResource ElevatedSurfaceBrush}">
+          <StackPanel Background="{DynamicResource ElevatedSurfaceBrush}">
+            <Border
+                x:Name="BoardContextHeader"
+                Padding="18,15"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Background="{DynamicResource ElevatedSurfaceBrush}">
+              <TextBlock
+                  FontSize="17"
+                  FontWeight="SemiBold"
+                  Text="{Binding PlanName.Value}"
+                  TextTrimming="CharacterEllipsis" />
+            </Border>
+            <Grid
+                x:Name="BoardGrid"
+                Background="{DynamicResource ElevatedSurfaceBrush}" />
+          </StackPanel>
+        </Border>
       </ScrollViewer>
-
-      <Border
-          x:Name="BoardContentRightBoundary"
-          Grid.RowSpan="2"
-          Width="1"
-          Margin="0,0,16,0"
-          HorizontalAlignment="Right"
-          Background="{DynamicResource StrongBorderBrush}"
-          IsHitTestVisible="False" />
     </Grid>
   </Border>
 </UserControl>

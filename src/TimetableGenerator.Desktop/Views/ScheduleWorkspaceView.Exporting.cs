@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -9,6 +10,7 @@ using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 
 using FluentIcons.Avalonia;
@@ -19,6 +21,7 @@ using TimetableGenerator.Desktop.Exporting.AppleCalendar;
 using TimetableGenerator.Desktop.Exporting.Calendar;
 using TimetableGenerator.Desktop.Integrations.GoogleCalendar;
 using TimetableGenerator.Desktop.Presentation;
+using TimetableGenerator.Desktop.Presentation.Icons;
 using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Domain.Planning;
@@ -27,7 +30,13 @@ namespace TimetableGenerator.Desktop.Views;
 
 internal sealed partial class ScheduleWorkspaceView
 {
+    private const string APPLE_CALENDAR_BUNDLE_IDENTIFIER =
+        "com.apple.iCal";
+
     private static readonly TimeSpan EXPORT_STATUS_DURATION = TimeSpan.FromSeconds(3.5);
+
+    private static readonly PixelSize APPLE_CALENDAR_ICON_PIXEL_SIZE =
+        new PixelSize(48, 48);
 
     private readonly IGoogleCalendarExporter mGoogleCalendarExporter;
 
@@ -52,6 +61,8 @@ internal sealed partial class ScheduleWorkspaceView
     private PlannerWorkspaceViewModel? mObservedWorkspaceOrNull;
 
     private EExportStatus? mActiveExportStatusOrNull;
+
+    private Bitmap? mAppleCalendarIconOrNull;
 
     private bool mIsExportInProgress;
 
@@ -98,18 +109,45 @@ internal sealed partial class ScheduleWorkspaceView
     }
 
     public ScheduleWorkspaceView()
-        : this(ScheduleExportCompositionRoot.CreateDefault())
+        : this(
+            ScheduleExportCompositionRoot.CreateDefault(),
+            EXPORT_STATUS_DURATION,
+            InstalledApplicationIconProviderFactory.CreateDefault())
     {
     }
 
     internal ScheduleWorkspaceView(ScheduleExportServices exportServices)
-        : this(exportServices, EXPORT_STATUS_DURATION)
+        : this(
+            exportServices,
+            EXPORT_STATUS_DURATION,
+            InstalledApplicationIconProviderFactory.CreateDefault())
     {
     }
 
     internal ScheduleWorkspaceView(
         ScheduleExportServices exportServices,
         TimeSpan exportStatusDuration)
+        : this(
+            exportServices,
+            exportStatusDuration,
+            InstalledApplicationIconProviderFactory.CreateDefault())
+    {
+    }
+
+    internal ScheduleWorkspaceView(
+        ScheduleExportServices exportServices,
+        IInstalledApplicationIconProvider installedApplicationIconProvider)
+        : this(
+            exportServices,
+            EXPORT_STATUS_DURATION,
+            installedApplicationIconProvider)
+    {
+    }
+
+    internal ScheduleWorkspaceView(
+        ScheduleExportServices exportServices,
+        TimeSpan exportStatusDuration,
+        IInstalledApplicationIconProvider installedApplicationIconProvider)
     {
         if (exportServices == null)
         {
@@ -119,6 +157,12 @@ internal sealed partial class ScheduleWorkspaceView
         if (exportStatusDuration <= TimeSpan.Zero)
         {
             throw new ArgumentOutOfRangeException(nameof(exportStatusDuration));
+        }
+
+        if (installedApplicationIconProvider == null)
+        {
+            throw new ArgumentNullException(
+                nameof(installedApplicationIconProvider));
         }
 
         mPngExporter = exportServices.PngExporter;
@@ -143,9 +187,43 @@ internal sealed partial class ScheduleWorkspaceView
         mToggleSchedulePresentationCommand = new DelegateCommand(toggleSchedulePresentation);
         mEditPersonalScheduleCommand = new ParameterizedCommand<PersonalScheduleId>(beginEditPersonalSchedule);
         AvaloniaXamlLoader.Load(this);
+        configureAppleCalendarIcon(installedApplicationIconProvider);
         DataContextChanged += onDataContextChanged;
         observeWorkspace(DataContext as PlannerWorkspaceViewModel);
         DetachedFromVisualTree += onDetachedFromVisualTree;
+    }
+
+    private void configureAppleCalendarIcon(
+        IInstalledApplicationIconProvider installedApplicationIconProvider)
+    {
+        Image? logoImageOrNull =
+            this.FindControl<Image>("ExportAppleCalendarLogoImage");
+        FluentIcon? fallbackIconOrNull =
+            this.FindControl<FluentIcon>("ExportAppleCalendarFallbackIcon");
+        if (logoImageOrNull == null || fallbackIconOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The Apple Calendar export icon controls were not initialized.");
+        }
+
+        try
+        {
+            mAppleCalendarIconOrNull =
+                installedApplicationIconProvider.TryLoad(
+                    APPLE_CALENDAR_BUNDLE_IDENTIFIER,
+                    APPLE_CALENDAR_ICON_PIXEL_SIZE);
+        }
+        catch (Exception exception)
+        {
+            Trace.TraceWarning(
+                "Installed application icon provider failed: {0}",
+                exception.GetType().Name);
+            mAppleCalendarIconOrNull = null;
+        }
+
+        logoImageOrNull.Source = mAppleCalendarIconOrNull;
+        logoImageOrNull.IsVisible = mAppleCalendarIconOrNull != null;
+        fallbackIconOrNull.IsVisible = mAppleCalendarIconOrNull == null;
     }
 
     private async Task exportGoogleCalendarAsync()
@@ -581,7 +659,21 @@ internal sealed partial class ScheduleWorkspaceView
         mExportStatusTimer.Stop();
         mExportStatusTimer.Tick -= onExportStatusTimerTick;
         mLifetimeCancellationSource.Cancel();
+        releaseAppleCalendarIcon();
         mExportResourceReleaseTask = releaseExportResourcesAsync();
+    }
+
+    private void releaseAppleCalendarIcon()
+    {
+        Image? logoImageOrNull =
+            this.FindControl<Image>("ExportAppleCalendarLogoImage");
+        if (logoImageOrNull != null)
+        {
+            logoImageOrNull.Source = null;
+        }
+
+        mAppleCalendarIconOrNull?.Dispose();
+        mAppleCalendarIconOrNull = null;
     }
 
     private async Task releaseExportResourcesAsync()

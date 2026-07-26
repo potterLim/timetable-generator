@@ -13,6 +13,8 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -25,6 +27,7 @@ using TimetableGenerator.Desktop.Exporting.AppleCalendar;
 using TimetableGenerator.Desktop.Exporting.Calendar;
 using TimetableGenerator.Desktop.Integrations.GoogleCalendar;
 using TimetableGenerator.Desktop.Presentation;
+using TimetableGenerator.Desktop.Presentation.Icons;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
 using TimetableGenerator.Desktop.Tests.Exporting;
 using TimetableGenerator.Desktop.Views;
@@ -49,10 +52,13 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         await workspace.RecommendationRefreshTask;
         RecordingGoogleCalendarExporter googleExporter = createSuccessfulGoogleExporter();
         RecordingAppleCalendarExporter appleExporter = createUnavailableAppleExporter();
+        RecordingInstalledApplicationIconProvider iconProvider =
+            new RecordingInstalledApplicationIconProvider(null);
         ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
             createServices(
                 googleExporter,
-                appleExporter));
+                appleExporter),
+            iconProvider);
         workspaceView.DataContext = workspace;
         Window window = showInWindow(workspaceView);
 
@@ -70,13 +76,12 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.Equal(workspace.HasMultipleRecommendations, allPngAction.IsVisible);
             Assert.False(appleAction.IsVisible);
             Assert.True(googleAction.IsVisible);
-            Assert.Equal(5, menu.Items.Count);
+            Assert.Equal(4, menu.Items.Count);
             Assert.Same(pngAction, menu.Items[0]);
-            Assert.Same(appleAction, menu.Items[1]);
-            Assert.Same(googleAction, menu.Items[2]);
-            Separator allPngSeparator = Assert.IsType<Separator>(menu.Items[3]);
-            Assert.Equal(workspace.HasMultipleRecommendations, allPngSeparator.IsVisible);
-            Assert.Same(allPngAction, menu.Items[4]);
+            Assert.Same(allPngAction, menu.Items[1]);
+            Assert.Same(appleAction, menu.Items[2]);
+            Assert.Same(googleAction, menu.Items[3]);
+            Assert.Empty(menu.Items.OfType<Separator>());
             foreach (ThemeVariant themeVariant in getProductThemeVariants())
             {
                 window.RequestedThemeVariant = themeVariant;
@@ -90,7 +95,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                     24.0,
                     24.0,
                     null);
-                assertExportFluentIconPresentation(appleAction, Icon.CalendarMonth);
+                assertAppleCalendarFallbackIconPresentation(appleAction);
                 assertExportRasterLogoPresentation(
                     googleAction,
                     "ExportGoogleCalendarLogoSlot",
@@ -112,6 +117,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.Same(workspaceView.ExportAllPngCommand, allPngAction.Command);
             Assert.Same(workspaceView.ExportGoogleCalendarCommand, googleAction.Command);
             Assert.Equal("Google Calendar로 내보내기", AutomationProperties.GetName(googleAction));
+            assertAppleCalendarIconRequest(iconProvider);
         }
         finally
         {
@@ -638,10 +644,15 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         await workspace.RecommendationRefreshTask;
         RecordingGoogleCalendarExporter googleExporter = createSuccessfulGoogleExporter();
         RecordingAppleCalendarExporter appleExporter = createSuccessfulAppleExporter();
+        Bitmap appleCalendarIcon = createTestAppleCalendarIcon();
+        RecordingInstalledApplicationIconProvider iconProvider =
+            new RecordingInstalledApplicationIconProvider(
+                appleCalendarIcon);
         ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
             createServices(
                 googleExporter,
-                appleExporter));
+                appleExporter),
+            iconProvider);
         workspaceView.DataContext = workspace;
         Window window = showInWindow(workspaceView);
 
@@ -653,14 +664,14 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             MenuItem googleAction = findRequiredMenuItem(menu, "ExportGoogleCalendarAction");
             Assert.True(appleAction.IsVisible);
             Assert.True(googleAction.IsVisible);
-            Assert.Equal(5, menu.Items.Count);
+            Assert.Equal(4, menu.Items.Count);
             Assert.Equal(
                 new[]
                 {
                     "현재 시간표 PNG 저장",
+                    "모든 가능한 시간표 PNG로 저장",
                     "Apple Calendar로 내보내기",
                     "Google Calendar로 내보내기",
-                    "모든 가능한 시간표 PNG로 저장",
                 },
                 menu.Items
                     .OfType<MenuItem>()
@@ -684,7 +695,9 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                     24.0,
                     24.0,
                     null);
-                assertExportFluentIconPresentation(appleAction, Icon.CalendarMonth);
+                assertAppleCalendarNativeIconPresentation(
+                    appleAction,
+                    appleCalendarIcon);
                 assertExportRasterLogoPresentation(
                     googleAction,
                     "ExportGoogleCalendarLogoSlot",
@@ -694,6 +707,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                     0.5);
                 menu.Hide();
             }
+            assertAppleCalendarIconRequest(iconProvider);
 
             AsyncDelegateCommand command = Assert.IsType<AsyncDelegateCommand>(workspaceView.ExportAppleCalendarCommand);
             command.Execute(null);
@@ -715,6 +729,48 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                 calendarEvent => calendarEvent.Content.Summary == "프로그래밍 I(01)");
             TextBlock status = findRequiredTextBlock(workspaceView, "ExportStatusText");
             Assert.Equal("Apple 캘린더로 내보냈습니다.", status.Text);
+        }
+        finally
+        {
+            await closeWindowAsync(window, workspaceView);
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task AppleCalendarIconFailureKeepsTheExportActionAvailableAsync()
+    {
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+        await workspace.RecommendationRefreshTask;
+        RecordingInstalledApplicationIconProvider iconProvider =
+            new RecordingInstalledApplicationIconProvider(
+                null,
+                shouldThrow: true);
+        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
+            createServices(
+                createSuccessfulGoogleExporter(),
+                createSuccessfulAppleExporter()),
+            iconProvider);
+        workspaceView.DataContext = workspace;
+        Window window = showInWindow(workspaceView);
+
+        try
+        {
+            Button exportButton =
+                findRequiredButton(workspaceView, "ExportScheduleButton");
+            MenuFlyout menu = Assert.IsType<MenuFlyout>(exportButton.Flyout);
+            MenuItem appleAction =
+                findRequiredMenuItem(menu, "ExportAppleCalendarAction");
+
+            Assert.True(appleAction.IsVisible);
+            Assert.Same(
+                workspaceView.ExportAppleCalendarCommand,
+                appleAction.Command);
+            menu.ShowAt(exportButton);
+            Dispatcher.UIThread.RunJobs();
+            assertAppleCalendarFallbackIconPresentation(appleAction);
+            menu.Hide();
+            assertAppleCalendarIconRequest(iconProvider);
         }
         finally
         {
@@ -814,6 +870,27 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         window.Show();
         Dispatcher.UIThread.RunJobs();
         return window;
+    }
+
+    private static Bitmap createTestAppleCalendarIcon()
+    {
+        return new WriteableBitmap(
+            new PixelSize(48, 48),
+            new Vector(96.0, 96.0),
+            PixelFormat.Bgra8888,
+            AlphaFormat.Premul);
+    }
+
+    private static void assertAppleCalendarIconRequest(
+        RecordingInstalledApplicationIconProvider iconProvider)
+    {
+        Assert.Equal(1, iconProvider.CallCount);
+        Assert.Equal(
+            "com.apple.iCal",
+            iconProvider.RequestedBundleIdentifierOrNull);
+        Assert.Equal(
+            new PixelSize(48, 48),
+            iconProvider.RequestedPixelSizeOrNull);
     }
 
     private static Button findRequiredButton(Control root, string controlName)
@@ -924,7 +1001,8 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         return logoSlot;
     }
 
-    private static void assertExportFluentIconPresentation(MenuItem menuItem, Icon expectedIcon)
+    private static void assertAppleCalendarFallbackIconPresentation(
+        MenuItem menuItem)
     {
         Assert.Contains("export-menu-item", menuItem.Classes);
         if (menuItem.IsVisible)
@@ -932,16 +1010,80 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             assertExportMenuItemPresentation(menuItem);
         }
 
-        FluentIcon icon = Assert.IsType<FluentIcon>(menuItem.Icon);
-        Assert.Equal(expectedIcon, icon.Icon);
-        Assert.Equal(IconVariant.Regular, icon.IconVariant);
-        Assert.Equal(IconSize.Size20, icon.IconSize);
-        Assert.Equal(20.0, icon.FontSize);
-        Assert.Equal(20.0, icon.Width);
-        Assert.Equal(20.0, icon.Height);
-        Assert.Equal(HorizontalAlignment.Center, icon.HorizontalAlignment);
-        Assert.Equal(VerticalAlignment.Center, icon.VerticalAlignment);
-        Assert.Contains("export-menu-icon", icon.Classes);
+        Grid logoSlot = Assert.IsType<Grid>(menuItem.Icon);
+        Assert.Equal("ExportAppleCalendarLogoSlot", logoSlot.Name);
+        Assert.Equal(24.0, logoSlot.Width);
+        Assert.Equal(24.0, logoSlot.Height);
+        Assert.Equal(HorizontalAlignment.Center, logoSlot.HorizontalAlignment);
+        Assert.Equal(VerticalAlignment.Center, logoSlot.VerticalAlignment);
+        Assert.Contains("export-menu-logo-slot", logoSlot.Classes);
+
+        Image? logoImageOrNull =
+            logoSlot.FindControl<Image>("ExportAppleCalendarLogoImage");
+        FluentIcon? fallbackIconOrNull =
+            logoSlot.FindControl<FluentIcon>("ExportAppleCalendarFallbackIcon");
+        Assert.NotNull(logoImageOrNull);
+        Assert.NotNull(fallbackIconOrNull);
+        if (logoImageOrNull == null || fallbackIconOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The Apple Calendar icon presentation was incomplete.");
+        }
+
+        Assert.Null(logoImageOrNull.Source);
+        Assert.False(logoImageOrNull.IsVisible);
+        Assert.True(fallbackIconOrNull.IsVisible);
+        Assert.Equal(Icon.CalendarMonth, fallbackIconOrNull.Icon);
+        Assert.Equal(IconVariant.Regular, fallbackIconOrNull.IconVariant);
+        Assert.Equal(IconSize.Size20, fallbackIconOrNull.IconSize);
+        Assert.Equal(20.0, fallbackIconOrNull.FontSize);
+        Assert.Equal(20.0, fallbackIconOrNull.Width);
+        Assert.Equal(20.0, fallbackIconOrNull.Height);
+        Assert.Contains("export-menu-icon", fallbackIconOrNull.Classes);
+        Assert.Equal(2, logoSlot.Children.Count);
+    }
+
+    private static void assertAppleCalendarNativeIconPresentation(
+        MenuItem menuItem,
+        Bitmap expectedIcon)
+    {
+        assertExportMenuItemPresentation(menuItem);
+        Grid logoSlot = Assert.IsType<Grid>(menuItem.Icon);
+        Assert.Equal("ExportAppleCalendarLogoSlot", logoSlot.Name);
+        Assert.Equal(24.0, logoSlot.Width);
+        Assert.Equal(24.0, logoSlot.Height);
+        Assert.Equal(HorizontalAlignment.Center, logoSlot.HorizontalAlignment);
+        Assert.Equal(VerticalAlignment.Center, logoSlot.VerticalAlignment);
+        Assert.Contains("export-menu-logo-slot", logoSlot.Classes);
+
+        Image? logoImageOrNull =
+            logoSlot.FindControl<Image>("ExportAppleCalendarLogoImage");
+        FluentIcon? fallbackIconOrNull =
+            logoSlot.FindControl<FluentIcon>(
+                "ExportAppleCalendarFallbackIcon");
+        Assert.NotNull(logoImageOrNull);
+        Assert.NotNull(fallbackIconOrNull);
+        if (logoImageOrNull == null || fallbackIconOrNull == null)
+        {
+            throw new InvalidOperationException(
+                "The Apple Calendar icon presentation was incomplete.");
+        }
+
+        Assert.Same(expectedIcon, logoImageOrNull.Source);
+        Assert.True(logoImageOrNull.IsVisible);
+        Assert.False(fallbackIconOrNull.IsVisible);
+        Assert.Equal(24.0, logoImageOrNull.Width);
+        Assert.Equal(24.0, logoImageOrNull.Height);
+        Assert.Equal(Stretch.Uniform, logoImageOrNull.Stretch);
+        Assert.Equal(
+            HorizontalAlignment.Center,
+            logoImageOrNull.HorizontalAlignment);
+        Assert.Equal(
+            VerticalAlignment.Center,
+            logoImageOrNull.VerticalAlignment);
+        Assert.Contains("export-menu-logo", logoImageOrNull.Classes);
+        Assert.Null(logoImageOrNull.RenderTransform);
+        Assert.Equal(2, logoSlot.Children.Count);
     }
 
     private static void assertExportMenuItemPresentation(MenuItem menuItem)
@@ -1009,6 +1151,44 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             ThemeVariant.Light,
             ThemeVariant.Dark,
         };
+    }
+
+    private sealed class RecordingInstalledApplicationIconProvider
+        : IInstalledApplicationIconProvider
+    {
+        private readonly Bitmap? mIconOrNull;
+
+        private readonly bool mShouldThrow;
+
+        public int CallCount { get; private set; }
+
+        public string? RequestedBundleIdentifierOrNull { get; private set; }
+
+        public PixelSize? RequestedPixelSizeOrNull { get; private set; }
+
+        public RecordingInstalledApplicationIconProvider(
+            Bitmap? iconOrNull,
+            bool shouldThrow = false)
+        {
+            mIconOrNull = iconOrNull;
+            mShouldThrow = shouldThrow;
+        }
+
+        public Bitmap? TryLoad(
+            string bundleIdentifier,
+            PixelSize pixelSize)
+        {
+            CallCount++;
+            RequestedBundleIdentifierOrNull = bundleIdentifier;
+            RequestedPixelSizeOrNull = pixelSize;
+            if (mShouldThrow)
+            {
+                throw new InvalidOperationException(
+                    "Controlled installed application icon failure.");
+            }
+
+            return mIconOrNull;
+        }
     }
 
     private sealed class ControlledGoogleCalendarExporter : IGoogleCalendarExporter
