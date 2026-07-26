@@ -85,6 +85,12 @@
             TextAlignment="Center"
             TextWrapping="Wrap" />
         <TextBlock
+            x:Name="CurrentNameDescription"
+            Classes="secondary"
+            LineHeight="21"
+            TextAlignment="Center"
+            TextWrapping="Wrap" />
+        <TextBlock
             x:Name="AvailableNameDescription"
             Classes="secondary"
             LineHeight="21"
@@ -110,7 +116,6 @@
               MinHeight="40"
               Content="기존 캘린더 대체"
               Click="onReplaceButtonClick"
-              Foreground="{DynamicResource ErrorBrush}"
               AutomationProperties.AutomationId="ReplaceExistingCalendar"
               AutomationProperties.Name="기존 캘린더 대체" />
           <Button

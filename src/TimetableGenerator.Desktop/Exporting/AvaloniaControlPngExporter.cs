@@ -40,15 +40,18 @@ public sealed class AvaloniaControlPngExporter : IControlPngExporter
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        return exportOnUiThreadAsync(sourceControl, destinationStream, cancellationToken);
+        return renderAndEncodeAsync(
+            sourceControl,
+            destinationStream,
+            cancellationToken);
     }
 
-    private async Task exportOnUiThreadAsync(
+    private async Task renderAndEncodeAsync(
         Control sourceControl,
         Stream destinationStream,
         CancellationToken cancellationToken)
     {
-        await Dispatcher.UIThread.InvokeAsync(
+        RenderTargetBitmap renderedBitmap = await Dispatcher.UIThread.InvokeAsync(
             delegate
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -56,16 +59,32 @@ public sealed class AvaloniaControlPngExporter : IControlPngExporter
                 PixelSize pixelSize = calculatePixelSize(sourceControl.Bounds.Size);
                 double exportDpi = STANDARD_DPI * mExportScale.Multiplier;
                 Vector dpi = new Vector(exportDpi, exportDpi);
-
-                using (RenderTargetBitmap renderedBitmap = new RenderTargetBitmap(pixelSize, dpi))
-                {
-                    renderedBitmap.Render(sourceControl);
-                    cancellationToken.ThrowIfCancellationRequested();
-                    renderedBitmap.Save(destinationStream, PngBitmapEncoderOptions.Default);
-                }
+                RenderTargetBitmap bitmap = new RenderTargetBitmap(pixelSize, dpi);
+                bitmap.Render(sourceControl);
+                cancellationToken.ThrowIfCancellationRequested();
+                return bitmap;
             },
             DispatcherPriority.Render,
             cancellationToken);
+        try
+        {
+            await Task.Run(
+                delegate
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    renderedBitmap.Save(
+                        destinationStream,
+                        PngBitmapEncoderOptions.Default);
+                    cancellationToken.ThrowIfCancellationRequested();
+                },
+                cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            await Dispatcher.UIThread.InvokeAsync(
+                renderedBitmap.Dispose,
+                DispatcherPriority.Background);
+        }
     }
 
     private PixelSize calculatePixelSize(Size controlSize)

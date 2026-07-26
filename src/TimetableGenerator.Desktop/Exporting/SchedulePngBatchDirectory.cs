@@ -1,22 +1,33 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+
+using TimetableGenerator.Domain.Planning;
 
 namespace TimetableGenerator.Desktop.Exporting;
 
 internal sealed class SchedulePngBatchDirectory : IDisposable
 {
+    private const int MAXIMUM_SUFFIX_ATTEMPTS = 10_000;
+
     private const string OWNERSHIP_MARKER_FILE_NAME = ".timetable-generator-exporting";
 
     private readonly List<string> mCreatedFilePaths;
 
-    private readonly string mOwnershipMarkerPath;
+    private string mDirectoryPath;
 
     private bool mIsCommitted;
 
     private bool mIsDisposed;
 
-    public string DirectoryPath { get; }
+    public string DirectoryPath
+    {
+        get
+        {
+            return mDirectoryPath;
+        }
+    }
 
     internal SchedulePngBatchDirectory(string directoryPath)
     {
@@ -25,15 +36,15 @@ internal sealed class SchedulePngBatchDirectory : IDisposable
             throw new ArgumentException("A PNG export directory path is required.", nameof(directoryPath));
         }
 
-        DirectoryPath = Path.GetFullPath(directoryPath);
-        if (Directory.Exists(DirectoryPath) == false)
+        mDirectoryPath = Path.GetFullPath(directoryPath);
+        if (Directory.Exists(mDirectoryPath) == false)
         {
             throw new DirectoryNotFoundException("The owned PNG export directory does not exist.");
         }
 
-        mOwnershipMarkerPath = Path.Combine(DirectoryPath, OWNERSHIP_MARKER_FILE_NAME);
+        string ownershipMarkerPath = getOwnershipMarkerPath();
         using (FileStream markerStream = new FileStream(
-            mOwnershipMarkerPath,
+            ownershipMarkerPath,
             FileMode.CreateNew,
             FileAccess.Write,
             FileShare.None))
@@ -74,9 +85,9 @@ internal sealed class SchedulePngBatchDirectory : IDisposable
             throw new ArgumentException("A PNG export file name is required.", nameof(fileName));
         }
 
-        string filePath = Path.GetFullPath(Path.Combine(DirectoryPath, fileName));
+        string filePath = Path.GetFullPath(Path.Combine(mDirectoryPath, fileName));
         string? parentPathOrNull = Path.GetDirectoryName(filePath);
-        if (string.Equals(parentPathOrNull, DirectoryPath, StringComparison.OrdinalIgnoreCase) == false)
+        if (string.Equals(parentPathOrNull, mDirectoryPath, StringComparison.OrdinalIgnoreCase) == false)
         {
             throw new ArgumentException(
                 "PNG export files must remain inside the owned directory.",
@@ -99,6 +110,60 @@ internal sealed class SchedulePngBatchDirectory : IDisposable
         throwIfUnavailable();
         deleteOwnershipMarker();
         mIsCommitted = true;
+    }
+
+    internal void commitAsUniqueBatch(
+        PlanName planName,
+        CancellationToken cancellationToken)
+    {
+        throwIfUnavailable();
+        ArgumentNullException.ThrowIfNull(planName);
+        string? parentDirectoryPathOrNull = Path.GetDirectoryName(mDirectoryPath);
+        if (string.IsNullOrWhiteSpace(parentDirectoryPathOrNull))
+        {
+            throw new InvalidOperationException(
+                "The staged PNG export directory requires a parent directory.");
+        }
+
+        for (int attempt = 1;
+            attempt <= MAXIMUM_SUFFIX_ATTEMPTS;
+            ++attempt)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            string folderName =
+                SchedulePngFileNameFactory.CreateBatchFolderName(
+                    planName,
+                    attempt);
+            string destinationDirectoryPath =
+                Path.Combine(
+                    parentDirectoryPathOrNull,
+                    folderName);
+            if (Directory.Exists(destinationDirectoryPath)
+                || File.Exists(destinationDirectoryPath))
+            {
+                continue;
+            }
+
+            try
+            {
+                Directory.Move(
+                    mDirectoryPath,
+                    destinationDirectoryPath);
+                mDirectoryPath = destinationDirectoryPath;
+                deleteOwnershipMarker();
+                mIsCommitted = true;
+                return;
+            }
+            catch (IOException)
+                when (Directory.Exists(destinationDirectoryPath)
+                    || File.Exists(destinationDirectoryPath))
+            {
+                // A competing export claimed this name after the existence check.
+            }
+        }
+
+        throw new IOException(
+            "A unique PNG export directory could not be committed.");
     }
 
     private void throwIfUnavailable()
@@ -137,7 +202,7 @@ internal sealed class SchedulePngBatchDirectory : IDisposable
     {
         try
         {
-            File.Delete(mOwnershipMarkerPath);
+            File.Delete(getOwnershipMarkerPath());
         }
         catch (IOException)
         {
@@ -153,7 +218,7 @@ internal sealed class SchedulePngBatchDirectory : IDisposable
     {
         try
         {
-            Directory.Delete(DirectoryPath, false);
+            Directory.Delete(mDirectoryPath, false);
         }
         catch (IOException)
         {
@@ -163,5 +228,12 @@ internal sealed class SchedulePngBatchDirectory : IDisposable
         {
             // Rollback is best effort and must not mask the original export failure.
         }
+    }
+
+    private string getOwnershipMarkerPath()
+    {
+        return Path.Combine(
+            mDirectoryPath,
+            OWNERSHIP_MARKER_FILE_NAME);
     }
 }

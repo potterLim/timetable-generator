@@ -76,7 +76,17 @@ internal sealed partial class ScheduleWorkspaceView
                         });
                 }))
         {
-            ECalendarNameConflictResolution resolution = await dialog.ShowDialog<ECalendarNameConflictResolution>(ownerOrNull);
+            ECalendarNameConflictResolution resolution;
+            try
+            {
+                resolution = await dialog.ShowDialog<ECalendarNameConflictResolution>(
+                    ownerOrNull);
+            }
+            finally
+            {
+                this.FindControl<Button>("ExportScheduleButton")?.Focus();
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
             if (resolution == ECalendarNameConflictResolution.None)
             {

@@ -37,14 +37,20 @@ internal sealed partial class CalendarNameConflictDialog : Window
             throw new ArgumentNullException(nameof(conflict));
         }
 
-        TextBlock availableNameDescription = findRequiredControl<TextBlock>("AvailableNameDescription");
+        TextBlock currentNameDescription = findRequiredControl<TextBlock>(
+            "CurrentNameDescription");
+        TextBlock availableNameDescription = findRequiredControl<TextBlock>(
+            "AvailableNameDescription");
         TextBlock replacementUnavailableDescription =
             findRequiredControl<TextBlock>(
                 "ReplacementUnavailableDescription");
         Button replaceButton = findRequiredControl<Button>("ReplaceButton");
-        availableNameDescription.Text = "새로 만들면 \""
+        currentNameDescription.Text = "현재 이름: \""
+            + conflict.RequestedName.Value
+            + "\"";
+        availableNameDescription.Text = "새 이름: \""
             + conflict.NextAvailableName.Value
-            + "\"로 저장됩니다.";
+            + "\"";
         replaceButton.IsEnabled = conflict.CanReplace;
         replacementUnavailableDescription.IsVisible = conflict.CanReplace == false;
 

@@ -172,10 +172,10 @@
               <MenuItem
                   x:Name="ExportPngAction"
                   Classes="export-menu-item"
-                  Header="PNG 이미지"
+                  Header="현재 시간표 PNG 저장"
                   Command="{Binding #WorkspaceRoot.ExportPngCommand}"
                   AutomationProperties.AutomationId="ExportPngImage"
-                  AutomationProperties.Name="현재 시간표를 PNG 이미지로 저장"
+                  AutomationProperties.Name="현재 시간표 PNG 저장"
                   AutomationProperties.HelpText="현재 시간표를 고해상도 PNG 이미지로 저장합니다.">
                 <MenuItem.Icon>
                   <Grid
@@ -195,11 +195,11 @@
               <MenuItem
                   x:Name="ExportAppleCalendarAction"
                   Classes="export-menu-item"
-                  Header="Apple 캘린더"
+                  Header="Apple Calendar로 내보내기"
                   IsVisible="{Binding #WorkspaceRoot.IsAppleCalendarExportAvailable}"
                   Command="{Binding #WorkspaceRoot.ExportAppleCalendarCommand}"
                   AutomationProperties.AutomationId="ExportAppleCalendar"
-                  AutomationProperties.Name="현재 시간표를 Apple 캘린더로 내보내기"
+                  AutomationProperties.Name="Apple Calendar로 내보내기"
                   AutomationProperties.HelpText="Apple 캘린더에 현재 시간표를 한 번 내보냅니다.">
                 <MenuItem.Icon>
                   <icons:FluentIcon
@@ -214,10 +214,10 @@
               <MenuItem
                   x:Name="ExportGoogleCalendarAction"
                   Classes="export-menu-item"
-                  Header="Google 캘린더"
+                  Header="Google Calendar로 내보내기"
                   Command="{Binding #WorkspaceRoot.ExportGoogleCalendarCommand}"
                   AutomationProperties.AutomationId="ExportGoogleCalendar"
-                  AutomationProperties.Name="현재 시간표를 Google 캘린더로 내보내기"
+                  AutomationProperties.Name="Google Calendar로 내보내기"
                   AutomationProperties.HelpText="Google 캘린더에 현재 시간표를 한 번 내보냅니다.">
                 <MenuItem.Icon>
                   <Grid
@@ -245,11 +245,11 @@
               <MenuItem
                   x:Name="ExportAllPngAction"
                   Classes="export-menu-item"
-                  Header="가능한 시간표 모두 PNG로 저장"
+                  Header="모든 가능한 시간표 PNG로 저장"
                   IsVisible="{Binding CanExportAllPngCandidates}"
                   Command="{Binding #WorkspaceRoot.ExportAllPngCommand}"
                   AutomationProperties.AutomationId="ExportAllPngImages"
-                  AutomationProperties.Name="가능한 시간표 모두 PNG로 저장"
+                  AutomationProperties.Name="모든 가능한 시간표 PNG로 저장"
                   AutomationProperties.HelpText="현재 조건으로 만든 가능한 시간표를 각각 번호가 붙은 PNG 이미지로 저장합니다.">
                 <MenuItem.Icon>
                   <Grid

@@ -10,6 +10,9 @@ internal static class SchedulePngBatchDirectoryAllocator
 {
     private const int MAXIMUM_SUFFIX_ATTEMPTS = 10_000;
 
+    private const string STAGING_DIRECTORY_PREFIX =
+        ".timetable-generator-png-staging-";
+
     internal static SchedulePngBatchDirectory createUnique(
         string parentDirectoryPath,
         PlanName planName,
@@ -53,6 +56,54 @@ internal static class SchedulePngBatchDirectoryAllocator
         }
 
         throw new IOException("A unique PNG export directory could not be reserved.");
+    }
+
+    internal static SchedulePngBatchDirectory createStaging(
+        string parentDirectoryPath,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(parentDirectoryPath))
+        {
+            throw new ArgumentException(
+                "A parent PNG export directory is required.",
+                nameof(parentDirectoryPath));
+        }
+
+        string fullParentPath = Path.GetFullPath(parentDirectoryPath);
+        if (Directory.Exists(fullParentPath) == false)
+        {
+            throw new DirectoryNotFoundException(
+                "The selected PNG export directory does not exist.");
+        }
+
+        for (int attempt = 1;
+            attempt <= MAXIMUM_SUFFIX_ATTEMPTS;
+            ++attempt)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            string directoryPath = Path.Combine(
+                fullParentPath,
+                STAGING_DIRECTORY_PREFIX
+                    + Guid.NewGuid().ToString("N"));
+            if (Directory.Exists(directoryPath)
+                || File.Exists(directoryPath))
+            {
+                continue;
+            }
+
+            try
+            {
+                Directory.CreateDirectory(directoryPath);
+                return new SchedulePngBatchDirectory(directoryPath);
+            }
+            catch (IOException)
+            {
+                tryDeleteEmptyDirectory(directoryPath);
+            }
+        }
+
+        throw new IOException(
+            "A temporary PNG export staging directory could not be reserved.");
     }
 
     private static void tryDeleteEmptyDirectory(string directoryPath)

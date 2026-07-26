@@ -102,8 +102,8 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             }
             Assert.Equal("ExportPngImage", AutomationProperties.GetAutomationId(pngAction));
             Assert.Equal("ExportAllPngImages", AutomationProperties.GetAutomationId(allPngAction));
-            Assert.Equal("가능한 시간표 모두 PNG로 저장", allPngAction.Header);
-            Assert.Equal("가능한 시간표 모두 PNG로 저장", AutomationProperties.GetName(allPngAction));
+            Assert.Equal("모든 가능한 시간표 PNG로 저장", allPngAction.Header);
+            Assert.Equal("모든 가능한 시간표 PNG로 저장", AutomationProperties.GetName(allPngAction));
             Assert.Equal(
                 "현재 조건으로 만든 가능한 시간표를 각각 번호가 붙은 PNG 이미지로 저장합니다.",
                 AutomationProperties.GetHelpText(allPngAction));
@@ -111,7 +111,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.Same(workspaceView.ExportPngCommand, pngAction.Command);
             Assert.Same(workspaceView.ExportAllPngCommand, allPngAction.Command);
             Assert.Same(workspaceView.ExportGoogleCalendarCommand, googleAction.Command);
-            Assert.Equal("현재 시간표를 Google 캘린더로 내보내기", AutomationProperties.GetName(googleAction));
+            Assert.Equal("Google Calendar로 내보내기", AutomationProperties.GetName(googleAction));
         }
         finally
         {
@@ -373,6 +373,77 @@ public sealed class ScheduleWorkspaceCalendarExportTests
     }
 
     [AvaloniaFact]
+    public async Task AppleCalendarPermissionProgressPersistsAndPreventsDuplicateExportAsync()
+    {
+        PlannerWorkspaceViewModel workspace =
+            PlannerWorkspaceTestFactory.CreateWorkspace();
+        await workspace.RecommendationRefreshTask;
+        ControlledAppleCalendarExporter appleExporter =
+            new ControlledAppleCalendarExporter();
+        ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(
+            createServices(
+                createSuccessfulGoogleExporter(),
+                appleExporter),
+            TEST_EXPORT_STATUS_DURATION);
+        workspaceView.DataContext = workspace;
+        Window window = showInWindow(workspaceView);
+
+        try
+        {
+            AsyncDelegateCommand command =
+                Assert.IsType<AsyncDelegateCommand>(
+                    workspaceView.ExportAppleCalendarCommand);
+            command.Execute(null);
+            await appleExporter.ExportStartedTask;
+
+            Button exportButton = findRequiredButton(
+                workspaceView,
+                "ExportScheduleButton");
+            Border statusToast = findRequiredControl<Border>(
+                workspaceView,
+                "ExportStatusToast");
+            TextBlock statusText = findRequiredTextBlock(
+                workspaceView,
+                "ExportStatusText");
+            Assert.False(exportButton.IsEnabled);
+            Assert.False(command.CanExecute(null));
+            Assert.True(statusToast.IsVisible);
+            Assert.False(statusToast.IsHitTestVisible);
+            Assert.Equal(
+                "Apple 캘린더로 내보내는 중입니다.",
+                statusText.Text);
+            Assert.Contains("information", statusToast.Classes);
+
+            command.Execute(null);
+            await Task.Delay(
+                TEST_EXPORT_STATUS_WAIT,
+                TestContext.Current.CancellationToken);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal(1, appleExporter.ExportCallCount);
+            Assert.True(statusToast.IsVisible);
+            Assert.Equal(
+                "Apple 캘린더로 내보내는 중입니다.",
+                statusText.Text);
+
+            appleExporter.Complete(createSuccessfulAppleResult());
+            await command.ExecutionTask;
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(exportButton.IsEnabled);
+            Assert.Equal(
+                "Apple 캘린더로 내보냈습니다.",
+                statusText.Text);
+            Assert.Contains("success", statusToast.Classes);
+        }
+        finally
+        {
+            appleExporter.CancelPendingExport();
+            await closeWindowAsync(window, workspaceView);
+        }
+    }
+
+    [AvaloniaFact]
     public async Task InformationalCalendarCompletionExpiresAsync()
     {
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
@@ -466,6 +537,8 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                 "Google 캘린더에 연결하지 못했습니다. 네트워크를 확인해 주세요.",
                 statusText.Text);
 
+            Assert.True(dismissButton.Focus());
+            Assert.True(dismissButton.IsFocused);
             dismissButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             Dispatcher.UIThread.RunJobs();
 
@@ -474,6 +547,10 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.Equal(string.Empty, statusText.Text);
             Assert.False(dismissButton.IsVisible);
             Assert.DoesNotContain("error", statusToast.Classes);
+            Assert.True(
+                findRequiredButton(
+                    workspaceView,
+                    "ExportScheduleButton").IsFocused);
         }
         finally
         {
@@ -580,10 +657,10 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.Equal(
                 new[]
                 {
-                    "PNG 이미지",
-                    "Apple 캘린더",
-                    "Google 캘린더",
-                    "가능한 시간표 모두 PNG로 저장",
+                    "현재 시간표 PNG 저장",
+                    "Apple Calendar로 내보내기",
+                    "Google Calendar로 내보내기",
+                    "모든 가능한 시간표 PNG로 저장",
                 },
                 menu.Items
                     .OfType<MenuItem>()
@@ -699,13 +776,20 @@ public sealed class ScheduleWorkspaceCalendarExportTests
 
     private static RecordingAppleCalendarExporter createSuccessfulAppleExporter()
     {
+        return new RecordingAppleCalendarExporter(
+            true,
+            createSuccessfulAppleResult());
+    }
+
+    private static AppleCalendarExportResult createSuccessfulAppleResult()
+    {
         AppleCalendarNativeExportResult nativeResult =
             new AppleCalendarNativeExportResult(
                 new AppleCalendarId("test-apple-calendar"),
                 new PlanName("2026-2학기 시간표"),
                 1,
                 0);
-        return new RecordingAppleCalendarExporter(true, AppleCalendarExportResult.Complete(nativeResult));
+        return AppleCalendarExportResult.Complete(nativeResult);
     }
 
     private static RecordingGoogleCalendarExporter createSuccessfulGoogleExporter()
@@ -969,6 +1053,66 @@ public sealed class ScheduleWorkspaceCalendarExportTests
 
         public void Dispose()
         {
+        }
+    }
+
+    private sealed class ControlledAppleCalendarExporter
+        : IAppleCalendarExporter
+    {
+        private readonly TaskCompletionSource mExportStartedSource =
+            new TaskCompletionSource(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+
+        private readonly TaskCompletionSource<AppleCalendarExportResult>
+            mCompletionSource =
+                new TaskCompletionSource<AppleCalendarExportResult>(
+                    TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public bool IsAvailable
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        public int ExportCallCount { get; private set; }
+
+        public Task ExportStartedTask
+        {
+            get
+            {
+                return mExportStartedSource.Task;
+            }
+        }
+
+        public async Task<AppleCalendarExportResult> ExportAsync(
+            CalendarExportDocument document,
+            ICalendarNameConflictResolver conflictResolver,
+            CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(document);
+            ArgumentNullException.ThrowIfNull(conflictResolver);
+            cancellationToken.ThrowIfCancellationRequested();
+            ExportCallCount++;
+            mExportStartedSource.TrySetResult();
+            return await mCompletionSource.Task.WaitAsync(
+                cancellationToken);
+        }
+
+        public void Complete(AppleCalendarExportResult result)
+        {
+            ArgumentNullException.ThrowIfNull(result);
+            if (mCompletionSource.TrySetResult(result) == false)
+            {
+                throw new InvalidOperationException(
+                    "The controlled export already completed.");
+            }
+        }
+
+        public void CancelPendingExport()
+        {
+            mCompletionSource.TrySetCanceled();
         }
     }
 

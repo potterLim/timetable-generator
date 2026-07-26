@@ -787,9 +787,10 @@ Full Keyboard Access를 끈 상태와 켠 상태에서 마우스 없이 전체 �
 
 macOS 내보내기 메뉴에는 다음이 보여야 한다.
 
-- PNG 이미지
-- Apple Calendar
-- Google Calendar
+- 현재 시간표 PNG 저장
+- 모든 가능한 시간표 PNG로 저장
+- Apple Calendar로 내보내기
+- Google Calendar로 내보내기
 
 PNG를 실제로 저장하고 Preview로 열어 검증한다.
 

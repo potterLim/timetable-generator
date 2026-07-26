@@ -519,6 +519,10 @@ internal sealed partial class ScheduleWorkspaceView
     private void onDismissExportStatusButtonClick(object? senderOrNull, RoutedEventArgs eventArgs)
     {
         clearExportFailureStatus();
+        Button? exportButtonOrNull = this.FindControl<Button>(
+            "ExportScheduleButton");
+        exportButtonOrNull?.Focus();
+        eventArgs.Handled = true;
     }
 
     private void onDataContextChanged(object? senderOrNull, EventArgs eventArgs)

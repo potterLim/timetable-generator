@@ -57,6 +57,40 @@ public sealed class AvaloniaControlPngExporterTests
     }
 
     [AvaloniaFact]
+    public async Task PngEncodingDoesNotBlockTheUiDispatcherAsync()
+    {
+        Border sourceControl = createArrangedControl();
+        AvaloniaControlPngExporter exporter =
+            new AvaloniaControlPngExporter(
+                PngExportScale.PRODUCT_QUALITY);
+
+        using (BlockingWriteStream destinationStream =
+            new BlockingWriteStream())
+        {
+            Task exportTask = exporter.ExportControlAsync(
+                sourceControl,
+                destinationStream,
+                TestContext.Current.CancellationToken);
+            await destinationStream.WriteStartedTask.WaitAsync(
+                TimeSpan.FromSeconds(5.0),
+                TestContext.Current.CancellationToken);
+
+            bool dispatcherCallbackRan = false;
+            await Dispatcher.UIThread.InvokeAsync(
+                delegate
+                {
+                    dispatcherCallbackRan = true;
+                },
+                DispatcherPriority.Input);
+
+            Assert.True(dispatcherCallbackRan);
+            destinationStream.Release();
+            await exportTask;
+            Assert.True(destinationStream.Length > PNG_SIGNATURE.Length);
+        }
+    }
+
+    [AvaloniaFact]
     public async Task ExportControlRejectsControlWithoutArrangedSizeAsync()
     {
         Border sourceControl = new Border();
@@ -161,5 +195,141 @@ public sealed class AvaloniaControlPngExporterTests
         sourceControl.Arrange(new Rect(0.0, 0.0, 120.0, 80.0));
         Dispatcher.UIThread.RunJobs();
         return sourceControl;
+    }
+
+    private sealed class BlockingWriteStream : Stream
+    {
+        private readonly MemoryStream mInnerStream = new MemoryStream();
+
+        private readonly ManualResetEventSlim mReleaseEvent =
+            new ManualResetEventSlim(false);
+
+        private readonly TaskCompletionSource mWriteStartedSource =
+            new TaskCompletionSource(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+
+        private int mHasBlocked;
+
+        public override bool CanRead
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool CanSeek
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        public override long Length
+        {
+            get
+            {
+                return mInnerStream.Length;
+            }
+        }
+
+        public override long Position
+        {
+            get
+            {
+                return mInnerStream.Position;
+            }
+            set
+            {
+                mInnerStream.Position = value;
+            }
+        }
+
+        public Task WriteStartedTask
+        {
+            get
+            {
+                return mWriteStartedSource.Task;
+            }
+        }
+
+        public override void Flush()
+        {
+            mInnerStream.Flush();
+        }
+
+        public override int Read(
+            byte[] buffer,
+            int offset,
+            int count)
+        {
+            throw new NotSupportedException();
+        }
+
+        public void Release()
+        {
+            mReleaseEvent.Set();
+        }
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            return mInnerStream.Seek(offset, origin);
+        }
+
+        public override void SetLength(long value)
+        {
+            mInnerStream.SetLength(value);
+        }
+
+        public override void Write(
+            byte[] buffer,
+            int offset,
+            int count)
+        {
+            waitForReleaseOnFirstWrite();
+            mInnerStream.Write(buffer, offset, count);
+        }
+
+        public override void Write(ReadOnlySpan<byte> buffer)
+        {
+            waitForReleaseOnFirstWrite();
+            mInnerStream.Write(buffer);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                mReleaseEvent.Set();
+                mReleaseEvent.Dispose();
+                mInnerStream.Dispose();
+            }
+
+            base.Dispose(disposing);
+        }
+
+        private void waitForReleaseOnFirstWrite()
+        {
+            if (Interlocked.Exchange(ref mHasBlocked, 1) != 0)
+            {
+                return;
+            }
+
+            mWriteStartedSource.TrySetResult();
+            if (mReleaseEvent.Wait(TimeSpan.FromSeconds(5.0)) == false)
+            {
+                throw new TimeoutException(
+                    "The PNG encoder did not release the test stream.");
+            }
+        }
     }
 }
