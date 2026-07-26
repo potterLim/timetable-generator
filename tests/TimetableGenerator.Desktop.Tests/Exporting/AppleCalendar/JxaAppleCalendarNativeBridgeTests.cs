@@ -27,7 +27,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                   "status": "ok",
                   "calendars": [
                     {
-                      "id": "managed",
+                      "id": "managed:71f3be04-d4c6-41d4-a269-792321e71423:2026-2%ED%95%99%EA%B8%B0%20%EC%8B%9C%EA%B0%84%ED%91%9C",
                       "name": "2026-2학기 시간표",
                       "description": "timetable-generator://managed-calendar/v1/71f3be04-d4c6-41d4-a269-792321e71423",
                       "writable": true
@@ -46,7 +46,9 @@ public sealed class JxaAppleCalendarNativeBridgeTests
         IReadOnlyList<AppleCalendarDescriptor> calendars = await bridge.GetCalendarsAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(2, calendars.Count);
-        Assert.Equal("managed", calendars[0].CalendarId.Value);
+        Assert.Equal(
+            "managed:71f3be04-d4c6-41d4-a269-792321e71423:2026-2%ED%95%99%EA%B8%B0%20%EC%8B%9C%EA%B0%84%ED%91%9C",
+            calendars[0].CalendarId.Value);
         Assert.Equal(EAppleCalendarOwnership.ApplicationManaged, calendars[0].Ownership);
         Assert.True(calendars[0].CanReplace);
         Assert.Equal(EAppleCalendarOwnership.External, calendars[1].Ownership);
@@ -64,6 +66,63 @@ public sealed class JxaAppleCalendarNativeBridgeTests
     }
 
     [Fact]
+    public void NativeCalendarIdentityUsesOwnershipMarkerAndSnapshotOrdinal()
+    {
+        string script = AppleCalendarAutomationScript.SOURCE;
+
+        Assert.DoesNotContain(
+            "calendar.calendarIdentifier()",
+            script,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "calendar.id()",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "function calendarSnapshotId(calendar, index, markerPrefix)",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "? \"external:\" + String(index)",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "+ encodeURIComponent(canonicalName(calendarName(calendar)))",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "const operationUrl = createOperationCanaryEvent(",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "createOperationCanaryEvent(",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "findOperationEventProof(",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "proof.event.delete()",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "function createCalendarSnapshotIds(calendars, markerPrefix)",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "\"ambiguous:\"",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains("createOperationEventUrl(", script, StringComparison.Ordinal);
+        Assert.Contains(
+            "apple_calendar_creation_target_changed",
+            script,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain("rollbackCreatedCalendar(", script, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task CreateExpandsWeeklyEventsWithOccurrenceSpecificOffsetsAsync()
     {
         RecordingAppleCalendarAutomationCommand command =
@@ -71,7 +130,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                 """
                 {
                   "status": "ok",
-                  "calendarId": "created",
+                  "calendarId": "managed:71f3be04-d4c6-41d4-a269-792321e71423:2026-2%ED%95%99%EA%B8%B0%20%EC%8B%9C%EA%B0%84%ED%91%9C",
                   "calendarName": "2026-2학기 시간표",
                   "createdEventCount": 3,
                   "deletedEventCount": 0
@@ -86,7 +145,9 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                 document.CalendarName),
             TestContext.Current.CancellationToken);
 
-        Assert.Equal("created", result.CalendarId.Value);
+        Assert.Equal(
+            "managed:71f3be04-d4c6-41d4-a269-792321e71423:2026-2%ED%95%99%EA%B8%B0%20%EC%8B%9C%EA%B0%84%ED%91%9C",
+            result.CalendarId.Value);
         Assert.Equal(3, result.CreatedEventCount);
         AppleCalendarAutomationInvocation invocation = Assert.Single(command.Invocations);
         Assert.Equal(EAppleCalendarAutomationOperation.ApplyExport, invocation.Operation);
@@ -130,7 +191,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                 """
                 {
                   "status": "ok",
-                  "calendarId": "existing",
+                  "calendarId": "managed:71f3be04-d4c6-41d4-a269-792321e71423:2026-2%ED%95%99%EA%B8%B0%20%EC%8B%9C%EA%B0%84%ED%91%9C",
                   "calendarName": "2026-2학기 시간표",
                   "createdEventCount": 3,
                   "deletedEventCount": 12
@@ -138,19 +199,28 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                 """);
         JxaAppleCalendarNativeBridge bridge = new JxaAppleCalendarNativeBridge(command);
         CalendarExportDocument document = createDocumentAcrossDstChange();
+        AppleCalendarId existingCalendarId = new AppleCalendarId(
+            "managed:71f3be04-d4c6-41d4-a269-792321e71423:2026-2%ED%95%99%EA%B8%B0%20%EC%8B%9C%EA%B0%84%ED%91%9C");
 
         AppleCalendarNativeExportResult result = await bridge.ApplyExportAsync(
             AppleCalendarExportMutation.ReplaceExisting(
                 document,
                 document.CalendarName,
-                new AppleCalendarId("existing")),
+                existingCalendarId),
             TestContext.Current.CancellationToken);
 
+        Assert.Equal(existingCalendarId, result.CalendarId);
         Assert.Equal(12, result.DeletedEventCount);
         using (JsonDocument request = JsonDocument.Parse(Assert.Single(command.Invocations).RequestJson))
         {
-            Assert.Equal("replace", request.RootElement.GetProperty("mutationKind").GetString());
-            Assert.Equal("existing", request.RootElement.GetProperty("existingCalendarId").GetString());
+            Assert.Equal(
+                "replace",
+                request.RootElement.GetProperty("mutationKind").GetString());
+            Assert.Equal(
+                existingCalendarId.Value,
+                request.RootElement
+                    .GetProperty("existingCalendarId")
+                    .GetString());
             Assert.Equal(
                 "2026-2학기 시간표".Normalize().ToUpperInvariant(),
                 request.RootElement
@@ -169,11 +239,27 @@ public sealed class JxaAppleCalendarNativeBridgeTests
     {
         string script = AppleCalendarAutomationScript.SOURCE;
 
-        Assert.Contains("matchingCalendars.length !== 1", script, StringComparison.Ordinal);
         Assert.Contains(
-            "calendarId(matchingCalendars[0]) !== request.existingCalendarId",
+            "function findManagedCalendarById(calendars, id, markerPrefix)",
             script,
             StringComparison.Ordinal);
+        Assert.Contains("if (match !== null)", script, StringComparison.Ordinal);
+        Assert.Contains(
+            "function replacementTargetIsValid(calendars, target, request)",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains("matchingCalendars.length === 1", script, StringComparison.Ordinal);
+        Assert.Contains(
+            "request.ownershipMarkerPrefix) === expectedCalendarId",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "apple_calendar_replacement_target_changed",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains("calendarApplication.calendars()", script, StringComparison.Ordinal);
+        Assert.Contains("calendarId: request.existingCalendarId", script, StringComparison.Ordinal);
+        Assert.Contains("calendarName: request.destinationName", script, StringComparison.Ordinal);
         Assert.Contains("calendarIsManaged(", script, StringComparison.Ordinal);
         Assert.Contains("request.ownershipMarkerPrefix", script, StringComparison.Ordinal);
         Assert.Contains(
@@ -184,7 +270,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
             "00000000-0000-0000-0000-000000000000",
             script,
             StringComparison.Ordinal);
-        Assert.Contains("calendarIsWritable(target) === false", script, StringComparison.Ordinal);
+        Assert.Contains("&& calendarIsWritable(target);", script, StringComparison.Ordinal);
         Assert.Contains("calendarApplication.Calendar({", script, StringComparison.Ordinal);
         Assert.Contains(").make();", script, StringComparison.Ordinal);
         Assert.Contains("calendar.events.push(event)", script, StringComparison.Ordinal);
@@ -193,7 +279,15 @@ public sealed class JxaAppleCalendarNativeBridgeTests
             script,
             StringComparison.Ordinal);
         Assert.Contains(
-            "const previousEvents = findManagedEvents(",
+            "const previousEvents = findPreviousManagedEvents(",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "const replacementMappings = createReplacementEvents(",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "restoreReplacementEventUrls(",
             script,
             StringComparison.Ordinal);
         Assert.Contains(
@@ -208,6 +302,1018 @@ public sealed class JxaAppleCalendarNativeBridgeTests
             "const previousEvents = target.events();",
             script,
             StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task NativeOperationMarkerRejectsCreatedAndReplacementTargetSwapsAsync()
+    {
+        if (OperatingSystem.IsMacOS() == false)
+        {
+            return;
+        }
+
+        const string HARNESS = """
+            function replacementSuccessScenario() {
+                const request = createMockRequest();
+                const previousEvent = createMockEvent(
+                    managedEventUrl("a"),
+                    null);
+                const target = createMockCalendar(
+                    "target",
+                    [previousEvent]);
+                const createdEvents = [];
+                const calendarApplication = {
+                    calendars: function () {
+                        return [target];
+                    },
+                    Event: function (eventData) {
+                        const event = createMockEvent(
+                            eventData.url,
+                            null);
+                        createdEvents.push(event);
+                        return event;
+                    },
+                };
+
+                const response = replaceCalendar(
+                    calendarApplication,
+                    request);
+                return {
+                    status: response.status,
+                    createdEventCount:
+                        response.createdEventCount,
+                    deletedEventCount:
+                        response.deletedEventCount,
+                    previousEventDeleted:
+                        previousEvent.deleted,
+                    canaryDeleted:
+                        createdEvents[0].deleted,
+                    finalEventPreserved:
+                        createdEvents[1].deleted === false,
+                    finalEventUrl:
+                        eventUrl(createdEvents[1]),
+                };
+            }
+
+            function replacementSwapScenario() {
+                const request = createMockRequest();
+                const previousEvent = createMockEvent(
+                    managedEventUrl("a"),
+                    null);
+                const original = createMockCalendar(
+                    "original",
+                    [previousEvent]);
+                const replacement = createMockCalendar(
+                    "replacement",
+                    [createMockEvent(managedEventUrl("a"), null)]);
+                const createdEvents = [];
+                let snapshotCount = 0;
+                const calendarApplication = {
+                    calendars: function () {
+                        snapshotCount += 1;
+                        return snapshotCount === 1
+                            ? [original]
+                            : [replacement];
+                    },
+                    Event: function (eventData) {
+                        const event = createMockEvent(
+                            eventData.url,
+                            null);
+                        createdEvents.push(event);
+                        return event;
+                    },
+                };
+
+                let operationFailed = false;
+                try {
+                    replaceCalendar(
+                        calendarApplication,
+                        request);
+                } catch (_) {
+                    operationFailed = true;
+                }
+
+                return {
+                    operationFailed: operationFailed,
+                    canaryPreserved:
+                        createdEvents[0].deleted === false,
+                    previousEventPreserved:
+                        previousEvent.deleted === false,
+                };
+            }
+
+            function lateReplacementSwapScenario() {
+                const request = createMockRequest();
+                const previousEvent = createMockEvent(
+                    managedEventUrl("a"),
+                    null);
+                const original = createMockCalendar(
+                    "original",
+                    [previousEvent]);
+                const replacement = createMockCalendar(
+                    "replacement",
+                    [createMockEvent(managedEventUrl("a"), null)]);
+                const createdEvents = [];
+                let snapshotCount = 0;
+                const calendarApplication = {
+                    calendars: function () {
+                        snapshotCount += 1;
+                        return snapshotCount <= 2
+                            ? [original]
+                            : [replacement];
+                    },
+                    Event: function (eventData) {
+                        const event = createMockEvent(
+                            eventData.url,
+                            null);
+                        createdEvents.push(event);
+                        return event;
+                    },
+                };
+
+                let operationFailed = false;
+                try {
+                    replaceCalendar(
+                        calendarApplication,
+                        request);
+                } catch (_) {
+                    operationFailed = true;
+                }
+
+                return {
+                    operationFailed: operationFailed,
+                    canaryPreserved:
+                        createdEvents[0].deleted === false,
+                    createdEventPreserved:
+                        createdEvents[1].deleted === false,
+                    previousEventPreserved:
+                        previousEvent.deleted === false,
+                };
+            }
+
+            function postCommitSwapScenario() {
+                const request = createMockRequest();
+                const previousEvent = createMockEvent(
+                    managedEventUrl("a"),
+                    null);
+                const original = createMockCalendar(
+                    "original",
+                    [previousEvent]);
+                const replacement = createMockCalendar(
+                    "replacement",
+                    [createMockEvent(managedEventUrl("a"), null)]);
+                const createdEvents = [];
+                let snapshotCount = 0;
+                const calendarApplication = {
+                    calendars: function () {
+                        snapshotCount += 1;
+                        return snapshotCount <= 3
+                            ? [original]
+                            : [replacement];
+                    },
+                    Event: function (eventData) {
+                        const event = createMockEvent(
+                            eventData.url,
+                            null);
+                        createdEvents.push(event);
+                        return event;
+                    },
+                };
+
+                let operationFailed = false;
+                try {
+                    replaceCalendar(
+                        calendarApplication,
+                        request);
+                } catch (_) {
+                    operationFailed = true;
+                }
+
+                return {
+                    operationFailed: operationFailed,
+                    previousEventDeleted:
+                        previousEvent.deleted,
+                    createdEventPreserved:
+                        createdEvents[1].deleted === false,
+                    canaryPreserved:
+                        createdEvents[0].deleted === false,
+                    createdEventMarkerPreserved:
+                        eventUrlIsManaged(
+                            eventUrl(createdEvents[1]),
+                            request.eventOwnershipMarkerPrefix),
+                };
+            }
+
+            function uncertainCleanupScenario() {
+                const request = createMockRequest();
+                const previousEvent = createMockEvent(
+                    managedEventUrl("a"),
+                    null);
+                const original = createMockCalendar(
+                    "original",
+                    [previousEvent]);
+                const replacement = createMockCalendar(
+                    "replacement",
+                    [createMockEvent(managedEventUrl("a"), null)]);
+                const createdEvents = [];
+                let snapshotCount = 0;
+                const calendarApplication = {
+                    calendars: function () {
+                        snapshotCount += 1;
+                        return snapshotCount === 1
+                            ? [original]
+                            : [replacement];
+                    },
+                    Event: function (eventData) {
+                        const event = createMockEvent(
+                            eventData.url,
+                            function (_) {
+                                throw new Error(
+                                    "synthetic_cleanup_failure");
+                            });
+                        createdEvents.push(event);
+                        return event;
+                    },
+                };
+
+                let operationFailed = false;
+                try {
+                    replaceCalendar(
+                        calendarApplication,
+                        request);
+                } catch (_) {
+                    operationFailed = true;
+                }
+
+                return {
+                    operationFailed: operationFailed,
+                    canaryPreserved:
+                        createdEvents[0].deleted === false,
+                    previousEventPreserved:
+                        previousEvent.deleted === false,
+                };
+            }
+
+            function creationSwapScenario() {
+                const request = createMockRequest();
+                const original = createMockCalendar("created", []);
+                const replacement = createMockCalendar("replacement", []);
+                const createdEvents = [];
+                let snapshotCount = 0;
+                const calendarApplication = {
+                    calendars: function () {
+                        snapshotCount += 1;
+                        if (snapshotCount === 1) {
+                            return [];
+                        }
+
+                        return snapshotCount === 2
+                            ? [original]
+                            : [replacement];
+                    },
+                    Calendar: function (_) {
+                        return {
+                            make: function () {
+                                return original;
+                            },
+                        };
+                    },
+                    Event: function (eventData) {
+                        const event = createMockEvent(
+                            eventData.url,
+                            null);
+                        createdEvents.push(event);
+                        return event;
+                    },
+                };
+
+                let operationFailed = false;
+                try {
+                    createCalendar(
+                        calendarApplication,
+                        request);
+                } catch (_) {
+                    operationFailed = true;
+                }
+
+                return {
+                    operationFailed: operationFailed,
+                    canaryPreserved:
+                        createdEvents[0].deleted === false,
+                    createdEventPreserved:
+                        createdEvents[1].deleted === false,
+                    createdCalendarPreserved:
+                        original.deleted === false,
+                };
+            }
+
+            function run(_) {
+                return JSON.stringify({
+                    success: replacementSuccessScenario(),
+                    replacement: replacementSwapScenario(),
+                    lateReplacement:
+                        lateReplacementSwapScenario(),
+                    postCommit: postCommitSwapScenario(),
+                    uncertainCleanup:
+                        uncertainCleanupScenario(),
+                    creation: creationSwapScenario(),
+                });
+            }
+            """;
+
+        using (JsonDocument result = await executeAutomationSourceHarnessAsync(HARNESS))
+        {
+            JsonElement success =
+                result.RootElement.GetProperty("success");
+            Assert.Equal(
+                "ok",
+                success.GetProperty("status").GetString());
+            Assert.Equal(
+                1,
+                success
+                    .GetProperty("createdEventCount")
+                    .GetInt32());
+            Assert.Equal(
+                1,
+                success
+                    .GetProperty("deletedEventCount")
+                    .GetInt32());
+            Assert.True(
+                success
+                    .GetProperty("previousEventDeleted")
+                    .GetBoolean());
+            Assert.True(
+                success
+                    .GetProperty("canaryDeleted")
+                    .GetBoolean());
+            Assert.True(
+                success
+                    .GetProperty("finalEventPreserved")
+                    .GetBoolean());
+            Assert.Equal(
+                "timetable-generator://managed-event/v1/"
+                    + new string('c', 64),
+                success
+                    .GetProperty("finalEventUrl")
+                    .GetString());
+
+            JsonElement replacement =
+                result.RootElement.GetProperty("replacement");
+            Assert.True(
+                replacement
+                    .GetProperty("operationFailed")
+                    .GetBoolean());
+            Assert.True(
+                replacement
+                    .GetProperty("canaryPreserved")
+                    .GetBoolean());
+            Assert.True(
+                replacement
+                    .GetProperty("previousEventPreserved")
+                    .GetBoolean());
+
+            JsonElement lateReplacement =
+                result.RootElement.GetProperty("lateReplacement");
+            Assert.True(
+                lateReplacement
+                    .GetProperty("operationFailed")
+                    .GetBoolean());
+            Assert.True(
+                lateReplacement
+                    .GetProperty("canaryPreserved")
+                    .GetBoolean());
+            Assert.True(
+                lateReplacement
+                    .GetProperty("createdEventPreserved")
+                    .GetBoolean());
+            Assert.True(
+                lateReplacement
+                    .GetProperty("previousEventPreserved")
+                    .GetBoolean());
+
+            JsonElement postCommit =
+                result.RootElement.GetProperty("postCommit");
+            Assert.True(
+                postCommit
+                    .GetProperty("operationFailed")
+                    .GetBoolean());
+            Assert.True(
+                postCommit
+                    .GetProperty("previousEventDeleted")
+                    .GetBoolean());
+            Assert.True(
+                postCommit
+                    .GetProperty("createdEventPreserved")
+                    .GetBoolean());
+            Assert.True(
+                postCommit
+                    .GetProperty("canaryPreserved")
+                    .GetBoolean());
+            Assert.True(
+                postCommit
+                    .GetProperty("createdEventMarkerPreserved")
+                    .GetBoolean());
+
+            JsonElement uncertainCleanup =
+                result.RootElement.GetProperty("uncertainCleanup");
+            Assert.True(
+                uncertainCleanup
+                    .GetProperty("operationFailed")
+                    .GetBoolean());
+            Assert.True(
+                uncertainCleanup
+                    .GetProperty("canaryPreserved")
+                    .GetBoolean());
+            Assert.True(
+                uncertainCleanup
+                    .GetProperty("previousEventPreserved")
+                    .GetBoolean());
+
+            JsonElement creation =
+                result.RootElement.GetProperty("creation");
+            Assert.True(
+                creation
+                    .GetProperty("operationFailed")
+                    .GetBoolean());
+            Assert.True(
+                creation
+                    .GetProperty("canaryPreserved")
+                    .GetBoolean());
+            Assert.True(
+                creation
+                    .GetProperty("createdEventPreserved")
+                    .GetBoolean());
+            Assert.True(
+                creation
+                    .GetProperty("createdCalendarPreserved")
+                    .GetBoolean());
+        }
+    }
+
+    [Fact]
+    public async Task NativeCanaryProtectsEmptyCreateAndReplacementAsync()
+    {
+        if (OperatingSystem.IsMacOS() == false)
+        {
+            return;
+        }
+
+        const string HARNESS = """
+            function emptyReplacementSuccessScenario() {
+                const request = createMockRequest();
+                request.events = [];
+                const previousEvent = createMockEvent(
+                    managedEventUrl("a"),
+                    null);
+                const target = createMockCalendar(
+                    "target",
+                    [previousEvent]);
+                const createdEvents = [];
+                const calendarApplication = {
+                    calendars: function () {
+                        return [target];
+                    },
+                    Event: function (eventData) {
+                        const event = createMockEvent(
+                            eventData.url,
+                            null);
+                        createdEvents.push(event);
+                        return event;
+                    },
+                };
+
+                const response = replaceCalendar(
+                    calendarApplication,
+                    request);
+                return {
+                    status: response.status,
+                    createdEventCount:
+                        response.createdEventCount,
+                    deletedEventCount:
+                        response.deletedEventCount,
+                    previousEventDeleted:
+                        previousEvent.deleted,
+                    canaryDeleted:
+                        createdEvents[0].deleted,
+                };
+            }
+
+            function emptyReplacementPostCommitSwapScenario() {
+                const request = createMockRequest();
+                request.events = [];
+                const previousEvent = createMockEvent(
+                    managedEventUrl("a"),
+                    null);
+                const original = createMockCalendar(
+                    "original",
+                    [previousEvent]);
+                const replacement = createMockCalendar(
+                    "replacement",
+                    []);
+                const createdEvents = [];
+                let snapshotCount = 0;
+                const calendarApplication = {
+                    calendars: function () {
+                        snapshotCount += 1;
+                        return snapshotCount <= 3
+                            ? [original]
+                            : [replacement];
+                    },
+                    Event: function (eventData) {
+                        const event = createMockEvent(
+                            eventData.url,
+                            null);
+                        createdEvents.push(event);
+                        return event;
+                    },
+                };
+
+                let operationFailed = false;
+                try {
+                    replaceCalendar(
+                        calendarApplication,
+                        request);
+                } catch (_) {
+                    operationFailed = true;
+                }
+
+                return {
+                    operationFailed: operationFailed,
+                    previousEventDeleted:
+                        previousEvent.deleted,
+                    canaryPreserved:
+                        createdEvents[0].deleted === false,
+                };
+            }
+
+            function emptyCreationSuccessScenario() {
+                const request = createMockRequest();
+                request.events = [];
+                const target = createMockCalendar(
+                    "created",
+                    []);
+                const createdEvents = [];
+                let snapshotCount = 0;
+                const calendarApplication = {
+                    calendars: function () {
+                        snapshotCount += 1;
+                        return snapshotCount === 1
+                            ? []
+                            : [target];
+                    },
+                    Calendar: function (_) {
+                        return {
+                            make: function () {
+                                return target;
+                            },
+                        };
+                    },
+                    Event: function (eventData) {
+                        const event = createMockEvent(
+                            eventData.url,
+                            null);
+                        createdEvents.push(event);
+                        return event;
+                    },
+                };
+
+                const response = createCalendar(
+                    calendarApplication,
+                    request);
+                return {
+                    status: response.status,
+                    createdEventCount:
+                        response.createdEventCount,
+                    canaryDeleted:
+                        createdEvents[0].deleted,
+                    calendarPreserved:
+                        target.deleted === false,
+                };
+            }
+
+            function duplicateSnapshotScenario() {
+                const request = createMockRequest();
+                const first = createMockCalendar(
+                    "first",
+                    []);
+                const second = createMockCalendar(
+                    "second",
+                    []);
+                const response = listCalendars(
+                    {
+                        calendars: function () {
+                            return [first, second];
+                        },
+                    },
+                    request);
+                return {
+                    status: response.status,
+                    firstId: response.calendars[0].id,
+                    secondId: response.calendars[1].id,
+                };
+            }
+
+            function invalidInitialCreationScenario() {
+                const request = createMockRequest();
+                const target = createMockCalendar(
+                    "invalid",
+                    []);
+                target.description = function () {
+                    return "";
+                };
+                const calendarApplication = {
+                    calendars: function () {
+                        return [];
+                    },
+                    Calendar: function (_) {
+                        return {
+                            make: function () {
+                                return target;
+                            },
+                        };
+                    },
+                };
+
+                let operationFailed = false;
+                try {
+                    createCalendar(
+                        calendarApplication,
+                        request);
+                } catch (_) {
+                    operationFailed = true;
+                }
+
+                return {
+                    operationFailed: operationFailed,
+                    invalidCalendarPreserved:
+                        target.deleted === false,
+                };
+            }
+
+            function run(_) {
+                return JSON.stringify({
+                    replacement:
+                        emptyReplacementSuccessScenario(),
+                    postCommit:
+                        emptyReplacementPostCommitSwapScenario(),
+                    creation:
+                        emptyCreationSuccessScenario(),
+                    duplicate:
+                        duplicateSnapshotScenario(),
+                    invalidCreation:
+                        invalidInitialCreationScenario(),
+                });
+            }
+            """;
+
+        using (JsonDocument result =
+            await executeAutomationSourceHarnessAsync(HARNESS))
+        {
+            JsonElement replacement =
+                result.RootElement.GetProperty("replacement");
+            Assert.Equal(
+                "ok",
+                replacement.GetProperty("status").GetString());
+            Assert.Equal(
+                0,
+                replacement
+                    .GetProperty("createdEventCount")
+                    .GetInt32());
+            Assert.Equal(
+                1,
+                replacement
+                    .GetProperty("deletedEventCount")
+                    .GetInt32());
+            Assert.True(
+                replacement
+                    .GetProperty("previousEventDeleted")
+                    .GetBoolean());
+            Assert.True(
+                replacement
+                    .GetProperty("canaryDeleted")
+                    .GetBoolean());
+
+            JsonElement postCommit =
+                result.RootElement.GetProperty("postCommit");
+            Assert.True(
+                postCommit
+                    .GetProperty("operationFailed")
+                    .GetBoolean());
+            Assert.True(
+                postCommit
+                    .GetProperty("previousEventDeleted")
+                    .GetBoolean());
+            Assert.True(
+                postCommit
+                    .GetProperty("canaryPreserved")
+                    .GetBoolean());
+
+            JsonElement creation =
+                result.RootElement.GetProperty("creation");
+            Assert.Equal(
+                "ok",
+                creation.GetProperty("status").GetString());
+            Assert.Equal(
+                0,
+                creation
+                    .GetProperty("createdEventCount")
+                    .GetInt32());
+            Assert.True(
+                creation
+                    .GetProperty("canaryDeleted")
+                    .GetBoolean());
+            Assert.True(
+                creation
+                    .GetProperty("calendarPreserved")
+                    .GetBoolean());
+
+            JsonElement duplicate =
+                result.RootElement.GetProperty("duplicate");
+            Assert.Equal(
+                "ok",
+                duplicate.GetProperty("status").GetString());
+            string? firstIdOrNull =
+                duplicate.GetProperty("firstId").GetString();
+            string? secondIdOrNull =
+                duplicate.GetProperty("secondId").GetString();
+            Assert.NotNull(firstIdOrNull);
+            Assert.NotNull(secondIdOrNull);
+            Assert.StartsWith(
+                "ambiguous:0:managed:",
+                firstIdOrNull,
+                StringComparison.Ordinal);
+            Assert.StartsWith(
+                "ambiguous:1:managed:",
+                secondIdOrNull,
+                StringComparison.Ordinal);
+            Assert.NotEqual(firstIdOrNull, secondIdOrNull);
+
+            JsonElement invalidCreation =
+                result.RootElement.GetProperty("invalidCreation");
+            Assert.True(
+                invalidCreation
+                    .GetProperty("operationFailed")
+                    .GetBoolean());
+            Assert.True(
+                invalidCreation
+                    .GetProperty("invalidCalendarPreserved")
+                    .GetBoolean());
+        }
+    }
+
+    [Fact]
+    public async Task NativeUnreadableEventUrlFailsClosedAsync()
+    {
+        if (OperatingSystem.IsMacOS() == false)
+        {
+            return;
+        }
+
+        const string HARNESS = """
+            function run(_) {
+                const request = createMockRequest();
+                const unreadableEvent = {
+                    deleted: false,
+                    url: function () {
+                        throw new Error(
+                            "synthetic_url_read_failure");
+                    },
+                    delete: function () {
+                        unreadableEvent.deleted = true;
+                    },
+                };
+                const target = createMockCalendar(
+                    "target",
+                    [unreadableEvent]);
+                const createdEvents = [];
+                const calendarApplication = {
+                    calendars: function () {
+                        return [target];
+                    },
+                    Event: function (eventData) {
+                        const event = createMockEvent(
+                            eventData.url,
+                            null);
+                        createdEvents.push(event);
+                        return event;
+                    },
+                };
+
+                let operationFailed = false;
+                try {
+                    replaceCalendar(
+                        calendarApplication,
+                        request);
+                } catch (_) {
+                    operationFailed = true;
+                }
+
+                return JSON.stringify({
+                    operationFailed: operationFailed,
+                    unreadableEventPreserved:
+                        unreadableEvent.deleted === false,
+                    canaryPreserved:
+                        createdEvents[0].deleted === false,
+                    replacementNotCreated:
+                        createdEvents.length === 1,
+                });
+            }
+            """;
+
+        using (JsonDocument result =
+            await executeAutomationSourceHarnessAsync(HARNESS))
+        {
+            Assert.True(
+                result.RootElement
+                    .GetProperty("operationFailed")
+                    .GetBoolean());
+            Assert.True(
+                result.RootElement
+                    .GetProperty("unreadableEventPreserved")
+                    .GetBoolean());
+            Assert.True(
+                result.RootElement
+                    .GetProperty("canaryPreserved")
+                    .GetBoolean());
+            Assert.True(
+                result.RootElement
+                    .GetProperty("replacementNotCreated")
+                    .GetBoolean());
+        }
+    }
+
+    [Fact]
+    public async Task NativeSilentOldEventDeletionCannotReportSuccessAsync()
+    {
+        if (OperatingSystem.IsMacOS() == false)
+        {
+            return;
+        }
+
+        const string HARNESS = """
+            function run(_) {
+                const request = createMockRequest();
+                const silentDeletion = createMockEvent(
+                    managedEventUrl("a"),
+                    function (_) {
+                        // Synthetic provider acknowledges without deleting.
+                    });
+                const target = createMockCalendar(
+                    "target",
+                    [silentDeletion]);
+                const createdEvents = [];
+                const calendarApplication = {
+                    calendars: function () {
+                        return [target];
+                    },
+                    Event: function (eventData) {
+                        const event = createMockEvent(
+                            eventData.url,
+                            null);
+                        createdEvents.push(event);
+                        return event;
+                    },
+                };
+
+                let operationFailed = false;
+                try {
+                    replaceCalendar(
+                        calendarApplication,
+                        request);
+                } catch (_) {
+                    operationFailed = true;
+                }
+
+                return JSON.stringify({
+                    operationFailed: operationFailed,
+                    previousEventPreserved:
+                        silentDeletion.deleted === false,
+                    canaryPreserved:
+                        createdEvents[0].deleted === false,
+                    newEventPreserved:
+                        createdEvents[1].deleted === false,
+                    newEventMarkerManaged:
+                        eventUrlIsManaged(
+                            eventUrl(createdEvents[1]),
+                            request.eventOwnershipMarkerPrefix),
+                });
+            }
+            """;
+
+        using (JsonDocument result =
+            await executeAutomationSourceHarnessAsync(HARNESS))
+        {
+            Assert.True(
+                result.RootElement
+                    .GetProperty("operationFailed")
+                    .GetBoolean());
+            Assert.True(
+                result.RootElement
+                    .GetProperty("previousEventPreserved")
+                    .GetBoolean());
+            Assert.True(
+                result.RootElement
+                    .GetProperty("canaryPreserved")
+                    .GetBoolean());
+            Assert.True(
+                result.RootElement
+                    .GetProperty("newEventPreserved")
+                    .GetBoolean());
+            Assert.True(
+                result.RootElement
+                    .GetProperty("newEventMarkerManaged")
+                    .GetBoolean());
+        }
+    }
+
+    [Fact]
+    public async Task NativePartialOldEventDeletionPreservesNewManagedEventsAsync()
+    {
+        if (OperatingSystem.IsMacOS() == false)
+        {
+            return;
+        }
+
+        const string HARNESS = """
+            function run(_) {
+                const request = createMockRequest();
+                const deletionFailure = createMockEvent(
+                    managedEventUrl("a"),
+                    function (_) {
+                        throw new Error("synthetic_delete_failure");
+                    });
+                const deletedBeforeFailure = createMockEvent(
+                    managedEventUrl("b"),
+                    null);
+                const target = createMockCalendar(
+                    "target",
+                    [deletionFailure, deletedBeforeFailure]);
+                const createdEvents = [];
+                const calendarApplication = {
+                    calendars: function () {
+                        return [target];
+                    },
+                    Event: function (eventData) {
+                        const event = createMockEvent(
+                            eventData.url,
+                            null);
+                        createdEvents.push(event);
+                        return event;
+                    },
+                };
+
+                let operationFailed = false;
+                try {
+                    replaceCalendar(calendarApplication, request);
+                } catch (_) {
+                    operationFailed = true;
+                }
+
+                return JSON.stringify({
+                    operationFailed: operationFailed,
+                    oneOldEventDeleted:
+                        deletedBeforeFailure.deleted,
+                    remainingOldEventPreserved:
+                        deletionFailure.deleted === false,
+                    canaryPreserved:
+                        createdEvents[0].deleted === false,
+                    newEventPreserved:
+                        createdEvents[1].deleted === false,
+                    newEventMarkerPreserved:
+                        eventUrlIsManaged(
+                            eventUrl(createdEvents[1]),
+                            request.eventOwnershipMarkerPrefix),
+                });
+            }
+            """;
+
+        using (JsonDocument result = await executeAutomationSourceHarnessAsync(HARNESS))
+        {
+            Assert.True(
+                result.RootElement
+                    .GetProperty("operationFailed")
+                    .GetBoolean());
+            Assert.True(
+                result.RootElement
+                    .GetProperty("oneOldEventDeleted")
+                    .GetBoolean());
+            Assert.True(
+                result.RootElement
+                    .GetProperty("remainingOldEventPreserved")
+                    .GetBoolean());
+            Assert.True(
+                result.RootElement
+                    .GetProperty("canaryPreserved")
+                    .GetBoolean());
+            Assert.True(
+                result.RootElement
+                    .GetProperty("newEventPreserved")
+                    .GetBoolean());
+            Assert.True(
+                result.RootElement
+                    .GetProperty("newEventMarkerPreserved")
+                    .GetBoolean());
+        }
     }
 
     [Theory]
@@ -305,6 +1411,146 @@ public sealed class JxaAppleCalendarNativeBridgeTests
         Assert.Equal("apply", startInfo.ArgumentList[^2]);
         Assert.Equal(REQUEST_PATH, startInfo.ArgumentList[^1]);
     }
+
+    private static async Task<JsonDocument>
+        executeAutomationSourceHarnessAsync(string harness)
+    {
+        ProcessStartInfo startInfo = new ProcessStartInfo();
+        startInfo.FileName = "/usr/bin/osascript";
+        startInfo.UseShellExecute = false;
+        startInfo.CreateNoWindow = true;
+        startInfo.RedirectStandardOutput = true;
+        startInfo.RedirectStandardError = true;
+        startInfo.ArgumentList.Add("-l");
+        startInfo.ArgumentList.Add("JavaScript");
+        startInfo.ArgumentList.Add("-e");
+        startInfo.ArgumentList.Add(
+            AppleCalendarAutomationScript.SOURCE
+                + Environment.NewLine
+                + AUTOMATION_FAULT_HARNESS_SUPPORT
+                + Environment.NewLine
+                + harness);
+
+        using (Process process = new Process())
+        {
+            process.StartInfo = startInfo;
+            Assert.True(process.Start());
+            Task<string> standardOutputTask =
+                process.StandardOutput.ReadToEndAsync(
+                    TestContext.Current.CancellationToken);
+            Task<string> standardErrorTask =
+                process.StandardError.ReadToEndAsync(
+                    TestContext.Current.CancellationToken);
+            await process.WaitForExitAsync(
+                TestContext.Current.CancellationToken);
+            string standardOutput = await standardOutputTask;
+            await standardErrorTask;
+            Assert.True(
+                process.ExitCode == 0,
+                "Synthetic Apple Calendar JXA harness failed.");
+            Assert.False(string.IsNullOrWhiteSpace(standardOutput));
+            return JsonDocument.Parse(standardOutput.Trim());
+        }
+    }
+
+    private const string AUTOMATION_FAULT_HARNESS_SUPPORT = """
+        const testCalendarMarkerPrefix =
+            "timetable-generator://managed-calendar/v1/";
+        const testEventMarkerPrefix =
+            "timetable-generator://managed-event/v1/";
+        const testPlanId =
+            "71f3be04-d4c6-41d4-a269-792321e71423";
+        const testCalendarId =
+            "managed:" + testPlanId + ":QA";
+
+        function managedEventUrl(character) {
+            return testEventMarkerPrefix
+                + character.repeat(64);
+        }
+
+        function createMockEvent(initialUrl, deleteAction) {
+            let currentUrl = initialUrl;
+            const event = {
+                deleted: false,
+                url: function () {
+                    return event.deleted ? "" : currentUrl;
+                },
+                delete: function () {
+                    if (deleteAction === null) {
+                        event.deleted = true;
+                        return;
+                    }
+
+                    deleteAction(event);
+                },
+            };
+
+            return new Proxy(event, {
+                set: function (target, property, value) {
+                    if (property === "url") {
+                        currentUrl = String(value);
+                        return true;
+                    }
+
+                    target[property] = value;
+                    return true;
+                },
+            });
+        }
+
+        function createMockCalendar(label, events) {
+            function eventCollection() {
+                return events;
+            }
+
+            eventCollection.push = function (event) {
+                events.push(event);
+            };
+            const calendar = {
+                label: label,
+                deleted: false,
+                name: function () {
+                    return "QA";
+                },
+                description: function () {
+                    return testCalendarMarkerPrefix
+                        + testPlanId;
+                },
+                writable: function () {
+                    return true;
+                },
+                events: eventCollection,
+                delete: function () {
+                    calendar.deleted = true;
+                },
+            };
+            return calendar;
+        }
+
+        function createMockRequest() {
+            return {
+                destinationName: "QA",
+                normalizedDestinationName: "QA",
+                ownershipMarkerPrefix:
+                    testCalendarMarkerPrefix,
+                ownershipDescription:
+                    testCalendarMarkerPrefix + testPlanId,
+                eventOwnershipMarkerPrefix:
+                    testEventMarkerPrefix,
+                existingCalendarId: testCalendarId,
+                events: [
+                    {
+                        summary: "Synthetic",
+                        location: "Synthetic",
+                        description: "Synthetic",
+                        startsAt: "2026-01-01T00:00:00Z",
+                        endsAt: "2026-01-01T01:00:00Z",
+                        ownershipUrl: managedEventUrl("c"),
+                    },
+                ],
+            };
+        }
+        """;
 
     private static CalendarExportDocument createDocumentAcrossDstChange()
     {

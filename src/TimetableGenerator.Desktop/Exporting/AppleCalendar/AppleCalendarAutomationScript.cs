@@ -25,10 +25,6 @@ internal static class AppleCalendarAutomationScript
             return String(value).trim().normalize("NFC").toUpperCase();
         }
 
-        function calendarId(calendar) {
-            return String(calendar.id());
-        }
-
         function calendarName(calendar) {
             return String(calendar.name());
         }
@@ -46,26 +42,90 @@ internal static class AppleCalendarAutomationScript
             }
         }
 
-        function calendarIsManaged(calendar, markerPrefix) {
+        function calendarManagedPlanId(calendar, markerPrefix) {
             const description = calendarDescription(calendar);
             if (description.indexOf(markerPrefix) !== 0) {
-                return false;
+                return null;
             }
 
             const planId = description.substring(markerPrefix.length);
             const planIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-            return planIdPattern.test(planId)
-                && planId !== "00000000-0000-0000-0000-000000000000";
-        }
-
-        function findCalendarById(calendars, id) {
-            for (let index = 0; index < calendars.length; index += 1) {
-                if (calendarId(calendars[index]) === id) {
-                    return calendars[index];
-                }
+            if (planIdPattern.test(planId) === false
+                || planId === "00000000-0000-0000-0000-000000000000") {
+                return null;
             }
 
-            return null;
+            return planId.toLowerCase();
+        }
+
+        function calendarIsManaged(calendar, markerPrefix) {
+            return calendarManagedPlanId(calendar, markerPrefix) !== null;
+        }
+
+        function managedCalendarId(calendar, markerPrefix) {
+            const planId = calendarManagedPlanId(calendar, markerPrefix);
+            return planId === null
+                ? null
+                : "managed:"
+                    + planId
+                    + ":"
+                    + encodeURIComponent(canonicalName(calendarName(calendar)));
+        }
+
+        function calendarSnapshotId(calendar, index, markerPrefix) {
+            const managedId = managedCalendarId(calendar, markerPrefix);
+            return managedId === null
+                ? "external:" + String(index)
+                : managedId;
+        }
+
+        function createCalendarSnapshotIds(calendars, markerPrefix) {
+            const ids = [];
+            for (let index = 0; index < calendars.length; index += 1) {
+                ids.push(calendarSnapshotId(
+                    calendars[index],
+                    index,
+                    markerPrefix));
+            }
+
+            const result = [];
+            for (let index = 0; index < ids.length; index += 1) {
+                let duplicateCount = 0;
+                for (let candidateIndex = 0;
+                    candidateIndex < ids.length;
+                    candidateIndex += 1) {
+                    if (ids[candidateIndex] === ids[index]) {
+                        duplicateCount += 1;
+                    }
+                }
+
+                result.push(duplicateCount === 1
+                    ? ids[index]
+                    : "ambiguous:"
+                        + String(index)
+                        + ":"
+                        + ids[index]);
+            }
+
+            return result;
+        }
+
+        function findManagedCalendarById(calendars, id, markerPrefix) {
+            let match = null;
+            for (let index = 0; index < calendars.length; index += 1) {
+                const calendar = calendars[index];
+                if (managedCalendarId(calendar, markerPrefix) !== id) {
+                    continue;
+                }
+
+                if (match !== null) {
+                    return null;
+                }
+
+                match = calendar;
+            }
+
+            return match;
         }
 
         function findCalendarsByName(calendars, normalizedName) {
@@ -79,6 +139,39 @@ internal static class AppleCalendarAutomationScript
             return matches;
         }
 
+        function calendarTargetIsValid(
+            calendars,
+            target,
+            expectedCalendarId,
+            request) {
+            if (target === null) {
+                return false;
+            }
+
+            const matchingCalendars = findCalendarsByName(
+                calendars,
+                request.normalizedDestinationName);
+            return matchingCalendars.length === 1
+                && managedCalendarId(
+                    matchingCalendars[0],
+                    request.ownershipMarkerPrefix) === expectedCalendarId
+                && managedCalendarId(
+                    target,
+                    request.ownershipMarkerPrefix) === expectedCalendarId
+                && calendarIsManaged(
+                    target,
+                    request.ownershipMarkerPrefix)
+                && calendarIsWritable(target);
+        }
+
+        function replacementTargetIsValid(calendars, target, request) {
+            return calendarTargetIsValid(
+                calendars,
+                target,
+                request.existingCalendarId,
+                request);
+        }
+
         function eventUrl(event) {
             try {
                 const value = event.url();
@@ -90,21 +183,301 @@ internal static class AppleCalendarAutomationScript
             }
         }
 
-        function findManagedEvents(events, markerPrefix) {
-            const managedEvents = [];
+        function eventUrlOrThrow(event) {
+            const value = event.url();
+            return value === null || value === undefined
+                ? ""
+                : String(value);
+        }
+
+        function eventUrlIsManaged(url, markerPrefix) {
+            if (url.indexOf(markerPrefix) !== 0) {
+                return false;
+            }
+
+            const markerPayload = url.substring(markerPrefix.length);
+            return /^[0-9a-f]{64}$/.test(markerPayload);
+        }
+
+        function createOperationEventUrl(markerPrefix) {
+            const firstPart = String(
+                ObjC.unwrap($.NSUUID.UUID.UUIDString))
+                .replace(/-/g, "")
+                .toLowerCase();
+            const secondPart = String(
+                ObjC.unwrap($.NSUUID.UUID.UUIDString))
+                .replace(/-/g, "")
+                .toLowerCase();
+            return markerPrefix + firstPart + secondPart;
+        }
+
+        function createManagedEventIndex(calendar, markerPrefix) {
+            const entries = [];
+            const countsByUrl = Object.create(null);
+            const uniqueEventsByUrl = Object.create(null);
+            const events = calendar.events();
             for (let index = 0; index < events.length; index += 1) {
-                const url = eventUrl(events[index]);
-                if (url.indexOf(markerPrefix) !== 0) {
+                const event = events[index];
+                const url = eventUrlOrThrow(event);
+                if (eventUrlIsManaged(url, markerPrefix) === false) {
                     continue;
                 }
 
-                const markerPayload = url.substring(markerPrefix.length);
-                if (/^[0-9a-f]{64}$/.test(markerPayload)) {
-                    managedEvents.push(events[index]);
+                entries.push({
+                    event: event,
+                    url: url,
+                });
+                const nextCount = (countsByUrl[url] || 0) + 1;
+                countsByUrl[url] = nextCount;
+                if (nextCount === 1) {
+                    uniqueEventsByUrl[url] = event;
+                } else {
+                    uniqueEventsByUrl[url] = null;
                 }
             }
 
-            return managedEvents;
+            return {
+                entries: entries,
+                countsByUrl: countsByUrl,
+                uniqueEventsByUrl: uniqueEventsByUrl,
+            };
+        }
+
+        function managedEventCount(index, url) {
+            return index.countsByUrl[url] || 0;
+        }
+
+        function uniqueManagedEvent(index, url) {
+            return managedEventCount(index, url) === 1
+                ? index.uniqueEventsByUrl[url]
+                : null;
+        }
+
+        function managedEventIndexMatchesExpectedUrls(
+            index,
+            expectedUrls) {
+            if (index.entries.length !== expectedUrls.length) {
+                return false;
+            }
+
+            const expectedCounts = Object.create(null);
+            for (let urlIndex = 0;
+                urlIndex < expectedUrls.length;
+                urlIndex += 1) {
+                const url = expectedUrls[urlIndex];
+                expectedCounts[url] =
+                    (expectedCounts[url] || 0) + 1;
+            }
+
+            for (const url in expectedCounts) {
+                if (managedEventCount(index, url)
+                    !== expectedCounts[url]) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        function findValidatedCalendarSnapshot(
+            calendarApplication,
+            expectedCalendarId,
+            request) {
+            const calendars = calendarApplication.calendars();
+            const matchingCalendars = findCalendarsByName(
+                calendars,
+                request.normalizedDestinationName);
+            if (matchingCalendars.length !== 1) {
+                return null;
+            }
+
+            const calendar = matchingCalendars[0];
+            if (calendarTargetIsValid(
+                    calendars,
+                    calendar,
+                    expectedCalendarId,
+                    request) === false) {
+                return null;
+            }
+
+            return {
+                calendar: calendar,
+                eventIndex: createManagedEventIndex(
+                    calendar,
+                    request.eventOwnershipMarkerPrefix),
+            };
+        }
+
+        function findOperationEventProof(
+            calendarApplication,
+            operationUrl,
+            expectedCalendarId,
+            request) {
+            const snapshot = findValidatedCalendarSnapshot(
+                calendarApplication,
+                expectedCalendarId,
+                request);
+            if (snapshot === null) {
+                return null;
+            }
+
+            const event = uniqueManagedEvent(
+                snapshot.eventIndex,
+                operationUrl);
+            return event === null
+                ? null
+                : {
+                    calendar: snapshot.calendar,
+                    event: event,
+                    eventIndex: snapshot.eventIndex,
+                };
+        }
+
+        function createOperationCanaryEvent(
+            calendarApplication,
+            calendar,
+            request) {
+            const operationUrl = createOperationEventUrl(
+                request.eventOwnershipMarkerPrefix);
+            createEvent(
+                calendarApplication,
+                calendar,
+                {
+                    summary: "Timetable Generator operation marker",
+                    location: "",
+                    description: "Temporary managed operation marker.",
+                    startsAt: "2001-01-01T00:00:00Z",
+                    endsAt: "2001-01-01T00:01:00Z",
+                    ownershipUrl: operationUrl,
+                });
+            return operationUrl;
+        }
+
+        function deleteOperationCanaryAndConfirm(
+            calendarApplication,
+            operationUrl,
+            expectedCalendarId,
+            request,
+            expectedRemainingUrls) {
+            const proof = findOperationEventProof(
+                calendarApplication,
+                operationUrl,
+                expectedCalendarId,
+                request);
+            if (proof === null) {
+                return false;
+            }
+
+            try {
+                proof.event.delete();
+            } catch (_) {
+                return false;
+            }
+
+            const finalSnapshot = findValidatedCalendarSnapshot(
+                calendarApplication,
+                expectedCalendarId,
+                request);
+            return finalSnapshot !== null
+                && managedEventIndexMatchesExpectedUrls(
+                    finalSnapshot.eventIndex,
+                    expectedRemainingUrls);
+        }
+
+        function createReplacementEvents(
+            calendarApplication,
+            calendar,
+            events,
+            markerPrefix) {
+            const mappings = [];
+            for (let index = 0; index < events.length; index += 1) {
+                const eventData = events[index];
+                const operationUrl = createOperationEventUrl(
+                    markerPrefix);
+                createEvent(
+                    calendarApplication,
+                    calendar,
+                    {
+                        summary: eventData.summary,
+                        location: eventData.location,
+                        description: eventData.description,
+                        startsAt: eventData.startsAt,
+                        endsAt: eventData.endsAt,
+                        ownershipUrl: operationUrl,
+                    });
+                mappings.push({
+                    operationUrl: operationUrl,
+                    finalUrl: eventData.ownershipUrl,
+                });
+            }
+
+            return mappings;
+        }
+
+        function replacementEventsAreCurrent(eventIndex, mappings) {
+            for (let mappingIndex = 0;
+                mappingIndex < mappings.length;
+                mappingIndex += 1) {
+                if (uniqueManagedEvent(
+                        eventIndex,
+                        mappings[mappingIndex].operationUrl) === null) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        function createReplacementUrlSet(mappings) {
+            const urls = Object.create(null);
+            for (let index = 0; index < mappings.length; index += 1) {
+                urls[mappings[index].operationUrl] = true;
+            }
+
+            return urls;
+        }
+
+        function findPreviousManagedEvents(
+            index,
+            canaryUrl,
+            replacementMappings) {
+            const replacementUrls =
+                createReplacementUrlSet(replacementMappings);
+            return index.entries
+                .filter(function (event) {
+                    return event.url !== canaryUrl
+                        && replacementUrls[event.url] !== true;
+                })
+                .map(function (entry) {
+                    return entry.event;
+                });
+        }
+
+        function restoreReplacementEventUrls(
+            proof,
+            mappings) {
+            for (let index = 0; index < mappings.length; index += 1) {
+                const mapping = mappings[index];
+                const event = uniqueManagedEvent(
+                    proof.eventIndex,
+                    mapping.operationUrl);
+                if (event === null
+                    || eventUrl(event) !== mapping.operationUrl) {
+                    return false;
+                }
+
+                try {
+                    event.url = mapping.finalUrl;
+                } catch (_) {
+                    return false;
+                }
+
+                if (eventUrl(event) !== mapping.finalUrl) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         function createEvent(calendarApplication, calendar, eventData) {
@@ -132,21 +505,11 @@ internal static class AppleCalendarAutomationScript
 
         function createAllEvents(calendarApplication, calendar, events) {
             const createdEvents = [];
-            try {
-                for (let index = 0; index < events.length; index += 1) {
-                    createdEvents.push(createEvent(
-                        calendarApplication,
-                        calendar,
-                        events[index]));
-                }
-            } catch (error) {
-                try {
-                    deleteItems(createdEvents);
-                } catch (_) {
-                    // Rollback is best effort; preserve the original automation failure.
-                }
-
-                throw error;
+            for (let index = 0; index < events.length; index += 1) {
+                createdEvents.push(createEvent(
+                    calendarApplication,
+                    calendar,
+                    events[index]));
             }
 
             return createdEvents;
@@ -154,11 +517,14 @@ internal static class AppleCalendarAutomationScript
 
         function listCalendars(calendarApplication, request) {
             const calendars = calendarApplication.calendars();
+            const snapshotIds = createCalendarSnapshotIds(
+                calendars,
+                request.ownershipMarkerPrefix);
             const result = [];
             for (let index = 0; index < calendars.length; index += 1) {
                 const calendar = calendars[index];
                 result.push({
-                    id: calendarId(calendar),
+                    id: snapshotIds[index],
                     name: calendarName(calendar),
                     description: calendarDescription(calendar),
                     writable: calendarIsWritable(calendar),
@@ -186,26 +552,82 @@ internal static class AppleCalendarAutomationScript
                 name: request.destinationName,
                 description: request.ownershipDescription,
             }).make();
-            let createdEvents;
+            let createdCalendarId;
             try {
-                createdEvents = createAllEvents(
-                    calendarApplication,
+                createdCalendarId = managedCalendarId(
                     calendar,
-                    request.events);
-            } catch (error) {
-                try {
-                    calendar.delete();
-                } catch (_) {
-                    // Rollback is best effort; preserve the original automation failure.
+                    request.ownershipMarkerPrefix);
+                if (createdCalendarId === null
+                    || canonicalName(calendarName(calendar))
+                        !== request.normalizedDestinationName) {
+                    throw new Error(
+                        "apple_calendar_creation_target_invalid");
                 }
-
+            } catch (error) {
+                // Without a canary-backed fresh rebind, deleting this lazy
+                // object specifier could target an unrelated calendar.
                 throw error;
+            }
+
+            const operationUrl = createOperationCanaryEvent(
+                calendarApplication,
+                calendar,
+                request);
+            let operationProof = findOperationEventProof(
+                calendarApplication,
+                operationUrl,
+                createdCalendarId,
+                request);
+            if (operationProof === null) {
+                throw new Error(
+                    "apple_calendar_creation_target_changed");
+            }
+
+            const createdEvents = createAllEvents(
+                calendarApplication,
+                operationProof.calendar,
+                request.events);
+            operationProof = findOperationEventProof(
+                calendarApplication,
+                operationUrl,
+                createdCalendarId,
+                request);
+            if (operationProof === null) {
+                throw new Error(
+                    "apple_calendar_creation_target_changed");
+            }
+
+            const expectedCreatedEventUrls = [];
+            for (let index = 0;
+                index < request.events.length;
+                index += 1) {
+                expectedCreatedEventUrls.push(
+                    request.events[index].ownershipUrl);
+            }
+
+            const expectedManagedEventUrls =
+                [operationUrl].concat(expectedCreatedEventUrls);
+            if (managedEventIndexMatchesExpectedUrls(
+                    operationProof.eventIndex,
+                    expectedManagedEventUrls) === false) {
+                throw new Error(
+                    "apple_calendar_creation_events_changed");
+            }
+
+            if (deleteOperationCanaryAndConfirm(
+                    calendarApplication,
+                    operationUrl,
+                    createdCalendarId,
+                    request,
+                    expectedCreatedEventUrls) === false) {
+                throw new Error(
+                    "apple_calendar_creation_canary_cleanup_failed");
             }
 
             return {
                 status: "ok",
-                calendarId: calendarId(calendar),
-                calendarName: calendarName(calendar),
+                calendarId: createdCalendarId,
+                calendarName: request.destinationName,
                 createdEventCount: createdEvents.length,
                 deletedEventCount: 0,
             };
@@ -213,50 +635,139 @@ internal static class AppleCalendarAutomationScript
 
         function replaceCalendar(calendarApplication, request) {
             const calendars = calendarApplication.calendars();
-            const target = findCalendarById(
+            const target = findManagedCalendarById(
                 calendars,
-                request.existingCalendarId);
-            const matchingCalendars = findCalendarsByName(
-                calendars,
-                request.normalizedDestinationName);
-            if (target === null
-                || matchingCalendars.length !== 1
-                || calendarId(matchingCalendars[0]) !== request.existingCalendarId
-                || calendarIsManaged(
+                request.existingCalendarId,
+                request.ownershipMarkerPrefix);
+            if (replacementTargetIsValid(
+                    calendars,
                     target,
-                    request.ownershipMarkerPrefix) === false
-                || calendarIsWritable(target) === false) {
+                    request) === false) {
                 return {
                     status: "calendar_changed",
                     diagnosticCode: "apple_calendar_replacement_precondition_changed",
                 };
             }
 
-            const previousEvents = findManagedEvents(
-                target.events(),
-                request.eventOwnershipMarkerPrefix);
-            const createdEvents = createAllEvents(
+            const operationUrl = createOperationCanaryEvent(
                 calendarApplication,
                 target,
-                request.events);
+                request);
+            let operationProof = findOperationEventProof(
+                calendarApplication,
+                operationUrl,
+                request.existingCalendarId,
+                request);
+            if (operationProof === null) {
+                throw new Error(
+                    "apple_calendar_replacement_target_changed");
+            }
+
+            const replacementMappings = createReplacementEvents(
+                calendarApplication,
+                operationProof.calendar,
+                request.events,
+                request.eventOwnershipMarkerPrefix);
+            operationProof = findOperationEventProof(
+                calendarApplication,
+                operationUrl,
+                request.existingCalendarId,
+                request);
+            if (operationProof === null) {
+                throw new Error(
+                    "apple_calendar_replacement_target_changed");
+            }
+
+            if (replacementEventsAreCurrent(
+                    operationProof.eventIndex,
+                    replacementMappings) === false) {
+                throw new Error(
+                    "apple_calendar_replacement_events_changed");
+            }
+
+            const previousEvents = findPreviousManagedEvents(
+                operationProof.eventIndex,
+                operationUrl,
+                replacementMappings);
             let deletedCount;
             try {
                 deletedCount = deleteItems(previousEvents);
             } catch (error) {
-                try {
-                    deleteItems(createdEvents);
-                } catch (_) {
-                    // Rollback is best effort; preserve the original automation failure.
-                }
-
+                // Old-event deletion is the commit point. Retaining the new
+                // managed events and canary avoids data loss and lets a later
+                // explicit replacement reconcile.
                 throw error;
+            }
+
+            operationProof = findOperationEventProof(
+                calendarApplication,
+                operationUrl,
+                request.existingCalendarId,
+                request);
+            if (operationProof === null) {
+                throw new Error(
+                    "apple_calendar_replacement_commit_unverified");
+            }
+
+            const expectedTemporaryUrls = [operationUrl];
+            for (let index = 0;
+                index < replacementMappings.length;
+                index += 1) {
+                expectedTemporaryUrls.push(
+                    replacementMappings[index].operationUrl);
+            }
+
+            if (managedEventIndexMatchesExpectedUrls(
+                    operationProof.eventIndex,
+                    expectedTemporaryUrls) === false) {
+                throw new Error(
+                    "apple_calendar_replacement_old_events_remain");
+            }
+
+            if (restoreReplacementEventUrls(
+                    operationProof,
+                    replacementMappings) === false) {
+                throw new Error(
+                    "apple_calendar_replacement_event_commit_failed");
+            }
+
+            operationProof = findOperationEventProof(
+                calendarApplication,
+                operationUrl,
+                request.existingCalendarId,
+                request);
+            const expectedReplacementUrls = [];
+            for (let index = 0;
+                index < replacementMappings.length;
+                index += 1) {
+                expectedReplacementUrls.push(
+                    replacementMappings[index].finalUrl);
+            }
+
+            if (operationProof === null
+                || managedEventIndexMatchesExpectedUrls(
+                    operationProof.eventIndex,
+                    [operationUrl].concat(
+                        expectedReplacementUrls)) === false) {
+                throw new Error(
+                    "apple_calendar_replacement_event_commit_unverified");
+            }
+
+            if (deleteOperationCanaryAndConfirm(
+                    calendarApplication,
+                    operationUrl,
+                    request.existingCalendarId,
+                    request,
+                    expectedReplacementUrls) === false) {
+                throw new Error(
+                    "apple_calendar_replacement_canary_cleanup_failed");
             }
 
             return {
                 status: "ok",
-                calendarId: calendarId(target),
-                calendarName: calendarName(target),
-                createdEventCount: createdEvents.length,
+                calendarId: request.existingCalendarId,
+                calendarName: request.destinationName,
+                createdEventCount: replacementMappings.length,
                 deletedEventCount: deletedCount,
             };
         }
