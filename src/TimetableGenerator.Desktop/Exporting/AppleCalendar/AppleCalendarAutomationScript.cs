@@ -47,7 +47,15 @@ internal static class AppleCalendarAutomationScript
         }
 
         function calendarIsManaged(calendar, markerPrefix) {
-            return calendarDescription(calendar).indexOf(markerPrefix) === 0;
+            const description = calendarDescription(calendar);
+            if (description.indexOf(markerPrefix) !== 0) {
+                return false;
+            }
+
+            const planId = description.substring(markerPrefix.length);
+            const planIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+            return planIdPattern.test(planId)
+                && planId !== "00000000-0000-0000-0000-000000000000";
         }
 
         function findCalendarById(calendars, id) {
@@ -71,6 +79,34 @@ internal static class AppleCalendarAutomationScript
             return matches;
         }
 
+        function eventUrl(event) {
+            try {
+                const value = event.url();
+                return value === null || value === undefined
+                    ? ""
+                    : String(value);
+            } catch (_) {
+                return "";
+            }
+        }
+
+        function findManagedEvents(events, markerPrefix) {
+            const managedEvents = [];
+            for (let index = 0; index < events.length; index += 1) {
+                const url = eventUrl(events[index]);
+                if (url.indexOf(markerPrefix) !== 0) {
+                    continue;
+                }
+
+                const markerPayload = url.substring(markerPrefix.length);
+                if (/^[0-9a-f]{64}$/.test(markerPayload)) {
+                    managedEvents.push(events[index]);
+                }
+            }
+
+            return managedEvents;
+        }
+
         function createEvent(calendarApplication, calendar, eventData) {
             const event = calendarApplication.Event({
                 summary: eventData.summary,
@@ -78,6 +114,7 @@ internal static class AppleCalendarAutomationScript
                 description: eventData.description,
                 startDate: new Date(eventData.startsAt),
                 endDate: new Date(eventData.endsAt),
+                url: eventData.ownershipUrl,
             });
             calendar.events.push(event);
             return event;
@@ -195,7 +232,9 @@ internal static class AppleCalendarAutomationScript
                 };
             }
 
-            const previousEvents = target.events();
+            const previousEvents = findManagedEvents(
+                target.events(),
+                request.eventOwnershipMarkerPrefix);
             const createdEvents = createAllEvents(
                 calendarApplication,
                 target,

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,6 +14,7 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
     private const int MAXIMUM_DESTINATION_ATTEMPTS = 3;
 
     private readonly IAppleCalendarNativeBridge mNativeBridge;
+    private readonly IAppleCalendarExportLeaseProvider mExportLeaseProvider;
 
     public bool IsAvailable
     {
@@ -23,13 +25,28 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
     }
 
     public AppleCalendarExportService(IAppleCalendarNativeBridge nativeBridge)
+        : this(
+            nativeBridge,
+            NoOpAppleCalendarExportLeaseProvider.Instance)
+    {
+    }
+
+    internal AppleCalendarExportService(
+        IAppleCalendarNativeBridge nativeBridge,
+        IAppleCalendarExportLeaseProvider exportLeaseProvider)
     {
         if (nativeBridge == null)
         {
             throw new ArgumentNullException(nameof(nativeBridge));
         }
 
+        if (exportLeaseProvider == null)
+        {
+            throw new ArgumentNullException(nameof(exportLeaseProvider));
+        }
+
         mNativeBridge = nativeBridge;
+        mExportLeaseProvider = exportLeaseProvider;
     }
 
     public async Task<AppleCalendarExportResult> ExportAsync(
@@ -57,14 +74,28 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
 
         try
         {
-            return await exportWithConflictResolutionAsync(
-                document,
-                conflictResolver,
-                cancellationToken);
+            await using (IAppleCalendarExportLease exportLease =
+                await mExportLeaseProvider.AcquireAsync(cancellationToken)
+                    .ConfigureAwait(false))
+            {
+                return await exportWithConflictResolutionAsync(
+                        document,
+                        conflictResolver,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
         }
         catch (AppleCalendarNativeBridgeException exception)
         {
             return createFailureResult(exception);
+        }
+        catch (Exception exception) when (
+            exception is IOException
+            || exception is UnauthorizedAccessException)
+        {
+            return AppleCalendarExportResult.Fail(
+                EAppleCalendarExportStatus.Failed,
+                "apple_calendar_local_state_failed");
         }
     }
 

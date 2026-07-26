@@ -11,6 +11,8 @@ internal sealed class AppleCalendarAutomationRequest
 
     public string OwnershipDescription { get; }
 
+    public string EventOwnershipMarkerPrefix { get; }
+
     public string MutationKind { get; }
 
     public string DestinationName { get; }
@@ -36,6 +38,8 @@ internal sealed class AppleCalendarAutomationRequest
         IReadOnlyList<AppleCalendarAutomationEvent> events)
     {
         OwnershipMarkerPrefix = AppleCalendarOwnershipMarker.PREFIX;
+        EventOwnershipMarkerPrefix =
+            AppleCalendarEventOwnershipMarker.PREFIX;
         OwnershipDescription = ownershipDescription;
         MutationKind = mutationKind;
         DestinationName = destinationName;

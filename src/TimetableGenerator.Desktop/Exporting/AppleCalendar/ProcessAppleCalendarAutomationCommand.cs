@@ -14,13 +14,63 @@ internal sealed class ProcessAppleCalendarAutomationCommand
     private const string OSASCRIPT_PATH = "/usr/bin/osascript";
     private const int BUFFER_SIZE = 8192;
 
+    private static readonly TimeSpan PROCESS_TERMINATION_WAIT =
+        TimeSpan.FromSeconds(5.0);
+
+    private readonly Func<
+        EAppleCalendarAutomationOperation,
+        string,
+        ProcessStartInfo> mStartInfoFactory;
+
+    private readonly Func<string> mRequestPathFactory;
+    private readonly Func<bool> mAvailabilityCheck;
+
     public bool IsAvailable
     {
         get
         {
-            return OperatingSystem.IsMacOS()
-                && File.Exists(OSASCRIPT_PATH);
+            return mAvailabilityCheck();
         }
+    }
+
+    public ProcessAppleCalendarAutomationCommand()
+        : this(
+            createStartInfo,
+            createRequestPath,
+            delegate
+            {
+                return OperatingSystem.IsMacOS()
+                    && File.Exists(OSASCRIPT_PATH);
+            })
+    {
+    }
+
+    internal ProcessAppleCalendarAutomationCommand(
+        Func<
+            EAppleCalendarAutomationOperation,
+            string,
+            ProcessStartInfo> startInfoFactory,
+        Func<string> requestPathFactory,
+        Func<bool> availabilityCheck)
+    {
+        if (startInfoFactory == null)
+        {
+            throw new ArgumentNullException(nameof(startInfoFactory));
+        }
+
+        if (requestPathFactory == null)
+        {
+            throw new ArgumentNullException(nameof(requestPathFactory));
+        }
+
+        if (availabilityCheck == null)
+        {
+            throw new ArgumentNullException(nameof(availabilityCheck));
+        }
+
+        mStartInfoFactory = startInfoFactory;
+        mRequestPathFactory = requestPathFactory;
+        mAvailabilityCheck = availabilityCheck;
     }
 
     public async Task<string> ExecuteAsync(
@@ -34,7 +84,7 @@ internal sealed class ProcessAppleCalendarAutomationCommand
             throw createUnavailableException(null);
         }
 
-        string requestPath = createRequestPath();
+        string requestPath = mRequestPathFactory();
         try
         {
             await writePrivateRequestAsync(
@@ -115,14 +165,16 @@ internal sealed class ProcessAppleCalendarAutomationCommand
         return options;
     }
 
-    private static async Task<string> executeProcessAsync(
+    private async Task<string> executeProcessAsync(
         EAppleCalendarAutomationOperation operation,
         string requestPath,
         CancellationToken cancellationToken)
     {
         using (Process process = new Process())
         {
-            process.StartInfo = createStartInfo(operation, requestPath);
+            process.StartInfo = mStartInfoFactory(
+                operation,
+                requestPath);
             try
             {
                 if (process.Start() == false)
@@ -285,18 +337,31 @@ internal sealed class ProcessAppleCalendarAutomationCommand
         {
             // Cancellation cleanup is best effort; the original cancellation remains authoritative.
         }
+        catch (Win32Exception)
+        {
+            // Cancellation cleanup is best effort; the original cancellation remains authoritative.
+        }
     }
 
     private static async Task waitForTerminatedProcessAsync(Process process)
     {
-        try
+        using (CancellationTokenSource waitCancellationSource =
+            new CancellationTokenSource(PROCESS_TERMINATION_WAIT))
         {
-            await process.WaitForExitAsync(CancellationToken.None)
-                .ConfigureAwait(false);
-        }
-        catch (InvalidOperationException)
-        {
-            // Cancellation cleanup is best effort; the original cancellation remains authoritative.
+            try
+            {
+                await process.WaitForExitAsync(
+                        waitCancellationSource.Token)
+                    .ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                // Do not let a failed process-tree kill block application shutdown.
+            }
+            catch (InvalidOperationException)
+            {
+                // Cancellation cleanup is best effort; the original cancellation remains authoritative.
+            }
         }
     }
 

@@ -196,6 +196,212 @@ public sealed class AppleCalendarExportServiceTests
     }
 
     [Fact]
+    public async Task ProcessLeaseCoversSnapshotAndMutationThenReleasesAsync()
+    {
+        RecordingAppleCalendarExportLeaseProvider leaseProvider =
+            new RecordingAppleCalendarExportLeaseProvider();
+        LeaseObservingAppleCalendarNativeBridge nativeBridge =
+            new LeaseObservingAppleCalendarNativeBridge(leaseProvider);
+        AppleCalendarExportService exporter =
+            new AppleCalendarExportService(
+                nativeBridge,
+                leaseProvider);
+
+        AppleCalendarExportResult result = await exporter.ExportAsync(
+            createDocument(),
+            new RecordingCalendarNameConflictResolver(
+                ECalendarNameConflictResolution.Cancel),
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(EAppleCalendarExportStatus.Success, result.Status);
+        Assert.True(nativeBridge.SnapshotObservedLease);
+        Assert.True(nativeBridge.MutationObservedLease);
+        Assert.Equal(1, leaseProvider.AcquireCount);
+        Assert.Equal(0, leaseProvider.ActiveLeaseCount);
+    }
+
+    [Fact]
+    public async Task NativeExceptionReleasesProcessLeaseAsync()
+    {
+        RecordingAppleCalendarExportLeaseProvider leaseProvider =
+            new RecordingAppleCalendarExportLeaseProvider();
+        RecordingAppleCalendarNativeBridge nativeBridge =
+            new RecordingAppleCalendarNativeBridge();
+        nativeBridge.FailureOnNextMutationOrNull =
+            new AppleCalendarNativeBridgeException(
+                EAppleCalendarNativeFailureKind.AccessDenied,
+                "apple_calendar_access_denied");
+        AppleCalendarExportService exporter =
+            new AppleCalendarExportService(
+                nativeBridge,
+                leaseProvider);
+
+        AppleCalendarExportResult result = await exporter.ExportAsync(
+            createDocument(),
+            new RecordingCalendarNameConflictResolver(
+                ECalendarNameConflictResolution.Cancel),
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(
+            EAppleCalendarExportStatus.AccessDenied,
+            result.Status);
+        Assert.Equal(1, leaseProvider.AcquireCount);
+        Assert.Equal(0, leaseProvider.ActiveLeaseCount);
+    }
+
+    [Fact]
+    public async Task CancellationReleasesProcessLeaseWithoutMutationAsync()
+    {
+        RecordingAppleCalendarExportLeaseProvider leaseProvider =
+            new RecordingAppleCalendarExportLeaseProvider();
+        ControlledPermissionAppleCalendarNativeBridge nativeBridge =
+            new ControlledPermissionAppleCalendarNativeBridge(1);
+        AppleCalendarExportService exporter =
+            new AppleCalendarExportService(
+                nativeBridge,
+                leaseProvider);
+
+        using (CancellationTokenSource cancellationSource =
+            new CancellationTokenSource())
+        {
+            Task<AppleCalendarExportResult> exportTask =
+                exporter.ExportAsync(
+                    createDocument(),
+                    new RecordingCalendarNameConflictResolver(
+                        ECalendarNameConflictResolution.Cancel),
+                    cancellationSource.Token);
+            await nativeBridge.WaitForSnapshotRequestAsync(
+                0,
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(1, leaseProvider.ActiveLeaseCount);
+            cancellationSource.Cancel();
+
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                async delegate
+                {
+                    await exportTask;
+                });
+        }
+
+        Assert.Equal(1, leaseProvider.AcquireCount);
+        Assert.Equal(0, leaseProvider.ActiveLeaseCount);
+        Assert.Equal(0, nativeBridge.ApplyExportRequestCount);
+    }
+
+    [Fact]
+    public async Task PendingPermissionContinuesTheSameExportAfterApprovalAsync()
+    {
+        ControlledPermissionAppleCalendarNativeBridge nativeBridge =
+            new ControlledPermissionAppleCalendarNativeBridge(1);
+        AppleCalendarExportService exporter =
+            new AppleCalendarExportService(nativeBridge);
+
+        Task<AppleCalendarExportResult> exportTask = exporter.ExportAsync(
+            createDocument(),
+            new RecordingCalendarNameConflictResolver(
+                ECalendarNameConflictResolution.Cancel),
+            TestContext.Current.CancellationToken);
+        await nativeBridge.WaitForSnapshotRequestAsync(
+            0,
+            TestContext.Current.CancellationToken);
+
+        await Task.Delay(
+            TimeSpan.FromMilliseconds(50.0),
+            TestContext.Current.CancellationToken);
+
+        Assert.False(exportTask.IsCompleted);
+        Assert.Equal(1, nativeBridge.CalendarSnapshotRequestCount);
+        Assert.Equal(0, nativeBridge.ApplyExportRequestCount);
+
+        nativeBridge.AllowSnapshot(0);
+        AppleCalendarExportResult result = await exportTask;
+
+        Assert.Equal(EAppleCalendarExportStatus.Success, result.Status);
+        Assert.Equal(1, nativeBridge.CalendarSnapshotRequestCount);
+        Assert.Equal(1, nativeBridge.ApplyExportRequestCount);
+    }
+
+    [Fact]
+    public async Task DeniedPermissionDoesNotMutateAndAUserRetryCanSucceedAsync()
+    {
+        ControlledPermissionAppleCalendarNativeBridge nativeBridge =
+            new ControlledPermissionAppleCalendarNativeBridge(2);
+        AppleCalendarExportService exporter =
+            new AppleCalendarExportService(nativeBridge);
+
+        Task<AppleCalendarExportResult> deniedExportTask =
+            exporter.ExportAsync(
+                createDocument(),
+                new RecordingCalendarNameConflictResolver(
+                    ECalendarNameConflictResolution.Cancel),
+                TestContext.Current.CancellationToken);
+        await nativeBridge.WaitForSnapshotRequestAsync(
+            0,
+            TestContext.Current.CancellationToken);
+        nativeBridge.DenySnapshot(0);
+
+        AppleCalendarExportResult deniedResult =
+            await deniedExportTask;
+
+        Assert.Equal(
+            EAppleCalendarExportStatus.AccessDenied,
+            deniedResult.Status);
+        Assert.Equal(0, nativeBridge.ApplyExportRequestCount);
+
+        Task<AppleCalendarExportResult> retryTask = exporter.ExportAsync(
+            createDocument(),
+            new RecordingCalendarNameConflictResolver(
+                ECalendarNameConflictResolution.Cancel),
+            TestContext.Current.CancellationToken);
+        await nativeBridge.WaitForSnapshotRequestAsync(
+            1,
+            TestContext.Current.CancellationToken);
+        nativeBridge.AllowSnapshot(1);
+
+        AppleCalendarExportResult retryResult = await retryTask;
+
+        Assert.Equal(
+            EAppleCalendarExportStatus.Success,
+            retryResult.Status);
+        Assert.Equal(2, nativeBridge.CalendarSnapshotRequestCount);
+        Assert.Equal(1, nativeBridge.ApplyExportRequestCount);
+    }
+
+    [Fact]
+    public async Task PendingPermissionHonorsCancellationWithoutMutationAsync()
+    {
+        ControlledPermissionAppleCalendarNativeBridge nativeBridge =
+            new ControlledPermissionAppleCalendarNativeBridge(1);
+        AppleCalendarExportService exporter =
+            new AppleCalendarExportService(nativeBridge);
+        using (CancellationTokenSource cancellationSource =
+            new CancellationTokenSource())
+        {
+            Task<AppleCalendarExportResult> exportTask =
+                exporter.ExportAsync(
+                    createDocument(),
+                    new RecordingCalendarNameConflictResolver(
+                        ECalendarNameConflictResolution.Cancel),
+                    cancellationSource.Token);
+            await nativeBridge.WaitForSnapshotRequestAsync(
+                0,
+                TestContext.Current.CancellationToken);
+
+            cancellationSource.Cancel();
+
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                async delegate
+                {
+                    await exportTask;
+                });
+        }
+
+        Assert.Equal(1, nativeBridge.CalendarSnapshotRequestCount);
+        Assert.Equal(0, nativeBridge.ApplyExportRequestCount);
+    }
+
+    [Fact]
     public async Task ResolverCannotReplaceUnmanagedCalendarAsync()
     {
         RecordingAppleCalendarNativeBridge nativeBridge =
@@ -214,6 +420,30 @@ public sealed class AppleCalendarExportServiceTests
                 TestContext.Current.CancellationToken));
 
         Assert.Empty(nativeBridge.AppliedMutations);
+    }
+
+    [Fact]
+    public void CalendarOwnershipMarkerRequiresAnExactNonEmptyPlanId()
+    {
+        PlanId planId = new PlanId(
+            Guid.Parse("71f3be04-d4c6-41d4-a269-792321e71423"));
+        string marker = AppleCalendarOwnershipMarker.CreateForPlan(planId);
+
+        Assert.True(
+            AppleCalendarOwnershipMarker.IsApplicationManaged(marker));
+        Assert.False(
+            AppleCalendarOwnershipMarker.IsApplicationManaged(
+                AppleCalendarOwnershipMarker.PREFIX));
+        Assert.False(
+            AppleCalendarOwnershipMarker.IsApplicationManaged(
+                AppleCalendarOwnershipMarker.PREFIX + "not-a-plan-id"));
+        Assert.False(
+            AppleCalendarOwnershipMarker.IsApplicationManaged(
+                marker + "/unexpected"));
+        Assert.False(
+            AppleCalendarOwnershipMarker.IsApplicationManaged(
+                AppleCalendarOwnershipMarker.PREFIX
+                    + "00000000-0000-0000-0000-000000000000"));
     }
 
     private static AppleCalendarDescriptor createCalendar(
@@ -279,6 +509,116 @@ public sealed class AppleCalendarExportServiceTests
             cancellationToken.ThrowIfCancellationRequested();
             mConflicts.Add(conflict);
             return Task.FromResult(mResolution);
+        }
+    }
+
+    private sealed class RecordingAppleCalendarExportLeaseProvider
+        : IAppleCalendarExportLeaseProvider
+    {
+        private int mAcquireCount;
+        private int mActiveLeaseCount;
+
+        public int AcquireCount
+        {
+            get
+            {
+                return Volatile.Read(ref mAcquireCount);
+            }
+        }
+
+        public int ActiveLeaseCount
+        {
+            get
+            {
+                return Volatile.Read(ref mActiveLeaseCount);
+            }
+        }
+
+        public Task<IAppleCalendarExportLease> AcquireAsync(
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            Interlocked.Increment(ref mAcquireCount);
+            Interlocked.Increment(ref mActiveLeaseCount);
+            return Task.FromResult<IAppleCalendarExportLease>(
+                new RecordingLease(this));
+        }
+
+        private sealed class RecordingLease
+            : IAppleCalendarExportLease
+        {
+            private readonly RecordingAppleCalendarExportLeaseProvider
+                mProvider;
+
+            private int mWasDisposed;
+
+            public RecordingLease(
+                RecordingAppleCalendarExportLeaseProvider provider)
+            {
+                mProvider = provider;
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                if (Interlocked.Exchange(ref mWasDisposed, 1) == 0)
+                {
+                    Interlocked.Decrement(
+                        ref mProvider.mActiveLeaseCount);
+                }
+
+                return ValueTask.CompletedTask;
+            }
+        }
+    }
+
+    private sealed class LeaseObservingAppleCalendarNativeBridge
+        : IAppleCalendarNativeBridge
+    {
+        private readonly RecordingAppleCalendarExportLeaseProvider
+            mLeaseProvider;
+
+        public bool IsAvailable
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        public bool SnapshotObservedLease { get; private set; }
+
+        public bool MutationObservedLease { get; private set; }
+
+        public LeaseObservingAppleCalendarNativeBridge(
+            RecordingAppleCalendarExportLeaseProvider leaseProvider)
+        {
+            mLeaseProvider = leaseProvider;
+        }
+
+        public Task<IReadOnlyList<AppleCalendarDescriptor>>
+            GetCalendarsAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            SnapshotObservedLease =
+                mLeaseProvider.ActiveLeaseCount == 1;
+            return Task.FromResult<IReadOnlyList<
+                AppleCalendarDescriptor>>(
+                    Array.Empty<AppleCalendarDescriptor>());
+        }
+
+        public Task<AppleCalendarNativeExportResult> ApplyExportAsync(
+            AppleCalendarExportMutation mutation,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            MutationObservedLease =
+                mLeaseProvider.ActiveLeaseCount == 1;
+            return Task.FromResult(
+                new AppleCalendarNativeExportResult(
+                    new AppleCalendarId("lease-observed-calendar"),
+                    mutation.DestinationName,
+                    mutation.Document.Events.Count,
+                    0));
         }
     }
 
@@ -374,6 +714,103 @@ public sealed class AppleCalendarExportServiceTests
                     mutation.DestinationName,
                     mutation.Document.Events.Count,
                     deletedEventCount));
+        }
+    }
+
+    private sealed class ControlledPermissionAppleCalendarNativeBridge
+        : IAppleCalendarNativeBridge
+    {
+        private readonly TaskCompletionSource<
+            IReadOnlyList<AppleCalendarDescriptor>>[] mSnapshotSources;
+
+        private readonly TaskCompletionSource[] mSnapshotRequestSources;
+
+        public bool IsAvailable
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        public int CalendarSnapshotRequestCount { get; private set; }
+
+        public int ApplyExportRequestCount { get; private set; }
+
+        public ControlledPermissionAppleCalendarNativeBridge(
+            int snapshotCount)
+        {
+            if (snapshotCount <= 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(snapshotCount));
+            }
+
+            mSnapshotSources = new TaskCompletionSource<
+                IReadOnlyList<AppleCalendarDescriptor>>[snapshotCount];
+            mSnapshotRequestSources =
+                new TaskCompletionSource[snapshotCount];
+            for (int index = 0; index < snapshotCount; ++index)
+            {
+                mSnapshotSources[index] = new TaskCompletionSource<
+                    IReadOnlyList<AppleCalendarDescriptor>>(
+                    TaskCreationOptions.RunContinuationsAsynchronously);
+                mSnapshotRequestSources[index] =
+                    new TaskCompletionSource(
+                        TaskCreationOptions.RunContinuationsAsynchronously);
+            }
+        }
+
+        public async Task<IReadOnlyList<AppleCalendarDescriptor>>
+            GetCalendarsAsync(CancellationToken cancellationToken)
+        {
+            int requestIndex = CalendarSnapshotRequestCount;
+            if (requestIndex >= mSnapshotSources.Length)
+            {
+                throw new InvalidOperationException(
+                    "No controlled Apple Calendar snapshot remains.");
+            }
+
+            CalendarSnapshotRequestCount++;
+            mSnapshotRequestSources[requestIndex].TrySetResult();
+            return await mSnapshotSources[requestIndex].Task
+                .WaitAsync(cancellationToken);
+        }
+
+        public Task<AppleCalendarNativeExportResult> ApplyExportAsync(
+            AppleCalendarExportMutation mutation,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ApplyExportRequestCount++;
+            return Task.FromResult(
+                new AppleCalendarNativeExportResult(
+                    new AppleCalendarId("controlled-calendar"),
+                    mutation.DestinationName,
+                    mutation.Document.Events.Count,
+                    0));
+        }
+
+        public Task WaitForSnapshotRequestAsync(
+            int requestIndex,
+            CancellationToken cancellationToken)
+        {
+            return mSnapshotRequestSources[requestIndex].Task
+                .WaitAsync(cancellationToken);
+        }
+
+        public void AllowSnapshot(int requestIndex)
+        {
+            mSnapshotSources[requestIndex].TrySetResult(
+                Array.Empty<AppleCalendarDescriptor>());
+        }
+
+        public void DenySnapshot(int requestIndex)
+        {
+            mSnapshotSources[requestIndex].TrySetException(
+                new AppleCalendarNativeBridgeException(
+                    EAppleCalendarNativeFailureKind.AccessDenied,
+                    "apple_calendar_automation_access_denied"));
         }
     }
 }

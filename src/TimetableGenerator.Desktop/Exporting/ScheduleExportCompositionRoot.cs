@@ -14,8 +14,7 @@ internal static class ScheduleExportCompositionRoot
             new AvaloniaControlPngExporter(PngExportScale.PRODUCT_QUALITY),
             GoogleCalendarIntegrationFactory.Create(dataRootPath),
             new DefaultGoogleCalendarWebNavigator(),
-            new AppleCalendarExportService(
-                new JxaAppleCalendarNativeBridge()),
+            AppleCalendarIntegrationFactory.Create(dataRootPath),
             new SystemCalendarTimeZoneProvider());
     }
 }

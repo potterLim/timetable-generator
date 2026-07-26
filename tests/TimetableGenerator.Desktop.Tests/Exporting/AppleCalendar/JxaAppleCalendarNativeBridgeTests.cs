@@ -98,8 +98,21 @@ public sealed class JxaAppleCalendarNativeBridgeTests
             Assert.Equal(
                 "timetable-generator://managed-calendar/v1/71f3be04-d4c6-41d4-a269-792321e71423",
                 root.GetProperty("ownershipDescription").GetString());
+            Assert.Equal(
+                AppleCalendarEventOwnershipMarker.PREFIX,
+                root.GetProperty(
+                    "eventOwnershipMarkerPrefix").GetString());
             JsonElement.ArrayEnumerator events = root.GetProperty("events").EnumerateArray();
             Assert.True(events.MoveNext());
+            Assert.Equal(
+                "personal:lab:2026-03-01",
+                events.Current.GetProperty("eventId").GetString());
+            string? firstOwnershipUrlOrNull = events.Current
+                .GetProperty("ownershipUrl")
+                .GetString();
+            Assert.True(
+                AppleCalendarEventOwnershipMarker.IsApplicationManaged(
+                    firstOwnershipUrlOrNull));
             Assert.Equal("2026-03-01T10:00:00-05:00", events.Current.GetProperty("startsAt").GetString());
             Assert.True(events.MoveNext());
             Assert.Equal("2026-03-08T10:00:00-04:00", events.Current.GetProperty("startsAt").GetString());
@@ -163,10 +176,70 @@ public sealed class JxaAppleCalendarNativeBridgeTests
             StringComparison.Ordinal);
         Assert.Contains("calendarIsManaged(", script, StringComparison.Ordinal);
         Assert.Contains("request.ownershipMarkerPrefix", script, StringComparison.Ordinal);
+        Assert.Contains(
+            "const planIdPattern = /^[0-9a-f]{8}-",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "00000000-0000-0000-0000-000000000000",
+            script,
+            StringComparison.Ordinal);
         Assert.Contains("calendarIsWritable(target) === false", script, StringComparison.Ordinal);
         Assert.Contains("calendarApplication.Calendar({", script, StringComparison.Ordinal);
         Assert.Contains(").make();", script, StringComparison.Ordinal);
         Assert.Contains("calendar.events.push(event)", script, StringComparison.Ordinal);
+        Assert.Contains(
+            "url: eventData.ownershipUrl",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "const previousEvents = findManagedEvents(",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "url.indexOf(markerPrefix) !== 0",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "/^[0-9a-f]{64}$/.test(markerPayload)",
+            script,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "const previousEvents = target.events();",
+            script,
+            StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("https://example.com")]
+    [InlineData("timetable-generator://managed-event/v1/")]
+    [InlineData("timetable-generator://managed-event/v1/not-a-hash")]
+    [InlineData("timetable-generator://managed-event/v1/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")]
+    public void EventOwnershipRejectsMissingOrNonCanonicalMarkers(
+        string? markerOrNull)
+    {
+        Assert.False(
+            AppleCalendarEventOwnershipMarker.IsApplicationManaged(
+                markerOrNull));
+    }
+
+    [Fact]
+    public void EventOwnershipCreatesDeterministicCanonicalMarkers()
+    {
+        string first = AppleCalendarEventOwnershipMarker.Create(
+            "personal:lab:2026-03-01");
+        string second = AppleCalendarEventOwnershipMarker.Create(
+            "personal:lab:2026-03-01");
+
+        Assert.Equal(first, second);
+        Assert.StartsWith(
+            AppleCalendarEventOwnershipMarker.PREFIX,
+            first,
+            StringComparison.Ordinal);
+        Assert.True(
+            AppleCalendarEventOwnershipMarker.IsApplicationManaged(first));
     }
 
     [Theory]

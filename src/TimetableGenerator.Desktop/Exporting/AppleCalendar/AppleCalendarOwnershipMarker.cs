@@ -22,6 +22,18 @@ internal static class AppleCalendarOwnershipMarker
 
     public static bool IsApplicationManaged(string? descriptionOrNull)
     {
-        return descriptionOrNull?.StartsWith(PREFIX, StringComparison.Ordinal) == true;
+        if (descriptionOrNull?.StartsWith(
+                PREFIX,
+                StringComparison.Ordinal) != true)
+        {
+            return false;
+        }
+
+        Guid planIdValue;
+        return Guid.TryParseExact(
+                descriptionOrNull[PREFIX.Length..],
+                "D",
+                out planIdValue)
+            && planIdValue != Guid.Empty;
     }
 }

@@ -6,6 +6,8 @@ internal sealed class AppleCalendarAutomationEvent
 {
     public string EventId { get; }
 
+    public string OwnershipUrl { get; }
+
     public string Summary { get; }
 
     public string Location { get; }
@@ -25,6 +27,7 @@ internal sealed class AppleCalendarAutomationEvent
         string endsAt)
     {
         EventId = requireText(eventId, nameof(eventId));
+        OwnershipUrl = AppleCalendarEventOwnershipMarker.Create(EventId);
         Summary = requireText(summary, nameof(summary));
         Location = requireValue(location, nameof(location));
         Description = requireValue(description, nameof(description));
