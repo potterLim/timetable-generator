@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Avalonia.Controls;
+using Avalonia.Threading;
 
 using TimetableGenerator.Desktop.Views;
 
@@ -36,7 +37,7 @@ internal sealed class SchedulePngBatchWriter
         ArgumentNullException.ThrowIfNull(sizingBoard);
         ArgumentNullException.ThrowIfNull(exportHost);
         cancellationToken.ThrowIfCancellationRequested();
-        await Task.Yield();
+        await yieldToPendingInputAsync(cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
 
         ScheduleBoardPngExportSnapshot snapshot;
@@ -66,7 +67,7 @@ internal sealed class SchedulePngBatchWriter
             for (int candidateIndex = 0; candidateIndex < exportBatch.Candidates.Count; ++candidateIndex)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await Task.Yield();
+                await yieldToPendingInputAsync(cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
                 try
                 {
@@ -107,5 +108,16 @@ internal sealed class SchedulePngBatchWriter
                     failures);
             }
         }
+    }
+
+    private static async Task yieldToPendingInputAsync(
+        CancellationToken cancellationToken)
+    {
+        await Dispatcher.UIThread.InvokeAsync(
+            delegate
+            {
+            },
+            DispatcherPriority.Background,
+            cancellationToken);
     }
 }
