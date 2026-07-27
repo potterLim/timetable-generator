@@ -133,7 +133,7 @@ internal sealed partial class ScheduleBoardView
         editButton.HorizontalAlignment = HorizontalAlignment.Right;
         editButton.VerticalAlignment = VerticalAlignment.Center;
         AutomationProperties.SetAutomationId(editButton, "EditPersonalScheduleButton:" + entry.ScheduleId);
-        AutomationProperties.SetName(editButton, entry.Title + " 개인 일정 수정");
+        AutomationProperties.SetName(editButton, entry.TitleWithSection + " 개인 일정 수정");
         AutomationProperties.SetHelpText(editButton, "현재 개인 일정 정보가 채워진 수정 창을 엽니다.");
         ToolTip.SetTip(editButton, "개인 일정 수정");
         return editButton;
