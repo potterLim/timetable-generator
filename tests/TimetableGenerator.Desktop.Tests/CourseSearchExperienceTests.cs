@@ -125,6 +125,74 @@ public sealed class CourseSearchExperienceTests
     }
 
     [AvaloniaFact]
+    public void MainSearchPublishesTheFirstPreeditImmediately()
+    {
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspaceWithEmptyPlan(CatalogProjectionTestFixture.CreateDocument());
+        CourseBrowserView courseBrowser = new CourseBrowserView();
+        courseBrowser.DataContext = workspace;
+        Window window = new Window();
+        window.Width = 390.0;
+        window.Height = 820.0;
+        window.Content = courseBrowser;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            TextBox searchBox = findRequiredControl<TextBox>(courseBrowser, "CourseSearchBox");
+            TextInputMethodClient textInputMethodClient = getTextInputMethodClient(searchBox);
+            Assert.True(searchBox.Focus());
+            Dispatcher.UIThread.RunJobs();
+
+            textInputMethodClient.SetPreeditText("프");
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal("프", workspace.SearchText);
+            Assert.Equal("CSE10001", Assert.Single(workspace.VisibleCourses).Code);
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
+    public void MainSearchPublishesFirstReplacementPreeditImmediately()
+    {
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspaceWithEmptyPlan(CatalogProjectionTestFixture.CreateDocument());
+        workspace.SearchText = "세미나";
+        CourseBrowserView courseBrowser = new CourseBrowserView();
+        courseBrowser.DataContext = workspace;
+        Window window = new Window();
+        window.Width = 390.0;
+        window.Height = 820.0;
+        window.Content = courseBrowser;
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            TextBox searchBox = findRequiredControl<TextBox>(courseBrowser, "CourseSearchBox");
+            TextInputMethodClient textInputMethodClient = getTextInputMethodClient(searchBox);
+            Assert.True(searchBox.Focus());
+            searchBox.SelectAll();
+            Dispatcher.UIThread.RunJobs();
+
+            textInputMethodClient.SetPreeditText("프");
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal("프", workspace.SearchText);
+            Assert.Equal("CSE10001", Assert.Single(workspace.VisibleCourses).Code);
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
     public void MainSearchTracksKoreanImeCompositionBeforeCommitAndAcceptsFirstClick()
     {
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspaceWithEmptyPlan(CatalogProjectionTestFixture.CreateKoreanImeSearchDocument());

@@ -93,7 +93,7 @@ internal sealed class CompositionAwareSearchTextBox : TextBox
         if (change.Property == TextProperty)
         {
             cancelDeferredQueryPublication();
-            publishCurrentQueryText();
+            publishCurrentQueryText(change.GetNewValue<string>());
             return;
         }
 
@@ -134,15 +134,27 @@ internal sealed class CompositionAwareSearchTextBox : TextBox
 
     private string createVisibleQueryText()
     {
-        string committedText = normalizeNullableText(Text);
+        return createVisibleQueryText(Text);
+    }
+
+    private string createVisibleQueryText(string? committedTextOrNull)
+    {
+        string committedText = normalizeNullableText(committedTextOrNull);
         string preeditText = normalizeNullableText(mTextPresenterOrNull?.PreeditText);
         if (preeditText.Length == 0)
         {
             return committedText;
         }
 
-        int insertionIndex = Math.Clamp(CaretIndex, 0, committedText.Length);
-        return committedText.Insert(insertionIndex, preeditText);
+        int selectionStart = Math.Clamp(Math.Min(SelectionStart, SelectionEnd), 0, committedText.Length);
+        int selectionEnd = Math.Clamp(Math.Max(SelectionStart, SelectionEnd), 0, committedText.Length);
+        if (selectionStart != selectionEnd)
+        {
+            return committedText.Remove(selectionStart, selectionEnd - selectionStart).Insert(selectionStart, preeditText);
+        }
+
+        int caretIndex = Math.Clamp(CaretIndex, 0, committedText.Length);
+        return committedText.Insert(caretIndex, preeditText);
     }
 
     private bool hasPreeditText()
@@ -190,23 +202,28 @@ internal sealed class CompositionAwareSearchTextBox : TextBox
 
     private void publishCommittedQueryText()
     {
+        publishCommittedQueryText(Text);
+    }
+
+    private void publishCommittedQueryText(string? committedTextOrNull)
+    {
         if (mIsApplyingQueryText)
         {
             return;
         }
 
-        publishQueryText(normalizeNullableText(Text));
+        publishQueryText(normalizeNullableText(committedTextOrNull));
     }
 
-    private void publishCurrentQueryText()
+    private void publishCurrentQueryText(string? committedTextOrNull)
     {
         if (hasPreeditText())
         {
-            publishVisibleQueryText();
+            publishQueryText(createVisibleQueryText(committedTextOrNull));
             return;
         }
 
-        publishCommittedQueryText();
+        publishCommittedQueryText(committedTextOrNull);
     }
 
     private void publishQueryText(string queryText)
