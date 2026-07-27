@@ -2,6 +2,8 @@
 
 이 문서는 Timetable Generator를 macOS 실제 기기로 옮긴 뒤 Codex에 전달할 최종 QA 요청 전문입니다. 저장소 루트를 Codex 작업 공간으로 연 다음, 아래 프롬프트 전체를 새 작업에 그대로 붙여 넣습니다.
 
+이전 전수 QA 이후 최신 `main`을 다시 받아 캘린더 변경을 검증하고 필요한 결함을 수정·커밋·푸시한 뒤 Windows로 인계하는 작업에는 [macOS 캘린더 재검증 및 Windows 복귀 전 인계 지시문](macos-calendar-revalidation-handoff.md)을 사용합니다. 이 문서의 소스 변경 금지 원칙은 그 후속 작업에 적용하지 않습니다.
+
 검증 결과와 스크린샷은 `artifacts/qa/` 아래에 보관하며 Git에는 커밋하지 않습니다. 실제 서비스 주소, OAuth 정보, 사용자 계획, 서명 자격 증명은 프롬프트나 결과 보고서에 기록하지 않습니다.
 
 ````text
