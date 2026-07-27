@@ -243,7 +243,7 @@ public sealed class GoogleCalendarOAuthTests
     }
 
     [Fact]
-    public void DefaultBrowserLauncherRejectsMissingOperatingSystemProcess()
+    public void DefaultBrowserLauncherAcceptsShellHandoffWithoutNewProcess()
     {
         DefaultExternalBrowserLauncher launcher = new DefaultExternalBrowserLauncher(
             delegate (ProcessStartInfo startInfo)
@@ -251,11 +251,27 @@ public sealed class GoogleCalendarOAuthTests
                 return null;
             });
 
-        Assert.Throws<InvalidOperationException>(
-            delegate
+        launcher.Launch(new Uri("https://accounts.google.com", UriKind.Absolute));
+    }
+
+    [Fact]
+    public async Task ShellHandoffWithoutNewProcessContinuesWaitingForAuthorizationAsync()
+    {
+        DefaultExternalBrowserLauncher launcher = new DefaultExternalBrowserLauncher(
+            delegate (ProcessStartInfo startInfo)
             {
-                launcher.Launch(new Uri("https://accounts.google.com", UriKind.Absolute));
+                return null;
             });
+        LoopbackGoogleOAuthAuthorizationCodeProvider provider = new LoopbackGoogleOAuthAuthorizationCodeProvider(launcher, TimeSpan.FromMilliseconds(25.0));
+
+        GoogleOAuthAuthorizationCodeResult result = await provider.RequestCodeAsync(
+            new GoogleOAuthClientId("client.apps.googleusercontent.com"),
+            new GoogleOAuthState("opaque-state"),
+            new GooglePkceCodeChallenge("opaque-challenge"),
+            CancellationToken.None);
+
+        Assert.Equal(EGoogleOAuthAuthorizationStatus.Failed, result.Status);
+        Assert.Equal("authorization_timeout", result.DiagnosticCodeOrNull);
     }
 
     [Fact]
@@ -288,26 +304,6 @@ public sealed class GoogleCalendarOAuthTests
 
             Assert.False(navigator.TryOpen());
         }
-    }
-
-    [Fact]
-    public async Task MissingOperatingSystemBrowserProcessReturnsImmediatelyAsAuthFailureAsync()
-    {
-        DefaultExternalBrowserLauncher launcher = new DefaultExternalBrowserLauncher(
-            delegate (ProcessStartInfo startInfo)
-            {
-                return null;
-            });
-        LoopbackGoogleOAuthAuthorizationCodeProvider provider = new LoopbackGoogleOAuthAuthorizationCodeProvider(launcher, TimeSpan.FromMinutes(5.0));
-
-        GoogleOAuthAuthorizationCodeResult result = await provider.RequestCodeAsync(
-            new GoogleOAuthClientId("client.apps.googleusercontent.com"),
-            new GoogleOAuthState("opaque-state"),
-            new GooglePkceCodeChallenge("opaque-challenge"),
-            CancellationToken.None);
-
-        Assert.Equal(EGoogleOAuthAuthorizationStatus.Failed, result.Status);
-        Assert.Equal("browser_launch_failed", result.DiagnosticCodeOrNull);
     }
 
     [Fact]

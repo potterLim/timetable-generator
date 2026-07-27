@@ -34,11 +34,6 @@ internal sealed class DefaultExternalBrowserLauncher : IExternalBrowserLauncher
             UseShellExecute = true,
         };
         Process? processOrNull = mProcessStarter(startInfo);
-        if (processOrNull == null)
-        {
-            throw new InvalidOperationException("The operating system did not start the external browser.");
-        }
-
-        processOrNull.Dispose();
+        processOrNull?.Dispose();
     }
 }
