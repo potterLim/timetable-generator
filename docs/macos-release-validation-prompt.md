@@ -236,7 +236,7 @@ otool -L "$MAIN"
 - 실행 권한 유지
 - 잘못된 Windows DLL 호출이나 누락된 native library 없음
 - 일반 unsigned 개발 게시에서는 설정 파일이 선택 사항일 수 있으나, 최종 Release 후보에는 `catalog-source.local.json`과 `google-calendar.local.json`이 모두 존재하고 최종화 스크립트의 스키마·값 검증을 통과하는지
-- OAuth token, client secret, 사용자 계획은 번들에 포함되지 않았는지
+- 액세스 토큰·새로 고침 토큰, 웹 애플리케이션 OAuth client secret, 사용자 계획은 번들에 포함되지 않았는지. 배포용 Desktop OAuth `clientId`와 `clientSecret`은 최종화 검증을 통과한 `google-calendar.local.json`에만 포함하며, 네이티브 앱에서 기밀 보안 경계로 취급하지 않는다.
 
 ZIP checksum과 압축 해제 후 실행 권한도 검증한다.
 
