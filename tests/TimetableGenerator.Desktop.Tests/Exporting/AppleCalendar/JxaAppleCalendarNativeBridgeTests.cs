@@ -392,13 +392,15 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                     ];
                 },
             };
-            JSON.stringify({
-                response: listCalendars(
-                    calendarApplication,
-                    request),
-                matchingCalendarEventReadCount:
-                    matchingCalendarEventReadCount,
-            });
+            function run(_) {
+                return JSON.stringify({
+                    response: listCalendars(
+                        calendarApplication,
+                        request),
+                    matchingCalendarEventReadCount:
+                        matchingCalendarEventReadCount,
+                });
+            }
             """;
 
         using (JsonDocument result =
@@ -474,16 +476,18 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                         null),
                 ]);
 
-            JSON.stringify(listCalendars(
-                {
-                    calendars: function () {
-                        return [
-                            mixedOwnershipCalendar,
-                            contradictoryLegacyCalendar,
-                        ];
+            function run(_) {
+                return JSON.stringify(listCalendars(
+                    {
+                        calendars: function () {
+                            return [
+                                mixedOwnershipCalendar,
+                                contradictoryLegacyCalendar,
+                            ];
+                        },
                     },
-                },
-                request));
+                    request));
+            }
             """;
 
         using (JsonDocument result = await executeAutomationSourceHarnessAsync(HARNESS))
