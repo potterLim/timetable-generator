@@ -2,6 +2,7 @@ using System;
 
 using Avalonia;
 using Avalonia.Automation;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 
@@ -78,11 +79,32 @@ internal sealed partial class MainWindow
         FluentIcon maximizeRestoreIcon = mMaximizeRestoreIconOrNull;
         bool isMaximized = WindowState == WindowState.Maximized;
         string actionName = isMaximized ? "복원" : "최대화";
+        AutomationPeer? maximizeRestorePeerOrNull = ControlAutomationPeer.FromElement(maximizeRestoreButton);
+        string? previousNameOrNull = maximizeRestorePeerOrNull?.GetName();
+        string? previousHelpTextOrNull = maximizeRestorePeerOrNull?.GetHelpText();
 
         maximizeRestoreIcon.Icon = isMaximized
             ? FluentIcons.Common.Icon.SquareMultiple
             : FluentIcons.Common.Icon.Square;
         AutomationProperties.SetName(maximizeRestoreButton, actionName);
         ToolTip.SetTip(maximizeRestoreButton, actionName);
+        if (maximizeRestorePeerOrNull != null)
+        {
+            if (string.Equals(previousNameOrNull, actionName, StringComparison.Ordinal) == false)
+            {
+                maximizeRestorePeerOrNull.RaisePropertyChangedEvent(
+                    AutomationElementIdentifiers.NameProperty,
+                    previousNameOrNull,
+                    actionName);
+            }
+
+            if (string.Equals(previousHelpTextOrNull, actionName, StringComparison.Ordinal) == false)
+            {
+                maximizeRestorePeerOrNull.RaisePropertyChangedEvent(
+                    AutomationElementIdentifiers.HelpTextProperty,
+                    previousHelpTextOrNull,
+                    actionName);
+            }
+        }
     }
 }

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
@@ -131,15 +133,44 @@ public sealed class WindowChromeInteractionTests
 
             if (platform == EWindowChromePlatform.Windows)
             {
+                AutomationPeer maximizeRestorePeer = ControlAutomationPeer.CreatePeerForElement(maximizeRestoreButton);
+                List<AutomationPropertyChangedEventArgs> propertyChanges = new List<AutomationPropertyChangedEventArgs>();
+                maximizeRestorePeer.PropertyChanged += (object? senderOrNull, AutomationPropertyChangedEventArgs eventArgs) => propertyChanges.Add(eventArgs);
+
                 maximizeRestoreButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 Assert.Equal(WindowState.Maximized, hostWindow.WindowState);
                 Assert.Equal("복원", AutomationProperties.GetName(maximizeRestoreButton));
+                Assert.Equal("복원", maximizeRestorePeer.GetName());
+                Assert.Equal("복원", maximizeRestorePeer.GetHelpText());
                 Assert.Equal(Icon.SquareMultiple, maximizeRestoreIcon.Icon);
+                assertAutomationPropertyChange(
+                    propertyChanges,
+                    AutomationElementIdentifiers.NameProperty,
+                    "최대화",
+                    "복원");
+                assertAutomationPropertyChange(
+                    propertyChanges,
+                    AutomationElementIdentifiers.HelpTextProperty,
+                    "최대화",
+                    "복원");
 
+                propertyChanges.Clear();
                 maximizeRestoreButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 Assert.Equal(WindowState.Normal, hostWindow.WindowState);
                 Assert.Equal("최대화", AutomationProperties.GetName(maximizeRestoreButton));
+                Assert.Equal("최대화", maximizeRestorePeer.GetName());
+                Assert.Equal("최대화", maximizeRestorePeer.GetHelpText());
                 Assert.Equal(Icon.Square, maximizeRestoreIcon.Icon);
+                assertAutomationPropertyChange(
+                    propertyChanges,
+                    AutomationElementIdentifiers.NameProperty,
+                    "복원",
+                    "최대화");
+                assertAutomationPropertyChange(
+                    propertyChanges,
+                    AutomationElementIdentifiers.HelpTextProperty,
+                    "복원",
+                    "최대화");
 
                 minimizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 Assert.Equal(WindowState.Minimized, hostWindow.WindowState);
@@ -165,6 +196,19 @@ public sealed class WindowChromeInteractionTests
         Assert.IsType<ButtonAutomationPeer>(peer);
         Assert.IsAssignableFrom<IInvokeProvider>(peer);
         Assert.Equal(expectedName, peer.GetName());
+    }
+
+    private static void assertAutomationPropertyChange(
+        IEnumerable<AutomationPropertyChangedEventArgs> propertyChanges,
+        AutomationProperty property,
+        string expectedOldValue,
+        string expectedNewValue)
+    {
+        AutomationPropertyChangedEventArgs propertyChange = Assert.Single(
+            propertyChanges,
+            candidate => candidate.Property == property);
+        Assert.Equal(expectedOldValue, Assert.IsType<string>(propertyChange.OldValue));
+        Assert.Equal(expectedNewValue, Assert.IsType<string>(propertyChange.NewValue));
     }
 
     private static TControl findRequiredControl<TControl>(Control root, string controlName)
