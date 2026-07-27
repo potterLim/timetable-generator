@@ -41,7 +41,7 @@ internal sealed partial class ScheduleBoardView
         string accessibleName = createPersonalScheduleAccessibleName(entry);
         AutomationProperties.SetName(scheduleCard, accessibleName);
         AutomationProperties.SetHelpText(scheduleCard, "선택하면 개인 일정의 시간과 세부 정보를 엽니다.");
-        ToolTip.SetTip(scheduleCard, entry.Title + Environment.NewLine + "선택하여 개인 일정 상세 정보 보기");
+        ToolTip.SetTip(scheduleCard, entry.TitleWithSection + Environment.NewLine + "선택하여 개인 일정 상세 정보 보기");
         ToolTip.SetShowDelay(scheduleCard, 650);
     }
 
@@ -74,13 +74,9 @@ internal sealed partial class ScheduleBoardView
         StackPanel details = createDetailsPanel();
         Grid heading = createPersonalScheduleFlyoutHeading();
         details.Children.Add(heading);
-        details.Children.Add(createFlyoutTitle(entry.Title));
+        details.Children.Add(createFlyoutTitle(entry.TitleWithSection));
         details.Children.Add(createFlyoutSeparator());
         details.Children.Add(createDetailRow("시간", ScheduleBoardDayRange.CreateFullDayTimeDisplayText(entry.Day, entry.TimeRange)));
-        if (entry.HasSection)
-        {
-            details.Children.Add(createDetailRow("분반", entry.SectionDisplayText));
-        }
 
         if (entry.HasLocation)
         {
@@ -92,7 +88,7 @@ internal sealed partial class ScheduleBoardView
             details.Children.Add(createDetailRow("담당", entry.InstructorDisplayText));
         }
 
-        Flyout detailsFlyout = createDetailsFlyout(details, entry.Title + " 개인 일정 상세 정보", entry.Day);
+        Flyout detailsFlyout = createDetailsFlyout(details, entry.TitleWithSection + " 개인 일정 상세 정보", entry.Day);
         Button editButton = createPersonalScheduleEditButton(scheduleCard, entry, detailsFlyout);
         Grid.SetColumn(editButton, 1);
         heading.Children.Add(editButton);

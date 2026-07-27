@@ -24,6 +24,14 @@ internal sealed class PersonalScheduleEntry : ScheduleEntry
         }
     }
 
+    public string TitleWithSection
+    {
+        get
+        {
+            return HasSection ? Title + "(" + SectionDisplayText + ")" : Title;
+        }
+    }
+
     public bool HasSection
     {
         get

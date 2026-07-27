@@ -25,6 +25,19 @@ internal sealed class PersonalScheduleItem
         }
     }
 
+    public string TitleDisplayText
+    {
+        get
+        {
+            if (Schedule.Details.SectionOrNull == null)
+            {
+                return Title;
+            }
+
+            return Title + "(" + Schedule.Details.SectionOrNull.Value + ")";
+        }
+    }
+
     public string TimeSummary
     {
         get
@@ -45,11 +58,6 @@ internal sealed class PersonalScheduleItem
         get
         {
             List<string> details = new List<string>();
-            if (Schedule.Details.SectionOrNull != null)
-            {
-                details.Add("분반: " + Schedule.Details.SectionOrNull.Value);
-            }
-
             if (Schedule.Details.InstructorOrNull != null)
             {
                 details.Add("담당: " + Schedule.Details.InstructorOrNull.Value);
@@ -76,7 +84,7 @@ internal sealed class PersonalScheduleItem
     {
         get
         {
-            return Title + " 개인 일정 수정";
+            return TitleDisplayText + " 개인 일정 수정";
         }
     }
 
@@ -84,7 +92,7 @@ internal sealed class PersonalScheduleItem
     {
         get
         {
-            return Title + " 개인 일정 삭제";
+            return TitleDisplayText + " 개인 일정 삭제";
         }
     }
 

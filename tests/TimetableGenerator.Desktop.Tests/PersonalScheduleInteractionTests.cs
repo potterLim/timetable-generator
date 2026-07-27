@@ -57,8 +57,9 @@ public sealed class PersonalScheduleInteractionTests
             PersonalScheduleItem addedItem = Assert.Single(workspace.ActivePlan.PersonalSchedules);
             PersonalScheduleId addedScheduleId = addedItem.Id;
             Assert.Equal("랩 미팅", addedItem.Title);
+            Assert.Equal("랩 미팅(A)", addedItem.TitleDisplayText);
             Assert.Equal("화·목: 18:00–19:30", addedItem.TimeSummary);
-            Assert.Equal("분반: A · 담당: 김교수 · 장소: 느헤미야홀", addedItem.DetailsSummary);
+            Assert.Equal("담당: 김교수 · 장소: 느헤미야홀", addedItem.DetailsSummary);
 
             workspace.ActivePlan = workspace.Plans[1];
             Assert.Empty(workspace.ActivePlan.PersonalSchedules);
@@ -73,6 +74,7 @@ public sealed class PersonalScheduleInteractionTests
             PersonalScheduleItem editedItem = Assert.Single(workspace.ActivePlan.PersonalSchedules);
             Assert.Equal(addedScheduleId, editedItem.Id);
             Assert.Equal("연구실 정기 미팅", editedItem.Title);
+            Assert.Equal("연구실 정기 미팅(A)", editedItem.TitleDisplayText);
             Assert.DoesNotContain("느헤미야홀", editedItem.DetailsSummary);
 
             workspace.BeginDeletePersonalScheduleCommand.Execute(editedItem);
@@ -863,7 +865,7 @@ public sealed class PersonalScheduleInteractionTests
             Grid cardContent = Assert.IsType<Grid>(scheduleCard.Content);
             TextBlock[] cardTexts = cardContent.Children.OfType<TextBlock>().ToArray();
             Assert.Equal(
-                new string[] { "사용자 경험 연구 정기 회의", "느헤미야홀 101호", "김교수" },
+                new string[] { "사용자 경험 연구 정기 회의(A)", "느헤미야홀 101호", "김교수" },
                 cardTexts.Select(getTextOrEmpty));
             Assert.Equal(new Thickness(8.0, 4.0), scheduleCard.Padding);
             Assert.Equal(VerticalAlignment.Center, cardContent.VerticalAlignment);
@@ -910,7 +912,7 @@ public sealed class PersonalScheduleInteractionTests
             Assert.Contains("분반 A", accessibleName);
             Assert.Contains("수요일 12:00–13:00", accessibleName);
             Assert.Equal(
-                "사용자 경험 연구 정기 회의"
+                "사용자 경험 연구 정기 회의(A)"
                     + Environment.NewLine
                     + "선택하여 개인 일정 상세 정보 보기",
                 ToolTip.GetTip(scheduleCard));
@@ -934,7 +936,7 @@ public sealed class PersonalScheduleInteractionTests
             Grid exportContent = Assert.IsType<Grid>(exportCard.Content);
             TextBlock[] exportCardTexts = exportContent.Children.OfType<TextBlock>().ToArray();
             Assert.Equal(
-                new string[] { "사용자 경험 연구 정기 회의", "느헤미야홀 101호", "김교수" },
+                new string[] { "사용자 경험 연구 정기 회의(A)", "느헤미야홀 101호", "김교수" },
                 exportCardTexts.Select(getTextOrEmpty));
             Assert.Equal(2.0, exportCardTexts[2].Margin.Top);
         }
@@ -1167,7 +1169,7 @@ public sealed class PersonalScheduleInteractionTests
                 card =>
                 {
                     TextBlock title = Assert.IsType<TextBlock>(card.Content);
-                    Assert.Equal("짧은 랩 미팅", title.Text);
+                    Assert.Equal("짧은 랩 미팅(A)", title.Text);
                     Assert.Equal(14.0, title.FontSize);
                     Assert.Equal(18.0, title.LineHeight);
                     Assert.Equal(FontWeight.Bold, title.FontWeight);
@@ -1187,7 +1189,7 @@ public sealed class PersonalScheduleInteractionTests
             Assert.DoesNotContain("한동대학교 · 2026-2", exportTexts);
             Assert.Equal(
                 2,
-                exportTexts.Count(text => text == "짧은 랩 미팅"));
+                exportTexts.Count(text => text == "짧은 랩 미팅(A)"));
             Assert.DoesNotContain(
                 exportTexts,
                 text => text.Contains("분반 A", StringComparison.Ordinal)

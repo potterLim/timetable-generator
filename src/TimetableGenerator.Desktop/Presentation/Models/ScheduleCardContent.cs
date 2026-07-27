@@ -29,7 +29,7 @@ internal sealed class ScheduleCardContent
             throw new ArgumentNullException(nameof(entry));
         }
 
-        Title = entry.Title;
+        Title = entry.TitleWithSection;
         LocationOrNull = entry.HasLocation ? entry.LocationDisplayText : null;
         ResponsiblePersonOrNull = entry.HasInstructor ? entry.InstructorDisplayText : null;
     }

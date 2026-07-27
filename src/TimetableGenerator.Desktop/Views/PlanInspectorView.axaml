@@ -490,9 +490,9 @@
                         Grid.Row="0"
                         FontSize="14"
                         FontWeight="SemiBold"
-                        Text="{Binding Title}"
+                        Text="{Binding TitleDisplayText}"
                         TextTrimming="CharacterEllipsis"
-                        ToolTip.Tip="{Binding Title}" />
+                        ToolTip.Tip="{Binding TitleDisplayText}" />
                     <TextBlock
                         Grid.Row="1"
                         Margin="0,4,0,0"

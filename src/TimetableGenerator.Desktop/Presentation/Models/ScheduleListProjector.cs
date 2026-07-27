@@ -171,20 +171,20 @@ internal static class ScheduleListProjector
         {
             mOccurrenceBuilders.Sort(compareOccurrenceBuilders);
             List<ScheduleListSource> groupSources = collectUniqueSources();
-            string? sharedCourseSectionOrNull = findSharedCourseSectionOrNull(groupSources);
+            string? sharedSectionOrNull = findSharedSectionOrNull();
             List<ScheduleListOccurrence> occurrences = new List<ScheduleListOccurrence>(mOccurrenceBuilders.Count);
             foreach (ScheduleListOccurrenceBuilder occurrenceBuilder
                 in mOccurrenceBuilders)
             {
-                ScheduleListOccurrence occurrence = sharedCourseSectionOrNull == null
+                ScheduleListOccurrence occurrence = sharedSectionOrNull == null
                     ? occurrenceBuilder.Build()
                     : occurrenceBuilder.BuildWithSectionInTitle();
                 occurrences.Add(occurrence);
             }
 
-            string titleDisplayText = sharedCourseSectionOrNull == null
+            string titleDisplayText = sharedSectionOrNull == null
                 ? mTitle
-                : mTitle + "(" + sharedCourseSectionOrNull + ")";
+                : mTitle + "(" + sharedSectionOrNull + ")";
             return new ScheduleListGroup(
                 mTitle,
                 titleDisplayText,
@@ -208,16 +208,8 @@ internal static class ScheduleListProjector
             return sources;
         }
 
-        private string? findSharedCourseSectionOrNull(IReadOnlyList<ScheduleListSource> sources)
+        private string? findSharedSectionOrNull()
         {
-            foreach (ScheduleListSource source in sources)
-            {
-                if (source.Kind != EScheduleListEntryKind.Course)
-                {
-                    return null;
-                }
-            }
-
             string? sharedSectionOrNull = null;
             foreach (ScheduleListOccurrenceBuilder occurrenceBuilder
                 in mOccurrenceBuilders)

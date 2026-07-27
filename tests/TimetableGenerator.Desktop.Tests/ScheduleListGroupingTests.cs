@@ -144,9 +144,9 @@ public sealed class ScheduleListGroupingTests
                         == EScheduleListEntryKind.PersonalSchedule));
 
         Assert.Equal("Project Lab", group.Title);
-        Assert.Equal("Project Lab", group.TitleDisplayText);
+        Assert.Equal("Project Lab(01)", group.TitleDisplayText);
         Assert.Equal(new EDay[] { EDay.Monday, EDay.Wednesday }, occurrence.Days);
-        Assert.Equal("(01) · NTH 311 · 김교수", occurrence.MetadataDisplayText);
+        Assert.Equal("NTH 311 · 김교수", occurrence.MetadataDisplayText);
         Assert.Equal(courseId, courseSource.CourseId);
         Assert.Equal(offeringId, courseSource.OfferingId);
         Assert.Equal(scheduleId, personalSource.ScheduleId);
@@ -201,13 +201,19 @@ public sealed class ScheduleListGroupingTests
             new PersonalScheduleTitle("랩 미팅"),
             EDay.Monday,
             timeRange,
-            PersonalScheduleDetails.CreateEmpty());
+            new PersonalScheduleDetails(
+                new PersonalScheduleSection("A"),
+                null,
+                null));
         PersonalScheduleEntry thursdayEntry = createPersonalEntry(
             thursdayScheduleId,
             new PersonalScheduleTitle("랩 미팅"),
             EDay.Thursday,
             timeRange,
-            PersonalScheduleDetails.CreateEmpty());
+            new PersonalScheduleDetails(
+                new PersonalScheduleSection("A"),
+                null,
+                null));
 
         ScheduleListGroup group = Assert.Single(ScheduleListProjector.Project(
             new ScheduleEntry[] { thursdayEntry, mondayEntry }));
@@ -217,8 +223,9 @@ public sealed class ScheduleListGroupingTests
             .Select(source => source.ScheduleId)
             .ToList();
 
-        Assert.Equal("랩 미팅", group.TitleDisplayText);
+        Assert.Equal("랩 미팅(A)", group.TitleDisplayText);
         Assert.Equal("월·목: 12:00–13:00", occurrence.ScheduleDisplayText);
+        Assert.True(occurrence.HasSection);
         Assert.False(occurrence.HasMetadata);
         Assert.Equal(2, retainedScheduleIds.Count);
         Assert.Contains(mondayScheduleId, retainedScheduleIds);
