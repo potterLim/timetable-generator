@@ -22,11 +22,16 @@ internal static class AppleCalendarOwnershipMarker
 
     public static bool IsApplicationManaged(string? descriptionOrNull)
     {
+        return TryParsePlanIdOrNull(descriptionOrNull) != null;
+    }
+
+    public static PlanId? TryParsePlanIdOrNull(string? descriptionOrNull)
+    {
         if (descriptionOrNull?.StartsWith(
                 PREFIX,
                 StringComparison.Ordinal) != true)
         {
-            return false;
+            return null;
         }
 
         Guid planIdValue;
@@ -34,6 +39,8 @@ internal static class AppleCalendarOwnershipMarker
                 descriptionOrNull[PREFIX.Length..],
                 "D",
                 out planIdValue)
-            && planIdValue != Guid.Empty;
+            && planIdValue != Guid.Empty
+            ? new PlanId(planIdValue)
+            : null;
     }
 }

@@ -72,6 +72,13 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
                 "apple_calendar_native_bridge_unavailable");
         }
 
+        if (document.Events.Count == 0)
+        {
+            return AppleCalendarExportResult.Fail(
+                EAppleCalendarExportStatus.Failed,
+                "apple_calendar_export_requires_events");
+        }
+
         try
         {
             await using (IAppleCalendarExportLease exportLease = await mExportLeaseProvider.AcquireAsync(cancellationToken).ConfigureAwait(false))
@@ -105,7 +112,7 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
         AppleCalendarNativeBridgeException? latestConflictExceptionOrNull = null;
         for (int attempt = 0; attempt < MAXIMUM_DESTINATION_ATTEMPTS; ++attempt)
         {
-            IReadOnlyList<AppleCalendarDescriptor> calendars = await getValidatedCalendarsAsync(cancellationToken);
+            IReadOnlyList<AppleCalendarDescriptor> calendars = await getValidatedCalendarsAsync(document.CalendarName, cancellationToken);
             AppleCalendarExportMutation? mutationOrNull = await createMutationOrNullAsync(document, calendars, conflictResolver, cancellationToken);
             if (mutationOrNull == null)
             {
@@ -171,7 +178,8 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
                 return AppleCalendarExportMutation.ReplaceExisting(
                     document,
                     document.CalendarName,
-                    replaceableCalendarOrNull!.CalendarId);
+                    replaceableCalendarOrNull!.CalendarId,
+                    replaceableCalendarOrNull.ManagedPlanIdOrNull!.Value);
             case ECalendarNameConflictResolution.CreateWithAvailableName:
                 return AppleCalendarExportMutation.CreateNew(
                     document,
@@ -188,9 +196,11 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
     }
 
     private async Task<IReadOnlyList<AppleCalendarDescriptor>>
-        getValidatedCalendarsAsync(CancellationToken cancellationToken)
+        getValidatedCalendarsAsync(
+            PlanName requestedDestinationName,
+            CancellationToken cancellationToken)
     {
-        IReadOnlyList<AppleCalendarDescriptor>? calendarsOrNull = await mNativeBridge.GetCalendarsAsync(cancellationToken);
+        IReadOnlyList<AppleCalendarDescriptor>? calendarsOrNull = await mNativeBridge.GetCalendarsAsync(requestedDestinationName, cancellationToken);
         if (calendarsOrNull == null)
         {
             throw new AppleCalendarNativeBridgeException(

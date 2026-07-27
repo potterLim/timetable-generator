@@ -42,28 +42,91 @@ internal static class AppleCalendarAutomationScript
             }
         }
 
-        function calendarManagedPlanId(calendar, markerPrefix) {
+        function validPlanIdOrNull(value) {
+            const normalizedValue = String(value).toLowerCase();
+            const planIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+            return planIdPattern.test(normalizedValue)
+                    && normalizedValue !== "00000000-0000-0000-0000-000000000000"
+                ? normalizedValue
+                : null;
+        }
+
+        function legacyCalendarManagedPlanId(calendar, markerPrefix) {
             const description = calendarDescription(calendar);
             if (description.indexOf(markerPrefix) !== 0) {
                 return null;
             }
 
             const planId = description.substring(markerPrefix.length);
-            const planIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-            if (planIdPattern.test(planId) === false
-                || planId === "00000000-0000-0000-0000-000000000000") {
+            return validPlanIdOrNull(planId);
+        }
+
+        function currentEventManagedPlanId(url, markerPrefix) {
+            if (url.indexOf(markerPrefix) !== 0) {
                 return null;
             }
 
-            return planId.toLowerCase();
+            const markerPayload = url.substring(markerPrefix.length);
+            const separatorIndex = markerPayload.indexOf("/");
+            if (separatorIndex <= 0
+                || /^[0-9a-f]{64}$/.test(
+                    markerPayload.substring(separatorIndex + 1)) === false) {
+                return null;
+            }
+
+            return validPlanIdOrNull(
+                markerPayload.substring(0, separatorIndex));
         }
 
-        function calendarIsManaged(calendar, markerPrefix) {
-            return calendarManagedPlanId(calendar, markerPrefix) !== null;
+        function calendarManagedPlanId(calendar, request) {
+            if (canonicalName(calendarName(calendar))
+                !== request.normalizedDestinationName) {
+                return null;
+            }
+
+            const legacyPlanId = legacyCalendarManagedPlanId(
+                calendar,
+                request.ownershipMarkerPrefix);
+            let eventPlanId = null;
+            const events = calendar.events();
+            for (let index = 0; index < events.length; index += 1) {
+                const candidatePlanId = currentEventManagedPlanId(
+                    eventUrl(events[index]),
+                    request.eventOwnershipMarkerPrefix);
+                if (candidatePlanId === null) {
+                    continue;
+                }
+
+                if (eventPlanId !== null
+                    && eventPlanId !== candidatePlanId) {
+                    return null;
+                }
+
+                eventPlanId = candidatePlanId;
+            }
+
+            if (legacyPlanId !== null
+                && eventPlanId !== null
+                && legacyPlanId !== eventPlanId) {
+                return null;
+            }
+
+            return eventPlanId === null
+                ? legacyPlanId
+                : eventPlanId;
         }
 
-        function managedCalendarId(calendar, markerPrefix) {
-            const planId = calendarManagedPlanId(calendar, markerPrefix);
+        function calendarIsManagedByPlan(calendar, request) {
+            return calendarManagedPlanId(calendar, request)
+                === request.planId;
+        }
+
+        function managedCalendarId(calendar, request) {
+            const planId = calendarManagedPlanId(calendar, request);
+            return managedCalendarIdForPlanId(calendar, planId);
+        }
+
+        function managedCalendarIdForPlanId(calendar, planId) {
             return planId === null
                 ? null
                 : "managed:"
@@ -72,23 +135,30 @@ internal static class AppleCalendarAutomationScript
                     + encodeURIComponent(canonicalName(calendarName(calendar)));
         }
 
-        function calendarSnapshotId(calendar, index, markerPrefix) {
-            const managedId = managedCalendarId(calendar, markerPrefix);
+        function calendarSnapshotId(calendar, index, managedPlanId) {
+            const managedId = managedCalendarIdForPlanId(
+                calendar,
+                managedPlanId);
             return managedId === null
                 ? "external:" + String(index)
                 : managedId;
         }
 
-        function createCalendarSnapshotIds(calendars, markerPrefix) {
+        function createCalendarSnapshot(calendars, request) {
             const ids = [];
+            const managedPlanIds = [];
             for (let index = 0; index < calendars.length; index += 1) {
+                const managedPlanId = calendarManagedPlanId(
+                    calendars[index],
+                    request);
+                managedPlanIds.push(managedPlanId);
                 ids.push(calendarSnapshotId(
                     calendars[index],
                     index,
-                    markerPrefix));
+                    managedPlanId));
             }
 
-            const result = [];
+            const uniqueIds = [];
             for (let index = 0; index < ids.length; index += 1) {
                 let duplicateCount = 0;
                 for (let candidateIndex = 0; candidateIndex < ids.length; candidateIndex += 1) {
@@ -97,7 +167,7 @@ internal static class AppleCalendarAutomationScript
                     }
                 }
 
-                result.push(duplicateCount === 1
+                uniqueIds.push(duplicateCount === 1
                     ? ids[index]
                     : "ambiguous:"
                         + String(index)
@@ -105,14 +175,17 @@ internal static class AppleCalendarAutomationScript
                         + ids[index]);
             }
 
-            return result;
+            return {
+                ids: uniqueIds,
+                managedPlanIds: managedPlanIds,
+            };
         }
 
-        function findManagedCalendarById(calendars, id, markerPrefix) {
+        function findManagedCalendarById(calendars, id, request) {
             let match = null;
             for (let index = 0; index < calendars.length; index += 1) {
                 const calendar = calendars[index];
-                if (managedCalendarId(calendar, markerPrefix) !== id) {
+                if (managedCalendarId(calendar, request) !== id) {
                     continue;
                 }
 
@@ -152,13 +225,13 @@ internal static class AppleCalendarAutomationScript
             return matchingCalendars.length === 1
                 && managedCalendarId(
                     matchingCalendars[0],
-                    request.ownershipMarkerPrefix) === expectedCalendarId
+                    request) === expectedCalendarId
                 && managedCalendarId(
                     target,
-                    request.ownershipMarkerPrefix) === expectedCalendarId
-                && calendarIsManaged(
+                    request) === expectedCalendarId
+                && calendarIsManagedByPlan(
                     target,
-                    request.ownershipMarkerPrefix)
+                    request)
                 && calendarIsWritable(target);
         }
 
@@ -188,16 +261,22 @@ internal static class AppleCalendarAutomationScript
                 : String(value);
         }
 
-        function eventUrlIsManaged(url, markerPrefix) {
-            if (url.indexOf(markerPrefix) !== 0) {
-                return false;
-            }
-
-            const markerPayload = url.substring(markerPrefix.length);
-            return /^[0-9a-f]{64}$/.test(markerPayload);
+        function legacyEventUrlIsManaged(url, markerPrefix) {
+            return url.indexOf(markerPrefix) === 0
+                && /^[0-9a-f]{64}$/.test(
+                    url.substring(markerPrefix.length));
         }
 
-        function createOperationEventUrl(markerPrefix) {
+        function eventUrlIsManaged(url, request) {
+            return currentEventManagedPlanId(
+                    url,
+                    request.eventOwnershipMarkerPrefix) !== null
+                || legacyEventUrlIsManaged(
+                    url,
+                    request.legacyEventOwnershipMarkerPrefix);
+        }
+
+        function createOperationEventUrl(request) {
             const firstPart = String(
                 ObjC.unwrap($.NSUUID.UUID.UUIDString))
                 .replace(/-/g, "")
@@ -206,10 +285,14 @@ internal static class AppleCalendarAutomationScript
                 ObjC.unwrap($.NSUUID.UUID.UUIDString))
                 .replace(/-/g, "")
                 .toLowerCase();
-            return markerPrefix + firstPart + secondPart;
+            return request.eventOwnershipMarkerPrefix
+                + request.planId
+                + "/"
+                + firstPart
+                + secondPart;
         }
 
-        function createManagedEventIndex(calendar, markerPrefix) {
+        function createManagedEventIndex(calendar, request) {
             const entries = [];
             const countsByUrl = Object.create(null);
             const uniqueEventsByUrl = Object.create(null);
@@ -217,7 +300,7 @@ internal static class AppleCalendarAutomationScript
             for (let index = 0; index < events.length; index += 1) {
                 const event = events[index];
                 const url = eventUrlOrThrow(event);
-                if (eventUrlIsManaged(url, markerPrefix) === false) {
+                if (eventUrlIsManaged(url, request) === false) {
                     continue;
                 }
 
@@ -299,7 +382,7 @@ internal static class AppleCalendarAutomationScript
                 calendar: calendar,
                 eventIndex: createManagedEventIndex(
                     calendar,
-                    request.eventOwnershipMarkerPrefix),
+                    request),
             };
         }
 
@@ -333,7 +416,7 @@ internal static class AppleCalendarAutomationScript
             calendar,
             request) {
             const operationUrl = createOperationEventUrl(
-                request.eventOwnershipMarkerPrefix);
+                request);
             createEvent(
                 calendarApplication,
                 calendar,
@@ -379,16 +462,48 @@ internal static class AppleCalendarAutomationScript
                     expectedRemainingUrls);
         }
 
+        function publishCalendarDescriptionAndConfirm(
+            calendarApplication,
+            expectedCalendarId,
+            request,
+            expectedEventUrls) {
+            const snapshot = findValidatedCalendarSnapshot(
+                calendarApplication,
+                expectedCalendarId,
+                request);
+            if (snapshot === null) {
+                return false;
+            }
+
+            try {
+                snapshot.calendar.description = request.calendarDescription;
+            } catch (_) {
+                return false;
+            }
+
+            const confirmedSnapshot = findValidatedCalendarSnapshot(
+                calendarApplication,
+                expectedCalendarId,
+                request);
+            return confirmedSnapshot !== null
+                && calendarDescription(
+                    confirmedSnapshot.calendar)
+                    === request.calendarDescription
+                && managedEventIndexMatchesExpectedUrls(
+                    confirmedSnapshot.eventIndex,
+                    expectedEventUrls);
+        }
+
         function createReplacementEvents(
             calendarApplication,
             calendar,
             events,
-            markerPrefix) {
+            request) {
             const mappings = [];
             for (let index = 0; index < events.length; index += 1) {
                 const eventData = events[index];
                 const operationUrl = createOperationEventUrl(
-                    markerPrefix);
+                    request);
                 createEvent(
                     calendarApplication,
                     calendar,
@@ -509,16 +624,17 @@ internal static class AppleCalendarAutomationScript
 
         function listCalendars(calendarApplication, request) {
             const calendars = calendarApplication.calendars();
-            const snapshotIds = createCalendarSnapshotIds(
+            const snapshot = createCalendarSnapshot(
                 calendars,
-                request.ownershipMarkerPrefix);
+                request);
             const result = [];
             for (let index = 0; index < calendars.length; index += 1) {
                 const calendar = calendars[index];
                 result.push({
-                    id: snapshotIds[index],
+                    id: snapshot.ids[index],
                     name: calendarName(calendar),
                     description: calendarDescription(calendar),
+                    managedPlanId: snapshot.managedPlanIds[index],
                     writable: calendarIsWritable(calendar),
                 });
             }
@@ -529,7 +645,16 @@ internal static class AppleCalendarAutomationScript
             };
         }
 
+        function ensureExportHasEvents(request) {
+            if (Array.isArray(request.events) === false
+                || request.events.length === 0) {
+                throw new Error(
+                    "apple_calendar_export_requires_events");
+            }
+        }
+
         function createCalendar(calendarApplication, request) {
+            ensureExportHasEvents(request);
             const calendars = calendarApplication.calendars();
             if (findCalendarsByName(
                     calendars,
@@ -548,7 +673,7 @@ internal static class AppleCalendarAutomationScript
             try {
                 createdCalendarId = managedCalendarId(
                     calendar,
-                    request.ownershipMarkerPrefix);
+                    request);
                 if (createdCalendarId === null
                     || canonicalName(calendarName(calendar))
                         !== request.normalizedDestinationName) {
@@ -613,6 +738,15 @@ internal static class AppleCalendarAutomationScript
                     "apple_calendar_creation_canary_cleanup_failed");
             }
 
+            if (publishCalendarDescriptionAndConfirm(
+                    calendarApplication,
+                    createdCalendarId,
+                    request,
+                    expectedCreatedEventUrls) === false) {
+                throw new Error(
+                    "apple_calendar_creation_description_commit_failed");
+            }
+
             return {
                 status: "ok",
                 calendarId: createdCalendarId,
@@ -623,11 +757,12 @@ internal static class AppleCalendarAutomationScript
         }
 
         function replaceCalendar(calendarApplication, request) {
+            ensureExportHasEvents(request);
             const calendars = calendarApplication.calendars();
             const target = findManagedCalendarById(
                 calendars,
                 request.existingCalendarId,
-                request.ownershipMarkerPrefix);
+                request);
             if (replacementTargetIsValid(
                     calendars,
                     target,
@@ -656,7 +791,7 @@ internal static class AppleCalendarAutomationScript
                 calendarApplication,
                 operationProof.calendar,
                 request.events,
-                request.eventOwnershipMarkerPrefix);
+                request);
             operationProof = findOperationEventProof(
                 calendarApplication,
                 operationUrl,
@@ -746,6 +881,15 @@ internal static class AppleCalendarAutomationScript
                     expectedReplacementUrls) === false) {
                 throw new Error(
                     "apple_calendar_replacement_canary_cleanup_failed");
+            }
+
+            if (publishCalendarDescriptionAndConfirm(
+                    calendarApplication,
+                    request.existingCalendarId,
+                    request,
+                    expectedReplacementUrls) === false) {
+                throw new Error(
+                    "apple_calendar_replacement_description_commit_failed");
             }
 
             return {

@@ -83,6 +83,8 @@ public sealed class GoogleCalendarEventResourceTests
                 new GoogleCalendarExportPlan(
                     PlanId.CreateNew(),
                     new PlanName("2026-2학기 시간표"),
+                    new InstitutionName("한동대학교"),
+                    AcademicTerm.Parse("2026-2"),
                     new CalendarTimeZoneId("Asia/Seoul"),
                     new GoogleCalendarExportEvent[] { first, second });
             });
@@ -99,27 +101,31 @@ public sealed class GoogleCalendarEventResourceTests
                 new ScheduleTime(12, 15)),
             new EDay[] { EDay.Thursday, EDay.Monday });
         AcademicTermCalendarMetadata metadata = new AcademicTermCalendarMetadata(
-            AcademicTerm.Parse("2026-2"),
+            AcademicTerm.Parse("2027-1"),
             new AcademicTermDateRange(
-                new DateOnly(2026, 8, 31),
-                new DateOnly(2026, 12, 20)),
+                new DateOnly(2027, 3, 1),
+                new DateOnly(2027, 6, 20)),
             new CalendarTimeZoneId("Asia/Seoul"));
         CalendarExportDocument document = new CalendarExportDocument(
             PlanId.CreateNew(),
-            new PlanName("2026-2학기 시간표"),
+            new PlanName("졸업 준비"),
+            new InstitutionName("테스트대학교"),
             metadata,
             new RecurringCalendarEvent[] { recurringEvent });
 
         GoogleCalendarExportPlan plan = GoogleCalendarExportPlan.CreateFromDocument(document);
 
         Assert.Equal(
+            "테스트대학교 2027-1 시간표입니다.",
+            plan.CalendarDescription.Value);
+        Assert.Equal(
             TimeSpan.FromHours(9.0),
             plan.TimeZoneId.FindUtcOffset(
                 plan.Events[0].FirstOccurrenceDate,
                 plan.Events[0].StartTime).Value);
         Assert.Equal(new EDay[] { EDay.Monday, EDay.Thursday }, plan.Events[0].Days);
-        Assert.Equal(new DateOnly(2026, 8, 31), plan.Events[0].FirstOccurrenceDate);
-        Assert.Equal(new DateOnly(2026, 12, 20), plan.Events[0].LastOccurrenceDate);
+        Assert.Equal(new DateOnly(2027, 3, 1), plan.Events[0].FirstOccurrenceDate);
+        Assert.Equal(new DateOnly(2027, 6, 20), plan.Events[0].LastOccurrenceDate);
     }
 
     private static GoogleCalendarExportEvent createEvent(string sourceId)

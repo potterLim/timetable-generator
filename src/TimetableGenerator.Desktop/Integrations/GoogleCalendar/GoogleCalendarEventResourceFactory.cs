@@ -114,31 +114,7 @@ internal static class GoogleCalendarEventResourceFactory
                 nameof(planId));
         }
 
-        JsonElement extendedProperties;
-        JsonElement privateProperties;
-        if (eventResource.ValueKind != JsonValueKind.Object
-            || eventResource.TryGetProperty(
-                "extendedProperties",
-                out extendedProperties) == false
-            || extendedProperties.ValueKind != JsonValueKind.Object
-            || extendedProperties.TryGetProperty(
-                "private",
-                out privateProperties) == false
-            || privateProperties.ValueKind != JsonValueKind.Object)
-        {
-            return false;
-        }
-
-        string? managedValueOrNull = getStringOrNull(privateProperties, MANAGED_PROPERTY_NAME);
-        string? planIdValueOrNull = getStringOrNull(privateProperties, PLAN_ID_PROPERTY_NAME);
-        return string.Equals(
-            managedValueOrNull,
-            "true",
-            StringComparison.Ordinal)
-            && string.Equals(
-                planIdValueOrNull,
-                planId.Value.ToString("N"),
-                StringComparison.Ordinal);
+        return tryGetManagedPlanIdOrNull(eventResource) == planId;
     }
 
     internal static bool isManaged(JsonElement eventResource)
@@ -162,6 +138,42 @@ internal static class GoogleCalendarEventResourceFactory
             getStringOrNull(privateProperties, MANAGED_PROPERTY_NAME),
             "true",
             StringComparison.Ordinal);
+    }
+
+    internal static PlanId? tryGetManagedPlanIdOrNull(
+        JsonElement eventResource)
+    {
+        JsonElement extendedProperties;
+        JsonElement privateProperties;
+        if (eventResource.ValueKind != JsonValueKind.Object
+            || eventResource.TryGetProperty(
+                "extendedProperties",
+                out extendedProperties) == false
+            || extendedProperties.ValueKind != JsonValueKind.Object
+            || extendedProperties.TryGetProperty(
+                "private",
+                out privateProperties) == false
+            || privateProperties.ValueKind != JsonValueKind.Object
+            || string.Equals(
+                getStringOrNull(
+                    privateProperties,
+                    MANAGED_PROPERTY_NAME),
+                "true",
+                StringComparison.Ordinal) == false)
+        {
+            return null;
+        }
+
+        Guid planIdValue;
+        return Guid.TryParseExact(
+                getStringOrNull(
+                    privateProperties,
+                    PLAN_ID_PROPERTY_NAME),
+                "N",
+                out planIdValue)
+            && planIdValue != Guid.Empty
+                ? new PlanId(planIdValue)
+                : null;
     }
 
     private static JsonObject createDateTimeResource(

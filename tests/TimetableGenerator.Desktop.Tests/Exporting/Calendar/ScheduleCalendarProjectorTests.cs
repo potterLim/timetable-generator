@@ -16,6 +16,8 @@ namespace TimetableGenerator.Desktop.Tests.Exporting.Calendar;
 
 public sealed class ScheduleCalendarProjectorTests
 {
+    private static readonly InstitutionName INSTITUTION_NAME = new InstitutionName("한동대학교");
+
     private static readonly ScheduleInstructorSummary CONFIRMED_INSTRUCTOR = new ScheduleInstructorSummary(
         InstructorAssignmentMetadata.CreateConfirmed(
             new InstructorDisplayText("김민수"),
@@ -47,6 +49,7 @@ public sealed class ScheduleCalendarProjectorTests
         CalendarExportDocument document = ScheduleCalendarProjector.ProjectForGoogleCalendar(
             planId,
             new PlanName("2026-2학기 시간표"),
+            INSTITUTION_NAME,
             displayedSchedule,
             getAcademicCalendar());
 
@@ -81,9 +84,9 @@ public sealed class ScheduleCalendarProjectorTests
         PlanName planName = new PlanName("시간표");
         AcademicTermCalendarMetadata academicCalendar = getAcademicCalendar();
 
-        CalendarExportDocument appleDocument = ScheduleCalendarProjector.ProjectForAppleCalendar(planId, planName, displayedSchedule, academicCalendar);
+        CalendarExportDocument appleDocument = ScheduleCalendarProjector.ProjectForAppleCalendar(planId, planName, INSTITUTION_NAME, displayedSchedule, academicCalendar);
         IReadOnlyList<AppleCalendarAutomationEvent> appleEvents = AppleCalendarEventOccurrenceProjector.Project(appleDocument);
-        CalendarExportDocument googleDocument = ScheduleCalendarProjector.ProjectForGoogleCalendar(planId, planName, displayedSchedule, academicCalendar);
+        CalendarExportDocument googleDocument = ScheduleCalendarProjector.ProjectForGoogleCalendar(planId, planName, INSTITUTION_NAME, displayedSchedule, academicCalendar);
         GoogleCalendarExportPlan googleExportPlan = GoogleCalendarExportPlan.CreateFromDocument(googleDocument);
 
         Assert.NotEmpty(appleEvents);
@@ -117,6 +120,7 @@ public sealed class ScheduleCalendarProjectorTests
         CalendarExportDocument document = ScheduleCalendarProjector.ProjectForGoogleCalendar(
             PlanId.CreateNew(),
             new PlanName("시간표"),
+            INSTITUTION_NAME,
             displayedSchedule,
             getAcademicCalendar());
 
@@ -166,6 +170,7 @@ public sealed class ScheduleCalendarProjectorTests
         CalendarExportDocument document = ScheduleCalendarProjector.ProjectForGoogleCalendar(
             PlanId.CreateNew(),
             new PlanName("시간표"),
+            INSTITUTION_NAME,
             displayedSchedule,
             getAcademicCalendar());
 
@@ -198,6 +203,7 @@ public sealed class ScheduleCalendarProjectorTests
         CalendarExportDocument document = ScheduleCalendarProjector.ProjectForGoogleCalendar(
             PlanId.CreateNew(),
             new PlanName("연구 일정"),
+            INSTITUTION_NAME,
             displayedSchedule,
             getAcademicCalendar());
 
@@ -228,12 +234,14 @@ public sealed class ScheduleCalendarProjectorTests
         CalendarExportDocument firstDocument = ScheduleCalendarProjector.ProjectForGoogleCalendar(
             planId,
             new PlanName("이름 변경 전"),
+            INSTITUTION_NAME,
             new ScheduleRecommendation(
                 new ScheduleEntry[] { mondayEntry, thursdayEntry }),
             getAcademicCalendar());
         CalendarExportDocument secondDocument = ScheduleCalendarProjector.ProjectForGoogleCalendar(
             planId,
             new PlanName("이름 변경 후"),
+            INSTITUTION_NAME,
             new ScheduleRecommendation(
                 new ScheduleEntry[] { thursdayEntry, mondayEntry }),
             getAcademicCalendar());
@@ -252,6 +260,7 @@ public sealed class ScheduleCalendarProjectorTests
             ScheduleCalendarProjector.ProjectForGoogleCalendar(
                 planId,
                 new PlanName("시간표"),
+                INSTITUTION_NAME,
                 new ScheduleRecommendation(
                     new ScheduleEntry[]
                     {
@@ -266,6 +275,7 @@ public sealed class ScheduleCalendarProjectorTests
             ScheduleCalendarProjector.ProjectForGoogleCalendar(
                 planId,
                 new PlanName("시간표"),
+                INSTITUTION_NAME,
                 new ScheduleRecommendation(
                     new ScheduleEntry[]
                     {
@@ -299,6 +309,7 @@ public sealed class ScheduleCalendarProjectorTests
             () => ScheduleCalendarProjector.ProjectForGoogleCalendar(
                 PlanId.CreateNew(),
                 new PlanName("시간표"),
+                INSTITUTION_NAME,
                 displayedSchedule,
                 getAcademicCalendar()));
     }

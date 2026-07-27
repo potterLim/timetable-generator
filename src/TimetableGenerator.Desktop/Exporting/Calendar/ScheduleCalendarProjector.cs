@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 
 using TimetableGenerator.Desktop.Presentation.Models;
+using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Planning;
 
 namespace TimetableGenerator.Desktop.Exporting.Calendar;
@@ -19,12 +20,14 @@ internal static class ScheduleCalendarProjector
     public static CalendarExportDocument ProjectForGoogleCalendar(
         PlanId planId,
         PlanName planName,
+        InstitutionName institutionName,
         ScheduleRecommendation displayedSchedule,
         AcademicTermCalendarMetadata academicCalendar)
     {
         return project(
             planId,
             planName,
+            institutionName,
             displayedSchedule,
             academicCalendar,
             ECourseSummaryStyle.NameOnly);
@@ -33,12 +36,14 @@ internal static class ScheduleCalendarProjector
     public static CalendarExportDocument ProjectForAppleCalendar(
         PlanId planId,
         PlanName planName,
+        InstitutionName institutionName,
         ScheduleRecommendation displayedSchedule,
         AcademicTermCalendarMetadata academicCalendar)
     {
         return project(
             planId,
             planName,
+            institutionName,
             displayedSchedule,
             academicCalendar,
             ECourseSummaryStyle.NameWithSection);
@@ -47,6 +52,7 @@ internal static class ScheduleCalendarProjector
     private static CalendarExportDocument project(
         PlanId planId,
         PlanName planName,
+        InstitutionName institutionName,
         ScheduleRecommendation displayedSchedule,
         AcademicTermCalendarMetadata academicCalendar,
         ECourseSummaryStyle courseSummaryStyle)
@@ -61,6 +67,11 @@ internal static class ScheduleCalendarProjector
         if (planName == null)
         {
             throw new ArgumentNullException(nameof(planName));
+        }
+
+        if (institutionName == null)
+        {
+            throw new ArgumentNullException(nameof(institutionName));
         }
 
         if (displayedSchedule == null)
@@ -107,7 +118,12 @@ internal static class ScheduleCalendarProjector
             events.Add(group.CreateEvent(planId));
         }
 
-        return new CalendarExportDocument(planId, planName, academicCalendar, events);
+        return new CalendarExportDocument(
+            planId,
+            planName,
+            institutionName,
+            academicCalendar,
+            events);
     }
 
     private static CalendarEventSourceIdentity createSourceIdentity(ScheduleEntry entry)

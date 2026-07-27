@@ -144,9 +144,20 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
                         accessToken,
                         calendarId,
                         destination.Plan,
+                        destination.PendingManagedPlanId,
                         linkedCancellationSource.Token).ConfigureAwait(false);
                 }
-                GoogleCalendarReconciliationResult reconciliation = await mApiClient.ReconcileEventsAsync(accessToken, calendarId, destination.Plan, linkedCancellationSource.Token).ConfigureAwait(false);
+                GoogleCalendarReconciliationResult reconciliation = await mApiClient.ReconcileEventsAsync(
+                    accessToken,
+                    calendarId,
+                    destination.Plan,
+                    destination.ReplacedPlanIdOrNull,
+                    linkedCancellationSource.Token).ConfigureAwait(false);
+                await mApiClient.FinalizePlanCalendarAsync(
+                    accessToken,
+                    calendarId,
+                    destination.Plan,
+                    linkedCancellationSource.Token).ConfigureAwait(false);
                 return GoogleCalendarExportResult.Complete(
                     calendarId,
                     destination.Plan.CalendarName,
@@ -242,7 +253,11 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
         IReadOnlyList<GoogleCalendarDescriptor> calendars = await mApiClient.ListCalendarsAsync(accessToken, cancellationToken).ConfigureAwait(false);
         for (int attempt = 0; attempt < MAXIMUM_DESTINATION_SELECTION_ATTEMPTS; ++attempt)
         {
-            IReadOnlyList<GoogleCalendarDescriptor> matches = findNameMatches(plan.CalendarName, calendars);
+            IReadOnlyList<GoogleCalendarDescriptor> matches = await findNameMatchesWithResolvedOwnershipAsync(
+                accessToken,
+                plan.CalendarName,
+                calendars,
+                cancellationToken).ConfigureAwait(false);
             if (matches.Count == 0)
             {
                 if (attempt > 0)
@@ -251,7 +266,7 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
                         "The original Google calendar name conflict changed before confirmation.");
                 }
 
-                return new GoogleCalendarDestination(plan, null);
+                return GoogleCalendarDestination.CreateNew(plan);
             }
 
             GoogleCalendarDescriptor? replaceableCalendarOrNull = findSoleReplaceableCalendarOrNull(matches);
@@ -277,14 +292,19 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
                         nextAvailableName,
                         getExistingNames(currentCalendars)) == false)
                 {
-                    return new GoogleCalendarDestination(plan.WithCalendarName(nextAvailableName), null);
+                    return GoogleCalendarDestination.CreateNew(plan.WithCalendarName(nextAvailableName));
                 }
 
                 calendars = currentCalendars;
                 continue;
             }
 
-            GoogleCalendarDescriptor? currentCalendarOrNull = findCalendarByIdOrNull(replaceableCalendarOrNull!.CalendarId, currentCalendars);
+            IReadOnlyList<GoogleCalendarDescriptor> currentMatches = await findNameMatchesWithResolvedOwnershipAsync(
+                accessToken,
+                plan.CalendarName,
+                currentCalendars,
+                cancellationToken).ConfigureAwait(false);
+            GoogleCalendarDescriptor? currentCalendarOrNull = findCalendarByIdOrNull(replaceableCalendarOrNull!.CalendarId, currentMatches);
             if (currentCalendarOrNull == null
                 || isSafeReplacementTarget(
                     currentCalendarOrNull,
@@ -294,10 +314,47 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
                 throw new InvalidOperationException("The selected Google calendar is no longer safe to replace.");
             }
 
-            return new GoogleCalendarDestination(plan, replaceableCalendarOrNull.CalendarId);
+            return GoogleCalendarDestination.Replace(
+                plan,
+                replaceableCalendarOrNull.CalendarId,
+                replaceableCalendarOrNull.ManagedPlanIdOrNull!.Value);
         }
 
         throw new InvalidOperationException("The Google calendar destination changed too many times.");
+    }
+
+    private async Task<IReadOnlyList<GoogleCalendarDescriptor>> findNameMatchesWithResolvedOwnershipAsync(
+        GoogleAccessToken accessToken,
+        PlanName requestedName,
+        IReadOnlyList<GoogleCalendarDescriptor> calendars,
+        CancellationToken cancellationToken)
+    {
+        IReadOnlyList<GoogleCalendarDescriptor> matches = findNameMatches(
+            requestedName,
+            calendars);
+        List<GoogleCalendarDescriptor> resolvedMatches =
+            new List<GoogleCalendarDescriptor>(matches.Count);
+        foreach (GoogleCalendarDescriptor calendar in matches)
+        {
+            if (calendar.IsApplicationManaged
+                || calendar.IsPrimary
+                || calendar.CanWrite == false)
+            {
+                resolvedMatches.Add(calendar);
+                continue;
+            }
+
+            PlanId? managedPlanIdOrNull = await mApiClient.FindManagedPlanIdAsync(
+                accessToken,
+                calendar.CalendarId,
+                cancellationToken).ConfigureAwait(false);
+            resolvedMatches.Add(
+                managedPlanIdOrNull.HasValue
+                    ? calendar.WithManagedPlanId(managedPlanIdOrNull.Value)
+                    : calendar);
+        }
+
+        return resolvedMatches.AsReadOnly();
     }
 
     private static GoogleCalendarDescriptor? findSoleReplaceableCalendarOrNull(
@@ -495,7 +552,43 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
         }
     }
 
-    private sealed record GoogleCalendarDestination(
-        GoogleCalendarExportPlan Plan,
-        GoogleCalendarId? ExistingCalendarIdOrNull);
+    private sealed class GoogleCalendarDestination
+    {
+        public GoogleCalendarExportPlan Plan { get; }
+
+        public GoogleCalendarId? ExistingCalendarIdOrNull { get; }
+
+        public PlanId? ReplacedPlanIdOrNull { get; }
+
+        public PlanId PendingManagedPlanId
+        {
+            get
+            {
+                return ReplacedPlanIdOrNull ?? Plan.PlanId;
+            }
+        }
+
+        private GoogleCalendarDestination(
+            GoogleCalendarExportPlan plan,
+            GoogleCalendarId? existingCalendarIdOrNull,
+            PlanId? replacedPlanIdOrNull)
+        {
+            Plan = plan;
+            ExistingCalendarIdOrNull = existingCalendarIdOrNull;
+            ReplacedPlanIdOrNull = replacedPlanIdOrNull;
+        }
+
+        public static GoogleCalendarDestination CreateNew(GoogleCalendarExportPlan plan)
+        {
+            return new GoogleCalendarDestination(plan, null, null);
+        }
+
+        public static GoogleCalendarDestination Replace(
+            GoogleCalendarExportPlan plan,
+            GoogleCalendarId calendarId,
+            PlanId replacedPlanId)
+        {
+            return new GoogleCalendarDestination(plan, calendarId, replacedPlanId);
+        }
+    }
 }

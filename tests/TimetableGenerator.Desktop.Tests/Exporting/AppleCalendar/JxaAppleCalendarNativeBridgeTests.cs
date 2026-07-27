@@ -18,7 +18,7 @@ namespace TimetableGenerator.Desktop.Tests.Exporting.AppleCalendar;
 public sealed class JxaAppleCalendarNativeBridgeTests
 {
     [Fact]
-    public async Task CalendarSnapshotUsesDescriptionMarkerAndWritableStateAsync()
+    public async Task CalendarSnapshotUsesManagedPlanEvidenceAndWritableStateAsync()
     {
         RecordingAppleCalendarAutomationCommand command =
             new RecordingAppleCalendarAutomationCommand(
@@ -30,6 +30,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                       "id": "managed:71f3be04-d4c6-41d4-a269-792321e71423:2026-2%ED%95%99%EA%B8%B0%20%EC%8B%9C%EA%B0%84%ED%91%9C",
                       "name": "2026-2학기 시간표",
                       "description": "timetable-generator://managed-calendar/v1/71f3be04-d4c6-41d4-a269-792321e71423",
+                      "managedPlanId": "71f3be04-d4c6-41d4-a269-792321e71423",
                       "writable": true
                     },
                     {
@@ -43,13 +44,21 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                 """);
         JxaAppleCalendarNativeBridge bridge = new JxaAppleCalendarNativeBridge(command);
 
-        IReadOnlyList<AppleCalendarDescriptor> calendars = await bridge.GetCalendarsAsync(TestContext.Current.CancellationToken);
+        IReadOnlyList<AppleCalendarDescriptor> calendars =
+            await bridge.GetCalendarsAsync(
+                new PlanName("2026-2학기 시간표"),
+                TestContext.Current.CancellationToken);
 
         Assert.Equal(2, calendars.Count);
         Assert.Equal(
             "managed:71f3be04-d4c6-41d4-a269-792321e71423:2026-2%ED%95%99%EA%B8%B0%20%EC%8B%9C%EA%B0%84%ED%91%9C",
             calendars[0].CalendarId.Value);
         Assert.Equal(EAppleCalendarOwnership.ApplicationManaged, calendars[0].Ownership);
+        Assert.Equal(
+            new PlanId(
+                Guid.Parse(
+                    "71f3be04-d4c6-41d4-a269-792321e71423")),
+            calendars[0].ManagedPlanIdOrNull);
         Assert.True(calendars[0].CanReplace);
         Assert.Equal(EAppleCalendarOwnership.External, calendars[1].Ownership);
         Assert.Equal(EAppleCalendarContentAccess.ReadOnly, calendars[1].ContentAccess);
@@ -61,6 +70,17 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                 AppleCalendarOwnershipMarker.PREFIX,
                 request.RootElement
                     .GetProperty("ownershipMarkerPrefix")
+                    .GetString());
+            Assert.Equal(
+                AppleCalendarEventOwnershipMarker.LEGACY_PREFIX,
+                request.RootElement
+                    .GetProperty(
+                        "legacyEventOwnershipMarkerPrefix")
+                    .GetString());
+            Assert.Equal(
+                "2026-2학기 시간표".Normalize().ToUpperInvariant(),
+                request.RootElement
+                    .GetProperty("normalizedDestinationName")
                     .GetString());
         }
     }
@@ -79,7 +99,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
             script,
             StringComparison.Ordinal);
         Assert.Contains(
-            "function calendarSnapshotId(calendar, index, markerPrefix)",
+            "function calendarSnapshotId(calendar, index, managedPlanId)",
             script,
             StringComparison.Ordinal);
         Assert.Contains(
@@ -107,7 +127,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
             script,
             StringComparison.Ordinal);
         Assert.Contains(
-            "function createCalendarSnapshotIds(calendars, markerPrefix)",
+            "function createCalendarSnapshot(calendars, request)",
             script,
             StringComparison.Ordinal);
         Assert.Contains(
@@ -160,6 +180,12 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                 "timetable-generator://managed-calendar/v1/71f3be04-d4c6-41d4-a269-792321e71423",
                 root.GetProperty("ownershipDescription").GetString());
             Assert.Equal(
+                "한동대학교 2026-2 시간표입니다.",
+                root.GetProperty("calendarDescription").GetString());
+            Assert.Equal(
+                "71f3be04-d4c6-41d4-a269-792321e71423",
+                root.GetProperty("planId").GetString());
+            Assert.Equal(
                 AppleCalendarEventOwnershipMarker.PREFIX,
                 root.GetProperty(
                     "eventOwnershipMarkerPrefix").GetString());
@@ -172,14 +198,51 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                 .GetProperty("ownershipUrl")
                 .GetString();
             Assert.True(
-                AppleCalendarEventOwnershipMarker.IsApplicationManaged(
-                    firstOwnershipUrlOrNull));
+                AppleCalendarEventOwnershipMarker.IsManagedByPlan(
+                    firstOwnershipUrlOrNull,
+                    document.PlanId));
             Assert.Equal("2026-03-01T10:00:00-05:00", events.Current.GetProperty("startsAt").GetString());
             Assert.True(events.MoveNext());
             Assert.Equal("2026-03-08T10:00:00-04:00", events.Current.GetProperty("startsAt").GetString());
             Assert.True(events.MoveNext());
             Assert.Equal("2026-03-15T10:00:00-04:00", events.Current.GetProperty("startsAt").GetString());
             Assert.False(events.MoveNext());
+        }
+    }
+
+    [Fact]
+    public async Task CalendarDescriptionUsesInstitutionAndTermMetadataInsteadOfPlanNameAsync()
+    {
+        RecordingAppleCalendarAutomationCommand command = new RecordingAppleCalendarAutomationCommand(
+            """
+            {
+              "status": "ok",
+              "calendarId": "managed:71f3be04-d4c6-41d4-a269-792321e71423:2026-2%ED%95%99%EA%B8%B0%20%EC%8B%9C%EA%B0%84%ED%91%9C",
+              "calendarName": "2026-2학기 시간표",
+              "createdEventCount": 3,
+              "deletedEventCount": 0
+            }
+            """);
+        JxaAppleCalendarNativeBridge bridge = new JxaAppleCalendarNativeBridge(command);
+        AcademicTermCalendarMetadata academicCalendar = new AcademicTermCalendarMetadata(
+            AcademicTerm.Parse("2031-1"),
+            new AcademicTermDateRange(
+                new DateOnly(2031, 3, 2),
+                new DateOnly(2031, 3, 16)),
+            new CalendarTimeZoneId("Asia/Seoul"));
+        CalendarExportDocument document = createDocument(new InstitutionName("테스트대학교"), academicCalendar);
+
+        await bridge.ApplyExportAsync(
+            AppleCalendarExportMutation.CreateNew(document, document.CalendarName),
+            TestContext.Current.CancellationToken);
+
+        using (JsonDocument request = JsonDocument.Parse(Assert.Single(command.Invocations).RequestJson))
+        {
+            Assert.Equal(
+                "테스트대학교 2031-1 시간표입니다.",
+                request.RootElement
+                    .GetProperty("calendarDescription")
+                    .GetString());
         }
     }
 
@@ -191,7 +254,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                 """
                 {
                   "status": "ok",
-                  "calendarId": "managed:71f3be04-d4c6-41d4-a269-792321e71423:2026-2%ED%95%99%EA%B8%B0%20%EC%8B%9C%EA%B0%84%ED%91%9C",
+                  "calendarId": "managed:a9b14096-c962-4f4d-b026-822e5da2a619:2026-2%ED%95%99%EA%B8%B0%20%EC%8B%9C%EA%B0%84%ED%91%9C",
                   "calendarName": "2026-2학기 시간표",
                   "createdEventCount": 3,
                   "deletedEventCount": 12
@@ -199,14 +262,18 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                 """);
         JxaAppleCalendarNativeBridge bridge = new JxaAppleCalendarNativeBridge(command);
         CalendarExportDocument document = createDocumentAcrossDstChange();
+        PlanId existingCalendarOwnerPlanId = new PlanId(
+            Guid.Parse(
+                "a9b14096-c962-4f4d-b026-822e5da2a619"));
         AppleCalendarId existingCalendarId = new AppleCalendarId(
-            "managed:71f3be04-d4c6-41d4-a269-792321e71423:2026-2%ED%95%99%EA%B8%B0%20%EC%8B%9C%EA%B0%84%ED%91%9C");
+            "managed:a9b14096-c962-4f4d-b026-822e5da2a619:2026-2%ED%95%99%EA%B8%B0%20%EC%8B%9C%EA%B0%84%ED%91%9C");
 
         AppleCalendarNativeExportResult result = await bridge.ApplyExportAsync(
             AppleCalendarExportMutation.ReplaceExisting(
                 document,
                 document.CalendarName,
-                existingCalendarId),
+                existingCalendarId,
+                existingCalendarOwnerPlanId),
             TestContext.Current.CancellationToken);
 
         Assert.Equal(existingCalendarId, result.CalendarId);
@@ -231,6 +298,218 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                 request.RootElement
                     .GetProperty("ownershipMarkerPrefix")
                     .GetString());
+            Assert.Equal(
+                existingCalendarOwnerPlanId.Value.ToString("D"),
+                request.RootElement.GetProperty("planId").GetString());
+            Assert.Equal(
+                AppleCalendarOwnershipMarker.CreateForPlan(
+                    existingCalendarOwnerPlanId),
+                request.RootElement
+                    .GetProperty("ownershipDescription")
+                    .GetString());
+            foreach (JsonElement eventElement in request.RootElement
+                .GetProperty("events")
+                .EnumerateArray())
+            {
+                Assert.True(
+                    AppleCalendarEventOwnershipMarker.IsManagedByPlan(
+                        eventElement.GetProperty("ownershipUrl").GetString(),
+                        existingCalendarOwnerPlanId));
+                Assert.False(
+                    AppleCalendarEventOwnershipMarker.IsManagedByPlan(
+                        eventElement.GetProperty("ownershipUrl").GetString(),
+                        document.PlanId));
+            }
+        }
+    }
+
+    [Fact]
+    public void CalendarListingInspectsEventOwnershipOnlyForTheRequestedDestination()
+    {
+        string script = AppleCalendarAutomationScript.SOURCE;
+        int nameGuardIndex = script.IndexOf(
+            "if (canonicalName(calendarName(calendar))",
+            StringComparison.Ordinal);
+        int eventReadIndex = script.IndexOf(
+            "const events = calendar.events();",
+            nameGuardIndex,
+            StringComparison.Ordinal);
+
+        Assert.True(nameGuardIndex >= 0);
+        Assert.True(eventReadIndex > nameGuardIndex);
+        Assert.Contains(
+            "!== request.normalizedDestinationName",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "managedPlanId: snapshot.managedPlanIds[index]",
+            script,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "managedPlanId: calendarManagedPlanId(",
+            script,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task CalendarListingDoesNotReadEventsFromOtherDestinationsAsync()
+    {
+        if (OperatingSystem.IsMacOS() == false)
+        {
+            return;
+        }
+
+        const string HARNESS = """
+            const request = createMockRequest();
+            const unrelatedCalendar = {
+                name: function () {
+                    return "PERSONAL";
+                },
+                description: function () {
+                    return "Personal calendar";
+                },
+                writable: function () {
+                    return true;
+                },
+                events: function () {
+                    throw new Error("unrelated_calendar_events_read");
+                },
+            };
+            const managedCalendar = createMockCalendar(
+                "matching",
+                [createMockEvent(managedEventUrl("a"), null)]);
+            let matchingCalendarEventReadCount = 0;
+            const readMatchingCalendarEvents = managedCalendar.events;
+            managedCalendar.events = function () {
+                matchingCalendarEventReadCount += 1;
+                return readMatchingCalendarEvents();
+            };
+            const calendarApplication = {
+                calendars: function () {
+                    return [
+                        unrelatedCalendar,
+                        managedCalendar,
+                    ];
+                },
+            };
+            JSON.stringify({
+                response: listCalendars(
+                    calendarApplication,
+                    request),
+                matchingCalendarEventReadCount:
+                    matchingCalendarEventReadCount,
+            });
+            """;
+
+        using (JsonDocument result =
+            await executeAutomationSourceHarnessAsync(HARNESS))
+        {
+            JsonElement.ArrayEnumerator calendars = result.RootElement
+                .GetProperty("response")
+                .GetProperty("calendars")
+                .EnumerateArray();
+            Assert.True(calendars.MoveNext());
+            Assert.Equal(
+                "external:0",
+                calendars.Current.GetProperty("id").GetString());
+            Assert.Equal(
+                JsonValueKind.Null,
+                calendars.Current
+                    .GetProperty("managedPlanId")
+                    .ValueKind);
+            Assert.True(calendars.MoveNext());
+            Assert.Equal(
+                "managed:71f3be04-d4c6-41d4-a269-792321e71423:QA",
+                calendars.Current.GetProperty("id").GetString());
+            Assert.Equal(
+                "71f3be04-d4c6-41d4-a269-792321e71423",
+                calendars.Current
+                    .GetProperty("managedPlanId")
+                    .GetString());
+            Assert.False(calendars.MoveNext());
+            Assert.Equal(
+                1,
+                result.RootElement
+                    .GetProperty(
+                        "matchingCalendarEventReadCount")
+                    .GetInt32());
+        }
+    }
+
+    [Fact]
+    public async Task CalendarListingRejectsAmbiguousOrContradictoryOwnershipEvidenceAsync()
+    {
+        if (OperatingSystem.IsMacOS() == false)
+        {
+            return;
+        }
+
+        const string HARNESS = """
+            const request = createMockRequest();
+            const otherPlanId =
+                "a9b14096-c962-4f4d-b026-822e5da2a619";
+            function eventUrlForPlan(planId, character) {
+                return testEventMarkerPrefix
+                    + planId
+                    + "/"
+                    + character.repeat(64);
+            }
+
+            const mixedOwnershipCalendar = createMockCalendar(
+                "mixed",
+                [
+                    createMockEvent(managedEventUrl("a"), null),
+                    createMockEvent(
+                        eventUrlForPlan(otherPlanId, "b"),
+                        null),
+                ]);
+            mixedOwnershipCalendar.description =
+                request.calendarDescription;
+
+            const contradictoryLegacyCalendar = createMockCalendar(
+                "contradictory",
+                [
+                    createMockEvent(
+                        eventUrlForPlan(otherPlanId, "c"),
+                        null),
+                ]);
+
+            JSON.stringify(listCalendars(
+                {
+                    calendars: function () {
+                        return [
+                            mixedOwnershipCalendar,
+                            contradictoryLegacyCalendar,
+                        ];
+                    },
+                },
+                request));
+            """;
+
+        using (JsonDocument result = await executeAutomationSourceHarnessAsync(HARNESS))
+        {
+            JsonElement.ArrayEnumerator calendars = result.RootElement
+                .GetProperty("calendars")
+                .EnumerateArray();
+            Assert.True(calendars.MoveNext());
+            Assert.Equal(
+                "external:0",
+                calendars.Current.GetProperty("id").GetString());
+            Assert.Equal(
+                JsonValueKind.Null,
+                calendars.Current
+                    .GetProperty("managedPlanId")
+                    .ValueKind);
+            Assert.True(calendars.MoveNext());
+            Assert.Equal(
+                "external:1",
+                calendars.Current.GetProperty("id").GetString());
+            Assert.Equal(
+                JsonValueKind.Null,
+                calendars.Current
+                    .GetProperty("managedPlanId")
+                    .ValueKind);
+            Assert.False(calendars.MoveNext());
         }
     }
 
@@ -240,7 +519,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
         string script = AppleCalendarAutomationScript.SOURCE;
 
         Assert.Contains(
-            "function findManagedCalendarById(calendars, id, markerPrefix)",
+            "function findManagedCalendarById(calendars, id, request)",
             script,
             StringComparison.Ordinal);
         Assert.Contains("if (match !== null)", script, StringComparison.Ordinal);
@@ -250,7 +529,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
             StringComparison.Ordinal);
         Assert.Contains("matchingCalendars.length === 1", script, StringComparison.Ordinal);
         Assert.Contains(
-            "request.ownershipMarkerPrefix) === expectedCalendarId",
+            "request) === expectedCalendarId",
             script,
             StringComparison.Ordinal);
         Assert.Contains(
@@ -260,8 +539,14 @@ public sealed class JxaAppleCalendarNativeBridgeTests
         Assert.Contains("calendarApplication.calendars()", script, StringComparison.Ordinal);
         Assert.Contains("calendarId: request.existingCalendarId", script, StringComparison.Ordinal);
         Assert.Contains("calendarName: request.destinationName", script, StringComparison.Ordinal);
-        Assert.Contains("calendarIsManaged(", script, StringComparison.Ordinal);
-        Assert.Contains("request.ownershipMarkerPrefix", script, StringComparison.Ordinal);
+        Assert.Contains(
+            "calendarIsManagedByPlan(",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "request.legacyEventOwnershipMarkerPrefix",
+            script,
+            StringComparison.Ordinal);
         Assert.Contains(
             "const planIdPattern = /^[0-9a-f]{8}-",
             script,
@@ -291,11 +576,15 @@ public sealed class JxaAppleCalendarNativeBridgeTests
             script,
             StringComparison.Ordinal);
         Assert.Contains(
-            "url.indexOf(markerPrefix) !== 0",
+            "function currentEventManagedPlanId(url, markerPrefix)",
             script,
             StringComparison.Ordinal);
         Assert.Contains(
-            "/^[0-9a-f]{64}$/.test(markerPayload)",
+            "/^[0-9a-f]{64}$/.test(",
+            script,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "publishCalendarDescriptionAndConfirm(",
             script,
             StringComparison.Ordinal);
         Assert.DoesNotContain(
@@ -316,11 +605,20 @@ public sealed class JxaAppleCalendarNativeBridgeTests
             function replacementSuccessScenario() {
                 const request = createMockRequest();
                 const previousEvent = createMockEvent(
-                    managedEventUrl("a"),
+                    testLegacyEventMarkerPrefix
+                        + "a".repeat(64),
+                    null);
+                const userEventWithoutUrl = createMockEvent("", null);
+                const userEventWithExternalUrl = createMockEvent(
+                    "https://calendar.example/user-event",
                     null);
                 const target = createMockCalendar(
                     "target",
-                    [previousEvent]);
+                    [
+                        previousEvent,
+                        userEventWithoutUrl,
+                        userEventWithExternalUrl,
+                    ]);
                 const createdEvents = [];
                 const calendarApplication = {
                     calendars: function () {
@@ -352,6 +650,12 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                         createdEvents[1].deleted === false,
                     finalEventUrl:
                         eventUrl(createdEvents[1]),
+                    finalDescription:
+                        calendarDescription(target),
+                    userEventWithoutUrlPreserved:
+                        userEventWithoutUrl.deleted === false,
+                    userEventWithExternalUrlPreserved:
+                        userEventWithExternalUrl.deleted === false,
                 };
             }
 
@@ -500,7 +804,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                     createdEventMarkerPreserved:
                         eventUrlIsManaged(
                             eventUrl(createdEvents[1]),
-                            request.eventOwnershipMarkerPrefix),
+                            request),
                 };
             }
 
@@ -650,11 +954,27 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                     .GetProperty("finalEventPreserved")
                     .GetBoolean());
             Assert.Equal(
-                "timetable-generator://managed-event/v1/"
+                "timetable-generator://managed-event/v2/"
+                    + "71f3be04-d4c6-41d4-a269-792321e71423/"
                     + new string('c', 64),
                 success
                     .GetProperty("finalEventUrl")
                     .GetString());
+            Assert.Equal(
+                "한동대학교 2026-2 시간표입니다.",
+                success
+                    .GetProperty("finalDescription")
+                    .GetString());
+            Assert.True(
+                success
+                    .GetProperty(
+                        "userEventWithoutUrlPreserved")
+                    .GetBoolean());
+            Assert.True(
+                success
+                    .GetProperty(
+                        "userEventWithExternalUrlPreserved")
+                    .GetBoolean());
 
             JsonElement replacement = result.RootElement.GetProperty("replacement");
             Assert.True(
@@ -745,7 +1065,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
     }
 
     [Fact]
-    public async Task NativeCanaryProtectsEmptyCreateAndReplacementAsync()
+    public async Task NativeBoundaryRejectsEmptyCreateAndReplacementAsync()
     {
         if (OperatingSystem.IsMacOS() == false)
         {
@@ -753,7 +1073,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
         }
 
         const string HARNESS = """
-            function emptyReplacementSuccessScenario() {
+            function emptyReplacementScenario() {
                 const request = createMockRequest();
                 request.events = [];
                 const previousEvent = createMockEvent(
@@ -776,19 +1096,21 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                     },
                 };
 
-                const response = replaceCalendar(
-                    calendarApplication,
-                    request);
+                let operationFailed = false;
+                try {
+                    replaceCalendar(
+                        calendarApplication,
+                        request);
+                } catch (_) {
+                    operationFailed = true;
+                }
+
                 return {
-                    status: response.status,
-                    createdEventCount:
-                        response.createdEventCount,
-                    deletedEventCount:
-                        response.deletedEventCount,
-                    previousEventDeleted:
-                        previousEvent.deleted,
-                    canaryDeleted:
-                        createdEvents[0].deleted,
+                    operationFailed: operationFailed,
+                    previousEventPreserved:
+                        previousEvent.deleted === false,
+                    noEventsCreated:
+                        createdEvents.length === 0,
                 };
             }
 
@@ -833,20 +1155,21 @@ public sealed class JxaAppleCalendarNativeBridgeTests
 
                 return {
                     operationFailed: operationFailed,
-                    previousEventDeleted:
-                        previousEvent.deleted,
-                    canaryPreserved:
-                        createdEvents[0].deleted === false,
+                    previousEventPreserved:
+                        previousEvent.deleted === false,
+                    noEventsCreated:
+                        createdEvents.length === 0,
                 };
             }
 
-            function emptyCreationSuccessScenario() {
+            function emptyCreationScenario() {
                 const request = createMockRequest();
                 request.events = [];
                 const target = createMockCalendar(
                     "created",
                     []);
                 const createdEvents = [];
+                let calendarCreated = false;
                 let snapshotCount = 0;
                 const calendarApplication = {
                     calendars: function () {
@@ -858,6 +1181,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                     Calendar: function (_) {
                         return {
                             make: function () {
+                                calendarCreated = true;
                                 return target;
                             },
                         };
@@ -871,17 +1195,21 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                     },
                 };
 
-                const response = createCalendar(
-                    calendarApplication,
-                    request);
+                let operationFailed = false;
+                try {
+                    createCalendar(
+                        calendarApplication,
+                        request);
+                } catch (_) {
+                    operationFailed = true;
+                }
+
                 return {
-                    status: response.status,
-                    createdEventCount:
-                        response.createdEventCount,
-                    canaryDeleted:
-                        createdEvents[0].deleted,
-                    calendarPreserved:
-                        target.deleted === false,
+                    operationFailed: operationFailed,
+                    calendarNotCreated:
+                        calendarCreated === false,
+                    noEventsCreated:
+                        createdEvents.length === 0,
                 };
             }
 
@@ -947,11 +1275,11 @@ public sealed class JxaAppleCalendarNativeBridgeTests
             function run(_) {
                 return JSON.stringify({
                     replacement:
-                        emptyReplacementSuccessScenario(),
+                        emptyReplacementScenario(),
                     postCommit:
                         emptyReplacementPostCommitSwapScenario(),
                     creation:
-                        emptyCreationSuccessScenario(),
+                        emptyCreationScenario(),
                     duplicate:
                         duplicateSnapshotScenario(),
                     invalidCreation:
@@ -963,26 +1291,17 @@ public sealed class JxaAppleCalendarNativeBridgeTests
         using (JsonDocument result = await executeAutomationSourceHarnessAsync(HARNESS))
         {
             JsonElement replacement = result.RootElement.GetProperty("replacement");
-            Assert.Equal(
-                "ok",
-                replacement.GetProperty("status").GetString());
-            Assert.Equal(
-                0,
-                replacement
-                    .GetProperty("createdEventCount")
-                    .GetInt32());
-            Assert.Equal(
-                1,
-                replacement
-                    .GetProperty("deletedEventCount")
-                    .GetInt32());
             Assert.True(
                 replacement
-                    .GetProperty("previousEventDeleted")
+                    .GetProperty("operationFailed")
                     .GetBoolean());
             Assert.True(
                 replacement
-                    .GetProperty("canaryDeleted")
+                    .GetProperty("previousEventPreserved")
+                    .GetBoolean());
+            Assert.True(
+                replacement
+                    .GetProperty("noEventsCreated")
                     .GetBoolean());
 
             JsonElement postCommit = result.RootElement.GetProperty("postCommit");
@@ -992,29 +1311,25 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                     .GetBoolean());
             Assert.True(
                 postCommit
-                    .GetProperty("previousEventDeleted")
+                    .GetProperty("previousEventPreserved")
                     .GetBoolean());
             Assert.True(
                 postCommit
-                    .GetProperty("canaryPreserved")
+                    .GetProperty("noEventsCreated")
                     .GetBoolean());
 
             JsonElement creation = result.RootElement.GetProperty("creation");
-            Assert.Equal(
-                "ok",
-                creation.GetProperty("status").GetString());
-            Assert.Equal(
-                0,
-                creation
-                    .GetProperty("createdEventCount")
-                    .GetInt32());
             Assert.True(
                 creation
-                    .GetProperty("canaryDeleted")
+                    .GetProperty("operationFailed")
                     .GetBoolean());
             Assert.True(
                 creation
-                    .GetProperty("calendarPreserved")
+                    .GetProperty("calendarNotCreated")
+                    .GetBoolean());
+            Assert.True(
+                creation
+                    .GetProperty("noEventsCreated")
                     .GetBoolean());
 
             JsonElement duplicate = result.RootElement.GetProperty("duplicate");
@@ -1180,7 +1495,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                     newEventMarkerManaged:
                         eventUrlIsManaged(
                             eventUrl(createdEvents[1]),
-                            request.eventOwnershipMarkerPrefix),
+                            request),
                 });
             }
             """;
@@ -1266,7 +1581,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                     newEventMarkerPreserved:
                         eventUrlIsManaged(
                             eventUrl(createdEvents[1]),
-                            request.eventOwnershipMarkerPrefix),
+                            request),
                 });
             }
             """;
@@ -1307,6 +1622,8 @@ public sealed class JxaAppleCalendarNativeBridgeTests
     [InlineData("timetable-generator://managed-event/v1/")]
     [InlineData("timetable-generator://managed-event/v1/not-a-hash")]
     [InlineData("timetable-generator://managed-event/v1/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")]
+    [InlineData("timetable-generator://managed-event/v2/")]
+    [InlineData("timetable-generator://managed-event/v2/not-a-plan/not-a-hash")]
     public void EventOwnershipRejectsMissingOrNonCanonicalMarkers(
         string? markerOrNull)
     {
@@ -1318,9 +1635,14 @@ public sealed class JxaAppleCalendarNativeBridgeTests
     [Fact]
     public void EventOwnershipCreatesDeterministicCanonicalMarkers()
     {
+        PlanId planId = new PlanId(
+            Guid.Parse(
+                "71f3be04-d4c6-41d4-a269-792321e71423"));
         string first = AppleCalendarEventOwnershipMarker.Create(
+            planId,
             "personal:lab:2026-03-01");
         string second = AppleCalendarEventOwnershipMarker.Create(
+            planId,
             "personal:lab:2026-03-01");
 
         Assert.Equal(first, second);
@@ -1330,6 +1652,29 @@ public sealed class JxaAppleCalendarNativeBridgeTests
             StringComparison.Ordinal);
         Assert.True(
             AppleCalendarEventOwnershipMarker.IsApplicationManaged(first));
+        Assert.True(
+            AppleCalendarEventOwnershipMarker.IsManagedByPlan(
+                first,
+                planId));
+        Assert.Equal(
+            planId,
+            AppleCalendarEventOwnershipMarker.TryParsePlanIdOrNull(
+                first));
+    }
+
+    [Fact]
+    public void EventOwnershipRecognizesLegacyMarkersWithoutAssigningPlan()
+    {
+        string legacyMarker =
+            AppleCalendarEventOwnershipMarker.LEGACY_PREFIX
+            + new string('a', 64);
+
+        Assert.True(
+            AppleCalendarEventOwnershipMarker.IsApplicationManaged(
+                legacyMarker));
+        Assert.Null(
+            AppleCalendarEventOwnershipMarker.TryParsePlanIdOrNull(
+                legacyMarker));
     }
 
     [Theory]
@@ -1346,6 +1691,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
         AppleCalendarNativeBridgeException exception =
             await Assert.ThrowsAsync<AppleCalendarNativeBridgeException>(
                 () => bridge.GetCalendarsAsync(
+                    new PlanName("2026-2학기 시간표"),
                     TestContext.Current.CancellationToken));
 
         Assert.Equal((EAppleCalendarNativeFailureKind)expectedFailureKindValue, exception.FailureKind);
@@ -1365,6 +1711,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
         AppleCalendarNativeBridgeException exception =
             await Assert.ThrowsAsync<AppleCalendarNativeBridgeException>(
                 () => bridge.GetCalendarsAsync(
+                    new PlanName("2026-2학기 시간표"),
                     TestContext.Current.CancellationToken));
 
         Assert.Equal(EAppleCalendarNativeFailureKind.Unavailable, exception.FailureKind);
@@ -1430,8 +1777,10 @@ public sealed class JxaAppleCalendarNativeBridgeTests
     private const string AUTOMATION_FAULT_HARNESS_SUPPORT = """
         const testCalendarMarkerPrefix =
             "timetable-generator://managed-calendar/v1/";
-        const testEventMarkerPrefix =
+        const testLegacyEventMarkerPrefix =
             "timetable-generator://managed-event/v1/";
+        const testEventMarkerPrefix =
+            "timetable-generator://managed-event/v2/";
         const testPlanId =
             "71f3be04-d4c6-41d4-a269-792321e71423";
         const testCalendarId =
@@ -1439,6 +1788,8 @@ public sealed class JxaAppleCalendarNativeBridgeTests
 
         function managedEventUrl(character) {
             return testEventMarkerPrefix
+                + testPlanId
+                + "/"
                 + character.repeat(64);
         }
 
@@ -1473,6 +1824,8 @@ public sealed class JxaAppleCalendarNativeBridgeTests
         }
 
         function createMockCalendar(label, events) {
+            let currentDescription =
+                testCalendarMarkerPrefix + testPlanId;
             function eventCollection() {
                 return events;
             }
@@ -1487,8 +1840,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                     return "QA";
                 },
                 description: function () {
-                    return testCalendarMarkerPrefix
-                        + testPlanId;
+                    return currentDescription;
                 },
                 writable: function () {
                     return true;
@@ -1498,7 +1850,17 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                     calendar.deleted = true;
                 },
             };
-            return calendar;
+            return new Proxy(calendar, {
+                set: function (target, property, value) {
+                    if (property === "description") {
+                        currentDescription = String(value);
+                        return true;
+                    }
+
+                    target[property] = value;
+                    return true;
+                },
+            });
         }
 
         function createMockRequest() {
@@ -1509,8 +1871,13 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                     testCalendarMarkerPrefix,
                 ownershipDescription:
                     testCalendarMarkerPrefix + testPlanId,
+                calendarDescription:
+                    "한동대학교 2026-2 시간표입니다.",
+                legacyEventOwnershipMarkerPrefix:
+                    testLegacyEventMarkerPrefix,
                 eventOwnershipMarkerPrefix:
                     testEventMarkerPrefix,
+                planId: testPlanId,
                 existingCalendarId: testCalendarId,
                 events: [
                     {
@@ -1535,6 +1902,13 @@ public sealed class JxaAppleCalendarNativeBridgeTests
                     new DateOnly(2026, 3, 1),
                     new DateOnly(2026, 3, 15)),
                 new CalendarTimeZoneId("America/New_York"));
+        return createDocument(new InstitutionName("한동대학교"), academicCalendar);
+    }
+
+    private static CalendarExportDocument createDocument(
+        InstitutionName institutionName,
+        AcademicTermCalendarMetadata academicCalendar)
+    {
         RecurringCalendarEvent calendarEvent = new RecurringCalendarEvent(
             new CalendarEventUid("personal:lab"),
             new CalendarEventContent(
@@ -1549,6 +1923,7 @@ public sealed class JxaAppleCalendarNativeBridgeTests
             new PlanId(
                 Guid.Parse("71f3be04-d4c6-41d4-a269-792321e71423")),
             new PlanName("2026-2학기 시간표"),
+            institutionName,
             academicCalendar,
             new RecurringCalendarEvent[] { calendarEvent });
     }

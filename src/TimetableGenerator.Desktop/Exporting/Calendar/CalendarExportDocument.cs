@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 
+using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Planning;
 
 namespace TimetableGenerator.Desktop.Exporting.Calendar;
@@ -12,6 +13,8 @@ internal sealed class CalendarExportDocument
     public PlanId PlanId { get; }
 
     public PlanName CalendarName { get; }
+
+    public InstitutionName InstitutionName { get; }
 
     public AcademicTermCalendarMetadata AcademicCalendar { get; }
 
@@ -26,6 +29,7 @@ internal sealed class CalendarExportDocument
     public CalendarExportDocument(
         PlanId planId,
         PlanName calendarName,
+        InstitutionName institutionName,
         AcademicTermCalendarMetadata academicCalendar,
         IEnumerable<RecurringCalendarEvent> events)
     {
@@ -37,6 +41,11 @@ internal sealed class CalendarExportDocument
         if (calendarName == null)
         {
             throw new ArgumentNullException(nameof(calendarName));
+        }
+
+        if (institutionName == null)
+        {
+            throw new ArgumentNullException(nameof(institutionName));
         }
 
         if (academicCalendar == null)
@@ -51,6 +60,7 @@ internal sealed class CalendarExportDocument
 
         PlanId = planId;
         CalendarName = calendarName;
+        InstitutionName = institutionName;
         AcademicCalendar = academicCalendar;
         mEvents = copyAndValidateEvents(events);
     }

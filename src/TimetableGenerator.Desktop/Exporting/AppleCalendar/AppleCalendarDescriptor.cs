@@ -1,5 +1,7 @@
 using System;
 
+using TimetableGenerator.Domain.Planning;
+
 namespace TimetableGenerator.Desktop.Exporting.AppleCalendar;
 
 internal sealed class AppleCalendarDescriptor
@@ -8,7 +10,17 @@ internal sealed class AppleCalendarDescriptor
 
     public string DisplayName { get; }
 
-    public EAppleCalendarOwnership Ownership { get; }
+    public PlanId? ManagedPlanIdOrNull { get; }
+
+    public EAppleCalendarOwnership Ownership
+    {
+        get
+        {
+            return ManagedPlanIdOrNull == null
+                ? EAppleCalendarOwnership.External
+                : EAppleCalendarOwnership.ApplicationManaged;
+        }
+    }
 
     public EAppleCalendarContentAccess ContentAccess { get; }
 
@@ -16,7 +28,7 @@ internal sealed class AppleCalendarDescriptor
     {
         get
         {
-            return Ownership == EAppleCalendarOwnership.ApplicationManaged
+            return ManagedPlanIdOrNull != null
                 && ContentAccess == EAppleCalendarContentAccess.Writable;
         }
     }
@@ -24,7 +36,7 @@ internal sealed class AppleCalendarDescriptor
     public AppleCalendarDescriptor(
         AppleCalendarId id,
         string displayName,
-        EAppleCalendarOwnership ownership,
+        PlanId? managedPlanIdOrNull,
         EAppleCalendarContentAccess contentAccess)
     {
         if (id == null)
@@ -43,9 +55,17 @@ internal sealed class AppleCalendarDescriptor
             throw new ArgumentException("Apple calendars require a display name.", nameof(displayName));
         }
 
+        if (managedPlanIdOrNull.HasValue
+            && managedPlanIdOrNull.Value.IsValid == false)
+        {
+            throw new ArgumentException(
+                "Managed Apple calendars require a valid plan ID.",
+                nameof(managedPlanIdOrNull));
+        }
+
         CalendarId = id;
         DisplayName = normalizedDisplayName;
-        Ownership = ownership;
+        ManagedPlanIdOrNull = managedPlanIdOrNull;
         ContentAccess = contentAccess;
     }
 }

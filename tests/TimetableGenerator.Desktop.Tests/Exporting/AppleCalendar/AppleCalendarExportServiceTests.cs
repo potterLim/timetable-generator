@@ -33,6 +33,10 @@ public sealed class AppleCalendarExportServiceTests
         Assert.Equal(EAppleCalendarExportMutationKind.CreateNew, mutation.Kind);
         Assert.Equal("2026-2학기 시간표", mutation.DestinationName.Value);
         Assert.Null(mutation.ExistingCalendarIdOrNull);
+        Assert.Equal(
+            "2026-2학기 시간표",
+            Assert.Single(
+                nativeBridge.RequestedDestinationNames).Value);
     }
 
     [Fact]
@@ -59,6 +63,65 @@ public sealed class AppleCalendarExportServiceTests
         AppleCalendarExportMutation mutation = Assert.Single(nativeBridge.AppliedMutations);
         Assert.Equal(EAppleCalendarExportMutationKind.ReplaceExisting, mutation.Kind);
         Assert.Equal(existingCalendarId, mutation.ExistingCalendarIdOrNull);
+    }
+
+    [Fact]
+    public async Task CalendarManagedByDifferentPlanCanBeReplacedWithoutChangingItsOwnershipPlanAsync()
+    {
+        PlanId existingCalendarOwnerPlanId = PlanId.CreateNew();
+        AppleCalendarDescriptor existingCalendar = new AppleCalendarDescriptor(
+            new AppleCalendarId("different-plan-calendar"),
+            "2026-2학기 시간표",
+            existingCalendarOwnerPlanId,
+            EAppleCalendarContentAccess.Writable);
+        RecordingAppleCalendarNativeBridge nativeBridge =
+            new RecordingAppleCalendarNativeBridge(existingCalendar);
+        RecordingCalendarNameConflictResolver conflictResolver =
+            new RecordingCalendarNameConflictResolver(
+                ECalendarNameConflictResolution.ReplaceExisting);
+
+        AppleCalendarExportResult result =
+            await new AppleCalendarExportService(nativeBridge).ExportAsync(
+                createDocument(),
+                conflictResolver,
+                TestContext.Current.CancellationToken);
+
+        Assert.Equal(EAppleCalendarExportStatus.Success, result.Status);
+        Assert.True(
+            Assert.Single(conflictResolver.Conflicts).CanReplace);
+        AppleCalendarExportMutation mutation =
+            Assert.Single(nativeBridge.AppliedMutations);
+        Assert.Equal(
+            existingCalendarOwnerPlanId,
+            mutation.CalendarOwnershipPlanId);
+        Assert.NotEqual(
+            mutation.Document.PlanId,
+            mutation.CalendarOwnershipPlanId);
+    }
+
+    [Fact]
+    public async Task DocumentWithoutEventsIsRejectedBeforeCalendarAccessAsync()
+    {
+        RecordingAppleCalendarNativeBridge nativeBridge =
+            new RecordingAppleCalendarNativeBridge();
+        AppleCalendarExportService exporter =
+            new AppleCalendarExportService(nativeBridge);
+        RecordingCalendarNameConflictResolver conflictResolver =
+            new RecordingCalendarNameConflictResolver(
+                ECalendarNameConflictResolution.Cancel);
+
+        AppleCalendarExportResult result = await exporter.ExportAsync(
+            createDocument(Array.Empty<RecurringCalendarEvent>()),
+            conflictResolver,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(EAppleCalendarExportStatus.Failed, result.Status);
+        Assert.Equal(
+            "apple_calendar_export_requires_events",
+            result.DiagnosticCodeOrNull);
+        Assert.Equal(0, nativeBridge.CalendarSnapshotRequestCount);
+        Assert.Empty(nativeBridge.AppliedMutations);
+        Assert.Empty(conflictResolver.Conflicts);
     }
 
     [Fact]
@@ -135,6 +198,12 @@ public sealed class AppleCalendarExportServiceTests
         Assert.Equal(2, nativeBridge.AppliedMutations.Count);
         Assert.Equal("2026-2학기 시간표 (2)", nativeBridge.AppliedMutations[0].DestinationName.Value);
         Assert.Equal("2026-2학기 시간표 (3)", nativeBridge.AppliedMutations[1].DestinationName.Value);
+        Assert.Equal(2, nativeBridge.RequestedDestinationNames.Count);
+        Assert.All(
+            nativeBridge.RequestedDestinationNames,
+            requestedName => Assert.Equal(
+                "2026-2학기 시간표",
+                requestedName.Value));
     }
 
     [Fact]
@@ -354,13 +423,14 @@ public sealed class AppleCalendarExportServiceTests
         return new AppleCalendarDescriptor(
             calendarId,
             name,
-            ownership,
+            ownership == EAppleCalendarOwnership.ApplicationManaged
+                ? createDocument().PlanId
+                : null,
             contentAccess);
     }
 
     private static CalendarExportDocument createDocument()
     {
-        AcademicTermCalendarMetadata academicCalendar = AcademicTermCalendarMetadataRegistry.findByTerm(AcademicTerm.Parse("2026-2"), new CalendarTimeZoneId("Asia/Seoul"));
         RecurringCalendarEvent calendarEvent = new RecurringCalendarEvent(
             new CalendarEventUid("course:ITP30003:01"),
             new CalendarEventContent(
@@ -371,12 +441,21 @@ public sealed class AppleCalendarExportServiceTests
                 new ScheduleTime(11, 30),
                 new ScheduleTime(12, 15)),
             new EDay[] { EDay.Monday, EDay.Thursday });
+        return createDocument(
+            new RecurringCalendarEvent[] { calendarEvent });
+    }
+
+    private static CalendarExportDocument createDocument(
+        IReadOnlyList<RecurringCalendarEvent> events)
+    {
+        AcademicTermCalendarMetadata academicCalendar = AcademicTermCalendarMetadataRegistry.findByTerm(AcademicTerm.Parse("2026-2"), new CalendarTimeZoneId("Asia/Seoul"));
         return new CalendarExportDocument(
             new PlanId(
                 Guid.Parse("71f3be04-d4c6-41d4-a269-792321e71423")),
             new PlanName("2026-2학기 시간표"),
+            new InstitutionName("한동대학교"),
             academicCalendar,
-            new RecurringCalendarEvent[] { calendarEvent });
+            events);
     }
 
     private sealed class RecordingCalendarNameConflictResolver
@@ -492,8 +571,12 @@ public sealed class AppleCalendarExportServiceTests
         }
 
         public Task<IReadOnlyList<AppleCalendarDescriptor>>
-            GetCalendarsAsync(CancellationToken cancellationToken)
+            GetCalendarsAsync(
+                PlanName requestedDestinationName,
+                CancellationToken cancellationToken)
         {
+            ArgumentNullException.ThrowIfNull(
+                requestedDestinationName);
             cancellationToken.ThrowIfCancellationRequested();
             SnapshotObservedLease = mLeaseProvider.ActiveLeaseCount == 1;
             return Task.FromResult<IReadOnlyList<
@@ -521,6 +604,8 @@ public sealed class AppleCalendarExportServiceTests
     {
         private readonly List<AppleCalendarDescriptor> mCalendars;
         private readonly List<AppleCalendarExportMutation> mAppliedMutations = new List<AppleCalendarExportMutation>();
+        private readonly List<PlanName> mRequestedDestinationNames =
+            new List<PlanName>();
 
         public bool IsAvailable { get; set; } = true;
 
@@ -548,15 +633,28 @@ public sealed class AppleCalendarExportServiceTests
             }
         }
 
+        public IReadOnlyList<PlanName> RequestedDestinationNames
+        {
+            get
+            {
+                return mRequestedDestinationNames;
+            }
+        }
+
         public RecordingAppleCalendarNativeBridge(params AppleCalendarDescriptor[] calendars)
         {
             mCalendars = new List<AppleCalendarDescriptor>(calendars);
         }
 
         public Task<IReadOnlyList<AppleCalendarDescriptor>> GetCalendarsAsync(
+            PlanName requestedDestinationName,
             CancellationToken cancellationToken)
         {
+            ArgumentNullException.ThrowIfNull(
+                requestedDestinationName);
             cancellationToken.ThrowIfCancellationRequested();
+            mRequestedDestinationNames.Add(
+                requestedDestinationName);
             CalendarSnapshotRequestCount++;
             IReadOnlyList<AppleCalendarDescriptor> snapshot = new List<AppleCalendarDescriptor>(mCalendars).AsReadOnly();
             return Task.FromResult(snapshot);
@@ -653,8 +751,12 @@ public sealed class AppleCalendarExportServiceTests
         }
 
         public async Task<IReadOnlyList<AppleCalendarDescriptor>>
-            GetCalendarsAsync(CancellationToken cancellationToken)
+            GetCalendarsAsync(
+                PlanName requestedDestinationName,
+                CancellationToken cancellationToken)
         {
+            ArgumentNullException.ThrowIfNull(
+                requestedDestinationName);
             int requestIndex = CalendarSnapshotRequestCount;
             if (requestIndex >= mSnapshotSources.Length)
             {

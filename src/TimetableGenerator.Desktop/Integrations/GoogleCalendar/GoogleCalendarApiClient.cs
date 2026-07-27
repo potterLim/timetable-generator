@@ -94,7 +94,7 @@ internal sealed class GoogleCalendarApiClient
                                         new GoogleCalendarId(idOrNull),
                                         displayNameOrNull,
                                         getBooleanOrDefault(item, "primary"),
-                                        tryParseManagedPlanIdOrNull(
+                                        tryParseLegacyManagedPlanIdOrNull(
                                             descriptionOrNull),
                                         parseAccessRole(item)));
                             }
@@ -153,9 +153,12 @@ internal sealed class GoogleCalendarApiClient
         GoogleAccessToken accessToken,
         GoogleCalendarId calendarId,
         GoogleCalendarExportPlan plan,
+        PlanId pendingManagedPlanId,
         CancellationToken cancellationToken)
     {
-        JsonObject resource = createCalendarResource(plan);
+        JsonObject resource = createCalendarResource(
+            plan,
+            createPlanMarker(pendingManagedPlanId));
         using (HttpRequestMessage request = createJsonRequest(
             HttpMethod.Put,
             "calendars/" + escapePathSegment(calendarId.Value),
@@ -174,10 +177,151 @@ internal sealed class GoogleCalendarApiClient
         }
     }
 
+    public async Task FinalizePlanCalendarAsync(
+        GoogleAccessToken accessToken,
+        GoogleCalendarId calendarId,
+        GoogleCalendarExportPlan plan,
+        CancellationToken cancellationToken)
+    {
+        JsonObject resource = createCalendarResource(
+            plan,
+            plan.CalendarDescription.Value);
+        using (HttpRequestMessage request = createJsonRequest(
+            HttpMethod.Put,
+            "calendars/" + escapePathSegment(calendarId.Value),
+            accessToken,
+            resource))
+        {
+            using (HttpResponseMessage response = await sendAsync(
+                request,
+                cancellationToken).ConfigureAwait(false))
+            {
+                await ensureSuccessAsync(
+                    response,
+                    "calendar_finalize_failed",
+                    cancellationToken).ConfigureAwait(false);
+            }
+        }
+    }
+
+    public async Task<PlanId?> FindManagedPlanIdAsync(
+        GoogleAccessToken accessToken,
+        GoogleCalendarId calendarId,
+        CancellationToken cancellationToken)
+    {
+        HashSet<PlanId> planIds = new HashSet<PlanId>();
+        GoogleCalendarPaginationGuard paginationGuard = new GoogleCalendarPaginationGuard(MAXIMUM_EVENT_LIST_PAGE_COUNT, "managed_calendar_probe_invalid_pagination");
+        string? pageTokenOrNull = null;
+        do
+        {
+            paginationGuard.BeginPage();
+            string relativeUri = "calendars/"
+                + escapePathSegment(calendarId.Value)
+                + "/events?maxResults="
+                + MAXIMUM_EVENT_LIST_PAGE_SIZE.ToString(CultureInfo.InvariantCulture)
+                + "&showDeleted=false&singleEvents=false&privateExtendedProperty="
+                + Uri.EscapeDataString(
+                    GoogleCalendarEventResourceFactory.CreateManagedPropertyFilter());
+            if (pageTokenOrNull != null)
+            {
+                relativeUri += "&pageToken=" + Uri.EscapeDataString(pageTokenOrNull);
+            }
+
+            using (HttpRequestMessage request = createRequest(
+                HttpMethod.Get,
+                relativeUri,
+                accessToken))
+            {
+                using (HttpResponseMessage response = await sendAsync(
+                    request,
+                    cancellationToken).ConfigureAwait(false))
+                {
+                    if (response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        return null;
+                    }
+
+                    if (response.StatusCode == HttpStatusCode.Forbidden)
+                    {
+                        bool isRateLimited = await containsRateLimitReasonAsync(
+                            response,
+                            cancellationToken).ConfigureAwait(false);
+                        if (isRateLimited)
+                        {
+                            throw new GoogleCalendarApiException(
+                                response.StatusCode,
+                                "managed_calendar_probe_failed",
+                                EGoogleCalendarApiFailureKind.Transient);
+                        }
+
+                        return null;
+                    }
+
+                    await ensureSuccessAsync(
+                        response,
+                        "managed_calendar_probe_failed",
+                        cancellationToken).ConfigureAwait(false);
+                    using (JsonDocument document = await readJsonAsync(
+                        response,
+                        cancellationToken).ConfigureAwait(false))
+                    {
+                        JsonElement items;
+                        if (document.RootElement.TryGetProperty(
+                                "items",
+                                out items)
+                            && items.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (JsonElement item in items.EnumerateArray())
+                            {
+                                PlanId? managedPlanIdOrNull = GoogleCalendarEventResourceFactory.tryGetManagedPlanIdOrNull(item);
+                                if (managedPlanIdOrNull.HasValue)
+                                {
+                                    planIds.Add(managedPlanIdOrNull.Value);
+                                    if (planIds.Count > 1)
+                                    {
+                                        return null;
+                                    }
+                                }
+                            }
+                        }
+
+                        pageTokenOrNull = paginationGuard.AcceptNextPageTokenOrNull(
+                            getStringOrNull(
+                                document.RootElement,
+                                "nextPageToken"));
+                    }
+                }
+            }
+        }
+        while (pageTokenOrNull != null);
+
+        foreach (PlanId planId in planIds)
+        {
+            return planId;
+        }
+
+        return null;
+    }
+
     public async Task<GoogleCalendarReconciliationResult> ReconcileEventsAsync(
         GoogleAccessToken accessToken,
         GoogleCalendarId calendarId,
         GoogleCalendarExportPlan plan,
+        CancellationToken cancellationToken)
+    {
+        return await ReconcileEventsAsync(
+            accessToken,
+            calendarId,
+            plan,
+            null,
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<GoogleCalendarReconciliationResult> ReconcileEventsAsync(
+        GoogleAccessToken accessToken,
+        GoogleCalendarId calendarId,
+        GoogleCalendarExportPlan plan,
+        PlanId? replacedPlanIdOrNull,
         CancellationToken cancellationToken)
     {
         HashSet<GoogleCalendarEventId> existingEventIds = await listManagedEventIdsAsync(
@@ -185,6 +329,17 @@ internal sealed class GoogleCalendarApiClient
             calendarId,
             plan.PlanId,
             cancellationToken).ConfigureAwait(false);
+        if (replacedPlanIdOrNull.HasValue
+            && replacedPlanIdOrNull.Value != plan.PlanId)
+        {
+            HashSet<GoogleCalendarEventId> replacedPlanEventIds = await listManagedEventIdsAsync(
+                accessToken,
+                calendarId,
+                replacedPlanIdOrNull.Value,
+                cancellationToken).ConfigureAwait(false);
+            existingEventIds.UnionWith(replacedPlanEventIds);
+        }
+
         HashSet<GoogleCalendarEventId> desiredEventIds = new HashSet<GoogleCalendarEventId>();
         int createdEventCount = 0;
         int updatedEventCount = 0;
@@ -395,10 +550,19 @@ internal sealed class GoogleCalendarApiClient
 
     private static JsonObject createCalendarResource(GoogleCalendarExportPlan plan)
     {
+        return createCalendarResource(
+            plan,
+            createPlanMarker(plan.PlanId));
+    }
+
+    private static JsonObject createCalendarResource(
+        GoogleCalendarExportPlan plan,
+        string description)
+    {
         return new JsonObject
         {
             ["summary"] = plan.CalendarName.Value,
-            ["description"] = createPlanMarker(plan.PlanId),
+            ["description"] = description,
             ["timeZone"] = plan.TimeZoneId.Value,
         };
     }
@@ -606,7 +770,8 @@ internal sealed class GoogleCalendarApiClient
         };
     }
 
-    private static PlanId? tryParseManagedPlanIdOrNull(string? descriptionOrNull)
+    private static PlanId? tryParseLegacyManagedPlanIdOrNull(
+        string? descriptionOrNull)
     {
         const string MARKER_PREFIX = "TimetableGenerator-Plan:";
         if (descriptionOrNull == null

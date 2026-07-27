@@ -27,5 +27,7 @@ internal sealed class AppleCalendarAutomationCalendarResponse
 
     public string? Description { get; set; }
 
+    public string? ManagedPlanId { get; set; }
+
     public bool Writable { get; set; }
 }

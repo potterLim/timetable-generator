@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using TimetableGenerator.Desktop.Exporting.Calendar;
+using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Planning;
 using TimetableGenerator.Domain.Scheduling;
 
@@ -13,6 +14,8 @@ internal sealed class GoogleCalendarExportPlan
     public PlanId PlanId { get; }
 
     public PlanName CalendarName { get; }
+
+    public GoogleCalendarDescription CalendarDescription { get; }
 
     public CalendarTimeZoneId TimeZoneId { get; }
 
@@ -27,6 +30,23 @@ internal sealed class GoogleCalendarExportPlan
     public GoogleCalendarExportPlan(
         PlanId planId,
         PlanName calendarName,
+        InstitutionName institutionName,
+        AcademicTerm academicTerm,
+        CalendarTimeZoneId timeZoneId,
+        IReadOnlyList<GoogleCalendarExportEvent> events)
+        : this(
+            planId,
+            calendarName,
+            GoogleCalendarDescription.Create(institutionName, academicTerm),
+            timeZoneId,
+            events)
+    {
+    }
+
+    private GoogleCalendarExportPlan(
+        PlanId planId,
+        PlanName calendarName,
+        GoogleCalendarDescription calendarDescription,
         CalendarTimeZoneId timeZoneId,
         IReadOnlyList<GoogleCalendarExportEvent> events)
     {
@@ -38,6 +58,11 @@ internal sealed class GoogleCalendarExportPlan
         if (calendarName == null)
         {
             throw new ArgumentNullException(nameof(calendarName));
+        }
+
+        if (calendarDescription == null)
+        {
+            throw new ArgumentNullException(nameof(calendarDescription));
         }
 
         if (timeZoneId.IsValid == false)
@@ -73,6 +98,7 @@ internal sealed class GoogleCalendarExportPlan
 
         PlanId = planId;
         CalendarName = calendarName;
+        CalendarDescription = calendarDescription;
         TimeZoneId = timeZoneId;
         mEvents = eventSnapshot.AsReadOnly();
     }
@@ -104,13 +130,20 @@ internal sealed class GoogleCalendarExportPlan
         return new GoogleCalendarExportPlan(
             document.PlanId,
             document.CalendarName,
+            document.InstitutionName,
+            document.AcademicCalendar.Term,
             document.AcademicCalendar.TimeZoneId,
             events);
     }
 
     public GoogleCalendarExportPlan WithCalendarName(PlanName calendarName)
     {
-        return new GoogleCalendarExportPlan(PlanId, calendarName, TimeZoneId, mEvents);
+        return new GoogleCalendarExportPlan(
+            PlanId,
+            calendarName,
+            CalendarDescription,
+            TimeZoneId,
+            mEvents);
     }
 
     private static DateOnly findFirstOccurrenceDate(

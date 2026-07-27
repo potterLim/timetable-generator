@@ -205,9 +205,9 @@ internal sealed partial class ScheduleWorkspaceView
         switch (provider)
         {
             case ECalendarExportProvider.Google:
-                return ScheduleCalendarProjector.ProjectForGoogleCalendar(activePlanOrNull.PlanId, activePlanOrNull.Name, workspace.DisplayedSchedule, academicCalendar);
+                return ScheduleCalendarProjector.ProjectForGoogleCalendar(activePlanOrNull.PlanId, activePlanOrNull.Name, scheduleBoardOrNull.InstitutionName, workspace.DisplayedSchedule, academicCalendar);
             case ECalendarExportProvider.Apple:
-                return ScheduleCalendarProjector.ProjectForAppleCalendar(activePlanOrNull.PlanId, activePlanOrNull.Name, workspace.DisplayedSchedule, academicCalendar);
+                return ScheduleCalendarProjector.ProjectForAppleCalendar(activePlanOrNull.PlanId, activePlanOrNull.Name, scheduleBoardOrNull.InstitutionName, workspace.DisplayedSchedule, academicCalendar);
             case ECalendarExportProvider.None:
             default:
                 throw new ArgumentOutOfRangeException(nameof(provider), provider, "Schedule exports require a supported calendar provider.");

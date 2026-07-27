@@ -15,11 +15,14 @@ internal sealed class AppleCalendarExportMutation
 
     public AppleCalendarId? ExistingCalendarIdOrNull { get; }
 
+    public PlanId CalendarOwnershipPlanId { get; }
+
     private AppleCalendarExportMutation(
         EAppleCalendarExportMutationKind kind,
         CalendarExportDocument document,
         PlanName destinationName,
-        AppleCalendarId? existingCalendarIdOrNull)
+        AppleCalendarId? existingCalendarIdOrNull,
+        PlanId calendarOwnershipPlanId)
     {
         if (document == null)
         {
@@ -31,29 +34,44 @@ internal sealed class AppleCalendarExportMutation
             throw new ArgumentNullException(nameof(destinationName));
         }
 
-        validateTarget(kind, existingCalendarIdOrNull);
+        if (document.Events.Count == 0)
+        {
+            throw new ArgumentException(
+                "Apple Calendar mutations require at least one calendar event.",
+                nameof(document));
+        }
+
+        validateTarget(kind, existingCalendarIdOrNull, calendarOwnershipPlanId);
 
         Kind = kind;
         Document = document;
         DestinationName = destinationName;
         ExistingCalendarIdOrNull = existingCalendarIdOrNull;
+        CalendarOwnershipPlanId = calendarOwnershipPlanId;
     }
 
     public static AppleCalendarExportMutation CreateNew(
         CalendarExportDocument document,
         PlanName destinationName)
     {
+        if (document == null)
+        {
+            throw new ArgumentNullException(nameof(document));
+        }
+
         return new AppleCalendarExportMutation(
             EAppleCalendarExportMutationKind.CreateNew,
             document,
             destinationName,
-            null);
+            null,
+            document.PlanId);
     }
 
     public static AppleCalendarExportMutation ReplaceExisting(
         CalendarExportDocument document,
         PlanName destinationName,
-        AppleCalendarId existingCalendarId)
+        AppleCalendarId existingCalendarId,
+        PlanId calendarOwnershipPlanId)
     {
         if (existingCalendarId == null)
         {
@@ -64,13 +82,22 @@ internal sealed class AppleCalendarExportMutation
             EAppleCalendarExportMutationKind.ReplaceExisting,
             document,
             destinationName,
-            existingCalendarId);
+            existingCalendarId,
+            calendarOwnershipPlanId);
     }
 
     private static void validateTarget(
         EAppleCalendarExportMutationKind kind,
-        AppleCalendarId? existingCalendarIdOrNull)
+        AppleCalendarId? existingCalendarIdOrNull,
+        PlanId calendarOwnershipPlanId)
     {
+        if (calendarOwnershipPlanId.IsValid == false)
+        {
+            throw new ArgumentException(
+                "Apple Calendar exports require a valid calendar ownership plan ID.",
+                nameof(calendarOwnershipPlanId));
+        }
+
         switch (kind)
         {
             case EAppleCalendarExportMutationKind.CreateNew:

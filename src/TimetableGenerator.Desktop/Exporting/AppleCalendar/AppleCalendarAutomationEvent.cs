@@ -1,5 +1,7 @@
 using System;
 
+using TimetableGenerator.Domain.Planning;
+
 namespace TimetableGenerator.Desktop.Exporting.AppleCalendar;
 
 internal sealed class AppleCalendarAutomationEvent
@@ -19,6 +21,7 @@ internal sealed class AppleCalendarAutomationEvent
     public string EndsAt { get; }
 
     public AppleCalendarAutomationEvent(
+        PlanId planId,
         string eventId,
         string summary,
         string location,
@@ -27,7 +30,7 @@ internal sealed class AppleCalendarAutomationEvent
         string endsAt)
     {
         EventId = requireText(eventId, nameof(eventId));
-        OwnershipUrl = AppleCalendarEventOwnershipMarker.Create(EventId);
+        OwnershipUrl = AppleCalendarEventOwnershipMarker.Create(planId, EventId);
         Summary = requireText(summary, nameof(summary));
         Location = requireValue(location, nameof(location));
         Description = requireValue(description, nameof(description));

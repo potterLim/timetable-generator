@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 
 using TimetableGenerator.Desktop.Exporting.Calendar;
+using TimetableGenerator.Domain.Planning;
 using TimetableGenerator.Domain.Scheduling;
 
 namespace TimetableGenerator.Desktop.Exporting.AppleCalendar;
@@ -19,12 +20,34 @@ internal static class AppleCalendarEventOccurrenceProjector
             throw new ArgumentNullException(nameof(document));
         }
 
+        return Project(document, document.PlanId);
+    }
+
+    public static IReadOnlyList<AppleCalendarAutomationEvent> Project(CalendarExportDocument document, PlanId calendarOwnershipPlanId)
+    {
+        if (document == null)
+        {
+            throw new ArgumentNullException(nameof(document));
+        }
+
+        if (calendarOwnershipPlanId.IsValid == false)
+        {
+            throw new ArgumentException(
+                "Apple Calendar event projection requires a valid calendar ownership plan ID.",
+                nameof(calendarOwnershipPlanId));
+        }
+
         List<AppleCalendarAutomationEvent> occurrences = new List<AppleCalendarAutomationEvent>();
         foreach (RecurringCalendarEvent recurringEvent in document.Events)
         {
             foreach (EDay day in recurringEvent.Days)
             {
-                appendOccurrences(occurrences, document.AcademicCalendar, recurringEvent, day);
+                appendOccurrences(
+                    occurrences,
+                    calendarOwnershipPlanId,
+                    document.AcademicCalendar,
+                    recurringEvent,
+                    day);
             }
         }
 
@@ -34,6 +57,7 @@ internal static class AppleCalendarEventOccurrenceProjector
 
     private static void appendOccurrences(
         ICollection<AppleCalendarAutomationEvent> occurrences,
+        PlanId planId,
         AcademicTermCalendarMetadata academicCalendar,
         RecurringCalendarEvent recurringEvent,
         EDay day)
@@ -45,6 +69,7 @@ internal static class AppleCalendarEventOccurrenceProjector
             DateTimeOffset endsAt = resolve(academicCalendar, occurrenceDate, recurringEvent.TimeRange.End);
             occurrences.Add(
                 new AppleCalendarAutomationEvent(
+                    planId,
                     recurringEvent.Uid.Value
                         + ":"
                         + occurrenceDate.ToString(

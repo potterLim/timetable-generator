@@ -84,6 +84,23 @@ internal sealed class GoogleCalendarDescriptor
         AccessRole = accessRole;
     }
 
+    public GoogleCalendarDescriptor WithManagedPlanId(PlanId managedPlanId)
+    {
+        if (managedPlanId.IsValid == false)
+        {
+            throw new ArgumentException(
+                "Managed Google calendars require a valid plan ID.",
+                nameof(managedPlanId));
+        }
+
+        return new GoogleCalendarDescriptor(
+            CalendarId,
+            DisplayName,
+            IsPrimary,
+            managedPlanId,
+            AccessRole);
+    }
+
     private static void validateAccessRole(EGoogleCalendarAccessRole accessRole)
     {
         switch (accessRole)

@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TimetableGenerator.Desktop.Exporting.Calendar;
 using TimetableGenerator.Desktop.Integrations.GoogleCalendar;
+using TimetableGenerator.Domain.Catalogs;
 using TimetableGenerator.Domain.Planning;
 using TimetableGenerator.Domain.Scheduling;
 using Xunit;
@@ -34,6 +35,15 @@ public sealed class GoogleCalendarExportServiceTests
             request => request.Method == HttpMethod.Post
                 && request.Path.EndsWith("/calendars", StringComparison.Ordinal)
                 && hasCalendarSummary(request, "2026-2학기 시간표"));
+        Assert.Contains(
+            handler.Requests,
+            request => request.Method == HttpMethod.Put
+                && request.Path.EndsWith(
+                    "/calendars/created-calendar",
+                    StringComparison.Ordinal)
+                && hasCalendarDescription(
+                    request,
+                    "한동대학교 2026-2 시간표입니다."));
     }
 
     [Fact]
@@ -60,6 +70,15 @@ public sealed class GoogleCalendarExportServiceTests
             request => request.Method == HttpMethod.Post
                 && request.Path.EndsWith("/calendars", StringComparison.Ordinal)
                 && hasCalendarSummary(request, "2026-2학기 시간표 (2)"));
+        Assert.Contains(
+            handler.Requests,
+            request => request.Method == HttpMethod.Put
+                && request.Path.EndsWith(
+                    "/calendars/created-calendar",
+                    StringComparison.Ordinal)
+                && hasCalendarDescription(
+                    request,
+                    "한동대학교 2026-2 시간표입니다."));
     }
 
     [Fact]
@@ -101,7 +120,10 @@ public sealed class GoogleCalendarExportServiceTests
             request => request.Method == HttpMethod.Put
                 && request.Path.EndsWith(
                     "/calendars/managed-calendar",
-                    StringComparison.Ordinal));
+                    StringComparison.Ordinal)
+                && hasCalendarDescription(
+                    request,
+                    "한동대학교 2026-2 시간표입니다."));
         Assert.Single(
             handler.Requests,
             request => request.Method == HttpMethod.Delete);
@@ -113,6 +135,152 @@ public sealed class GoogleCalendarExportServiceTests
             handler.Requests,
             request => request.Method == HttpMethod.Delete
                 && request.Path.EndsWith("manual-event", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task FriendlyDescriptionCalendarUsesManagedEventOwnershipForReplacementAsync()
+    {
+        GoogleCalendarExportPlan plan = createPlan();
+        GoogleCalendarEventId existingEventId = GoogleCalendarEventId.Create(
+            plan.PlanId,
+            plan.Events[0].SourceId);
+        string listJson = createCalendarListJson(
+            createCalendarJson(
+                "managed-calendar",
+                plan.CalendarName.Value,
+                false,
+                plan.CalendarDescription.Value));
+        string eventListJson = "{\"items\":["
+            + "{\"id\":\""
+            + existingEventId.Value
+            + "\",\"extendedProperties\":{\"private\":{"
+            + "\"timetableGeneratorManaged\":\"true\","
+            + "\"timetableGeneratorPlanId\":\""
+            + plan.PlanId.Value.ToString("N")
+            + "\"}}}]}";
+        CalendarExportHttpMessageHandler handler =
+            new CalendarExportHttpMessageHandler(listJson, listJson)
+            {
+                EventListJson = eventListJson,
+            };
+        RecordingConflictResolver resolver = new RecordingConflictResolver(
+            ECalendarNameConflictResolution.ReplaceExisting);
+
+        GoogleCalendarExportResult result = await exportAsync(
+            handler,
+            resolver,
+            plan);
+
+        Assert.Equal(EGoogleCalendarExportStatus.Success, result.Status);
+        Assert.True(resolver.ConflictOrNull?.CanReplace);
+        Assert.Contains(
+            handler.Requests,
+            request => request.Method == HttpMethod.Put
+                && request.Path.EndsWith(
+                    "/calendars/managed-calendar",
+                    StringComparison.Ordinal)
+                && hasCalendarDescription(
+                    request,
+                    "한동대학교 2026-2 시간표입니다."));
+    }
+
+    [Fact]
+    public async Task ReplacingFriendlyCalendarFromAnotherPlanRemovesItsManagedEventsAsync()
+    {
+        GoogleCalendarExportPlan plan = createPlan();
+        PlanId replacedPlanId = new PlanId(
+            Guid.Parse("94a5bfba-29bd-4d88-98f4-f457a6a2eb3f"));
+        GoogleCalendarEventId replacedEventId = GoogleCalendarEventId.Create(
+            replacedPlanId,
+            new GoogleCalendarSourceEventId("replaced-course"));
+        string listJson = createCalendarListJson(
+            createCalendarJson(
+                "managed-calendar",
+                plan.CalendarName.Value,
+                false,
+                plan.CalendarDescription.Value));
+        string eventListJson = "{\"items\":["
+            + "{\"id\":\""
+            + replacedEventId.Value
+            + "\",\"extendedProperties\":{\"private\":{"
+            + "\"timetableGeneratorManaged\":\"true\","
+            + "\"timetableGeneratorPlanId\":\""
+            + replacedPlanId.Value.ToString("N")
+            + "\"}}}]}";
+        CalendarExportHttpMessageHandler handler =
+            new CalendarExportHttpMessageHandler(listJson, listJson)
+            {
+                EventListJson = eventListJson,
+            };
+        RecordingConflictResolver resolver = new RecordingConflictResolver(
+            ECalendarNameConflictResolution.ReplaceExisting);
+
+        GoogleCalendarExportResult result = await exportAsync(
+            handler,
+            resolver,
+            plan);
+
+        Assert.Equal(EGoogleCalendarExportStatus.Success, result.Status);
+        Assert.Contains(
+            handler.Requests,
+            request => request.Method == HttpMethod.Delete
+                && request.Path.EndsWith(
+                    replacedEventId.Value,
+                    StringComparison.Ordinal));
+        Assert.Contains(
+            handler.Requests,
+            request => request.Method == HttpMethod.Post
+                && request.Path.Contains(
+                    "/events",
+                    StringComparison.Ordinal));
+        Assert.Contains(
+            handler.Requests,
+            request => request.Method == HttpMethod.Put
+                && request.Path.EndsWith(
+                    "/calendars/managed-calendar",
+                    StringComparison.Ordinal)
+                && hasCalendarDescription(
+                    request,
+                    GoogleCalendarApiClient.createPlanMarker(
+                        replacedPlanId)));
+        Assert.Contains(
+            handler.Requests,
+            request => request.Method == HttpMethod.Put
+                && request.Path.EndsWith(
+                    "/calendars/managed-calendar",
+                    StringComparison.Ordinal)
+                && hasCalendarDescription(
+                    request,
+                    "한동대학교 2026-2 시간표입니다."));
+    }
+
+    [Fact]
+    public async Task FriendlyDescriptionWithoutManagedEventsCannotBeReplacedAsync()
+    {
+        GoogleCalendarExportPlan plan = createPlan();
+        string listJson = createCalendarListJson(
+            createCalendarJson(
+                "user-calendar",
+                plan.CalendarName.Value,
+                false,
+                plan.CalendarDescription.Value));
+        CalendarExportHttpMessageHandler handler =
+            new CalendarExportHttpMessageHandler(listJson);
+        RecordingConflictResolver resolver = new RecordingConflictResolver(
+            ECalendarNameConflictResolution.Cancel);
+
+        GoogleCalendarExportResult result = await exportAsync(
+            handler,
+            resolver,
+            plan);
+
+        Assert.Equal(EGoogleCalendarExportStatus.Cancelled, result.Status);
+        Assert.False(resolver.ConflictOrNull?.CanReplace);
+        Assert.DoesNotContain(
+            handler.Requests,
+            request => request.Method == HttpMethod.Put
+                || request.Method == HttpMethod.Post
+                || request.Method == HttpMethod.Delete);
     }
 
     [Theory]
@@ -657,6 +825,79 @@ public sealed class GoogleCalendarExportServiceTests
     }
 
     [Fact]
+    public async Task OrdinaryForbiddenManagedCalendarProbeIsTreatedAsUnmanagedAsync()
+    {
+        GoogleCalendarApiClient apiClient = new GoogleCalendarApiClient(
+            new HttpClient(
+                new FixedResponseHttpMessageHandler(
+                    HttpStatusCode.Forbidden,
+                    "{\"error\":{\"errors\":[{\"reason\":\"forbidden\"}]}}")));
+
+        PlanId? managedPlanIdOrNull = await apiClient.FindManagedPlanIdAsync(
+            new GoogleAccessToken("access-secret"),
+            new GoogleCalendarId("calendar-id"),
+            CancellationToken.None);
+
+        Assert.Null(managedPlanIdOrNull);
+    }
+
+    [Fact]
+    public async Task RateLimitedManagedCalendarProbeRemainsTransientAsync()
+    {
+        GoogleCalendarApiClient apiClient = new GoogleCalendarApiClient(
+            new HttpClient(
+                new FixedResponseHttpMessageHandler(
+                    HttpStatusCode.Forbidden,
+                    "{\"error\":{\"errors\":[{\"reason\":\"rateLimitExceeded\"}]}}")));
+
+        GoogleCalendarApiException exception =
+            await Assert.ThrowsAsync<GoogleCalendarApiException>(
+                async delegate
+                {
+                    await apiClient.FindManagedPlanIdAsync(
+                        new GoogleAccessToken("access-secret"),
+                        new GoogleCalendarId("calendar-id"),
+                        CancellationToken.None);
+                });
+
+        Assert.Equal(
+            EGoogleCalendarApiFailureKind.Transient,
+            exception.FailureKind);
+        Assert.Equal(
+            "managed_calendar_probe_failed",
+            exception.DiagnosticCode);
+    }
+
+    [Fact]
+    public async Task EventFailureDoesNotPublishFriendlyCalendarDescriptionAsync()
+    {
+        CalendarExportHttpMessageHandler handler =
+            new CalendarExportHttpMessageHandler("{\"items\":[]}")
+            {
+                EventMutationFailureStatusCodeOrNull =
+                    HttpStatusCode.ServiceUnavailable,
+            };
+
+        GoogleCalendarExportResult result = await exportAsync(
+            handler,
+            new RecordingConflictResolver(
+                ECalendarNameConflictResolution.Cancel));
+
+        Assert.Equal(
+            EGoogleCalendarExportStatus.NetworkFailed,
+            result.Status);
+        Assert.DoesNotContain(
+            handler.Requests,
+            request => request.Method == HttpMethod.Put
+                && request.Path.EndsWith(
+                    "/calendars/created-calendar",
+                    StringComparison.Ordinal)
+                && hasCalendarDescription(
+                    request,
+                    "한동대학교 2026-2 시간표입니다."));
+    }
+
+    [Fact]
     public async Task RepeatedCalendarListPageTokenIsRejectedAsync()
     {
         RepeatingCalendarPageHttpMessageHandler handler = new RepeatingCalendarPageHttpMessageHandler();
@@ -912,6 +1153,8 @@ public sealed class GoogleCalendarExportServiceTests
         return new GoogleCalendarExportPlan(
             planId,
             new PlanName("2026-2학기 시간표"),
+            new InstitutionName("한동대학교"),
+            AcademicTerm.Parse("2026-2"),
             new CalendarTimeZoneId("Asia/Seoul"),
             new GoogleCalendarExportEvent[] { exportEvent });
     }
@@ -936,6 +1179,8 @@ public sealed class GoogleCalendarExportServiceTests
         return new GoogleCalendarExportPlan(
             firstEventPlan.PlanId,
             firstEventPlan.CalendarName,
+            new InstitutionName("한동대학교"),
+            AcademicTerm.Parse("2026-2"),
             firstEventPlan.TimeZoneId,
             new GoogleCalendarExportEvent[]
             {
@@ -959,6 +1204,24 @@ public sealed class GoogleCalendarExportServiceTests
                 && string.Equals(
                     summary.GetString(),
                     expectedSummary,
+                    StringComparison.Ordinal);
+        }
+    }
+
+    private static bool hasCalendarDescription(
+        RequestRecord request,
+        string expectedDescription)
+    {
+        using (JsonDocument document = JsonDocument.Parse(request.Body))
+        {
+            JsonElement description;
+            return document.RootElement.TryGetProperty(
+                    "description",
+                    out description)
+                && description.ValueKind == JsonValueKind.String
+                && string.Equals(
+                    description.GetString(),
+                    expectedDescription,
                     StringComparison.Ordinal);
         }
     }
@@ -1263,6 +1526,8 @@ public sealed class GoogleCalendarExportServiceTests
 
         public string EventListJson { get; init; } = "{\"items\":[]}";
 
+        public HttpStatusCode? EventMutationFailureStatusCodeOrNull { get; init; }
+
         public CalendarExportHttpMessageHandler(params string[] calendarLists)
         {
             if (calendarLists == null || calendarLists.Length == 0)
@@ -1300,6 +1565,19 @@ public sealed class GoogleCalendarExportServiceTests
             if (request.Method == HttpMethod.Get && request.Path.Contains("/events?", StringComparison.Ordinal))
             {
                 return jsonResponse(EventListJson);
+            }
+
+            if (request.Path.Contains("/events", StringComparison.Ordinal)
+                && EventMutationFailureStatusCodeOrNull.HasValue)
+            {
+                return new HttpResponseMessage(
+                    EventMutationFailureStatusCodeOrNull.Value)
+                {
+                    Content = new StringContent(
+                        "{}",
+                        Encoding.UTF8,
+                        "application/json"),
+                };
             }
 
             return jsonResponse("{}");

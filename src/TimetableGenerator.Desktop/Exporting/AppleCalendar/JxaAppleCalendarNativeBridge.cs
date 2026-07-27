@@ -40,10 +40,16 @@ internal sealed class JxaAppleCalendarNativeBridge
     }
 
     public async Task<IReadOnlyList<AppleCalendarDescriptor>> GetCalendarsAsync(
+        PlanName requestedDestinationName,
         CancellationToken cancellationToken)
     {
+        if (requestedDestinationName == null)
+        {
+            throw new ArgumentNullException(nameof(requestedDestinationName));
+        }
+
         ensureAvailable();
-        AppleCalendarAutomationRequest request = AppleCalendarAutomationRequest.CreateListRequest();
+        AppleCalendarAutomationRequest request = AppleCalendarAutomationRequest.CreateListRequest(requestedDestinationName);
         AppleCalendarAutomationResponse response = await executeAsync(
                 EAppleCalendarAutomationOperation.ListCalendars,
                 request,
@@ -172,16 +178,14 @@ internal sealed class JxaAppleCalendarNativeBridge
         {
             string calendarId = calendarResponse.Id == null ? string.Empty : calendarResponse.Id;
             string calendarName = calendarResponse.Name == null ? string.Empty : calendarResponse.Name;
-            EAppleCalendarOwnership ownership = AppleCalendarOwnershipMarker.IsApplicationManaged(calendarResponse.Description)
-                ? EAppleCalendarOwnership.ApplicationManaged
-                : EAppleCalendarOwnership.External;
+            PlanId? managedPlanIdOrNull = tryParsePlanIdOrNull(calendarResponse.ManagedPlanId);
             EAppleCalendarContentAccess contentAccess = calendarResponse.Writable
                 ? EAppleCalendarContentAccess.Writable
                 : EAppleCalendarContentAccess.ReadOnly;
             return new AppleCalendarDescriptor(
                 new AppleCalendarId(calendarId),
                 calendarName,
-                ownership,
+                managedPlanIdOrNull,
                 contentAccess);
         }
         catch (ArgumentException exception)
@@ -190,6 +194,28 @@ internal sealed class JxaAppleCalendarNativeBridge
                 "apple_calendar_automation_calendar_invalid",
                 exception);
         }
+    }
+
+    private static PlanId? tryParsePlanIdOrNull(string? planIdOrNull)
+    {
+        if (planIdOrNull == null)
+        {
+            return null;
+        }
+
+        Guid planIdValue;
+        if (Guid.TryParseExact(
+                planIdOrNull,
+                "D",
+                out planIdValue) == false
+            || planIdValue == Guid.Empty)
+        {
+            throw createOperationFailure(
+                "apple_calendar_automation_calendar_invalid",
+                null);
+        }
+
+        return new PlanId(planIdValue);
     }
 
     private static void ensureSuccess(
