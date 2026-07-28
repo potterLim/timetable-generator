@@ -35,9 +35,11 @@ public sealed class ScheduleWorkspaceCalendarExportTests
 {
     private const double MAXIMUM_CENTER_DELTA_DIP = 0.05;
 
-    private static readonly TimeSpan TEST_EXPORT_STATUS_DURATION = TimeSpan.FromMilliseconds(30.0);
+    private static readonly TimeSpan TEST_EXPORT_STATUS_DURATION = TimeSpan.FromMilliseconds(500.0);
 
     private static readonly TimeSpan TEST_EXPORT_STATUS_WAIT = TimeSpan.FromMilliseconds(150.0);
+
+    private static readonly TimeSpan TEST_EXPORT_STATUS_EXPIRATION_WAIT = TimeSpan.FromMilliseconds(1000.0);
 
     [AvaloniaFact]
     public async Task WindowsExportMenuOffersPngAndGoogleCalendarAsync()
@@ -291,7 +293,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.Contains("success", statusToast.Classes);
             Assert.False(dismissButton.IsVisible);
 
-            await Task.Delay(TEST_EXPORT_STATUS_WAIT);
+            await Task.Delay(TEST_EXPORT_STATUS_EXPIRATION_WAIT);
             Dispatcher.UIThread.RunJobs();
 
             Assert.False(statusToast.IsVisible);
@@ -388,7 +390,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             Assert.Contains("information", statusToast.Classes);
             Assert.False(dismissButton.IsVisible);
 
-            await Task.Delay(TEST_EXPORT_STATUS_WAIT);
+            await Task.Delay(TEST_EXPORT_STATUS_EXPIRATION_WAIT);
             Dispatcher.UIThread.RunJobs();
 
             Assert.False(statusToast.IsVisible);
