@@ -28,10 +28,7 @@ internal sealed class MeetingSchedule
         }
     }
 
-    private MeetingSchedule(
-        EMeetingScheduleStatus status,
-        KoreanScheduleText? sourceTextOrNull,
-        IEnumerable<MeetingSlot> slots)
+    private MeetingSchedule(EMeetingScheduleStatus status, KoreanScheduleText? sourceTextOrNull, IEnumerable<MeetingSlot> slots)
     {
         if (Enum.IsDefined(typeof(EMeetingScheduleStatus), status) == false)
         {
@@ -71,9 +68,7 @@ internal sealed class MeetingSchedule
         mSlots = copiedSlots.AsReadOnly();
     }
 
-    public static MeetingSchedule CreateScheduled(
-        KoreanScheduleText sourceText,
-        IEnumerable<MeetingSlot> slots)
+    public static MeetingSchedule CreateScheduled(KoreanScheduleText sourceText, IEnumerable<MeetingSlot> slots)
     {
         if (sourceText == null)
         {

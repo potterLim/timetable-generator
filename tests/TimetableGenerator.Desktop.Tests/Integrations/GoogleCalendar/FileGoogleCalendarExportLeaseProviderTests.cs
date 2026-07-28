@@ -27,9 +27,7 @@ public sealed class FileGoogleCalendarExportLeaseProviderTests
                 Assert.False(secondLeaseTask.IsCompleted);
             }
 
-            IGoogleCalendarExportLease secondLease = await secondLeaseTask.WaitAsync(
-                TimeSpan.FromSeconds(2.0),
-                TestContext.Current.CancellationToken);
+            IGoogleCalendarExportLease secondLease = await secondLeaseTask.WaitAsync(TimeSpan.FromSeconds(2.0), TestContext.Current.CancellationToken);
             await using (secondLease)
             {
             }

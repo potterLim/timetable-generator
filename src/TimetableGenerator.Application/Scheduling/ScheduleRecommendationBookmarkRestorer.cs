@@ -51,14 +51,10 @@ internal static class ScheduleRecommendationBookmarkRestorer
         state.Recommendations[replacementIndex] = bookmarkedRecommendationOrNull;
     }
 
-    private static ScheduleRecommendation? createBookmarkedRecommendationOrNull(
-        ScheduleRecommendationGenerationState state,
-        PlanningPlan plan,
-        ScheduleRecommendationBookmark bookmark)
+    private static ScheduleRecommendation? createBookmarkedRecommendationOrNull(ScheduleRecommendationGenerationState state, PlanningPlan plan, ScheduleRecommendationBookmark bookmark)
     {
         ScheduleSearchNode node = ScheduleSearchNode.CreateRoot();
-        foreach (ValidatedCourseChoiceGroup courseChoiceGroup
-            in state.CourseChoiceGroups)
+        foreach (ValidatedCourseChoiceGroup courseChoiceGroup in state.CourseChoiceGroups)
         {
             ValidatedOfferingCandidate? matchingCandidateOrNull = findBookmarkedCandidateOrNull(courseChoiceGroup, bookmark);
             if (matchingCandidateOrNull == null)
@@ -66,11 +62,7 @@ internal static class ScheduleRecommendationBookmarkRestorer
                 return null;
             }
 
-            if (matchingCandidateOrNull.IsScheduled
-                && ScheduleRecommendationConflictChecker.CanAddOffering(
-                    node,
-                    matchingCandidateOrNull.GetScheduledOffering(),
-                    plan.PersonalSchedules) == false)
+            if (matchingCandidateOrNull.IsScheduled && ScheduleRecommendationConflictChecker.CanAddOffering(node, matchingCandidateOrNull.GetScheduledOffering(), plan.PersonalSchedules) == false)
             {
                 return null;
             }
@@ -78,20 +70,12 @@ internal static class ScheduleRecommendationBookmarkRestorer
             node = node.CreateChild(matchingCandidateOrNull);
         }
 
-        return new ScheduleRecommendation(
-            node.SelectedOfferings,
-            state.CombineUnscheduledSelections(
-                node.SelectedUnscheduledSelections),
-            plan.PersonalSchedules,
-            node.Score);
+        return new ScheduleRecommendation(node.SelectedOfferings, state.CombineUnscheduledSelections(node.SelectedUnscheduledSelections), plan.PersonalSchedules, node.Score);
     }
 
-    private static ValidatedOfferingCandidate? findBookmarkedCandidateOrNull(
-        ValidatedCourseChoiceGroup courseChoiceGroup,
-        ScheduleRecommendationBookmark bookmark)
+    private static ValidatedOfferingCandidate? findBookmarkedCandidateOrNull(ValidatedCourseChoiceGroup courseChoiceGroup, ScheduleRecommendationBookmark bookmark)
     {
-        foreach (ValidatedOfferingCandidate offeringCandidate
-            in courseChoiceGroup.OfferingCandidates)
+        foreach (ValidatedOfferingCandidate offeringCandidate in courseChoiceGroup.OfferingCandidates)
         {
             if (bookmark.ContainsOffering(offeringCandidate.OfferingId))
             {
@@ -102,21 +86,15 @@ internal static class ScheduleRecommendationBookmarkRestorer
         return null;
     }
 
-    private static bool bookmarkMatchesRecommendation(
-        ScheduleRecommendationBookmark bookmark,
-        ScheduleRecommendation recommendation,
-        IReadOnlyList<UnscheduledOfferingSelection> fixedUnscheduledSelections)
+    private static bool bookmarkMatchesRecommendation(ScheduleRecommendationBookmark bookmark, ScheduleRecommendation recommendation, IReadOnlyList<UnscheduledOfferingSelection> fixedUnscheduledSelections)
     {
-        List<OfferingId> offeringIds = new List<OfferingId>(
-            recommendation.ScheduledOfferings.Count
-                + recommendation.UnscheduledSelections.Count);
+        List<OfferingId> offeringIds = new List<OfferingId>(recommendation.ScheduledOfferings.Count + recommendation.UnscheduledSelections.Count);
         foreach (ScheduledOffering offering in recommendation.ScheduledOfferings)
         {
             offeringIds.Add(offering.OfferingId);
         }
 
-        foreach (UnscheduledOfferingSelection selection
-            in recommendation.UnscheduledSelections)
+        foreach (UnscheduledOfferingSelection selection in recommendation.UnscheduledSelections)
         {
             if (containsOfferingId(fixedUnscheduledSelections, selection.OfferingId) == false)
             {
@@ -127,9 +105,7 @@ internal static class ScheduleRecommendationBookmarkRestorer
         return bookmark.HasSameOfferingIds(offeringIds);
     }
 
-    private static bool containsOfferingId(
-        IReadOnlyList<UnscheduledOfferingSelection> selections,
-        OfferingId offeringId)
+    private static bool containsOfferingId(IReadOnlyList<UnscheduledOfferingSelection> selections, OfferingId offeringId)
     {
         foreach (UnscheduledOfferingSelection selection in selections)
         {

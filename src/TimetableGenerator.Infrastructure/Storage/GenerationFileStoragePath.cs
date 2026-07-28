@@ -47,9 +47,7 @@ internal sealed record GenerationFileStoragePath
         Debug.Assert(directoryPathOrNull != null);
         if (directoryPathOrNull == null)
         {
-            throw new ArgumentException(
-                "Generation file paths must include a directory.",
-                nameof(baseFilePath));
+            throw new ArgumentException("Generation file paths must include a directory.", nameof(baseFilePath));
         }
 
         DirectoryPath = directoryPathOrNull;
@@ -61,15 +59,10 @@ internal sealed record GenerationFileStoragePath
     {
         if (generation.IsValid == false)
         {
-            throw new ArgumentException(
-                "Generation file paths require a valid generation.",
-                nameof(generation));
+            throw new ArgumentException("Generation file paths require a valid generation.", nameof(generation));
         }
 
-        string fileName = BaseFileName
-            + "."
-            + generation.FileComponent
-            + FileExtension;
+        string fileName = BaseFileName + "." + generation.FileComponent + FileExtension;
         return new GenerationFilePath(Path.Combine(DirectoryPath, fileName));
     }
 

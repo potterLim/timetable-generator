@@ -80,9 +80,7 @@ internal sealed class TimeNotProvidedCourseItem
         }
     }
 
-    public TimeNotProvidedCourseItem(
-        CatalogCourseProjection course,
-        UnscheduledOfferingSelection selection)
+    public TimeNotProvidedCourseItem(CatalogCourseProjection course, UnscheduledOfferingSelection selection)
     {
         if (course == null)
         {
@@ -96,9 +94,7 @@ internal sealed class TimeNotProvidedCourseItem
 
         if (selection.CourseId != course.Course.Id)
         {
-            throw new ArgumentException(
-                "Time-not-provided selections must match their projected course.",
-                nameof(selection));
+            throw new ArgumentException("Time-not-provided selections must match their projected course.", nameof(selection));
         }
 
         CatalogOfferingProjection offering = findTimeNotProvidedOffering(course, selection);
@@ -107,16 +103,12 @@ internal sealed class TimeNotProvidedCourseItem
         Name = course.Course.KoreanName.Value;
         InstructorDisplayText = offering.InstructorSummary;
         Credits = course.Course.Credits;
-        MeetingDisplayText = offering.Offering.SectionCode.Value
-            + "분반 · "
-            + offering.ScheduleSummary;
+        MeetingDisplayText = offering.Offering.SectionCode.Value + "분반 · " + offering.ScheduleSummary;
         LocationDisplayText = offering.LocationSummary;
         Accent = course.Accent;
     }
 
-    private static CatalogOfferingProjection findTimeNotProvidedOffering(
-        CatalogCourseProjection course,
-        UnscheduledOfferingSelection selection)
+    private static CatalogOfferingProjection findTimeNotProvidedOffering(CatalogCourseProjection course, UnscheduledOfferingSelection selection)
     {
         foreach (CatalogOfferingProjection offering in course.Offerings)
         {
@@ -124,17 +116,13 @@ internal sealed class TimeNotProvidedCourseItem
             {
                 if (offering.Offering.MeetingSchedule.Status != EMeetingScheduleStatus.NotProvided)
                 {
-                    throw new ArgumentException(
-                        "The selected offering must have no provided meeting time.",
-                        nameof(selection));
+                    throw new ArgumentException("The selected offering must have no provided meeting time.", nameof(selection));
                 }
 
                 return offering;
             }
         }
 
-        throw new ArgumentException(
-            "The selected offering does not belong to its projected course.",
-            nameof(selection));
+        throw new ArgumentException("The selected offering does not belong to its projected course.", nameof(selection));
     }
 }

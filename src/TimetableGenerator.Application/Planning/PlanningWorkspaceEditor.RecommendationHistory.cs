@@ -6,10 +6,7 @@ namespace TimetableGenerator.Application.Planning;
 
 public sealed partial class PlanningWorkspaceEditor
 {
-    public PlanningWorkspace RememberLastViewedRecommendation(
-        PlanningWorkspace workspace,
-        PlanId planId,
-        ScheduleRecommendationBookmark recommendationBookmark)
+    public PlanningWorkspace RememberLastViewedRecommendation(PlanningWorkspace workspace, PlanId planId, ScheduleRecommendationBookmark recommendationBookmark)
     {
         if (workspace == null)
         {
@@ -44,11 +41,7 @@ public sealed partial class PlanningWorkspaceEditor
             return workspace;
         }
 
-        PlanningPlan updatedPlan = new PlanningPlan(
-            existingPlan.Id,
-            existingPlan.Name,
-            existingPlan.CatalogBinding,
-            existingPlan.Content);
+        PlanningPlan updatedPlan = new PlanningPlan(existingPlan.Id, existingPlan.Name, existingPlan.CatalogBinding, existingPlan.Content);
         return replacePlan(workspace, updatedPlan);
     }
 }

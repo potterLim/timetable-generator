@@ -43,10 +43,7 @@ internal sealed class SchedulePngBatchWriter
         ScheduleBoardPngExportSnapshot snapshot;
         try
         {
-            snapshot = ScheduleBoardPngExportSnapshot.create(
-                exportHost,
-                exportBatch.Candidates[0],
-                sizingBoard);
+            snapshot = ScheduleBoardPngExportSnapshot.create(exportHost, exportBatch.Candidates[0], sizingBoard);
         }
         catch (OperationCanceledException)
         {
@@ -54,10 +51,7 @@ internal sealed class SchedulePngBatchWriter
         }
         catch (Exception exception)
         {
-            throw new SchedulePngBatchExportException(
-                0,
-                exportBatch.Candidates.Count,
-                new Exception[] { exception });
+            throw new SchedulePngBatchExportException(0, exportBatch.Candidates.Count, new Exception[] { exception });
         }
 
         using (snapshot)
@@ -80,12 +74,8 @@ internal sealed class SchedulePngBatchWriter
                     string fileName = SchedulePngFileNameFactory.CreateBatchCandidate(exportBatch.PlanName, candidateNumber);
                     using (Stream destinationStream = destinationDirectory.createFile(fileName))
                     {
-                        await mPngExporter.ExportControlAsync(
-                            snapshot.Surface,
-                            destinationStream,
-                            cancellationToken);
-                        await destinationStream.FlushAsync(
-                            cancellationToken);
+                        await mPngExporter.ExportControlAsync(snapshot.Surface, destinationStream, cancellationToken);
+                        await destinationStream.FlushAsync(cancellationToken);
                     }
 
                     successfulCount++;
@@ -102,16 +92,12 @@ internal sealed class SchedulePngBatchWriter
 
             if (failures.Count > 0)
             {
-                throw new SchedulePngBatchExportException(
-                    successfulCount,
-                    failures.Count,
-                    failures);
+                throw new SchedulePngBatchExportException(successfulCount, failures.Count, failures);
             }
         }
     }
 
-    private static async Task yieldToPendingInputAsync(
-        CancellationToken cancellationToken)
+    private static async Task yieldToPendingInputAsync(CancellationToken cancellationToken)
     {
         await Dispatcher.UIThread.InvokeAsync(
             delegate

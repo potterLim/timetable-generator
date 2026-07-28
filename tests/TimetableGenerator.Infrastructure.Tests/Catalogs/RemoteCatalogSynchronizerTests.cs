@@ -19,8 +19,7 @@ public sealed class RemoteCatalogSynchronizerTests
     [TestMethod]
     public void PublicSurfaceDoesNotAcceptAnOpaqueRedirectingHttpClient()
     {
-        ConstructorInfo[] publicConstructors = typeof(RemoteCatalogSynchronizer)
-            .GetConstructors(BindingFlags.Instance | BindingFlags.Public);
+        ConstructorInfo[] publicConstructors = typeof(RemoteCatalogSynchronizer).GetConstructors(BindingFlags.Instance | BindingFlags.Public);
 
         Assert.IsEmpty(publicConstructors);
     }
@@ -50,9 +49,7 @@ public sealed class RemoteCatalogSynchronizerTests
                 Assert.AreEqual("handong-global-university:2026-2:r0001", package.Document.Catalog.Id.Value);
                 Assert.AreEqual(2, handler.RequestCount);
                 Assert.AreEqual(INDEX_URI, handler.RequestedUris[0]);
-                Assert.AreEqual(
-                    "https://catalog.example.edu/catalog/v1/handong-global-university/2026-2/catalog-r0001.json",
-                    handler.RequestedUris[1].AbsoluteUri);
+                Assert.AreEqual("https://catalog.example.edu/catalog/v1/handong-global-university/2026-2/catalog-r0001.json", handler.RequestedUris[1].AbsoluteUri);
                 Assert.AreEqual(ECatalogCacheLoadStatus.LoadedLatestGeneration, cachedResult.Status);
                 Assert.AreEqual(package.Document.Catalog.Id, cachedResult.GetPackage().Document.Catalog.Id);
             }
@@ -105,9 +102,7 @@ public sealed class RemoteCatalogSynchronizerTests
         {
             byte[] catalogBytes = CatalogSynchronizationTestDocuments.CreateValidCatalogBytes();
             byte[] indexBytes = CatalogSynchronizationTestDocuments.CreateValidIndexBytes(catalogBytes);
-            CatalogSynchronizationLimits limits = new CatalogSynchronizationLimits(
-                new CatalogResourceByteLimit(indexBytes.LongLength - 1L),
-                new CatalogResourceByteLimit(1_000_000L));
+            CatalogSynchronizationLimits limits = new CatalogSynchronizationLimits(new CatalogResourceByteLimit(indexBytes.LongLength - 1L), new CatalogResourceByteLimit(1_000_000L));
             using (QueueHttpMessageHandler handler = new QueueHttpMessageHandler(
                 new HttpResponseMessage[] { createResponse(indexBytes) }))
             using (HttpClient httpClient = new HttpClient(handler))
@@ -138,9 +133,7 @@ public sealed class RemoteCatalogSynchronizerTests
         {
             byte[] catalogBytes = CatalogSynchronizationTestDocuments.CreateValidCatalogBytes();
             byte[] indexBytes = CatalogSynchronizationTestDocuments.CreateValidIndexBytes(catalogBytes);
-            CatalogSynchronizationLimits limits = new CatalogSynchronizationLimits(
-                new CatalogResourceByteLimit(64_000L),
-                new CatalogResourceByteLimit(catalogBytes.LongLength - 1L));
+            CatalogSynchronizationLimits limits = new CatalogSynchronizationLimits(new CatalogResourceByteLimit(64_000L), new CatalogResourceByteLimit(catalogBytes.LongLength - 1L));
             using (QueueHttpMessageHandler handler = new QueueHttpMessageHandler(
                 new HttpResponseMessage[] { createResponse(indexBytes) }))
             using (HttpClient httpClient = new HttpClient(handler))
@@ -169,13 +162,8 @@ public sealed class RemoteCatalogSynchronizerTests
         {
             const int CATALOG_LIMIT_BYTES = 100;
             byte[] oversizedCatalogBytes = new byte[CATALOG_LIMIT_BYTES + 1];
-            byte[] indexBytes = CatalogSynchronizationTestDocuments.CreateIndexBytes(
-                CatalogSynchronizationTestDocuments.VALID_RELATIVE_PATH,
-                new CatalogFileSize(1L),
-                Sha256Digest.Compute(new byte[] { 0x01 }));
-            CatalogSynchronizationLimits limits = new CatalogSynchronizationLimits(
-                new CatalogResourceByteLimit(64_000L),
-                new CatalogResourceByteLimit(CATALOG_LIMIT_BYTES));
+            byte[] indexBytes = CatalogSynchronizationTestDocuments.CreateIndexBytes(CatalogSynchronizationTestDocuments.VALID_RELATIVE_PATH, new CatalogFileSize(1L), Sha256Digest.Compute(new byte[] { 0x01 }));
+            CatalogSynchronizationLimits limits = new CatalogSynchronizationLimits(new CatalogResourceByteLimit(64_000L), new CatalogResourceByteLimit(CATALOG_LIMIT_BYTES));
             HttpResponseMessage catalogResponse = new HttpResponseMessage(HttpStatusCode.OK);
             catalogResponse.Content = new UnknownLengthByteArrayContent(oversizedCatalogBytes);
             using (QueueHttpMessageHandler handler = new QueueHttpMessageHandler(
@@ -212,16 +200,10 @@ public sealed class RemoteCatalogSynchronizerTests
         {
             CatalogSynchronizationLimits limits = createLimits();
             CatalogCacheFileStore store = createStore(testDirectoryPath, limits);
-            await store.SaveAsync(
-                CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithKoreanName(
-                    "보존할 자료구조"),
-                CancellationToken.None);
+            await store.SaveAsync(CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithKoreanName("보존할 자료구조"), CancellationToken.None);
             byte[][] contentBeforeSynchronization = await readGenerationContentsAsync(testDirectoryPath);
             byte[] catalogBytes = CatalogSynchronizationTestDocuments.CreateValidCatalogBytes();
-            byte[] changedCatalogBytes = CatalogSynchronizationTestDocuments.Replace(
-                catalogBytes,
-                "Data Structures",
-                "Changed Data Structures");
+            byte[] changedCatalogBytes = CatalogSynchronizationTestDocuments.Replace(catalogBytes, "Data Structures", "Changed Data Structures");
             byte[] indexBytes = CatalogSynchronizationTestDocuments.CreateValidIndexBytes(catalogBytes);
             using (QueueHttpMessageHandler handler = new QueueHttpMessageHandler(
                 new HttpResponseMessage[]
@@ -255,10 +237,7 @@ public sealed class RemoteCatalogSynchronizerTests
         string testDirectoryPath = createTestDirectoryPath();
         try
         {
-            byte[] invalidCatalogBytes = CatalogSynchronizationTestDocuments.Replace(
-                CatalogSynchronizationTestDocuments.CreateValidCatalogBytes(),
-                "\"courses\": 1,",
-                "\"courses\": 2,");
+            byte[] invalidCatalogBytes = CatalogSynchronizationTestDocuments.Replace(CatalogSynchronizationTestDocuments.CreateValidCatalogBytes(), "\"courses\": 1,", "\"courses\": 2,");
             byte[] indexBytes = CatalogSynchronizationTestDocuments.CreateValidIndexBytes(invalidCatalogBytes);
             CatalogSynchronizationLimits limits = createLimits();
             using (QueueHttpMessageHandler handler = new QueueHttpMessageHandler(
@@ -293,10 +272,7 @@ public sealed class RemoteCatalogSynchronizerTests
         try
         {
             byte[] catalogBytes = CatalogSynchronizationTestDocuments.CreateValidCatalogBytes();
-            byte[] indexBytes = CatalogSynchronizationTestDocuments.CreateIndexBytes(
-                "https://other.example.edu/catalog.json",
-                new CatalogFileSize(catalogBytes.LongLength),
-                Sha256Digest.Compute(catalogBytes));
+            byte[] indexBytes = CatalogSynchronizationTestDocuments.CreateIndexBytes("https://other.example.edu/catalog.json", new CatalogFileSize(catalogBytes.LongLength), Sha256Digest.Compute(catalogBytes));
             CatalogSynchronizationLimits limits = createLimits();
             using (QueueHttpMessageHandler handler = new QueueHttpMessageHandler(
                 new HttpResponseMessage[] { createResponse(indexBytes) }))
@@ -327,9 +303,7 @@ public sealed class RemoteCatalogSynchronizerTests
             byte[] catalogBytes = CatalogSynchronizationTestDocuments.CreateValidCatalogBytes();
             byte[] indexBytes = CatalogSynchronizationTestDocuments.CreateValidIndexBytes(catalogBytes);
             HttpResponseMessage redirectedCatalogResponse = createResponse(catalogBytes);
-            redirectedCatalogResponse.RequestMessage = new HttpRequestMessage(
-                HttpMethod.Get,
-                new Uri("https://other.example.edu/catalog.json"));
+            redirectedCatalogResponse.RequestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri("https://other.example.edu/catalog.json"));
             CatalogSynchronizationLimits limits = createLimits();
             using (QueueHttpMessageHandler handler = new QueueHttpMessageHandler(
                 new HttpResponseMessage[]
@@ -395,32 +369,20 @@ public sealed class RemoteCatalogSynchronizerTests
         }
     }
 
-    private static RemoteCatalogSynchronizer createSynchronizer(
-        HttpClient httpClient,
-        CatalogCacheFileStore store,
-        CatalogSynchronizationLimits limits)
+    private static RemoteCatalogSynchronizer createSynchronizer(HttpClient httpClient, CatalogCacheFileStore store, CatalogSynchronizationLimits limits)
     {
-        return RemoteCatalogSynchronizer.createForTesting(
-            httpClient,
-            new CatalogIndexEndpoint(INDEX_URI),
-            limits,
-            store);
+        return RemoteCatalogSynchronizer.createForTesting(httpClient, new CatalogIndexEndpoint(INDEX_URI), limits, store);
     }
 
-    private static CatalogCacheFileStore createStore(
-        string testDirectoryPath,
-        CatalogSynchronizationLimits limits)
+    private static CatalogCacheFileStore createStore(string testDirectoryPath, CatalogSynchronizationLimits limits)
     {
-        CatalogCacheFilePath cachePath = new CatalogCacheFilePath(
-            Path.Combine(testDirectoryPath, "catalog.cache"));
+        CatalogCacheFilePath cachePath = new CatalogCacheFilePath(Path.Combine(testDirectoryPath, "catalog.cache"));
         return new CatalogCacheFileStore(cachePath, limits);
     }
 
     private static CatalogSynchronizationLimits createLimits()
     {
-        return new CatalogSynchronizationLimits(
-            new CatalogResourceByteLimit(64_000L),
-            new CatalogResourceByteLimit(1_000_000L));
+        return new CatalogSynchronizationLimits(new CatalogResourceByteLimit(64_000L), new CatalogResourceByteLimit(1_000_000L));
     }
 
     private static HttpResponseMessage createResponse(byte[] content)
@@ -448,9 +410,7 @@ public sealed class RemoteCatalogSynchronizerTests
         return contents;
     }
 
-    private static void assertGenerationContentsEqual(
-        byte[][] expectedContents,
-        byte[][] actualContents)
+    private static void assertGenerationContentsEqual(byte[][] expectedContents, byte[][] actualContents)
     {
         Assert.HasCount(expectedContents.Length, actualContents);
         for (int index = 0; index < expectedContents.Length; ++index)

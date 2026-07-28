@@ -63,16 +63,11 @@ internal static class CatalogJsonValueParser
     {
         if (string.Equals(actualValue, expectedValue, StringComparison.Ordinal) == false)
         {
-            throw new CatalogJsonFormatException(
-                path,
-                "expected \"" + expectedValue + "\" but found \"" + actualValue + "\".");
+            throw new CatalogJsonFormatException(path, "expected \"" + expectedValue + "\" but found \"" + actualValue + "\".");
         }
     }
 
-    public static string BuildCatalogId(
-        InstitutionId institutionId,
-        AcademicTerm term,
-        CatalogRevision revision)
+    public static string BuildCatalogId(InstitutionId institutionId, AcademicTerm term, CatalogRevision revision)
     {
         return institutionId.Value + ":" + term.Id + ":" + revision.FileComponent;
     }
@@ -82,31 +77,13 @@ internal static class CatalogJsonValueParser
         return institutionId.Value + ":" + courseCode.Value;
     }
 
-    public static string BuildOfferingId(
-        InstitutionId institutionId,
-        AcademicTerm term,
-        CourseCode courseCode,
-        CourseSectionCode sectionCode)
+    public static string BuildOfferingId(InstitutionId institutionId, AcademicTerm term, CourseCode courseCode, CourseSectionCode sectionCode)
     {
-        return institutionId.Value
-            + ":"
-            + term.Id
-            + ":"
-            + courseCode.Value
-            + ":"
-            + sectionCode.Value;
+        return institutionId.Value + ":" + term.Id + ":" + courseCode.Value + ":" + sectionCode.Value;
     }
 
-    public static string BuildCatalogRelativePath(
-        InstitutionId institutionId,
-        AcademicTerm term,
-        CatalogRevision revision)
+    public static string BuildCatalogRelativePath(InstitutionId institutionId, AcademicTerm term, CatalogRevision revision)
     {
-        return institutionId.Value
-            + "/"
-            + term.Id
-            + "/catalog-"
-            + revision.FileComponent
-            + ".json";
+        return institutionId.Value + "/" + term.Id + "/catalog-" + revision.FileComponent + ".json";
     }
 }

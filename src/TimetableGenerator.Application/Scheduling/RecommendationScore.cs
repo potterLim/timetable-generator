@@ -21,10 +21,7 @@ public readonly record struct RecommendationScore : IComparable<RecommendationSc
     {
         if (value < 0)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "Recommendation scores cannot be negative.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Recommendation scores cannot be negative.");
         }
 
         Value = value;

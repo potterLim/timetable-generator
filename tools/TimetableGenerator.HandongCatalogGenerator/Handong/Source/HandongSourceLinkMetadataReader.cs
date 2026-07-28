@@ -13,9 +13,7 @@ internal static class HandongSourceLinkMetadataReader
     private const string ACADEMIC_YEAR_PARAMETER_NAME = "kang_yy";
     private const string ACADEMIC_SEMESTER_PARAMETER_NAME = "kang_hakgi";
 
-    public static HandongSourceLinkMetadata? ReadMetadataOrNull(
-        IElement rowElement,
-        SourceRecordNumber sourceRecordNumber)
+    public static HandongSourceLinkMetadata? ReadMetadataOrNull(IElement rowElement, SourceRecordNumber sourceRecordNumber)
     {
         ArgumentNullException.ThrowIfNull(rowElement);
 
@@ -32,9 +30,7 @@ internal static class HandongSourceLinkMetadataReader
 
             if (sourceLinkMetadataOrNull != null && sourceLinkMetadataOrNull != currentMetadata)
             {
-                throw new HandongSourceFormatException(
-                    "Source record " + sourceRecordNumber
-                    + " contains conflicting Handong offering-link metadata.");
+                throw new HandongSourceFormatException("Source record " + sourceRecordNumber + " contains conflicting Handong offering-link metadata.");
             }
 
             sourceLinkMetadataOrNull = currentMetadata;
@@ -53,9 +49,7 @@ internal static class HandongSourceLinkMetadataReader
         return linkTargetOrNull.Contains(COURSE_CODE_PARAMETER_NAME + "=", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static HandongSourceLinkMetadata readMetadata(
-        string linkTarget,
-        SourceRecordNumber sourceRecordNumber)
+    private static HandongSourceLinkMetadata readMetadata(string linkTarget, SourceRecordNumber sourceRecordNumber)
     {
         try
         {
@@ -77,17 +71,11 @@ internal static class HandongSourceLinkMetadataReader
         }
         catch (ArgumentException exception)
         {
-            throw new HandongSourceFormatException(
-                "Source record " + sourceRecordNumber
-                + " contains invalid Handong offering-link metadata.",
-                exception);
+            throw new HandongSourceFormatException("Source record " + sourceRecordNumber + " contains invalid Handong offering-link metadata.", exception);
         }
     }
 
-    private static string readRequiredParameter(
-        string linkTarget,
-        string parameterName,
-        SourceRecordNumber sourceRecordNumber)
+    private static string readRequiredParameter(string linkTarget, string parameterName, SourceRecordNumber sourceRecordNumber)
     {
         string queryMarker = "?" + parameterName + "=";
         string additionalMarker = "&" + parameterName + "=";
@@ -103,9 +91,7 @@ internal static class HandongSourceLinkMetadataReader
             parameterMarkerIndex = linkTarget.IndexOf(additionalMarker, StringComparison.OrdinalIgnoreCase);
             if (parameterMarkerIndex < 0)
             {
-                throw new HandongSourceFormatException(
-                    "Source record " + sourceRecordNumber
-                    + " is missing offering-link parameter '" + parameterName + "'.");
+                throw new HandongSourceFormatException("Source record " + sourceRecordNumber + " is missing offering-link parameter '" + parameterName + "'.");
             }
 
             parameterValueIndex = parameterMarkerIndex + additionalMarker.Length;
@@ -116,9 +102,7 @@ internal static class HandongSourceLinkMetadataReader
         string decodedParameterValue = WebUtility.UrlDecode(encodedParameterValue).Trim();
         if (decodedParameterValue.Length == 0)
         {
-            throw new HandongSourceFormatException(
-                "Source record " + sourceRecordNumber
-                + " has an empty offering-link parameter '" + parameterName + "'.");
+            throw new HandongSourceFormatException("Source record " + sourceRecordNumber + " has an empty offering-link parameter '" + parameterName + "'.");
         }
 
         return decodedParameterValue;
@@ -138,18 +122,13 @@ internal static class HandongSourceLinkMetadataReader
         return linkTarget.Length;
     }
 
-    private static int parseIntegerParameter(
-        string parameterText,
-        string parameterName,
-        SourceRecordNumber sourceRecordNumber)
+    private static int parseIntegerParameter(string parameterText, string parameterName, SourceRecordNumber sourceRecordNumber)
     {
         int parameterValue;
         bool isParameterParsed = int.TryParse(parameterText, NumberStyles.None, CultureInfo.InvariantCulture, out parameterValue);
         if (isParameterParsed == false)
         {
-            throw new HandongSourceFormatException(
-                "Source record " + sourceRecordNumber
-                + " has a non-numeric offering-link parameter '" + parameterName + "'.");
+            throw new HandongSourceFormatException("Source record " + sourceRecordNumber + " has a non-numeric offering-link parameter '" + parameterName + "'.");
         }
 
         return parameterValue;

@@ -9,8 +9,5 @@ internal interface IAppleCalendarExporter
 {
     bool IsAvailable { get; }
 
-    Task<AppleCalendarExportResult> ExportAsync(
-        CalendarExportDocument document,
-        ICalendarNameConflictResolver conflictResolver,
-        CancellationToken cancellationToken);
+    Task<AppleCalendarExportResult> ExportAsync(CalendarExportDocument document, ICalendarNameConflictResolver conflictResolver, CancellationToken cancellationToken);
 }

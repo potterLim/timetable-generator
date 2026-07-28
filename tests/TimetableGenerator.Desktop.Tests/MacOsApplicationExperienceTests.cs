@@ -43,9 +43,7 @@ public sealed class MacOsApplicationExperienceTests
 
         try
         {
-            TextBlock productVersionText = findRequiredControl<TextBlock>(
-                aboutWindow,
-                "ProductVersionText");
+            TextBlock productVersionText = findRequiredControl<TextBlock>(aboutWindow, "ProductVersionText");
             Button closeButton = findRequiredControl<Button>(aboutWindow, "CloseAboutButton");
 
             Assert.Equal("About Timetable Generator", aboutWindow.Title);
@@ -75,52 +73,16 @@ public sealed class MacOsApplicationExperienceTests
             NativeMenu editMenu = getRequiredSubmenu(nativeMenu, 1, "Edit");
             NativeMenu windowMenu = getRequiredSubmenu(nativeMenu, 2, "Window");
 
-            assertGesture(
-                getRequiredMenuItem(fileMenu, 0),
-                "Close Window",
-                Key.W,
-                KeyModifiers.Meta);
-            assertGesture(
-                getRequiredMenuItem(editMenu, 0),
-                "Undo",
-                Key.Z,
-                KeyModifiers.Meta);
-            assertGesture(
-                getRequiredMenuItem(editMenu, 1),
-                "Redo",
-                Key.Z,
-                KeyModifiers.Meta | KeyModifiers.Shift);
-            assertGesture(
-                getRequiredMenuItem(editMenu, 3),
-                "Cut",
-                Key.X,
-                KeyModifiers.Meta);
-            assertGesture(
-                getRequiredMenuItem(editMenu, 4),
-                "Copy",
-                Key.C,
-                KeyModifiers.Meta);
-            assertGesture(
-                getRequiredMenuItem(editMenu, 5),
-                "Paste",
-                Key.V,
-                KeyModifiers.Meta);
-            assertGesture(
-                getRequiredMenuItem(editMenu, 6),
-                "Select All",
-                Key.A,
-                KeyModifiers.Meta);
-            assertGesture(
-                getRequiredMenuItem(windowMenu, 0),
-                "Minimize",
-                Key.M,
-                KeyModifiers.Meta);
+            assertGesture(getRequiredMenuItem(fileMenu, 0), "Close Window", Key.W, KeyModifiers.Meta);
+            assertGesture(getRequiredMenuItem(editMenu, 0), "Undo", Key.Z, KeyModifiers.Meta);
+            assertGesture(getRequiredMenuItem(editMenu, 1), "Redo", Key.Z, KeyModifiers.Meta | KeyModifiers.Shift);
+            assertGesture(getRequiredMenuItem(editMenu, 3), "Cut", Key.X, KeyModifiers.Meta);
+            assertGesture(getRequiredMenuItem(editMenu, 4), "Copy", Key.C, KeyModifiers.Meta);
+            assertGesture(getRequiredMenuItem(editMenu, 5), "Paste", Key.V, KeyModifiers.Meta);
+            assertGesture(getRequiredMenuItem(editMenu, 6), "Select All", Key.A, KeyModifiers.Meta);
+            assertGesture(getRequiredMenuItem(windowMenu, 0), "Minimize", Key.M, KeyModifiers.Meta);
             Assert.Equal("Zoom", getRequiredMenuItem(windowMenu, 1).Header);
-            assertGesture(
-                getRequiredMenuItem(windowMenu, 3),
-                "Enter Full Screen",
-                Key.F,
-                KeyModifiers.Control | KeyModifiers.Meta);
+            assertGesture(getRequiredMenuItem(windowMenu, 3), "Enter Full Screen", Key.F, KeyModifiers.Control | KeyModifiers.Meta);
             Assert.Equal("Bring All to Front", getRequiredMenuItem(windowMenu, 5).Header);
         }
         finally
@@ -223,8 +185,7 @@ public sealed class MacOsApplicationExperienceTests
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace(store);
         ProductShellViewModel shell = PlannerWorkspaceTestFactory.CreateShell(workspace);
         MainWindow hostWindow = new MainWindow(shell, ProductAppearanceTestFactory.CreateViewModel());
-        TaskCompletionSource closedCompletionSource = new TaskCompletionSource(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCompletionSource closedCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         bool saveAttemptCompleted = false;
         hostWindow.Closed += delegate
         {
@@ -233,17 +194,13 @@ public sealed class MacOsApplicationExperienceTests
 
         try
         {
-            await workspace.RecommendationRefreshTask.WaitAsync(
-                TEST_OPERATION_TIMEOUT,
-                TestContext.Current.CancellationToken);
+            await workspace.RecommendationRefreshTask.WaitAsync(TEST_OPERATION_TIMEOUT, TestContext.Current.CancellationToken);
             hostWindow.Show();
             Dispatcher.UIThread.RunJobs();
             workspace.BeginRenamePlanCommand.Execute(null);
             workspace.PlanNameDraft = "종료 저장 검증";
             workspace.ConfirmPlanNameCommand.Execute(null);
-            await saveAttempt
-                .WaitForStartAsync()
-                .WaitAsync(TEST_OPERATION_TIMEOUT, TestContext.Current.CancellationToken);
+            await saveAttempt.WaitForStartAsync().WaitAsync(TEST_OPERATION_TIMEOUT, TestContext.Current.CancellationToken);
 
             NativeMenu nativeMenu = getRequiredNativeMenu(hostWindow);
             NativeMenu fileMenu = getRequiredSubmenu(nativeMenu, 0, "File");
@@ -296,15 +253,10 @@ public sealed class MacOsApplicationExperienceTests
         }
 
         Dispatcher.UIThread.RunJobs();
-        await closedTask.WaitAsync(
-            TimeSpan.FromMilliseconds(100.0),
-            TestContext.Current.CancellationToken);
+        await closedTask.WaitAsync(TimeSpan.FromMilliseconds(100.0), TestContext.Current.CancellationToken);
     }
 
-    private static NativeMenu getRequiredSubmenu(
-        NativeMenu parentMenu,
-        int index,
-        string expectedHeader)
+    private static NativeMenu getRequiredSubmenu(NativeMenu parentMenu, int index, string expectedHeader)
     {
         NativeMenuItem parentItem = getRequiredMenuItem(parentMenu, index);
         Assert.Equal(expectedHeader, parentItem.Header);
@@ -333,11 +285,7 @@ public sealed class MacOsApplicationExperienceTests
         return menuItem.Command;
     }
 
-    private static void assertGesture(
-        NativeMenuItem menuItem,
-        string expectedHeader,
-        Key expectedKey,
-        KeyModifiers expectedModifiers)
+    private static void assertGesture(NativeMenuItem menuItem, string expectedHeader, Key expectedKey, KeyModifiers expectedModifiers)
     {
         Assert.Equal(expectedHeader, menuItem.Header);
         Assert.NotNull(menuItem.Command);
@@ -358,9 +306,7 @@ public sealed class MacOsApplicationExperienceTests
         Assert.NotNull(controlOrNull);
         if (controlOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The required control could not be resolved: "
-                    + controlName);
+            throw new InvalidOperationException("The required control could not be resolved: " + controlName);
         }
 
         return controlOrNull;

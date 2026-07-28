@@ -16,8 +16,7 @@ public sealed class CatalogCommandLineParserTests
         string sourcePath = Path.Combine(Path.GetTempPath(), "source.xls");
         string outputRootPath = Path.Combine(Path.GetTempPath(), "catalog-output");
 
-        CatalogGenerationRequest request = CatalogCommandLineParser.Parse(
-            createValidArguments(sourcePath, outputRootPath));
+        CatalogGenerationRequest request = CatalogCommandLineParser.Parse(createValidArguments(sourcePath, outputRootPath));
 
         Assert.AreEqual(Path.GetFullPath(sourcePath), request.SourceFilePath.Value);
         Assert.AreEqual("2026-2", request.Term.Id);
@@ -131,9 +130,7 @@ public sealed class CatalogCommandLineParserTests
     [DataRow("--term", "2026-02")]
     [DataRow("--revision", "0")]
     [DataRow("--revision", "1.5")]
-    public void Parse_InvalidOptionValue_ReportsTypedCommandLineError(
-        string optionName,
-        string invalidValue)
+    public void Parse_InvalidOptionValue_ReportsTypedCommandLineError(string optionName, string invalidValue)
     {
         List<string> arguments = createValidArgumentList();
         int optionIndex = arguments.IndexOf(optionName);
@@ -169,9 +166,7 @@ public sealed class CatalogCommandLineParserTests
         return new List<string>(createValidArguments(sourcePath, outputRootPath));
     }
 
-    private static void assertInvalidArgumentsError(
-        CatalogGenerationException exception,
-        ECatalogGenerationErrorCode expectedErrorCode)
+    private static void assertInvalidArgumentsError(CatalogGenerationException exception, ECatalogGenerationErrorCode expectedErrorCode)
     {
         Assert.AreEqual(expectedErrorCode, exception.ErrorCode);
         Assert.AreEqual(ECatalogGeneratorExitCode.InvalidArguments, exception.ExitCode);

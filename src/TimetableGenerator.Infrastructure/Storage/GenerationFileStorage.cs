@@ -33,14 +33,12 @@ internal sealed class GenerationFileStorage
         return Directory.Exists(mStoragePath.DirectoryPath);
     }
 
-    public Task<GenerationFileStorageAccess> AcquireExistingDirectoryAsync(
-        CancellationToken cancellationToken)
+    public Task<GenerationFileStorageAccess> AcquireExistingDirectoryAsync(CancellationToken cancellationToken)
     {
         return acquireAccessAsync(EGenerationDirectoryPreparation.UseExisting, cancellationToken);
     }
 
-    public Task<GenerationFileStorageAccess> AcquireCreatingDirectoryAsync(
-        CancellationToken cancellationToken)
+    public Task<GenerationFileStorageAccess> AcquireCreatingDirectoryAsync(CancellationToken cancellationToken)
     {
         return acquireAccessAsync(EGenerationDirectoryPreparation.Create, cancellationToken);
     }
@@ -48,10 +46,7 @@ internal sealed class GenerationFileStorage
     public IReadOnlyList<GenerationFile> GetGenerationFiles()
     {
         List<GenerationFile> generationFiles = new List<GenerationFile>();
-        IEnumerable<string> paths = Directory.EnumerateFiles(
-            mStoragePath.DirectoryPath,
-            mStoragePath.GenerationSearchPattern,
-            SearchOption.TopDirectoryOnly);
+        IEnumerable<string> paths = Directory.EnumerateFiles(mStoragePath.DirectoryPath, mStoragePath.GenerationSearchPattern, SearchOption.TopDirectoryOnly);
         foreach (string path in paths)
         {
             FileGeneration generation;
@@ -66,16 +61,10 @@ internal sealed class GenerationFileStorage
         return generationFiles;
     }
 
-    public async Task<GenerationFile> CommitAsync(
-        FileGeneration generation,
-        ReadOnlyMemory<byte> content,
-        CancellationToken cancellationToken)
+    public async Task<GenerationFile> CommitAsync(FileGeneration generation, ReadOnlyMemory<byte> content, CancellationToken cancellationToken)
     {
         GenerationFilePath finalPath = mStoragePath.CreateGenerationFilePath(generation);
-        string temporaryPath = finalPath.Value
-            + "."
-            + Guid.NewGuid().ToString("N")
-            + ".tmp";
+        string temporaryPath = finalPath.Value + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
             await writeDurableFileAsync(temporaryPath, content, cancellationToken).ConfigureAwait(false);
@@ -135,10 +124,7 @@ internal sealed class GenerationFileStorage
         return second.Generation.Value.CompareTo(first.Generation.Value);
     }
 
-    private static async Task writeDurableFileAsync(
-        string path,
-        ReadOnlyMemory<byte> content,
-        CancellationToken cancellationToken)
+    private static async Task writeDurableFileAsync(string path, ReadOnlyMemory<byte> content, CancellationToken cancellationToken)
     {
         FileOptions fileOptions = FileOptions.Asynchronous | FileOptions.WriteThrough;
         using (FileStream outputStream = new FileStream(
@@ -168,9 +154,7 @@ internal sealed class GenerationFileStorage
         }
     }
 
-    private async Task<GenerationFileStorageAccess> acquireAccessAsync(
-        EGenerationDirectoryPreparation directoryPreparation,
-        CancellationToken cancellationToken)
+    private async Task<GenerationFileStorageAccess> acquireAccessAsync(EGenerationDirectoryPreparation directoryPreparation, CancellationToken cancellationToken)
     {
         await mAccessGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -234,10 +218,7 @@ internal sealed class GenerationFileStorage
     {
         try
         {
-            IEnumerable<string> temporaryPaths = Directory.EnumerateFiles(
-                mStoragePath.DirectoryPath,
-                mStoragePath.TemporaryFileSearchPattern,
-                SearchOption.TopDirectoryOnly);
+            IEnumerable<string> temporaryPaths = Directory.EnumerateFiles(mStoragePath.DirectoryPath, mStoragePath.TemporaryFileSearchPattern, SearchOption.TopDirectoryOnly);
             foreach (string temporaryPath in temporaryPaths)
             {
                 tryDeleteFile(temporaryPath);

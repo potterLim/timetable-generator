@@ -54,9 +54,7 @@ internal sealed partial class MainWindow
         mInteractionWorkspaceOrNull = null;
     }
 
-    private void onInteractionWorkspacePropertyChanged(
-        object? senderOrNull,
-        PropertyChangedEventArgs eventArgs)
+    private void onInteractionWorkspacePropertyChanged(object? senderOrNull, PropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.PropertyName == nameof(PlannerWorkspaceViewModel.IsWorkspaceInteractionEnabled))
         {

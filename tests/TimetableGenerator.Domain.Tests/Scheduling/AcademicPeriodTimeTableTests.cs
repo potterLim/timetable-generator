@@ -80,11 +80,7 @@ public sealed class AcademicPeriodTimeTableTests
         int endHour,
         int endMinute)
     {
-        return new ExpectedPeriodTime(
-            new AcademicPeriod(periodValue),
-            new DailyTimeRange(
-                new ScheduleTime(startHour, startMinute),
-                new ScheduleTime(endHour, endMinute)));
+        return new ExpectedPeriodTime(new AcademicPeriod(periodValue), new DailyTimeRange(new ScheduleTime(startHour, startMinute), new ScheduleTime(endHour, endMinute)));
     }
 
     private static void assertTimeTable(EDay day, IReadOnlyList<ExpectedPeriodTime> expectedPeriods)
@@ -110,7 +106,5 @@ public sealed class AcademicPeriodTimeTableTests
         }
     }
 
-    private readonly record struct ExpectedPeriodTime(
-        AcademicPeriod Period,
-        DailyTimeRange TimeRange);
+    private readonly record struct ExpectedPeriodTime(AcademicPeriod Period, DailyTimeRange TimeRange);
 }

@@ -12,8 +12,7 @@ namespace TimetableGenerator.Desktop.Presentation.Catalog;
 
 internal static class ScheduleRecommendationProjector
 {
-    public static PresentationScheduleRecommendation ProjectPersonalSchedules(
-        IEnumerable<PersonalSchedule> personalSchedules)
+    public static PresentationScheduleRecommendation ProjectPersonalSchedules(IEnumerable<PersonalSchedule> personalSchedules)
     {
         if (personalSchedules == null)
         {
@@ -25,9 +24,7 @@ internal static class ScheduleRecommendationProjector
         {
             if (personalSchedule == null)
             {
-                throw new ArgumentException(
-                    "Schedule projections cannot contain null personal schedules.",
-                    nameof(personalSchedules));
+                throw new ArgumentException("Schedule projections cannot contain null personal schedules.", nameof(personalSchedules));
             }
 
             foreach (WeeklyTimeRange timeRange in personalSchedule.TimeRanges)
@@ -40,9 +37,7 @@ internal static class ScheduleRecommendationProjector
         return new PresentationScheduleRecommendation(entries);
     }
 
-    public static PresentationScheduleRecommendation Project(
-        ApplicationScheduleRecommendation recommendation,
-        CourseCatalogProjection catalogProjection)
+    public static PresentationScheduleRecommendation Project(ApplicationScheduleRecommendation recommendation, CourseCatalogProjection catalogProjection)
     {
         if (recommendation == null)
         {
@@ -62,8 +57,7 @@ internal static class ScheduleRecommendationProjector
             addScheduleEntries(scheduledOffering, catalogProjection, entries);
         }
 
-        foreach (UnscheduledOfferingSelection selection
-            in recommendation.UnscheduledSelections)
+        foreach (UnscheduledOfferingSelection selection in recommendation.UnscheduledSelections)
         {
             validateUnscheduledSelection(selection, catalogProjection, selectedCourseIds);
         }
@@ -74,9 +68,7 @@ internal static class ScheduleRecommendationProjector
         return new PresentationScheduleRecommendation(entries);
     }
 
-    private static void addPersonalScheduleEntries(
-        IEnumerable<PersonalSchedule> personalSchedules,
-        ICollection<ScheduleEntry> entries)
+    private static void addPersonalScheduleEntries(IEnumerable<PersonalSchedule> personalSchedules, ICollection<ScheduleEntry> entries)
     {
         foreach (PersonalSchedule personalSchedule in personalSchedules)
         {
@@ -87,85 +79,56 @@ internal static class ScheduleRecommendationProjector
         }
     }
 
-    private static void validateScheduledOffering(
-        ScheduledOffering scheduledOffering,
-        CourseCatalogProjection catalogProjection,
-        ISet<CourseId> selectedCourseIds)
+    private static void validateScheduledOffering(ScheduledOffering scheduledOffering, CourseCatalogProjection catalogProjection, ISet<CourseId> selectedCourseIds)
     {
         if (catalogProjection.HasOffering(scheduledOffering.OfferingId) == false)
         {
-            throw new ArgumentException(
-                "The recommendation references an offering outside the projected catalog.",
-                nameof(scheduledOffering));
+            throw new ArgumentException("The recommendation references an offering outside the projected catalog.", nameof(scheduledOffering));
         }
 
         CatalogOffering sourceOffering = catalogProjection.FindOfferingById(scheduledOffering.OfferingId).Offering;
-        bool hasMatchingIdentity = sourceOffering.CourseId == scheduledOffering.CourseId
-            && sourceOffering.SectionCode == scheduledOffering.SectionCode;
+        bool hasMatchingIdentity = sourceOffering.CourseId == scheduledOffering.CourseId && sourceOffering.SectionCode == scheduledOffering.SectionCode;
         if (hasMatchingIdentity == false)
         {
-            throw new ArgumentException(
-                "The recommendation offering identity does not match the projected catalog.",
-                nameof(scheduledOffering));
+            throw new ArgumentException("The recommendation offering identity does not match the projected catalog.", nameof(scheduledOffering));
         }
 
-        if (sourceOffering.MeetingSchedule.IsScheduled == false
-            || haveMatchingSlots(
-                sourceOffering.MeetingSchedule.Slots,
-                scheduledOffering.MeetingSlots) == false)
+        if (sourceOffering.MeetingSchedule.IsScheduled == false || haveMatchingSlots(sourceOffering.MeetingSchedule.Slots, scheduledOffering.MeetingSlots) == false)
         {
-            throw new ArgumentException(
-                "The recommendation schedule does not match the projected catalog.",
-                nameof(scheduledOffering));
+            throw new ArgumentException("The recommendation schedule does not match the projected catalog.", nameof(scheduledOffering));
         }
 
         if (selectedCourseIds.Add(scheduledOffering.CourseId) == false)
         {
-            throw new ArgumentException(
-                "A recommendation cannot select a course more than once.",
-                nameof(scheduledOffering));
+            throw new ArgumentException("A recommendation cannot select a course more than once.", nameof(scheduledOffering));
         }
     }
 
-    private static void validateUnscheduledSelection(
-        UnscheduledOfferingSelection selection,
-        CourseCatalogProjection catalogProjection,
-        ISet<CourseId> selectedCourseIds)
+    private static void validateUnscheduledSelection(UnscheduledOfferingSelection selection, CourseCatalogProjection catalogProjection, ISet<CourseId> selectedCourseIds)
     {
         if (catalogProjection.HasOffering(selection.OfferingId) == false)
         {
-            throw new ArgumentException(
-                "The recommendation references an offering outside the projected catalog.",
-                nameof(selection));
+            throw new ArgumentException("The recommendation references an offering outside the projected catalog.", nameof(selection));
         }
 
         CatalogOffering sourceOffering = catalogProjection.FindOfferingById(selection.OfferingId).Offering;
         if (sourceOffering.CourseId != selection.CourseId)
         {
-            throw new ArgumentException(
-                "The time-not-provided selection does not belong to its declared course.",
-                nameof(selection));
+            throw new ArgumentException("The time-not-provided selection does not belong to its declared course.", nameof(selection));
         }
 
         if (sourceOffering.MeetingSchedule.Status != EMeetingScheduleStatus.NotProvided)
         {
-            throw new ArgumentException(
-                "Time-not-provided selections must reference offerings without a schedule.",
-                nameof(selection));
+            throw new ArgumentException("Time-not-provided selections must reference offerings without a schedule.", nameof(selection));
         }
 
         if (selectedCourseIds.Add(selection.CourseId) == false)
         {
-            throw new ArgumentException(
-                "A recommendation cannot select a course more than once.",
-                nameof(selection));
+            throw new ArgumentException("A recommendation cannot select a course more than once.", nameof(selection));
         }
     }
 
-    private static void addScheduleEntries(
-        ScheduledOffering scheduledOffering,
-        CourseCatalogProjection catalogProjection,
-        ICollection<ScheduleEntry> entries)
+    private static void addScheduleEntries(ScheduledOffering scheduledOffering, CourseCatalogProjection catalogProjection, ICollection<ScheduleEntry> entries)
     {
         CatalogCourseProjection courseProjection = catalogProjection.FindCourseById(scheduledOffering.CourseId);
         CatalogOfferingProjection offeringProjection = catalogProjection.FindOfferingById(scheduledOffering.OfferingId);
@@ -173,10 +136,8 @@ internal static class ScheduleRecommendationProjector
             courseProjection.Course.Code,
             courseProjection.Course.KoreanName,
             courseProjection.Course.Credits,
-            new ScheduleInstructorSummary(
-                offeringProjection.Metadata.Instruction.InstructorAssignment),
-            new ScheduleLocationSummary(
-                offeringProjection.Metadata.Logistics.Location));
+            new ScheduleInstructorSummary(offeringProjection.Metadata.Instruction.InstructorAssignment),
+            new ScheduleLocationSummary(offeringProjection.Metadata.Logistics.Location));
 
         foreach (MeetingSlot slot in scheduledOffering.MeetingSlots)
         {
@@ -190,9 +151,7 @@ internal static class ScheduleRecommendationProjector
         }
     }
 
-    private static bool haveMatchingSlots(
-        IReadOnlyList<MeetingSlot> sourceSlots,
-        IReadOnlyList<MeetingSlot> recommendationSlots)
+    private static bool haveMatchingSlots(IReadOnlyList<MeetingSlot> sourceSlots, IReadOnlyList<MeetingSlot> recommendationSlots)
     {
         if (sourceSlots.Count != recommendationSlots.Count)
         {

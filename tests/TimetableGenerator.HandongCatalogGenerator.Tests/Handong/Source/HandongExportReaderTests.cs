@@ -16,9 +16,7 @@ public sealed class HandongExportReaderTests
     {
         using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(HandongExportTestHtml.Create()))
         {
-            HandongExportDocument document = await HandongExportReader.ReadAsync(
-                sourceFile.FilePath,
-                CancellationToken.None);
+            HandongExportDocument document = await HandongExportReader.ReadAsync(sourceFile.FilePath, CancellationToken.None);
 
             Assert.AreEqual(HandongExportSchema.DECLARED_CHARSET, document.DeclaredCharset);
             Assert.HasCount(1, document.Rows);
@@ -30,12 +28,8 @@ public sealed class HandongExportReaderTests
                 Assert.IsNotNull(document.Rows[0].GetCellLines(column));
             }
 
-            CollectionAssert.AreEqual(
-                new string[] { "GCS10001" },
-                toArray(document.Rows[0].GetCellLines(EHandongColumn.CourseCode)));
-            CollectionAssert.AreEqual(
-                new string[] { "01" },
-                toArray(document.Rows[0].GetCellLines(EHandongColumn.Section)));
+            CollectionAssert.AreEqual(new string[] { "GCS10001" }, toArray(document.Rows[0].GetCellLines(EHandongColumn.CourseCode)));
+            CollectionAssert.AreEqual(new string[] { "01" }, toArray(document.Rows[0].GetCellLines(EHandongColumn.Section)));
         }
     }
 
@@ -44,20 +38,12 @@ public sealed class HandongExportReaderTests
     {
         using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(HandongExportTestHtml.Create()))
         {
-            HandongExportDocument document = await HandongExportReader.ReadAsync(
-                sourceFile.FilePath,
-                CancellationToken.None);
+            HandongExportDocument document = await HandongExportReader.ReadAsync(sourceFile.FilePath, CancellationToken.None);
             HandongRawOfferingRow row = document.Rows[0];
 
-            CollectionAssert.AreEqual(
-                new string[] { "소프트웨어 입문", "(Introduction to Programming)" },
-                toArray(row.GetCellLines(EHandongColumn.CourseName)));
-            CollectionAssert.AreEqual(
-                new string[] { "GLS 주간", "테스트 담당자" },
-                toArray(row.GetCellLines(EHandongColumn.OfferingInformation)));
-            CollectionAssert.AreEqual(
-                new string[] { "화5,금5", "Tue5,Fri5" },
-                toArray(row.GetCellLines(EHandongColumn.Period)));
+            CollectionAssert.AreEqual(new string[] { "소프트웨어 입문", "(Introduction to Programming)" }, toArray(row.GetCellLines(EHandongColumn.CourseName)));
+            CollectionAssert.AreEqual(new string[] { "GLS 주간", "테스트 담당자" }, toArray(row.GetCellLines(EHandongColumn.OfferingInformation)));
+            CollectionAssert.AreEqual(new string[] { "화5,금5", "Tue5,Fri5" }, toArray(row.GetCellLines(EHandongColumn.Period)));
         }
     }
 
@@ -66,9 +52,7 @@ public sealed class HandongExportReaderTests
     {
         using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(HandongExportTestHtml.Create()))
         {
-            HandongExportDocument document = await HandongExportReader.ReadAsync(
-                sourceFile.FilePath,
-                CancellationToken.None);
+            HandongExportDocument document = await HandongExportReader.ReadAsync(sourceFile.FilePath, CancellationToken.None);
             StringBuilder catalogTextBuilder = new StringBuilder();
             foreach (EHandongColumn column in Enum.GetValues<EHandongColumn>())
             {
@@ -90,9 +74,7 @@ public sealed class HandongExportReaderTests
     {
         using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(HandongExportTestHtml.Create()))
         {
-            HandongExportDocument document = await HandongExportReader.ReadAsync(
-                sourceFile.FilePath,
-                CancellationToken.None);
+            HandongExportDocument document = await HandongExportReader.ReadAsync(sourceFile.FilePath, CancellationToken.None);
             HandongSourceLinkMetadata? metadataOrNull = document.Rows[0].SourceLinkMetadataOrNull;
 
             Assert.IsNotNull(metadataOrNull);

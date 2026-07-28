@@ -18,9 +18,7 @@ internal sealed class LocationAssignment
         }
     }
 
-    private LocationAssignment(
-        ELocationAssignmentStatus status,
-        ClassroomDisplayText? displayTextOrNull)
+    private LocationAssignment(ELocationAssignmentStatus status, ClassroomDisplayText? displayTextOrNull)
     {
         if (Enum.IsDefined(typeof(ELocationAssignmentStatus), status) == false)
         {

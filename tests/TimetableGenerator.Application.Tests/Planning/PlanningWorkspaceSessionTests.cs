@@ -31,15 +31,11 @@ public sealed class PlanningWorkspaceSessionTests
                 });
 
         session.AddCourse(selection);
-        ScheduleRecommendationResult result = session.GenerateRecommendations(
-            new ScheduleRecommendationLimit(10),
-            CancellationToken.None);
+        ScheduleRecommendationResult result = session.GenerateRecommendations(new ScheduleRecommendationLimit(10), CancellationToken.None);
 
         Assert.HasCount(1, session.Workspace.GetActivePlan().CourseChoiceGroups);
         Assert.HasCount(2, result.Recommendations);
-        Assert.AreEqual(
-            ERecommendationVerificationStatus.ConfirmedConflictFree,
-            result.Recommendations[0].VerificationStatus);
+        Assert.AreEqual(ERecommendationVerificationStatus.ConfirmedConflictFree, result.Recommendations[0].VerificationStatus);
     }
 
     [TestMethod]
@@ -50,15 +46,11 @@ public sealed class PlanningWorkspaceSessionTests
         PlanningCourseSelection selection = PlanningCourseSelection.CreateTimeNotProvidedOffering(ScheduleRecommendationTestData.CreateCourseId("BBB10001"), ScheduleRecommendationTestData.CreateOfferingId("BBB10001", "01"));
 
         session.AddCourse(selection);
-        ScheduleRecommendationResult result = session.GenerateRecommendations(
-            new ScheduleRecommendationLimit(10),
-            CancellationToken.None);
+        ScheduleRecommendationResult result = session.GenerateRecommendations(new ScheduleRecommendationLimit(10), CancellationToken.None);
 
         Assert.HasCount(1, session.Workspace.GetActivePlan().UnscheduledOfferingSelections);
         Assert.HasCount(1, result.Recommendations);
-        Assert.AreEqual(
-            ERecommendationVerificationStatus.RequiresManualReview,
-            result.Recommendations[0].VerificationStatus);
+        Assert.AreEqual(ERecommendationVerificationStatus.RequiresManualReview, result.Recommendations[0].VerificationStatus);
     }
 
     [TestMethod]
@@ -103,9 +95,7 @@ public sealed class PlanningWorkspaceSessionTests
     {
         CourseCatalog catalog = createCatalog();
         PlanningWorkspaceSession session = createEmptySession(catalog);
-        PersonalSchedule firstPlanSchedule = createPersonalSchedule(
-            PersonalScheduleId.CreateNew(),
-            "첫 계획 일정");
+        PersonalSchedule firstPlanSchedule = createPersonalSchedule(PersonalScheduleId.CreateNew(), "첫 계획 일정");
         session.AddPersonalSchedule(firstPlanSchedule);
         session.AddPlan(PlanId.CreateNew(), new PlanName("둘째 계획"));
         PersonalScheduleId secondScheduleId = PersonalScheduleId.CreateNew();
@@ -157,11 +147,7 @@ public sealed class PlanningWorkspaceSessionTests
         PersonalSchedule existingSchedule = createPersonalSchedule(PersonalScheduleId.CreateNew(), "기존 일정");
         session.AddPersonalSchedule(existingSchedule);
         PlanningWorkspace workspaceBeforeRejectedEdit = session.Workspace;
-        PersonalSchedule overlappingSchedule = createPersonalSchedule(
-            PersonalScheduleId.CreateNew(),
-            "겹치는 일정",
-            new ScheduleTime(12, 30),
-            new ScheduleTime(13, 30));
+        PersonalSchedule overlappingSchedule = createPersonalSchedule(PersonalScheduleId.CreateNew(), "겹치는 일정", new ScheduleTime(12, 30), new ScheduleTime(13, 30));
 
         Assert.ThrowsExactly<ArgumentException>(
             () => session.AddPersonalSchedule(overlappingSchedule));
@@ -181,14 +167,8 @@ public sealed class PlanningWorkspaceSessionTests
             catalog.Term,
             new CatalogRevision(2),
             new CatalogArtifactSha256(new string('a', 64)));
-        PlanningPlan plan = ScheduleRecommendationTestData.CreatePlanWithBinding(
-            mismatchedBinding,
-            Array.Empty<CourseChoiceGroup>(),
-            Array.Empty<UnscheduledOfferingSelection>());
-        PlanningWorkspace workspace = new PlanningWorkspace(
-            plan.CatalogBinding,
-            plan.Id,
-            new PlanningPlan[] { plan });
+        PlanningPlan plan = ScheduleRecommendationTestData.CreatePlanWithBinding(mismatchedBinding, Array.Empty<CourseChoiceGroup>(), Array.Empty<UnscheduledOfferingSelection>());
+        PlanningWorkspace workspace = new PlanningWorkspace(plan.CatalogBinding, plan.Id, new PlanningPlan[] { plan });
 
         Assert.ThrowsExactly<ArgumentException>(
             () => new PlanningWorkspaceSession(catalog, workspace));
@@ -247,14 +227,8 @@ public sealed class PlanningWorkspaceSessionTests
             int periodValue = (groupIndex % 10) + 1;
             MeetingSlot slot = ScheduleRecommendationTestData.CreateMeetingSlot(day, periodValue);
             courses.Add(ScheduleRecommendationTestData.CreateCourse(courseCodeValue));
-            offerings.Add(ScheduleRecommendationTestData.CreateScheduledOffering(
-                courseCodeValue,
-                "01",
-                new MeetingSlot[] { slot }));
-            offerings.Add(ScheduleRecommendationTestData.CreateScheduledOffering(
-                courseCodeValue,
-                "02",
-                new MeetingSlot[] { slot }));
+            offerings.Add(ScheduleRecommendationTestData.CreateScheduledOffering(courseCodeValue, "01", new MeetingSlot[] { slot }));
+            offerings.Add(ScheduleRecommendationTestData.CreateScheduledOffering(courseCodeValue, "02", new MeetingSlot[] { slot }));
             groups.Add(ScheduleRecommendationTestData.CreateCourseChoiceGroup(courseCodeValue, "01", "02"));
         }
 
@@ -269,15 +243,8 @@ public sealed class PlanningWorkspaceSessionTests
                 new WeeklyTimeRange(blockedSlot.Day, blockedTimeRange),
             },
             PersonalScheduleDetails.CreateEmpty());
-        PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
-            catalog,
-            groups,
-            Array.Empty<UnscheduledOfferingSelection>(),
-            new PersonalSchedule[] { blockingSchedule });
-        PlanningWorkspace workspace = new PlanningWorkspace(
-            plan.CatalogBinding,
-            plan.Id,
-            new PlanningPlan[] { plan });
+        PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(catalog, groups, Array.Empty<UnscheduledOfferingSelection>(), new PersonalSchedule[] { blockingSchedule });
+        PlanningWorkspace workspace = new PlanningWorkspace(plan.CatalogBinding, plan.Id, new PlanningPlan[] { plan });
 
         PlanningWorkspaceSession session = new PlanningWorkspaceSession(catalog, workspace);
 
@@ -321,14 +288,8 @@ public sealed class PlanningWorkspaceSessionTests
 
     private static PlanningWorkspaceSession createEmptySession(CourseCatalog catalog)
     {
-        PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
-            catalog,
-            Array.Empty<CourseChoiceGroup>(),
-            Array.Empty<UnscheduledOfferingSelection>());
-        PlanningWorkspace workspace = new PlanningWorkspace(
-            plan.CatalogBinding,
-            plan.Id,
-            new PlanningPlan[] { plan });
+        PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(catalog, Array.Empty<CourseChoiceGroup>(), Array.Empty<UnscheduledOfferingSelection>());
+        PlanningWorkspace workspace = new PlanningWorkspace(plan.CatalogBinding, plan.Id, new PlanningPlan[] { plan });
         return new PlanningWorkspaceSession(catalog, workspace);
     }
 
@@ -337,17 +298,9 @@ public sealed class PlanningWorkspaceSessionTests
         return createPersonalSchedule(id, title, new ScheduleTime(12, 0), new ScheduleTime(13, 0));
     }
 
-    private static PersonalSchedule createPersonalSchedule(
-        PersonalScheduleId id,
-        string title,
-        ScheduleTime start,
-        ScheduleTime end)
+    private static PersonalSchedule createPersonalSchedule(PersonalScheduleId id, string title, ScheduleTime start, ScheduleTime end)
     {
         WeeklyTimeRange timeRange = new WeeklyTimeRange(EDay.Wednesday, new DailyTimeRange(start, end));
-        return new PersonalSchedule(
-            id,
-            new PersonalScheduleTitle(title),
-            new WeeklyTimeRange[] { timeRange },
-            PersonalScheduleDetails.CreateEmpty());
+        return new PersonalSchedule(id, new PersonalScheduleTitle(title), new WeeklyTimeRange[] { timeRange }, PersonalScheduleDetails.CreateEmpty());
     }
 }

@@ -117,11 +117,7 @@ internal static class CatalogProjectionTestFixture
             LocationAssignmentMetadata.NotProvided,
             new KoreanScheduleSourceText("화2"),
             new SourceRecordNumber(2));
-        CatalogDocumentCounts counts = new CatalogDocumentCounts(
-            new CatalogCourseCount(2),
-            new CatalogOfferingCount(2),
-            new CatalogScheduledOfferingCount(2),
-            new CatalogMeetingNotProvidedCount(0));
+        CatalogDocumentCounts counts = new CatalogDocumentCounts(new CatalogCourseCount(2), new CatalogOfferingCount(2), new CatalogScheduledOfferingCount(2), new CatalogMeetingNotProvidedCount(0));
         CatalogDataQualityMetadata dataQuality = new CatalogDataQualityMetadata(
             EScheduleNormalizationSource.KoreanPeriodText,
             new CatalogSourceEnglishScheduleMismatchCount(0),
@@ -158,23 +154,13 @@ internal static class CatalogProjectionTestFixture
         CourseId seminarCourseId = new CourseId("course-seminar");
         OfferingId seminarOfferingId = new OfferingId("offering-seminar-unscheduled");
 
-        CourseChoiceGroup courseChoiceGroup =
-            CourseChoiceGroup.CreateWithAcceptableOfferings(
-                CourseChoiceGroupId.CreateNew(),
-                programmingCourseId,
-                new OfferingId[] { primaryOfferingId });
+        CourseChoiceGroup courseChoiceGroup = CourseChoiceGroup.CreateWithAcceptableOfferings(CourseChoiceGroupId.CreateNew(), programmingCourseId, new OfferingId[] { primaryOfferingId });
         UnscheduledOfferingSelection unscheduledSelection = new UnscheduledOfferingSelection(seminarCourseId, seminarOfferingId);
-        PlanningPlanContent content = new PlanningPlanContent(
-            new CourseChoiceGroup[] { courseChoiceGroup },
-            new UnscheduledOfferingSelection[] { unscheduledSelection },
-            Array.Empty<PersonalSchedule>());
+        PlanningPlanContent content = new PlanningPlanContent(new CourseChoiceGroup[] { courseChoiceGroup }, new UnscheduledOfferingSelection[] { unscheduledSelection }, Array.Empty<PersonalSchedule>());
         return generateRecommendation(document, content);
     }
 
-    public static ScheduleRecommendation CreateScheduledRecommendation(
-        CourseCatalogDocument document,
-        CourseId courseId,
-        OfferingId offeringId)
+    public static ScheduleRecommendation CreateScheduledRecommendation(CourseCatalogDocument document, CourseId courseId, OfferingId offeringId)
     {
         if (document == null)
         {
@@ -191,21 +177,12 @@ internal static class CatalogProjectionTestFixture
             throw new ArgumentNullException(nameof(offeringId));
         }
 
-        CourseChoiceGroup courseChoiceGroup =
-            CourseChoiceGroup.CreateWithAcceptableOfferings(
-                CourseChoiceGroupId.CreateNew(),
-                courseId,
-                new OfferingId[] { offeringId });
-        PlanningPlanContent content = new PlanningPlanContent(
-            new CourseChoiceGroup[] { courseChoiceGroup },
-            Array.Empty<UnscheduledOfferingSelection>(),
-            Array.Empty<PersonalSchedule>());
+        CourseChoiceGroup courseChoiceGroup = CourseChoiceGroup.CreateWithAcceptableOfferings(CourseChoiceGroupId.CreateNew(), courseId, new OfferingId[] { offeringId });
+        PlanningPlanContent content = new PlanningPlanContent(new CourseChoiceGroup[] { courseChoiceGroup }, Array.Empty<UnscheduledOfferingSelection>(), Array.Empty<PersonalSchedule>());
         return generateRecommendation(document, content);
     }
 
-    private static ScheduleRecommendation generateRecommendation(
-        CourseCatalogDocument document,
-        PlanningPlanContent content)
+    private static ScheduleRecommendation generateRecommendation(CourseCatalogDocument document, PlanningPlanContent content)
     {
         PlanCatalogBinding catalogBinding = new PlanCatalogBinding(
             document.Catalog.Id,
@@ -213,44 +190,27 @@ internal static class CatalogProjectionTestFixture
             document.Catalog.Term,
             document.Catalog.Revision,
             new CatalogArtifactSha256(new string('a', 64)));
-        PlanningPlan plan = new PlanningPlan(
-            PlanId.CreateNew(),
-            new PlanName("프로젝션 테스트"),
-            catalogBinding,
-            content);
-        ScheduleRecommendationRequest request = new ScheduleRecommendationRequest(
-            document.Catalog,
-            plan,
-            new ScheduleRecommendationLimit(1));
+        PlanningPlan plan = new PlanningPlan(PlanId.CreateNew(), new PlanName("프로젝션 테스트"), catalogBinding, content);
+        ScheduleRecommendationRequest request = new ScheduleRecommendationRequest(document.Catalog, plan, new ScheduleRecommendationLimit(1));
 
         ScheduleRecommendationGenerator generator = new ScheduleRecommendationGenerator();
-        ScheduleRecommendationResult result = generator.GenerateRecommendations(
-            request,
-            CancellationToken.None);
+        ScheduleRecommendationResult result = generator.GenerateRecommendations(request, CancellationToken.None);
         if (result.IsSuccessful == false || result.Recommendations.Count != 1)
         {
-            throw new InvalidOperationException(
-                "The catalog projection recommendation fixture could not be generated.");
+            throw new InvalidOperationException("The catalog projection recommendation fixture could not be generated.");
         }
 
         return result.Recommendations[0];
     }
 
-    private static CourseCatalogDocument createDocument(
-        MeetingSchedule primarySchedule,
-        ECatalogCourseOrder courseOrder,
-        bool hasScheduledSeminarOffering)
+    private static CourseCatalogDocument createDocument(MeetingSchedule primarySchedule, ECatalogCourseOrder courseOrder, bool hasScheduledSeminarOffering)
     {
         InstitutionId institutionId = new InstitutionId("handong-global-university");
         InstitutionName institutionName = new InstitutionName("한동대학교");
         CatalogCourse programmingCourse = createProgrammingCourse();
         CatalogCourse seminarCourse = createSeminarCourse();
 
-        CatalogOffering primaryOffering = new CatalogOffering(
-            new OfferingId("offering-programming-primary"),
-            programmingCourse.Id,
-            new CourseSectionCode("01"),
-            primarySchedule);
+        CatalogOffering primaryOffering = new CatalogOffering(new OfferingId("offering-programming-primary"), programmingCourse.Id, new CourseSectionCode("01"), primarySchedule);
         CatalogOffering alternativeOffering = new CatalogOffering(
             new OfferingId("offering-programming-alternative"),
             programmingCourse.Id,
@@ -267,21 +227,10 @@ internal static class CatalogProjectionTestFixture
                     new MeetingSlot(EDay.Friday, new AcademicPeriod(4)),
                 })
             : MeetingSchedule.NotProvided;
-        CatalogOffering seminarOffering = new CatalogOffering(
-            new OfferingId("offering-seminar-unscheduled"),
-            seminarCourse.Id,
-            new CourseSectionCode("01"),
-            seminarSchedule);
-        CatalogOffering secondSeminarOffering = new CatalogOffering(
-            new OfferingId("offering-seminar-unscheduled-02"),
-            seminarCourse.Id,
-            new CourseSectionCode("02"),
-            MeetingSchedule.NotProvided);
+        CatalogOffering seminarOffering = new CatalogOffering(new OfferingId("offering-seminar-unscheduled"), seminarCourse.Id, new CourseSectionCode("01"), seminarSchedule);
+        CatalogOffering secondSeminarOffering = new CatalogOffering(new OfferingId("offering-seminar-unscheduled-02"), seminarCourse.Id, new CourseSectionCode("02"), MeetingSchedule.NotProvided);
 
-        IReadOnlyList<CatalogCourse> courses = createCourseOrder(
-            programmingCourse,
-            seminarCourse,
-            courseOrder);
+        IReadOnlyList<CatalogCourse> courses = createCourseOrder(programmingCourse, seminarCourse, courseOrder);
         IReadOnlyList<CatalogOffering> offerings = createOfferingOrder(
             primaryOffering,
             alternativeOffering,
@@ -300,16 +249,10 @@ internal static class CatalogProjectionTestFixture
         List<CatalogOfferingMetadata> metadata = new List<CatalogOfferingMetadata>();
         metadata.Add(createPrimaryOfferingMetadata(primaryOffering.Id));
         metadata.Add(createAlternativeOfferingMetadata(alternativeOffering.Id));
-        metadata.Add(
-            hasScheduledSeminarOffering
-                ? createScheduledSeminarOfferingMetadata(seminarOffering.Id)
-                : createSeminarOfferingMetadata(seminarOffering.Id));
+        metadata.Add(hasScheduledSeminarOffering ? createScheduledSeminarOfferingMetadata(seminarOffering.Id) : createSeminarOfferingMetadata(seminarOffering.Id));
         metadata.Add(createSecondSeminarOfferingMetadata(secondSeminarOffering.Id));
 
-        InstitutionMetadata institution = new InstitutionMetadata(
-            institutionId,
-            institutionName,
-            new EnglishInstitutionName("Handong Global University"));
+        InstitutionMetadata institution = new InstitutionMetadata(institutionId, institutionName, new EnglishInstitutionName("Handong Global University"));
         CatalogSourceMetadata source = new CatalogSourceMetadata(
             institutionId,
             new CatalogSourceLogicalFileName("catalog.xls"),
@@ -319,16 +262,8 @@ internal static class CatalogProjectionTestFixture
             new CatalogDecoderName("windows-949"),
             new CatalogFileSize(1),
             new Sha256Digest(new string('0', 64)));
-        CatalogConverterMetadata converter = new CatalogConverterMetadata(
-            new CatalogConverterId("catalog-converter"),
-            new CatalogConverterVersion(new Version(1, 0, 0)));
-        CatalogDocumentCounts counts = new CatalogDocumentCounts(
-            new CatalogCourseCount(2),
-            new CatalogOfferingCount(4),
-            new CatalogScheduledOfferingCount(
-                hasScheduledSeminarOffering ? 3 : 2),
-            new CatalogMeetingNotProvidedCount(
-                hasScheduledSeminarOffering ? 1 : 2));
+        CatalogConverterMetadata converter = new CatalogConverterMetadata(new CatalogConverterId("catalog-converter"), new CatalogConverterVersion(new Version(1, 0, 0)));
+        CatalogDocumentCounts counts = new CatalogDocumentCounts(new CatalogCourseCount(2), new CatalogOfferingCount(4), new CatalogScheduledOfferingCount(hasScheduledSeminarOffering ? 3 : 2), new CatalogMeetingNotProvidedCount(hasScheduledSeminarOffering ? 1 : 2));
         CatalogDataQualityMetadata dataQuality = new CatalogDataQualityMetadata(
             EScheduleNormalizationSource.KoreanPeriodText,
             new CatalogSourceEnglishScheduleMismatchCount(0),
@@ -369,10 +304,7 @@ internal static class CatalogProjectionTestFixture
             new CourseCredits(1m));
     }
 
-    private static IReadOnlyList<CatalogCourse> createCourseOrder(
-        CatalogCourse programmingCourse,
-        CatalogCourse seminarCourse,
-        ECatalogCourseOrder courseOrder)
+    private static IReadOnlyList<CatalogCourse> createCourseOrder(CatalogCourse programmingCourse, CatalogCourse seminarCourse, ECatalogCourseOrder courseOrder)
     {
         if (courseOrder == ECatalogCourseOrder.Reversed)
         {
@@ -411,9 +343,7 @@ internal static class CatalogProjectionTestFixture
 
     private static CatalogOfferingMetadata createPrimaryOfferingMetadata(OfferingId offeringId)
     {
-        InstructorAssignmentMetadata instructor = InstructorAssignmentMetadata.CreateConfirmed(
-            new InstructorDisplayText("홍길동 외 1명"),
-            new AdditionalInstructorCount(1));
+        InstructorAssignmentMetadata instructor = InstructorAssignmentMetadata.CreateConfirmed(new InstructorDisplayText("홍길동 외 1명"), new AdditionalInstructorCount(1));
         LocationAssignmentMetadata location = LocationAssignmentMetadata.CreateAssigned(new ClassroomDisplayText("오석관 301"));
         return createScheduledMetadata(
             offeringId,
@@ -439,11 +369,7 @@ internal static class CatalogProjectionTestFixture
 
     private static CatalogOfferingMetadata createSeminarOfferingMetadata(OfferingId offeringId)
     {
-        CatalogOfferingClassificationMetadata classification =
-            CatalogOfferingClassificationMetadata.CreateWithoutGeneralEducationCategory(
-                ERequirementType.GeneralElective,
-                new OfferingUnitName("ICT창업학부"),
-                EInstructionSession.Daytime);
+        CatalogOfferingClassificationMetadata classification = CatalogOfferingClassificationMetadata.CreateWithoutGeneralEducationCategory(ERequirementType.GeneralElective, new OfferingUnitName("ICT창업학부"), EInstructionSession.Daytime);
         CatalogOfferingInstructionMetadata instruction = createInstruction(InstructorAssignmentMetadata.Unconfirmed);
         CatalogOfferingLogisticsMetadata logistics = CatalogOfferingLogisticsMetadata.CreateWithoutProvidedSchedule(LocationAssignmentMetadata.NotProvided);
         return createMetadata(
@@ -468,11 +394,7 @@ internal static class CatalogProjectionTestFixture
 
     private static CatalogOfferingMetadata createSecondSeminarOfferingMetadata(OfferingId offeringId)
     {
-        CatalogOfferingClassificationMetadata classification =
-            CatalogOfferingClassificationMetadata.CreateWithoutGeneralEducationCategory(
-                ERequirementType.GeneralElective,
-                new OfferingUnitName("ICT창업학부"),
-                EInstructionSession.Daytime);
+        CatalogOfferingClassificationMetadata classification = CatalogOfferingClassificationMetadata.CreateWithoutGeneralEducationCategory(ERequirementType.GeneralElective, new OfferingUnitName("ICT창업학부"), EInstructionSession.Daytime);
         CatalogOfferingInstructionMetadata instruction = createInstruction(InstructorAssignmentMetadata.NotProvided);
         CatalogOfferingLogisticsMetadata logistics = CatalogOfferingLogisticsMetadata.CreateWithoutProvidedSchedule(LocationAssignmentMetadata.NotProvided);
         return createMetadata(
@@ -492,25 +414,15 @@ internal static class CatalogProjectionTestFixture
         KoreanScheduleSourceText scheduleSourceText,
         SourceRecordNumber sourceRecordNumber)
     {
-        CatalogOfferingClassificationMetadata classification =
-            CatalogOfferingClassificationMetadata.CreateWithoutGeneralEducationCategory(
-                requirementType,
-                offeringUnitName,
-                EInstructionSession.Daytime);
+        CatalogOfferingClassificationMetadata classification = CatalogOfferingClassificationMetadata.CreateWithoutGeneralEducationCategory(requirementType, offeringUnitName, EInstructionSession.Daytime);
         CatalogOfferingInstructionMetadata instruction = createInstruction(instructor);
         CatalogOfferingLogisticsMetadata logistics = CatalogOfferingLogisticsMetadata.CreateScheduled(scheduleSourceText, location);
         return createMetadata(offeringId, classification, instruction, logistics, sourceRecordNumber);
     }
 
-    private static CatalogOfferingInstructionMetadata createInstruction(
-        InstructorAssignmentMetadata instructor)
+    private static CatalogOfferingInstructionMetadata createInstruction(InstructorAssignmentMetadata instructor)
     {
-        return new CatalogOfferingInstructionMetadata(
-            instructor,
-            new EnglishInstructionPercentage(0m),
-            new GradingMetadata(
-                EGradingType.Letter,
-                EPassFailOptionAvailability.Unavailable));
+        return new CatalogOfferingInstructionMetadata(instructor, new EnglishInstructionPercentage(0m), new GradingMetadata(EGradingType.Letter, EPassFailOptionAvailability.Unavailable));
     }
 
     private static CatalogOfferingMetadata createMetadata(
@@ -525,9 +437,6 @@ internal static class CatalogProjectionTestFixture
             classification,
             instruction,
             logistics,
-            CatalogOfferingCapacityMetadata.CreateWithoutCurrentEnrollment(
-                new OfferingSeatCapacity(30)),
-            new OfferingDetailsMetadata(ERemarksAvailability.Unavailable),
-            sourceRecordNumber);
+            CatalogOfferingCapacityMetadata.CreateWithoutCurrentEnrollment(new OfferingSeatCapacity(30)), new OfferingDetailsMetadata(ERemarksAvailability.Unavailable), sourceRecordNumber);
     }
 }

@@ -110,9 +110,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         {
             handlePersonalScheduleOverlayStateChanged();
         }
-        else if (eventArgs.PropertyName
-            == nameof(
-                PlannerWorkspaceViewModel.IsDeletePersonalScheduleConfirmationVisible))
+        else if (eventArgs.PropertyName == nameof(PlannerWorkspaceViewModel.IsDeletePersonalScheduleConfirmationVisible))
         {
             handlePersonalScheduleOverlayStateChanged();
         }
@@ -280,9 +278,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
             message = workspaceOrNull.PlanNameValidationMessage;
         }
 
-        AutomationLiveSetting liveSetting = string.IsNullOrEmpty(message)
-            ? AutomationLiveSetting.Off
-            : AutomationLiveSetting.Assertive;
+        AutomationLiveSetting liveSetting = string.IsNullOrEmpty(message) ? AutomationLiveSetting.Off : AutomationLiveSetting.Assertive;
         AutomationProperties.SetLiveSetting(validationMessageOrNull, liveSetting);
         validationMessageOrNull.Text = message;
     }
@@ -314,9 +310,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         TabStripItem? activePlanTabOrNull = this.GetVisualDescendants()
             .OfType<TabStripItem>()
             .FirstOrDefault(
-                candidate => ReferenceEquals(
-                    candidate.DataContext,
-                    activePlanOrNull));
+                candidate => ReferenceEquals(candidate.DataContext, activePlanOrNull));
         return activePlanTabOrNull != null && activePlanTabOrNull.Focus();
     }
 
@@ -388,8 +382,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
     {
         if (mWorkspaceOrNull == null
             || mWorkspaceOrNull.IsPersonalScheduleEditorVisible == false
-            || mWorkspaceOrNull.PersonalScheduleValidationError
-                == EPersonalScheduleDraftValidationError.None)
+            || mWorkspaceOrNull.PersonalScheduleValidationError == EPersonalScheduleDraftValidationError.None)
         {
             return;
         }
@@ -502,8 +495,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
             .FirstOrDefault(
                 static candidate => candidate.Name
                     == "CourseChoiceGroupEditButton"
-                    || candidate.Name
-                    == "AlternativeCourseChoiceGroupEditButton");
+                    || candidate.Name == "AlternativeCourseChoiceGroupEditButton");
         if (editButtonOrNull != null && editButtonOrNull.Focus())
         {
             return;
@@ -538,9 +530,7 @@ internal sealed partial class ProductWorkspaceHostView : UserControl
         Button? openActionOrNull = this.GetVisualDescendants()
             .OfType<Button>()
             .FirstOrDefault(
-                candidate => ReferenceEquals(
-                    candidate.Command,
-                    mWorkspaceOrNull.ToggleCoursePaneCommand)
+                candidate => ReferenceEquals(candidate.Command, mWorkspaceOrNull.ToggleCoursePaneCommand)
                     && candidate.IsEffectivelyVisible
                     && candidate.Name != "CloseCoursePaneButton");
         openActionOrNull?.Focus();

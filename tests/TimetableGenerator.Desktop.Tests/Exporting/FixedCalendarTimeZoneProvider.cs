@@ -12,9 +12,7 @@ internal sealed class FixedCalendarTimeZoneProvider : ICalendarTimeZoneProvider
     {
         if (timeZoneId.IsValid == false)
         {
-            throw new ArgumentException(
-                "Fixed calendar time-zone providers require a valid time-zone ID.",
-                nameof(timeZoneId));
+            throw new ArgumentException("Fixed calendar time-zone providers require a valid time-zone ID.", nameof(timeZoneId));
         }
 
         mTimeZoneId = timeZoneId;

@@ -46,8 +46,7 @@ internal static class DeterministicJsonWriter
                 }
 
                 int followingByteIndex = byteIndex + 1;
-                bool isCarriageReturnLineFeed = followingByteIndex < content.Length
-                    && content[followingByteIndex] == LINE_FEED;
+                bool isCarriageReturnLineFeed = followingByteIndex < content.Length && content[followingByteIndex] == LINE_FEED;
                 if (isCarriageReturnLineFeed == false)
                 {
                     throw new InvalidOperationException("Deterministic JSON contains a bare carriage return.");

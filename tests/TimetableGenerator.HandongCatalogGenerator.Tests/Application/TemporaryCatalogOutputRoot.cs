@@ -12,9 +12,7 @@ internal sealed class TemporaryCatalogOutputRoot : IDisposable
 
     public TemporaryCatalogOutputRoot()
     {
-        mDirectoryPath = Path.Combine(
-            Path.GetTempPath(),
-            "HandongCatalogOutputTests-" + Guid.NewGuid().ToString("N"));
+        mDirectoryPath = Path.Combine(Path.GetTempPath(), "HandongCatalogOutputTests-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(mDirectoryPath);
         OutputRootPath = new CatalogOutputRootPath(mDirectoryPath);
     }

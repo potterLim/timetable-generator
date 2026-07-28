@@ -31,9 +31,7 @@ public sealed class ProcessAppleCalendarAutomationCommandTests
             return;
         }
 
-        Assert.Equal(
-            UnixFileMode.UserRead | UnixFileMode.UserWrite,
-            options.UnixCreateMode);
+        Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, options.UnixCreateMode);
     }
 
     [Fact]
@@ -44,11 +42,7 @@ public sealed class ProcessAppleCalendarAutomationCommandTests
             return;
         }
 
-        string requestPath = Path.Combine(
-            Path.GetTempPath(),
-            "timetable-generator-apple-calendar-test-"
-                + Guid.NewGuid().ToString("N")
-                + ".json");
+        string requestPath = Path.Combine(Path.GetTempPath(), "timetable-generator-apple-calendar-test-" + Guid.NewGuid().ToString("N") + ".json");
         try
         {
             FileStreamOptions options = ProcessAppleCalendarAutomationCommand.createPrivateRequestFileOptions();
@@ -56,9 +50,7 @@ public sealed class ProcessAppleCalendarAutomationCommandTests
             {
                 UnixFileMode createdMode = File.GetUnixFileMode(requestPath);
 
-                Assert.Equal(
-                    UnixFileMode.UserRead | UnixFileMode.UserWrite,
-                    createdMode);
+                Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, createdMode);
                 Assert.True(requestStream.CanWrite);
                 Assert.False(requestStream.CanRead);
             }
@@ -126,17 +118,9 @@ public sealed class ProcessAppleCalendarAutomationCommandTests
                             TestContext.Current.CancellationToken);
                     });
 
-            Assert.Equal(
-                EAppleCalendarNativeFailureKind.AccessDenied,
-                exception.FailureKind);
-            Assert.Equal(
-                "apple_calendar_automation_access_denied",
-                exception.DiagnosticCode);
-            Assert.Equal(
-                "600",
-                (await File.ReadAllTextAsync(
-                    command.ModePath,
-                    TestContext.Current.CancellationToken)).Trim());
+            Assert.Equal(EAppleCalendarNativeFailureKind.AccessDenied, exception.FailureKind);
+            Assert.Equal("apple_calendar_automation_access_denied", exception.DiagnosticCode);
+            Assert.Equal("600", (await File.ReadAllTextAsync(command.ModePath, TestContext.Current.CancellationToken)).Trim());
             Assert.False(File.Exists(command.RequestPath));
         }
     }
@@ -169,21 +153,11 @@ public sealed class ProcessAppleCalendarAutomationCommandTests
 
             try
             {
-                await waitForFileAsync(
-                    command.ChildProcessIdPath,
-                    TestContext.Current.CancellationToken);
-                string childProcessIdText = await File.ReadAllTextAsync(
-                    command.ChildProcessIdPath,
-                    TestContext.Current.CancellationToken);
-                childProcessId = int.Parse(
-                    childProcessIdText.Trim(),
-                    System.Globalization.CultureInfo.InvariantCulture);
+                await waitForFileAsync(command.ChildProcessIdPath, TestContext.Current.CancellationToken);
+                string childProcessIdText = await File.ReadAllTextAsync(command.ChildProcessIdPath, TestContext.Current.CancellationToken);
+                childProcessId = int.Parse(childProcessIdText.Trim(), System.Globalization.CultureInfo.InvariantCulture);
 
-                Assert.Equal(
-                    "600",
-                    (await File.ReadAllTextAsync(
-                        command.ModePath,
-                        TestContext.Current.CancellationToken)).Trim());
+                Assert.Equal("600", (await File.ReadAllTextAsync(command.ModePath, TestContext.Current.CancellationToken)).Trim());
                 Assert.True(isProcessRunning(childProcessId));
 
                 cancellationSource.Cancel();
@@ -193,9 +167,7 @@ public sealed class ProcessAppleCalendarAutomationCommandTests
                     {
                         await executionTask;
                     });
-                await waitForProcessExitAsync(
-                    childProcessId,
-                    TestContext.Current.CancellationToken);
+                await waitForProcessExitAsync(childProcessId, TestContext.Current.CancellationToken);
 
                 Assert.False(isProcessRunning(childProcessId));
                 Assert.False(File.Exists(command.RequestPath));
@@ -218,41 +190,31 @@ public sealed class ProcessAppleCalendarAutomationCommandTests
         }
     }
 
-    private static async Task waitForFileAsync(
-        string path,
-        CancellationToken cancellationToken)
+    private static async Task waitForFileAsync(string path, CancellationToken cancellationToken)
     {
         Stopwatch timeout = Stopwatch.StartNew();
         while (File.Exists(path) == false)
         {
             if (timeout.Elapsed >= TimeSpan.FromSeconds(5.0))
             {
-                throw new TimeoutException(
-                    "The temporary shell command did not create its marker file.");
+                throw new TimeoutException("The temporary shell command did not create its marker file.");
             }
 
-            await Task.Delay(
-                TimeSpan.FromMilliseconds(25.0),
-                cancellationToken);
+            await Task.Delay(TimeSpan.FromMilliseconds(25.0), cancellationToken);
         }
     }
 
-    private static async Task waitForProcessExitAsync(
-        int processId,
-        CancellationToken cancellationToken)
+    private static async Task waitForProcessExitAsync(int processId, CancellationToken cancellationToken)
     {
         Stopwatch timeout = Stopwatch.StartNew();
         while (isProcessRunning(processId))
         {
             if (timeout.Elapsed >= TimeSpan.FromSeconds(5.0))
             {
-                throw new TimeoutException(
-                    "The child process survived Apple automation cancellation.");
+                throw new TimeoutException("The child process survived Apple automation cancellation.");
             }
 
-            await Task.Delay(
-                TimeSpan.FromMilliseconds(25.0),
-                cancellationToken);
+            await Task.Delay(TimeSpan.FromMilliseconds(25.0), cancellationToken);
         }
     }
 
@@ -327,38 +289,22 @@ public sealed class ProcessAppleCalendarAutomationCommandTests
 
         public TemporaryShellCommand(string script)
         {
-            mDirectoryPath = Path.Combine(
-                Path.GetTempPath(),
-                "TimetableGenerator.Desktop.Tests",
-                Guid.NewGuid().ToString("N"));
+            mDirectoryPath = Path.Combine(Path.GetTempPath(), "TimetableGenerator.Desktop.Tests", Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(mDirectoryPath);
             RequestPath = Path.Combine(mDirectoryPath, "request.json");
             ModePath = Path.Combine(mDirectoryPath, "request.mode");
-            ChildProcessIdPath = Path.Combine(
-                mDirectoryPath,
-                "child.pid");
-            ExecutablePath = Path.Combine(
-                mDirectoryPath,
-                "automation-test.sh");
-            File.WriteAllText(
-                ExecutablePath,
-                script,
-                new UTF8Encoding(false));
+            ChildProcessIdPath = Path.Combine(mDirectoryPath, "child.pid");
+            ExecutablePath = Path.Combine(mDirectoryPath, "automation-test.sh");
+            File.WriteAllText(ExecutablePath, script, new UTF8Encoding(false));
             if (OperatingSystem.IsWindows())
             {
-                throw new PlatformNotSupportedException(
-                    "Temporary shell commands require Unix file modes.");
+                throw new PlatformNotSupportedException("Temporary shell commands require Unix file modes.");
             }
 
-            File.SetUnixFileMode(
-                ExecutablePath,
-                UnixFileMode.UserRead
-                    | UnixFileMode.UserWrite
-                    | UnixFileMode.UserExecute);
+            File.SetUnixFileMode(ExecutablePath, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
         }
 
-        public ProcessAppleCalendarAutomationCommand
-            CreateAutomationCommand(params string[] additionalArguments)
+        public ProcessAppleCalendarAutomationCommand CreateAutomationCommand(params string[] additionalArguments)
         {
             return new ProcessAppleCalendarAutomationCommand(
                 delegate (

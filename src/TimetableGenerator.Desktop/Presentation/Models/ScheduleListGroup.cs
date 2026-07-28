@@ -71,11 +71,7 @@ internal sealed class ScheduleListGroup
         }
     }
 
-    internal ScheduleListGroup(
-        string title,
-        string titleDisplayText,
-        IReadOnlyList<ScheduleListOccurrence> occurrences,
-        IReadOnlyList<ScheduleListSource> sources)
+    internal ScheduleListGroup(string title, string titleDisplayText, IReadOnlyList<ScheduleListOccurrence> occurrences, IReadOnlyList<ScheduleListSource> sources)
     {
         if (string.IsNullOrWhiteSpace(title))
         {
@@ -94,9 +90,7 @@ internal sealed class ScheduleListGroup
 
         if (occurrences.Count == 0)
         {
-            throw new ArgumentException(
-                "Schedule list groups require at least one occurrence.",
-                nameof(occurrences));
+            throw new ArgumentException("Schedule list groups require at least one occurrence.", nameof(occurrences));
         }
 
         if (sources == null)

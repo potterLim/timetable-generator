@@ -27,10 +27,7 @@ public sealed class PlanningWorkspace
         }
     }
 
-    public PlanningWorkspace(
-        PlanCatalogBinding catalogBinding,
-        PlanId? activePlanIdOrNull,
-        IEnumerable<PlanningPlan> plans)
+    public PlanningWorkspace(PlanCatalogBinding catalogBinding, PlanId? activePlanIdOrNull, IEnumerable<PlanningPlan> plans)
     {
         if (catalogBinding == null)
         {
@@ -39,9 +36,7 @@ public sealed class PlanningWorkspace
 
         if (activePlanIdOrNull.HasValue && activePlanIdOrNull.Value.IsValid == false)
         {
-            throw new ArgumentException(
-                "Planning workspaces require a valid active plan ID when one is set.",
-                nameof(activePlanIdOrNull));
+            throw new ArgumentException("Planning workspaces require a valid active plan ID when one is set.", nameof(activePlanIdOrNull));
         }
 
         if (plans == null)
@@ -62,23 +57,17 @@ public sealed class PlanningWorkspace
 
             if (planIds.Add(plan.Id) == false)
             {
-                throw new ArgumentException(
-                    "Planning workspaces cannot contain duplicate plan IDs.",
-                    nameof(plans));
+                throw new ArgumentException("Planning workspaces cannot contain duplicate plan IDs.", nameof(plans));
             }
 
             if (plan.CatalogBinding != catalogBinding)
             {
-                throw new ArgumentException(
-                    "Every workspace plan must use the workspace catalog binding.",
-                    nameof(plans));
+                throw new ArgumentException("Every workspace plan must use the workspace catalog binding.", nameof(plans));
             }
 
             if (planNames.Add(plan.Name.Value) == false)
             {
-                throw new ArgumentException(
-                    "Planning workspaces cannot contain duplicate plan names.",
-                    nameof(plans));
+                throw new ArgumentException("Planning workspaces cannot contain duplicate plan names.", nameof(plans));
             }
 
             if (activePlanIdOrNull.HasValue && plan.Id == activePlanIdOrNull.Value)
@@ -93,22 +82,16 @@ public sealed class PlanningWorkspace
         {
             if (activePlanIdOrNull.HasValue)
             {
-                throw new ArgumentException(
-                    "Empty planning workspaces cannot identify an active plan.",
-                    nameof(activePlanIdOrNull));
+                throw new ArgumentException("Empty planning workspaces cannot identify an active plan.", nameof(activePlanIdOrNull));
             }
         }
         else if (activePlanIdOrNull.HasValue == false)
         {
-            throw new ArgumentException(
-                "Planning workspaces with plans require an active plan ID.",
-                nameof(activePlanIdOrNull));
+            throw new ArgumentException("Planning workspaces with plans require an active plan ID.", nameof(activePlanIdOrNull));
         }
         else if (hasActivePlan == false)
         {
-            throw new ArgumentException(
-                "The active plan ID must identify a workspace plan.",
-                nameof(activePlanIdOrNull));
+            throw new ArgumentException("The active plan ID must identify a workspace plan.", nameof(activePlanIdOrNull));
         }
 
         CatalogBinding = catalogBinding;
@@ -131,7 +114,6 @@ public sealed class PlanningWorkspace
             }
         }
 
-        throw new InvalidOperationException(
-            "The planning workspace invariant no longer contains its active plan.");
+        throw new InvalidOperationException("The planning workspace invariant no longer contains its active plan.");
     }
 }

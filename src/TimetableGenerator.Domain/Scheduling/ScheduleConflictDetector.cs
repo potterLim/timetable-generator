@@ -8,16 +8,12 @@ public static class ScheduleConflictDetector
     {
         if (firstRange.IsValid == false)
         {
-            throw new ArgumentException(
-                "Conflict checks require a valid first weekly time range.",
-                nameof(firstRange));
+            throw new ArgumentException("Conflict checks require a valid first weekly time range.", nameof(firstRange));
         }
 
         if (secondRange.IsValid == false)
         {
-            throw new ArgumentException(
-                "Conflict checks require a valid second weekly time range.",
-                nameof(secondRange));
+            throw new ArgumentException("Conflict checks require a valid second weekly time range.", nameof(secondRange));
         }
 
         if (firstRange.Day != secondRange.Day)
@@ -25,8 +21,7 @@ public static class ScheduleConflictDetector
             return false;
         }
 
-        return firstRange.TimeRange.Start.CompareTo(secondRange.TimeRange.End) < 0
-            && secondRange.TimeRange.Start.CompareTo(firstRange.TimeRange.End) < 0;
+        return firstRange.TimeRange.Start.CompareTo(secondRange.TimeRange.End) < 0 && secondRange.TimeRange.Start.CompareTo(firstRange.TimeRange.End) < 0;
     }
 
     public static bool HasConflict(ScheduledOffering firstOffering, ScheduledOffering secondOffering)

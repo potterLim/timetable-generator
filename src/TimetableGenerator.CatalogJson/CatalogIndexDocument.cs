@@ -42,9 +42,7 @@ public sealed class CatalogIndexDocument
 
             if (catalogIds.Add(entry.CatalogId) == false)
             {
-                throw new ArgumentException(
-                    "Catalog indexes cannot contain duplicate catalog IDs.",
-                    nameof(entries));
+                throw new ArgumentException("Catalog indexes cannot contain duplicate catalog IDs.", nameof(entries));
             }
 
             if (entry.CatalogId == defaultCatalogId)
@@ -62,9 +60,7 @@ public sealed class CatalogIndexDocument
 
         if (hasDefaultEntry == false)
         {
-            throw new ArgumentException(
-                "The default catalog ID must reference an index entry.",
-                nameof(defaultCatalogId));
+            throw new ArgumentException("The default catalog ID must reference an index entry.", nameof(defaultCatalogId));
         }
 
         DefaultCatalogId = defaultCatalogId;

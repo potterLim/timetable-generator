@@ -13,9 +13,7 @@ internal sealed record GoogleCalendarDescription
         Value = value;
     }
 
-    public static GoogleCalendarDescription Create(
-        InstitutionName institutionName,
-        AcademicTerm academicTerm)
+    public static GoogleCalendarDescription Create(InstitutionName institutionName, AcademicTerm academicTerm)
     {
         if (institutionName == null)
         {
@@ -24,9 +22,7 @@ internal sealed record GoogleCalendarDescription
 
         if (academicTerm.IsValid == false)
         {
-            throw new ArgumentException(
-                "Google Calendar descriptions require a valid academic term.",
-                nameof(academicTerm));
+            throw new ArgumentException("Google Calendar descriptions require a valid academic term.", nameof(academicTerm));
         }
 
         return new GoogleCalendarDescription(institutionName.Value + " " + academicTerm.Id + " 시간표입니다.");

@@ -29,11 +29,7 @@ internal static class HandongHtmlCellReader
 
     private static void appendNodeTextRecursive(INode node, List<StringBuilder> lineTextBuilders)
     {
-        if (node is IElement element
-            && string.Equals(
-                element.LocalName,
-                HTML_LINE_BREAK_ELEMENT_NAME,
-                StringComparison.OrdinalIgnoreCase))
+        if (node is IElement element && string.Equals(element.LocalName, HTML_LINE_BREAK_ELEMENT_NAME, StringComparison.OrdinalIgnoreCase))
         {
             lineTextBuilders.Add(new StringBuilder());
             return;

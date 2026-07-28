@@ -21,10 +21,7 @@ public readonly record struct CatalogResourceByteLimit
     {
         if (bytes <= 0L || bytes > MAXIMUM_SUPPORTED_BYTES)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(bytes),
-                bytes,
-                "Catalog resource limits must fit in a supported in-memory document.");
+            throw new ArgumentOutOfRangeException(nameof(bytes), bytes, "Catalog resource limits must fit in a supported in-memory document.");
         }
 
         Bytes = bytes;

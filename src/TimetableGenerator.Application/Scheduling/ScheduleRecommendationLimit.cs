@@ -19,10 +19,7 @@ public readonly record struct ScheduleRecommendationLimit
     {
         if (value <= 0)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "Schedule recommendation limits must be positive.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Schedule recommendation limits must be positive.");
         }
 
         Value = value;

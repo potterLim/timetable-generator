@@ -12,18 +12,12 @@ public sealed class CatalogIndexCounts
     {
         if (courseCount.IsValid == false)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(courseCount),
-                courseCount,
-                "Catalog indexes require a positive course count.");
+            throw new ArgumentOutOfRangeException(nameof(courseCount), courseCount, "Catalog indexes require a positive course count.");
         }
 
         if (offeringCount.IsValid == false)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(offeringCount),
-                offeringCount,
-                "Catalog indexes require a positive offering count.");
+            throw new ArgumentOutOfRangeException(nameof(offeringCount), offeringCount, "Catalog indexes require a positive offering count.");
         }
 
         CourseCount = courseCount;

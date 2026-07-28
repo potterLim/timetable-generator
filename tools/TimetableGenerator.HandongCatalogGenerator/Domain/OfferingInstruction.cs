@@ -10,10 +10,7 @@ internal sealed class OfferingInstruction
 
     public GradingPolicy GradingPolicy { get; }
 
-    public OfferingInstruction(
-        InstructorAssignment instructorAssignment,
-        EnglishInstructionPercentage englishInstructionPercentage,
-        GradingPolicy gradingPolicy)
+    public OfferingInstruction(InstructorAssignment instructorAssignment, EnglishInstructionPercentage englishInstructionPercentage, GradingPolicy gradingPolicy)
     {
         if (instructorAssignment == null)
         {

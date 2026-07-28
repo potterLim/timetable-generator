@@ -81,20 +81,11 @@ public sealed class PlanInspectorVisualStateTests
                     Assert.Equal(24.0, planTitle.Bounds.Height);
                     Assert.Equal(24.0, managementPresenter.Bounds.Height);
                     Assert.Equal(24.0, managementPresenter.LineHeight);
-                    Assert.True(
-                        naturalTitle.DesiredSize.Height
-                        <= planTitle.Bounds.Height + 0.05);
+                    Assert.True(naturalTitle.DesiredSize.Height <= planTitle.Bounds.Height + 0.05);
                     assertControlsShareVerticalCenter(managementButton, managementButton, planTitle);
                     assertControlsShareVerticalCenter(managementButton, managementPresenter, planTitle);
                     Assert.Equal(TextTrimming.CharacterEllipsis, planTitle.TextTrimming);
-                    Assert.True(
-                        naturalTitle.DesiredSize.Width
-                        <= planTitle.Bounds.Width + 0.05,
-                        "The product term name did not fit at inspector width "
-                            + inspectorWidth + ". Natural text width: "
-                            + naturalTitle.DesiredSize.Width
-                            + ", arranged title width: "
-                            + planTitle.Bounds.Width + ".");
+                    Assert.True(naturalTitle.DesiredSize.Width <= planTitle.Bounds.Width + 0.05, "The product term name did not fit at inspector width " + inspectorWidth + ". Natural text width: " + naturalTitle.DesiredSize.Width + ", arranged title width: " + planTitle.Bounds.Width + ".");
                     Assert.Equal(TERM_PLAN_NAME, AutomationProperties.GetName(managementButton));
                     Assert.Equal("시간표 이름 관리", AutomationProperties.GetHelpText(managementButton));
                     Assert.Equal(3, (int)AutomationProperties.GetHeadingLevel(managementButton));
@@ -155,8 +146,7 @@ public sealed class PlanInspectorVisualStateTests
             PlanCourseChoiceGroupItem initialGroup = Assert.Single(workspace.ActivePlan.CourseChoiceGroups);
             workspace.BeginEditCourseChoiceGroupCommand.Execute(initialGroup);
             workspace.AlternativeCourseSearchText = "세미나";
-            workspace.AddAlternativeCourseCommand.Execute(
-                Assert.Single(workspace.AlternativeCourseSearchResults));
+            workspace.AddAlternativeCourseCommand.Execute(Assert.Single(workspace.AlternativeCourseSearchResults));
             workspace.SaveCourseChoiceCommand.Execute(null);
 
             PlanInspectorView inspector = new PlanInspectorView();
@@ -181,8 +171,7 @@ public sealed class PlanInspectorVisualStateTests
                 Assert.Equal(new CornerRadius(10.0), alternativeGroup.CornerRadius);
                 Assert.Equal(new Thickness(0.0), alternativeGroup.BorderThickness);
                 Assert.Equal(new Thickness(0.0), alternativeGroup.Padding);
-                Assert.Single(
-                    alternativeGroup.GetVisualDescendants()
+                Assert.Single(alternativeGroup.GetVisualDescendants()
                         .OfType<TextBlock>(),
                     candidate => candidate.Text == "2개 과목 중 1개 선택");
 
@@ -197,14 +186,11 @@ public sealed class PlanInspectorVisualStateTests
                 Assert.Equal(new Thickness(1.0), frame.BorderThickness);
                 Assert.Equal(new CornerRadius(10.0), frame.CornerRadius);
                 Assert.NotNull(frame.BorderBrush);
-                Point? groupContentOriginOrNull = groupContent.TranslatePoint(
-                    new Point(0.0, 0.0),
-                    alternativeGroup);
+                Point? groupContentOriginOrNull = groupContent.TranslatePoint(new Point(0.0, 0.0), alternativeGroup);
                 Assert.NotNull(groupContentOriginOrNull);
                 if (groupContentOriginOrNull == null)
                 {
-                    throw new InvalidOperationException(
-                        "The alternative course group content position was unavailable.");
+                    throw new InvalidOperationException("The alternative course group content position was unavailable.");
                 }
 
                 Assert.Equal(0.0, groupContentOriginOrNull.Value.X, 3);
@@ -230,9 +216,7 @@ public sealed class PlanInspectorVisualStateTests
         }
     }
 
-    private static void assertDisabledClearActionVisuals(
-        PlanInspectorView inspector,
-        ThemeVariant themeVariant)
+    private static void assertDisabledClearActionVisuals(PlanInspectorView inspector, ThemeVariant themeVariant)
     {
         Button managementButton = findRequiredControl<Button>(inspector, "PlanManagementButton");
         Flyout managementFlyout = Assert.IsType<Flyout>(managementButton.Flyout);
@@ -274,11 +258,7 @@ public sealed class PlanInspectorVisualStateTests
             assertTransparent(clearButton.BorderBrush);
             assertTransparent(presenter.Background);
             assertTransparent(presenter.BorderBrush);
-            Assert.Equal(
-                getRequiredApplicationColor(
-                    "TextTertiaryBrush",
-                    themeVariant),
-                getRequiredSolidColor(clearButton.Foreground));
+            Assert.Equal(getRequiredApplicationColor("TextTertiaryBrush", themeVariant), getRequiredSolidColor(clearButton.Foreground));
             Assert.Equal(2, contentChildren.Length);
             Assert.Equal(18.0, clearIcon.Width);
             Assert.Equal(18.0, clearIcon.Height);
@@ -299,18 +279,13 @@ public sealed class PlanInspectorVisualStateTests
         TControl? controlOrNull = root.FindControl<TControl>(controlName);
         if (controlOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The required plan inspector control was not found: "
-                + controlName);
+            throw new InvalidOperationException("The required plan inspector control was not found: " + controlName);
         }
 
         return controlOrNull;
     }
 
-    private static void assertControlsShareVerticalCenter(
-        Control root,
-        Control firstControl,
-        Control secondControl)
+    private static void assertControlsShareVerticalCenter(Control root, Control firstControl, Control secondControl)
     {
         Point? firstOriginOrNull = firstControl.TranslatePoint(new Point(0.0, 0.0), root);
         Point? secondOriginOrNull = secondControl.TranslatePoint(new Point(0.0, 0.0), root);
@@ -321,10 +296,8 @@ public sealed class PlanInspectorVisualStateTests
             throw new InvalidOperationException("The plan management action geometry could not be resolved.");
         }
 
-        double firstCenterY = firstOriginOrNull.Value.Y
-            + (firstControl.Bounds.Height / 2.0);
-        double secondCenterY = secondOriginOrNull.Value.Y
-            + (secondControl.Bounds.Height / 2.0);
+        double firstCenterY = firstOriginOrNull.Value.Y + (firstControl.Bounds.Height / 2.0);
+        double secondCenterY = secondOriginOrNull.Value.Y + (secondControl.Bounds.Height / 2.0);
         Assert.InRange(Math.Abs(firstCenterY - secondCenterY), 0.0, 0.05);
     }
 

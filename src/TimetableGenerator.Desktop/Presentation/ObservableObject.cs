@@ -8,10 +8,7 @@ internal abstract class ObservableObject : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    protected bool setProperty<T>(
-        ref T currentValue,
-        T newValue,
-        [CallerMemberName] string propertyName = "")
+    protected bool setProperty<T>(ref T currentValue, T newValue, [CallerMemberName] string propertyName = "")
     {
         if (EqualityComparer<T>.Default.Equals(currentValue, newValue))
         {

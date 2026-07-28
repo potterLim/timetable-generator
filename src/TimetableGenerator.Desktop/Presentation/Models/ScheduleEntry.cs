@@ -14,9 +14,7 @@ internal abstract class ScheduleEntry
         ensureDefinedDay(day);
         if (timeRange.IsValid == false)
         {
-            throw new ArgumentException(
-                "Schedule entries require a valid daily time range.",
-                nameof(timeRange));
+            throw new ArgumentException("Schedule entries require a valid daily time range.", nameof(timeRange));
         }
 
         Day = day;
@@ -36,10 +34,7 @@ internal abstract class ScheduleEntry
             case EDay.Sunday:
                 return;
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(day),
-                    day,
-                    "Schedule entries require a defined day of the week.");
+                throw new ArgumentOutOfRangeException(nameof(day), day, "Schedule entries require a defined day of the week.");
         }
     }
 }

@@ -53,16 +53,9 @@ internal sealed class ScheduleListMetadata
         }
 
         SectionDisplayText = courseEntry.SectionCode.Value;
-        LocationDisplayText = courseEntry.HasAssignedLocation
-            ? courseEntry.LocationDisplayText
-            : string.Empty;
-        ResponsiblePersonDisplayText = courseEntry.HasConfirmedInstructor
-            ? courseEntry.InstructorDisplayText
-            : string.Empty;
-        DisplayText = createDisplayTextWithSection(
-            SectionDisplayText,
-            LocationDisplayText,
-            ResponsiblePersonDisplayText);
+        LocationDisplayText = courseEntry.HasAssignedLocation ? courseEntry.LocationDisplayText : string.Empty;
+        ResponsiblePersonDisplayText = courseEntry.HasConfirmedInstructor ? courseEntry.InstructorDisplayText : string.Empty;
+        DisplayText = createDisplayTextWithSection(SectionDisplayText, LocationDisplayText, ResponsiblePersonDisplayText);
     }
 
     public ScheduleListMetadata(PersonalScheduleEntry personalScheduleEntry)
@@ -75,10 +68,7 @@ internal sealed class ScheduleListMetadata
         SectionDisplayText = personalScheduleEntry.SectionDisplayText;
         LocationDisplayText = personalScheduleEntry.LocationDisplayText;
         ResponsiblePersonDisplayText = personalScheduleEntry.InstructorDisplayText;
-        DisplayText = createDisplayTextWithSection(
-            SectionDisplayText,
-            LocationDisplayText,
-            ResponsiblePersonDisplayText);
+        DisplayText = createDisplayTextWithSection(SectionDisplayText, LocationDisplayText, ResponsiblePersonDisplayText);
     }
 
     private ScheduleListMetadata(ScheduleListMetadata source, string displayText)
@@ -96,33 +86,15 @@ internal sealed class ScheduleListMetadata
             return false;
         }
 
-        return string.Equals(
-                SectionDisplayText,
-                otherOrNull.SectionDisplayText,
-                StringComparison.Ordinal)
-            && string.Equals(
-                LocationDisplayText,
-                otherOrNull.LocationDisplayText,
-                StringComparison.Ordinal)
-            && string.Equals(
-                ResponsiblePersonDisplayText,
-                otherOrNull.ResponsiblePersonDisplayText,
-                StringComparison.Ordinal);
+        return string.Equals(SectionDisplayText, otherOrNull.SectionDisplayText, StringComparison.Ordinal) && string.Equals(LocationDisplayText, otherOrNull.LocationDisplayText, StringComparison.Ordinal) && string.Equals(ResponsiblePersonDisplayText, otherOrNull.ResponsiblePersonDisplayText, StringComparison.Ordinal);
     }
 
     public ScheduleListMetadata WithoutSectionInDisplay()
     {
-        return new ScheduleListMetadata(
-            this,
-            createDisplayTextWithoutSection(
-                LocationDisplayText,
-                ResponsiblePersonDisplayText));
+        return new ScheduleListMetadata(this, createDisplayTextWithoutSection(LocationDisplayText, ResponsiblePersonDisplayText));
     }
 
-    private static string createDisplayTextWithSection(
-        string sectionDisplayText,
-        string locationDisplayText,
-        string responsiblePersonDisplayText)
+    private static string createDisplayTextWithSection(string sectionDisplayText, string locationDisplayText, string responsiblePersonDisplayText)
     {
         List<string> visibleValues = new List<string>(3);
         if (string.IsNullOrWhiteSpace(sectionDisplayText) == false)
@@ -135,9 +107,7 @@ internal sealed class ScheduleListMetadata
         return string.Join(" · ", visibleValues);
     }
 
-    private static string createDisplayTextWithoutSection(
-        string locationDisplayText,
-        string responsiblePersonDisplayText)
+    private static string createDisplayTextWithoutSection(string locationDisplayText, string responsiblePersonDisplayText)
     {
         List<string> visibleValues = new List<string>(2);
         addVisibleValue(visibleValues, locationDisplayText);

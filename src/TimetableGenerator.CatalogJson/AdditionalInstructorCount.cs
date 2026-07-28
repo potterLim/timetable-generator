@@ -11,10 +11,7 @@ public readonly record struct AdditionalInstructorCount
     {
         if (value < 0)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "Additional instructor counts cannot be negative.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Additional instructor counts cannot be negative.");
         }
 
         Value = value;

@@ -59,19 +59,14 @@ public sealed class ProductBoundaryPaletteTests
         }
 
         object? resourceOrNull;
-        bool hasResource = applicationOrNull.TryGetResource(
-            colorToken.Value,
-            themeVariant,
-            out resourceOrNull);
+        bool hasResource = applicationOrNull.TryGetResource(colorToken.Value, themeVariant, out resourceOrNull);
         Assert.True(hasResource, "The product color token could not be resolved: " + colorToken.Value);
 
         SolidColorBrush? brushOrNull = resourceOrNull as SolidColorBrush;
         Assert.NotNull(brushOrNull);
         if (brushOrNull == null)
         {
-            throw new System.InvalidOperationException(
-                "The product color token was not a solid color brush: " +
-                    colorToken.Value);
+            throw new System.InvalidOperationException("The product color token was not a solid color brush: " + colorToken.Value);
         }
 
         return brushOrNull;
@@ -79,9 +74,7 @@ public sealed class ProductBoundaryPaletteTests
 
     private readonly record struct ColorToken(string Value);
 
-    private readonly record struct ExpectedColor(
-        ColorToken Token,
-        string HexColor)
+    private readonly record struct ExpectedColor(ColorToken Token, string HexColor)
     {
         public ExpectedColor(string token, string hexColor)
             : this(new ColorToken(token), hexColor)

@@ -59,9 +59,7 @@ internal sealed class ScheduleRecommendationGenerationState
 
         if (maximumRecommendationCount.IsValid == false)
         {
-            throw new ArgumentException(
-                "Recommendation generation state requires a valid result limit.",
-                nameof(maximumRecommendationCount));
+            throw new ArgumentException("Recommendation generation state requires a valid result limit.", nameof(maximumRecommendationCount));
         }
 
         CourseChoiceGroups = courseChoiceGroups;
@@ -97,10 +95,7 @@ internal sealed class ScheduleRecommendationGenerationState
         RecommendationScore remainingMinimumScore = mRemainingMinimumScores[node.NextGroupIndex];
         RecommendationScore optimisticScore = node.Score.Add(remainingMinimumScore);
         int remainingGroupCount = CourseChoiceGroups.Count - node.NextGroupIndex;
-        ScheduleSearchPriority priority = new ScheduleSearchPriority(
-            optimisticScore,
-            remainingGroupCount,
-            mNextSequence);
+        ScheduleSearchPriority priority = new ScheduleSearchPriority(optimisticScore, remainingGroupCount, mNextSequence);
         mNextSequence = checked(mNextSequence + 1L);
         mPendingNodes.Enqueue(node, priority);
     }
@@ -115,8 +110,7 @@ internal sealed class ScheduleRecommendationGenerationState
         Completion = EScheduleRecommendationCompletion.MaximumRecommendationCountReached;
     }
 
-    public IReadOnlyList<UnscheduledOfferingSelection> CombineUnscheduledSelections(
-            IReadOnlyList<UnscheduledOfferingSelection> selectedByGroups)
+    public IReadOnlyList<UnscheduledOfferingSelection> CombineUnscheduledSelections(IReadOnlyList<UnscheduledOfferingSelection> selectedByGroups)
     {
         if (selectedByGroups == null)
         {
@@ -129,8 +123,7 @@ internal sealed class ScheduleRecommendationGenerationState
         return combinedSelections.AsReadOnly();
     }
 
-    private static IReadOnlyList<RecommendationScore> createRemainingMinimumScores(
-        IReadOnlyList<ValidatedCourseChoiceGroup> courseChoiceGroups)
+    private static IReadOnlyList<RecommendationScore> createRemainingMinimumScores(IReadOnlyList<ValidatedCourseChoiceGroup> courseChoiceGroups)
     {
         RecommendationScore[] remainingMinimumScores = new RecommendationScore[courseChoiceGroups.Count + 1];
         remainingMinimumScores[courseChoiceGroups.Count] = RecommendationScore.ZERO;

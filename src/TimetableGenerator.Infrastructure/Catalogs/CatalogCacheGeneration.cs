@@ -21,10 +21,7 @@ internal readonly record struct CatalogCacheGeneration
     {
         if (value < FIRST_GENERATION)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "Catalog cache generations must be positive.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Catalog cache generations must be positive.");
         }
 
         Value = value;
@@ -49,11 +46,7 @@ internal readonly record struct CatalogCacheGeneration
         }
 
         long parsedValue;
-        bool isParsed = long.TryParse(
-            value.AsSpan(1),
-            NumberStyles.None,
-            CultureInfo.InvariantCulture,
-            out parsedValue);
+        bool isParsed = long.TryParse(value.AsSpan(1), NumberStyles.None, CultureInfo.InvariantCulture, out parsedValue);
         if (isParsed == false || parsedValue < FIRST_GENERATION)
         {
             return false;

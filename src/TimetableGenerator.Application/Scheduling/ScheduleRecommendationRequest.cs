@@ -12,10 +12,7 @@ public sealed class ScheduleRecommendationRequest
 
     public ScheduleRecommendationLimit MaximumRecommendationCount { get; }
 
-    public ScheduleRecommendationRequest(
-        CourseCatalog catalog,
-        PlanningPlan plan,
-        ScheduleRecommendationLimit maximumRecommendationCount)
+    public ScheduleRecommendationRequest(CourseCatalog catalog, PlanningPlan plan, ScheduleRecommendationLimit maximumRecommendationCount)
     {
         if (catalog == null)
         {
@@ -29,9 +26,7 @@ public sealed class ScheduleRecommendationRequest
 
         if (maximumRecommendationCount.IsValid == false)
         {
-            throw new ArgumentException(
-                "Schedule recommendation requests require a valid result limit.",
-                nameof(maximumRecommendationCount));
+            throw new ArgumentException("Schedule recommendation requests require a valid result limit.", nameof(maximumRecommendationCount));
         }
 
         Catalog = catalog;

@@ -71,9 +71,7 @@ public sealed class ApplicationIconAssetTests
         {
             int entryOffset = 6 + (16 * imageIndex);
             int width = bytes[entryOffset] == 0 ? 256 : bytes[entryOffset];
-            int height = bytes[entryOffset + 1] == 0
-                ? 256
-                : bytes[entryOffset + 1];
+            int height = bytes[entryOffset + 1] == 0 ? 256 : bytes[entryOffset + 1];
             Assert.Equal(width, height);
 
             uint payloadLength = readLittleEndianUInt32(bytes, entryOffset + 8);
@@ -91,10 +89,7 @@ public sealed class ApplicationIconAssetTests
 
     private static int readBigEndianInt32(byte[] bytes, int offset)
     {
-        return (bytes[offset] << 24)
-            | (bytes[offset + 1] << 16)
-            | (bytes[offset + 2] << 8)
-            | bytes[offset + 3];
+        return (bytes[offset] << 24) | (bytes[offset + 1] << 16) | (bytes[offset + 2] << 8) | bytes[offset + 3];
     }
 
     private static ushort readLittleEndianUInt16(byte[] bytes, int offset)
@@ -104,9 +99,6 @@ public sealed class ApplicationIconAssetTests
 
     private static uint readLittleEndianUInt32(byte[] bytes, int offset)
     {
-        return (uint)(bytes[offset]
-            | (bytes[offset + 1] << 8)
-            | (bytes[offset + 2] << 16)
-            | (bytes[offset + 3] << 24));
+        return (uint)(bytes[offset] | (bytes[offset + 1] << 8) | (bytes[offset + 2] << 16) | (bytes[offset + 3] << 24));
     }
 }

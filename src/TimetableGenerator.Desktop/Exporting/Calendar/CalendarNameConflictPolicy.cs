@@ -40,9 +40,7 @@ internal static class CalendarNameConflictPolicy
         return canonicalExistingNames.Contains(canonicalCalendarName);
     }
 
-    public static PlanName FindNextAvailableName(
-        PlanName requestedName,
-        IEnumerable<PlanName> existingNames)
+    public static PlanName FindNextAvailableName(PlanName requestedName, IEnumerable<PlanName> existingNames)
     {
         if (requestedName == null)
         {
@@ -56,9 +54,7 @@ internal static class CalendarNameConflictPolicy
         while (true)
         {
             string copySuffix = createCopySuffix(copyNumber);
-            string candidateBaseName = truncateWithoutSplittingTextElement(
-                normalizedRequestedName,
-                PlanName.MAXIMUM_LENGTH - copySuffix.Length);
+            string candidateBaseName = truncateWithoutSplittingTextElement(normalizedRequestedName, PlanName.MAXIMUM_LENGTH - copySuffix.Length);
             PlanName candidateName = new PlanName(candidateBaseName + copySuffix);
             string canonicalCandidateName = createCanonicalName(candidateName);
             if (canonicalExistingNames.Contains(canonicalCandidateName) == false)
@@ -75,9 +71,7 @@ internal static class CalendarNameConflictPolicy
         }
     }
 
-    public static void EnsureResolutionIsSupported(
-        CalendarNameConflict conflict,
-        ECalendarNameConflictResolution resolution)
+    public static void EnsureResolutionIsSupported(CalendarNameConflict conflict, ECalendarNameConflictResolution resolution)
     {
         if (conflict == null)
         {
@@ -98,10 +92,7 @@ internal static class CalendarNameConflictPolicy
                 return;
             case ECalendarNameConflictResolution.None:
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(resolution),
-                    resolution,
-                    "A supported calendar name conflict resolution is required.");
+                throw new ArgumentOutOfRangeException(nameof(resolution), resolution, "A supported calendar name conflict resolution is required.");
         }
     }
 
@@ -117,9 +108,7 @@ internal static class CalendarNameConflictPolicy
         {
             if (existingName == null)
             {
-                throw new ArgumentException(
-                    "Existing calendar names cannot contain null values.",
-                    nameof(existingNames));
+                throw new ArgumentException("Existing calendar names cannot contain null values.", nameof(existingNames));
             }
 
             canonicalExistingNames.Add(createCanonicalName(existingName));

@@ -18,9 +18,7 @@ internal sealed class GeneralEducationCategoryAssignment
         }
     }
 
-    private GeneralEducationCategoryAssignment(
-        EGeneralEducationCategoryStatus status,
-        GeneralEducationCategoryName? categoryNameOrNull)
+    private GeneralEducationCategoryAssignment(EGeneralEducationCategoryStatus status, GeneralEducationCategoryName? categoryNameOrNull)
     {
         if (Enum.IsDefined(typeof(EGeneralEducationCategoryStatus), status) == false)
         {
@@ -37,8 +35,7 @@ internal sealed class GeneralEducationCategoryAssignment
         mCategoryNameOrNull = categoryNameOrNull;
     }
 
-    public static GeneralEducationCategoryAssignment CreateProvided(
-        GeneralEducationCategoryName categoryName)
+    public static GeneralEducationCategoryAssignment CreateProvided(GeneralEducationCategoryName categoryName)
     {
         if (categoryName == null)
         {

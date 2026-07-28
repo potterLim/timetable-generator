@@ -108,9 +108,7 @@ public sealed class CourseCatalogDocument
         return metadataOrNull;
     }
 
-    private static Dictionary<OfferingId, CatalogOfferingMetadata> copyAndValidateOfferingMetadata(
-        CourseCatalog catalog,
-        IEnumerable<CatalogOfferingMetadata> offeringMetadata)
+    private static Dictionary<OfferingId, CatalogOfferingMetadata> copyAndValidateOfferingMetadata(CourseCatalog catalog, IEnumerable<CatalogOfferingMetadata> offeringMetadata)
     {
         HashSet<OfferingId> knownOfferingIds = new HashSet<OfferingId>();
         foreach (CatalogOffering offering in catalog.Offerings)
@@ -123,31 +121,23 @@ public sealed class CourseCatalogDocument
         {
             if (metadata == null)
             {
-                throw new ArgumentException(
-                    "Course catalog documents cannot contain null offering metadata.",
-                    nameof(offeringMetadata));
+                throw new ArgumentException("Course catalog documents cannot contain null offering metadata.", nameof(offeringMetadata));
             }
 
             if (knownOfferingIds.Contains(metadata.OfferingId) == false)
             {
-                throw new ArgumentException(
-                    "Offering metadata must reference an offering in the domain catalog.",
-                    nameof(offeringMetadata));
+                throw new ArgumentException("Offering metadata must reference an offering in the domain catalog.", nameof(offeringMetadata));
             }
 
             if (metadataById.TryAdd(metadata.OfferingId, metadata) == false)
             {
-                throw new ArgumentException(
-                    "Course catalog documents cannot contain duplicate offering metadata.",
-                    nameof(offeringMetadata));
+                throw new ArgumentException("Course catalog documents cannot contain duplicate offering metadata.", nameof(offeringMetadata));
             }
         }
 
         if (metadataById.Count != knownOfferingIds.Count)
         {
-            throw new ArgumentException(
-                "Every domain catalog offering requires preserved JSON metadata.",
-                nameof(offeringMetadata));
+            throw new ArgumentException("Every domain catalog offering requires preserved JSON metadata.", nameof(offeringMetadata));
         }
 
         return metadataById;

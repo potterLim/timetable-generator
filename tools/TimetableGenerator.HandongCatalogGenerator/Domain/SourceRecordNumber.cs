@@ -13,10 +13,7 @@ internal readonly record struct SourceRecordNumber
     {
         if (value < FIRST_DATA_RECORD_NUMBER)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "Source data record numbers begin at two after the header row.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Source data record numbers begin at two after the header row.");
         }
 
         Value = value;

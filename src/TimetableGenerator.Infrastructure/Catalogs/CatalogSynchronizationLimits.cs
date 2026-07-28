@@ -18,9 +18,7 @@ public sealed class CatalogSynchronizationLimits
         }
     }
 
-    public CatalogSynchronizationLimits(
-        CatalogResourceByteLimit index,
-        CatalogResourceByteLimit catalog)
+    public CatalogSynchronizationLimits(CatalogResourceByteLimit index, CatalogResourceByteLimit catalog)
     {
         if (index.IsValid == false)
         {
@@ -29,16 +27,12 @@ public sealed class CatalogSynchronizationLimits
 
         if (catalog.IsValid == false)
         {
-            throw new ArgumentException(
-                "Catalog synchronization requires a valid catalog limit.",
-                nameof(catalog));
+            throw new ArgumentException("Catalog synchronization requires a valid catalog limit.", nameof(catalog));
         }
 
         if (index.Bytes + catalog.Bytes > MAXIMUM_COMBINED_BYTES)
         {
-            throw new ArgumentException(
-                "The combined catalog synchronization limits are too large.",
-                nameof(catalog));
+            throw new ArgumentException("The combined catalog synchronization limits are too large.", nameof(catalog));
         }
 
         Index = index;

@@ -91,8 +91,7 @@ public sealed class CourseCatalog
         mOfferings = copiedOfferings;
     }
 
-    private static IReadOnlyList<CatalogCourse> copyAndValidateCourses(
-        IEnumerable<CatalogCourse> courses)
+    private static IReadOnlyList<CatalogCourse> copyAndValidateCourses(IEnumerable<CatalogCourse> courses)
     {
         List<CatalogCourse> copiedCourses = new List<CatalogCourse>();
         HashSet<CourseId> courseIds = new HashSet<CourseId>();
@@ -106,16 +105,12 @@ public sealed class CourseCatalog
 
             if (courseIds.Add(course.Id) == false)
             {
-                throw new ArgumentException(
-                    "Course catalogs cannot contain duplicate course IDs.",
-                    nameof(courses));
+                throw new ArgumentException("Course catalogs cannot contain duplicate course IDs.", nameof(courses));
             }
 
             if (courseCodes.Add(course.Code) == false)
             {
-                throw new ArgumentException(
-                    "Course catalogs cannot contain duplicate course codes.",
-                    nameof(courses));
+                throw new ArgumentException("Course catalogs cannot contain duplicate course codes.", nameof(courses));
             }
 
             copiedCourses.Add(course);
@@ -129,9 +124,7 @@ public sealed class CourseCatalog
         return copiedCourses.AsReadOnly();
     }
 
-    private static IReadOnlyList<CatalogOffering> copyAndValidateOfferings(
-        IEnumerable<CatalogOffering> offerings,
-        IReadOnlyList<CatalogCourse> courses)
+    private static IReadOnlyList<CatalogOffering> copyAndValidateOfferings(IEnumerable<CatalogOffering> offerings, IReadOnlyList<CatalogCourse> courses)
     {
         HashSet<CourseId> knownCourseIds = new HashSet<CourseId>();
         foreach (CatalogCourse course in courses)
@@ -150,16 +143,12 @@ public sealed class CourseCatalog
 
             if (offeringIds.Add(offering.Id) == false)
             {
-                throw new ArgumentException(
-                    "Course catalogs cannot contain duplicate offering IDs.",
-                    nameof(offerings));
+                throw new ArgumentException("Course catalogs cannot contain duplicate offering IDs.", nameof(offerings));
             }
 
             if (knownCourseIds.Contains(offering.CourseId) == false)
             {
-                throw new ArgumentException(
-                    "Every catalog offering must reference a catalog course.",
-                    nameof(offerings));
+                throw new ArgumentException("Every catalog offering must reference a catalog course.", nameof(offerings));
             }
 
             copiedOfferings.Add(offering);

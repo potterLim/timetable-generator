@@ -81,22 +81,16 @@ internal static class HandongExportTestHtml
         return createDocument(HEADER_CELLS, offeringCells);
     }
 
-    private static string createDocument(
-        IReadOnlyList<string> headerCells,
-        IReadOnlyList<string> offeringCells)
+    private static string createDocument(IReadOnlyList<string> headerCells, IReadOnlyList<string> offeringCells)
     {
         StringBuilder documentBuilder = new StringBuilder();
         documentBuilder.AppendLine("<html>");
         documentBuilder.AppendLine("<head>");
-        documentBuilder.AppendLine(
-            "<meta http-equiv=\"Content-Type\" " +
-            "content=\"text/html; charset=ks_c_5601-1987\">");
+        documentBuilder.AppendLine("<meta http-equiv=\"Content-Type\" " + "content=\"text/html; charset=ks_c_5601-1987\">");
         documentBuilder.AppendLine("<title>교직원정보시스템</title>");
         documentBuilder.AppendLine("</head>");
         documentBuilder.AppendLine("<body>");
-        documentBuilder.AppendLine(
-            "Warning: ociexecute(): ORA-00923 in " +
-            "/srv/example/app/config.php on line 409");
+        documentBuilder.AppendLine("Warning: ociexecute(): ORA-00923 in " + "/srv/example/app/config.php on line 409");
         documentBuilder.AppendLine("<table>");
         appendRow(documentBuilder, headerCells);
         appendRow(documentBuilder, offeringCells);

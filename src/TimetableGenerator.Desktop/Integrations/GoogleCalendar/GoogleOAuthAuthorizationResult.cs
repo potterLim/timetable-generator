@@ -10,13 +10,9 @@ internal sealed class GoogleOAuthAuthorizationResult
 
     public string? DiagnosticCodeOrNull { get; }
 
-    private GoogleOAuthAuthorizationResult(
-        EGoogleOAuthAuthorizationStatus status,
-        GoogleAccessToken? accessTokenOrNull,
-        string? diagnosticCodeOrNull)
+    private GoogleOAuthAuthorizationResult(EGoogleOAuthAuthorizationStatus status, GoogleAccessToken? accessTokenOrNull, string? diagnosticCodeOrNull)
     {
-        if (Enum.IsDefined(typeof(EGoogleOAuthAuthorizationStatus), status) == false
-            || status == EGoogleOAuthAuthorizationStatus.None)
+        if (Enum.IsDefined(typeof(EGoogleOAuthAuthorizationStatus), status) == false || status == EGoogleOAuthAuthorizationStatus.None)
         {
             throw new ArgumentOutOfRangeException(nameof(status));
         }
@@ -33,21 +29,14 @@ internal sealed class GoogleOAuthAuthorizationResult
             throw new ArgumentNullException(nameof(accessToken));
         }
 
-        return new GoogleOAuthAuthorizationResult(
-            EGoogleOAuthAuthorizationStatus.Completed,
-            accessToken,
-            null);
+        return new GoogleOAuthAuthorizationResult(EGoogleOAuthAuthorizationStatus.Completed, accessToken, null);
     }
 
-    public static GoogleOAuthAuthorizationResult Fail(
-        EGoogleOAuthAuthorizationStatus status,
-        string? diagnosticCodeOrNull)
+    public static GoogleOAuthAuthorizationResult Fail(EGoogleOAuthAuthorizationStatus status, string? diagnosticCodeOrNull)
     {
         if (status == EGoogleOAuthAuthorizationStatus.Completed)
         {
-            throw new ArgumentException(
-                "Completed Google OAuth results require an access token.",
-                nameof(status));
+            throw new ArgumentException("Completed Google OAuth results require an access token.", nameof(status));
         }
 
         return new GoogleOAuthAuthorizationResult(status, null, diagnosticCodeOrNull);

@@ -105,8 +105,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                 EPlanNameEditorPurpose.Create => "시간표 이름",
                 EPlanNameEditorPurpose.Rename => "시간표 이름 바꾸기",
                 null => string.Empty,
-                _ => throw new InvalidOperationException(
-                    "The plan name editor purpose is not supported."),
+                _ => throw new InvalidOperationException("The plan name editor purpose is not supported."),
             };
         }
     }
@@ -120,8 +119,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                 EPlanNameEditorPurpose.Create => "만들기",
                 EPlanNameEditorPurpose.Rename => "저장",
                 null => string.Empty,
-                _ => throw new InvalidOperationException(
-                    "The plan name editor purpose is not supported."),
+                _ => throw new InvalidOperationException("The plan name editor purpose is not supported."),
             };
         }
     }
@@ -207,9 +205,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                 return string.Empty;
             }
 
-            return "삭제할 시간표: '"
-                + mPlanPendingDeletionOrNull.DisplayName
-                + "'";
+            return "삭제할 시간표: '" + mPlanPendingDeletionOrNull.DisplayName + "'";
         }
     }
 
@@ -235,8 +231,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                 return string.Empty;
             }
 
-            return "'" + mPlanPendingClearOrNull.DisplayName
-                + "'의 모든 내용을 지웁니다.";
+            return "'" + mPlanPendingClearOrNull.DisplayName + "'의 모든 내용을 지웁니다.";
         }
     }
 
@@ -289,8 +284,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return mActivePlanOrNull != null
-                && mActivePlanOrNull.IsCompletelyEmpty == false;
+            return mActivePlanOrNull != null && mActivePlanOrNull.IsCompletelyEmpty == false;
         }
     }
 
@@ -627,8 +621,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             }
         }
 
-        throw new InvalidOperationException(
-            "The active planning session plan was not projected for the UI.");
+        throw new InvalidOperationException("The active planning session plan was not projected for the UI.");
     }
 
     private PlanTabItem getRequiredActivePlanItem()
@@ -658,10 +651,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         foreach (PlanningPlan plan in mSession.Workspace.Plans)
         {
-            if (plan.Id != excludedPlanId
-                && StringComparer.OrdinalIgnoreCase.Equals(
-                    plan.Name.Value,
-                    name.Value))
+            if (plan.Id != excludedPlanId && StringComparer.OrdinalIgnoreCase.Equals(plan.Name.Value, name.Value))
             {
                 return true;
             }
@@ -774,9 +764,7 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private void showInvalidPlanNameValidationMessage()
     {
-        mPlanNameValidationMessage = "시간표 이름은 1~"
-            + PlanName.MAXIMUM_LENGTH
-            + "자로 입력해 주세요.";
+        mPlanNameValidationMessage = "시간표 이름은 1~" + PlanName.MAXIMUM_LENGTH + "자로 입력해 주세요.";
         raisePropertyChanged(nameof(PlanNameValidationMessage));
         raisePropertyChanged(nameof(HasPlanNameValidationMessage));
     }

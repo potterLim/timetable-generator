@@ -8,10 +8,7 @@ public sealed class PersonalScheduleDetails
 
     public PersonalScheduleLocation? LocationOrNull { get; }
 
-    public PersonalScheduleDetails(
-        PersonalScheduleSection? sectionOrNull,
-        PersonalScheduleInstructor? instructorOrNull,
-        PersonalScheduleLocation? locationOrNull)
+    public PersonalScheduleDetails(PersonalScheduleSection? sectionOrNull, PersonalScheduleInstructor? instructorOrNull, PersonalScheduleLocation? locationOrNull)
     {
         SectionOrNull = sectionOrNull;
         InstructorOrNull = instructorOrNull;

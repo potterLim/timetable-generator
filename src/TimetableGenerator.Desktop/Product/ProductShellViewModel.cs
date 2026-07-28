@@ -113,9 +113,7 @@ internal sealed partial class ProductShellViewModel : ObservableObject, IDisposa
         }
     }
 
-    public ProductShellViewModel(
-        IProductWorkspaceLoader workspaceLoader,
-        IProductCatalogUpdateService catalogUpdateService)
+    public ProductShellViewModel(IProductWorkspaceLoader workspaceLoader, IProductCatalogUpdateService catalogUpdateService)
     {
         if (workspaceLoader == null)
         {
@@ -162,8 +160,7 @@ internal sealed partial class ProductShellViewModel : ObservableObject, IDisposa
         {
             ProductWorkspacePresentation presentation = await mWorkspaceLoader.LoadAsync(loadCancellationSource.Token);
             PlannerWorkspaceViewModel workspace = presentation.Workspace;
-            if (loadCancellationSource.IsCancellationRequested
-                || ReferenceEquals(mLoadCancellationSource, loadCancellationSource) == false)
+            if (loadCancellationSource.IsCancellationRequested || ReferenceEquals(mLoadCancellationSource, loadCancellationSource) == false)
             {
                 workspace.Dispose();
                 return;
@@ -184,10 +181,7 @@ internal sealed partial class ProductShellViewModel : ObservableObject, IDisposa
         }
         catch (Exception exception)
         {
-            if (loadCancellationSource.IsCancellationRequested == false
-                && ReferenceEquals(
-                    mLoadCancellationSource,
-                    loadCancellationSource))
+            if (loadCancellationSource.IsCancellationRequested == false && ReferenceEquals(mLoadCancellationSource, loadCancellationSource))
             {
                 showFailure(exception);
             }

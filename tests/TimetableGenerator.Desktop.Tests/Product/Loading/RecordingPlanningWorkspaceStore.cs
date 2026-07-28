@@ -41,10 +41,7 @@ internal sealed class RecordingPlanningWorkspaceStore : IPlanningWorkspaceStore
         return Task.FromResult(mLoadResult);
     }
 
-    public Task<PlanningWorkspaceConcurrencyToken> SaveAsync(
-        PlanningWorkspace workspace,
-        PlanningWorkspaceConcurrencyToken expectedToken,
-        CancellationToken cancellationToken)
+    public Task<PlanningWorkspaceConcurrencyToken> SaveAsync(PlanningWorkspace workspace, PlanningWorkspaceConcurrencyToken expectedToken, CancellationToken cancellationToken)
     {
         if (workspace == null)
         {

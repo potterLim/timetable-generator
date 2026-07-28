@@ -14,11 +14,7 @@ public sealed class PlanningCourseSelection
 
     public EPlanningCourseSelectionKind Kind { get; }
 
-    private PlanningCourseSelection(
-        CourseId courseId,
-        EPlanningCourseSelectionKind kind,
-        IReadOnlyList<OfferingId> scheduledOfferingIds,
-        OfferingId? timeNotProvidedOfferingIdOrNull)
+    private PlanningCourseSelection(CourseId courseId, EPlanningCourseSelectionKind kind, IReadOnlyList<OfferingId> scheduledOfferingIds, OfferingId? timeNotProvidedOfferingIdOrNull)
     {
         CourseId = courseId;
         Kind = kind;
@@ -26,9 +22,7 @@ public sealed class PlanningCourseSelection
         mTimeNotProvidedOfferingIdOrNull = timeNotProvidedOfferingIdOrNull;
     }
 
-    public static PlanningCourseSelection CreateScheduledAlternatives(
-        CourseId courseId,
-        IEnumerable<OfferingId> offeringIds)
+    public static PlanningCourseSelection CreateScheduledAlternatives(CourseId courseId, IEnumerable<OfferingId> offeringIds)
     {
         if (courseId == null)
         {
@@ -46,16 +40,12 @@ public sealed class PlanningCourseSelection
         {
             if (offeringId == null)
             {
-                throw new ArgumentException(
-                    "Scheduled course selections cannot contain null offering IDs.",
-                    nameof(offeringIds));
+                throw new ArgumentException("Scheduled course selections cannot contain null offering IDs.", nameof(offeringIds));
             }
 
             if (uniqueOfferingIds.Add(offeringId) == false)
             {
-                throw new ArgumentException(
-                    "Scheduled course selections cannot contain duplicate offering IDs.",
-                    nameof(offeringIds));
+                throw new ArgumentException("Scheduled course selections cannot contain duplicate offering IDs.", nameof(offeringIds));
             }
 
             copiedOfferingIds.Add(offeringId);
@@ -63,21 +53,13 @@ public sealed class PlanningCourseSelection
 
         if (copiedOfferingIds.Count == 0)
         {
-            throw new ArgumentException(
-                "Scheduled course selections require at least one offering ID.",
-                nameof(offeringIds));
+            throw new ArgumentException("Scheduled course selections require at least one offering ID.", nameof(offeringIds));
         }
 
-        return new PlanningCourseSelection(
-            courseId,
-            EPlanningCourseSelectionKind.ScheduledAlternatives,
-            copiedOfferingIds.AsReadOnly(),
-            null);
+        return new PlanningCourseSelection(courseId, EPlanningCourseSelectionKind.ScheduledAlternatives, copiedOfferingIds.AsReadOnly(), null);
     }
 
-    public static PlanningCourseSelection CreateTimeNotProvidedOffering(
-        CourseId courseId,
-        OfferingId offeringId)
+    public static PlanningCourseSelection CreateTimeNotProvidedOffering(CourseId courseId, OfferingId offeringId)
     {
         if (courseId == null)
         {
@@ -89,19 +71,14 @@ public sealed class PlanningCourseSelection
             throw new ArgumentNullException(nameof(offeringId));
         }
 
-        return new PlanningCourseSelection(
-            courseId,
-            EPlanningCourseSelectionKind.TimeNotProvidedOffering,
-            Array.Empty<OfferingId>(),
-            offeringId);
+        return new PlanningCourseSelection(courseId, EPlanningCourseSelectionKind.TimeNotProvidedOffering, Array.Empty<OfferingId>(), offeringId);
     }
 
     public IReadOnlyList<OfferingId> GetScheduledOfferingIds()
     {
         if (Kind != EPlanningCourseSelectionKind.ScheduledAlternatives)
         {
-            throw new InvalidOperationException(
-                "The course selection does not contain scheduled alternatives.");
+            throw new InvalidOperationException("The course selection does not contain scheduled alternatives.");
         }
 
         return mScheduledOfferingIds;
@@ -109,11 +86,9 @@ public sealed class PlanningCourseSelection
 
     public OfferingId GetTimeNotProvidedOfferingId()
     {
-        if (Kind != EPlanningCourseSelectionKind.TimeNotProvidedOffering
-            || mTimeNotProvidedOfferingIdOrNull == null)
+        if (Kind != EPlanningCourseSelectionKind.TimeNotProvidedOffering || mTimeNotProvidedOfferingIdOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The course selection does not identify a time-not-provided offering.");
+            throw new InvalidOperationException("The course selection does not identify a time-not-provided offering.");
         }
 
         return mTimeNotProvidedOfferingIdOrNull;

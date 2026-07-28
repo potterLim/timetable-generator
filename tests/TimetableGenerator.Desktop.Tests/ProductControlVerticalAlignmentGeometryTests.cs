@@ -89,13 +89,8 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
 
                         option.IsChecked = isSelected;
                         Dispatcher.UIThread.RunJobs();
-                        string stateName = "Appearance option '" + text
-                            + "' [theme=" + themeVariant.Key
-                            + ", selected=" + isSelected + "]";
-                        heightComparisons.Add(new ControlHeightComparison(
-                            stateName,
-                            APPEARANCE_OPTION_HEIGHT_DIP,
-                            option.Bounds.Height));
+                        string stateName = "Appearance option '" + text + "' [theme=" + themeVariant.Key + ", selected=" + isSelected + "]";
+                        heightComparisons.Add(new ControlHeightComparison(stateName, APPEARANCE_OPTION_HEIGHT_DIP, option.Bounds.Height));
                         centerComparisons.AddRange(getAppearanceOptionCenterComparisons(option, text, stateName));
                     }
                 }
@@ -141,12 +136,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                         dayOption.IsSelected = isSelected;
                         Dispatcher.UIThread.RunJobs();
                         TextBlock text = findRequiredTextBlock(dayInput, dayOption.ShortName);
-                        comparisons.Add(compareControlAndTextLayoutCenters(
-                            "Personal schedule day '" + dayOption.ShortName
-                                + "' [theme=" + themeVariant.Key
-                                + ", selected=" + isSelected + "]",
-                            dayInput,
-                            measureTextLayout(text, dayInput)));
+                        comparisons.Add(compareControlAndTextLayoutCenters("Personal schedule day '" + dayOption.ShortName + "' [theme=" + themeVariant.Key + ", selected=" + isSelected + "]", dayInput, measureTextLayout(text, dayInput)));
                     }
                 }
             }
@@ -195,21 +185,14 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                     RadioButton preferenceInput = preferenceInputs[optionIndex];
                     foreach (bool isSelected in new bool[] { false, true })
                     {
-                        int selectedOptionIndex = isSelected
-                            ? optionIndex
-                            : (optionIndex + 1) % preferenceInputs.Length;
+                        int selectedOptionIndex = isSelected ? optionIndex : (optionIndex + 1) % preferenceInputs.Length;
                         preferenceInputs[selectedOptionIndex].Command?.Execute(null);
                         Dispatcher.UIThread.RunJobs();
 
                         Assert.Equal(isSelected, preferenceInput.IsChecked);
                         string preferenceText = Assert.IsType<string>(preferenceInput.Content);
                         TextBlock text = findRequiredTextBlock(preferenceInput, preferenceText);
-                        comparisons.Add(compareControlAndTextLayoutCenters(
-                            "Course preference '" + preferenceText
-                                + "' [theme=" + themeVariant.Key
-                                + ", selected=" + isSelected + "]",
-                            preferenceInput,
-                            measureTextLayout(text, preferenceInput)));
+                        comparisons.Add(compareControlAndTextLayoutCenters("Course preference '" + preferenceText + "' [theme=" + themeVariant.Key + ", selected=" + isSelected + "]", preferenceInput, measureTextLayout(text, preferenceInput)));
                     }
                 }
             }
@@ -260,11 +243,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                 {
                     string buttonText = Assert.IsType<string>(button.Content);
                     TextBlock text = findRequiredTextBlock(button, buttonText);
-                    comparisons.Add(compareControlAndTextLayoutCenters(
-                        "Button '" + buttonText + "' [theme="
-                            + themeVariant.Key + "]",
-                        button,
-                        measureTextLayout(text, button)));
+                    comparisons.Add(compareControlAndTextLayoutCenters("Button '" + buttonText + "' [theme=" + themeVariant.Key + "]", button, measureTextLayout(text, button)));
                 }
             }
 
@@ -297,10 +276,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                 TextPresenter text = textBox.GetVisualDescendants()
                     .OfType<TextPresenter>()
                     .Single(candidate => candidate.Text == "과목 검색");
-                comparisons.Add(compareControlAndTextLayoutCenters(
-                    "TextBox '과목 검색' [theme=" + themeVariant.Key + "]",
-                    textBox,
-                    measureTextLayout(text, textBox)));
+                comparisons.Add(compareControlAndTextLayoutCenters("TextBox '과목 검색' [theme=" + themeVariant.Key + "]", textBox, measureTextLayout(text, textBox)));
             }
 
             assertAllLayoutCentersMatch(comparisons);
@@ -344,11 +320,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                     .OfType<TextBlock>()
                     .Single(candidate => candidate.Name == "PART_Placeholder");
                 Assert.Equal("과목명, 코드, 교수 검색", searchPlaceholder.Text);
-                comparisons.Add(compareControlAndTextLayoutCenters(
-                    "Course search placeholder [theme="
-                        + themeVariant.Key + "]",
-                    searchInput,
-                    measureTextLayout(searchPlaceholder, searchInput)));
+                comparisons.Add(compareControlAndTextLayoutCenters("Course search placeholder [theme=" + themeVariant.Key + "]", searchInput, measureTextLayout(searchPlaceholder, searchInput)));
 
                 foreach (ComboBox selectionInput in selectionInputs)
                 {
@@ -359,11 +331,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                             candidate => ReferenceEquals(
                                 candidate.DataContext,
                                 selectionInput.SelectedItem));
-                    comparisons.Add(compareControlAndTextLayoutCenters(
-                        "Course selection '" + selectedText.Text
-                            + "' [theme=" + themeVariant.Key + "]",
-                        selectionInput,
-                        measureTextLayout(selectedText, selectionInput)));
+                    comparisons.Add(compareControlAndTextLayoutCenters("Course selection '" + selectedText.Text + "' [theme=" + themeVariant.Key + "]", selectionInput, measureTextLayout(selectedText, selectionInput)));
                 }
             }
 
@@ -407,11 +375,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                             candidate => ReferenceEquals(
                                 candidate.DataContext,
                                 segment.SelectedItem));
-                    comparisons.Add(compareControlAndTextLayoutCenters(
-                        "ProductTimePicker segment '" + segment.Name
-                            + "' [theme=" + themeVariant.Key + "]",
-                        segment,
-                        measureTextLayout(text, segment)));
+                    comparisons.Add(compareControlAndTextLayoutCenters("ProductTimePicker segment '" + segment.Name + "' [theme=" + themeVariant.Key + "]", segment, measureTextLayout(text, segment)));
                 }
             }
 
@@ -447,10 +411,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
             foreach (ThemeVariant themeVariant in getProductThemeVariants())
             {
                 window.RequestedThemeVariant = themeVariant;
-                heightComparisons.Add(new ControlHeightComparison(
-                    "Plan TabStrip [theme=" + themeVariant.Key + "]",
-                    PLAN_TAB_HEIGHT_DIP,
-                    planTabs.Bounds.Height));
+                heightComparisons.Add(new ControlHeightComparison("Plan TabStrip [theme=" + themeVariant.Key + "]", PLAN_TAB_HEIGHT_DIP, planTabs.Bounds.Height));
                 foreach (PlanTabItem selectedPlan in workspace.Plans)
                 {
                     workspace.ActivePlan = selectedPlan;
@@ -462,38 +423,13 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                         TextBlock text = findRequiredTextBlock(planTabItem, plan.DisplayName);
                         Button closeButton = planTabItem.GetVisualDescendants().OfType<Button>().Single();
                         FluentIcon closeIcon = closeButton.GetVisualDescendants().OfType<FluentIcon>().Single();
-                        string stateName = " [theme=" + themeVariant.Key
-                            + ", selected=" + isSelected + "]";
+                        string stateName = " [theme=" + themeVariant.Key + ", selected=" + isSelected + "]";
 
-                        heightComparisons.Add(new ControlHeightComparison(
-                            "Plan TabStripItem '" + plan.DisplayName
-                                + "'" + stateName,
-                            PLAN_TAB_HEIGHT_DIP,
-                            planTabItem.Bounds.Height));
-                        centerComparisons.Add(compareCenters(
-                            "Plan TabStripItem '" + plan.DisplayName
-                                + "' versus TabStrip" + stateName,
-                            measureArrangedBounds(planTabs, planTabs),
-                            measureArrangedBounds(planTabItem, planTabs)));
-                        centerComparisons.Add(
-                            compareControlAndTextLayoutCenters(
-                                "Plan tab '" + plan.DisplayName + "'"
-                                    + stateName,
-                                planTabItem,
-                                measureTextLayout(
-                                    text,
-                                    planTabItem,
-                                    PLAN_TAB_FONT_SIZE_DIP)));
-                        centerComparisons.Add(compareCenters(
-                            "Plan tab close button versus icon '"
-                                + plan.DisplayName + "'" + stateName,
-                            measureArrangedBounds(closeButton, closeButton),
-                            measureArrangedBounds(closeIcon, closeButton)));
-                        centerComparisons.Add(compareCenters(
-                            "Plan tab item versus close button '"
-                                + plan.DisplayName + "'" + stateName,
-                            measureArrangedBounds(planTabItem, planTabItem),
-                            measureArrangedBounds(closeButton, planTabItem)));
+                        heightComparisons.Add(new ControlHeightComparison("Plan TabStripItem '" + plan.DisplayName + "'" + stateName, PLAN_TAB_HEIGHT_DIP, planTabItem.Bounds.Height));
+                        centerComparisons.Add(compareCenters("Plan TabStripItem '" + plan.DisplayName + "' versus TabStrip" + stateName, measureArrangedBounds(planTabs, planTabs), measureArrangedBounds(planTabItem, planTabs)));
+                        centerComparisons.Add(compareControlAndTextLayoutCenters("Plan tab '" + plan.DisplayName + "'" + stateName, planTabItem, measureTextLayout(text, planTabItem, PLAN_TAB_FONT_SIZE_DIP)));
+                        centerComparisons.Add(compareCenters("Plan tab close button versus icon '" + plan.DisplayName + "'" + stateName, measureArrangedBounds(closeButton, closeButton), measureArrangedBounds(closeIcon, closeButton)));
+                        centerComparisons.Add(compareCenters("Plan tab item versus close button '" + plan.DisplayName + "'" + stateName, measureArrangedBounds(planTabItem, planTabItem), measureArrangedBounds(closeButton, planTabItem)));
                     }
                 }
             }
@@ -552,26 +488,16 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                         .Single(
                             candidate => candidate.Name == "PART_IconPresenter");
                     FluentIcon icon = iconPresenter.GetVisualDescendants().OfType<FluentIcon>().Single();
-                    string stateName = "Plan tab context menu '"
-                        + headerText + "' [theme=" + themeVariant.Key + "]";
+                    string stateName = "Plan tab context menu '" + headerText + "' [theme=" + themeVariant.Key + "]";
 
                     Assert.InRange(menuItem.Bounds.Width, 148.0, 160.0);
                     Assert.Equal(18.0, header.Height);
                     Assert.Equal(18.0, header.LineHeight);
                     Assert.Equal(18.0, icon.Width);
                     Assert.Equal(18.0, icon.Height);
-                    comparisons.Add(compareControlAndTextLayoutCenters(
-                        stateName,
-                        menuItem,
-                        measureTextLayout(header, menuItem)));
-                    comparisons.Add(compareCenters(
-                        stateName + " item versus icon slot",
-                        measureArrangedBounds(menuItem, menuItem),
-                        measureArrangedBounds(iconPresenter, menuItem)));
-                    comparisons.Add(compareCenters(
-                        stateName + " icon slot versus icon",
-                        measureArrangedBounds(iconPresenter, iconPresenter),
-                        measureArrangedBounds(icon, iconPresenter)));
+                    comparisons.Add(compareControlAndTextLayoutCenters(stateName, menuItem, measureTextLayout(header, menuItem)));
+                    comparisons.Add(compareCenters(stateName + " item versus icon slot", measureArrangedBounds(menuItem, menuItem), measureArrangedBounds(iconPresenter, menuItem)));
+                    comparisons.Add(compareCenters(stateName + " icon slot versus icon", measureArrangedBounds(iconPresenter, iconPresenter), measureArrangedBounds(icon, iconPresenter)));
                 }
 
                 contextMenu.Close();
@@ -624,16 +550,8 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                 Dispatcher.UIThread.RunJobs();
                 VerticalCenterMeasurement iconMeasurement = measureArrangedBounds(iconBox, button);
                 VerticalCenterMeasurement textMeasurement = measureTextLayout(label, button);
-                comparisons.Add(compareCenters(
-                    "Button icon versus '시간표 편집' [theme="
-                        + themeVariant.Key + "]",
-                    iconMeasurement,
-                    textMeasurement));
-                comparisons.Add(compareControlAndTextLayoutCenters(
-                    "Compound Button '시간표 편집' [theme="
-                        + themeVariant.Key + "]",
-                    button,
-                    textMeasurement));
+                comparisons.Add(compareCenters("Button icon versus '시간표 편집' [theme=" + themeVariant.Key + "]", iconMeasurement, textMeasurement));
+                comparisons.Add(compareControlAndTextLayoutCenters("Compound Button '시간표 편집' [theme=" + themeVariant.Key + "]", button, textMeasurement));
             }
 
             assertAllLayoutCentersMatch(comparisons);
@@ -666,10 +584,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
         return button;
     }
 
-    private static IReadOnlyList<VerticalCenterComparison> getAppearanceOptionCenterComparisons(
-        RadioButton option,
-        string expectedText,
-        string stateName)
+    private static IReadOnlyList<VerticalCenterComparison> getAppearanceOptionCenterComparisons(RadioButton option, string expectedText, string stateName)
     {
         Visual indicator = option.GetVisualDescendants()
             .Single(candidate => candidate.Name == "OuterEllipse");
@@ -694,21 +609,12 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
         };
     }
 
-    private static VerticalCenterComparison compareControlAndTextLayoutCenters(
-        string controlName,
-        Control control,
-        VerticalCenterMeasurement textMeasurement)
+    private static VerticalCenterComparison compareControlAndTextLayoutCenters(string controlName, Control control, VerticalCenterMeasurement textMeasurement)
     {
-        return compareCenters(
-            controlName + " control versus text layout",
-            measureArrangedBounds(control, control),
-            textMeasurement);
+        return compareCenters(controlName + " control versus text layout", measureArrangedBounds(control, control), textMeasurement);
     }
 
-    private static VerticalCenterComparison compareCenters(
-        string measurementName,
-        VerticalCenterMeasurement referenceMeasurement,
-        VerticalCenterMeasurement comparedMeasurement)
+    private static VerticalCenterComparison compareCenters(string measurementName, VerticalCenterMeasurement referenceMeasurement, VerticalCenterMeasurement comparedMeasurement)
     {
         return new VerticalCenterComparison(measurementName, referenceMeasurement, comparedMeasurement);
     }
@@ -722,17 +628,11 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
             comparisonReport);
     }
 
-    private void assertAllGeometryMatches(
-        IReadOnlyList<VerticalCenterComparison> centerComparisons,
-        IReadOnlyList<ControlHeightComparison> heightComparisons)
+    private void assertAllGeometryMatches(IReadOnlyList<VerticalCenterComparison> centerComparisons, IReadOnlyList<ControlHeightComparison> heightComparisons)
     {
         string centerReport = string.Join(Environment.NewLine, centerComparisons.Select(formatComparison));
-        string heightReport = string.Join(
-            Environment.NewLine,
-            heightComparisons.Select(formatHeightComparison));
-        string geometryReport = heightReport
-            + Environment.NewLine
-            + centerReport;
+        string heightReport = string.Join(Environment.NewLine, heightComparisons.Select(formatHeightComparison));
+        string geometryReport = heightReport + Environment.NewLine + centerReport;
         mOutputHelper.WriteLine(geometryReport);
         Assert.True(
             centerComparisons.All(
@@ -744,47 +644,21 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
 
     private static string formatComparison(VerticalCenterComparison comparison)
     {
-        return string.Create(
-            CultureInfo.InvariantCulture,
-            $"{comparison.MeasurementName}: layout center delta="
-            + $"{comparison.SignedLayoutCenterDelta:F3} DIP "
-            + $"(absolute={comparison.AbsoluteLayoutCenterDelta:F3} DIP, "
-            + $"allowed={MAXIMUM_LAYOUT_CENTER_DELTA_DIP:F3} DIP); "
-            + $"ink center delta={comparison.SignedInkCenterDelta:F3} DIP; "
-            + $"reference top={comparison.Reference.Top:F3}, "
-            + $"height={comparison.Reference.Height:F3}, "
-            + $"center={comparison.Reference.CenterY:F3}; "
-            + $"text top={comparison.Compared.Top:F3}, "
-            + $"height={comparison.Compared.Height:F3}, "
-            + $"center={comparison.Compared.CenterY:F3}, "
-            + $"ink center={comparison.Compared.InkCenterY:F3}.");
+        return string.Create(CultureInfo.InvariantCulture, $"{comparison.MeasurementName}: layout center delta=" + $"{comparison.SignedLayoutCenterDelta:F3} DIP " + $"(absolute={comparison.AbsoluteLayoutCenterDelta:F3} DIP, " + $"allowed={MAXIMUM_LAYOUT_CENTER_DELTA_DIP:F3} DIP); " + $"ink center delta={comparison.SignedInkCenterDelta:F3} DIP; " + $"reference top={comparison.Reference.Top:F3}, " + $"height={comparison.Reference.Height:F3}, " + $"center={comparison.Reference.CenterY:F3}; " + $"text top={comparison.Compared.Top:F3}, " + $"height={comparison.Compared.Height:F3}, " + $"center={comparison.Compared.CenterY:F3}, " + $"ink center={comparison.Compared.InkCenterY:F3}.");
     }
 
     private static string formatHeightComparison(ControlHeightComparison comparison)
     {
-        return string.Create(
-            CultureInfo.InvariantCulture,
-            $"{comparison.MeasurementName}: height delta="
-            + $"{comparison.SignedHeightDelta:F3} DIP "
-            + $"(absolute={comparison.AbsoluteHeightDelta:F3} DIP, "
-            + $"allowed={MAXIMUM_LAYOUT_CENTER_DELTA_DIP:F3} DIP); "
-            + $"expected={comparison.ExpectedHeight:F3}, "
-            + $"actual={comparison.ActualHeight:F3}.");
+        return string.Create(CultureInfo.InvariantCulture, $"{comparison.MeasurementName}: height delta=" + $"{comparison.SignedHeightDelta:F3} DIP " + $"(absolute={comparison.AbsoluteHeightDelta:F3} DIP, " + $"allowed={MAXIMUM_LAYOUT_CENTER_DELTA_DIP:F3} DIP); " + $"expected={comparison.ExpectedHeight:F3}, " + $"actual={comparison.ActualHeight:F3}.");
     }
 
     private static VerticalCenterMeasurement measureArrangedBounds(Visual visual, Visual relativeTo)
     {
         Point origin = findRequiredOrigin(visual, relativeTo);
-        return new VerticalCenterMeasurement(
-            origin.Y,
-            visual.Bounds.Height,
-            origin.Y + (visual.Bounds.Height / 2.0));
+        return new VerticalCenterMeasurement(origin.Y, visual.Bounds.Height, origin.Y + (visual.Bounds.Height / 2.0));
     }
 
-    private static VerticalCenterMeasurement measureTextLayout(
-        TextBlock text,
-        Visual relativeTo,
-        double expectedFontSize = BODY_FONT_SIZE_DIP)
+    private static VerticalCenterMeasurement measureTextLayout(TextBlock text, Visual relativeTo, double expectedFontSize = BODY_FONT_SIZE_DIP)
     {
         Assert.Equal(expectedFontSize, text.FontSize);
         Point origin = findRequiredOrigin(text, relativeTo);
@@ -800,9 +674,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
 
     private static VerticalCenterMeasurement measureTextLayout(TextLayout textLayout, double layoutTop)
     {
-        double inkBottom = layoutTop
-            + textLayout.Height
-            + textLayout.OverhangAfter;
+        double inkBottom = layoutTop + textLayout.Height + textLayout.OverhangAfter;
         double inkTop = inkBottom - textLayout.Extent;
         double inkCenterY = inkTop + (textLayout.Extent / 2.0);
 
@@ -829,9 +701,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
         Assert.NotNull(textOrNull);
         if (textOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The rendered text block could not be resolved: "
-                + expectedText);
+            throw new InvalidOperationException("The rendered text block could not be resolved: " + expectedText);
         }
 
         return textOrNull;
@@ -868,10 +738,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
         return window;
     }
 
-    private readonly record struct VerticalCenterComparison(
-        string MeasurementName,
-        VerticalCenterMeasurement Reference,
-        VerticalCenterMeasurement Compared)
+    private readonly record struct VerticalCenterComparison(string MeasurementName, VerticalCenterMeasurement Reference, VerticalCenterMeasurement Compared)
     {
         public double SignedLayoutCenterDelta =>
             Compared.CenterY - Reference.CenterY;
@@ -886,10 +753,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
             AbsoluteLayoutCenterDelta <= MAXIMUM_LAYOUT_CENTER_DELTA_DIP;
     }
 
-    private readonly record struct ControlHeightComparison(
-        string MeasurementName,
-        double ExpectedHeight,
-        double ActualHeight)
+    private readonly record struct ControlHeightComparison(string MeasurementName, double ExpectedHeight, double ActualHeight)
     {
         public double SignedHeightDelta => ActualHeight - ExpectedHeight;
 
@@ -899,10 +763,7 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
             AbsoluteHeightDelta <= MAXIMUM_LAYOUT_CENTER_DELTA_DIP;
     }
 
-    private readonly record struct VerticalCenterMeasurement(
-        double Top,
-        double Height,
-        double InkCenterY)
+    private readonly record struct VerticalCenterMeasurement(double Top, double Height, double InkCenterY)
     {
         public double CenterY => Top + (Height / 2.0);
     }

@@ -29,22 +29,15 @@ internal static class CatalogCommandLineParser
         Dictionary<string, string> optionValues = readOptionValues(arguments);
         validateRequiredOptions(optionValues);
 
-        return new CatalogGenerationRequest(
-            parseSourceFilePath(optionValues[SOURCE_OPTION]),
-            parseAcademicTerm(optionValues[TERM_OPTION]),
-            parseRevision(optionValues[REVISION_OPTION]),
-            parseOutputRootPath(optionValues[OUTPUT_ROOT_OPTION]));
+        return new CatalogGenerationRequest(parseSourceFilePath(optionValues[SOURCE_OPTION]), parseAcademicTerm(optionValues[TERM_OPTION]), parseRevision(optionValues[REVISION_OPTION]), parseOutputRootPath(optionValues[OUTPUT_ROOT_OPTION]));
     }
 
     private static void validateCommand(IReadOnlyList<string> arguments)
     {
-        if (arguments.Count == 0 ||
-            string.Equals(arguments[0], GENERATE_COMMAND, StringComparison.Ordinal) == false)
+        if (arguments.Count == 0 || string.Equals(arguments[0], GENERATE_COMMAND, StringComparison.Ordinal) == false)
         {
             string suppliedCommand = arguments.Count == 0 ? "<missing>" : arguments[0];
-            throw createCommandLineException(
-                ECatalogGenerationErrorCode.InvalidCommand,
-                "Expected the 'generate' command but received '" + suppliedCommand + "'.");
+            throw createCommandLineException(ECatalogGenerationErrorCode.InvalidCommand, "Expected the 'generate' command but received '" + suppliedCommand + "'.");
         }
     }
 
@@ -57,24 +50,18 @@ internal static class CatalogCommandLineParser
             string optionName = arguments[argumentIndex];
             if (isKnownOption(optionName) == false)
             {
-                throw createCommandLineException(
-                    ECatalogGenerationErrorCode.UnknownOption,
-                    "Unknown option '" + optionName + "'.");
+                throw createCommandLineException(ECatalogGenerationErrorCode.UnknownOption, "Unknown option '" + optionName + "'.");
             }
 
             if (optionValues.ContainsKey(optionName))
             {
-                throw createCommandLineException(
-                    ECatalogGenerationErrorCode.DuplicateOption,
-                    "Option '" + optionName + "' can be specified only once.");
+                throw createCommandLineException(ECatalogGenerationErrorCode.DuplicateOption, "Option '" + optionName + "' can be specified only once.");
             }
 
             int valueIndex = argumentIndex + 1;
             if (valueIndex >= arguments.Count || isOptionToken(arguments[valueIndex]))
             {
-                throw createCommandLineException(
-                    ECatalogGenerationErrorCode.MissingOptionValue,
-                    "Option '" + optionName + "' requires a value.");
+                throw createCommandLineException(ECatalogGenerationErrorCode.MissingOptionValue, "Option '" + optionName + "' requires a value.");
             }
 
             optionValues.Add(optionName, arguments[valueIndex]);
@@ -93,16 +80,11 @@ internal static class CatalogCommandLineParser
         addMissingOption(optionValues, missingOptions, OUTPUT_ROOT_OPTION);
         if (missingOptions.Count > 0)
         {
-            throw createCommandLineException(
-                ECatalogGenerationErrorCode.MissingRequiredOption,
-                "Missing required option(s): " + string.Join(", ", missingOptions) + ".");
+            throw createCommandLineException(ECatalogGenerationErrorCode.MissingRequiredOption, "Missing required option(s): " + string.Join(", ", missingOptions) + ".");
         }
     }
 
-    private static void addMissingOption(
-        IReadOnlyDictionary<string, string> optionValues,
-        ICollection<string> missingOptions,
-        string optionName)
+    private static void addMissingOption(IReadOnlyDictionary<string, string> optionValues, ICollection<string> missingOptions, string optionName)
     {
         if (optionValues.ContainsKey(optionName) == false)
         {
@@ -139,9 +121,7 @@ internal static class CatalogCommandLineParser
     {
         if (hasExactAcademicTermFormat(value) == false)
         {
-            throw createInvalidOptionValueException(
-                TERM_OPTION,
-                "The academic term must use the YYYY-S format with semester 1 or 2.");
+            throw createInvalidOptionValueException(TERM_OPTION, "The academic term must use the YYYY-S format with semester 1 or 2.");
         }
 
         try
@@ -177,9 +157,7 @@ internal static class CatalogCommandLineParser
         bool isParsed = int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out revisionValue);
         if (isParsed == false)
         {
-            throw createInvalidOptionValueException(
-                REVISION_OPTION,
-                "The revision must be a positive integer.");
+            throw createInvalidOptionValueException(REVISION_OPTION, "The revision must be a positive integer.");
         }
 
         try
@@ -211,25 +189,13 @@ internal static class CatalogCommandLineParser
             exception is PathTooLongException;
     }
 
-    private static CatalogGenerationException createInvalidOptionValueException(
-        string optionName,
-        string reason,
-        Exception? innerExceptionOrNull = null)
+    private static CatalogGenerationException createInvalidOptionValueException(string optionName, string reason, Exception? innerExceptionOrNull = null)
     {
-        return new CatalogGenerationException(
-            ECatalogGenerationErrorCode.InvalidOptionValue,
-            ECatalogGeneratorExitCode.InvalidArguments,
-            "Invalid value for option '" + optionName + "': " + reason,
-            innerExceptionOrNull);
+        return new CatalogGenerationException(ECatalogGenerationErrorCode.InvalidOptionValue, ECatalogGeneratorExitCode.InvalidArguments, "Invalid value for option '" + optionName + "': " + reason, innerExceptionOrNull);
     }
 
-    private static CatalogGenerationException createCommandLineException(
-        ECatalogGenerationErrorCode errorCode,
-        string message)
+    private static CatalogGenerationException createCommandLineException(ECatalogGenerationErrorCode errorCode, string message)
     {
-        return new CatalogGenerationException(
-            errorCode,
-            ECatalogGeneratorExitCode.InvalidArguments,
-            message);
+        return new CatalogGenerationException(errorCode, ECatalogGeneratorExitCode.InvalidArguments, message);
     }
 }

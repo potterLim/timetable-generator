@@ -60,9 +60,7 @@ public sealed class ProductShellViewModelTests
                     ProductCatalogUpdateResult updateResult = new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.Staged, new CatalogRevision(2));
                     return Task.FromResult(updateResult);
                 });
-        using (ProductShellViewModel shell = new ProductShellViewModel(
-            loader,
-            catalogUpdateService))
+        using (ProductShellViewModel shell = new ProductShellViewModel(loader, catalogUpdateService))
         {
             await shell.StartAsync();
             await shell.CatalogUpdateTask;
@@ -100,9 +98,7 @@ public sealed class ProductShellViewModelTests
                     ProductCatalogUpdateResult updateResult = new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.Staged, new CatalogRevision(2));
                     return Task.FromResult(updateResult);
                 });
-        using (ProductShellViewModel shell = new ProductShellViewModel(
-            loader,
-            catalogUpdateService))
+        using (ProductShellViewModel shell = new ProductShellViewModel(loader, catalogUpdateService))
         {
             await shell.StartAsync();
             await shell.CatalogUpdateTask;
@@ -133,8 +129,7 @@ public sealed class ProductShellViewModelTests
     public async Task NormalWorkspaceSetupDoesNotShowRecoveryNoticeAsync()
     {
         await assertRecoveryFlagsDoNotShowNoticeAsync(EProductWorkspaceRecoveryFlags.WorkspaceCreated);
-        await assertRecoveryFlagsDoNotShowNoticeAsync(
-            EProductWorkspaceRecoveryFlags.WorkspaceCatalogRebound);
+        await assertRecoveryFlagsDoNotShowNoticeAsync(EProductWorkspaceRecoveryFlags.WorkspaceCatalogRebound);
     }
 
     [AvaloniaFact]
@@ -151,13 +146,9 @@ public sealed class ProductShellViewModelTests
             createCatalogUpdateService(
                 delegate
                 {
-                    return Task.FromException<ProductCatalogUpdateResult>(
-                        new InvalidOperationException(
-                            "Expected background update failure."));
+                    return Task.FromException<ProductCatalogUpdateResult>(new InvalidOperationException("Expected background update failure."));
                 });
-        using (ProductShellViewModel shell = new ProductShellViewModel(
-            loader,
-            catalogUpdateService))
+        using (ProductShellViewModel shell = new ProductShellViewModel(loader, catalogUpdateService))
         {
             await shell.StartAsync();
             await shell.CatalogUpdateTask;
@@ -191,11 +182,7 @@ public sealed class ProductShellViewModelTests
         TaskCompletionSource<ProductCatalogUpdateResult> staleUpdateCompletion = new TaskCompletionSource<ProductCatalogUpdateResult>(TaskCreationOptions.RunContinuationsAsynchronously);
         QueueProductCatalogUpdateService catalogUpdateService =
             new QueueProductCatalogUpdateService(
-                new Func<
-                    VerifiedCatalogPackage,
-                    PlanningWorkspace,
-                    CancellationToken,
-                    Task<ProductCatalogUpdateResult>>[]
+                new Func<VerifiedCatalogPackage, PlanningWorkspace, CancellationToken, Task<ProductCatalogUpdateResult>>[]
                 {
                     delegate
                     {
@@ -207,19 +194,14 @@ public sealed class ProductShellViewModelTests
                         return Task.FromResult(updateResult);
                     },
                 });
-        using (ProductShellViewModel shell = new ProductShellViewModel(
-            loader,
-            catalogUpdateService))
+        using (ProductShellViewModel shell = new ProductShellViewModel(loader, catalogUpdateService))
         {
             await shell.StartAsync();
             Task staleUpdateTask = shell.CatalogUpdateTask;
 
             await shell.StartAsync();
             await shell.CatalogUpdateTask;
-            staleUpdateCompletion.SetResult(
-                new ProductCatalogUpdateResult(
-                    EProductCatalogUpdateStatus.Staged,
-                    new CatalogRevision(2)));
+            staleUpdateCompletion.SetResult(new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.Staged, new CatalogRevision(2)));
             await staleUpdateTask;
 
             Assert.Equal(2, catalogUpdateService.CheckCount);
@@ -251,10 +233,7 @@ public sealed class ProductShellViewModelTests
         Task updateTask = shell.CatalogUpdateTask;
 
         shell.Dispose();
-        updateCompletion.SetResult(
-            new ProductCatalogUpdateResult(
-                EProductCatalogUpdateStatus.Staged,
-                new CatalogRevision(2)));
+        updateCompletion.SetResult(new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.Staged, new CatalogRevision(2)));
         await updateTask;
 
         Assert.False(shell.HasCatalogUpdateNotice);
@@ -272,9 +251,7 @@ public sealed class ProductShellViewModelTests
                 return Task.FromResult(presentation);
             });
         QueueProductCatalogUpdateService catalogUpdateService = new QueueProductCatalogUpdateService(Array.Empty<Func<VerifiedCatalogPackage, PlanningWorkspace, CancellationToken, Task<ProductCatalogUpdateResult>>>());
-        using (ProductShellViewModel shell = new ProductShellViewModel(
-            loader,
-            catalogUpdateService))
+        using (ProductShellViewModel shell = new ProductShellViewModel(loader, catalogUpdateService))
         {
             await shell.StartAsync();
             await shell.CatalogUpdateTask;
@@ -290,8 +267,7 @@ public sealed class ProductShellViewModelTests
         QueueProductWorkspaceLoader loader = createLoader(
             delegate
             {
-                return Task.FromException<ProductWorkspacePresentation>(
-                    new CatalogSourceConfigurationException("Missing test source."));
+                return Task.FromException<ProductWorkspacePresentation>(new CatalogSourceConfigurationException("Missing test source."));
             });
         using (ProductShellViewModel shell = createShell(loader))
         {
@@ -332,8 +308,7 @@ public sealed class ProductShellViewModelTests
             {
                 delegate
                 {
-                    return Task.FromException<ProductWorkspacePresentation>(
-                        new InvalidOperationException("First load failed."));
+                    return Task.FromException<ProductWorkspacePresentation>(new InvalidOperationException("First load failed."));
                 },
                 delegate
                 {
@@ -461,10 +436,7 @@ ProductWorkspacePresentation presentation = PlannerWorkspaceTestFactory.CreatePr
         QueueProductWorkspaceLoader loader = createLoader(
             delegate
             {
-                return Task.FromException<ProductWorkspacePresentation>(
-                    new RemoteCatalogSynchronizationException(
-                        ERemoteCatalogSynchronizationFailureKind.InvalidRemoteData,
-                        "Expected invalid remote data."));
+                return Task.FromException<ProductWorkspacePresentation>(new RemoteCatalogSynchronizationException(ERemoteCatalogSynchronizationFailureKind.InvalidRemoteData, "Expected invalid remote data."));
             });
         using (ProductShellViewModel shell = createShell(loader))
         {
@@ -482,10 +454,7 @@ ProductWorkspacePresentation presentation = PlannerWorkspaceTestFactory.CreatePr
         QueueProductWorkspaceLoader loader = createLoader(
             delegate
             {
-                return Task.FromException<ProductWorkspacePresentation>(
-                    new RemoteCatalogSynchronizationException(
-                        ERemoteCatalogSynchronizationFailureKind.LocalPersistence,
-                        "Expected local persistence failure."));
+                return Task.FromException<ProductWorkspacePresentation>(new RemoteCatalogSynchronizationException(ERemoteCatalogSynchronizationFailureKind.LocalPersistence, "Expected local persistence failure."));
             });
         using (ProductShellViewModel shell = createShell(loader))
         {
@@ -497,8 +466,7 @@ ProductWorkspacePresentation presentation = PlannerWorkspaceTestFactory.CreatePr
         }
     }
 
-    private static QueueProductWorkspaceLoader createLoader(
-        Func<CancellationToken, Task<ProductWorkspacePresentation>> load)
+    private static QueueProductWorkspaceLoader createLoader(Func<CancellationToken, Task<ProductWorkspacePresentation>> load)
     {
         return new QueueProductWorkspaceLoader(
             new Func<CancellationToken, Task<ProductWorkspacePresentation>>[]
@@ -507,19 +475,10 @@ ProductWorkspacePresentation presentation = PlannerWorkspaceTestFactory.CreatePr
             });
     }
 
-    private static QueueProductCatalogUpdateService createCatalogUpdateService(
-        Func<
-            VerifiedCatalogPackage,
-            PlanningWorkspace,
-            CancellationToken,
-            Task<ProductCatalogUpdateResult>> check)
+    private static QueueProductCatalogUpdateService createCatalogUpdateService(Func<VerifiedCatalogPackage, PlanningWorkspace, CancellationToken, Task<ProductCatalogUpdateResult>> check)
     {
         return new QueueProductCatalogUpdateService(
-            new Func<
-                VerifiedCatalogPackage,
-                PlanningWorkspace,
-                CancellationToken,
-                Task<ProductCatalogUpdateResult>>[]
+            new Func<VerifiedCatalogPackage, PlanningWorkspace, CancellationToken, Task<ProductCatalogUpdateResult>>[]
             {
                 check,
             });
@@ -537,8 +496,7 @@ ProductWorkspacePresentation presentation = PlannerWorkspaceTestFactory.CreatePr
         return new ProductShellViewModel(loader, catalogUpdateService);
     }
 
-    private static async Task assertRecoveryFlagsDoNotShowNoticeAsync(
-        EProductWorkspaceRecoveryFlags recoveryFlags)
+    private static async Task assertRecoveryFlagsDoNotShowNoticeAsync(EProductWorkspaceRecoveryFlags recoveryFlags)
     {
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         QueueProductWorkspaceLoader loader = createLoader(

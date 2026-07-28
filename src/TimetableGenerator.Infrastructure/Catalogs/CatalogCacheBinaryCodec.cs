@@ -64,19 +64,16 @@ internal sealed class CatalogCacheBinaryCodec
     {
         if (content.Length < HEADER_LENGTH)
         {
-            throw new CatalogCacheDocumentException(
-                "The catalog cache document is shorter than its required header.");
+            throw new CatalogCacheDocumentException("The catalog cache document is shorter than its required header.");
         }
 
         ReadOnlySpan<byte> contentSpan = content.Span;
         if (contentSpan.Slice(0, CACHE_MAGIC.Length).SequenceEqual(CACHE_MAGIC) == false)
         {
-            throw new CatalogCacheDocumentException(
-                "The catalog cache document has an invalid file signature.");
+            throw new CatalogCacheDocumentException("The catalog cache document has an invalid file signature.");
         }
 
-        int schemaVersion = BinaryPrimitives.ReadInt32LittleEndian(
-            contentSpan.Slice(CACHE_SCHEMA_VERSION_OFFSET, sizeof(int)));
+        int schemaVersion = BinaryPrimitives.ReadInt32LittleEndian(contentSpan.Slice(CACHE_SCHEMA_VERSION_OFFSET, sizeof(int)));
         if (schemaVersion > CACHE_SCHEMA_VERSION)
         {
             throw new UnsupportedCatalogCacheSchemaVersionException(schemaVersion);
@@ -84,27 +81,22 @@ internal sealed class CatalogCacheBinaryCodec
 
         if (schemaVersion != CACHE_SCHEMA_VERSION)
         {
-            throw new CatalogCacheDocumentException(
-                "The catalog cache document has an invalid schema version.");
+            throw new CatalogCacheDocumentException("The catalog cache document has an invalid schema version.");
         }
 
-        long generationValue = BinaryPrimitives.ReadInt64LittleEndian(
-            contentSpan.Slice(GENERATION_OFFSET, sizeof(long)));
+        long generationValue = BinaryPrimitives.ReadInt64LittleEndian(contentSpan.Slice(GENERATION_OFFSET, sizeof(long)));
         if (generationValue <= 0L)
         {
             throw new CatalogCacheDocumentException("The catalog cache document has an invalid generation.");
         }
 
-        int indexLength = BinaryPrimitives.ReadInt32LittleEndian(
-            contentSpan.Slice(INDEX_LENGTH_OFFSET, sizeof(int)));
-        int catalogLength = BinaryPrimitives.ReadInt32LittleEndian(
-            contentSpan.Slice(CATALOG_LENGTH_OFFSET, sizeof(int)));
+        int indexLength = BinaryPrimitives.ReadInt32LittleEndian(contentSpan.Slice(INDEX_LENGTH_OFFSET, sizeof(int)));
+        int catalogLength = BinaryPrimitives.ReadInt32LittleEndian(contentSpan.Slice(CATALOG_LENGTH_OFFSET, sizeof(int)));
         validateResourceLengths(indexLength, catalogLength);
         long expectedLength = HEADER_LENGTH + (long)indexLength + catalogLength;
         if (expectedLength != content.Length)
         {
-            throw new CatalogCacheDocumentException(
-                "The catalog cache document length does not match its header.");
+            throw new CatalogCacheDocumentException("The catalog cache document length does not match its header.");
         }
 
         ReadOnlyMemory<byte> indexBytes = content.Slice(HEADER_LENGTH, indexLength);
@@ -116,9 +108,7 @@ internal sealed class CatalogCacheBinaryCodec
         }
         catch (CatalogJsonFormatException exception)
         {
-            throw new CatalogCacheDocumentException(
-                "The catalog cache contains an invalid verified package.",
-                exception);
+            throw new CatalogCacheDocumentException("The catalog cache contains an invalid verified package.", exception);
         }
     }
 

@@ -37,18 +37,12 @@ internal sealed partial class CalendarNameConflictDialog : Window
             throw new ArgumentNullException(nameof(conflict));
         }
 
-        TextBlock currentNameDescription = findRequiredControl<TextBlock>(
-            "CurrentNameDescription");
-        TextBlock availableNameDescription = findRequiredControl<TextBlock>(
-            "AvailableNameDescription");
+        TextBlock currentNameDescription = findRequiredControl<TextBlock>("CurrentNameDescription");
+        TextBlock availableNameDescription = findRequiredControl<TextBlock>("AvailableNameDescription");
         TextBlock replacementUnavailableDescription = findRequiredControl<TextBlock>("ReplacementUnavailableDescription");
         Button replaceButton = findRequiredControl<Button>("ReplaceButton");
-        currentNameDescription.Text = "현재 이름: \""
-            + conflict.RequestedName.Value
-            + "\"";
-        availableNameDescription.Text = "새 이름: \""
-            + conflict.NextAvailableName.Value
-            + "\"";
+        currentNameDescription.Text = "현재 이름: \"" + conflict.RequestedName.Value + "\"";
+        availableNameDescription.Text = "새 이름: \"" + conflict.NextAvailableName.Value + "\"";
         replaceButton.IsEnabled = conflict.CanReplace;
         replacementUnavailableDescription.IsVisible = conflict.CanReplace == false;
 
@@ -56,36 +50,24 @@ internal sealed partial class CalendarNameConflictDialog : Window
         {
             ECalendarExportProvider.Google => "Google 캘린더",
             ECalendarExportProvider.Apple => "Apple 캘린더",
-            ECalendarExportProvider.None => throw new ArgumentOutOfRangeException(
-                nameof(conflict),
-                conflict.Provider,
-                "A calendar conflict requires an export provider."),
-            _ => throw new ArgumentOutOfRangeException(
-                nameof(conflict),
-                conflict.Provider,
-                "Unknown calendar export provider."),
+            ECalendarExportProvider.None => throw new ArgumentOutOfRangeException(nameof(conflict), conflict.Provider, "A calendar conflict requires an export provider."),
+            _ => throw new ArgumentOutOfRangeException(nameof(conflict), conflict.Provider, "Unknown calendar export provider."),
         };
         Avalonia.Automation.AutomationProperties.SetName(this, providerName + "의 같은 이름 캘린더 확인");
     }
 
-    private void onWindowCloseButtonClick(
-        object? senderOrNull,
-        Avalonia.Interactivity.RoutedEventArgs eventArgs)
+    private void onWindowCloseButtonClick(object? senderOrNull, Avalonia.Interactivity.RoutedEventArgs eventArgs)
     {
         closeWithResolution(ECalendarNameConflictResolution.Cancel);
         eventArgs.Handled = true;
     }
 
-    private void onReplaceButtonClick(
-        object? senderOrNull,
-        Avalonia.Interactivity.RoutedEventArgs eventArgs)
+    private void onReplaceButtonClick(object? senderOrNull, Avalonia.Interactivity.RoutedEventArgs eventArgs)
     {
         closeWithResolution(ECalendarNameConflictResolution.ReplaceExisting);
     }
 
-    private void onCreateButtonClick(
-        object? senderOrNull,
-        Avalonia.Interactivity.RoutedEventArgs eventArgs)
+    private void onCreateButtonClick(object? senderOrNull, Avalonia.Interactivity.RoutedEventArgs eventArgs)
     {
         closeWithResolution(ECalendarNameConflictResolution.CreateWithAvailableName);
     }
@@ -135,9 +117,7 @@ internal sealed partial class CalendarNameConflictDialog : Window
         TControl? controlOrNull = this.FindControl<TControl>(controlName);
         if (controlOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The calendar conflict dialog control is unavailable: "
-                    + controlName);
+            throw new InvalidOperationException("The calendar conflict dialog control is unavailable: " + controlName);
         }
 
         return controlOrNull;

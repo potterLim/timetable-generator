@@ -12,20 +12,11 @@ namespace TimetableGenerator.Desktop.Tests.Product;
 internal sealed class QueueProductCatalogUpdateService :
     IProductCatalogUpdateService
 {
-    private readonly Queue<Func<
-        VerifiedCatalogPackage,
-        PlanningWorkspace,
-        CancellationToken,
-        Task<ProductCatalogUpdateResult>>> mChecks;
+    private readonly Queue<Func<VerifiedCatalogPackage, PlanningWorkspace, CancellationToken, Task<ProductCatalogUpdateResult>>> mChecks;
 
     public int CheckCount { get; private set; }
 
-    public QueueProductCatalogUpdateService(
-        IEnumerable<Func<
-            VerifiedCatalogPackage,
-            PlanningWorkspace,
-            CancellationToken,
-            Task<ProductCatalogUpdateResult>>> checks)
+    public QueueProductCatalogUpdateService(IEnumerable<Func<VerifiedCatalogPackage, PlanningWorkspace, CancellationToken, Task<ProductCatalogUpdateResult>>> checks)
     {
         if (checks == null)
         {
@@ -35,10 +26,7 @@ internal sealed class QueueProductCatalogUpdateService :
         mChecks = new Queue<Func<VerifiedCatalogPackage, PlanningWorkspace, CancellationToken, Task<ProductCatalogUpdateResult>>>(checks);
     }
 
-    public Task<ProductCatalogUpdateResult> CheckAndStageAsync(
-        VerifiedCatalogPackage activePackage,
-        PlanningWorkspace workspaceSnapshot,
-        CancellationToken cancellationToken)
+    public Task<ProductCatalogUpdateResult> CheckAndStageAsync(VerifiedCatalogPackage activePackage, PlanningWorkspace workspaceSnapshot, CancellationToken cancellationToken)
     {
         ++CheckCount;
         if (mChecks.Count == 0)
@@ -46,11 +34,7 @@ internal sealed class QueueProductCatalogUpdateService :
             throw new InvalidOperationException("No queued catalog update check remains.");
         }
 
-        Func<
-            VerifiedCatalogPackage,
-            PlanningWorkspace,
-            CancellationToken,
-            Task<ProductCatalogUpdateResult>> check = mChecks.Dequeue();
+        Func<VerifiedCatalogPackage, PlanningWorkspace, CancellationToken, Task<ProductCatalogUpdateResult>> check = mChecks.Dequeue();
         return check(activePackage, workspaceSnapshot, cancellationToken);
     }
 }

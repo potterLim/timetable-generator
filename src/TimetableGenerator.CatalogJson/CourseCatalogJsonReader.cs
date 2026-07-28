@@ -36,16 +36,11 @@ public static partial class CourseCatalogJsonReader
         }
         catch (ArgumentException exception)
         {
-            throw new CatalogJsonFormatException(
-                "$",
-                "a schema value is invalid. " + exception.Message,
-                exception);
+            throw new CatalogJsonFormatException("$", "a schema value is invalid. " + exception.Message, exception);
         }
     }
 
-    public static CourseCatalogDocument ReadAndVerify(
-        ReadOnlyMemory<byte> jsonBytes,
-        CatalogIndexEntry expectedEntry)
+    public static CourseCatalogDocument ReadAndVerify(ReadOnlyMemory<byte> jsonBytes, CatalogIndexEntry expectedEntry)
     {
         if (expectedEntry == null)
         {
@@ -54,9 +49,7 @@ public static partial class CourseCatalogJsonReader
 
         if (expectedEntry.File.HasExpectedContent(jsonBytes.Span) == false)
         {
-            throw new CatalogJsonFormatException(
-                "$",
-                "the catalog bytes do not match the size and SHA-256 declared by the index.");
+            throw new CatalogJsonFormatException("$", "the catalog bytes do not match the size and SHA-256 declared by the index.");
         }
 
         CourseCatalogDocument document = Read(jsonBytes);
@@ -89,26 +82,14 @@ public static partial class CourseCatalogJsonReader
 
         CatalogId catalogId = new CatalogId(rootObject.GetString("catalogId"));
         CatalogRevision revision = new CatalogRevision(rootObject.GetInt32("revision"));
-        InstitutionMetadata institution = CatalogJsonValueParser.ParseInstitution(
-            rootObject.GetElement("institution"),
-            rootObject.GetPropertyPath("institution"));
-        AcademicTerm term = CatalogJsonValueParser.ParseTerm(
-            rootObject.GetElement("term"),
-            rootObject.GetPropertyPath("term"));
+        InstitutionMetadata institution = CatalogJsonValueParser.ParseInstitution(rootObject.GetElement("institution"), rootObject.GetPropertyPath("institution"));
+        AcademicTerm term = CatalogJsonValueParser.ParseTerm(rootObject.GetElement("term"), rootObject.GetPropertyPath("term"));
         string expectedCatalogId = CatalogJsonValueParser.BuildCatalogId(institution.Id, term, revision);
         CatalogJsonValueParser.RequireExactString(catalogId.Value, expectedCatalogId, rootObject.GetPropertyPath("catalogId"));
 
-        CatalogSourceMetadata source = parseSource(
-            rootObject.GetElement("source"),
-            rootObject.GetPropertyPath("source"),
-            institution.Id,
-            term);
-        CatalogConverterMetadata converter = parseConverter(
-            rootObject.GetElement("converter"),
-            rootObject.GetPropertyPath("converter"));
-        CatalogDocumentCounts counts = parseDocumentCounts(
-            rootObject.GetElement("counts"),
-            rootObject.GetPropertyPath("counts"));
+        CatalogSourceMetadata source = parseSource(rootObject.GetElement("source"), rootObject.GetPropertyPath("source"), institution.Id, term);
+        CatalogConverterMetadata converter = parseConverter(rootObject.GetElement("converter"), rootObject.GetPropertyPath("converter"));
+        CatalogDocumentCounts counts = parseDocumentCounts(rootObject.GetElement("counts"), rootObject.GetPropertyPath("counts"));
 
         List<CatalogCourse> courses = parseCourses(rootObject.GetArray("courses"), institution.Id);
         Dictionary<CourseId, CourseCode> courseCodesById = buildCourseCodesById(courses);
@@ -122,10 +103,7 @@ public static partial class CourseCatalogJsonReader
             offerings,
             offeringMetadata);
 
-        CatalogDataQualityMetadata dataQuality = parseDataQuality(
-            rootObject.GetElement("dataQuality"),
-            rootObject.GetPropertyPath("dataQuality"),
-            courseCodesById.Keys);
+        CatalogDataQualityMetadata dataQuality = parseDataQuality(rootObject.GetElement("dataQuality"), rootObject.GetPropertyPath("dataQuality"), courseCodesById.Keys);
         validateDocumentConsistency(counts, dataQuality, courses, offerings, offeringMetadata);
 
         CourseCatalog catalog = new CourseCatalog(
@@ -146,9 +124,7 @@ public static partial class CourseCatalogJsonReader
             offeringMetadata);
     }
 
-    private static void validateAgainstIndex(
-        CourseCatalogDocument document,
-        CatalogIndexEntry expectedEntry)
+    private static void validateAgainstIndex(CourseCatalogDocument document, CatalogIndexEntry expectedEntry)
     {
         CourseCatalog catalog = document.Catalog;
         if (catalog.Id != expectedEntry.CatalogId
@@ -161,8 +137,7 @@ public static partial class CourseCatalogJsonReader
             throw new CatalogJsonFormatException("$", "the catalog identity does not match its index entry.");
         }
 
-        if (document.Counts.CourseCount != expectedEntry.Counts.CourseCount
-            || document.Counts.OfferingCount != expectedEntry.Counts.OfferingCount)
+        if (document.Counts.CourseCount != expectedEntry.Counts.CourseCount || document.Counts.OfferingCount != expectedEntry.Counts.OfferingCount)
         {
             throw new CatalogJsonFormatException("$.counts", "catalog counts do not match the index entry.");
         }

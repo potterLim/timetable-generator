@@ -12,9 +12,7 @@ internal static class AppleCalendarOwnershipMarker
     {
         if (planId.IsValid == false)
         {
-            throw new ArgumentException(
-                "Apple Calendar ownership markers require a valid plan ID.",
-                nameof(planId));
+            throw new ArgumentException("Apple Calendar ownership markers require a valid plan ID.", nameof(planId));
         }
 
         return PREFIX + planId.Value.ToString("D");
@@ -27,20 +25,12 @@ internal static class AppleCalendarOwnershipMarker
 
     public static PlanId? TryParsePlanIdOrNull(string? descriptionOrNull)
     {
-        if (descriptionOrNull?.StartsWith(
-                PREFIX,
-                StringComparison.Ordinal) != true)
+        if (descriptionOrNull?.StartsWith(PREFIX, StringComparison.Ordinal) != true)
         {
             return null;
         }
 
         Guid planIdValue;
-        return Guid.TryParseExact(
-                descriptionOrNull[PREFIX.Length..],
-                "D",
-                out planIdValue)
-            && planIdValue != Guid.Empty
-            ? new PlanId(planIdValue)
-            : null;
+        return Guid.TryParseExact(descriptionOrNull[PREFIX.Length..], "D", out planIdValue) && planIdValue != Guid.Empty ? new PlanId(planIdValue) : null;
     }
 }

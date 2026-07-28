@@ -24,9 +24,7 @@ internal sealed class ProductWorkspaceLoaderTestContext : IDisposable
 
     public ProductWorkspaceLoader Loader { get; }
 
-    public ProductWorkspaceLoaderTestContext(
-        PlanningWorkspaceLoadResult workspaceLoadResult,
-        IEnumerable<Func<CancellationToken, Task<VerifiedCatalogPackage>>> downloads)
+    public ProductWorkspaceLoaderTestContext(PlanningWorkspaceLoadResult workspaceLoadResult, IEnumerable<Func<CancellationToken, Task<VerifiedCatalogPackage>>> downloads)
     {
         if (workspaceLoadResult == null)
         {
@@ -38,15 +36,9 @@ internal sealed class ProductWorkspaceLoaderTestContext : IDisposable
             throw new ArgumentNullException(nameof(downloads));
         }
 
-        mDirectoryPath = Path.Combine(
-            Path.GetTempPath(),
-            "TimetableGenerator.Desktop.Tests",
-            Guid.NewGuid().ToString("N"));
-        CatalogSynchronizationLimits limits = new CatalogSynchronizationLimits(
-            new CatalogResourceByteLimit(MAXIMUM_INDEX_BYTES),
-            new CatalogResourceByteLimit(MAXIMUM_CATALOG_BYTES));
-        CatalogCacheFilePath cachePath = new CatalogCacheFilePath(
-            Path.Combine(mDirectoryPath, "catalog-cache.bin"));
+        mDirectoryPath = Path.Combine(Path.GetTempPath(), "TimetableGenerator.Desktop.Tests", Guid.NewGuid().ToString("N"));
+        CatalogSynchronizationLimits limits = new CatalogSynchronizationLimits(new CatalogResourceByteLimit(MAXIMUM_INDEX_BYTES), new CatalogResourceByteLimit(MAXIMUM_CATALOG_BYTES));
+        CatalogCacheFilePath cachePath = new CatalogCacheFilePath(Path.Combine(mDirectoryPath, "catalog-cache.bin"));
         CatalogCacheStore = new CatalogCacheFileStore(cachePath, limits);
         WorkspaceStore = new RecordingPlanningWorkspaceStore(workspaceLoadResult);
         CatalogDownloader = new QueueProductCatalogDownloader(downloads);

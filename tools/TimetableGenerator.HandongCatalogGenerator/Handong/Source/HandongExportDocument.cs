@@ -45,8 +45,7 @@ internal sealed class HandongExportDocument
         Rows = copyRows(rows);
     }
 
-    private static IReadOnlyList<AcademicTerm> copyAcademicTerms(
-        IReadOnlyList<AcademicTerm> academicTerms)
+    private static IReadOnlyList<AcademicTerm> copyAcademicTerms(IReadOnlyList<AcademicTerm> academicTerms)
     {
         List<AcademicTerm> copiedAcademicTerms = new List<AcademicTerm>(academicTerms.Count);
         foreach (AcademicTerm academicTerm in academicTerms)
@@ -57,8 +56,7 @@ internal sealed class HandongExportDocument
         return new ReadOnlyCollection<AcademicTerm>(copiedAcademicTerms);
     }
 
-    private static IReadOnlyList<HandongRawOfferingRow> copyRows(
-        IReadOnlyList<HandongRawOfferingRow> rows)
+    private static IReadOnlyList<HandongRawOfferingRow> copyRows(IReadOnlyList<HandongRawOfferingRow> rows)
     {
         List<HandongRawOfferingRow> copiedRows = new List<HandongRawOfferingRow>(rows.Count);
         foreach (HandongRawOfferingRow row in rows)

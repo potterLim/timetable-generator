@@ -11,9 +11,7 @@ namespace TimetableGenerator.Desktop.Views;
 
 internal sealed partial class ScheduleWorkspaceView
 {
-    public Task<ECalendarNameConflictResolution> ResolveAsync(
-        CalendarNameConflict conflict,
-        CancellationToken cancellationToken)
+    public Task<ECalendarNameConflictResolution> ResolveAsync(CalendarNameConflict conflict, CancellationToken cancellationToken)
     {
         if (conflict == null)
         {
@@ -48,9 +46,7 @@ internal sealed partial class ScheduleWorkspaceView
         return completionSource.Task;
     }
 
-    private async Task<ECalendarNameConflictResolution> showCalendarNameConflictAsync(
-            CalendarNameConflict conflict,
-            CancellationToken cancellationToken)
+    private async Task<ECalendarNameConflictResolution> showCalendarNameConflictAsync(CalendarNameConflict conflict, CancellationToken cancellationToken)
     {
         Window? ownerOrNull = TopLevel.GetTopLevel(this) as Window;
         if (ownerOrNull == null)
@@ -59,25 +55,23 @@ internal sealed partial class ScheduleWorkspaceView
         }
 
         CalendarNameConflictDialog dialog = new CalendarNameConflictDialog(conflict);
-        using (CancellationTokenRegistration registration =
-            cancellationToken.Register(
-                delegate
-                {
-                    Dispatcher.UIThread.Post(
-                        delegate
+        using (CancellationTokenRegistration registration = cancellationToken.Register(
+            delegate
+            {
+                Dispatcher.UIThread.Post(
+                    delegate
+                    {
+                        if (dialog.IsVisible)
                         {
-                            if (dialog.IsVisible)
-                            {
-                                dialog.Close(ECalendarNameConflictResolution.Cancel);
-                            }
-                        });
-                }))
+                            dialog.Close(ECalendarNameConflictResolution.Cancel);
+                        }
+                    });
+            }))
         {
             ECalendarNameConflictResolution resolution;
             try
             {
-                resolution = await dialog.ShowDialog<ECalendarNameConflictResolution>(
-                    ownerOrNull);
+                resolution = await dialog.ShowDialog<ECalendarNameConflictResolution>(ownerOrNull);
             }
             finally
             {

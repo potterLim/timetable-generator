@@ -20,14 +20,9 @@ internal sealed record CatalogSourceConfigurationPath
         }
 
         string fullPath = Path.GetFullPath(value);
-        if (string.Equals(
-            Path.GetExtension(fullPath),
-            ".json",
-            StringComparison.OrdinalIgnoreCase) == false)
+        if (string.Equals(Path.GetExtension(fullPath), ".json", StringComparison.OrdinalIgnoreCase) == false)
         {
-            throw new ArgumentException(
-                "Catalog source configuration paths must identify a JSON file.",
-                nameof(value));
+            throw new ArgumentException("Catalog source configuration paths must identify a JSON file.", nameof(value));
         }
 
         Value = fullPath;

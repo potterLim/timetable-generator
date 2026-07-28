@@ -54,13 +54,9 @@ public sealed class UnsatisfiedScheduleExperienceTests
                 window.Show();
                 Dispatcher.UIThread.RunJobs();
 
-                Border recoveryState = findRequiredControl<Border>(
-                    scheduleWorkspace,
-                    "UnsatisfiedScheduleEmptyState");
+                Border recoveryState = findRequiredControl<Border>(scheduleWorkspace, "UnsatisfiedScheduleEmptyState");
                 Border ordinaryEmptyState = findRequiredControl<Border>(scheduleWorkspace, "ScheduleEmptyState");
-                Button openPlanButton = findRequiredControl<Button>(
-                    scheduleWorkspace,
-                    "UnsatisfiedScheduleOpenPlanButton");
+                Button openPlanButton = findRequiredControl<Button>(scheduleWorkspace, "UnsatisfiedScheduleOpenPlanButton");
                 Button exportButton = findRequiredControl<Button>(scheduleWorkspace, "ExportScheduleButton");
                 string[] recoveryTexts = recoveryState.GetVisualDescendants().OfType<TextBlock>().Select(getTextOrEmpty).ToArray();
 
@@ -128,15 +124,9 @@ public sealed class UnsatisfiedScheduleExperienceTests
                 window.Show();
                 Dispatcher.UIThread.RunJobs();
 
-                Border warningBanner = findRequiredControl<Border>(
-                    scheduleWorkspace,
-                    "UnsatisfiedPersonalScheduleBanner");
-                Grid scheduleBoardContainer = findRequiredControl<Grid>(
-                    scheduleWorkspace,
-                    "ScheduleBoardContainer");
-                Border centralRecoveryState = findRequiredControl<Border>(
-                    scheduleWorkspace,
-                    "UnsatisfiedScheduleEmptyState");
+                Border warningBanner = findRequiredControl<Border>(scheduleWorkspace, "UnsatisfiedPersonalScheduleBanner");
+                Grid scheduleBoardContainer = findRequiredControl<Grid>(scheduleWorkspace, "ScheduleBoardContainer");
+                Border centralRecoveryState = findRequiredControl<Border>(scheduleWorkspace, "UnsatisfiedScheduleEmptyState");
                 Button exportButton = findRequiredControl<Button>(scheduleWorkspace, "ExportScheduleButton");
                 Button openPlanButton = warningBanner.GetVisualDescendants().OfType<Button>().Single();
                 string[] warningTexts = warningBanner.GetVisualDescendants().OfType<TextBlock>().Select(getTextOrEmpty).ToArray();
@@ -148,9 +138,7 @@ public sealed class UnsatisfiedScheduleExperienceTests
                 Assert.Contains("아래에는 개인 일정만 표시됩니다. 겹치는 개인 일정이나 분반 선택을 조정해 보세요.", warningTexts);
                 Assert.True(openPlanButton.IsEffectivelyVisible);
                 Assert.Equal("선택 과목 확인", openPlanButton.Content);
-                Assert.Equal(
-                    "충돌한 과목 선택을 시간표 편집에서 확인",
-                    AutomationProperties.GetName(openPlanButton));
+                Assert.Equal("충돌한 과목 선택을 시간표 편집에서 확인", AutomationProperties.GetName(openPlanButton));
                 Assert.False(exportButton.IsEffectivelyVisible);
                 Assert.False(exportButton.IsEnabled);
             }
@@ -192,10 +180,7 @@ public sealed class UnsatisfiedScheduleExperienceTests
                 option => option.Day == day);
         if (optionOrNull == null)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(day),
-                day,
-                "The personal schedule day option was not found.");
+            throw new ArgumentOutOfRangeException(nameof(day), day, "The personal schedule day option was not found.");
         }
 
         optionOrNull.IsSelected = true;
@@ -264,10 +249,7 @@ public sealed class UnsatisfiedScheduleExperienceTests
             mGenerator = new ScheduleRecommendationGenerator();
         }
 
-        public ScheduleRecommendationResult Generate(
-            PlanningPlan plan,
-            ScheduleRecommendationLimit recommendationLimit,
-            CancellationToken cancellationToken)
+        public ScheduleRecommendationResult Generate(PlanningPlan plan, ScheduleRecommendationLimit recommendationLimit, CancellationToken cancellationToken)
         {
             if (plan == null)
             {
@@ -287,30 +269,15 @@ public sealed class UnsatisfiedScheduleExperienceTests
                     new ScheduleTime(11, 30),
                     new ScheduleTime(12, 45)),
             };
-            PlanningPlan conflictingPlan = new PlanningPlan(
-                plan.Id,
-                plan.Name,
-                plan.CatalogBinding,
-                new PlanningPlanContent(
-                    plan.CourseChoiceGroups,
-                    plan.UnscheduledOfferingSelections,
-                    blockingSchedules));
+            PlanningPlan conflictingPlan = new PlanningPlan(plan.Id, plan.Name, plan.CatalogBinding, new PlanningPlanContent(plan.CourseChoiceGroups, plan.UnscheduledOfferingSelections, blockingSchedules));
             ScheduleRecommendationRequest request = new ScheduleRecommendationRequest(mCatalog, conflictingPlan, recommendationLimit);
             return mGenerator.GenerateRecommendations(request, cancellationToken);
         }
 
-        private static PersonalSchedule createBlockingSchedule(
-            string title,
-            EDay day,
-            ScheduleTime start,
-            ScheduleTime end)
+        private static PersonalSchedule createBlockingSchedule(string title, EDay day, ScheduleTime start, ScheduleTime end)
         {
             WeeklyTimeRange timeRange = new WeeklyTimeRange(day, new DailyTimeRange(start, end));
-            return new PersonalSchedule(
-                PersonalScheduleId.CreateNew(),
-                new PersonalScheduleTitle(title),
-                new WeeklyTimeRange[] { timeRange },
-                PersonalScheduleDetails.CreateEmpty());
+            return new PersonalSchedule(PersonalScheduleId.CreateNew(), new PersonalScheduleTitle(title), new WeeklyTimeRange[] { timeRange }, PersonalScheduleDetails.CreateEmpty());
         }
     }
 }

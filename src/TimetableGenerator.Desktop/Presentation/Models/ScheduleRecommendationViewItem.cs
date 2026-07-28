@@ -10,9 +10,7 @@ internal sealed class ScheduleRecommendationViewItem
 
     public ScheduleRecommendationBookmark? BookmarkOrNull { get; }
 
-    public ScheduleRecommendationViewItem(
-        ScheduleRecommendation schedule,
-        ScheduleRecommendationBookmark? bookmarkOrNull)
+    public ScheduleRecommendationViewItem(ScheduleRecommendation schedule, ScheduleRecommendationBookmark? bookmarkOrNull)
     {
         if (schedule == null)
         {

@@ -43,9 +43,7 @@ internal sealed class ScheduleCourseDetails
 
         if (credits.IsValid == false)
         {
-            throw new ArgumentException(
-                "Schedule course details require valid course credits.",
-                nameof(credits));
+            throw new ArgumentException("Schedule course details require valid course credits.", nameof(credits));
         }
 
         if (instructorSummary == null)

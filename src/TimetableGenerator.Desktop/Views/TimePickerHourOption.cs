@@ -14,10 +14,7 @@ internal sealed class TimePickerHourOption
     {
         if (value < MINIMUM_VALUE || value > MAXIMUM_VALUE)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "Time picker hours must be between 1 and 12.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Time picker hours must be between 1 and 12.");
         }
 
         Value = value;

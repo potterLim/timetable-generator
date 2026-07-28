@@ -23,22 +23,13 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private PersonalSchedule createPersonalScheduleFromDraft()
     {
-        PersonalScheduleId scheduleId = mEditingPersonalScheduleIdOrNull.HasValue
-            ? mEditingPersonalScheduleIdOrNull.Value
-            : PersonalScheduleId.CreateNew();
+        PersonalScheduleId scheduleId = mEditingPersonalScheduleIdOrNull.HasValue ? mEditingPersonalScheduleIdOrNull.Value : PersonalScheduleId.CreateNew();
         PersonalScheduleTitle title = new PersonalScheduleTitle(PersonalScheduleTitleDraft);
-        ScheduleTime startTime = getRequiredTime(
-            PersonalScheduleStartTimeOrNull,
-            nameof(PersonalScheduleStartTimeOrNull));
-        ScheduleTime endTime = getRequiredTime(
-            PersonalScheduleEndTimeOrNull,
-            nameof(PersonalScheduleEndTimeOrNull));
+        ScheduleTime startTime = getRequiredTime(PersonalScheduleStartTimeOrNull, nameof(PersonalScheduleStartTimeOrNull));
+        ScheduleTime endTime = getRequiredTime(PersonalScheduleEndTimeOrNull, nameof(PersonalScheduleEndTimeOrNull));
         DailyTimeRange timeRange = new DailyTimeRange(startTime, endTime);
         IReadOnlyList<WeeklyTimeRange> timeRanges = createSelectedTimeRanges(timeRange);
-        PersonalScheduleDetails details = new PersonalScheduleDetails(
-            createSectionOrNull(PersonalScheduleSectionDraft),
-            createInstructorOrNull(PersonalScheduleInstructorDraft),
-            createLocationOrNull(PersonalScheduleLocationDraft));
+        PersonalScheduleDetails details = new PersonalScheduleDetails(createSectionOrNull(PersonalScheduleSectionDraft), createInstructorOrNull(PersonalScheduleInstructorDraft), createLocationOrNull(PersonalScheduleLocationDraft));
         return new PersonalSchedule(scheduleId, title, timeRanges, details);
     }
 
@@ -106,10 +97,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             }
         }
 
-        throw new ArgumentOutOfRangeException(
-            nameof(day),
-            day,
-            "The personal schedule editor requires a day from Monday through Sunday.");
+        throw new ArgumentOutOfRangeException(nameof(day), day, "The personal schedule editor requires a day from Monday through Sunday.");
     }
 
     private bool hasSelectedPersonalScheduleDay()
@@ -181,8 +169,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         if (valueOrNull.HasValue == false)
         {
-            throw new InvalidOperationException(
-                propertyName + " must be validated before creating a schedule.");
+            throw new InvalidOperationException(propertyName + " must be validated before creating a schedule.");
         }
 
         return valueOrNull.Value;

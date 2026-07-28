@@ -12,16 +12,11 @@ internal static class SchedulePngBatchDirectoryAllocator
 
     private const string STAGING_DIRECTORY_PREFIX = ".timetable-generator-png-staging-";
 
-    internal static SchedulePngBatchDirectory createUnique(
-        string parentDirectoryPath,
-        PlanName planName,
-        CancellationToken cancellationToken)
+    internal static SchedulePngBatchDirectory createUnique(string parentDirectoryPath, PlanName planName, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(parentDirectoryPath))
         {
-            throw new ArgumentException(
-                "A parent PNG export directory is required.",
-                nameof(parentDirectoryPath));
+            throw new ArgumentException("A parent PNG export directory is required.", nameof(parentDirectoryPath));
         }
 
         ArgumentNullException.ThrowIfNull(planName);
@@ -55,33 +50,24 @@ internal static class SchedulePngBatchDirectoryAllocator
         throw new IOException("A unique PNG export directory could not be reserved.");
     }
 
-    internal static SchedulePngBatchDirectory createStaging(
-        string parentDirectoryPath,
-        CancellationToken cancellationToken)
+    internal static SchedulePngBatchDirectory createStaging(string parentDirectoryPath, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(parentDirectoryPath))
         {
-            throw new ArgumentException(
-                "A parent PNG export directory is required.",
-                nameof(parentDirectoryPath));
+            throw new ArgumentException("A parent PNG export directory is required.", nameof(parentDirectoryPath));
         }
 
         string fullParentPath = Path.GetFullPath(parentDirectoryPath);
         if (Directory.Exists(fullParentPath) == false)
         {
-            throw new DirectoryNotFoundException(
-                "The selected PNG export directory does not exist.");
+            throw new DirectoryNotFoundException("The selected PNG export directory does not exist.");
         }
 
         for (int attempt = 1; attempt <= MAXIMUM_SUFFIX_ATTEMPTS; ++attempt)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            string directoryPath = Path.Combine(
-                fullParentPath,
-                STAGING_DIRECTORY_PREFIX
-                    + Guid.NewGuid().ToString("N"));
-            if (Directory.Exists(directoryPath)
-                || File.Exists(directoryPath))
+            string directoryPath = Path.Combine(fullParentPath, STAGING_DIRECTORY_PREFIX + Guid.NewGuid().ToString("N"));
+            if (Directory.Exists(directoryPath) || File.Exists(directoryPath))
             {
                 continue;
             }
@@ -97,8 +83,7 @@ internal static class SchedulePngBatchDirectoryAllocator
             }
         }
 
-        throw new IOException(
-            "A temporary PNG export staging directory could not be reserved.");
+        throw new IOException("A temporary PNG export staging directory could not be reserved.");
     }
 
     private static void tryDeleteEmptyDirectory(string directoryPath)

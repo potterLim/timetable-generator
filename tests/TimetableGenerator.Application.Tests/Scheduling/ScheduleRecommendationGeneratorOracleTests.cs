@@ -28,30 +28,18 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
         Assert.AreEqual(EScheduleRecommendationCompletion.Completed, firstResult.Completion);
         Assert.HasCount(expectedSolutions.Count, firstResult.Recommendations);
         assertMatchesOracle(firstResult, expectedSolutions, fixture.Groups.Count);
-        CollectionAssert.AreEqual(
-            serializeRecommendations(firstResult.Recommendations),
-            serializeRecommendations(secondResult.Recommendations),
-            "Identical fixed-seed input must preserve recommendation order and scores.");
-        Assert.IsGreaterThan(
-            expectedSolutions.Count,
-            getCartesianCombinationCount(fixture.Groups),
-            "The fixture must exercise conflict pruning.");
-        Assert.IsTrue(
-            containsDifferentScores(expectedSolutions),
-            "The fixture must exercise preference-score ordering.");
+        CollectionAssert.AreEqual(serializeRecommendations(firstResult.Recommendations), serializeRecommendations(secondResult.Recommendations), "Identical fixed-seed input must preserve recommendation order and scores.");
+        Assert.IsGreaterThan(expectedSolutions.Count, getCartesianCombinationCount(fixture.Groups), "The fixture must exercise conflict pruning.");
+        Assert.IsTrue(containsDifferentScores(expectedSolutions), "The fixture must exercise preference-score ordering.");
     }
 
-    private static void assertMatchesOracle(
-        ScheduleRecommendationResult actualResult,
-        IReadOnlyList<OracleSolution> expectedSolutions,
-        int expectedOfferingCount)
+    private static void assertMatchesOracle(ScheduleRecommendationResult actualResult, IReadOnlyList<OracleSolution> expectedSolutions, int expectedOfferingCount)
     {
         Dictionary<string, int> expectedScoresByKey = createExpectedScoresByKey(expectedSolutions);
         HashSet<string> actualKeys = new HashSet<string>(StringComparer.Ordinal);
         int previousScore = -1;
 
-        foreach (ScheduleRecommendation recommendation
-            in actualResult.Recommendations)
+        foreach (ScheduleRecommendation recommendation in actualResult.Recommendations)
         {
             string key = createOfferingKey(recommendation.ScheduledOfferings);
             int expectedScore;
@@ -60,24 +48,15 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
             Assert.IsTrue(isExpected, "Generator returned a combination rejected by the oracle: " + key);
             Assert.IsTrue(actualKeys.Add(key), "Generator returned a duplicate combination: " + key);
             Assert.AreEqual(expectedScore, recommendation.Score.Value, key);
-            Assert.IsGreaterThanOrEqualTo(
-                previousScore,
-                recommendation.Score.Value,
-                "Recommendations must be ordered by ascending score.");
-            Assert.HasCount(
-                expectedOfferingCount,
-                recommendation.ScheduledOfferings,
-                "Exactly one offering must be chosen from every group.");
+            Assert.IsGreaterThanOrEqualTo(previousScore, recommendation.Score.Value, "Recommendations must be ordered by ascending score.");
+            Assert.HasCount(expectedOfferingCount, recommendation.ScheduledOfferings, "Exactly one offering must be chosen from every group.");
             assertConflictFree(recommendation.ScheduledOfferings);
             previousScore = recommendation.Score.Value;
         }
 
         foreach (OracleSolution expectedSolution in expectedSolutions)
         {
-            Assert.Contains(
-                expectedSolution.Key,
-                actualKeys,
-                "Generator omitted a feasible combination: " + expectedSolution.Key);
+            Assert.Contains(expectedSolution.Key, actualKeys, "Generator omitted a feasible combination: " + expectedSolution.Key);
         }
     }
 
@@ -92,8 +71,7 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
         }
     }
 
-    private static IReadOnlyList<OracleSolution> enumerateFeasibleSolutions(
-        IReadOnlyList<OracleGroup> groups)
+    private static IReadOnlyList<OracleSolution> enumerateFeasibleSolutions(IReadOnlyList<OracleGroup> groups)
     {
         List<OracleSolution> solutions = new List<OracleSolution>();
         enumerateGroup(groups, 0, new List<OracleCandidate>(), 0, solutions);
@@ -137,9 +115,7 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
         }
     }
 
-    private static bool hasConflict(
-        OracleCandidate candidate,
-        IEnumerable<OracleCandidate> selectedCandidates)
+    private static bool hasConflict(OracleCandidate candidate, IEnumerable<OracleCandidate> selectedCandidates)
     {
         foreach (OracleCandidate selectedCandidate in selectedCandidates)
         {
@@ -217,18 +193,12 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
                 courseCandidates.Add(new CourseCandidate(course.Id, candidateOfferings));
             }
 
-            choiceGroups.Add(new CourseChoiceGroup(
-                CourseChoiceGroupId.CreateNew(),
-                ECourseChoiceCardinality.ExactlyOne,
-                courseCandidates));
+            choiceGroups.Add(new CourseChoiceGroup(CourseChoiceGroupId.CreateNew(), ECourseChoiceCardinality.ExactlyOne, courseCandidates));
             oracleGroups.Add(new OracleGroup(oracleCandidates));
         }
 
         CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(courses, offerings);
-        PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
-            catalog,
-            choiceGroups,
-            Array.Empty<UnscheduledOfferingSelection>());
+        PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(catalog, choiceGroups, Array.Empty<UnscheduledOfferingSelection>());
         return new OracleFixture(catalog, plan, oracleGroups);
     }
 
@@ -251,10 +221,7 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
         }
     }
 
-    private static MeetingSlot[] createMeetingSlots(
-        Random random,
-        int groupIndex,
-        string sectionCodeValue)
+    private static MeetingSlot[] createMeetingSlots(Random random, int groupIndex, string sectionCodeValue)
     {
         if (sectionCodeValue == "01")
         {
@@ -292,16 +259,12 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
 
     private static ScheduleRecommendationResult generate(OracleFixture fixture)
     {
-        ScheduleRecommendationRequest request = new ScheduleRecommendationRequest(
-            fixture.Catalog,
-            fixture.Plan,
-            new ScheduleRecommendationLimit(MAXIMUM_RECOMMENDATION_COUNT));
+        ScheduleRecommendationRequest request = new ScheduleRecommendationRequest(fixture.Catalog, fixture.Plan, new ScheduleRecommendationLimit(MAXIMUM_RECOMMENDATION_COUNT));
         ScheduleRecommendationGenerator generator = new ScheduleRecommendationGenerator();
         return generator.GenerateRecommendations(request, CancellationToken.None);
     }
 
-    private static Dictionary<string, int> createExpectedScoresByKey(
-        IEnumerable<OracleSolution> solutions)
+    private static Dictionary<string, int> createExpectedScoresByKey(IEnumerable<OracleSolution> solutions)
     {
         Dictionary<string, int> scoresByKey = new Dictionary<string, int>(StringComparer.Ordinal);
         foreach (OracleSolution solution in solutions)
@@ -323,16 +286,12 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
         return string.Join("|", offeringIds);
     }
 
-    private static string[] serializeRecommendations(
-        IEnumerable<ScheduleRecommendation> recommendations)
+    private static string[] serializeRecommendations(IEnumerable<ScheduleRecommendation> recommendations)
     {
         List<string> serializedRecommendations = new List<string>();
         foreach (ScheduleRecommendation recommendation in recommendations)
         {
-            serializedRecommendations.Add(
-                recommendation.Score.Value.ToString(CultureInfo.InvariantCulture)
-                + ":"
-                + createOfferingKey(recommendation.ScheduledOfferings));
+            serializedRecommendations.Add(recommendation.Score.Value.ToString(CultureInfo.InvariantCulture) + ":" + createOfferingKey(recommendation.ScheduledOfferings));
         }
 
         return serializedRecommendations.ToArray();

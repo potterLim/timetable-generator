@@ -63,9 +63,7 @@ public sealed class CatalogSourceMetadata
 
         if (size.IsValid == false)
         {
-            throw new ArgumentException(
-                "Catalog source metadata requires a valid positive size.",
-                nameof(size));
+            throw new ArgumentException("Catalog source metadata requires a valid positive size.", nameof(size));
         }
 
         if (sha256 == null)

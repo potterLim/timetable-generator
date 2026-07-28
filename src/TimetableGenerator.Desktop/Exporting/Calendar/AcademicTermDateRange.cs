@@ -22,9 +22,7 @@ internal readonly record struct AcademicTermDateRange
     {
         if (endDate < startDate)
         {
-            throw new ArgumentException(
-                "The academic term end date cannot precede its start date.",
-                nameof(endDate));
+            throw new ArgumentException("The academic term end date cannot precede its start date.", nameof(endDate));
         }
 
         StartDate = startDate;

@@ -177,11 +177,7 @@ internal sealed class PlanTabItem
         }
     }
 
-    public PlanTabItem(
-        PlanningPlan plan,
-        CourseCatalogProjection catalogProjection,
-        Action<PlanTabItem> requestRenamePlan,
-        Action<PlanTabItem> requestClosePlan)
+    public PlanTabItem(PlanningPlan plan, CourseCatalogProjection catalogProjection, Action<PlanTabItem> requestRenamePlan, Action<PlanTabItem> requestClosePlan)
     {
         if (plan == null)
         {
@@ -223,8 +219,7 @@ internal sealed class PlanTabItem
             CourseChoiceGroups.Add(new PlanCourseChoiceGroupItem(group, catalogProjection));
         }
 
-        foreach (UnscheduledOfferingSelection selection
-            in plan.UnscheduledOfferingSelections)
+        foreach (UnscheduledOfferingSelection selection in plan.UnscheduledOfferingSelections)
         {
             CatalogCourseProjection course = catalogProjection.FindCourseById(selection.CourseId);
             TimeNotProvidedCourses.Add(new TimeNotProvidedCourseItem(course, selection));
@@ -254,8 +249,7 @@ internal sealed class PlanTabItem
             }
         }
 
-        foreach (UnscheduledOfferingSelection selection
-            in Plan.UnscheduledOfferingSelections)
+        foreach (UnscheduledOfferingSelection selection in Plan.UnscheduledOfferingSelections)
         {
             if (selection.CourseId == courseId)
             {

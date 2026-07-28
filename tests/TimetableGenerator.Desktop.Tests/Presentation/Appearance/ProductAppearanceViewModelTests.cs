@@ -19,17 +19,13 @@ public sealed class ProductAppearanceViewModelTests
         ControlledProductAppearanceSettingsStore settingsStore = new ControlledProductAppearanceSettingsStore(new ProductAppearanceSettings(EProductThemePreference.Dark));
         RecordingProductThemeVariantService themeVariantService = new RecordingProductThemeVariantService();
 
-        ProductAppearanceViewModel viewModel = new ProductAppearanceViewModel(
-            settingsStore,
-            themeVariantService);
+        ProductAppearanceViewModel viewModel = new ProductAppearanceViewModel(settingsStore, themeVariantService);
 
         Assert.Equal(EProductThemePreference.Dark, viewModel.ThemePreference);
         Assert.True(viewModel.IsDarkThemeSelected);
         Assert.False(viewModel.IsLightThemeSelected);
         Assert.False(viewModel.IsSystemThemeSelected);
-        Assert.Equal(
-            new EProductThemePreference[] { EProductThemePreference.Dark },
-            themeVariantService.AppliedPreferences);
+        Assert.Equal(new EProductThemePreference[] { EProductThemePreference.Dark }, themeVariantService.AppliedPreferences);
     }
 
     [AvaloniaFact]
@@ -37,9 +33,7 @@ public sealed class ProductAppearanceViewModelTests
     {
         ControlledProductAppearanceSettingsStore settingsStore = new ControlledProductAppearanceSettingsStore(ProductAppearanceSettings.CreateDefault());
         RecordingProductThemeVariantService themeVariantService = new RecordingProductThemeVariantService();
-        ProductAppearanceViewModel viewModel = new ProductAppearanceViewModel(
-            settingsStore,
-            themeVariantService);
+        ProductAppearanceViewModel viewModel = new ProductAppearanceViewModel(settingsStore, themeVariantService);
 
         int inputThreadId = Environment.CurrentManagedThreadId;
 
@@ -66,9 +60,7 @@ public sealed class ProductAppearanceViewModelTests
         ControlledProductAppearanceSettingsStore settingsStore = new ControlledProductAppearanceSettingsStore(ProductAppearanceSettings.CreateDefault());
         settingsStore.FailSaves(new ProductAppearanceSettingsException("Controlled failure."));
         RecordingProductThemeVariantService themeVariantService = new RecordingProductThemeVariantService();
-        ProductAppearanceViewModel viewModel = new ProductAppearanceViewModel(
-            settingsStore,
-            themeVariantService);
+        ProductAppearanceViewModel viewModel = new ProductAppearanceViewModel(settingsStore, themeVariantService);
 
         viewModel.IsDarkThemeSelected = true;
         await viewModel.CompletePersistenceAsync();

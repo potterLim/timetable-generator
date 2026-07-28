@@ -29,10 +29,7 @@ internal static class CatalogSummaryFormatter
             case EInstructorAssignmentStatus.NotProvided:
                 return INSTRUCTOR_NOT_PROVIDED_SUMMARY;
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(instructorAssignment),
-                    instructorAssignment.Status,
-                    "Unknown instructor assignment status.");
+                throw new ArgumentOutOfRangeException(nameof(instructorAssignment), instructorAssignment.Status, "Unknown instructor assignment status.");
         }
     }
 
@@ -50,10 +47,7 @@ internal static class CatalogSummaryFormatter
             case ELocationAssignmentStatus.NotProvided:
                 return LOCATION_NOT_PROVIDED_SUMMARY;
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(location),
-                    location.Status,
-                    "Unknown location assignment status.");
+                throw new ArgumentOutOfRangeException(nameof(location), location.Status, "Unknown location assignment status.");
         }
     }
 

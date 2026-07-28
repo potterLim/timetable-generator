@@ -38,19 +38,12 @@ internal sealed class ProcessAppleCalendarAutomationCommand
             createRequestPath,
             delegate
             {
-                return OperatingSystem.IsMacOS()
-                    && File.Exists(OSASCRIPT_PATH);
+                return OperatingSystem.IsMacOS() && File.Exists(OSASCRIPT_PATH);
             })
     {
     }
 
-    internal ProcessAppleCalendarAutomationCommand(
-        Func<
-            EAppleCalendarAutomationOperation,
-            string,
-            ProcessStartInfo> startInfoFactory,
-        Func<string> requestPathFactory,
-        Func<bool> availabilityCheck)
+    internal ProcessAppleCalendarAutomationCommand(Func<EAppleCalendarAutomationOperation, string, ProcessStartInfo> startInfoFactory, Func<string> requestPathFactory, Func<bool> availabilityCheck)
     {
         if (startInfoFactory == null)
         {
@@ -72,10 +65,7 @@ internal sealed class ProcessAppleCalendarAutomationCommand
         mAvailabilityCheck = availabilityCheck;
     }
 
-    public async Task<string> ExecuteAsync(
-        EAppleCalendarAutomationOperation operation,
-        string requestJson,
-        CancellationToken cancellationToken)
+    public async Task<string> ExecuteAsync(EAppleCalendarAutomationOperation operation, string requestJson, CancellationToken cancellationToken)
     {
         validateRequest(operation, requestJson);
         if (IsAvailable == false)
@@ -86,16 +76,8 @@ internal sealed class ProcessAppleCalendarAutomationCommand
         string requestPath = mRequestPathFactory();
         try
         {
-            await writePrivateRequestAsync(
-                    requestPath,
-                    requestJson,
-                    cancellationToken)
-                .ConfigureAwait(false);
-            return await executeProcessAsync(
-                    operation,
-                    requestPath,
-                    cancellationToken)
-                .ConfigureAwait(false);
+            await writePrivateRequestAsync(requestPath, requestJson, cancellationToken).ConfigureAwait(false);
+            return await executeProcessAsync(operation, requestPath, cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -119,15 +101,11 @@ internal sealed class ProcessAppleCalendarAutomationCommand
         }
     }
 
-    internal static ProcessStartInfo createStartInfo(
-        EAppleCalendarAutomationOperation operation,
-        string requestPath)
+    internal static ProcessStartInfo createStartInfo(EAppleCalendarAutomationOperation operation, string requestPath)
     {
         if (string.IsNullOrWhiteSpace(requestPath))
         {
-            throw new ArgumentException(
-                "Apple Calendar automation requires a request path.",
-                nameof(requestPath));
+            throw new ArgumentException("Apple Calendar automation requires a request path.", nameof(requestPath));
         }
 
         ProcessStartInfo startInfo = new ProcessStartInfo();
@@ -164,16 +142,11 @@ internal sealed class ProcessAppleCalendarAutomationCommand
         return options;
     }
 
-    private async Task<string> executeProcessAsync(
-        EAppleCalendarAutomationOperation operation,
-        string requestPath,
-        CancellationToken cancellationToken)
+    private async Task<string> executeProcessAsync(EAppleCalendarAutomationOperation operation, string requestPath, CancellationToken cancellationToken)
     {
         using (Process process = new Process())
         {
-            process.StartInfo = mStartInfoFactory(
-                operation,
-                requestPath);
+            process.StartInfo = mStartInfoFactory(operation, requestPath);
             try
             {
                 if (process.Start() == false)
@@ -213,24 +186,17 @@ internal sealed class ProcessAppleCalendarAutomationCommand
             string normalizedOutput = standardOutput.Trim();
             if (normalizedOutput.Length == 0)
             {
-                throw new AppleCalendarNativeBridgeException(
-                    EAppleCalendarNativeFailureKind.OperationFailed,
-                    "apple_calendar_automation_empty_response");
+                throw new AppleCalendarNativeBridgeException(EAppleCalendarNativeFailureKind.OperationFailed, "apple_calendar_automation_empty_response");
             }
 
             return normalizedOutput;
         }
     }
 
-    private static async Task writePrivateRequestAsync(
-        string requestPath,
-        string requestJson,
-        CancellationToken cancellationToken)
+    private static async Task writePrivateRequestAsync(string requestPath, string requestJson, CancellationToken cancellationToken)
     {
         byte[] requestBytes = new UTF8Encoding(false).GetBytes(requestJson);
-        await using (FileStream requestStream = new FileStream(
-                requestPath,
-                createPrivateRequestFileOptions()))
+        await using (FileStream requestStream = new FileStream(requestPath, createPrivateRequestFileOptions()))
         {
             await requestStream.WriteAsync(requestBytes, cancellationToken).ConfigureAwait(false);
             await requestStream.FlushAsync(cancellationToken).ConfigureAwait(false);
@@ -246,11 +212,7 @@ internal sealed class ProcessAppleCalendarAutomationCommand
 
         try
         {
-            using (FileStream requestStream = new FileStream(
-                    requestPath,
-                    FileMode.Open,
-                    FileAccess.Write,
-                    FileShare.None))
+            using (FileStream requestStream = new FileStream(requestPath, FileMode.Open, FileAccess.Write, FileShare.None))
             {
                 byte[] zeroBuffer = new byte[BUFFER_SIZE];
                 long remainingLength = requestStream.Length;
@@ -288,28 +250,19 @@ internal sealed class ProcessAppleCalendarAutomationCommand
         }
     }
 
-    private static AppleCalendarNativeBridgeException createProcessFailure(
-        string standardError)
+    private static AppleCalendarNativeBridgeException createProcessFailure(string standardError)
     {
         if (containsAccessDenial(standardError))
         {
-            return new AppleCalendarNativeBridgeException(
-                EAppleCalendarNativeFailureKind.AccessDenied,
-                "apple_calendar_automation_access_denied");
+            return new AppleCalendarNativeBridgeException(EAppleCalendarNativeFailureKind.AccessDenied, "apple_calendar_automation_access_denied");
         }
 
-        return new AppleCalendarNativeBridgeException(
-            EAppleCalendarNativeFailureKind.OperationFailed,
-            "apple_calendar_automation_process_failed");
+        return new AppleCalendarNativeBridgeException(EAppleCalendarNativeFailureKind.OperationFailed, "apple_calendar_automation_process_failed");
     }
 
-    private static AppleCalendarNativeBridgeException createOperationFailure(
-        Exception innerException)
+    private static AppleCalendarNativeBridgeException createOperationFailure(Exception innerException)
     {
-        return new AppleCalendarNativeBridgeException(
-            EAppleCalendarNativeFailureKind.OperationFailed,
-            "apple_calendar_automation_io_failed",
-            innerException);
+        return new AppleCalendarNativeBridgeException(EAppleCalendarNativeFailureKind.OperationFailed, "apple_calendar_automation_io_failed", innerException);
     }
 
     private static bool containsAccessDenial(string value)
@@ -348,9 +301,7 @@ internal sealed class ProcessAppleCalendarAutomationCommand
         {
             try
             {
-                await process.WaitForExitAsync(
-                        waitCancellationSource.Token)
-                    .ConfigureAwait(false);
+                await process.WaitForExitAsync(waitCancellationSource.Token).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -365,15 +316,10 @@ internal sealed class ProcessAppleCalendarAutomationCommand
 
     private static string createRequestPath()
     {
-        return Path.Combine(
-            Path.GetTempPath(),
-            "timetable-generator-apple-calendar-"
-                + Guid.NewGuid().ToString("N")
-                + ".json");
+        return Path.Combine(Path.GetTempPath(), "timetable-generator-apple-calendar-" + Guid.NewGuid().ToString("N") + ".json");
     }
 
-    private static string findOperationArgument(
-        EAppleCalendarAutomationOperation operation)
+    private static string findOperationArgument(EAppleCalendarAutomationOperation operation)
     {
         switch (operation)
         {
@@ -387,25 +333,17 @@ internal sealed class ProcessAppleCalendarAutomationCommand
         }
     }
 
-    private static void validateRequest(
-        EAppleCalendarAutomationOperation operation,
-        string requestJson)
+    private static void validateRequest(EAppleCalendarAutomationOperation operation, string requestJson)
     {
         findOperationArgument(operation);
         if (string.IsNullOrWhiteSpace(requestJson))
         {
-            throw new ArgumentException(
-                "Apple Calendar automation requires a JSON request.",
-                nameof(requestJson));
+            throw new ArgumentException("Apple Calendar automation requires a JSON request.", nameof(requestJson));
         }
     }
 
-    private static AppleCalendarNativeBridgeException createUnavailableException(
-        Exception? innerExceptionOrNull)
+    private static AppleCalendarNativeBridgeException createUnavailableException(Exception? innerExceptionOrNull)
     {
-        return new AppleCalendarNativeBridgeException(
-            EAppleCalendarNativeFailureKind.Unavailable,
-            "apple_calendar_automation_unavailable",
-            innerExceptionOrNull);
+        return new AppleCalendarNativeBridgeException(EAppleCalendarNativeFailureKind.Unavailable, "apple_calendar_automation_unavailable", innerExceptionOrNull);
     }
 }

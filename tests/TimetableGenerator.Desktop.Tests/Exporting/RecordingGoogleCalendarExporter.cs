@@ -25,10 +25,7 @@ internal sealed class RecordingGoogleCalendarExporter : IGoogleCalendarExporter
         mResult = result;
     }
 
-    public Task<GoogleCalendarExportResult> ExportAsync(
-        GoogleCalendarExportPlan plan,
-        ICalendarNameConflictResolver conflictResolver,
-        CancellationToken cancellationToken)
+    public Task<GoogleCalendarExportResult> ExportAsync(GoogleCalendarExportPlan plan, ICalendarNameConflictResolver conflictResolver, CancellationToken cancellationToken)
     {
         if (plan == null)
         {

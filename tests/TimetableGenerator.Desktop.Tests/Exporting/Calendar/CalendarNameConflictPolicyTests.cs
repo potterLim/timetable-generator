@@ -19,10 +19,7 @@ public sealed class CalendarNameConflictPolicyTests
         bool isSameName = CalendarNameConflictPolicy.IsSameName(composedName, decomposedName);
 
         Assert.True(isSameName);
-        Assert.True(
-            CalendarNameConflictPolicy.IsNameInUse(
-                composedName,
-                new PlanName[] { decomposedName }));
+        Assert.True(CalendarNameConflictPolicy.IsNameInUse(composedName, new PlanName[] { decomposedName }));
     }
 
     [Fact]
@@ -46,10 +43,7 @@ public sealed class CalendarNameConflictPolicyTests
     {
         PlanName requestedName = new PlanName("2026-2학기 시간표");
 
-        PlanName nextAvailableName =
-            CalendarNameConflictPolicy.FindNextAvailableName(
-                requestedName,
-                new PlanName[] { requestedName });
+        PlanName nextAvailableName = CalendarNameConflictPolicy.FindNextAvailableName(requestedName, new PlanName[] { requestedName });
 
         Assert.Equal("2026-2학기 시간표 (2)", nextAvailableName.Value);
     }
@@ -59,15 +53,10 @@ public sealed class CalendarNameConflictPolicyTests
     {
         PlanName requestedName = new PlanName(new string('가', PlanName.MAXIMUM_LENGTH));
 
-        PlanName nextAvailableName =
-            CalendarNameConflictPolicy.FindNextAvailableName(
-                requestedName,
-                new PlanName[] { requestedName });
+        PlanName nextAvailableName = CalendarNameConflictPolicy.FindNextAvailableName(requestedName, new PlanName[] { requestedName });
 
         Assert.Equal(PlanName.MAXIMUM_LENGTH, nextAvailableName.Value.Length);
-        Assert.Equal(
-            new string('가', PlanName.MAXIMUM_LENGTH - " (2)".Length) + " (2)",
-            nextAvailableName.Value);
+        Assert.Equal(new string('가', PlanName.MAXIMUM_LENGTH - " (2)".Length) + " (2)", nextAvailableName.Value);
     }
 
     [Fact]
@@ -76,10 +65,7 @@ public sealed class CalendarNameConflictPolicyTests
         string requestedNameValue = new string('a', 75) + "\U0001F600bbb";
         PlanName requestedName = new PlanName(requestedNameValue);
 
-        PlanName nextAvailableName =
-            CalendarNameConflictPolicy.FindNextAvailableName(
-                requestedName,
-                new PlanName[] { requestedName });
+        PlanName nextAvailableName = CalendarNameConflictPolicy.FindNextAvailableName(requestedName, new PlanName[] { requestedName });
 
         Assert.Equal(new string('a', 75) + " (2)", nextAvailableName.Value);
         Assert.DoesNotContain('\uD83D', nextAvailableName.Value);
@@ -94,20 +80,12 @@ public sealed class CalendarNameConflictPolicyTests
         for (int copyNumber = 2; copyNumber <= 10; ++copyNumber)
         {
             string suffix = " (" + copyNumber + ")";
-            existingNames.Add(
-                new PlanName(
-                    new string(
-                        'a',
-                        PlanName.MAXIMUM_LENGTH - suffix.Length)
-                    + suffix));
+            existingNames.Add(new PlanName(new string('a', PlanName.MAXIMUM_LENGTH - suffix.Length) + suffix));
         }
 
         PlanName nextAvailableName = CalendarNameConflictPolicy.FindNextAvailableName(requestedName, existingNames);
 
-        Assert.Equal(
-            new string('a', PlanName.MAXIMUM_LENGTH - " (11)".Length)
-                + " (11)",
-            nextAvailableName.Value);
+        Assert.Equal(new string('a', PlanName.MAXIMUM_LENGTH - " (11)".Length) + " (11)", nextAvailableName.Value);
         Assert.Equal(PlanName.MAXIMUM_LENGTH, nextAvailableName.Value.Length);
     }
 
@@ -141,11 +119,7 @@ public sealed class CalendarNameConflictPolicyTests
         PlanName requestedName = new PlanName("시간표");
         PlanName nextAvailableName = new PlanName("시간표 (2)");
 
-        CalendarNameConflict conflict = new CalendarNameConflict(
-            provider,
-            requestedName,
-            nextAvailableName,
-            ECalendarReplacementAvailability.Available);
+        CalendarNameConflict conflict = new CalendarNameConflict(provider, requestedName, nextAvailableName, ECalendarReplacementAvailability.Available);
 
         Assert.Equal(provider, conflict.Provider);
         Assert.Same(requestedName, conflict.RequestedName);
@@ -219,12 +193,8 @@ public sealed class CalendarNameConflictPolicyTests
             () => CalendarNameConflictPolicy.EnsureResolutionIsSupported(
                 conflict,
                 ECalendarNameConflictResolution.ReplaceExisting));
-        CalendarNameConflictPolicy.EnsureResolutionIsSupported(
-            conflict,
-            ECalendarNameConflictResolution.CreateWithAvailableName);
-        CalendarNameConflictPolicy.EnsureResolutionIsSupported(
-            conflict,
-            ECalendarNameConflictResolution.Cancel);
+        CalendarNameConflictPolicy.EnsureResolutionIsSupported(conflict, ECalendarNameConflictResolution.CreateWithAvailableName);
+        CalendarNameConflictPolicy.EnsureResolutionIsSupported(conflict, ECalendarNameConflictResolution.Cancel);
     }
 
     [Fact]
@@ -246,13 +216,8 @@ public sealed class CalendarNameConflictPolicyTests
                 (ECalendarNameConflictResolution)99));
     }
 
-    private static CalendarNameConflict createConflict(
-        ECalendarReplacementAvailability replacementAvailability)
+    private static CalendarNameConflict createConflict(ECalendarReplacementAvailability replacementAvailability)
     {
-        return new CalendarNameConflict(
-            ECalendarExportProvider.Google,
-            new PlanName("시간표"),
-            new PlanName("시간표 (2)"),
-            replacementAvailability);
+        return new CalendarNameConflict(ECalendarExportProvider.Google, new PlanName("시간표"), new PlanName("시간표 (2)"), replacementAvailability);
     }
 }

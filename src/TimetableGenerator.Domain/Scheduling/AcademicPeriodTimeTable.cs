@@ -8,9 +8,7 @@ public static class AcademicPeriodTimeTable
     {
         if (slot.IsValid == false)
         {
-            throw new ArgumentException(
-                "Academic period time conversion requires a valid meeting slot.",
-                nameof(slot));
+            throw new ArgumentException("Academic period time conversion requires a valid meeting slot.", nameof(slot));
         }
 
         if (slot.Day == EDay.Wednesday)

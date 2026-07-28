@@ -82,9 +82,7 @@ public sealed class ProductModalAndTabVisualStateTests
                 Assert.False(outlineButton.IsEffectivelyEnabled);
                 Assert.NotEmpty(planTabCloseButtons);
 
-                ContentPresenter iconPresenter = findRequiredTemplateControl<ContentPresenter>(
-                    iconButton,
-                    "PART_ContentPresenter");
+                ContentPresenter iconPresenter = findRequiredTemplateControl<ContentPresenter>(iconButton, "PART_ContentPresenter");
                 assertTransparent(iconPresenter.Background);
                 assertTransparent(iconPresenter.BorderBrush);
                 Assert.Equal(1.0, iconButton.Opacity);
@@ -184,9 +182,7 @@ public sealed class ProductModalAndTabVisualStateTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            ContentPresenter presenter = findRequiredTemplateControl<ContentPresenter>(
-                iconButton,
-                "PART_ContentPresenter");
+            ContentPresenter presenter = findRequiredTemplateControl<ContentPresenter>(iconButton, "PART_ContentPresenter");
             Assert.False(iconButton.IsEffectivelyEnabled);
             Assert.Equal(0.62, iconButton.Opacity);
             assertTransparent(presenter.Background);
@@ -252,10 +248,7 @@ public sealed class ProductModalAndTabVisualStateTests
         }
     }
 
-    private static void assertBrushUsesToken(
-        IBrush? actualBrushOrNull,
-        ColorToken expectedToken,
-        ThemeVariant themeVariant)
+    private static void assertBrushUsesToken(IBrush? actualBrushOrNull, ColorToken expectedToken, ThemeVariant themeVariant)
     {
         ISolidColorBrush? actualSolidBrushOrNull = actualBrushOrNull as ISolidColorBrush;
         Assert.NotNull(actualSolidBrushOrNull);
@@ -320,19 +313,14 @@ public sealed class ProductModalAndTabVisualStateTests
         }
 
         object? resourceOrNull;
-        bool hasResource = applicationOrNull.TryGetResource(
-            colorToken.Value,
-            themeVariant,
-            out resourceOrNull);
+        bool hasResource = applicationOrNull.TryGetResource(colorToken.Value, themeVariant, out resourceOrNull);
         Assert.True(hasResource);
 
         SolidColorBrush? brushOrNull = resourceOrNull as SolidColorBrush;
         Assert.NotNull(brushOrNull);
         if (brushOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The product color token was not a solid color brush: " +
-                    colorToken.Value);
+            throw new InvalidOperationException("The product color token was not a solid color brush: " + colorToken.Value);
         }
 
         return brushOrNull;

@@ -33,9 +33,7 @@ internal sealed class CourseSelectionOption
                 return string.Empty;
             }
 
-            return EnglishInstructionPercentageRange
-                .CreateUniform(ExactEnglishInstructionPercentageOrNull.Value)
-                .DisplayText;
+            return EnglishInstructionPercentageRange.CreateUniform(ExactEnglishInstructionPercentageOrNull.Value).DisplayText;
         }
     }
 
@@ -48,9 +46,7 @@ internal sealed class CourseSelectionOption
                 return string.Empty;
             }
 
-            return EnglishInstructionPercentageRange
-                .CreateUniform(ExactEnglishInstructionPercentageOrNull.Value)
-                .AccessibleText;
+            return EnglishInstructionPercentageRange.CreateUniform(ExactEnglishInstructionPercentageOrNull.Value).AccessibleText;
         }
     }
 
@@ -70,11 +66,7 @@ internal sealed class CourseSelectionOption
         }
     }
 
-    private CourseSelectionOption(
-        PlanningCourseSelection selection,
-        EMeetingScheduleStatus scheduleStatus,
-        string displayName,
-        EnglishInstructionPercentage? exactEnglishInstructionPercentageOrNull)
+    private CourseSelectionOption(PlanningCourseSelection selection, EMeetingScheduleStatus scheduleStatus, string displayName, EnglishInstructionPercentage? exactEnglishInstructionPercentageOrNull)
     {
         if (selection == null)
         {
@@ -97,10 +89,8 @@ internal sealed class CourseSelectionOption
         string normalizedDisplayName = displayName.Trim();
         if (exactEnglishInstructionPercentageOrNull.HasValue)
         {
-            DisplayName = normalizedDisplayName + " · "
-                + EnglishInstructionDisplayText;
-            AccessibleName = normalizedDisplayName + ", "
-                + EnglishInstructionAccessibleText;
+            DisplayName = normalizedDisplayName + " · " + EnglishInstructionDisplayText;
+            AccessibleName = normalizedDisplayName + ", " + EnglishInstructionAccessibleText;
         }
         else
         {
@@ -109,36 +99,22 @@ internal sealed class CourseSelectionOption
         }
     }
 
-    public static CourseSelectionOption CreateDirectAdd(
-        PlanningCourseSelection selection,
-        EMeetingScheduleStatus scheduleStatus,
-        string displayName,
-        EnglishInstructionPercentage exactEnglishInstructionPercentage)
+    public static CourseSelectionOption CreateDirectAdd(PlanningCourseSelection selection, EMeetingScheduleStatus scheduleStatus, string displayName, EnglishInstructionPercentage exactEnglishInstructionPercentage)
     {
         validateDirectAddSelection(selection, scheduleStatus);
-        return new CourseSelectionOption(
-            selection,
-            scheduleStatus,
-            displayName,
-            exactEnglishInstructionPercentage);
+        return new CourseSelectionOption(selection, scheduleStatus, displayName, exactEnglishInstructionPercentage);
     }
 
-    public static CourseSelectionOption CreatePreferenceEditor(
-        PlanningCourseSelection selection,
-        string displayName)
+    public static CourseSelectionOption CreatePreferenceEditor(PlanningCourseSelection selection, string displayName)
     {
         if (selection == null)
         {
             throw new ArgumentNullException(nameof(selection));
         }
 
-        if (selection.Kind
-            != EPlanningCourseSelectionKind.ScheduledAlternatives
-            || selection.GetScheduledOfferingIds().Count <= 1)
+        if (selection.Kind != EPlanningCourseSelectionKind.ScheduledAlternatives || selection.GetScheduledOfferingIds().Count <= 1)
         {
-            throw new ArgumentException(
-                "Preference-editor options require multiple scheduled offerings.",
-                nameof(selection));
+            throw new ArgumentException("Preference-editor options require multiple scheduled offerings.", nameof(selection));
         }
 
         return new CourseSelectionOption(selection, EMeetingScheduleStatus.Scheduled, displayName, null);
@@ -163,10 +139,7 @@ internal sealed class CourseSelectionOption
             case EPlanningCourseSelectionKind.TimeNotProvidedOffering:
                 return Selection.GetTimeNotProvidedOfferingId() == selection.GetTimeNotProvidedOfferingId();
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(selection),
-                    selection.Kind,
-                    "Unknown planning course selection kind.");
+                throw new ArgumentOutOfRangeException(nameof(selection), selection.Kind, "Unknown planning course selection kind.");
         }
     }
 
@@ -200,9 +173,7 @@ internal sealed class CourseSelectionOption
         return true;
     }
 
-    private static void validateDirectAddSelection(
-        PlanningCourseSelection selection,
-        EMeetingScheduleStatus scheduleStatus)
+    private static void validateDirectAddSelection(PlanningCourseSelection selection, EMeetingScheduleStatus scheduleStatus)
     {
         if (selection == null)
         {
@@ -216,27 +187,19 @@ internal sealed class CourseSelectionOption
 
         if (scheduleStatus == EMeetingScheduleStatus.Scheduled)
         {
-            if (selection.Kind
-                != EPlanningCourseSelectionKind.ScheduledAlternatives
-                || selection.GetScheduledOfferingIds().Count != 1)
+            if (selection.Kind != EPlanningCourseSelectionKind.ScheduledAlternatives || selection.GetScheduledOfferingIds().Count != 1)
             {
-                throw new ArgumentException(
-                    "Scheduled direct-add options require exactly one offering.",
-                    nameof(selection));
+                throw new ArgumentException("Scheduled direct-add options require exactly one offering.", nameof(selection));
             }
 
             return;
         }
 
-        if (scheduleStatus == EMeetingScheduleStatus.NotProvided
-            && selection.Kind
-                == EPlanningCourseSelectionKind.TimeNotProvidedOffering)
+        if (scheduleStatus == EMeetingScheduleStatus.NotProvided && selection.Kind == EPlanningCourseSelectionKind.TimeNotProvidedOffering)
         {
             return;
         }
 
-        throw new ArgumentException(
-            "Direct-add option status must match its planning selection.",
-            nameof(selection));
+        throw new ArgumentException("Direct-add option status must match its planning selection.", nameof(selection));
     }
 }

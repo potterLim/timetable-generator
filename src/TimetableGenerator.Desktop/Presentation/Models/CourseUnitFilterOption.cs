@@ -13,10 +13,7 @@ internal sealed class CourseUnitFilterOption
 
     public string DisplayName { get; }
 
-    private CourseUnitFilterOption(
-        ECourseFilterScope scope,
-        OfferingUnitName? offeringUnitNameOrNull,
-        string displayName)
+    private CourseUnitFilterOption(ECourseFilterScope scope, OfferingUnitName? offeringUnitNameOrNull, string displayName)
     {
         Scope = scope;
         mOfferingUnitNameOrNull = offeringUnitNameOrNull;
@@ -35,10 +32,7 @@ internal sealed class CourseUnitFilterOption
             throw new ArgumentNullException(nameof(offeringUnitName));
         }
 
-        return new CourseUnitFilterOption(
-            ECourseFilterScope.Specific,
-            offeringUnitName,
-            offeringUnitName.Value);
+        return new CourseUnitFilterOption(ECourseFilterScope.Specific, offeringUnitName, offeringUnitName.Value);
     }
 
     public bool Matches(CatalogCourseProjection course)

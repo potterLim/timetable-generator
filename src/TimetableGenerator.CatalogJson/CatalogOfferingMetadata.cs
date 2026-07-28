@@ -60,9 +60,7 @@ public sealed class CatalogOfferingMetadata
 
         if (sourceRecordNumber.IsValid == false)
         {
-            throw new ArgumentException(
-                "Catalog offering metadata requires a valid source record number.",
-                nameof(sourceRecordNumber));
+            throw new ArgumentException("Catalog offering metadata requires a valid source record number.", nameof(sourceRecordNumber));
         }
 
         OfferingId = offeringId;

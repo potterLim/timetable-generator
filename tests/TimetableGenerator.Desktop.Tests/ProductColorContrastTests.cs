@@ -186,9 +186,7 @@ public sealed class ProductColorContrastTests
 
         foreach (ShadowToken shadowToken in REQUIRED_BOX_SHADOW_TOKENS)
         {
-            Assert.NotEqual(
-                findRequiredBoxShadows(shadowToken, ThemeVariant.Light),
-                findRequiredBoxShadows(shadowToken, ThemeVariant.Dark));
+            Assert.NotEqual(findRequiredBoxShadows(shadowToken, ThemeVariant.Light), findRequiredBoxShadows(shadowToken, ThemeVariant.Dark));
         }
     }
 
@@ -327,13 +325,7 @@ public sealed class ProductColorContrastTests
             Color pressedColor = findRequiredBrush(CAPTION_CLOSE_PRESSED_BACKGROUND, themeVariant).Color;
             ContrastRatio actualContrast = calculateContrastRatio(hoverColor, pressedColor);
 
-            Assert.True(
-                actualContrast.IsAtLeast(MINIMUM_INTERACTION_STATE_CONTRAST),
-                themeVariant + " caption close pressed fill has contrast " +
-                actualContrast.Value.ToString("F2") +
-                ":1 against its hover fill; required " +
-                MINIMUM_INTERACTION_STATE_CONTRAST.Value.ToString("F2") +
-                ":1 or greater.");
+            Assert.True(actualContrast.IsAtLeast(MINIMUM_INTERACTION_STATE_CONTRAST), themeVariant + " caption close pressed fill has contrast " + actualContrast.Value.ToString("F2") + ":1 against its hover fill; required " + MINIMUM_INTERACTION_STATE_CONTRAST.Value.ToString("F2") + ":1 or greater.");
         }
     }
 
@@ -571,24 +563,17 @@ public sealed class ProductColorContrastTests
         assertContrastRequirements(contrastRequirements);
     }
 
-    private static ContrastRequirement bodyText(
-        ThemeVariant themeVariant,
-        ColorToken foreground,
-        ColorToken background)
+    private static ContrastRequirement bodyText(ThemeVariant themeVariant, ColorToken foreground, ColorToken background)
     {
         return new ContrastRequirement(themeVariant, foreground, background, MINIMUM_BODY_TEXT_CONTRAST);
     }
 
-    private static ContrastRequirement nonText(
-        ThemeVariant themeVariant,
-        ColorToken foreground,
-        ColorToken background)
+    private static ContrastRequirement nonText(ThemeVariant themeVariant, ColorToken foreground, ColorToken background)
     {
         return new ContrastRequirement(themeVariant, foreground, background, MINIMUM_NON_TEXT_CONTRAST);
     }
 
-    private static void assertContrastRequirements(
-        IReadOnlyList<ContrastRequirement> contrastRequirements)
+    private static void assertContrastRequirements(IReadOnlyList<ContrastRequirement> contrastRequirements)
     {
         foreach (ContrastRequirement contrastRequirement in contrastRequirements)
         {
@@ -605,9 +590,7 @@ public sealed class ProductColorContrastTests
     {
         Assert.Equal(expectedSurface, findRequiredBrush(SELECTION_SURFACE, themeVariant).Color);
         Assert.Equal(expectedHoverSurface, findRequiredBrush(SELECTION_HOVER_SURFACE, themeVariant).Color);
-        Assert.Equal(
-            expectedPressedSurface,
-            findRequiredBrush(SELECTION_PRESSED_SURFACE, themeVariant).Color);
+        Assert.Equal(expectedPressedSurface, findRequiredBrush(SELECTION_PRESSED_SURFACE, themeVariant).Color);
         Assert.Equal(expectedIndicator, findRequiredBrush(SELECTION_INDICATOR, themeVariant).Color);
     }
 
@@ -627,12 +610,8 @@ public sealed class ProductColorContrastTests
 
     private static void assertContrastRequirement(ContrastRequirement contrastRequirement)
     {
-        SolidColorBrush foregroundBrush = findRequiredBrush(
-            contrastRequirement.Foreground,
-            contrastRequirement.ThemeVariant);
-        SolidColorBrush backgroundBrush = findRequiredBrush(
-            contrastRequirement.Background,
-            contrastRequirement.ThemeVariant);
+        SolidColorBrush foregroundBrush = findRequiredBrush(contrastRequirement.Foreground, contrastRequirement.ThemeVariant);
+        SolidColorBrush backgroundBrush = findRequiredBrush(contrastRequirement.Background, contrastRequirement.ThemeVariant);
 
         Assert.Equal(byte.MaxValue, foregroundBrush.Color.A);
         Assert.Equal(byte.MaxValue, backgroundBrush.Color.A);
@@ -653,19 +632,14 @@ public sealed class ProductColorContrastTests
         }
 
         object? resourceOrNull;
-        bool hasResource = applicationOrNull.TryGetResource(
-            colorToken.Value,
-            themeVariant,
-            out resourceOrNull);
+        bool hasResource = applicationOrNull.TryGetResource(colorToken.Value, themeVariant, out resourceOrNull);
         Assert.True(hasResource, "The product color token could not be resolved: " + colorToken.Value);
 
         SolidColorBrush? brushOrNull = resourceOrNull as SolidColorBrush;
         Assert.NotNull(brushOrNull);
         if (brushOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The product color token is not a solid color brush: " +
-                colorToken.Value);
+            throw new InvalidOperationException("The product color token is not a solid color brush: " + colorToken.Value);
         }
 
         return brushOrNull;
@@ -681,14 +655,8 @@ public sealed class ProductColorContrastTests
         }
 
         object? resourceOrNull;
-        bool hasResource = applicationOrNull.TryGetResource(
-            shadowToken.Value,
-            themeVariant,
-            out resourceOrNull);
-        Assert.True(
-            hasResource,
-            "The product box shadow token could not be resolved: " +
-            shadowToken.Value);
+        bool hasResource = applicationOrNull.TryGetResource(shadowToken.Value, themeVariant, out resourceOrNull);
+        Assert.True(hasResource, "The product box shadow token could not be resolved: " + shadowToken.Value);
 
         return Assert.IsType<BoxShadows>(resourceOrNull);
     }
@@ -710,9 +678,7 @@ public sealed class ProductColorContrastTests
         double linearGreen = calculateLinearColorChannel(color.G);
         double linearBlue = calculateLinearColorChannel(color.B);
 
-        return (RED_LUMINANCE_WEIGHT * linearRed) +
-            (GREEN_LUMINANCE_WEIGHT * linearGreen) +
-            (BLUE_LUMINANCE_WEIGHT * linearBlue);
+        return (RED_LUMINANCE_WEIGHT * linearRed) + (GREEN_LUMINANCE_WEIGHT * linearGreen) + (BLUE_LUMINANCE_WEIGHT * linearBlue);
     }
 
     private static double calculateLinearColorChannel(byte colorChannel)
@@ -739,9 +705,5 @@ public sealed class ProductColorContrastTests
         }
     }
 
-    private readonly record struct ContrastRequirement(
-        ThemeVariant ThemeVariant,
-        ColorToken Foreground,
-        ColorToken Background,
-        ContrastRatio Minimum);
+    private readonly record struct ContrastRequirement(ThemeVariant ThemeVariant, ColorToken Foreground, ColorToken Background, ContrastRatio Minimum);
 }

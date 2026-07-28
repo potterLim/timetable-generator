@@ -10,10 +10,7 @@ public sealed class CatalogOfferingInstructionMetadata
 
     public GradingMetadata Grading { get; }
 
-    public CatalogOfferingInstructionMetadata(
-        InstructorAssignmentMetadata instructorAssignment,
-        EnglishInstructionPercentage englishInstructionPercentage,
-        GradingMetadata grading)
+    public CatalogOfferingInstructionMetadata(InstructorAssignmentMetadata instructorAssignment, EnglishInstructionPercentage englishInstructionPercentage, GradingMetadata grading)
     {
         if (instructorAssignment == null)
         {

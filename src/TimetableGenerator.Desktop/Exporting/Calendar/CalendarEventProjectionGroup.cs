@@ -14,9 +14,7 @@ internal sealed class CalendarEventProjectionGroup
 
     public CalendarEventContent Content { get; }
 
-    public CalendarEventProjectionGroup(
-        CalendarEventProjectionGroupKey key,
-        CalendarEventContent content)
+    public CalendarEventProjectionGroup(CalendarEventProjectionGroupKey key, CalendarEventContent content)
     {
         if (key.SourceIdentity.IsValid == false || key.TimeRange.IsValid == false)
         {
@@ -42,16 +40,12 @@ internal sealed class CalendarEventProjectionGroup
 
         if (hasSameContent(content) == false)
         {
-            throw new ArgumentException(
-                "Grouped calendar entries must have matching event content.",
-                nameof(content));
+            throw new ArgumentException("Grouped calendar entries must have matching event content.", nameof(content));
         }
 
         if (mDays.Add(day) == false)
         {
-            throw new ArgumentException(
-                "A grouped calendar event cannot repeat the same weekday.",
-                nameof(day));
+            throw new ArgumentException("A grouped calendar event cannot repeat the same weekday.", nameof(day));
         }
     }
 
@@ -63,17 +57,6 @@ internal sealed class CalendarEventProjectionGroup
 
     private bool hasSameContent(CalendarEventContent content)
     {
-        return string.Equals(
-            Content.Summary,
-            content.Summary,
-            StringComparison.Ordinal)
-            && string.Equals(
-                Content.Location,
-                content.Location,
-                StringComparison.Ordinal)
-            && string.Equals(
-                Content.Description,
-                content.Description,
-                StringComparison.Ordinal);
+        return string.Equals(Content.Summary, content.Summary, StringComparison.Ordinal) && string.Equals(Content.Location, content.Location, StringComparison.Ordinal) && string.Equals(Content.Description, content.Description, StringComparison.Ordinal);
     }
 }

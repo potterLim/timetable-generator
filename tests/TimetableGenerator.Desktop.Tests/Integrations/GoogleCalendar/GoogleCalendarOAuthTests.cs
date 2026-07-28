@@ -20,10 +20,7 @@ public sealed class GoogleCalendarOAuthTests
     public async Task MissingClientConfigurationDoesNotTouchCredentialsBrowserOrNetworkAsync()
     {
         ThrowingHttpMessageHandler httpHandler = new ThrowingHttpMessageHandler();
-        GoogleCalendarOAuthClient client = new GoogleCalendarOAuthClient(
-            new HttpClient(httpHandler),
-            new FixedConfigurationProvider(null),
-            new ThrowingCodeProvider());
+        GoogleCalendarOAuthClient client = new GoogleCalendarOAuthClient(new HttpClient(httpHandler), new FixedConfigurationProvider(null), new ThrowingCodeProvider());
 
         GoogleOAuthAuthorizationResult result = await client.AuthorizeAsync(CancellationToken.None);
 
@@ -36,12 +33,7 @@ public sealed class GoogleCalendarOAuthTests
     {
         RecordingCodeProvider codeProvider = new RecordingCodeProvider();
         PkceTokenHttpMessageHandler httpHandler = new PkceTokenHttpMessageHandler(codeProvider);
-        GoogleCalendarOAuthClient client = new GoogleCalendarOAuthClient(
-            new HttpClient(httpHandler),
-            new FixedConfigurationProvider(
-                new GoogleCalendarOAuthConfiguration(
-                    new GoogleOAuthClientId("client.apps.googleusercontent.com"))),
-            codeProvider);
+        GoogleCalendarOAuthClient client = new GoogleCalendarOAuthClient(new HttpClient(httpHandler), new FixedConfigurationProvider(new GoogleCalendarOAuthConfiguration(new GoogleOAuthClientId("client.apps.googleusercontent.com"))), codeProvider);
 
         GoogleOAuthAuthorizationResult result = await client.AuthorizeAsync(CancellationToken.None);
 
@@ -57,12 +49,7 @@ public sealed class GoogleCalendarOAuthTests
     {
         RecordingCodeProvider codeProvider = new RecordingCodeProvider();
         PkceTokenHttpMessageHandler httpHandler = new PkceTokenHttpMessageHandler(codeProvider);
-        GoogleCalendarOAuthClient client = new GoogleCalendarOAuthClient(
-            new HttpClient(httpHandler),
-            new FixedConfigurationProvider(
-                new GoogleCalendarOAuthConfiguration(
-                    new GoogleOAuthClientId("client.apps.googleusercontent.com"))),
-            codeProvider);
+        GoogleCalendarOAuthClient client = new GoogleCalendarOAuthClient(new HttpClient(httpHandler), new FixedConfigurationProvider(new GoogleCalendarOAuthConfiguration(new GoogleOAuthClientId("client.apps.googleusercontent.com"))), codeProvider);
 
         GoogleOAuthAuthorizationResult firstResult = await client.AuthorizeAsync(CancellationToken.None);
         GoogleOAuthAuthorizationResult secondResult = await client.AuthorizeAsync(CancellationToken.None);
@@ -78,13 +65,7 @@ public sealed class GoogleCalendarOAuthTests
     {
         RecordingCodeProvider codeProvider = new RecordingCodeProvider();
         ClientSecretTokenHttpMessageHandler httpHandler = new ClientSecretTokenHttpMessageHandler();
-        GoogleCalendarOAuthClient client = new GoogleCalendarOAuthClient(
-            new HttpClient(httpHandler),
-            new FixedConfigurationProvider(
-                new GoogleCalendarOAuthConfiguration(
-                    new GoogleOAuthClientId("client.apps.googleusercontent.com"),
-                    new GoogleOAuthClientSecret("native-client-secret"))),
-            codeProvider);
+        GoogleCalendarOAuthClient client = new GoogleCalendarOAuthClient(new HttpClient(httpHandler), new FixedConfigurationProvider(new GoogleCalendarOAuthConfiguration(new GoogleOAuthClientId("client.apps.googleusercontent.com"), new GoogleOAuthClientSecret("native-client-secret"))), codeProvider);
 
         GoogleOAuthAuthorizationResult result = await client.AuthorizeAsync(CancellationToken.None);
 
@@ -188,9 +169,7 @@ public sealed class GoogleCalendarOAuthTests
     [InlineData(
         "GET /?code=authorization-code&state=expected http/1.1",
         "invalid_loopback_request")]
-    public void CallbackRejectsInvalidOrAmbiguousRequests(
-        string requestLine,
-        string expectedDiagnosticCode)
+    public void CallbackRejectsInvalidOrAmbiguousRequests(string requestLine, string expectedDiagnosticCode)
     {
         GoogleOAuthAuthorizationCodeResult result = LoopbackGoogleOAuthAuthorizationCodeProvider.parseRequestLine(requestLine, new GoogleOAuthRedirectUri(new Uri("http://127.0.0.1:53122/", UriKind.Absolute)), new GoogleOAuthState("expected"));
 
@@ -219,10 +198,7 @@ public sealed class GoogleCalendarOAuthTests
             await Assert.ThrowsAsync<IOException>(
                 async delegate
                 {
-                    await LoopbackGoogleOAuthAuthorizationCodeProvider
-                        .readRequestLineAsync(
-                            stream,
-                            CancellationToken.None);
+                    await LoopbackGoogleOAuthAuthorizationCodeProvider.readRequestLineAsync(stream, CancellationToken.None);
                 });
         }
     }
@@ -232,11 +208,7 @@ public sealed class GoogleCalendarOAuthTests
     {
         LoopbackGoogleOAuthAuthorizationCodeProvider provider = new LoopbackGoogleOAuthAuthorizationCodeProvider(new FailingBrowserLauncher(), TimeSpan.FromSeconds(1.0));
 
-        GoogleOAuthAuthorizationCodeResult result = await provider.RequestCodeAsync(
-            new GoogleOAuthClientId("client.apps.googleusercontent.com"),
-            new GoogleOAuthState("opaque-state"),
-            new GooglePkceCodeChallenge("opaque-challenge"),
-            CancellationToken.None);
+        GoogleOAuthAuthorizationCodeResult result = await provider.RequestCodeAsync(new GoogleOAuthClientId("client.apps.googleusercontent.com"), new GoogleOAuthState("opaque-state"), new GooglePkceCodeChallenge("opaque-challenge"), CancellationToken.None);
 
         Assert.Equal(EGoogleOAuthAuthorizationStatus.Failed, result.Status);
         Assert.Equal("browser_launch_failed", result.DiagnosticCodeOrNull);
@@ -264,11 +236,7 @@ public sealed class GoogleCalendarOAuthTests
             });
         LoopbackGoogleOAuthAuthorizationCodeProvider provider = new LoopbackGoogleOAuthAuthorizationCodeProvider(launcher, TimeSpan.FromMilliseconds(25.0));
 
-        GoogleOAuthAuthorizationCodeResult result = await provider.RequestCodeAsync(
-            new GoogleOAuthClientId("client.apps.googleusercontent.com"),
-            new GoogleOAuthState("opaque-state"),
-            new GooglePkceCodeChallenge("opaque-challenge"),
-            CancellationToken.None);
+        GoogleOAuthAuthorizationCodeResult result = await provider.RequestCodeAsync(new GoogleOAuthClientId("client.apps.googleusercontent.com"), new GoogleOAuthState("opaque-state"), new GooglePkceCodeChallenge("opaque-challenge"), CancellationToken.None);
 
         Assert.Equal(EGoogleOAuthAuthorizationStatus.Failed, result.Status);
         Assert.Equal("authorization_timeout", result.DiagnosticCodeOrNull);
@@ -283,9 +251,7 @@ public sealed class GoogleCalendarOAuthTests
         bool wasOpened = navigator.TryOpen();
 
         Assert.True(wasOpened);
-        Assert.Equal(
-            new Uri("https://calendar.google.com/calendar/r", UriKind.Absolute),
-            browserLauncher.LaunchedUriOrNull);
+        Assert.Equal(new Uri("https://calendar.google.com/calendar/r", UriKind.Absolute), browserLauncher.LaunchedUriOrNull);
     }
 
     [Fact]
@@ -309,9 +275,7 @@ public sealed class GoogleCalendarOAuthTests
     [Fact]
     public void InteractiveAuthorizationAllowsTenMinutesForAccountSelectionAndConsent()
     {
-        Assert.Equal(
-            TimeSpan.FromMinutes(10.0),
-            LoopbackGoogleOAuthAuthorizationCodeProvider.DEFAULT_AUTHORIZATION_TIMEOUT);
+        Assert.Equal(TimeSpan.FromMinutes(10.0), LoopbackGoogleOAuthAuthorizationCodeProvider.DEFAULT_AUTHORIZATION_TIMEOUT);
     }
 
     [Fact]
@@ -340,12 +304,7 @@ public sealed class GoogleCalendarOAuthTests
     public async Task MissingDesktopClientSecretUsesSanitizedDiagnosticCodeAsync()
     {
         const string SENSITIVE_DESCRIPTION = "client_secret is missing for account someone@example.com";
-        GoogleCalendarOAuthClient client = createInteractiveClient(
-            new TokenErrorHttpMessageHandler(
-                HttpStatusCode.BadRequest,
-                "{\"error\":\"invalid_request\",\"error_description\":\""
-                    + SENSITIVE_DESCRIPTION
-                    + "\"}"));
+        GoogleCalendarOAuthClient client = createInteractiveClient(new TokenErrorHttpMessageHandler(HttpStatusCode.BadRequest, "{\"error\":\"invalid_request\",\"error_description\":\"" + SENSITIVE_DESCRIPTION + "\"}"));
 
         GoogleOAuthAuthorizationResult result = await client.AuthorizeAsync(CancellationToken.None);
 
@@ -360,14 +319,9 @@ public sealed class GoogleCalendarOAuthTests
     [InlineData("invalid_grant", "oauth_invalid_grant")]
     [InlineData("unauthorized_client", "oauth_unauthorized_client")]
     [InlineData("access_denied", "oauth_access_denied")]
-    public async Task TokenEndpointErrorsUseStableDiagnosticCodesAsync(
-        string error,
-        string expectedDiagnosticCode)
+    public async Task TokenEndpointErrorsUseStableDiagnosticCodesAsync(string error, string expectedDiagnosticCode)
     {
-        GoogleCalendarOAuthClient client = createInteractiveClient(
-            new TokenErrorHttpMessageHandler(
-                HttpStatusCode.BadRequest,
-                "{\"error\":\"" + error + "\"}"));
+        GoogleCalendarOAuthClient client = createInteractiveClient(new TokenErrorHttpMessageHandler(HttpStatusCode.BadRequest, "{\"error\":\"" + error + "\"}"));
 
         GoogleOAuthAuthorizationResult result = await client.AuthorizeAsync(CancellationToken.None);
 
@@ -391,11 +345,7 @@ public sealed class GoogleCalendarOAuthTests
     {
         LoopbackGoogleOAuthAuthorizationCodeProvider provider = new LoopbackGoogleOAuthAuthorizationCodeProvider(new RecordingBrowserLauncher(), TimeSpan.FromMilliseconds(25.0));
 
-        GoogleOAuthAuthorizationCodeResult result = await provider.RequestCodeAsync(
-            new GoogleOAuthClientId("client.apps.googleusercontent.com"),
-            new GoogleOAuthState("opaque-state"),
-            new GooglePkceCodeChallenge("opaque-challenge"),
-            CancellationToken.None);
+        GoogleOAuthAuthorizationCodeResult result = await provider.RequestCodeAsync(new GoogleOAuthClientId("client.apps.googleusercontent.com"), new GoogleOAuthState("opaque-state"), new GooglePkceCodeChallenge("opaque-challenge"), CancellationToken.None);
 
         Assert.Equal(EGoogleOAuthAuthorizationStatus.Failed, result.Status);
         Assert.Equal("authorization_timeout", result.DiagnosticCodeOrNull);
@@ -407,14 +357,8 @@ public sealed class GoogleCalendarOAuthTests
         ProbeThenCallbackBrowserLauncher launcher = new ProbeThenCallbackBrowserLauncher(TestContext.Current.CancellationToken);
         LoopbackGoogleOAuthAuthorizationCodeProvider provider = new LoopbackGoogleOAuthAuthorizationCodeProvider(launcher, TimeSpan.FromSeconds(3.0));
 
-        GoogleOAuthAuthorizationCodeResult result = await provider.RequestCodeAsync(
-            new GoogleOAuthClientId("client.apps.googleusercontent.com"),
-            new GoogleOAuthState("opaque-state"),
-            new GooglePkceCodeChallenge("opaque-challenge"),
-            TestContext.Current.CancellationToken);
-        await launcher.CallbackTask.WaitAsync(
-            TimeSpan.FromSeconds(2.0),
-            TestContext.Current.CancellationToken);
+        GoogleOAuthAuthorizationCodeResult result = await provider.RequestCodeAsync(new GoogleOAuthClientId("client.apps.googleusercontent.com"), new GoogleOAuthState("opaque-state"), new GooglePkceCodeChallenge("opaque-challenge"), TestContext.Current.CancellationToken);
+        await launcher.CallbackTask.WaitAsync(TimeSpan.FromSeconds(2.0), TestContext.Current.CancellationToken);
 
         Assert.Equal(EGoogleOAuthAuthorizationStatus.Completed, result.Status);
         Assert.Equal("authorization-code", result.AuthorizationCodeOrNull?.Value);
@@ -434,28 +378,18 @@ public sealed class GoogleCalendarOAuthTests
         Assert.DoesNotContain("내보내기 완료", callbackBody);
         string callbackScript = extractInlineElement(callbackBody, "script");
         Assert.Contains("history.replaceState", callbackScript);
-        Assert.True(
-            callbackScript.Contains("'/'", StringComparison.Ordinal)
-                || callbackScript.Contains("\"/\"", StringComparison.Ordinal),
-            "The callback script must replace the sensitive URL with the loopback root.");
+        Assert.True(callbackScript.Contains("'/'", StringComparison.Ordinal) || callbackScript.Contains("\"/\"", StringComparison.Ordinal), "The callback script must replace the sensitive URL with the loopback root.");
         Assert.Contains("window.close", callbackScript);
         string callbackScriptHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(callbackScript)));
-        Assert.Contains(
-            "script-src 'sha256-" + callbackScriptHash + "'",
-            callbackContentSecurityPolicy);
+        Assert.Contains("script-src 'sha256-" + callbackScriptHash + "'", callbackContentSecurityPolicy);
         Assert.Contains("lang=\"ko\"", launcher.ProbeBodyOrNull);
         Assert.Contains("올바른 Google 로그인 응답을 기다리고 있습니다.", launcher.ProbeBodyOrNull);
         Assert.Contains("default-src 'none'", launcher.ProbeContentSecurityPolicyOrNull);
-        string probeScript = extractInlineElement(
-            Assert.IsType<string>(launcher.ProbeBodyOrNull),
-            "script");
+        string probeScript = extractInlineElement(Assert.IsType<string>(launcher.ProbeBodyOrNull), "script");
         Assert.Contains("history.replaceState", probeScript);
         Assert.DoesNotContain("window.close", probeScript);
-        string probeScriptHash = Convert.ToBase64String(
-            SHA256.HashData(Encoding.UTF8.GetBytes(probeScript)));
-        Assert.Contains(
-            "script-src 'sha256-" + probeScriptHash + "'",
-            launcher.ProbeContentSecurityPolicyOrNull);
+        string probeScriptHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(probeScript)));
+        Assert.Contains("script-src 'sha256-" + probeScriptHash + "'", launcher.ProbeContentSecurityPolicyOrNull);
     }
 
     [Fact]
@@ -464,14 +398,8 @@ public sealed class GoogleCalendarOAuthTests
         AccessDeniedCallbackBrowserLauncher launcher = new AccessDeniedCallbackBrowserLauncher(TestContext.Current.CancellationToken);
         LoopbackGoogleOAuthAuthorizationCodeProvider provider = new LoopbackGoogleOAuthAuthorizationCodeProvider(launcher, TimeSpan.FromSeconds(3.0));
 
-        GoogleOAuthAuthorizationCodeResult result = await provider.RequestCodeAsync(
-            new GoogleOAuthClientId("client.apps.googleusercontent.com"),
-            new GoogleOAuthState("opaque-state"),
-            new GooglePkceCodeChallenge("opaque-challenge"),
-            TestContext.Current.CancellationToken);
-        await launcher.CallbackTask.WaitAsync(
-            TimeSpan.FromSeconds(2.0),
-            TestContext.Current.CancellationToken);
+        GoogleOAuthAuthorizationCodeResult result = await provider.RequestCodeAsync(new GoogleOAuthClientId("client.apps.googleusercontent.com"), new GoogleOAuthState("opaque-state"), new GooglePkceCodeChallenge("opaque-challenge"), TestContext.Current.CancellationToken);
+        await launcher.CallbackTask.WaitAsync(TimeSpan.FromSeconds(2.0), TestContext.Current.CancellationToken);
 
         Assert.Equal(EGoogleOAuthAuthorizationStatus.Cancelled, result.Status);
         Assert.Equal("access_denied", result.DiagnosticCodeOrNull);
@@ -481,11 +409,8 @@ public sealed class GoogleCalendarOAuthTests
         string callbackScript = extractInlineElement(callbackBody, "script");
         Assert.Contains("history.replaceState", callbackScript);
         Assert.DoesNotContain("window.close", callbackScript);
-        string callbackScriptHash = Convert.ToBase64String(
-            SHA256.HashData(Encoding.UTF8.GetBytes(callbackScript)));
-        Assert.Contains(
-            "script-src 'sha256-" + callbackScriptHash + "'",
-            launcher.CallbackContentSecurityPolicyOrNull);
+        string callbackScriptHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(callbackScript)));
+        Assert.Contains("script-src 'sha256-" + callbackScriptHash + "'", launcher.CallbackContentSecurityPolicyOrNull);
     }
 
     private static string extractInlineElement(string html, string elementName)
@@ -493,25 +418,16 @@ public sealed class GoogleCalendarOAuthTests
         string openingTag = "<" + elementName + ">";
         string closingTag = "</" + elementName + ">";
         int contentStartIndex = html.IndexOf(openingTag, StringComparison.Ordinal);
-        Assert.True(
-            contentStartIndex >= 0,
-            "The callback page does not contain an inline " + elementName + ".");
+        Assert.True(contentStartIndex >= 0, "The callback page does not contain an inline " + elementName + ".");
         contentStartIndex += openingTag.Length;
         int contentEndIndex = html.IndexOf(closingTag, contentStartIndex, StringComparison.Ordinal);
-        Assert.True(
-            contentEndIndex >= contentStartIndex,
-            "The callback page contains an incomplete " + elementName + ".");
+        Assert.True(contentEndIndex >= contentStartIndex, "The callback page contains an incomplete " + elementName + ".");
         return html[contentStartIndex..contentEndIndex];
     }
 
     private static GoogleCalendarOAuthClient createInteractiveClient(HttpMessageHandler handler)
     {
-        return new GoogleCalendarOAuthClient(
-            new HttpClient(handler),
-            new FixedConfigurationProvider(
-                new GoogleCalendarOAuthConfiguration(
-                    new GoogleOAuthClientId("client.apps.googleusercontent.com"))),
-            new RecordingCodeProvider());
+        return new GoogleCalendarOAuthClient(new HttpClient(handler), new FixedConfigurationProvider(new GoogleCalendarOAuthConfiguration(new GoogleOAuthClientId("client.apps.googleusercontent.com"))), new RecordingCodeProvider());
     }
 
     private sealed class FixedConfigurationProvider
@@ -538,22 +454,12 @@ public sealed class GoogleCalendarOAuthTests
 
         public GooglePkceCodeChallenge? CodeChallengeOrNull { get; private set; }
 
-        public Task<GoogleOAuthAuthorizationCodeResult> RequestCodeAsync(
-            GoogleOAuthClientId clientId,
-            GoogleOAuthState state,
-            GooglePkceCodeChallenge codeChallenge,
-            CancellationToken cancellationToken)
+        public Task<GoogleOAuthAuthorizationCodeResult> RequestCodeAsync(GoogleOAuthClientId clientId, GoogleOAuthState state, GooglePkceCodeChallenge codeChallenge, CancellationToken cancellationToken)
         {
             RequestCount++;
             StateOrNull = state;
             CodeChallengeOrNull = codeChallenge;
-            return Task.FromResult(
-                GoogleOAuthAuthorizationCodeResult.Complete(
-                    new GoogleOAuthAuthorizationCode("authorization-code"),
-                    new GoogleOAuthRedirectUri(
-                        new Uri(
-                            "http://127.0.0.1:53122/",
-                            UriKind.Absolute))));
+            return Task.FromResult(GoogleOAuthAuthorizationCodeResult.Complete(new GoogleOAuthAuthorizationCode("authorization-code"), new GoogleOAuthRedirectUri(new Uri("http://127.0.0.1:53122/", UriKind.Absolute))));
         }
     }
 
@@ -572,9 +478,7 @@ public sealed class GoogleCalendarOAuthTests
             mCodeProvider = codeProvider;
         }
 
-        protected override async Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             RequestCount++;
             HttpContent? contentOrNull = request.Content;
@@ -588,10 +492,7 @@ public sealed class GoogleCalendarOAuthTests
             ClientSecretIncluded = parameters.ContainsKey("client_secret");
             byte[] digest = SHA256.HashData(Encoding.ASCII.GetBytes(parameters["code_verifier"]));
             string challenge = Convert.ToBase64String(digest).TrimEnd('=').Replace('+', '-').Replace('/', '_');
-            PkceVerified = string.Equals(
-                challenge,
-                mCodeProvider.CodeChallengeOrNull?.Value,
-                StringComparison.Ordinal);
+            PkceVerified = string.Equals(challenge, mCodeProvider.CodeChallengeOrNull?.Value, StringComparison.Ordinal);
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(
@@ -616,9 +517,7 @@ public sealed class GoogleCalendarOAuthTests
 
     private sealed class ThrowingHttpMessageHandler : HttpMessageHandler
     {
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             throw new InvalidOperationException("HTTP must not be called.");
         }
@@ -630,9 +529,7 @@ public sealed class GoogleCalendarOAuthTests
 
         public int ClientSecretParameterCount { get; private set; }
 
-        protected override async Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             HttpContent? contentOrNull = request.Content;
             if (contentOrNull == null)
@@ -664,46 +561,37 @@ public sealed class GoogleCalendarOAuthTests
 
     private sealed class TimeoutHttpMessageHandler : HttpMessageHandler
     {
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            return Task.FromException<HttpResponseMessage>(
-                new TaskCanceledException("Simulated HTTP timeout."));
+            return Task.FromException<HttpResponseMessage>(new TaskCanceledException("Simulated HTTP timeout."));
         }
     }
 
     private sealed class ServiceUnavailableHttpMessageHandler : HttpMessageHandler
     {
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            return Task.FromResult(
-                new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
-                {
-                    Content = new StringContent(
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
+            {
+                Content = new StringContent(
                         "{\"error\":\"temporarily_unavailable\"}",
                         Encoding.UTF8,
                         "application/json"),
-                });
+            });
         }
     }
 
     private sealed class OversizedTokenResponseHttpMessageHandler : HttpMessageHandler
     {
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            return Task.FromResult(
-                new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new StringContent(
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(
                         new string('x', 70_000),
                         Encoding.UTF8,
                         "application/json"),
-                });
+            });
         }
     }
 
@@ -719,28 +607,21 @@ public sealed class GoogleCalendarOAuthTests
             mResponseBody = responseBody;
         }
 
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            return Task.FromResult(
-                new HttpResponseMessage(mStatusCode)
-                {
-                    Content = new StringContent(
+            return Task.FromResult(new HttpResponseMessage(mStatusCode)
+            {
+                Content = new StringContent(
                         mResponseBody,
                         Encoding.UTF8,
                         "application/json"),
-                });
+            });
         }
     }
 
     private sealed class ThrowingCodeProvider : IGoogleOAuthAuthorizationCodeProvider
     {
-        public Task<GoogleOAuthAuthorizationCodeResult> RequestCodeAsync(
-            GoogleOAuthClientId clientId,
-            GoogleOAuthState state,
-            GooglePkceCodeChallenge codeChallenge,
-            CancellationToken cancellationToken)
+        public Task<GoogleOAuthAuthorizationCodeResult> RequestCodeAsync(GoogleOAuthClientId clientId, GoogleOAuthState state, GooglePkceCodeChallenge codeChallenge, CancellationToken cancellationToken)
         {
             throw new InvalidOperationException("The browser flow must not be called.");
         }
@@ -824,9 +705,7 @@ public sealed class GoogleCalendarOAuthTests
                 UseProxy = false,
             })
             using (HttpClient client = new HttpClient(handler))
-            using (HttpResponseMessage probeResponse = await client.GetAsync(
-                new Uri(authorityUri, "/probe"),
-                mCancellationToken))
+            using (HttpResponseMessage probeResponse = await client.GetAsync(new Uri(authorityUri, "/probe"), mCancellationToken))
             {
                 ProbeStatusCodeOrNull = probeResponse.StatusCode;
                 ProbeBodyOrNull = await probeResponse.Content.ReadAsStringAsync(mCancellationToken);
@@ -840,18 +719,14 @@ public sealed class GoogleCalendarOAuthTests
                 UseProxy = false,
             })
             using (HttpClient client = new HttpClient(handler))
-            using (HttpResponseMessage callbackResponse = await client.GetAsync(
-                new Uri(redirectUri.AbsoluteUri + callbackQuery, UriKind.Absolute),
-                mCancellationToken))
+            using (HttpResponseMessage callbackResponse = await client.GetAsync(new Uri(redirectUri.AbsoluteUri + callbackQuery, UriKind.Absolute), mCancellationToken))
             {
                 CallbackStatusCodeOrNull = callbackResponse.StatusCode;
                 CallbackRedirectUriOrNull = callbackResponse.Headers.Location;
                 CallbackCacheControlOrNull = getHeaderValueOrNull(callbackResponse, "Cache-Control");
                 CallbackReferrerPolicyOrNull = getHeaderValueOrNull(callbackResponse, "Referrer-Policy");
                 CallbackBodyOrNull = await callbackResponse.Content.ReadAsStringAsync(mCancellationToken);
-                CallbackContentSecurityPolicyOrNull = getHeaderValueOrNull(
-                    callbackResponse,
-                    "Content-Security-Policy");
+                CallbackContentSecurityPolicyOrNull = getHeaderValueOrNull(callbackResponse, "Content-Security-Policy");
             }
         }
 
@@ -867,18 +742,13 @@ public sealed class GoogleCalendarOAuthTests
             foreach (string pair in query.Split('&'))
             {
                 string[] parts = pair.Split('=', 2);
-                if (parts.Length == 2
-                    && string.Equals(
-                        Uri.UnescapeDataString(parts[0]),
-                        parameterName,
-                        StringComparison.Ordinal))
+                if (parts.Length == 2 && string.Equals(Uri.UnescapeDataString(parts[0]), parameterName, StringComparison.Ordinal))
                 {
                     return Uri.UnescapeDataString(parts[1]);
                 }
             }
 
-            throw new InvalidOperationException(
-                "The authorization URL does not contain the expected query parameter.");
+            throw new InvalidOperationException("The authorization URL does not contain the expected query parameter.");
         }
     }
 
@@ -895,8 +765,7 @@ public sealed class GoogleCalendarOAuthTests
 
         public string? CallbackContentSecurityPolicyOrNull { get; private set; }
 
-        public AccessDeniedCallbackBrowserLauncher(
-            CancellationToken cancellationToken)
+        public AccessDeniedCallbackBrowserLauncher(CancellationToken cancellationToken)
         {
             mCancellationToken = cancellationToken;
         }
@@ -908,67 +777,42 @@ public sealed class GoogleCalendarOAuthTests
 
         private async Task sendCallbackAsync(Uri authorizationUri)
         {
-            string redirectUriValue = getQueryParameter(
-                authorizationUri,
-                "redirect_uri");
+            string redirectUriValue = getQueryParameter(authorizationUri, "redirect_uri");
             Uri redirectUri = new Uri(redirectUriValue, UriKind.Absolute);
-            Uri callbackUri = new Uri(
-                redirectUri.AbsoluteUri
-                    + "?error=access_denied&state=opaque-state",
-                UriKind.Absolute);
+            Uri callbackUri = new Uri(redirectUri.AbsoluteUri + "?error=access_denied&state=opaque-state", UriKind.Absolute);
             using (HttpClientHandler handler = new HttpClientHandler
             {
                 AllowAutoRedirect = false,
                 UseProxy = false,
             })
             using (HttpClient client = new HttpClient(handler))
-            using (HttpResponseMessage callbackResponse = await client.GetAsync(
-                callbackUri,
-                mCancellationToken))
+            using (HttpResponseMessage callbackResponse = await client.GetAsync(callbackUri, mCancellationToken))
             {
                 CallbackStatusCodeOrNull = callbackResponse.StatusCode;
-                CallbackBodyOrNull = await callbackResponse.Content
-                    .ReadAsStringAsync(mCancellationToken);
-                CallbackContentSecurityPolicyOrNull = getHeaderValueOrNull(
-                    callbackResponse,
-                    "Content-Security-Policy");
+                CallbackBodyOrNull = await callbackResponse.Content.ReadAsStringAsync(mCancellationToken);
+                CallbackContentSecurityPolicyOrNull = getHeaderValueOrNull(callbackResponse, "Content-Security-Policy");
             }
         }
 
-        private static string? getHeaderValueOrNull(
-            HttpResponseMessage response,
-            string headerName)
+        private static string? getHeaderValueOrNull(HttpResponseMessage response, string headerName)
         {
             IEnumerable<string>? values;
-            return response.Headers.TryGetValues(headerName, out values)
-                ? string.Join(", ", values)
-                : null;
+            return response.Headers.TryGetValues(headerName, out values) ? string.Join(", ", values) : null;
         }
 
-        private static string getQueryParameter(
-            Uri uri,
-            string parameterName)
+        private static string getQueryParameter(Uri uri, string parameterName)
         {
-            string query = uri.Query.StartsWith(
-                "?",
-                StringComparison.Ordinal)
-                    ? uri.Query[1..]
-                    : uri.Query;
+            string query = uri.Query.StartsWith("?", StringComparison.Ordinal) ? uri.Query[1..] : uri.Query;
             foreach (string pair in query.Split('&'))
             {
                 string[] parts = pair.Split('=', 2);
-                if (parts.Length == 2
-                    && string.Equals(
-                        Uri.UnescapeDataString(parts[0]),
-                        parameterName,
-                        StringComparison.Ordinal))
+                if (parts.Length == 2 && string.Equals(Uri.UnescapeDataString(parts[0]), parameterName, StringComparison.Ordinal))
                 {
                     return Uri.UnescapeDataString(parts[1]);
                 }
             }
 
-            throw new InvalidOperationException(
-                "The authorization URL does not contain the expected query parameter.");
+            throw new InvalidOperationException("The authorization URL does not contain the expected query parameter.");
         }
     }
 }

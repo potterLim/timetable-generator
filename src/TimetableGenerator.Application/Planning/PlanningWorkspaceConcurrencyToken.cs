@@ -23,10 +23,7 @@ public readonly record struct PlanningWorkspaceConcurrencyToken
     {
         if (value < MISSING_WORKSPACE_GENERATION)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "Planning workspace concurrency tokens cannot be negative.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Planning workspace concurrency tokens cannot be negative.");
         }
 
         Value = value;

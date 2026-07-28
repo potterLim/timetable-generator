@@ -208,10 +208,41 @@
                       AutomationProperties.AccessibilityView="Raw"
                       IsHitTestVisible="False">
                     <Image
-                        x:Name="ExportAllPngLogoImage"
+                        x:Name="ExportAllPngBackImage"
                         Classes="export-menu-logo"
-                        Width="24"
-                        Height="24"
+                        Width="12"
+                        Height="12"
+                        Margin="1,2,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        RenderTransformOrigin="50%,50%"
+                        Source="/Assets/Export/PngImageIcon.png">
+                      <Image.RenderTransform>
+                        <RotateTransform Angle="-8" />
+                      </Image.RenderTransform>
+                    </Image>
+                    <Image
+                        x:Name="ExportAllPngMiddleImage"
+                        Classes="export-menu-logo"
+                        Width="12"
+                        Height="12"
+                        Margin="11,2,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        RenderTransformOrigin="50%,50%"
+                        Source="/Assets/Export/PngImageIcon.png">
+                      <Image.RenderTransform>
+                        <RotateTransform Angle="8" />
+                      </Image.RenderTransform>
+                    </Image>
+                    <Image
+                        x:Name="ExportAllPngFrontImage"
+                        Classes="export-menu-logo"
+                        Width="16"
+                        Height="16"
+                        Margin="4,8,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
                         Source="/Assets/Export/PngImageIcon.png" />
                   </Grid>
                 </MenuItem.Icon>

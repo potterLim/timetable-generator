@@ -19,9 +19,7 @@ internal static class AcademicTermPlanNameFactory
         return new PlanName(academicTerm.Id + PLAN_NAME_SUFFIX);
     }
 
-    public static PlanName FindAvailablePlanName(
-        AcademicTerm academicTerm,
-        IReadOnlyList<PlanningPlan> existingPlans)
+    public static PlanName FindAvailablePlanName(AcademicTerm academicTerm, IReadOnlyList<PlanningPlan> existingPlans)
     {
         requireValidAcademicTerm(academicTerm);
         if (existingPlans == null)
@@ -52,8 +50,7 @@ internal static class AcademicTermPlanNameFactory
             string planNumberText = planNumber.ToString(CultureInfo.InvariantCulture);
             string candidateNameValue = initialPlanName.Value + " (" + planNumberText + ")";
             string legacyCandidateNameValue = initialPlanName.Value + "(" + planNumberText + ")";
-            if (existingPlanNames.Contains(candidateNameValue) == false
-                && existingPlanNames.Contains(legacyCandidateNameValue) == false)
+            if (existingPlanNames.Contains(candidateNameValue) == false && existingPlanNames.Contains(legacyCandidateNameValue) == false)
             {
                 return new PlanName(candidateNameValue);
             }

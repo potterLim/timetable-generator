@@ -60,8 +60,7 @@ internal sealed class HandongCatalogNormalizer
                 ++instructorUnconfirmedCount;
             }
 
-            if (instructorAssignment.Status == EInstructorAssignmentStatus.Confirmed &&
-                instructorAssignment.GetAdditionalInstructorCount().Value > 0)
+            if (instructorAssignment.Status == EInstructorAssignmentStatus.Confirmed && instructorAssignment.GetAdditionalInstructorCount().Value > 0)
             {
                 ++multiInstructorDisplayCount;
             }
@@ -90,10 +89,7 @@ internal sealed class HandongCatalogNormalizer
         return new CourseCatalog(courses, offerings, dataQuality);
     }
 
-    private static void addOrValidateCourse(
-        IDictionary<CourseCode, CatalogCourse> coursesByCode,
-        CatalogCourse candidateCourse,
-        ICollection<CatalogManualReview> manualReviews)
+    private static void addOrValidateCourse(IDictionary<CourseCode, CatalogCourse> coursesByCode, CatalogCourse candidateCourse, ICollection<CatalogManualReview> manualReviews)
     {
         CatalogCourse? existingCourseOrNull;
         bool hasExistingCourse = coursesByCode.TryGetValue(candidateCourse.Code, out existingCourseOrNull);
@@ -111,18 +107,12 @@ internal sealed class HandongCatalogNormalizer
         coursesByCode.Add(candidateCourse.Code, candidateCourse);
         if (candidateCourse.EnglishName.Value.Contains('?', StringComparison.Ordinal))
         {
-            CatalogManualReview manualReview = new CatalogManualReview(
-                candidateCourse.Code,
-                EManualReviewField.EnglishCourseName,
-                EManualReviewReason.UnexpectedQuestionMarkInSource,
-                new ManualReviewSourceValue(candidateCourse.EnglishName.Value));
+            CatalogManualReview manualReview = new CatalogManualReview(candidateCourse.Code, EManualReviewField.EnglishCourseName, EManualReviewReason.UnexpectedQuestionMarkInSource, new ManualReviewSourceValue(candidateCourse.EnglishName.Value));
             manualReviews.Add(manualReview);
         }
     }
 
-    private static void validateConsistentCourse(
-        CatalogCourse existingCourse,
-        CatalogCourse candidateCourse)
+    private static void validateConsistentCourse(CatalogCourse existingCourse, CatalogCourse candidateCourse)
     {
         if (existingCourse.KoreanName != candidateCourse.KoreanName)
         {
@@ -140,21 +130,12 @@ internal sealed class HandongCatalogNormalizer
         }
     }
 
-    private static ConflictingCourseDefinitionException createCourseConflict(
-        CatalogCourse existingCourse,
-        CatalogCourse candidateCourse,
-        ECourseDefinitionField field)
+    private static ConflictingCourseDefinitionException createCourseConflict(CatalogCourse existingCourse, CatalogCourse candidateCourse, ECourseDefinitionField field)
     {
-        return new ConflictingCourseDefinitionException(
-            existingCourse.Code,
-            field,
-            existingCourse.FirstSourceRecordNumber,
-            candidateCourse.FirstSourceRecordNumber);
+        return new ConflictingCourseDefinitionException(existingCourse.Code, field, existingCourse.FirstSourceRecordNumber, candidateCourse.FirstSourceRecordNumber);
     }
 
-    private static void addOffering(
-        IDictionary<CourseOfferingKey, CatalogOffering> offeringsByKey,
-        CatalogOffering offering)
+    private static void addOffering(IDictionary<CourseOfferingKey, CatalogOffering> offeringsByKey, CatalogOffering offering)
     {
         CatalogOffering? existingOfferingOrNull;
         bool hasExistingOffering = offeringsByKey.TryGetValue(offering.Key, out existingOfferingOrNull);
@@ -165,10 +146,7 @@ internal sealed class HandongCatalogNormalizer
                 throw new InvalidOperationException("The offering lookup returned a null offering for an existing key.");
             }
 
-            throw new DuplicateCourseOfferingException(
-                offering.Key,
-                existingOfferingOrNull.SourceRecordNumber,
-                offering.SourceRecordNumber);
+            throw new DuplicateCourseOfferingException(offering.Key, existingOfferingOrNull.SourceRecordNumber, offering.SourceRecordNumber);
         }
 
         offeringsByKey.Add(offering.Key, offering);

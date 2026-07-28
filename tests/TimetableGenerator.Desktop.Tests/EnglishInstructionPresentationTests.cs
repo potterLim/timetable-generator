@@ -111,9 +111,7 @@ public sealed class EnglishInstructionPresentationTests
             option =>
             {
                 Assert.True(option.IsDirectAdd);
-                Assert.Equal(
-                    new EnglishInstructionPercentage(100m),
-                    option.ExactEnglishInstructionPercentageOrNull);
+                Assert.Equal(new EnglishInstructionPercentage(100m), option.ExactEnglishInstructionPercentageOrNull);
                 Assert.EndsWith("영어 100%", option.DisplayName);
                 Assert.Contains("영어 강의 비율 100%", option.AccessibleName, StringComparison.Ordinal);
             });
@@ -199,11 +197,7 @@ public sealed class EnglishInstructionPresentationTests
         CourseCatalogProjection catalogProjection = CourseCatalogProjector.Project(CatalogProjectionTestFixture.CreateDocument());
         CatalogCourseProjection sourceCourse = catalogProjection.Courses.Single(
             candidate => candidate.Course.Code.Value == "BFT30009");
-        CatalogCourseProjection singleOfferingCourse =
-            new CatalogCourseProjection(
-                sourceCourse.Course,
-                sourceCourse.Accent,
-                new CatalogOfferingProjection[] { sourceCourse.Offerings[0] });
+        CatalogCourseProjection singleOfferingCourse = new CatalogCourseProjection(sourceCourse.Course, sourceCourse.Accent, new CatalogOfferingProjection[] { sourceCourse.Offerings[0] });
         CatalogCourseProjection projectedCourse = replaceEnglishPercentages(
             singleOfferingCourse,
             new EnglishInstructionPercentage[]
@@ -213,9 +207,7 @@ public sealed class EnglishInstructionPresentationTests
         CourseSearchItem course = new CourseSearchItem(projectedCourse);
 
         Assert.True(course.HasSingleOfferingDetails);
-        Assert.Equal(
-            course.InstructorCreditDisplayText + " · 영어 12.5%",
-            course.CourseBrowserMetadataDisplayText);
+        Assert.Equal(course.InstructorCreditDisplayText + " · 영어 12.5%", course.CourseBrowserMetadataDisplayText);
         Assert.Equal("영어 강의 비율 12.5%", course.EnglishInstructionAccessibleText);
         Assert.Contains("영어 강의 비율 12.5%", course.CourseBrowserAccessibleName, StringComparison.Ordinal);
     }
@@ -321,15 +313,11 @@ public sealed class EnglishInstructionPresentationTests
         }
     }
 
-    private static CatalogCourseProjection replaceEnglishPercentages(
-        CatalogCourseProjection sourceCourse,
-        IReadOnlyList<EnglishInstructionPercentage> percentages)
+    private static CatalogCourseProjection replaceEnglishPercentages(CatalogCourseProjection sourceCourse, IReadOnlyList<EnglishInstructionPercentage> percentages)
     {
         if (sourceCourse.Offerings.Count != percentages.Count)
         {
-            throw new ArgumentException(
-                "Each projected offering requires one English instruction percentage.",
-                nameof(percentages));
+            throw new ArgumentException("Each projected offering requires one English instruction percentage.", nameof(percentages));
         }
 
         List<CatalogOfferingProjection> offerings = new List<CatalogOfferingProjection>();

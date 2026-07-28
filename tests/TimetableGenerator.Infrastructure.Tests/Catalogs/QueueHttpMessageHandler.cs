@@ -39,9 +39,7 @@ internal sealed class QueueHttpMessageHandler : HttpMessageHandler
         mRequestedUris = new List<Uri>();
     }
 
-    protected override Task<HttpResponseMessage> SendAsync(
-        HttpRequestMessage request,
-        CancellationToken cancellationToken)
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (request.RequestUri == null)

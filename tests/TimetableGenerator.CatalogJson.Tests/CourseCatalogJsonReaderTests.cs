@@ -41,10 +41,7 @@ public sealed class CourseCatalogJsonReaderTests
     public void ReadRejectsUnknownDeepProperty()
     {
         byte[] validBytes = CatalogJsonTestDocuments.CreateValidCatalogBytes();
-        byte[] invalidBytes = CatalogJsonTestDocuments.Replace(
-            validBytes,
-            "\"additionalInstructorCount\": 1",
-            "\"additionalInstructorCount\": 1,\n        \"unexpected\": true");
+        byte[] invalidBytes = CatalogJsonTestDocuments.Replace(validBytes, "\"additionalInstructorCount\": 1", "\"additionalInstructorCount\": 1,\n        \"unexpected\": true");
 
         CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(
             () => CourseCatalogJsonReader.Read(invalidBytes));
@@ -56,10 +53,7 @@ public sealed class CourseCatalogJsonReaderTests
     public void ReadRejectsDuplicateDeepProperty()
     {
         byte[] validBytes = CatalogJsonTestDocuments.CreateValidCatalogBytes();
-        byte[] invalidBytes = CatalogJsonTestDocuments.Replace(
-            validBytes,
-            "\"period\": 1",
-            "\"period\": 1,\n            \"period\": 1");
+        byte[] invalidBytes = CatalogJsonTestDocuments.Replace(validBytes, "\"period\": 1", "\"period\": 1,\n            \"period\": 1");
 
         CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(
             () => CourseCatalogJsonReader.Read(invalidBytes));
@@ -72,10 +66,7 @@ public sealed class CourseCatalogJsonReaderTests
     public void ReadRejectsUnsupportedCatalogSchemaVersion()
     {
         byte[] validBytes = CatalogJsonTestDocuments.CreateValidCatalogBytes();
-        byte[] invalidBytes = CatalogJsonTestDocuments.Replace(
-            validBytes,
-            "\"schemaVersion\": 1",
-            "\"schemaVersion\": 2");
+        byte[] invalidBytes = CatalogJsonTestDocuments.Replace(validBytes, "\"schemaVersion\": 1", "\"schemaVersion\": 2");
 
         CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(
             () => CourseCatalogJsonReader.Read(invalidBytes));
@@ -87,10 +78,7 @@ public sealed class CourseCatalogJsonReaderTests
     public void ReadRejectsDeclaredCourseCountMismatch()
     {
         byte[] validBytes = CatalogJsonTestDocuments.CreateValidCatalogBytes();
-        byte[] invalidBytes = CatalogJsonTestDocuments.Replace(
-            validBytes,
-            "\"courses\": 1,",
-            "\"courses\": 2,");
+        byte[] invalidBytes = CatalogJsonTestDocuments.Replace(validBytes, "\"courses\": 1,", "\"courses\": 2,");
 
         CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(
             () => CourseCatalogJsonReader.Read(invalidBytes));
@@ -103,10 +91,7 @@ public sealed class CourseCatalogJsonReaderTests
     public void ReadRejectsDataQualityStatusMismatch()
     {
         byte[] validBytes = CatalogJsonTestDocuments.CreateValidCatalogBytes();
-        byte[] invalidBytes = CatalogJsonTestDocuments.Replace(
-            validBytes,
-            "\"roomNotProvided\": 1,",
-            "\"roomNotProvided\": 0,");
+        byte[] invalidBytes = CatalogJsonTestDocuments.Replace(validBytes, "\"roomNotProvided\": 1,", "\"roomNotProvided\": 0,");
 
         CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(
             () => CourseCatalogJsonReader.Read(invalidBytes));
@@ -118,10 +103,7 @@ public sealed class CourseCatalogJsonReaderTests
     public void ReadRejectsScheduleStatusAndValueMismatch()
     {
         byte[] validBytes = CatalogJsonTestDocuments.CreateValidCatalogBytes();
-        byte[] invalidBytes = CatalogJsonTestDocuments.Replace(
-            validBytes,
-            "\"status\": \"notProvided\",\n        \"sourceTextKo\": null,",
-            "\"status\": \"scheduled\",\n        \"sourceTextKo\": null,");
+        byte[] invalidBytes = CatalogJsonTestDocuments.Replace(validBytes, "\"status\": \"notProvided\",\n        \"sourceTextKo\": null,", "\"status\": \"scheduled\",\n        \"sourceTextKo\": null,");
 
         CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(
             () => CourseCatalogJsonReader.Read(invalidBytes));
@@ -138,10 +120,7 @@ public sealed class CourseCatalogJsonReaderTests
         CatalogFileSize catalogSize = new CatalogFileSize(catalogBytes.Length);
         byte[] indexBytes = CatalogJsonTestDocuments.CreateValidIndexBytes(catalogSize, catalogSha256);
         CatalogIndexEntry indexEntry = CatalogIndexJsonReader.Read(indexBytes).FindDefaultEntry();
-        byte[] changedCatalogBytes = CatalogJsonTestDocuments.Replace(
-            catalogBytes,
-            "Data Structures",
-            "Changed Data Structures");
+        byte[] changedCatalogBytes = CatalogJsonTestDocuments.Replace(catalogBytes, "Data Structures", "Changed Data Structures");
 
         CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(
             () => CourseCatalogJsonReader.ReadAndVerify(changedCatalogBytes, indexEntry));
@@ -185,11 +164,7 @@ public sealed class CourseCatalogJsonReaderTests
             "catalog",
             "v1");
         string indexPath = Path.Combine(deploymentRoot, "index.json");
-        string catalogPath = Path.Combine(
-            deploymentRoot,
-            "handong-global-university",
-            "2026-2",
-            "catalog-r0001.json");
+        string catalogPath = Path.Combine(deploymentRoot, "handong-global-university", "2026-2", "catalog-r0001.json");
         if (File.Exists(indexPath) == false || File.Exists(catalogPath) == false)
         {
             return;
@@ -199,17 +174,11 @@ public sealed class CourseCatalogJsonReaderTests
         byte[] catalogBytes = File.ReadAllBytes(catalogPath);
         CatalogIndexEntry indexEntry = CatalogIndexJsonReader.Read(indexBytes).FindDefaultEntry();
 
-        CourseCatalogDocument firstDocument = CourseCatalogJsonReader.ReadAndVerify(
-            catalogBytes,
-            indexEntry);
-        CourseCatalogDocument secondDocument = CourseCatalogJsonReader.ReadAndVerify(
-            catalogBytes,
-            indexEntry);
+        CourseCatalogDocument firstDocument = CourseCatalogJsonReader.ReadAndVerify(catalogBytes, indexEntry);
+        CourseCatalogDocument secondDocument = CourseCatalogJsonReader.ReadAndVerify(catalogBytes, indexEntry);
 
         Assert.AreEqual(972_395L, indexEntry.File.Size.Value);
-        Assert.AreEqual(
-            "fb66ad08f8f884dfa625910ec78bcaae7d445709be97e13a37e4e7761329097b",
-            indexEntry.File.Sha256.HexValue);
+        Assert.AreEqual("fb66ad08f8f884dfa625910ec78bcaae7d445709be97e13a37e4e7761329097b", indexEntry.File.Sha256.HexValue);
         Assert.HasCount(515, firstDocument.Catalog.Courses);
         Assert.HasCount(742, firstDocument.Catalog.Offerings);
         Assert.AreEqual(657, firstDocument.Counts.ScheduledOfferingCount.Value);
@@ -218,9 +187,7 @@ public sealed class CourseCatalogJsonReaderTests
         Assert.AreEqual(92, firstDocument.DataQuality.RoomNotProvidedCount.Value);
         Assert.HasCount(742, firstDocument.OfferingMetadata);
         Assert.AreEqual(firstDocument.Catalog.Id, secondDocument.Catalog.Id);
-        Assert.AreEqual(
-            firstDocument.OfferingMetadata[0].OfferingId,
-            secondDocument.OfferingMetadata[0].OfferingId);
+        Assert.AreEqual(firstDocument.OfferingMetadata[0].OfferingId, secondDocument.OfferingMetadata[0].OfferingId);
     }
 
     private static string? findRepositoryRootOrNull()

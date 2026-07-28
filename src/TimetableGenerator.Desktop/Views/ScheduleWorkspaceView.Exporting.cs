@@ -511,8 +511,7 @@ internal sealed partial class ScheduleWorkspaceView
 
     private void onWorkspacePropertyChanged(object? senderOrNull, PropertyChangedEventArgs eventArgs)
     {
-        if (ReferenceEquals(senderOrNull, mObservedWorkspaceOrNull) == false
-            || string.Equals(eventArgs.PropertyName, nameof(PlannerWorkspaceViewModel.DisplayedScheduleBoard), StringComparison.Ordinal) == false)
+        if (ReferenceEquals(senderOrNull, mObservedWorkspaceOrNull) == false || string.Equals(eventArgs.PropertyName, nameof(PlannerWorkspaceViewModel.DisplayedScheduleBoard), StringComparison.Ordinal) == false)
         {
             return;
         }

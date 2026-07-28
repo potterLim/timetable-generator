@@ -12,11 +12,7 @@ internal sealed class CatalogManualReview
 
     public ManualReviewSourceValue SourceValue { get; }
 
-    public CatalogManualReview(
-        CourseCode courseCode,
-        EManualReviewField field,
-        EManualReviewReason reason,
-        ManualReviewSourceValue sourceValue)
+    public CatalogManualReview(CourseCode courseCode, EManualReviewField field, EManualReviewReason reason, ManualReviewSourceValue sourceValue)
     {
         if (courseCode == null)
         {

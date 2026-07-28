@@ -23,11 +23,7 @@ internal sealed class RecurringCalendarEvent
         }
     }
 
-    public RecurringCalendarEvent(
-        CalendarEventUid uid,
-        CalendarEventContent content,
-        DailyTimeRange timeRange,
-        IEnumerable<EDay> days)
+    public RecurringCalendarEvent(CalendarEventUid uid, CalendarEventContent content, DailyTimeRange timeRange, IEnumerable<EDay> days)
     {
         if (uid.IsValid == false)
         {
@@ -41,9 +37,7 @@ internal sealed class RecurringCalendarEvent
 
         if (timeRange.IsValid == false)
         {
-            throw new ArgumentException(
-                "Recurring calendar events require a valid daily time range.",
-                nameof(timeRange));
+            throw new ArgumentException("Recurring calendar events require a valid daily time range.", nameof(timeRange));
         }
 
         if (days == null)
@@ -66,9 +60,7 @@ internal sealed class RecurringCalendarEvent
             ensureSupportedDay(day, days);
             if (uniqueDays.Add(day) == false)
             {
-                throw new ArgumentException(
-                    "Recurring calendar events cannot contain duplicate weekdays.",
-                    nameof(days));
+                throw new ArgumentException("Recurring calendar events cannot contain duplicate weekdays.", nameof(days));
             }
 
             copiedDays.Add(day);
@@ -76,9 +68,7 @@ internal sealed class RecurringCalendarEvent
 
         if (copiedDays.Count == 0)
         {
-            throw new ArgumentException(
-                "Recurring calendar events require at least one weekday.",
-                nameof(days));
+            throw new ArgumentException("Recurring calendar events require at least one weekday.", nameof(days));
         }
 
         copiedDays.Sort();
@@ -98,9 +88,7 @@ internal sealed class RecurringCalendarEvent
             case EDay.Sunday:
                 return;
             default:
-                throw new ArgumentException(
-                    "Recurring calendar events require weekdays from Monday through Sunday.",
-                    nameof(days));
+                throw new ArgumentException("Recurring calendar events require weekdays from Monday through Sunday.", nameof(days));
         }
     }
 }

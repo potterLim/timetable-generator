@@ -22,9 +22,7 @@ internal sealed class CancellationHttpMessageHandler : HttpMessageHandler
         mRequestStartedSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 
-    protected override async Task<HttpResponseMessage> SendAsync(
-        HttpRequestMessage request,
-        CancellationToken cancellationToken)
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         mRequestStartedSource.TrySetResult();
         await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);

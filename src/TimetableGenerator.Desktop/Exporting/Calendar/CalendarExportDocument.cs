@@ -65,8 +65,7 @@ internal sealed class CalendarExportDocument
         mEvents = copyAndValidateEvents(events);
     }
 
-    private static IReadOnlyList<RecurringCalendarEvent> copyAndValidateEvents(
-        IEnumerable<RecurringCalendarEvent> events)
+    private static IReadOnlyList<RecurringCalendarEvent> copyAndValidateEvents(IEnumerable<RecurringCalendarEvent> events)
     {
         List<RecurringCalendarEvent> copiedEvents = new List<RecurringCalendarEvent>();
         HashSet<CalendarEventUid> uniqueUids = new HashSet<CalendarEventUid>();
@@ -74,16 +73,12 @@ internal sealed class CalendarExportDocument
         {
             if (calendarEvent == null)
             {
-                throw new ArgumentException(
-                    "Calendar export documents cannot contain null events.",
-                    nameof(events));
+                throw new ArgumentException("Calendar export documents cannot contain null events.", nameof(events));
             }
 
             if (uniqueUids.Add(calendarEvent.Uid) == false)
             {
-                throw new ArgumentException(
-                    "Calendar export documents cannot contain duplicate event UIDs.",
-                    nameof(events));
+                throw new ArgumentException("Calendar export documents cannot contain duplicate event UIDs.", nameof(events));
             }
 
             copiedEvents.Add(calendarEvent);

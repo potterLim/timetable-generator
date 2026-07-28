@@ -14,10 +14,7 @@ public sealed class PlanningWorkspaceTests
         PlanningPlan firstPlan = createPlan(PlanId.CreateNew(), "공강 중심");
         PlanningPlan secondPlan = createPlan(PlanId.CreateNew(), "전공 중심");
 
-        PlanningWorkspace workspace = new PlanningWorkspace(
-            firstPlan.CatalogBinding,
-            secondPlan.Id,
-            new PlanningPlan[] { firstPlan, secondPlan });
+        PlanningWorkspace workspace = new PlanningWorkspace(firstPlan.CatalogBinding, secondPlan.Id, new PlanningPlan[] { firstPlan, secondPlan });
 
         Assert.AreSame(firstPlan.CatalogBinding, workspace.CatalogBinding);
         Assert.AreEqual(secondPlan.Id, workspace.ActivePlanIdOrNull);
@@ -32,10 +29,7 @@ public sealed class PlanningWorkspaceTests
     {
         PlanCatalogBinding catalogBinding = createCatalogBinding();
 
-        PlanningWorkspace workspace = new PlanningWorkspace(
-            catalogBinding,
-            null,
-            Array.Empty<PlanningPlan>());
+        PlanningWorkspace workspace = new PlanningWorkspace(catalogBinding, null, Array.Empty<PlanningPlan>());
 
         Assert.AreSame(catalogBinding, workspace.CatalogBinding);
         Assert.IsNull(workspace.ActivePlanIdOrNull);
@@ -131,19 +125,9 @@ public sealed class PlanningWorkspaceTests
         return createPlan(planId, planName, createCatalogBinding());
     }
 
-    private static PlanningPlan createPlan(
-        PlanId planId,
-        string planName,
-        PlanCatalogBinding catalogBinding)
+    private static PlanningPlan createPlan(PlanId planId, string planName, PlanCatalogBinding catalogBinding)
     {
-        return new PlanningPlan(
-            planId,
-            new PlanName(planName),
-            catalogBinding,
-            new PlanningPlanContent(
-                Array.Empty<CourseChoiceGroup>(),
-                Array.Empty<UnscheduledOfferingSelection>(),
-                Array.Empty<PersonalSchedule>()));
+        return new PlanningPlan(planId, new PlanName(planName), catalogBinding, new PlanningPlanContent(Array.Empty<CourseChoiceGroup>(), Array.Empty<UnscheduledOfferingSelection>(), Array.Empty<PersonalSchedule>()));
     }
 
     private static PlanCatalogBinding createCatalogBinding()

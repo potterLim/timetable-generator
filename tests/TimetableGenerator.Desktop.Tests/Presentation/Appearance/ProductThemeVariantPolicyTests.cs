@@ -14,28 +14,19 @@ public sealed class ProductThemeVariantPolicyTests
     [Fact]
     public void SystemPreferenceMapsToDefaultVariant()
     {
-        Assert.Same(
-            ThemeVariant.Default,
-            ProductThemeVariantPolicy.FindThemeVariant(
-                EProductThemePreference.System));
+        Assert.Same(ThemeVariant.Default, ProductThemeVariantPolicy.FindThemeVariant(EProductThemePreference.System));
     }
 
     [Fact]
     public void LightPreferenceMapsToLightVariant()
     {
-        Assert.Same(
-            ThemeVariant.Light,
-            ProductThemeVariantPolicy.FindThemeVariant(
-                EProductThemePreference.Light));
+        Assert.Same(ThemeVariant.Light, ProductThemeVariantPolicy.FindThemeVariant(EProductThemePreference.Light));
     }
 
     [Fact]
     public void DarkPreferenceMapsToDarkVariant()
     {
-        Assert.Same(
-            ThemeVariant.Dark,
-            ProductThemeVariantPolicy.FindThemeVariant(
-                EProductThemePreference.Dark));
+        Assert.Same(ThemeVariant.Dark, ProductThemeVariantPolicy.FindThemeVariant(EProductThemePreference.Dark));
     }
 
     [Fact]

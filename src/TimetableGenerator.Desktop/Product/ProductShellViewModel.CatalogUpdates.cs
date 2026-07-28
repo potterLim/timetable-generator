@@ -49,8 +49,7 @@ internal sealed partial class ProductShellViewModel
     {
         get
         {
-            return (mStartupRecoveryFlags & RECOVERY_NOTICE_FLAGS)
-                != EProductWorkspaceRecoveryFlags.None;
+            return (mStartupRecoveryFlags & RECOVERY_NOTICE_FLAGS) != EProductWorkspaceRecoveryFlags.None;
         }
     }
 
@@ -123,9 +122,7 @@ internal sealed partial class ProductShellViewModel
         clearCatalogUpdateNotice();
     }
 
-    private void startCatalogUpdateCheck(
-        ProductWorkspacePresentation presentation,
-        CancellationTokenSource cancellationSource)
+    private void startCatalogUpdateCheck(ProductWorkspacePresentation presentation, CancellationTokenSource cancellationSource)
     {
         if (presentation.CatalogOrigin == EProductCatalogOrigin.RemoteDownload)
         {
@@ -136,9 +133,7 @@ internal sealed partial class ProductShellViewModel
         mCatalogUpdateTask = checkCatalogUpdateAsync(presentation, cancellationSource);
     }
 
-    private async Task checkCatalogUpdateAsync(
-        ProductWorkspacePresentation presentation,
-        CancellationTokenSource cancellationSource)
+    private async Task checkCatalogUpdateAsync(ProductWorkspacePresentation presentation, CancellationTokenSource cancellationSource)
     {
         try
         {
@@ -171,9 +166,7 @@ internal sealed partial class ProductShellViewModel
     {
         return mIsDisposed == false
             && cancellationSource.IsCancellationRequested == false
-            && ReferenceEquals(
-                mCatalogUpdateCancellationSource,
-                cancellationSource);
+            && ReferenceEquals(mCatalogUpdateCancellationSource, cancellationSource);
     }
 
     private void applyCatalogUpdateResult(ProductCatalogUpdateResult result)
@@ -185,11 +178,7 @@ internal sealed partial class ProductShellViewModel
                 mCatalogUpdateNotice = string.Empty;
                 break;
             case EProductCatalogUpdateStatus.Staged:
-                mCatalogUpdateNotice = "과목 데이터 r"
-                    + result.CandidateRevision.Value.ToString(
-                        "D4",
-                        CultureInfo.InvariantCulture)
-                    + " 준비됨: 다음 실행에서 확인 후 적용";
+                mCatalogUpdateNotice = "과목 데이터 r" + result.CandidateRevision.Value.ToString("D4", CultureInfo.InvariantCulture) + " 준비됨: 다음 실행에서 확인 후 적용";
                 break;
             case EProductCatalogUpdateStatus.WorkspaceIncompatible:
                 mCatalogUpdateNotice = "새 과목 데이터가 현재 시간표와 맞지 않아 기존 버전을 유지합니다.";
@@ -198,10 +187,7 @@ internal sealed partial class ProductShellViewModel
                 mCatalogUpdateNotice = "같은 버전의 서버 데이터가 변경되어 안전을 위해 무시했습니다.";
                 break;
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(result),
-                    result.Status,
-                    "Unknown product catalog update status.");
+                throw new ArgumentOutOfRangeException(nameof(result), result.Status, "Unknown product catalog update status.");
         }
 
         raiseProductNoticePropertiesChanged();

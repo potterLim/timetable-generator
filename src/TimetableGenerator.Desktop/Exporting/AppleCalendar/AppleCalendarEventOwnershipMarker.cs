@@ -18,38 +18,29 @@ internal static class AppleCalendarEventOwnershipMarker
     {
         if (planId.IsValid == false)
         {
-            throw new ArgumentException(
-                "Apple Calendar event ownership markers require a valid plan ID.",
-                nameof(planId));
+            throw new ArgumentException("Apple Calendar event ownership markers require a valid plan ID.", nameof(planId));
         }
 
         if (string.IsNullOrWhiteSpace(eventId))
         {
-            throw new ArgumentException(
-                "Apple Calendar event ownership markers require an event ID.",
-                nameof(eventId));
+            throw new ArgumentException("Apple Calendar event ownership markers require an event ID.", nameof(eventId));
         }
 
         byte[] eventIdBytes = Encoding.UTF8.GetBytes(eventId.Trim());
-        string eventIdHash = Convert
-            .ToHexString(SHA256.HashData(eventIdBytes))
-            .ToLowerInvariant();
+        string eventIdHash = Convert.ToHexString(SHA256.HashData(eventIdBytes)).ToLowerInvariant();
         return PREFIX + planId.Value.ToString("D") + "/" + eventIdHash;
     }
 
     public static bool IsApplicationManaged(string? urlOrNull)
     {
-        return TryParsePlanIdOrNull(urlOrNull) != null
-            || isLegacyMarker(urlOrNull);
+        return TryParsePlanIdOrNull(urlOrNull) != null || isLegacyMarker(urlOrNull);
     }
 
     public static bool IsManagedByPlan(string? urlOrNull, PlanId planId)
     {
         if (planId.IsValid == false)
         {
-            throw new ArgumentException(
-                "Apple Calendar event ownership checks require a valid plan ID.",
-                nameof(planId));
+            throw new ArgumentException("Apple Calendar event ownership checks require a valid plan ID.", nameof(planId));
         }
 
         return TryParsePlanIdOrNull(urlOrNull) == planId;
@@ -84,11 +75,7 @@ internal static class AppleCalendarEventOwnershipMarker
 
     private static bool isLegacyMarker(string? urlOrNull)
     {
-        return urlOrNull?.StartsWith(
-                LEGACY_PREFIX,
-                StringComparison.Ordinal) == true
-            && isCanonicalHash(
-                urlOrNull.AsSpan(LEGACY_PREFIX.Length));
+        return urlOrNull?.StartsWith(LEGACY_PREFIX, StringComparison.Ordinal) == true && isCanonicalHash(urlOrNull.AsSpan(LEGACY_PREFIX.Length));
     }
 
     private static bool isCanonicalHash(ReadOnlySpan<char> value)
@@ -100,8 +87,7 @@ internal static class AppleCalendarEventOwnershipMarker
 
         foreach (char character in value)
         {
-            if (character is not (>= '0' and <= '9')
-                and not (>= 'a' and <= 'f'))
+            if (character is not (>= '0' and <= '9') and not (>= 'a' and <= 'f'))
             {
                 return false;
             }

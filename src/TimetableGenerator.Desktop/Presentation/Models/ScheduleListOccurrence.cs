@@ -130,11 +130,7 @@ internal sealed class ScheduleListOccurrence
         }
     }
 
-    internal ScheduleListOccurrence(
-        IReadOnlyList<EDay> days,
-        DailyTimeRange timeRange,
-        ScheduleListMetadata metadata,
-        IReadOnlyList<ScheduleListSource> sources)
+    internal ScheduleListOccurrence(IReadOnlyList<EDay> days, DailyTimeRange timeRange, ScheduleListMetadata metadata, IReadOnlyList<ScheduleListSource> sources)
     {
         if (days == null)
         {
@@ -148,9 +144,7 @@ internal sealed class ScheduleListOccurrence
 
         if (timeRange.IsValid == false)
         {
-            throw new ArgumentException(
-                "Schedule list occurrences require a valid time range.",
-                nameof(timeRange));
+            throw new ArgumentException("Schedule list occurrences require a valid time range.", nameof(timeRange));
         }
 
         if (metadata == null)
@@ -165,9 +159,7 @@ internal sealed class ScheduleListOccurrence
 
         if (sources.Count == 0)
         {
-            throw new ArgumentException(
-                "Schedule list occurrences require at least one source.",
-                nameof(sources));
+            throw new ArgumentException("Schedule list occurrences require at least one source.", nameof(sources));
         }
 
         mDays = copyAndValidateDays(days);
@@ -198,9 +190,7 @@ internal sealed class ScheduleListOccurrence
         return ScheduleBoardDayRange.CreateShortDayTimeDisplayText(days, timeRange);
     }
 
-    private static string createAccessibleScheduleText(
-        IReadOnlyList<EDay> days,
-        DailyTimeRange timeRange)
+    private static string createAccessibleScheduleText(IReadOnlyList<EDay> days, DailyTimeRange timeRange)
     {
         List<string> dayNames = new List<string>(days.Count);
         foreach (EDay day in days)

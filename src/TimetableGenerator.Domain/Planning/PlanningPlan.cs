@@ -47,11 +47,7 @@ public sealed class PlanningPlan
         }
     }
 
-    public PlanningPlan(
-        PlanId id,
-        PlanName name,
-        PlanCatalogBinding catalogBinding,
-        PlanningPlanContent content)
+    public PlanningPlan(PlanId id, PlanName name, PlanCatalogBinding catalogBinding, PlanningPlanContent content)
         : this(id, name, catalogBinding, content, null)
     {
     }
@@ -91,9 +87,7 @@ public sealed class PlanningPlan
         LastViewedRecommendationOrNull = lastViewedRecommendationOrNull;
     }
 
-    private static void validateLastViewedRecommendation(
-        PlanningPlanContent content,
-        ScheduleRecommendationBookmark? lastViewedRecommendationOrNull)
+    private static void validateLastViewedRecommendation(PlanningPlanContent content, ScheduleRecommendationBookmark? lastViewedRecommendationOrNull)
     {
         if (lastViewedRecommendationOrNull == null)
         {
@@ -102,30 +96,23 @@ public sealed class PlanningPlan
 
         if (lastViewedRecommendationOrNull.SelectedOfferingIds.Count != content.CourseChoiceGroups.Count)
         {
-            throw new ArgumentException(
-                "The last-viewed recommendation must select one offering per course choice group.",
-                nameof(lastViewedRecommendationOrNull));
+            throw new ArgumentException("The last-viewed recommendation must select one offering per course choice group.", nameof(lastViewedRecommendationOrNull));
         }
 
         foreach (CourseChoiceGroup courseChoiceGroup in content.CourseChoiceGroups)
         {
             if (bookmarkSelectsEligibleOffering(lastViewedRecommendationOrNull, courseChoiceGroup) == false)
             {
-                throw new ArgumentException(
-                    "The last-viewed recommendation must reference eligible plan offerings.",
-                    nameof(lastViewedRecommendationOrNull));
+                throw new ArgumentException("The last-viewed recommendation must reference eligible plan offerings.", nameof(lastViewedRecommendationOrNull));
             }
         }
     }
 
-    private static bool bookmarkSelectsEligibleOffering(
-        ScheduleRecommendationBookmark bookmark,
-        CourseChoiceGroup courseChoiceGroup)
+    private static bool bookmarkSelectsEligibleOffering(ScheduleRecommendationBookmark bookmark, CourseChoiceGroup courseChoiceGroup)
     {
         foreach (CourseCandidate courseCandidate in courseChoiceGroup.CourseCandidates)
         {
-            foreach (OfferingCandidate offeringCandidate
-                in courseCandidate.OfferingCandidates)
+            foreach (OfferingCandidate offeringCandidate in courseCandidate.OfferingCandidates)
             {
                 if (offeringCandidate.IsEligible && bookmark.ContainsOffering(offeringCandidate.OfferingId))
                 {

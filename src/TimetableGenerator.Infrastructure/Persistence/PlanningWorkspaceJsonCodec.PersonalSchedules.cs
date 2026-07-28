@@ -50,16 +50,12 @@ public sealed partial class PlanningWorkspaceJsonCodec
                     "location",
                 });
             PersonalScheduleId scheduleId = readPersonalScheduleId(properties["id"], "personalSchedule.id");
-            PersonalScheduleTitle title = new PersonalScheduleTitle(
-                readString(properties["title"], "personalSchedule.title"));
+            PersonalScheduleTitle title = new PersonalScheduleTitle(readString(properties["title"], "personalSchedule.title"));
             IReadOnlyList<WeeklyTimeRange> timeRanges = readTimeRanges(properties["timeRanges"]);
             PersonalScheduleSection? sectionOrNull = readOptionalSectionOrNull(properties["section"]);
             PersonalScheduleInstructor? instructorOrNull = readOptionalInstructorOrNull(properties["instructor"]);
             PersonalScheduleLocation? locationOrNull = readOptionalLocationOrNull(properties["location"]);
-            PersonalScheduleDetails details = new PersonalScheduleDetails(
-                sectionOrNull,
-                instructorOrNull,
-                locationOrNull);
+            PersonalScheduleDetails details = new PersonalScheduleDetails(sectionOrNull, instructorOrNull, locationOrNull);
             personalSchedules.Add(new PersonalSchedule(scheduleId, title, timeRanges, details));
         }
 
@@ -107,16 +103,8 @@ public sealed partial class PlanningWorkspaceJsonCodec
 
         int hour;
         int minute;
-        bool hasHour = int.TryParse(
-            value.Substring(0, 2),
-            System.Globalization.NumberStyles.None,
-            System.Globalization.CultureInfo.InvariantCulture,
-            out hour);
-        bool hasMinute = int.TryParse(
-            value.Substring(3, 2),
-            System.Globalization.NumberStyles.None,
-            System.Globalization.CultureInfo.InvariantCulture,
-            out minute);
+        bool hasHour = int.TryParse(value.Substring(0, 2), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out hour);
+        bool hasMinute = int.TryParse(value.Substring(3, 2), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out minute);
         if (hasHour == false || hasMinute == false)
         {
             throw new WorkspaceDocumentException(context + " must use the HH:mm format.");
@@ -232,10 +220,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         return details.LocationOrNull.Value;
     }
 
-    private static void writeOptionalString(
-        Utf8JsonWriter writer,
-        string propertyName,
-        string? valueOrNull)
+    private static void writeOptionalString(Utf8JsonWriter writer, string propertyName, string? valueOrNull)
     {
         if (valueOrNull == null)
         {

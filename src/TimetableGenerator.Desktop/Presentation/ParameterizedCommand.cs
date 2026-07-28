@@ -25,9 +25,7 @@ internal sealed class ParameterizedCommand<T> : ICommand
     {
         if (parameterOrNull is not T typedParameter)
         {
-            throw new ArgumentException(
-                "The command requires a strongly typed parameter.",
-                nameof(parameterOrNull));
+            throw new ArgumentException("The command requires a strongly typed parameter.", nameof(parameterOrNull));
         }
 
         mExecute(typedParameter);

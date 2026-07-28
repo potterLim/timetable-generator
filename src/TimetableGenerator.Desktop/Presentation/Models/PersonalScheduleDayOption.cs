@@ -120,10 +120,7 @@ internal sealed class PersonalScheduleDayOption : ObservableObject
             case EDay.Sunday:
                 return;
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(day),
-                    day,
-                    "Personal schedule day options require a day from Monday through Sunday.");
+                throw new ArgumentOutOfRangeException(nameof(day), day, "Personal schedule day options require a day from Monday through Sunday.");
         }
     }
 }

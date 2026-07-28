@@ -8,8 +8,7 @@ using TimetableGenerator.Domain.Planning;
 
 namespace TimetableGenerator.Desktop.Exporting.AppleCalendar;
 
-internal sealed class JxaAppleCalendarNativeBridge
-    : IAppleCalendarNativeBridge
+internal sealed class JxaAppleCalendarNativeBridge : IAppleCalendarNativeBridge
 {
     private static readonly JsonSerializerOptions sJsonOptions = createJsonOptions();
 
@@ -28,8 +27,7 @@ internal sealed class JxaAppleCalendarNativeBridge
     {
     }
 
-    internal JxaAppleCalendarNativeBridge(
-        IAppleCalendarAutomationCommand automationCommand)
+    internal JxaAppleCalendarNativeBridge(IAppleCalendarAutomationCommand automationCommand)
     {
         if (automationCommand == null)
         {
@@ -39,9 +37,7 @@ internal sealed class JxaAppleCalendarNativeBridge
         mAutomationCommand = automationCommand;
     }
 
-    public async Task<IReadOnlyList<AppleCalendarDescriptor>> GetCalendarsAsync(
-        PlanName requestedDestinationName,
-        CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<AppleCalendarDescriptor>> GetCalendarsAsync(PlanName requestedDestinationName, CancellationToken cancellationToken)
     {
         if (requestedDestinationName == null)
         {
@@ -50,22 +46,15 @@ internal sealed class JxaAppleCalendarNativeBridge
 
         ensureAvailable();
         AppleCalendarAutomationRequest request = AppleCalendarAutomationRequest.CreateListRequest(requestedDestinationName);
-        AppleCalendarAutomationResponse response = await executeAsync(
-                EAppleCalendarAutomationOperation.ListCalendars,
-                request,
-                cancellationToken)
-            .ConfigureAwait(false);
+        AppleCalendarAutomationResponse response = await executeAsync(EAppleCalendarAutomationOperation.ListCalendars, request, cancellationToken).ConfigureAwait(false);
         ensureSuccess(response);
         if (response.Calendars == null)
         {
-            throw createOperationFailure(
-                "apple_calendar_automation_calendars_missing",
-                null);
+            throw createOperationFailure("apple_calendar_automation_calendars_missing", null);
         }
 
         List<AppleCalendarDescriptor> calendars = new List<AppleCalendarDescriptor>(response.Calendars.Count);
-        foreach (AppleCalendarAutomationCalendarResponse calendarResponse
-            in response.Calendars)
+        foreach (AppleCalendarAutomationCalendarResponse calendarResponse in response.Calendars)
         {
             calendars.Add(createDescriptor(calendarResponse));
         }
@@ -73,9 +62,7 @@ internal sealed class JxaAppleCalendarNativeBridge
         return calendars.AsReadOnly();
     }
 
-    public async Task<AppleCalendarNativeExportResult> ApplyExportAsync(
-        AppleCalendarExportMutation mutation,
-        CancellationToken cancellationToken)
+    public async Task<AppleCalendarNativeExportResult> ApplyExportAsync(AppleCalendarExportMutation mutation, CancellationToken cancellationToken)
     {
         if (mutation == null)
         {
@@ -84,18 +71,11 @@ internal sealed class JxaAppleCalendarNativeBridge
 
         ensureAvailable();
         AppleCalendarAutomationRequest request = AppleCalendarAutomationRequest.CreateMutationRequest(mutation);
-        AppleCalendarAutomationResponse response = await executeAsync(
-                EAppleCalendarAutomationOperation.ApplyExport,
-                request,
-                cancellationToken)
-            .ConfigureAwait(false);
+        AppleCalendarAutomationResponse response = await executeAsync(EAppleCalendarAutomationOperation.ApplyExport, request, cancellationToken).ConfigureAwait(false);
         ensureSuccess(response);
-        if (string.IsNullOrWhiteSpace(response.CalendarId)
-            || string.IsNullOrWhiteSpace(response.CalendarName))
+        if (string.IsNullOrWhiteSpace(response.CalendarId) || string.IsNullOrWhiteSpace(response.CalendarName))
         {
-            throw createOperationFailure(
-                "apple_calendar_automation_export_result_missing",
-                null);
+            throw createOperationFailure("apple_calendar_automation_export_result_missing", null);
         }
 
         if (response.CreatedEventCount != request.Events.Count
@@ -103,54 +83,36 @@ internal sealed class JxaAppleCalendarNativeBridge
             || (mutation.Kind == EAppleCalendarExportMutationKind.CreateNew
                 && response.DeletedEventCount != 0))
         {
-            throw createOperationFailure(
-                "apple_calendar_automation_event_counts_invalid",
-                null);
+            throw createOperationFailure("apple_calendar_automation_event_counts_invalid", null);
         }
 
         try
         {
-            return new AppleCalendarNativeExportResult(
-                new AppleCalendarId(response.CalendarId),
-                new PlanName(response.CalendarName),
-                response.CreatedEventCount,
-                response.DeletedEventCount);
+            return new AppleCalendarNativeExportResult(new AppleCalendarId(response.CalendarId), new PlanName(response.CalendarName), response.CreatedEventCount, response.DeletedEventCount);
         }
         catch (ArgumentException exception)
         {
-            throw createOperationFailure(
-                "apple_calendar_automation_export_result_invalid",
-                exception);
+            throw createOperationFailure("apple_calendar_automation_export_result_invalid", exception);
         }
     }
 
-    private async Task<AppleCalendarAutomationResponse> executeAsync(
-        EAppleCalendarAutomationOperation operation,
-        AppleCalendarAutomationRequest request,
-        CancellationToken cancellationToken)
+    private async Task<AppleCalendarAutomationResponse> executeAsync(EAppleCalendarAutomationOperation operation, AppleCalendarAutomationRequest request, CancellationToken cancellationToken)
     {
         string requestJson = JsonSerializer.Serialize(request, sJsonOptions);
-        string responseJson = await mAutomationCommand.ExecuteAsync(
-                operation,
-                requestJson,
-                cancellationToken)
-            .ConfigureAwait(false);
+        string responseJson = await mAutomationCommand.ExecuteAsync(operation, requestJson, cancellationToken).ConfigureAwait(false);
         try
         {
             AppleCalendarAutomationResponse? responseOrNull = JsonSerializer.Deserialize<AppleCalendarAutomationResponse>(responseJson, sJsonOptions);
             if (responseOrNull == null)
             {
-                throw new JsonException(
-                    "Apple Calendar automation returned a null response.");
+                throw new JsonException("Apple Calendar automation returned a null response.");
             }
 
             return responseOrNull;
         }
         catch (JsonException exception)
         {
-            throw createOperationFailure(
-                "apple_calendar_automation_response_invalid",
-                exception);
+            throw createOperationFailure("apple_calendar_automation_response_invalid", exception);
         }
     }
 
@@ -158,20 +120,15 @@ internal sealed class JxaAppleCalendarNativeBridge
     {
         if (IsAvailable == false)
         {
-            throw new AppleCalendarNativeBridgeException(
-                EAppleCalendarNativeFailureKind.Unavailable,
-                "apple_calendar_automation_unavailable");
+            throw new AppleCalendarNativeBridgeException(EAppleCalendarNativeFailureKind.Unavailable, "apple_calendar_automation_unavailable");
         }
     }
 
-    private static AppleCalendarDescriptor createDescriptor(
-        AppleCalendarAutomationCalendarResponse calendarResponse)
+    private static AppleCalendarDescriptor createDescriptor(AppleCalendarAutomationCalendarResponse calendarResponse)
     {
         if (calendarResponse == null)
         {
-            throw createOperationFailure(
-                "apple_calendar_automation_calendar_invalid",
-                null);
+            throw createOperationFailure("apple_calendar_automation_calendar_invalid", null);
         }
 
         try
@@ -179,20 +136,12 @@ internal sealed class JxaAppleCalendarNativeBridge
             string calendarId = calendarResponse.Id == null ? string.Empty : calendarResponse.Id;
             string calendarName = calendarResponse.Name == null ? string.Empty : calendarResponse.Name;
             PlanId? managedPlanIdOrNull = tryParsePlanIdOrNull(calendarResponse.ManagedPlanId);
-            EAppleCalendarContentAccess contentAccess = calendarResponse.Writable
-                ? EAppleCalendarContentAccess.Writable
-                : EAppleCalendarContentAccess.ReadOnly;
-            return new AppleCalendarDescriptor(
-                new AppleCalendarId(calendarId),
-                calendarName,
-                managedPlanIdOrNull,
-                contentAccess);
+            EAppleCalendarContentAccess contentAccess = calendarResponse.Writable ? EAppleCalendarContentAccess.Writable : EAppleCalendarContentAccess.ReadOnly;
+            return new AppleCalendarDescriptor(new AppleCalendarId(calendarId), calendarName, managedPlanIdOrNull, contentAccess);
         }
         catch (ArgumentException exception)
         {
-            throw createOperationFailure(
-                "apple_calendar_automation_calendar_invalid",
-                exception);
+            throw createOperationFailure("apple_calendar_automation_calendar_invalid", exception);
         }
     }
 
@@ -204,43 +153,28 @@ internal sealed class JxaAppleCalendarNativeBridge
         }
 
         Guid planIdValue;
-        if (Guid.TryParseExact(
-                planIdOrNull,
-                "D",
-                out planIdValue) == false
-            || planIdValue == Guid.Empty)
+        if (Guid.TryParseExact(planIdOrNull, "D", out planIdValue) == false || planIdValue == Guid.Empty)
         {
-            throw createOperationFailure(
-                "apple_calendar_automation_calendar_invalid",
-                null);
+            throw createOperationFailure("apple_calendar_automation_calendar_invalid", null);
         }
 
         return new PlanId(planIdValue);
     }
 
-    private static void ensureSuccess(
-        AppleCalendarAutomationResponse response)
+    private static void ensureSuccess(AppleCalendarAutomationResponse response)
     {
         switch (response.Status)
         {
             case "ok":
                 return;
             case "access_denied":
-                throw new AppleCalendarNativeBridgeException(
-                    EAppleCalendarNativeFailureKind.AccessDenied,
-                    "apple_calendar_automation_access_denied");
+                throw new AppleCalendarNativeBridgeException(EAppleCalendarNativeFailureKind.AccessDenied, "apple_calendar_automation_access_denied");
             case "calendar_changed":
-                throw new AppleCalendarNativeBridgeException(
-                    EAppleCalendarNativeFailureKind.CalendarChanged,
-                    "apple_calendar_destination_changed");
+                throw new AppleCalendarNativeBridgeException(EAppleCalendarNativeFailureKind.CalendarChanged, "apple_calendar_destination_changed");
             case "operation_failed":
-                throw createOperationFailure(
-                    "apple_calendar_automation_operation_failed",
-                    null);
+                throw createOperationFailure("apple_calendar_automation_operation_failed", null);
             default:
-                throw createOperationFailure(
-                    "apple_calendar_automation_status_invalid",
-                    null);
+                throw createOperationFailure("apple_calendar_automation_status_invalid", null);
         }
     }
 
@@ -253,13 +187,8 @@ internal sealed class JxaAppleCalendarNativeBridge
         };
     }
 
-    private static AppleCalendarNativeBridgeException createOperationFailure(
-        string diagnosticCode,
-        Exception? innerExceptionOrNull)
+    private static AppleCalendarNativeBridgeException createOperationFailure(string diagnosticCode, Exception? innerExceptionOrNull)
     {
-        return new AppleCalendarNativeBridgeException(
-            EAppleCalendarNativeFailureKind.OperationFailed,
-            diagnosticCode,
-            innerExceptionOrNull);
+        return new AppleCalendarNativeBridgeException(EAppleCalendarNativeFailureKind.OperationFailed, diagnosticCode, innerExceptionOrNull);
     }
 }

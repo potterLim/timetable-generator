@@ -79,37 +79,22 @@ public static partial class CourseCatalogJsonReader
         bool hasCourseCode = courseCodesById.TryGetValue(courseId, out courseCodeOrNull);
         if (hasCourseCode == false || courseCodeOrNull == null)
         {
-            throw new CatalogJsonFormatException(
-                offeringObject.GetPropertyPath("courseId"),
-                "offerings must reference a course in the catalog.");
+            throw new CatalogJsonFormatException(offeringObject.GetPropertyPath("courseId"), "offerings must reference a course in the catalog.");
         }
 
         CourseSectionCode sectionCode = new CourseSectionCode(offeringObject.GetString("sectionCode"));
-        string expectedOfferingId = CatalogJsonValueParser.BuildOfferingId(
-            institutionId,
-            term,
-            courseCodeOrNull,
-            sectionCode);
+        string expectedOfferingId = CatalogJsonValueParser.BuildOfferingId(institutionId, term, courseCodeOrNull, sectionCode);
         CatalogJsonValueParser.RequireExactString(offeringId.Value, expectedOfferingId, offeringObject.GetPropertyPath("offeringId"));
 
         CatalogOfferingClassificationMetadata classification = parseClassification(offeringObject);
-        InstructorAssignmentMetadata instructorAssignment = parseInstructorAssignment(
-            offeringObject.GetElement("instructorAssignment"),
-            offeringObject.GetPropertyPath("instructorAssignment"));
-        GradingMetadata grading = parseGrading(
-            offeringObject.GetElement("grading"),
-            offeringObject.GetPropertyPath("grading"));
+        InstructorAssignmentMetadata instructorAssignment = parseInstructorAssignment(offeringObject.GetElement("instructorAssignment"), offeringObject.GetPropertyPath("instructorAssignment"));
+        GradingMetadata grading = parseGrading(offeringObject.GetElement("grading"), offeringObject.GetPropertyPath("grading"));
         EnglishInstructionPercentage englishInstructionPercentage = new EnglishInstructionPercentage(offeringObject.GetDecimal("englishInstructionPercentage"));
         CatalogOfferingInstructionMetadata instruction = new CatalogOfferingInstructionMetadata(instructorAssignment, englishInstructionPercentage, grading);
 
         KoreanScheduleSourceText? scheduleSourceTextOrNull;
-        MeetingSchedule meetingSchedule = parseMeetingSchedule(
-            offeringObject.GetElement("schedule"),
-            offeringObject.GetPropertyPath("schedule"),
-            out scheduleSourceTextOrNull);
-        LocationAssignmentMetadata location = parseLocation(
-            offeringObject.GetElement("location"),
-            offeringObject.GetPropertyPath("location"));
+        MeetingSchedule meetingSchedule = parseMeetingSchedule(offeringObject.GetElement("schedule"), offeringObject.GetPropertyPath("schedule"), out scheduleSourceTextOrNull);
+        LocationAssignmentMetadata location = parseLocation(offeringObject.GetElement("location"), offeringObject.GetPropertyPath("location"));
         CatalogOfferingLogisticsMetadata logistics;
         if (scheduleSourceTextOrNull == null)
         {
@@ -121,9 +106,7 @@ public static partial class CourseCatalogJsonReader
         }
 
         CatalogOfferingCapacityMetadata capacity = parseCapacity(offeringObject);
-        OfferingDetailsMetadata details = parseDetails(
-            offeringObject.GetElement("details"),
-            offeringObject.GetPropertyPath("details"));
+        OfferingDetailsMetadata details = parseDetails(offeringObject.GetElement("details"), offeringObject.GetPropertyPath("details"));
         SourceRecordNumber sourceRecordNumber = new SourceRecordNumber(offeringObject.GetInt64("sourceRecordNumber"));
 
         offering = new CatalogOffering(offeringId, courseId, sectionCode, meetingSchedule);
@@ -137,36 +120,22 @@ public static partial class CourseCatalogJsonReader
             sourceRecordNumber);
     }
 
-    private static CatalogOfferingClassificationMetadata parseClassification(
-        StrictJsonObject offeringObject)
+    private static CatalogOfferingClassificationMetadata parseClassification(StrictJsonObject offeringObject)
     {
-        ERequirementType requirementType = parseRequirementType(
-            offeringObject.GetString("requirementType"),
-            offeringObject.GetPropertyPath("requirementType"));
+        ERequirementType requirementType = parseRequirementType(offeringObject.GetString("requirementType"), offeringObject.GetPropertyPath("requirementType"));
         OfferingUnitName offeringUnitName = new OfferingUnitName(offeringObject.GetString("offeringUnitName"));
-        EInstructionSession instructionSession = parseInstructionSession(
-            offeringObject.GetString("instructionSession"),
-            offeringObject.GetPropertyPath("instructionSession"));
+        EInstructionSession instructionSession = parseInstructionSession(offeringObject.GetString("instructionSession"), offeringObject.GetPropertyPath("instructionSession"));
         string? categoryNameOrNull = offeringObject.GetNullableStringOrNull("generalEducationCategory");
         if (categoryNameOrNull == null)
         {
-            return CatalogOfferingClassificationMetadata.CreateWithoutGeneralEducationCategory(
-                requirementType,
-                offeringUnitName,
-                instructionSession);
+            return CatalogOfferingClassificationMetadata.CreateWithoutGeneralEducationCategory(requirementType, offeringUnitName, instructionSession);
         }
 
         GeneralEducationCategoryName categoryName = new GeneralEducationCategoryName(categoryNameOrNull);
-        return CatalogOfferingClassificationMetadata.CreateWithGeneralEducationCategory(
-            requirementType,
-            offeringUnitName,
-            instructionSession,
-            categoryName);
+        return CatalogOfferingClassificationMetadata.CreateWithGeneralEducationCategory(requirementType, offeringUnitName, instructionSession, categoryName);
     }
 
-    private static InstructorAssignmentMetadata parseInstructorAssignment(
-        JsonElement element,
-        string path)
+    private static InstructorAssignmentMetadata parseInstructorAssignment(JsonElement element, string path)
     {
         StrictJsonObject assignmentObject = StrictJsonObject.Create(
             element,
@@ -177,9 +146,7 @@ public static partial class CourseCatalogJsonReader
                 "displayText",
                 "additionalInstructorCount",
             });
-        EInstructorAssignmentStatus status = parseInstructorAssignmentStatus(
-            assignmentObject.GetString("status"),
-            assignmentObject.GetPropertyPath("status"));
+        EInstructorAssignmentStatus status = parseInstructorAssignmentStatus(assignmentObject.GetString("status"), assignmentObject.GetPropertyPath("status"));
         string? displayTextOrNull = assignmentObject.GetNullableStringOrNull("displayText");
         int? additionalInstructorCountOrNull = assignmentObject.GetNullableInt32OrNull("additionalInstructorCount");
 
@@ -188,9 +155,7 @@ public static partial class CourseCatalogJsonReader
             case EInstructorAssignmentStatus.Confirmed:
                 if (displayTextOrNull == null || additionalInstructorCountOrNull.HasValue == false)
                 {
-                    throw new CatalogJsonFormatException(
-                        path,
-                        "confirmed instructors require display text and an additional instructor count.");
+                    throw new CatalogJsonFormatException(path, "confirmed instructors require display text and an additional instructor count.");
                 }
 
                 InstructorDisplayText displayText = new InstructorDisplayText(displayTextOrNull);
@@ -207,23 +172,15 @@ public static partial class CourseCatalogJsonReader
         }
     }
 
-    private static void requireMissingInstructorValues(
-        string? displayTextOrNull,
-        int? additionalInstructorCountOrNull,
-        string path)
+    private static void requireMissingInstructorValues(string? displayTextOrNull, int? additionalInstructorCountOrNull, string path)
     {
         if (displayTextOrNull != null || additionalInstructorCountOrNull.HasValue)
         {
-            throw new CatalogJsonFormatException(
-                path,
-                "unconfirmed or missing instructors must use null detail values.");
+            throw new CatalogJsonFormatException(path, "unconfirmed or missing instructors must use null detail values.");
         }
     }
 
-    private static MeetingSchedule parseMeetingSchedule(
-        JsonElement element,
-        string path,
-        out KoreanScheduleSourceText? scheduleSourceTextOrNull)
+    private static MeetingSchedule parseMeetingSchedule(JsonElement element, string path, out KoreanScheduleSourceText? scheduleSourceTextOrNull)
     {
         StrictJsonObject scheduleObject = StrictJsonObject.Create(
             element,
@@ -234,22 +191,16 @@ public static partial class CourseCatalogJsonReader
                 "sourceTextKo",
                 "slots",
             });
-        EMeetingScheduleStatus status = parseMeetingScheduleStatus(
-            scheduleObject.GetString("status"),
-            scheduleObject.GetPropertyPath("status"));
+        EMeetingScheduleStatus status = parseMeetingScheduleStatus(scheduleObject.GetString("status"), scheduleObject.GetPropertyPath("status"));
         string? sourceTextOrNull = scheduleObject.GetNullableStringOrNull("sourceTextKo");
-        List<MeetingSlot> slots = parseMeetingSlots(
-            scheduleObject.GetArray("slots"),
-            scheduleObject.GetPropertyPath("slots"));
+        List<MeetingSlot> slots = parseMeetingSlots(scheduleObject.GetArray("slots"), scheduleObject.GetPropertyPath("slots"));
 
         switch (status)
         {
             case EMeetingScheduleStatus.Scheduled:
                 if (sourceTextOrNull == null || slots.Count == 0)
                 {
-                    throw new CatalogJsonFormatException(
-                        path,
-                        "scheduled meetings require Korean source text and at least one slot.");
+                    throw new CatalogJsonFormatException(path, "scheduled meetings require Korean source text and at least one slot.");
                 }
 
                 scheduleSourceTextOrNull = new KoreanScheduleSourceText(sourceTextOrNull);
@@ -257,9 +208,7 @@ public static partial class CourseCatalogJsonReader
             case EMeetingScheduleStatus.NotProvided:
                 if (sourceTextOrNull != null || slots.Count != 0)
                 {
-                    throw new CatalogJsonFormatException(
-                        path,
-                        "time-not-provided meetings require null source text and an empty slot array.");
+                    throw new CatalogJsonFormatException(path, "time-not-provided meetings require null source text and an empty slot array.");
                 }
 
                 scheduleSourceTextOrNull = null;
@@ -303,27 +252,21 @@ public static partial class CourseCatalogJsonReader
                 "status",
                 "displayText",
             });
-        ELocationAssignmentStatus status = parseLocationAssignmentStatus(
-            locationObject.GetString("status"),
-            locationObject.GetPropertyPath("status"));
+        ELocationAssignmentStatus status = parseLocationAssignmentStatus(locationObject.GetString("status"), locationObject.GetPropertyPath("status"));
         string? displayTextOrNull = locationObject.GetNullableStringOrNull("displayText");
         switch (status)
         {
             case ELocationAssignmentStatus.Assigned:
                 if (displayTextOrNull == null)
                 {
-                    throw new CatalogJsonFormatException(
-                        locationObject.GetPropertyPath("displayText"),
-                        "assigned locations require display text.");
+                    throw new CatalogJsonFormatException(locationObject.GetPropertyPath("displayText"), "assigned locations require display text.");
                 }
 
                 return LocationAssignmentMetadata.CreateAssigned(new ClassroomDisplayText(displayTextOrNull));
             case ELocationAssignmentStatus.NotProvided:
                 if (displayTextOrNull != null)
                 {
-                    throw new CatalogJsonFormatException(
-                        locationObject.GetPropertyPath("displayText"),
-                        "locations without provided data require a null display value.");
+                    throw new CatalogJsonFormatException(locationObject.GetPropertyPath("displayText"), "locations without provided data require a null display value.");
                 }
 
                 return LocationAssignmentMetadata.NotProvided;
@@ -355,13 +298,9 @@ public static partial class CourseCatalogJsonReader
                 "type",
                 "passFailOptionAvailable",
             });
-        EGradingType gradingType = parseGradingType(
-            gradingObject.GetString("type"),
-            gradingObject.GetPropertyPath("type"));
+        EGradingType gradingType = parseGradingType(gradingObject.GetString("type"), gradingObject.GetPropertyPath("type"));
         bool isPassFailOptionAvailable = gradingObject.GetBoolean("passFailOptionAvailable");
-        EPassFailOptionAvailability availability = isPassFailOptionAvailable
-            ? EPassFailOptionAvailability.Available
-            : EPassFailOptionAvailability.Unavailable;
+        EPassFailOptionAvailability availability = isPassFailOptionAvailable ? EPassFailOptionAvailability.Available : EPassFailOptionAvailability.Unavailable;
         return new GradingMetadata(gradingType, availability);
     }
 
@@ -377,9 +316,7 @@ public static partial class CourseCatalogJsonReader
             });
         detailsObject.RequireNull("syllabusUrl");
         bool areRemarksAvailable = detailsObject.GetBoolean("remarksAvailable");
-        ERemarksAvailability availability = areRemarksAvailable
-            ? ERemarksAvailability.Available
-            : ERemarksAvailability.Unavailable;
+        ERemarksAvailability availability = areRemarksAvailable ? ERemarksAvailability.Available : ERemarksAvailability.Unavailable;
         return new OfferingDetailsMetadata(availability);
     }
 
@@ -417,9 +354,7 @@ public static partial class CourseCatalogJsonReader
         }
     }
 
-    private static EInstructorAssignmentStatus parseInstructorAssignmentStatus(
-        string value,
-        string path)
+    private static EInstructorAssignmentStatus parseInstructorAssignmentStatus(string value, string path)
     {
         switch (value)
         {

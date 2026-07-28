@@ -9,11 +9,7 @@ internal static class CatalogJsonWriter
 {
     private const int SCHEMA_VERSION = 1;
 
-    public static byte[] Write(
-        CourseCatalog catalog,
-        AcademicTerm term,
-        CatalogRevision revision,
-        HandongExportDocument sourceDocument)
+    public static byte[] Write(CourseCatalog catalog, AcademicTerm term, CatalogRevision revision, HandongExportDocument sourceDocument)
     {
         ArgumentNullException.ThrowIfNull(catalog);
         ArgumentNullException.ThrowIfNull(sourceDocument);
@@ -65,10 +61,7 @@ internal static class CatalogJsonWriter
         writer.WriteEndObject();
     }
 
-    private static void writeSource(
-        Utf8JsonWriter writer,
-        AcademicTerm term,
-        HandongExportDocument sourceDocument)
+    private static void writeSource(Utf8JsonWriter writer, AcademicTerm term, HandongExportDocument sourceDocument)
     {
         writer.WriteStartObject("source");
         writer.WriteString("providerId", CatalogFileLayout.INSTITUTION_ID);
@@ -103,9 +96,7 @@ internal static class CatalogJsonWriter
     private static void writeDataQuality(Utf8JsonWriter writer, CatalogDataQuality dataQuality)
     {
         writer.WriteStartObject("dataQuality");
-        writer.WriteString(
-            "scheduleNormalizationSource",
-            getScheduleNormalizationSourceName(dataQuality.ScheduleNormalizationSource));
+        writer.WriteString("scheduleNormalizationSource", getScheduleNormalizationSourceName(dataQuality.ScheduleNormalizationSource));
         writer.WriteNumber("sourceEnglishScheduleMismatch", dataQuality.EnglishScheduleMismatchCount.Value);
         writer.WriteNumber("roomNotProvided", dataQuality.RoomNotProvidedCount.Value);
         writer.WriteNumber("enrollmentNotProvided", dataQuality.EnrollmentNotProvidedCount.Value);
@@ -132,9 +123,7 @@ internal static class CatalogJsonWriter
         writer.WriteEndObject();
     }
 
-    private static void writeCourses(
-        Utf8JsonWriter writer,
-        System.Collections.Generic.IReadOnlyList<CatalogCourse> courses)
+    private static void writeCourses(Utf8JsonWriter writer, System.Collections.Generic.IReadOnlyList<CatalogCourse> courses)
     {
         writer.WriteStartArray("courses");
         foreach (CatalogCourse course in courses)
@@ -153,10 +142,7 @@ internal static class CatalogJsonWriter
         writer.WriteEndArray();
     }
 
-    private static void writeOfferings(
-        Utf8JsonWriter writer,
-        AcademicTerm term,
-        System.Collections.Generic.IReadOnlyList<CatalogOffering> offerings)
+    private static void writeOfferings(Utf8JsonWriter writer, AcademicTerm term, System.Collections.Generic.IReadOnlyList<CatalogOffering> offerings)
     {
         writer.WriteStartArray("offerings");
         foreach (CatalogOffering offering in offerings)
@@ -167,35 +153,21 @@ internal static class CatalogJsonWriter
         writer.WriteEndArray();
     }
 
-    private static void writeOffering(
-        Utf8JsonWriter writer,
-        AcademicTerm term,
-        CatalogOffering offering)
+    private static void writeOffering(Utf8JsonWriter writer, AcademicTerm term, CatalogOffering offering)
     {
         writer.WriteStartObject();
-        writer.WriteString(
-            "offeringId",
-            CatalogFileLayout.GetOfferingId(
-                term,
-                offering.Key.CourseCode,
-                offering.Key.SectionCode));
+        writer.WriteString("offeringId", CatalogFileLayout.GetOfferingId(term, offering.Key.CourseCode, offering.Key.SectionCode));
         writer.WriteString("courseId", CatalogFileLayout.GetCourseId(offering.Key.CourseCode));
         writer.WriteString("sectionCode", offering.Key.SectionCode.Value);
-        writer.WriteString(
-            "requirementType",
-            getRequirementTypeName(offering.Classification.RequirementType));
+        writer.WriteString("requirementType", getRequirementTypeName(offering.Classification.RequirementType));
         writer.WriteString("offeringUnitName", offering.Classification.OfferingUnitName.Value);
-        writer.WriteString(
-            "instructionSession",
-            getInstructionSessionName(offering.Classification.InstructionSession));
+        writer.WriteString("instructionSession", getInstructionSessionName(offering.Classification.InstructionSession));
         writeInstructorAssignment(writer, offering.Instruction.InstructorAssignment);
         writeSchedule(writer, offering.Logistics.Schedule);
         writeLocation(writer, offering.Logistics.Location);
         writer.WriteNumber("seatCapacity", offering.Capacity.SeatCapacity.Value);
         writeEnrollment(writer, offering.Capacity.Enrollment);
-        writer.WriteNumber(
-            "englishInstructionPercentage",
-            offering.Instruction.EnglishInstructionPercentage.Value);
+        writer.WriteNumber("englishInstructionPercentage", offering.Instruction.EnglishInstructionPercentage.Value);
         writeGeneralEducationCategory(writer, offering.Classification.GeneralEducationCategory);
         writeGradingPolicy(writer, offering.Instruction.GradingPolicy);
         writeDetails(writer, offering.Details);
@@ -203,9 +175,7 @@ internal static class CatalogJsonWriter
         writer.WriteEndObject();
     }
 
-    private static void writeInstructorAssignment(
-        Utf8JsonWriter writer,
-        InstructorAssignment assignment)
+    private static void writeInstructorAssignment(Utf8JsonWriter writer, InstructorAssignment assignment)
     {
         writer.WriteStartObject("instructorAssignment");
         writer.WriteString("status", getInstructorAssignmentStatusName(assignment.Status));
@@ -277,9 +247,7 @@ internal static class CatalogJsonWriter
         }
     }
 
-    private static void writeGeneralEducationCategory(
-        Utf8JsonWriter writer,
-        GeneralEducationCategoryAssignment category)
+    private static void writeGeneralEducationCategory(Utf8JsonWriter writer, GeneralEducationCategoryAssignment category)
     {
         if (category.Status == EGeneralEducationCategoryStatus.Provided)
         {
@@ -300,9 +268,7 @@ internal static class CatalogJsonWriter
 
         writer.WriteStartObject("grading");
         writer.WriteString("type", getGradingTypeName(gradingPolicy.GradingType));
-        writer.WriteBoolean(
-            "passFailOptionAvailable",
-            gradingPolicy.PassFailOptionAvailability == EPassFailOptionAvailability.Available);
+        writer.WriteBoolean("passFailOptionAvailable", gradingPolicy.PassFailOptionAvailability == EPassFailOptionAvailability.Available);
         writer.WriteEndObject();
     }
 

@@ -17,10 +17,7 @@ public sealed record CatalogIndexEndpoint
         bool isHttpsEndpoint = false;
         if (value.IsAbsoluteUri)
         {
-            isHttpsEndpoint = string.Equals(
-                value.Scheme,
-                Uri.UriSchemeHttps,
-                StringComparison.OrdinalIgnoreCase);
+            isHttpsEndpoint = string.Equals(value.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase);
         }
 
         if (value.IsAbsoluteUri == false
@@ -29,9 +26,7 @@ public sealed record CatalogIndexEndpoint
             || value.UserInfo.Length > 0
             || value.Fragment.Length > 0)
         {
-            throw new ArgumentException(
-                "Catalog index endpoints must be absolute HTTPS URLs without credentials or fragments.",
-                nameof(value));
+            throw new ArgumentException("Catalog index endpoints must be absolute HTTPS URLs without credentials or fragments.", nameof(value));
         }
 
         Value = value;

@@ -25,9 +25,7 @@ internal sealed class CatalogSourceConfigurationLoader
     {
     }
 
-    internal CatalogSourceConfigurationLoader(
-        CatalogSourceConfigurationPath path,
-        Func<string?> environmentValueProvider)
+    internal CatalogSourceConfigurationLoader(CatalogSourceConfigurationPath path, Func<string?> environmentValueProvider)
     {
         if (path == null)
         {
@@ -53,8 +51,7 @@ internal sealed class CatalogSourceConfigurationLoader
 
         if (File.Exists(mPath.Value) == false)
         {
-            throw new CatalogSourceConfigurationException(
-                "No catalog source is configured for this installation.");
+            throw new CatalogSourceConfigurationException("No catalog source is configured for this installation.");
         }
 
         try
@@ -62,8 +59,7 @@ internal sealed class CatalogSourceConfigurationLoader
             FileInfo fileInfo = new FileInfo(mPath.Value);
             if (fileInfo.Length > MAXIMUM_CONFIGURATION_FILE_BYTES)
             {
-                throw new CatalogSourceConfigurationException(
-                    "The catalog source configuration exceeds the product size limit.");
+                throw new CatalogSourceConfigurationException("The catalog source configuration exceeds the product size limit.");
             }
 
             byte[] content = await File.ReadAllBytesAsync(mPath.Value, cancellationToken).ConfigureAwait(false);
@@ -79,9 +75,7 @@ internal sealed class CatalogSourceConfigurationLoader
         }
         catch (Exception exception) when (isFileSystemException(exception))
         {
-            throw new CatalogSourceConfigurationException(
-                "The catalog source configuration could not be read.",
-                exception);
+            throw new CatalogSourceConfigurationException("The catalog source configuration could not be read.", exception);
         }
     }
 

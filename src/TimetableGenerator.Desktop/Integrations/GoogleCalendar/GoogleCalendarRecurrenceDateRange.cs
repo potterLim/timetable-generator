@@ -12,9 +12,7 @@ internal sealed record GoogleCalendarRecurrenceDateRange
     {
         if (firstOccurrenceDate > lastOccurrenceDate)
         {
-            throw new ArgumentException(
-                "The first event occurrence cannot follow the final occurrence.",
-                nameof(lastOccurrenceDate));
+            throw new ArgumentException("The first event occurrence cannot follow the final occurrence.", nameof(lastOccurrenceDate));
         }
 
         FirstOccurrenceDate = firstOccurrenceDate;

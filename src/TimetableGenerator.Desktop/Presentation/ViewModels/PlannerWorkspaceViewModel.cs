@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Avalonia.Controls;
+using Avalonia.Threading;
 
 using TimetableGenerator.Application.Planning;
 using TimetableGenerator.Desktop.Presentation.Catalog;
@@ -49,11 +50,7 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         }
     }
 
-    public PlannerWorkspaceViewModel(
-        CourseCatalogProjection catalogProjection,
-        PlanningWorkspaceSession session,
-        PlanningWorkspaceAutosaveQueue autosaveQueue,
-        IScheduleRecommendationProvider recommendationProvider)
+    public PlannerWorkspaceViewModel(CourseCatalogProjection catalogProjection, PlanningWorkspaceSession session, PlanningWorkspaceAutosaveQueue autosaveQueue, IScheduleRecommendationProvider recommendationProvider)
     {
         if (catalogProjection == null)
         {
@@ -77,9 +74,7 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
 
         if (ReferenceEquals(catalogProjection.Document.Catalog, session.Catalog) == false)
         {
-            throw new ArgumentException(
-                "The workspace session and presentation projection must share a catalog.",
-                nameof(session));
+            throw new ArgumentException("The workspace session and presentation projection must share a catalog.", nameof(session));
         }
 
         mCatalogProjection = catalogProjection;
@@ -111,7 +106,10 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
 
         mPlanNameValidationMessage = string.Empty;
         mAutosaveStatus = EPlanningWorkspaceAutosaveStatus.Saved;
-        mAutosaveStatusText = "자동 저장됨";
+        mAutosaveStatusText = string.Empty;
+        mAutosaveSavingIndicatorTimer = new DispatcherTimer();
+        mAutosaveSavingIndicatorTimer.Interval = AUTOSAVE_SAVING_INDICATOR_DELAY;
+        mAutosaveSavingIndicatorTimer.Tick += onAutosaveSavingIndicatorTimerTick;
         mRecommendationCancellationSource = new CancellationTokenSource();
         mRecommendationRefreshTask = Task.CompletedTask;
         mRecommendationCalculationState = ERecommendationCalculationState.Ready;
@@ -154,12 +152,8 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         ConfirmDeletePersonalScheduleCommand = new DelegateCommand(confirmDeletePersonalSchedule);
         CancelDeletePersonalScheduleCommand = new DelegateCommand(cancelDeletePersonalSchedule);
         AddPlanCommand = new DelegateCommand(beginCreatePlan);
-        mPreviousRecommendationCommand = new DelegateCommand(
-            selectPreviousRecommendation,
-            canNavigateRecommendations);
-        mNextRecommendationCommand = new DelegateCommand(
-            selectNextRecommendation,
-            canNavigateRecommendations);
+        mPreviousRecommendationCommand = new DelegateCommand(selectPreviousRecommendation, canNavigateRecommendations);
+        mNextRecommendationCommand = new DelegateCommand(selectNextRecommendation, canNavigateRecommendations);
         ToggleCoursePaneCommand = new DelegateCommand(toggleCoursePane);
         OpenInspectorPaneCommand = new DelegateCommand(openInspectorPane);
         CloseInspectorPaneCommand = new DelegateCommand(closeInspectorPane);
@@ -173,9 +167,7 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         ConfirmClearActivePlanCommand = new DelegateCommand(confirmClearActivePlan);
         CancelClearActivePlanCommand = new DelegateCommand(cancelClearActivePlan);
         mRetryAutosaveCommand = new DelegateCommand(retryAutosave, canRetryAutosave);
-        mRetryRecommendationCommand = new DelegateCommand(
-            requestRecommendationRefresh,
-            canRetryRecommendation);
+        mRetryRecommendationCommand = new DelegateCommand(requestRecommendationRefresh, canRetryRecommendation);
 
         mAutosaveQueue.StateChanged += onAutosaveStateChanged;
         refreshVisibleCourses();
@@ -191,6 +183,8 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         }
 
         mIsDisposed = true;
+        mAutosaveSavingIndicatorTimer.Stop();
+        mAutosaveSavingIndicatorTimer.Tick -= onAutosaveSavingIndicatorTimerTick;
         mRecommendationCancellationSource.Cancel();
         mRecommendationCancellationSource.Dispose();
         mAutosaveQueue.StateChanged -= onAutosaveStateChanged;

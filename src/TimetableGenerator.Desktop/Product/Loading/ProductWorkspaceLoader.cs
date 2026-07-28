@@ -16,10 +16,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
 
     private readonly IProductCatalogDownloader mCatalogDownloader;
 
-    internal ProductWorkspaceLoader(
-        CatalogCacheFileStore catalogCacheStore,
-        IPlanningWorkspaceStore workspaceStore,
-        IProductCatalogDownloader catalogDownloader)
+    internal ProductWorkspaceLoader(CatalogCacheFileStore catalogCacheStore, IPlanningWorkspaceStore workspaceStore, IProductCatalogDownloader catalogDownloader)
     {
         if (catalogCacheStore == null)
         {
@@ -49,32 +46,17 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
 
         if (workspaceLoadResult.IsFound == false)
         {
-            return await createWorkspaceAsync(
-                cacheLoadResult,
-                workspaceLoadResult.ConcurrencyToken,
-                recoveryFlags,
-                cancellationToken).ConfigureAwait(false);
+            return await createWorkspaceAsync(cacheLoadResult, workspaceLoadResult.ConcurrencyToken, recoveryFlags, cancellationToken).ConfigureAwait(false);
         }
 
         PlanningWorkspace workspace = getLoadedWorkspace(workspaceLoadResult);
         PlanCatalogBinding savedBinding = getSharedCatalogBinding(workspace);
         if (cacheLoadResult.IsFound)
         {
-            return await loadWithCachedCatalogAsync(
-                cacheLoadResult,
-                workspace,
-                savedBinding,
-                workspaceLoadResult.ConcurrencyToken,
-                recoveryFlags,
-                cancellationToken).ConfigureAwait(false);
+            return await loadWithCachedCatalogAsync(cacheLoadResult, workspace, savedBinding, workspaceLoadResult.ConcurrencyToken, recoveryFlags, cancellationToken).ConfigureAwait(false);
         }
 
-        return await loadWithDownloadedCatalogAsync(
-            workspace,
-            savedBinding,
-            workspaceLoadResult.ConcurrencyToken,
-            recoveryFlags,
-            cancellationToken).ConfigureAwait(false);
+        return await loadWithDownloadedCatalogAsync(workspace, savedBinding, workspaceLoadResult.ConcurrencyToken, recoveryFlags, cancellationToken).ConfigureAwait(false);
     }
 
     private static PlanningWorkspace createEmptyWorkspace(VerifiedCatalogPackage catalogPackage)
@@ -82,14 +64,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
         PlanId planId = PlanId.CreateNew();
         PlanCatalogBinding catalogBinding = createCatalogBinding(catalogPackage);
         PlanName initialPlanName = AcademicTermPlanNameFactory.CreateInitialPlanName(catalogBinding.Term);
-        PlanningPlan plan = new PlanningPlan(
-            planId,
-            initialPlanName,
-            catalogBinding,
-            new PlanningPlanContent(
-                Array.Empty<CourseChoiceGroup>(),
-                Array.Empty<UnscheduledOfferingSelection>(),
-                Array.Empty<PersonalSchedule>()));
+        PlanningPlan plan = new PlanningPlan(planId, initialPlanName, catalogBinding, new PlanningPlanContent(Array.Empty<CourseChoiceGroup>(), Array.Empty<UnscheduledOfferingSelection>(), Array.Empty<PersonalSchedule>()));
         return new PlanningWorkspace(
             catalogBinding,
             planId,
@@ -116,16 +91,12 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
         return workspace.CatalogBinding;
     }
 
-    private static bool hasMatchingCatalogBinding(
-        VerifiedCatalogPackage catalogPackage,
-        PlanCatalogBinding catalogBinding)
+    private static bool hasMatchingCatalogBinding(VerifiedCatalogPackage catalogPackage, PlanCatalogBinding catalogBinding)
     {
         return catalogPackage.CreatePlanCatalogBinding() == catalogBinding;
     }
 
-    private static void requireCompatibleWorkspace(
-        VerifiedCatalogPackage catalogPackage,
-        PlanningWorkspace workspace)
+    private static void requireCompatibleWorkspace(VerifiedCatalogPackage catalogPackage, PlanningWorkspace workspace)
     {
         PlanningWorkspaceCatalogRebindResult rebindResult = PlanningWorkspaceCatalogRebinder.TryRebind(catalogPackage.Document.Catalog, catalogPackage.CreatePlanCatalogBinding(), workspace);
         if (rebindResult.IsRebound == false)
@@ -134,9 +105,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
         }
     }
 
-    private static PlanningWorkspace rebindWorkspace(
-        VerifiedCatalogPackage catalogPackage,
-        PlanningWorkspace workspace)
+    private static PlanningWorkspace rebindWorkspace(VerifiedCatalogPackage catalogPackage, PlanningWorkspace workspace)
     {
         PlanningWorkspaceCatalogRebindResult rebindResult = PlanningWorkspaceCatalogRebinder.TryRebind(catalogPackage.Document.Catalog, catalogPackage.CreatePlanCatalogBinding(), workspace);
         if (rebindResult.IsRebound == false || rebindResult.ReboundWorkspaceOrNull == null)
@@ -147,8 +116,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
         return rebindResult.ReboundWorkspaceOrNull;
     }
 
-    private static EPlanningWorkspaceCatalogRebindStatus getTransitionFailureStatus(
-            EPlanningCatalogTransitionStatus transitionStatus)
+    private static EPlanningWorkspaceCatalogRebindStatus getTransitionFailureStatus(EPlanningCatalogTransitionStatus transitionStatus)
     {
         switch (transitionStatus)
         {
@@ -161,15 +129,11 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
             case EPlanningCatalogTransitionStatus.ArtifactSha256Mismatch:
                 return EPlanningWorkspaceCatalogRebindStatus.CatalogArtifactSha256Mismatch;
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(transitionStatus),
-                    transitionStatus,
-                    "Only an ineligible catalog transition has a failure status.");
+                throw new ArgumentOutOfRangeException(nameof(transitionStatus), transitionStatus, "Only an ineligible catalog transition has a failure status.");
         }
     }
 
-    private static EProductWorkspaceRecoveryFlags getCatalogRecoveryFlags(
-        CatalogCacheLoadResult cacheLoadResult)
+    private static EProductWorkspaceRecoveryFlags getCatalogRecoveryFlags(CatalogCacheLoadResult cacheLoadResult)
     {
         if (cacheLoadResult.Status == ECatalogCacheLoadStatus.RecoveredPreviousGeneration)
         {
@@ -179,8 +143,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
         return EProductWorkspaceRecoveryFlags.None;
     }
 
-    private static EProductWorkspaceRecoveryFlags getWorkspaceRecoveryFlags(
-        PlanningWorkspaceLoadResult workspaceLoadResult)
+    private static EProductWorkspaceRecoveryFlags getWorkspaceRecoveryFlags(PlanningWorkspaceLoadResult workspaceLoadResult)
     {
         if (workspaceLoadResult.Status == EPlanningWorkspaceLoadStatus.RecoveredPreviousGeneration)
         {
@@ -190,11 +153,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
         return EProductWorkspaceRecoveryFlags.None;
     }
 
-    private async Task<ProductWorkspaceLoadResult> createWorkspaceAsync(
-        CatalogCacheLoadResult cacheLoadResult,
-        PlanningWorkspaceConcurrencyToken workspaceConcurrencyToken,
-        EProductWorkspaceRecoveryFlags recoveryFlags,
-        CancellationToken cancellationToken)
+    private async Task<ProductWorkspaceLoadResult> createWorkspaceAsync(CatalogCacheLoadResult cacheLoadResult, PlanningWorkspaceConcurrencyToken workspaceConcurrencyToken, EProductWorkspaceRecoveryFlags recoveryFlags, CancellationToken cancellationToken)
     {
         VerifiedCatalogPackage catalogPackage;
         EProductCatalogOrigin catalogOrigin;
@@ -212,10 +171,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
         }
 
         PlanningWorkspace workspace = createEmptyWorkspace(catalogPackage);
-        workspaceConcurrencyToken = await mWorkspaceStore.SaveAsync(
-            workspace,
-            workspaceConcurrencyToken,
-            cancellationToken).ConfigureAwait(false);
+        workspaceConcurrencyToken = await mWorkspaceStore.SaveAsync(workspace, workspaceConcurrencyToken, cancellationToken).ConfigureAwait(false);
         recoveryFlags |= EProductWorkspaceRecoveryFlags.WorkspaceCreated;
         return new ProductWorkspaceLoadResult(
             catalogPackage,
@@ -252,17 +208,11 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
         PlanningWorkspaceCatalogRebindResult? rebindResultOrNull = null;
         if (transitionStatus == EPlanningCatalogTransitionStatus.UpgradeEligible)
         {
-            rebindResultOrNull = PlanningWorkspaceCatalogRebinder.TryRebind(
-                latestCatalogPackage.Document.Catalog,
-                latestCatalogPackage.CreatePlanCatalogBinding(),
-                workspace);
+            rebindResultOrNull = PlanningWorkspaceCatalogRebinder.TryRebind(latestCatalogPackage.Document.Catalog, latestCatalogPackage.CreatePlanCatalogBinding(), workspace);
             if (rebindResultOrNull.IsRebound && rebindResultOrNull.ReboundWorkspaceOrNull != null)
             {
                 PlanningWorkspace reboundWorkspace = rebindResultOrNull.ReboundWorkspaceOrNull;
-                workspaceConcurrencyToken = await mWorkspaceStore.SaveAsync(
-                    reboundWorkspace,
-                    workspaceConcurrencyToken,
-                    cancellationToken).ConfigureAwait(false);
+                workspaceConcurrencyToken = await mWorkspaceStore.SaveAsync(reboundWorkspace, workspaceConcurrencyToken, cancellationToken).ConfigureAwait(false);
                 recoveryFlags |= getCatalogRecoveryFlags(latestCacheLoadResult);
                 recoveryFlags |= EProductWorkspaceRecoveryFlags.WorkspaceCatalogRebound;
                 return new ProductWorkspaceLoadResult(
@@ -295,8 +245,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
             throw new ProductWorkspaceCatalogCompatibilityException(rebindResultOrNull.Status);
         }
 
-        throw new ProductWorkspaceCatalogCompatibilityException(
-            getTransitionFailureStatus(transitionStatus));
+        throw new ProductWorkspaceCatalogCompatibilityException(getTransitionFailureStatus(transitionStatus));
     }
 
     private async Task<ProductWorkspaceLoadResult> loadWithDownloadedCatalogAsync(
@@ -321,18 +270,13 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
         }
         else
         {
-            throw new ProductWorkspaceCatalogCompatibilityException(
-                getTransitionFailureStatus(transitionStatus));
+            throw new ProductWorkspaceCatalogCompatibilityException(getTransitionFailureStatus(transitionStatus));
         }
 
-        await mCatalogCacheStore.SaveAsync(downloadedCatalogPackage, cancellationToken)
-            .ConfigureAwait(false);
+        await mCatalogCacheStore.SaveAsync(downloadedCatalogPackage, cancellationToken).ConfigureAwait(false);
         if (shouldSaveWorkspace)
         {
-            workspaceConcurrencyToken = await mWorkspaceStore.SaveAsync(
-                compatibleWorkspace,
-                workspaceConcurrencyToken,
-                cancellationToken).ConfigureAwait(false);
+            workspaceConcurrencyToken = await mWorkspaceStore.SaveAsync(compatibleWorkspace, workspaceConcurrencyToken, cancellationToken).ConfigureAwait(false);
             recoveryFlags |= EProductWorkspaceRecoveryFlags.WorkspaceCatalogRebound;
         }
 

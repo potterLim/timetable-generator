@@ -54,30 +54,17 @@ internal sealed class ProductWorkspacePresentation
             throw new ArgumentOutOfRangeException(nameof(recoveryFlags));
         }
 
-        bool isRemoteWithRecoveredCatalog =
-            catalogOrigin == EProductCatalogOrigin.RemoteDownload
-            && (recoveryFlags
-                & EProductWorkspaceRecoveryFlags.CatalogPreviousGeneration) != 0;
+        bool isRemoteWithRecoveredCatalog = catalogOrigin == EProductCatalogOrigin.RemoteDownload && (recoveryFlags & EProductWorkspaceRecoveryFlags.CatalogPreviousGeneration) != 0;
         if (isRemoteWithRecoveredCatalog)
         {
-            throw new ArgumentException(
-                "A remotely downloaded catalog cannot be a recovered cache generation.",
-                nameof(recoveryFlags));
+            throw new ArgumentException("A remotely downloaded catalog cannot be a recovered cache generation.", nameof(recoveryFlags));
         }
 
-        bool isCreatedAndRecovered =
-            (recoveryFlags & EProductWorkspaceRecoveryFlags.WorkspaceCreated) != 0
-            && (recoveryFlags
-                & EProductWorkspaceRecoveryFlags.WorkspacePreviousGeneration) != 0;
-        bool isCreatedAndRebound =
-            (recoveryFlags & EProductWorkspaceRecoveryFlags.WorkspaceCreated) != 0
-            && (recoveryFlags
-                & EProductWorkspaceRecoveryFlags.WorkspaceCatalogRebound) != 0;
+        bool isCreatedAndRecovered = (recoveryFlags & EProductWorkspaceRecoveryFlags.WorkspaceCreated) != 0 && (recoveryFlags & EProductWorkspaceRecoveryFlags.WorkspacePreviousGeneration) != 0;
+        bool isCreatedAndRebound = (recoveryFlags & EProductWorkspaceRecoveryFlags.WorkspaceCreated) != 0 && (recoveryFlags & EProductWorkspaceRecoveryFlags.WorkspaceCatalogRebound) != 0;
         if (isCreatedAndRecovered || isCreatedAndRebound)
         {
-            throw new ArgumentException(
-                "A newly created workspace cannot also be recovered or rebound.",
-                nameof(recoveryFlags));
+            throw new ArgumentException("A newly created workspace cannot also be recovered or rebound.", nameof(recoveryFlags));
         }
 
         Workspace = workspace;

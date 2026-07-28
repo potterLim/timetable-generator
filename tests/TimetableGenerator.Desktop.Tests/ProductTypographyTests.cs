@@ -81,9 +81,7 @@ public sealed class ProductTypographyTests
         {
             Typeface productTypeface = new Typeface(productFontFamily, FontStyle.Normal, productFontWeight);
             GlyphTypeface? resolvedTypefaceOrNull;
-            bool hasResolvedTypeface = FontManager.Current.TryGetGlyphTypeface(
-                productTypeface,
-                out resolvedTypefaceOrNull);
+            bool hasResolvedTypeface = FontManager.Current.TryGetGlyphTypeface(productTypeface, out resolvedTypefaceOrNull);
 
             Assert.True(hasResolvedTypeface);
             Assert.NotNull(resolvedTypefaceOrNull);

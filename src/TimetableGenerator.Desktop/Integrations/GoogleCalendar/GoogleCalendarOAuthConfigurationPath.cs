@@ -16,18 +16,13 @@ internal sealed record GoogleCalendarOAuthConfigurationPath
 
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException(
-                "Google Calendar OAuth configuration paths cannot be empty.",
-                nameof(value));
+            throw new ArgumentException("Google Calendar OAuth configuration paths cannot be empty.", nameof(value));
         }
 
         string fullPath = Path.GetFullPath(value);
-        if (string.IsNullOrWhiteSpace(Path.GetFileName(fullPath))
-            || Directory.Exists(fullPath))
+        if (string.IsNullOrWhiteSpace(Path.GetFileName(fullPath)) || Directory.Exists(fullPath))
         {
-            throw new ArgumentException(
-                "Google Calendar OAuth configuration paths must identify a file.",
-                nameof(value));
+            throw new ArgumentException("Google Calendar OAuth configuration paths must identify a file.", nameof(value));
         }
 
         Value = fullPath;

@@ -29,16 +29,10 @@ internal sealed class ProductWorkspaceViewModelLoader : IProductWorkspaceLoader
     {
         ProductWorkspaceLoadResult loadResult = await mDataLoader.LoadAsync(cancellationToken);
         CourseCatalogProjection catalogProjection = CourseCatalogProjector.Project(loadResult.CatalogPackage.Document);
-        PlanningWorkspaceSession session = new PlanningWorkspaceSession(
-            loadResult.CatalogPackage.Document.Catalog,
-            loadResult.Workspace);
+        PlanningWorkspaceSession session = new PlanningWorkspaceSession(loadResult.CatalogPackage.Document.Catalog, loadResult.Workspace);
         PlanningWorkspaceAutosaveQueue autosaveQueue = new PlanningWorkspaceAutosaveQueue(loadResult.WorkspaceStore, loadResult.WorkspaceConcurrencyToken);
         IScheduleRecommendationProvider recommendationProvider = new CatalogScheduleRecommendationProvider(loadResult.CatalogPackage.Document.Catalog);
-        PlannerWorkspaceViewModel workspace = new PlannerWorkspaceViewModel(
-            catalogProjection,
-            session,
-            autosaveQueue,
-            recommendationProvider);
+        PlannerWorkspaceViewModel workspace = new PlannerWorkspaceViewModel(catalogProjection, session, autosaveQueue, recommendationProvider);
         return new ProductWorkspacePresentation(
             workspace,
             loadResult.CatalogPackage,

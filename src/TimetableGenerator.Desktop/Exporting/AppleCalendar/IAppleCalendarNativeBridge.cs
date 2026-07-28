@@ -22,7 +22,5 @@ internal interface IAppleCalendarNativeBridge
 
     Task<IReadOnlyList<AppleCalendarDescriptor>> GetCalendarsAsync(PlanName requestedDestinationName, CancellationToken cancellationToken);
 
-    Task<AppleCalendarNativeExportResult> ApplyExportAsync(
-        AppleCalendarExportMutation mutation,
-        CancellationToken cancellationToken);
+    Task<AppleCalendarNativeExportResult> ApplyExportAsync(AppleCalendarExportMutation mutation, CancellationToken cancellationToken);
 }

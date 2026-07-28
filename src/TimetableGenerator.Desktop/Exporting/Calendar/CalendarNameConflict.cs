@@ -22,11 +22,7 @@ internal sealed class CalendarNameConflict
         }
     }
 
-    public CalendarNameConflict(
-        ECalendarExportProvider provider,
-        PlanName requestedName,
-        PlanName nextAvailableName,
-        ECalendarReplacementAvailability replacementAvailability)
+    public CalendarNameConflict(ECalendarExportProvider provider, PlanName requestedName, PlanName nextAvailableName, ECalendarReplacementAvailability replacementAvailability)
     {
         validateProvider(provider);
         if (requestedName == null)
@@ -42,9 +38,7 @@ internal sealed class CalendarNameConflict
         validateReplacementAvailability(replacementAvailability);
         if (CalendarNameConflictPolicy.IsSameName(requestedName, nextAvailableName))
         {
-            throw new ArgumentException(
-                "The next available calendar name must differ from the requested name.",
-                nameof(nextAvailableName));
+            throw new ArgumentException("The next available calendar name must differ from the requested name.", nameof(nextAvailableName));
         }
 
         Provider = provider;
@@ -62,15 +56,11 @@ internal sealed class CalendarNameConflict
                 return;
             case ECalendarExportProvider.None:
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(provider),
-                    provider,
-                    "Calendar name conflicts require a supported export provider.");
+                throw new ArgumentOutOfRangeException(nameof(provider), provider, "Calendar name conflicts require a supported export provider.");
         }
     }
 
-    private static void validateReplacementAvailability(
-        ECalendarReplacementAvailability replacementAvailability)
+    private static void validateReplacementAvailability(ECalendarReplacementAvailability replacementAvailability)
     {
         switch (replacementAvailability)
         {
@@ -78,10 +68,7 @@ internal sealed class CalendarNameConflict
             case ECalendarReplacementAvailability.Available:
                 return;
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(replacementAvailability),
-                    replacementAvailability,
-                    "Calendar name conflicts require a valid replacement availability.");
+                throw new ArgumentOutOfRangeException(nameof(replacementAvailability), replacementAvailability, "Calendar name conflicts require a valid replacement availability.");
         }
     }
 }

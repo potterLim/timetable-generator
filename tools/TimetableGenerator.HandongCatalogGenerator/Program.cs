@@ -32,9 +32,7 @@ internal static class Program
         }
         catch (Exception exception)
         {
-            Console.Error.WriteLine(
-                "[" + ECatalogGenerationErrorCode.UnexpectedFailure + "] " +
-                "Catalog generation failed unexpectedly: " + exception.Message);
+            Console.Error.WriteLine("[" + ECatalogGenerationErrorCode.UnexpectedFailure + "] " + "Catalog generation failed unexpectedly: " + exception.Message);
             return (int)ECatalogGeneratorExitCode.UnexpectedFailure;
         }
     }
@@ -54,8 +52,6 @@ internal static class Program
         Console.Out.WriteLine("meetingNotProvided: " + result.Summary.MeetingNotProvidedCount.Value);
         Console.Out.WriteLine("roomNotProvided: " + result.Summary.RoomNotProvidedCount.Value);
         Console.Out.WriteLine("instructorUnconfirmed: " + result.Summary.InstructorUnconfirmedCount.Value);
-        Console.Out.WriteLine(
-            "sourceEnglishScheduleMismatch: "
-            + result.Summary.EnglishScheduleMismatchCount.Value);
+        Console.Out.WriteLine("sourceEnglishScheduleMismatch: " + result.Summary.EnglishScheduleMismatchCount.Value);
     }
 }

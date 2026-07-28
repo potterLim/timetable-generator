@@ -23,9 +23,7 @@ internal sealed record GoogleOAuthRedirectUri
             || value.Query.Length > 0
             || value.Fragment.Length > 0)
         {
-            throw new ArgumentException(
-                "Google OAuth redirect URIs must use the product loopback callback.",
-                nameof(value));
+            throw new ArgumentException("Google OAuth redirect URIs must use the product loopback callback.", nameof(value));
         }
 
         Value = value;

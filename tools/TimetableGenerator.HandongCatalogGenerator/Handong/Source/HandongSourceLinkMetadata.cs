@@ -9,10 +9,7 @@ internal sealed record HandongSourceLinkMetadata
     public CourseCode CourseCode { get; }
     public CourseSectionCode CourseSectionCode { get; }
 
-    public HandongSourceLinkMetadata(
-        AcademicTerm academicTerm,
-        CourseCode courseCode,
-        CourseSectionCode courseSectionCode)
+    public HandongSourceLinkMetadata(AcademicTerm academicTerm, CourseCode courseCode, CourseSectionCode courseSectionCode)
     {
         ArgumentNullException.ThrowIfNull(courseCode);
         ArgumentNullException.ThrowIfNull(courseSectionCode);

@@ -43,9 +43,7 @@ public sealed class ProductAppearanceSettingsJsonCodecTests
             () => codec.Deserialize(Encoding.UTF8.GetBytes(json)));
     }
 
-    private static void assertPreferenceRoundTrip(
-        EProductThemePreference preference,
-        string serializedValue)
+    private static void assertPreferenceRoundTrip(EProductThemePreference preference, string serializedValue)
     {
         ProductAppearanceSettingsJsonCodec codec = new ProductAppearanceSettingsJsonCodec();
         ProductAppearanceSettings settings = new ProductAppearanceSettings(preference);
@@ -54,10 +52,7 @@ public sealed class ProductAppearanceSettingsJsonCodecTests
         ProductAppearanceSettings decodedSettings = codec.Deserialize(content);
 
         string json = Encoding.UTF8.GetString(content);
-        Assert.Contains(
-            "\"themePreference\": \"" + serializedValue + "\"",
-            json,
-            StringComparison.Ordinal);
+        Assert.Contains("\"themePreference\": \"" + serializedValue + "\"", json, StringComparison.Ordinal);
         Assert.Equal(preference, decodedSettings.ThemePreference);
     }
 

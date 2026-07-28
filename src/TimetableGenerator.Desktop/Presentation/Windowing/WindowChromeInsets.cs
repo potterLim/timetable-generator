@@ -21,10 +21,7 @@ internal readonly record struct WindowChromeInsets
     {
         if (double.IsNaN(inset) || double.IsInfinity(inset) || inset < 0.0)
         {
-            throw new ArgumentOutOfRangeException(
-                parameterName,
-                inset,
-                "Window chrome inset must be finite and non-negative.");
+            throw new ArgumentOutOfRangeException(parameterName, inset, "Window chrome inset must be finite and non-negative.");
         }
     }
 }

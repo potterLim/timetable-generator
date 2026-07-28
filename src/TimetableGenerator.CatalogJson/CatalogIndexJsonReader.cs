@@ -36,10 +36,7 @@ public static class CatalogIndexJsonReader
         }
         catch (ArgumentException exception)
         {
-            throw new CatalogJsonFormatException(
-                "$",
-                "a schema value is invalid. " + exception.Message,
-                exception);
+            throw new CatalogJsonFormatException("$", "a schema value is invalid. " + exception.Message, exception);
         }
     }
 
@@ -94,26 +91,15 @@ public static class CatalogIndexJsonReader
             });
         CatalogId catalogId = new CatalogId(entryObject.GetString("catalogId"));
         CatalogJsonValueParser.RequireSchemaVersion(entryObject.GetInt32("catalogSchemaVersion"), entryObject.GetPropertyPath("catalogSchemaVersion"));
-        InstitutionMetadata institution = CatalogJsonValueParser.ParseInstitution(
-            entryObject.GetElement("institution"),
-            entryObject.GetPropertyPath("institution"));
-        AcademicTerm term = CatalogJsonValueParser.ParseTerm(
-            entryObject.GetElement("term"),
-            entryObject.GetPropertyPath("term"));
+        InstitutionMetadata institution = CatalogJsonValueParser.ParseInstitution(entryObject.GetElement("institution"), entryObject.GetPropertyPath("institution"));
+        AcademicTerm term = CatalogJsonValueParser.ParseTerm(entryObject.GetElement("term"), entryObject.GetPropertyPath("term"));
         CatalogRevision revision = new CatalogRevision(entryObject.GetInt32("revision"));
-        CatalogFileDescriptor file = parseFile(
-            entryObject.GetElement("file"),
-            entryObject.GetPropertyPath("file"));
-        CatalogIndexCounts counts = parseCounts(
-            entryObject.GetElement("counts"),
-            entryObject.GetPropertyPath("counts"));
+        CatalogFileDescriptor file = parseFile(entryObject.GetElement("file"), entryObject.GetPropertyPath("file"));
+        CatalogIndexCounts counts = parseCounts(entryObject.GetElement("counts"), entryObject.GetPropertyPath("counts"));
 
         string expectedCatalogId = CatalogJsonValueParser.BuildCatalogId(institution.Id, term, revision);
         CatalogJsonValueParser.RequireExactString(catalogId.Value, expectedCatalogId, entryObject.GetPropertyPath("catalogId"));
-        string expectedRelativePath = CatalogJsonValueParser.BuildCatalogRelativePath(
-            institution.Id,
-            term,
-            revision);
+        string expectedRelativePath = CatalogJsonValueParser.BuildCatalogRelativePath(institution.Id, term, revision);
         CatalogJsonValueParser.RequireExactString(file.RelativePath.Value, expectedRelativePath, entryObject.GetPropertyPath("file") + ".relativePath");
 
         return new CatalogIndexEntry(catalogId, institution, term, revision, file, counts);
@@ -164,8 +150,6 @@ public static class CatalogIndexJsonReader
                 "courses",
                 "offerings",
             });
-        return new CatalogIndexCounts(
-            new CatalogCourseCount(countsObject.GetInt32("courses")),
-            new CatalogOfferingCount(countsObject.GetInt32("offerings")));
+        return new CatalogIndexCounts(new CatalogCourseCount(countsObject.GetInt32("courses")), new CatalogOfferingCount(countsObject.GetInt32("offerings")));
     }
 }

@@ -32,9 +32,7 @@ internal static class AppleCalendarEventOccurrenceProjector
 
         if (calendarOwnershipPlanId.IsValid == false)
         {
-            throw new ArgumentException(
-                "Apple Calendar event projection requires a valid calendar ownership plan ID.",
-                nameof(calendarOwnershipPlanId));
+            throw new ArgumentException("Apple Calendar event projection requires a valid calendar ownership plan ID.", nameof(calendarOwnershipPlanId));
         }
 
         List<AppleCalendarAutomationEvent> occurrences = new List<AppleCalendarAutomationEvent>();
@@ -42,12 +40,7 @@ internal static class AppleCalendarEventOccurrenceProjector
         {
             foreach (EDay day in recurringEvent.Days)
             {
-                appendOccurrences(
-                    occurrences,
-                    calendarOwnershipPlanId,
-                    document.AcademicCalendar,
-                    recurringEvent,
-                    day);
+                appendOccurrences(occurrences, calendarOwnershipPlanId, document.AcademicCalendar, recurringEvent, day);
             }
         }
 
@@ -70,11 +63,7 @@ internal static class AppleCalendarEventOccurrenceProjector
             occurrences.Add(
                 new AppleCalendarAutomationEvent(
                     planId,
-                    recurringEvent.Uid.Value
-                        + ":"
-                        + occurrenceDate.ToString(
-                            "yyyy-MM-dd",
-                            CultureInfo.InvariantCulture),
+                    recurringEvent.Uid.Value + ":" + occurrenceDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                     recurringEvent.Content.Summary,
                     recurringEvent.Content.Location,
                     recurringEvent.Content.Description,
@@ -85,10 +74,7 @@ internal static class AppleCalendarEventOccurrenceProjector
         }
     }
 
-    private static DateTimeOffset resolve(
-        AcademicTermCalendarMetadata academicCalendar,
-        DateOnly occurrenceDate,
-        ScheduleTime scheduleTime)
+    private static DateTimeOffset resolve(AcademicTermCalendarMetadata academicCalendar, DateOnly occurrenceDate, ScheduleTime scheduleTime)
     {
         TimeOnly time = new TimeOnly(scheduleTime.Hour, scheduleTime.Minute);
         return academicCalendar.TimeZoneId.ResolveLocalDateTime(occurrenceDate, time);
@@ -99,9 +85,7 @@ internal static class AppleCalendarEventOccurrenceProjector
         return value.ToString(ISO_OFFSET_FORMAT, CultureInfo.InvariantCulture);
     }
 
-    private static int compareOccurrences(
-        AppleCalendarAutomationEvent left,
-        AppleCalendarAutomationEvent right)
+    private static int compareOccurrences(AppleCalendarAutomationEvent left, AppleCalendarAutomationEvent right)
     {
         int startComparison = string.CompareOrdinal(left.StartsAt, right.StartsAt);
         if (startComparison != 0)

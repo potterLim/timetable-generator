@@ -18,9 +18,7 @@ public sealed record Sha256Digest
 
         if (hexValue.Length != HEX_LENGTH || containsInvalidCharacter(hexValue))
         {
-            throw new ArgumentException(
-                "SHA-256 digests must contain exactly 64 lowercase hexadecimal characters.",
-                nameof(hexValue));
+            throw new ArgumentException("SHA-256 digests must contain exactly 64 lowercase hexadecimal characters.", nameof(hexValue));
         }
 
         HexValue = hexValue;

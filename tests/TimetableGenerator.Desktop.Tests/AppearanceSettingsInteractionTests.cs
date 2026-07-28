@@ -312,13 +312,9 @@ public sealed class AppearanceSettingsInteractionTests
             throw new InvalidOperationException("The appearance option geometry could not be resolved.");
         }
 
-        double indicatorCenterY = indicatorOriginOrNull.Value.Y
-            + (indicator.Bounds.Height / 2.0);
-        double presenterCenterY = presenterOriginOrNull.Value.Y
-            + (presenter.Bounds.Height / 2.0);
-        double horizontalGap = presenterOriginOrNull.Value.X
-            - indicatorOriginOrNull.Value.X
-            - indicator.Bounds.Width;
+        double indicatorCenterY = indicatorOriginOrNull.Value.Y + (indicator.Bounds.Height / 2.0);
+        double presenterCenterY = presenterOriginOrNull.Value.Y + (presenter.Bounds.Height / 2.0);
+        double horizontalGap = presenterOriginOrNull.Value.X - indicatorOriginOrNull.Value.X - indicator.Bounds.Width;
         Assert.InRange(horizontalGap, 7.75, 8.25);
         double presenterCenterDelta = indicatorCenterY - presenterCenterY;
         Assert.InRange(presenterCenterDelta, -0.05, 0.05);
@@ -335,9 +331,7 @@ public sealed class AppearanceSettingsInteractionTests
         double expectedIndicatorX = findRequiredHorizontalOrigin(expectedIndicator, root);
         double expectedPresenterX = findRequiredHorizontalOrigin(expectedPresenter, root);
         double expectedTextX = findRequiredHorizontalOrigin(expectedText, root);
-        double expectedIndicatorToPresenterGap = expectedPresenterX
-            - expectedIndicatorX
-            - expectedIndicator.Bounds.Width;
+        double expectedIndicatorToPresenterGap = expectedPresenterX - expectedIndicatorX - expectedIndicator.Bounds.Width;
 
         foreach (RadioButton option in options)
         {
@@ -350,9 +344,7 @@ public sealed class AppearanceSettingsInteractionTests
             double indicatorX = findRequiredHorizontalOrigin(indicator, root);
             double presenterX = findRequiredHorizontalOrigin(presenter, root);
             double textX = findRequiredHorizontalOrigin(text, root);
-            double indicatorToPresenterGap = presenterX
-                - indicatorX
-                - indicator.Bounds.Width;
+            double indicatorToPresenterGap = presenterX - indicatorX - indicator.Bounds.Width;
 
             Assert.InRange(Math.Abs(indicatorX - expectedIndicatorX), 0.0, 0.05);
             Assert.InRange(Math.Abs(presenterX - expectedPresenterX), 0.0, 0.05);
@@ -367,8 +359,7 @@ public sealed class AppearanceSettingsInteractionTests
         Assert.NotNull(originOrNull);
         if (originOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The appearance option horizontal origin could not be resolved.");
+            throw new InvalidOperationException("The appearance option horizontal origin could not be resolved.");
         }
 
         return originOrNull.Value.X;
@@ -383,8 +374,7 @@ public sealed class AppearanceSettingsInteractionTests
         Assert.NotNull(indicatorOriginOrNull);
         if (indicatorOriginOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The appearance option indicator position could not be resolved.");
+            throw new InvalidOperationException("The appearance option indicator position could not be resolved.");
         }
 
         Assert.InRange(indicatorOriginOrNull.Value.X, 8.0, 10.0);
@@ -395,9 +385,7 @@ public sealed class AppearanceSettingsInteractionTests
         Border rootBorder = option.GetVisualDescendants()
             .OfType<Border>()
             .Single(candidate => candidate.Name == "RootBorder");
-        Color restingColor = getRequiredApplicationColor(
-            "SelectionSurfaceBrush",
-            option.ActualThemeVariant);
+        Color restingColor = getRequiredApplicationColor("SelectionSurfaceBrush", option.ActualThemeVariant);
         Assert.Equal(restingColor, getRequiredSolidColor(rootBorder.Background));
         Point? optionOriginOrNull = option.TranslatePoint(new Point(0.0, 0.0), window);
 
@@ -407,17 +395,12 @@ public sealed class AppearanceSettingsInteractionTests
             throw new InvalidOperationException("The appearance option position could not be resolved.");
         }
 
-        Point optionCenter = optionOriginOrNull.Value
-            + new Vector(option.Bounds.Width / 2.0, option.Bounds.Height / 2.0);
+        Point optionCenter = optionOriginOrNull.Value + new Vector(option.Bounds.Width / 2.0, option.Bounds.Height / 2.0);
         window.MouseMove(optionCenter, RawInputModifiers.None);
         Dispatcher.UIThread.RunJobs();
 
         Assert.True(option.IsPointerOver);
-        Assert.Equal(
-            getRequiredApplicationColor(
-                "SelectionHoverSurfaceBrush",
-                option.ActualThemeVariant),
-            getRequiredSolidColor(rootBorder.Background));
+        Assert.Equal(getRequiredApplicationColor("SelectionHoverSurfaceBrush", option.ActualThemeVariant), getRequiredSolidColor(rootBorder.Background));
     }
 
     private static Border findAppearanceOptionSurface(RadioButton option)
@@ -436,8 +419,7 @@ public sealed class AppearanceSettingsInteractionTests
             throw new InvalidOperationException("The appearance option position could not be resolved.");
         }
 
-        return originOrNull.Value
-            + new Vector(control.Bounds.Width / 2.0, control.Bounds.Height / 2.0);
+        return originOrNull.Value + new Vector(control.Bounds.Width / 2.0, control.Bounds.Height / 2.0);
     }
 
     private static void movePointerOutsideAppearanceOptions(Window window)
@@ -449,21 +431,12 @@ public sealed class AppearanceSettingsInteractionTests
     private static void assertFocusVisuals(RadioButton option, ThemeVariant themeVariant)
     {
         Assert.Equal(new Thickness(2.0), option.BorderThickness);
-        Assert.Equal(
-            getRequiredApplicationColor(
-                "ProductFocusStrokeBrush",
-                themeVariant),
-            getRequiredSolidColor(option.BorderBrush));
+        Assert.Equal(getRequiredApplicationColor("ProductFocusStrokeBrush", themeVariant), getRequiredSolidColor(option.BorderBrush));
     }
 
-    private static void assertSurfaceUsesResource(
-        Border surface,
-        string resourceKey,
-        ThemeVariant themeVariant)
+    private static void assertSurfaceUsesResource(Border surface, string resourceKey, ThemeVariant themeVariant)
     {
-        Assert.Equal(
-            getRequiredApplicationColor(resourceKey, themeVariant),
-            getRequiredSolidColor(surface.Background));
+        Assert.Equal(getRequiredApplicationColor(resourceKey, themeVariant), getRequiredSolidColor(surface.Background));
     }
 
     private static void assertTransparentSurface(Border surface)

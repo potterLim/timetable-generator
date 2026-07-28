@@ -12,16 +12,8 @@ internal sealed class ConflictingCourseDefinitionException : Exception
 
     public SourceRecordNumber ConflictingSourceRecordNumber { get; }
 
-    public ConflictingCourseDefinitionException(
-        CourseCode courseCode,
-        ECourseDefinitionField field,
-        SourceRecordNumber firstSourceRecordNumber,
-        SourceRecordNumber conflictingSourceRecordNumber)
-        : base(createMessage(
-            courseCode,
-            field,
-            firstSourceRecordNumber,
-            conflictingSourceRecordNumber))
+    public ConflictingCourseDefinitionException(CourseCode courseCode, ECourseDefinitionField field, SourceRecordNumber firstSourceRecordNumber, SourceRecordNumber conflictingSourceRecordNumber)
+        : base(createMessage(courseCode, field, firstSourceRecordNumber, conflictingSourceRecordNumber))
     {
         if (courseCode == null)
         {
@@ -39,14 +31,8 @@ internal sealed class ConflictingCourseDefinitionException : Exception
         ConflictingSourceRecordNumber = conflictingSourceRecordNumber;
     }
 
-    private static string createMessage(
-        CourseCode courseCode,
-        ECourseDefinitionField field,
-        SourceRecordNumber firstSourceRecordNumber,
-        SourceRecordNumber conflictingSourceRecordNumber)
+    private static string createMessage(CourseCode courseCode, ECourseDefinitionField field, SourceRecordNumber firstSourceRecordNumber, SourceRecordNumber conflictingSourceRecordNumber)
     {
-        return "Course " + courseCode + " has conflicting " + field +
-            " values at source records " + firstSourceRecordNumber +
-            " and " + conflictingSourceRecordNumber + ".";
+        return "Course " + courseCode + " has conflicting " + field + " values at source records " + firstSourceRecordNumber + " and " + conflictingSourceRecordNumber + ".";
     }
 }

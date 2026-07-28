@@ -37,10 +37,7 @@ internal sealed class CourseChoiceAlternativeSearchItem
     {
         get
         {
-            return Projection.Offerings.Count
-                + "개 분반 · "
-                + Projection.Course.Credits
-                + "학점";
+            return Projection.Offerings.Count + "개 분반 · " + Projection.Course.Credits + "학점";
         }
     }
 
@@ -61,9 +58,7 @@ internal sealed class CourseChoiceAlternativeSearchItem
 
         if (projection.Offerings.Count == 0)
         {
-            throw new ArgumentException(
-                "Alternative course search items require at least one offering.",
-                nameof(projection));
+            throw new ArgumentException("Alternative course search items require at least one offering.", nameof(projection));
         }
 
         Projection = projection;

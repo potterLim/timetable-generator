@@ -54,9 +54,7 @@ internal sealed partial class AboutWindow : Window
         TControl? controlOrNull = this.FindControl<TControl>(controlName);
         if (controlOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The About window control is unavailable: "
-                    + controlName);
+            throw new InvalidOperationException("The About window control is unavailable: " + controlName);
         }
 
         return controlOrNull;

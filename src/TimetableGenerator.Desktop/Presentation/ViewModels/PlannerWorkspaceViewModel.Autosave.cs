@@ -11,13 +11,19 @@ namespace TimetableGenerator.Desktop.Presentation.ViewModels;
 
 internal sealed partial class PlannerWorkspaceViewModel
 {
+    private static readonly TimeSpan AUTOSAVE_SAVING_INDICATOR_DELAY = TimeSpan.FromMilliseconds(500.0);
+
     private readonly PlanningWorkspaceAutosaveQueue mAutosaveQueue;
 
     private readonly DelegateCommand mRetryAutosaveCommand;
 
+    private readonly DispatcherTimer mAutosaveSavingIndicatorTimer;
+
     private EPlanningWorkspaceAutosaveStatus mAutosaveStatus;
 
     private string mAutosaveStatusText;
+
+    private bool mIsAutosaveSavingIndicatorVisible;
 
     public EPlanningWorkspaceAutosaveStatus AutosaveStatus
     {
@@ -35,19 +41,11 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
-    public bool IsAutosaveSaved
-    {
-        get
-        {
-            return AutosaveStatus == EPlanningWorkspaceAutosaveStatus.Saved;
-        }
-    }
-
     public bool IsAutosaveSaving
     {
         get
         {
-            return AutosaveStatus == EPlanningWorkspaceAutosaveStatus.Saving;
+            return mIsAutosaveSavingIndicatorVisible;
         }
     }
 
@@ -104,9 +102,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         return HasAutosaveError;
     }
 
-    private void onAutosaveStateChanged(
-        object? senderOrNull,
-        PlanningWorkspaceAutosaveStateChangedEventArgs eventArgs)
+    private void onAutosaveStateChanged(object? senderOrNull, PlanningWorkspaceAutosaveStateChangedEventArgs eventArgs)
     {
         PlanningWorkspaceAutosaveState state = eventArgs.State;
         Dispatcher.UIThread.Post(
@@ -126,12 +122,15 @@ internal sealed partial class PlannerWorkspaceViewModel
         {
             case EPlanningWorkspaceAutosaveStatus.Saving:
                 mAutosaveStatusText = "저장 중...";
+                scheduleAutosaveSavingIndicator();
                 break;
             case EPlanningWorkspaceAutosaveStatus.Saved:
-                mAutosaveStatusText = "자동 저장됨";
+                mAutosaveStatusText = string.Empty;
+                hideAutosaveSavingIndicator();
                 break;
             case EPlanningWorkspaceAutosaveStatus.Failed:
                 mAutosaveStatusText = "저장하지 못함";
+                hideAutosaveSavingIndicator();
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(state), state.Status, "Unknown autosave state.");
@@ -139,9 +138,37 @@ internal sealed partial class PlannerWorkspaceViewModel
 
         raisePropertyChanged(nameof(AutosaveStatus));
         raisePropertyChanged(nameof(AutosaveStatusText));
-        raisePropertyChanged(nameof(IsAutosaveSaved));
-        raisePropertyChanged(nameof(IsAutosaveSaving));
         raisePropertyChanged(nameof(HasAutosaveError));
         mRetryAutosaveCommand.NotifyCanExecuteChanged();
+    }
+
+    private void scheduleAutosaveSavingIndicator()
+    {
+        hideAutosaveSavingIndicator();
+        mAutosaveSavingIndicatorTimer.Start();
+    }
+
+    private void hideAutosaveSavingIndicator()
+    {
+        mAutosaveSavingIndicatorTimer.Stop();
+        if (mIsAutosaveSavingIndicatorVisible == false)
+        {
+            return;
+        }
+
+        mIsAutosaveSavingIndicatorVisible = false;
+        raisePropertyChanged(nameof(IsAutosaveSaving));
+    }
+
+    private void onAutosaveSavingIndicatorTimerTick(object? senderOrNull, EventArgs eventArguments)
+    {
+        mAutosaveSavingIndicatorTimer.Stop();
+        if (mAutosaveStatus != EPlanningWorkspaceAutosaveStatus.Saving || mIsAutosaveSavingIndicatorVisible)
+        {
+            return;
+        }
+
+        mIsAutosaveSavingIndicatorVisible = true;
+        raisePropertyChanged(nameof(IsAutosaveSaving));
     }
 }

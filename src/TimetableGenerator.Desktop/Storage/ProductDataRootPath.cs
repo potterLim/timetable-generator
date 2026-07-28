@@ -35,8 +35,7 @@ internal sealed record ProductDataRootPath
         string localApplicationDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         if (string.IsNullOrWhiteSpace(localApplicationDataPath))
         {
-            throw new InvalidOperationException(
-                "The operating system did not provide a local application data path.");
+            throw new InvalidOperationException("The operating system did not provide a local application data path.");
         }
 
         return new ProductDataRootPath(Path.Combine(localApplicationDataPath, PRODUCT_DIRECTORY_NAME));

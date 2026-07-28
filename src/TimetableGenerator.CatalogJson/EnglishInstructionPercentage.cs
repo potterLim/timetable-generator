@@ -14,10 +14,7 @@ public readonly record struct EnglishInstructionPercentage
     {
         if (value < MINIMUM_PERCENTAGE || value > MAXIMUM_PERCENTAGE)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "English instruction percentages must be between 0 and 100.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "English instruction percentages must be between 0 and 100.");
         }
 
         Value = value;

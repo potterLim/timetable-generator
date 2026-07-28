@@ -17,9 +17,7 @@ public sealed record CatalogArtifactSha256
 
         if (hexValue.Length != HEX_LENGTH || containsInvalidCharacter(hexValue))
         {
-            throw new ArgumentException(
-                "Catalog artifact SHA-256 values must contain exactly 64 lowercase hexadecimal characters.",
-                nameof(hexValue));
+            throw new ArgumentException("Catalog artifact SHA-256 values must contain exactly 64 lowercase hexadecimal characters.", nameof(hexValue));
         }
 
         HexValue = hexValue;

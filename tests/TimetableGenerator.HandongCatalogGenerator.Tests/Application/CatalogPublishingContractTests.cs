@@ -20,11 +20,7 @@ public sealed class CatalogPublishingContractTests
         using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(HandongExportTestHtml.Create()))
         using (TemporaryCatalogOutputRoot outputRoot = new TemporaryCatalogOutputRoot())
         {
-            CatalogGenerationRequest request = new CatalogGenerationRequest(
-                sourceFile.FilePath,
-                AcademicTerm.Parse("2026-2"),
-                new CatalogRevision(1),
-                outputRoot.OutputRootPath);
+            CatalogGenerationRequest request = new CatalogGenerationRequest(sourceFile.FilePath, AcademicTerm.Parse("2026-2"), new CatalogRevision(1), outputRoot.OutputRootPath);
             CatalogGenerationService service = new CatalogGenerationService();
 
             CatalogGenerationResult result = await service.GenerateAsync(request, CancellationToken.None);
@@ -38,26 +34,12 @@ public sealed class CatalogPublishingContractTests
             Assert.AreEqual(result.CatalogSha256.HexValue, package.Entry.File.Sha256.HexValue);
             Assert.AreEqual(result.Summary.CourseCount.Value, package.Document.Counts.CourseCount.Value);
             Assert.AreEqual(result.Summary.OfferingCount.Value, package.Document.Counts.OfferingCount.Value);
-            Assert.AreEqual(
-                result.Summary.ScheduledOfferingCount.Value,
-                package.Document.Counts.ScheduledOfferingCount.Value);
+            Assert.AreEqual(result.Summary.ScheduledOfferingCount.Value, package.Document.Counts.ScheduledOfferingCount.Value);
             Assert.HasCount(result.Summary.CourseCount.Value, package.Document.Catalog.Courses);
             Assert.HasCount(result.Summary.OfferingCount.Value, package.Document.Catalog.Offerings);
             Assert.HasCount(2, package.Document.Catalog.Offerings[0].MeetingSchedule.Slots);
-            Assert.AreEqual(
-                "테스트 담당자",
-                package.Document.OfferingMetadata[0]
-                    .Instruction
-                    .InstructorAssignment
-                    .GetDisplayText()
-                    .Value);
-            Assert.AreEqual(
-                "HDH 403",
-                package.Document.OfferingMetadata[0]
-                    .Logistics
-                    .Location
-                    .GetDisplayText()
-                    .Value);
+            Assert.AreEqual("테스트 담당자", package.Document.OfferingMetadata[0].Instruction.InstructorAssignment.GetDisplayText().Value);
+            Assert.AreEqual("HDH 403", package.Document.OfferingMetadata[0].Logistics.Location.GetDisplayText().Value);
         }
     }
 }

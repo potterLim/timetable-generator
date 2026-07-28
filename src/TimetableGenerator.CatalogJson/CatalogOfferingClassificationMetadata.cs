@@ -20,11 +20,7 @@ public sealed class CatalogOfferingClassificationMetadata
         }
     }
 
-    private CatalogOfferingClassificationMetadata(
-        ERequirementType requirementType,
-        OfferingUnitName offeringUnitName,
-        EInstructionSession instructionSession,
-        GeneralEducationCategoryName? generalEducationCategoryOrNull)
+    private CatalogOfferingClassificationMetadata(ERequirementType requirementType, OfferingUnitName offeringUnitName, EInstructionSession instructionSession, GeneralEducationCategoryName? generalEducationCategoryOrNull)
     {
         if (offeringUnitName == null)
         {
@@ -37,34 +33,19 @@ public sealed class CatalogOfferingClassificationMetadata
         mGeneralEducationCategoryOrNull = generalEducationCategoryOrNull;
     }
 
-    public static CatalogOfferingClassificationMetadata CreateWithoutGeneralEducationCategory(
-        ERequirementType requirementType,
-        OfferingUnitName offeringUnitName,
-        EInstructionSession instructionSession)
+    public static CatalogOfferingClassificationMetadata CreateWithoutGeneralEducationCategory(ERequirementType requirementType, OfferingUnitName offeringUnitName, EInstructionSession instructionSession)
     {
-        return new CatalogOfferingClassificationMetadata(
-            requirementType,
-            offeringUnitName,
-            instructionSession,
-            null);
+        return new CatalogOfferingClassificationMetadata(requirementType, offeringUnitName, instructionSession, null);
     }
 
-    public static CatalogOfferingClassificationMetadata CreateWithGeneralEducationCategory(
-        ERequirementType requirementType,
-        OfferingUnitName offeringUnitName,
-        EInstructionSession instructionSession,
-        GeneralEducationCategoryName generalEducationCategory)
+    public static CatalogOfferingClassificationMetadata CreateWithGeneralEducationCategory(ERequirementType requirementType, OfferingUnitName offeringUnitName, EInstructionSession instructionSession, GeneralEducationCategoryName generalEducationCategory)
     {
         if (generalEducationCategory == null)
         {
             throw new ArgumentNullException(nameof(generalEducationCategory));
         }
 
-        return new CatalogOfferingClassificationMetadata(
-            requirementType,
-            offeringUnitName,
-            instructionSession,
-            generalEducationCategory);
+        return new CatalogOfferingClassificationMetadata(requirementType, offeringUnitName, instructionSession, generalEducationCategory);
     }
 
     public GeneralEducationCategoryName GetGeneralEducationCategory()

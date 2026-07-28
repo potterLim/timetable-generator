@@ -42,11 +42,7 @@ public sealed class ScheduleRecommendation
 
     public RecommendationScore Score { get; }
 
-    internal ScheduleRecommendation(
-        IEnumerable<ScheduledOffering> scheduledOfferings,
-        IEnumerable<UnscheduledOfferingSelection> unscheduledSelections,
-        IEnumerable<PersonalSchedule> personalSchedules,
-        RecommendationScore score)
+    internal ScheduleRecommendation(IEnumerable<ScheduledOffering> scheduledOfferings, IEnumerable<UnscheduledOfferingSelection> unscheduledSelections, IEnumerable<PersonalSchedule> personalSchedules, RecommendationScore score)
     {
         if (scheduledOfferings == null)
         {
@@ -84,31 +80,24 @@ public sealed class ScheduleRecommendation
         mUnscheduledSelections = copiedUnscheduledSelections;
         mPersonalSchedules = copiedPersonalSchedules;
         Score = score;
-        VerificationStatus = copiedUnscheduledSelections.Count == 0
-            ? ERecommendationVerificationStatus.ConfirmedConflictFree
-            : ERecommendationVerificationStatus.RequiresManualReview;
+        VerificationStatus = copiedUnscheduledSelections.Count == 0 ? ERecommendationVerificationStatus.ConfirmedConflictFree : ERecommendationVerificationStatus.RequiresManualReview;
     }
 
-    private static IReadOnlyList<ScheduledOffering> copyAndValidateScheduledOfferings(
-        IEnumerable<ScheduledOffering> scheduledOfferings)
+    private static IReadOnlyList<ScheduledOffering> copyAndValidateScheduledOfferings(IEnumerable<ScheduledOffering> scheduledOfferings)
     {
         List<ScheduledOffering> copiedOfferings = new List<ScheduledOffering>();
         foreach (ScheduledOffering scheduledOffering in scheduledOfferings)
         {
             if (scheduledOffering == null)
             {
-                throw new ArgumentException(
-                    "Schedule recommendations cannot contain null offerings.",
-                    nameof(scheduledOfferings));
+                throw new ArgumentException("Schedule recommendations cannot contain null offerings.", nameof(scheduledOfferings));
             }
 
             foreach (ScheduledOffering selectedOffering in copiedOfferings)
             {
                 if (ScheduleConflictDetector.HasConflict(selectedOffering, scheduledOffering))
                 {
-                    throw new ArgumentException(
-                        "Schedule recommendations cannot contain conflicting offerings.",
-                        nameof(scheduledOfferings));
+                    throw new ArgumentException("Schedule recommendations cannot contain conflicting offerings.", nameof(scheduledOfferings));
                 }
             }
 
@@ -118,17 +107,14 @@ public sealed class ScheduleRecommendation
         return copiedOfferings.AsReadOnly();
     }
 
-    private static IReadOnlyList<UnscheduledOfferingSelection> copyUnscheduledSelections(
-        IEnumerable<UnscheduledOfferingSelection> unscheduledSelections)
+    private static IReadOnlyList<UnscheduledOfferingSelection> copyUnscheduledSelections(IEnumerable<UnscheduledOfferingSelection> unscheduledSelections)
     {
         List<UnscheduledOfferingSelection> copiedSelections = new List<UnscheduledOfferingSelection>();
         foreach (UnscheduledOfferingSelection selection in unscheduledSelections)
         {
             if (selection == null)
             {
-                throw new ArgumentException(
-                    "Schedule recommendations cannot contain null unscheduled selections.",
-                    nameof(unscheduledSelections));
+                throw new ArgumentException("Schedule recommendations cannot contain null unscheduled selections.", nameof(unscheduledSelections));
             }
 
             copiedSelections.Add(selection);
@@ -137,11 +123,7 @@ public sealed class ScheduleRecommendation
         return copiedSelections.AsReadOnly();
     }
 
-    private static void validateUniqueCourseAndOfferingSelections(
-        IReadOnlyList<ScheduledOffering> scheduledOfferings,
-        IReadOnlyList<UnscheduledOfferingSelection> unscheduledSelections,
-        string scheduledParameterName,
-        string unscheduledParameterName)
+    private static void validateUniqueCourseAndOfferingSelections(IReadOnlyList<ScheduledOffering> scheduledOfferings, IReadOnlyList<UnscheduledOfferingSelection> unscheduledSelections, string scheduledParameterName, string unscheduledParameterName)
     {
         HashSet<CourseId> selectedCourseIds = new HashSet<CourseId>();
         HashSet<OfferingId> selectedOfferingIds = new HashSet<OfferingId>();
@@ -175,21 +157,16 @@ public sealed class ScheduleRecommendation
     {
         if (selectedCourseIds.Add(courseId) == false)
         {
-            throw new ArgumentException(
-                "Schedule recommendations can select only one offering per course.",
-                parameterName);
+            throw new ArgumentException("Schedule recommendations can select only one offering per course.", parameterName);
         }
 
         if (selectedOfferingIds.Add(offeringId) == false)
         {
-            throw new ArgumentException(
-                "Schedule recommendations cannot contain duplicate offerings.",
-                parameterName);
+            throw new ArgumentException("Schedule recommendations cannot contain duplicate offerings.", parameterName);
         }
     }
 
-    private static IReadOnlyList<PersonalSchedule> copyPersonalSchedules(
-        IEnumerable<PersonalSchedule> personalSchedules)
+    private static IReadOnlyList<PersonalSchedule> copyPersonalSchedules(IEnumerable<PersonalSchedule> personalSchedules)
     {
         List<PersonalSchedule> copiedSchedules = new List<PersonalSchedule>();
         HashSet<PersonalScheduleId> scheduleIds = new HashSet<PersonalScheduleId>();
@@ -197,16 +174,12 @@ public sealed class ScheduleRecommendation
         {
             if (personalSchedule == null)
             {
-                throw new ArgumentException(
-                    "Schedule recommendations cannot contain null personal schedules.",
-                    nameof(personalSchedules));
+                throw new ArgumentException("Schedule recommendations cannot contain null personal schedules.", nameof(personalSchedules));
             }
 
             if (scheduleIds.Add(personalSchedule.Id) == false)
             {
-                throw new ArgumentException(
-                    "Schedule recommendations cannot contain duplicate personal schedules.",
-                    nameof(personalSchedules));
+                throw new ArgumentException("Schedule recommendations cannot contain duplicate personal schedules.", nameof(personalSchedules));
             }
 
             copiedSchedules.Add(personalSchedule);
@@ -215,9 +188,7 @@ public sealed class ScheduleRecommendation
         return copiedSchedules.AsReadOnly();
     }
 
-    private static void validateFixedScheduleConflicts(
-        IEnumerable<ScheduledOffering> scheduledOfferings,
-        IEnumerable<PersonalSchedule> personalSchedules)
+    private static void validateFixedScheduleConflicts(IEnumerable<ScheduledOffering> scheduledOfferings, IEnumerable<PersonalSchedule> personalSchedules)
     {
         foreach (ScheduledOffering scheduledOffering in scheduledOfferings)
         {
@@ -226,15 +197,11 @@ public sealed class ScheduleRecommendation
                 WeeklyTimeRange offeringTimeRange = AcademicPeriodTimeTable.GetWeeklyTimeRange(meetingSlot);
                 foreach (PersonalSchedule personalSchedule in personalSchedules)
                 {
-                    foreach (WeeklyTimeRange personalTimeRange
-                        in personalSchedule.TimeRanges)
+                    foreach (WeeklyTimeRange personalTimeRange in personalSchedule.TimeRanges)
                     {
                         if (ScheduleConflictDetector.HasConflict(offeringTimeRange, personalTimeRange))
                         {
-                            throw new ArgumentException(
-                                "Schedule recommendations cannot contain a course "
-                                + "that conflicts with a personal schedule.",
-                                nameof(scheduledOfferings));
+                            throw new ArgumentException("Schedule recommendations cannot contain a course " + "that conflicts with a personal schedule.", nameof(scheduledOfferings));
                         }
                     }
                 }

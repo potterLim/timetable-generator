@@ -20,17 +20,7 @@ internal static class PlanningWorkspaceTestFactory
             AcademicTerm.Parse("2026-2"),
             new CatalogRevision(1),
             new CatalogArtifactSha256(new string('a', 64)));
-        PlanningPlan plan = new PlanningPlan(
-            planId,
-            planName,
-            catalogBinding,
-            new PlanningPlanContent(
-                Array.Empty<CourseChoiceGroup>(),
-                Array.Empty<UnscheduledOfferingSelection>(),
-                Array.Empty<PersonalSchedule>()));
-        return new PlanningWorkspace(
-            catalogBinding,
-            planId,
-            new PlanningPlan[] { plan });
+        PlanningPlan plan = new PlanningPlan(planId, planName, catalogBinding, new PlanningPlanContent(Array.Empty<CourseChoiceGroup>(), Array.Empty<UnscheduledOfferingSelection>(), Array.Empty<PersonalSchedule>()));
+        return new PlanningWorkspace(catalogBinding, planId, new PlanningPlan[] { plan });
     }
 }

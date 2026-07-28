@@ -28,10 +28,7 @@ internal sealed class GoogleCalendarDescriptor
     {
         get
         {
-            return AccessRole == EGoogleCalendarAccessRole.Writer
-                || AccessRole
-                    == EGoogleCalendarAccessRole.WriterWithoutPrivateAccess
-                || AccessRole == EGoogleCalendarAccessRole.Owner;
+            return AccessRole == EGoogleCalendarAccessRole.Writer || AccessRole == EGoogleCalendarAccessRole.WriterWithoutPrivateAccess || AccessRole == EGoogleCalendarAccessRole.Owner;
         }
     }
 
@@ -39,9 +36,7 @@ internal sealed class GoogleCalendarDescriptor
     {
         get
         {
-            return IsPrimary == false
-                && IsApplicationManaged
-                && CanWrite;
+            return IsPrimary == false && IsApplicationManaged && CanWrite;
         }
     }
 
@@ -70,9 +65,7 @@ internal sealed class GoogleCalendarDescriptor
 
         if (managedPlanIdOrNull.HasValue && managedPlanIdOrNull.Value.IsValid == false)
         {
-            throw new ArgumentException(
-                "Managed Google calendars require a valid plan ID.",
-                nameof(managedPlanIdOrNull));
+            throw new ArgumentException("Managed Google calendars require a valid plan ID.", nameof(managedPlanIdOrNull));
         }
 
         validateAccessRole(accessRole);
@@ -88,17 +81,10 @@ internal sealed class GoogleCalendarDescriptor
     {
         if (managedPlanId.IsValid == false)
         {
-            throw new ArgumentException(
-                "Managed Google calendars require a valid plan ID.",
-                nameof(managedPlanId));
+            throw new ArgumentException("Managed Google calendars require a valid plan ID.", nameof(managedPlanId));
         }
 
-        return new GoogleCalendarDescriptor(
-            CalendarId,
-            DisplayName,
-            IsPrimary,
-            managedPlanId,
-            AccessRole);
+        return new GoogleCalendarDescriptor(CalendarId, DisplayName, IsPrimary, managedPlanId, AccessRole);
     }
 
     private static void validateAccessRole(EGoogleCalendarAccessRole accessRole)
@@ -113,10 +99,7 @@ internal sealed class GoogleCalendarDescriptor
             case EGoogleCalendarAccessRole.Owner:
                 return;
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(accessRole),
-                    accessRole,
-                    "Unknown Google Calendar access role.");
+                throw new ArgumentOutOfRangeException(nameof(accessRole), accessRole, "Unknown Google Calendar access role.");
         }
     }
 }

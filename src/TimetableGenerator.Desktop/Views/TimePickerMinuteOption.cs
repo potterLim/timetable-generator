@@ -17,10 +17,7 @@ internal sealed class TimePickerMinuteOption
         bool usesMinuteIncrement = value % MINUTE_INCREMENT_MINUTES == 0;
         if (value < 0 || value >= MINUTES_PER_HOUR || usesMinuteIncrement == false)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "Time picker minutes must use five-minute increments.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Time picker minutes must use five-minute increments.");
         }
 
         Value = value;

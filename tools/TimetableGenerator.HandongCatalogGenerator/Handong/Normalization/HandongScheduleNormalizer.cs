@@ -18,9 +18,7 @@ internal sealed class HandongScheduleNormalizer
         IReadOnlyList<string> lines = HandongCellValueReader.getNonEmptyLines(row, EHandongColumn.Period);
         if (lines.Count == 0)
         {
-            return new HandongScheduleNormalizationResult(
-                MeetingSchedule.NotProvided,
-                EEnglishScheduleComparison.NotApplicable);
+            return new HandongScheduleNormalizationResult(MeetingSchedule.NotProvided, EEnglishScheduleComparison.NotApplicable);
         }
 
         string koreanSourceText = lines[0];
@@ -44,10 +42,7 @@ internal sealed class HandongScheduleNormalizer
             Match slotMatch = KOREAN_SLOT_FORMAT.Match(token);
             if (slotMatch.Success == false)
             {
-                throw new InvalidHandongSourceRecordException(
-                    row.SourceRecordNumber,
-                    EHandongColumn.Period,
-                    "Invalid Korean meeting token: " + token);
+                throw new InvalidHandongSourceRecordException(row.SourceRecordNumber, EHandongColumn.Period, "Invalid Korean meeting token: " + token);
             }
 
             EDay day = parseKoreanDay(slotMatch.Groups["day"].Value, row);
@@ -55,10 +50,7 @@ internal sealed class HandongScheduleNormalizer
             MeetingSlot slot = new MeetingSlot(day, period);
             if (uniqueSlots.Add(slot) == false)
             {
-                throw new InvalidHandongSourceRecordException(
-                    row.SourceRecordNumber,
-                    EHandongColumn.Period,
-                    "The Korean schedule contains a duplicate meeting slot: " + token);
+                throw new InvalidHandongSourceRecordException(row.SourceRecordNumber, EHandongColumn.Period, "The Korean schedule contains a duplicate meeting slot: " + token);
             }
 
             slots.Add(slot);
@@ -66,10 +58,7 @@ internal sealed class HandongScheduleNormalizer
 
         if (slots.Count == 0)
         {
-            throw new InvalidHandongSourceRecordException(
-                row.SourceRecordNumber,
-                EHandongColumn.Period,
-                "A provided Korean schedule must contain at least one meeting slot.");
+            throw new InvalidHandongSourceRecordException(row.SourceRecordNumber, EHandongColumn.Period, "A provided Korean schedule must contain at least one meeting slot.");
         }
 
         return slots;
@@ -94,10 +83,7 @@ internal sealed class HandongScheduleNormalizer
             case "일":
                 return EDay.Sunday;
             default:
-                throw new InvalidHandongSourceRecordException(
-                    row.SourceRecordNumber,
-                    EHandongColumn.Period,
-                    "Unsupported Korean day: " + sourceValue);
+                throw new InvalidHandongSourceRecordException(row.SourceRecordNumber, EHandongColumn.Period, "Unsupported Korean day: " + sourceValue);
         }
     }
 
@@ -107,10 +93,7 @@ internal sealed class HandongScheduleNormalizer
         bool isPeriodParsed = int.TryParse(sourceValue, NumberStyles.None, CultureInfo.InvariantCulture, out periodValue);
         if (isPeriodParsed == false)
         {
-            throw new InvalidHandongSourceRecordException(
-                row.SourceRecordNumber,
-                EHandongColumn.Period,
-                "The academic period is not numeric: " + sourceValue);
+            throw new InvalidHandongSourceRecordException(row.SourceRecordNumber, EHandongColumn.Period, "The academic period is not numeric: " + sourceValue);
         }
 
         try
@@ -119,16 +102,11 @@ internal sealed class HandongScheduleNormalizer
         }
         catch (ArgumentOutOfRangeException exception)
         {
-            throw new InvalidHandongSourceRecordException(
-                row.SourceRecordNumber,
-                EHandongColumn.Period,
-                exception.Message);
+            throw new InvalidHandongSourceRecordException(row.SourceRecordNumber, EHandongColumn.Period, exception.Message);
         }
     }
 
-    private static EEnglishScheduleComparison compareEnglishSchedule(
-        IReadOnlyList<string> lines,
-        IReadOnlyList<MeetingSlot> koreanSlots)
+    private static EEnglishScheduleComparison compareEnglishSchedule(IReadOnlyList<string> lines, IReadOnlyList<MeetingSlot> koreanSlots)
     {
         if (lines.Count < 2)
         {

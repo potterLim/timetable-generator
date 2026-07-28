@@ -54,9 +54,7 @@ internal sealed class CatalogDataQuality
         {
             if (manualReview == null)
             {
-                throw new ArgumentException(
-                    "Data quality cannot contain null manual reviews.",
-                    nameof(manualReviews));
+                throw new ArgumentException("Data quality cannot contain null manual reviews.", nameof(manualReviews));
             }
 
             copiedManualReviews.Add(manualReview);

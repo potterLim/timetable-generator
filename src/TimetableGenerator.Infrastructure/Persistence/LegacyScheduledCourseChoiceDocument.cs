@@ -36,16 +36,12 @@ internal sealed class LegacyScheduledCourseChoiceDocument
         {
             if (offeringId == null)
             {
-                throw new ArgumentException(
-                    "Legacy scheduled choices cannot contain null offering IDs.",
-                    nameof(offeringIds));
+                throw new ArgumentException("Legacy scheduled choices cannot contain null offering IDs.", nameof(offeringIds));
             }
 
             if (uniqueOfferingIds.Add(offeringId) == false)
             {
-                throw new ArgumentException(
-                    "Legacy scheduled choices cannot contain duplicate offering IDs.",
-                    nameof(offeringIds));
+                throw new ArgumentException("Legacy scheduled choices cannot contain duplicate offering IDs.", nameof(offeringIds));
             }
 
             copiedOfferingIds.Add(offeringId);
@@ -53,9 +49,7 @@ internal sealed class LegacyScheduledCourseChoiceDocument
 
         if (copiedOfferingIds.Count == 0)
         {
-            throw new ArgumentException(
-                "Legacy scheduled choices require at least one offering ID.",
-                nameof(offeringIds));
+            throw new ArgumentException("Legacy scheduled choices require at least one offering ID.", nameof(offeringIds));
         }
 
         CourseId = courseId;

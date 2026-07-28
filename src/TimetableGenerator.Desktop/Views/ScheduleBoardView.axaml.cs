@@ -155,11 +155,7 @@ internal sealed partial class ScheduleBoardView : UserControl
     private void rebuildBoardAfterThemeChange()
     {
         object? borderBrushOrNull;
-        bool hasBorderBrush = ResourceNodeExtensions.TryFindResource(
-            this,
-            "BorderBrush",
-            ActualThemeVariant,
-            out borderBrushOrNull);
+        bool hasBorderBrush = ResourceNodeExtensions.TryFindResource(this, "BorderBrush", ActualThemeVariant, out borderBrushOrNull);
         if (VisualRoot == null || hasBorderBrush == false || borderBrushOrNull is not IBrush)
         {
             return;
@@ -187,17 +183,14 @@ internal sealed partial class ScheduleBoardView : UserControl
         mBoardGrid.RowDefinitions.Clear();
         mBoardStickyDayHeaderGrid.Children.Clear();
         mBoardStickyDayHeaderGrid.ColumnDefinitions.Clear();
-        mBoardGrid.MinHeight = findBoardGridHeaderRowHeight()
-            + (mRenderedLayout.TimeAxis.IncrementCount
-                * TIME_INCREMENT_ROW_HEIGHT);
+        mBoardGrid.MinHeight = findBoardGridHeaderRowHeight() + (mRenderedLayout.TimeAxis.IncrementCount * TIME_INCREMENT_ROW_HEIGHT);
 
         addGridDefinitions();
         addGridGuides();
         addDayHeaders();
         addTimeHeaders();
 
-        bool hasScheduleEntries = recommendationOrNull != null
-            && recommendationOrNull.Entries.Count > 0;
+        bool hasScheduleEntries = recommendationOrNull != null && recommendationOrNull.Entries.Count > 0;
         if (hasScheduleEntries == false || recommendationOrNull == null)
         {
             return;
@@ -241,11 +234,7 @@ internal sealed partial class ScheduleBoardView : UserControl
         {
             Border columnGuide = new Border();
             columnGuide.BorderBrush = findBrush("BorderBrush");
-            columnGuide.BorderThickness = new Thickness(
-                0.0,
-                0.0,
-                columnIndex < totalColumnCount - 1 ? 1.0 : 0.0,
-                0.0);
+            columnGuide.BorderThickness = new Thickness(0.0, 0.0, columnIndex < totalColumnCount - 1 ? 1.0 : 0.0, 0.0);
             Grid.SetRow(columnGuide, 0);
             Grid.SetRowSpan(columnGuide, mRenderedLayout.TimeAxis.IncrementCount + 1);
             Grid.SetColumn(columnGuide, columnIndex);
@@ -259,14 +248,11 @@ internal sealed partial class ScheduleBoardView : UserControl
         Grid.SetColumnSpan(headerGuide, totalColumnCount);
         mBoardGrid.Children.Add(headerGuide);
 
-        foreach (ScheduleBoardTimeBoundary guideTime
-            in mRenderedLayout.TimeAxis.GuideTimes)
+        foreach (ScheduleBoardTimeBoundary guideTime in mRenderedLayout.TimeAxis.GuideTimes)
         {
             int rowIndex = 1 + mRenderedLayout.TimeAxis.FindBoundaryRowOffset(guideTime);
             Border timeGuide = new Border();
-            string gridLineBrushKey = guideTime.IsFullHour
-                ? "ScheduleHourGridLineBrush"
-                : "ScheduleHalfHourGridLineBrush";
+            string gridLineBrushKey = guideTime.IsFullHour ? "ScheduleHourGridLineBrush" : "ScheduleHalfHourGridLineBrush";
             timeGuide.BorderBrush = findBrush(gridLineBrushKey);
             timeGuide.BorderThickness = new Thickness(0.0, 1.0, 0.0, 0.0);
             timeGuide.IsHitTestVisible = false;
@@ -329,11 +315,7 @@ internal sealed partial class ScheduleBoardView : UserControl
         {
             Border columnGuide = new Border();
             columnGuide.BorderBrush = findBrush("BorderBrush");
-            columnGuide.BorderThickness = new Thickness(
-                0.0,
-                0.0,
-                columnIndex < totalColumnCount - 1 ? 1.0 : 0.0,
-                0.0);
+            columnGuide.BorderThickness = new Thickness(0.0, 0.0, columnIndex < totalColumnCount - 1 ? 1.0 : 0.0, 0.0);
             Grid.SetColumn(columnGuide, columnIndex);
             mBoardStickyDayHeaderGrid.Children.Add(columnGuide);
         }
@@ -353,8 +335,7 @@ internal sealed partial class ScheduleBoardView : UserControl
 
     private void addTimeHeaders()
     {
-        foreach (ScheduleBoardTimeBoundary labelTime
-            in mRenderedLayout.TimeAxis.LabelTimes)
+        foreach (ScheduleBoardTimeBoundary labelTime in mRenderedLayout.TimeAxis.LabelTimes)
         {
             TextBlock timeHeader = new TextBlock();
             timeHeader.Classes.Add("schedule-time-label");
@@ -371,9 +352,7 @@ internal sealed partial class ScheduleBoardView : UserControl
             timeHeader.Margin = new Thickness(0.0, 0.0, HOUR_GUIDE_EXTENSION_WIDTH + TIME_LABEL_GUIDE_GAP, 0.0);
             timeHeader.IsHitTestVisible = false;
             int boundaryRowIndex = 1 + mRenderedLayout.TimeAxis.FindBoundaryRowOffset(labelTime);
-            int labelRowIndex = labelTime == mRenderedLayout.TimeAxis.Start
-                ? boundaryRowIndex
-                : boundaryRowIndex - 1;
+            int labelRowIndex = labelTime == mRenderedLayout.TimeAxis.Start ? boundaryRowIndex : boundaryRowIndex - 1;
             Grid.SetRow(timeHeader, labelRowIndex);
             Grid.SetRowSpan(timeHeader, 2);
             Grid.SetColumn(timeHeader, 0);
@@ -384,11 +363,7 @@ internal sealed partial class ScheduleBoardView : UserControl
     private IBrush findBrush(string resourceKey)
     {
         object? resourceOrNull;
-        bool hasResource = ResourceNodeExtensions.TryFindResource(
-            this,
-            resourceKey,
-            ActualThemeVariant,
-            out resourceOrNull);
+        bool hasResource = ResourceNodeExtensions.TryFindResource(this, resourceKey, ActualThemeVariant, out resourceOrNull);
         if (hasResource == false || resourceOrNull is not IBrush brush)
         {
             throw new InvalidOperationException("Missing brush resource: " + resourceKey);

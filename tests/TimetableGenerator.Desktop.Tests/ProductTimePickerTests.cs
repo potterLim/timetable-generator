@@ -92,12 +92,10 @@ public sealed class ProductTimePickerTests
         bindingSource.SelectedTimeOrNull = new ScheduleTime(9, 15);
         ProductTimePicker timePicker = new ProductTimePicker();
         timePicker.DataContext = bindingSource;
-        timePicker.Bind(
-            ProductTimePicker.SelectedTimeOrNullProperty,
-            new Binding(nameof(ScheduleTimeBindingSource.SelectedTimeOrNull))
-            {
-                Mode = BindingMode.TwoWay,
-            });
+        timePicker.Bind(ProductTimePicker.SelectedTimeOrNullProperty, new Binding(nameof(ScheduleTimeBindingSource.SelectedTimeOrNull))
+        {
+            Mode = BindingMode.TwoWay,
+        });
         Window window = new Window();
         window.Content = timePicker;
 

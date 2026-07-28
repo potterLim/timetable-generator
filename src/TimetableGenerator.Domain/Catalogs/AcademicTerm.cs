@@ -57,17 +57,9 @@ public readonly record struct AcademicTerm
         }
 
         int academicYearValue;
-        bool isAcademicYearParsed = int.TryParse(
-            parts[0],
-            NumberStyles.None,
-            CultureInfo.InvariantCulture,
-            out academicYearValue);
+        bool isAcademicYearParsed = int.TryParse(parts[0], NumberStyles.None, CultureInfo.InvariantCulture, out academicYearValue);
         int semesterValue;
-        bool isSemesterParsed = int.TryParse(
-            parts[1],
-            NumberStyles.None,
-            CultureInfo.InvariantCulture,
-            out semesterValue);
+        bool isSemesterParsed = int.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out semesterValue);
         if (isAcademicYearParsed == false || isSemesterParsed == false)
         {
             throw new FormatException("Academic terms must contain numeric year and semester values.");

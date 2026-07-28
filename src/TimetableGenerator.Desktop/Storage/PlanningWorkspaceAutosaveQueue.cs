@@ -33,9 +33,7 @@ public sealed class PlanningWorkspaceAutosaveQueue
         }
     }
 
-    public PlanningWorkspaceAutosaveQueue(
-        IPlanningWorkspaceStore workspaceStore,
-        PlanningWorkspaceConcurrencyToken initialConcurrencyToken)
+    public PlanningWorkspaceAutosaveQueue(IPlanningWorkspaceStore workspaceStore, PlanningWorkspaceConcurrencyToken initialConcurrencyToken)
     {
         if (workspaceStore == null)
         {
@@ -59,8 +57,7 @@ public sealed class PlanningWorkspaceAutosaveQueue
         {
             if (mIsCompletionInProgress || mIsCompleted)
             {
-                throw new InvalidOperationException(
-                    "Completed autosave queues cannot accept new workspace snapshots.");
+                throw new InvalidOperationException("Completed autosave queues cannot accept new workspace snapshots.");
             }
 
             mPendingWorkspaceOrNull = workspace;

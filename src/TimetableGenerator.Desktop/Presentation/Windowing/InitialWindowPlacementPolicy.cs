@@ -18,25 +18,17 @@ internal static class InitialWindowPlacementPolicy
     {
         WindowLogicalSize workingSize = workingArea.FindLogicalSize();
 
-        double maximumHorizontalMargin = Math.Max(
-            0.0,
-            (workingSize.Width - MINIMUM_VISIBLE_LOGICAL_LENGTH) / 2.0);
+        double maximumHorizontalMargin = Math.Max(0.0, (workingSize.Width - MINIMUM_VISIBLE_LOGICAL_LENGTH) / 2.0);
         double horizontalMargin = Math.Min(SAFE_EDGE_MARGIN, maximumHorizontalMargin);
-        double maximumVerticalMargin = Math.Max(
-            0.0,
-            (workingSize.Height - MINIMUM_VISIBLE_LOGICAL_LENGTH) / 2.0);
+        double maximumVerticalMargin = Math.Max(0.0, (workingSize.Height - MINIMUM_VISIBLE_LOGICAL_LENGTH) / 2.0);
         double verticalMargin = Math.Min(SAFE_EDGE_MARGIN, maximumVerticalMargin);
 
         double availableWidth = workingSize.Width - (horizontalMargin * 2.0);
         double availableHeight = workingSize.Height - (verticalMargin * 2.0);
         WindowLogicalSize availableSize = new WindowLogicalSize(availableWidth, availableHeight);
 
-        WindowLogicalSize effectiveMinimumSize = new WindowLogicalSize(
-            Math.Min(DESIGN_MINIMUM_SIZE.Width, availableSize.Width),
-            Math.Min(DESIGN_MINIMUM_SIZE.Height, availableSize.Height));
-        WindowLogicalSize initialSize = new WindowLogicalSize(
-            Math.Min(PREFERRED_SIZE.Width, availableSize.Width),
-            Math.Min(PREFERRED_SIZE.Height, availableSize.Height));
+        WindowLogicalSize effectiveMinimumSize = new WindowLogicalSize(Math.Min(DESIGN_MINIMUM_SIZE.Width, availableSize.Width), Math.Min(DESIGN_MINIMUM_SIZE.Height, availableSize.Height));
+        WindowLogicalSize initialSize = new WindowLogicalSize(Math.Min(PREFERRED_SIZE.Width, availableSize.Width), Math.Min(PREFERRED_SIZE.Height, availableSize.Height));
 
         Debug.Assert(initialSize.Width >= effectiveMinimumSize.Width);
         Debug.Assert(initialSize.Height >= effectiveMinimumSize.Height);
@@ -45,9 +37,7 @@ internal static class InitialWindowPlacementPolicy
         return new InitialWindowPlacement(initialSize, effectiveMinimumSize, position);
     }
 
-    private static PixelPoint findCenteredPosition(
-        WindowWorkingArea workingArea,
-        WindowLogicalSize initialSize)
+    private static PixelPoint findCenteredPosition(WindowWorkingArea workingArea, WindowLogicalSize initialSize)
     {
         PixelRect bounds = workingArea.Bounds;
         double initialPixelWidthValue = Math.Ceiling(initialSize.Width * workingArea.Scale.Value);

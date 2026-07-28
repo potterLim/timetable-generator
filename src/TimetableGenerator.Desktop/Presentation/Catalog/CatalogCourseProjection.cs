@@ -69,10 +69,7 @@ internal sealed class CatalogCourseProjection
         }
     }
 
-    public CatalogCourseProjection(
-        CatalogCourse course,
-        ECourseAccent accent,
-        IEnumerable<CatalogOfferingProjection> offerings)
+    public CatalogCourseProjection(CatalogCourse course, ECourseAccent accent, IEnumerable<CatalogOfferingProjection> offerings)
     {
         if (course == null)
         {
@@ -117,9 +114,7 @@ internal sealed class CatalogCourseProjection
             ERequirementType requirementType = offering.Metadata.Classification.RequirementType;
             if (Enum.IsDefined(typeof(ERequirementType), requirementType) == false)
             {
-                throw new ArgumentException(
-                    "Course projections require defined requirement types.",
-                    nameof(offerings));
+                throw new ArgumentException("Course projections require defined requirement types.", nameof(offerings));
             }
 
             requirementTypes.Add(requirementType);
@@ -135,10 +130,7 @@ internal sealed class CatalogCourseProjection
         mRequirementTypes = new List<ERequirementType>(requirementTypes).AsReadOnly();
     }
 
-    private static void validateOffering(
-        CatalogCourse course,
-        CatalogOfferingProjection offering,
-        ISet<OfferingId> uniqueOfferingIds)
+    private static void validateOffering(CatalogCourse course, CatalogOfferingProjection offering, ISet<OfferingId> uniqueOfferingIds)
     {
         if (offering == null)
         {
@@ -147,16 +139,12 @@ internal sealed class CatalogCourseProjection
 
         if (offering.Offering.CourseId != course.Id)
         {
-            throw new ArgumentException(
-                "Every projected offering must belong to the projected course.",
-                nameof(offering));
+            throw new ArgumentException("Every projected offering must belong to the projected course.", nameof(offering));
         }
 
         if (uniqueOfferingIds.Add(offering.Offering.Id) == false)
         {
-            throw new ArgumentException(
-                "Course projections cannot contain duplicate offerings.",
-                nameof(offering));
+            throw new ArgumentException("Course projections cannot contain duplicate offerings.", nameof(offering));
         }
     }
 }

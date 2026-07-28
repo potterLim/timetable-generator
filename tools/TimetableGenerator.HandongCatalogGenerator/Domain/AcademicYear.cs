@@ -13,10 +13,7 @@ internal readonly record struct AcademicYear
     {
         if (value < MINIMUM_YEAR || value > MAXIMUM_YEAR)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "The academic year is outside the supported range.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "The academic year is outside the supported range.");
         }
 
         Value = value;

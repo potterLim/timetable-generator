@@ -9,8 +9,7 @@ internal static class AppleCalendarIntegrationFactory
 {
     private const string EXPORT_LOCK_FILE_NAME = "apple-calendar-export.lock";
 
-    public static IAppleCalendarExporter Create(
-        ProductDataRootPath dataRootPath)
+    public static IAppleCalendarExporter Create(ProductDataRootPath dataRootPath)
     {
         if (dataRootPath == null)
         {
@@ -18,8 +17,6 @@ internal static class AppleCalendarIntegrationFactory
         }
 
         FileAppleCalendarExportLeaseProvider exportLeaseProvider = new FileAppleCalendarExportLeaseProvider(new AppleCalendarExportLockFilePath(Path.Combine(dataRootPath.Value, "Integrations", EXPORT_LOCK_FILE_NAME)));
-        return new AppleCalendarExportService(
-            new JxaAppleCalendarNativeBridge(),
-            exportLeaseProvider);
+        return new AppleCalendarExportService(new JxaAppleCalendarNativeBridge(), exportLeaseProvider);
     }
 }

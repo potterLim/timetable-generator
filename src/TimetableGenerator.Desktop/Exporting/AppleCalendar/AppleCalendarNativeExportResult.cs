@@ -14,11 +14,7 @@ internal sealed class AppleCalendarNativeExportResult
 
     public int DeletedEventCount { get; }
 
-    public AppleCalendarNativeExportResult(
-        AppleCalendarId calendarId,
-        PlanName calendarName,
-        int createdEventCount,
-        int deletedEventCount)
+    public AppleCalendarNativeExportResult(AppleCalendarId calendarId, PlanName calendarName, int createdEventCount, int deletedEventCount)
     {
         if (calendarId == null)
         {

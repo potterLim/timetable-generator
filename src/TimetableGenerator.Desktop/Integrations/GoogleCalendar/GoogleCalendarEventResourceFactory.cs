@@ -16,10 +16,7 @@ internal static class GoogleCalendarEventResourceFactory
     private const string PLAN_ID_PROPERTY_NAME = "timetableGeneratorPlanId";
     private const string SOURCE_ID_PROPERTY_NAME = "timetableGeneratorSourceId";
 
-    public static JsonObject Create(
-        PlanId planId,
-        CalendarTimeZoneId timeZoneId,
-        GoogleCalendarExportEvent exportEvent)
+    public static JsonObject Create(PlanId planId, CalendarTimeZoneId timeZoneId, GoogleCalendarExportEvent exportEvent)
     {
         if (planId.IsValid == false)
         {
@@ -28,9 +25,7 @@ internal static class GoogleCalendarEventResourceFactory
 
         if (timeZoneId.IsValid == false)
         {
-            throw new ArgumentException(
-                "Google Calendar resources require a valid time-zone ID.",
-                nameof(timeZoneId));
+            throw new ArgumentException("Google Calendar resources require a valid time-zone ID.", nameof(timeZoneId));
         }
 
         if (exportEvent == null)
@@ -38,21 +33,10 @@ internal static class GoogleCalendarEventResourceFactory
             throw new ArgumentNullException(nameof(exportEvent));
         }
 
-        DateTimeOffset start = timeZoneId.ResolveLocalDateTime(
-            exportEvent.FirstOccurrenceDate,
-            exportEvent.StartTime);
-        DateTimeOffset end = timeZoneId.ResolveLocalDateTime(
-            exportEvent.FirstOccurrenceDate,
-            exportEvent.EndTime);
-        DateTimeOffset recurrenceCutoff = timeZoneId.ResolveLocalDateTime(
-            exportEvent.LastOccurrenceDate,
-            new TimeOnly(23, 59, 59));
-        string recurrenceRule = "RRULE:FREQ=WEEKLY;BYDAY="
-            + formatWeekdays(exportEvent.Days)
-            + ";UNTIL="
-            + recurrenceCutoff
-                .ToUniversalTime()
-                .ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture);
+        DateTimeOffset start = timeZoneId.ResolveLocalDateTime(exportEvent.FirstOccurrenceDate, exportEvent.StartTime);
+        DateTimeOffset end = timeZoneId.ResolveLocalDateTime(exportEvent.FirstOccurrenceDate, exportEvent.EndTime);
+        DateTimeOffset recurrenceCutoff = timeZoneId.ResolveLocalDateTime(exportEvent.LastOccurrenceDate, new TimeOnly(23, 59, 59));
+        string recurrenceRule = "RRULE:FREQ=WEEKLY;BYDAY=" + formatWeekdays(exportEvent.Days) + ";UNTIL=" + recurrenceCutoff.ToUniversalTime().ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture);
         GoogleCalendarEventId eventId = GoogleCalendarEventId.Create(planId, exportEvent.SourceId);
 
         JsonObject resource = new JsonObject
@@ -109,9 +93,7 @@ internal static class GoogleCalendarEventResourceFactory
     {
         if (planId.IsValid == false)
         {
-            throw new ArgumentException(
-                "Google Calendar ownership checks require a valid plan ID.",
-                nameof(planId));
+            throw new ArgumentException("Google Calendar ownership checks require a valid plan ID.", nameof(planId));
         }
 
         return tryGetManagedPlanIdOrNull(eventResource) == planId;
@@ -122,63 +104,36 @@ internal static class GoogleCalendarEventResourceFactory
         JsonElement extendedProperties;
         JsonElement privateProperties;
         if (eventResource.ValueKind != JsonValueKind.Object
-            || eventResource.TryGetProperty(
-                "extendedProperties",
-                out extendedProperties) == false
+            || eventResource.TryGetProperty("extendedProperties", out extendedProperties) == false
             || extendedProperties.ValueKind != JsonValueKind.Object
-            || extendedProperties.TryGetProperty(
-                "private",
-                out privateProperties) == false
+            || extendedProperties.TryGetProperty("private", out privateProperties) == false
             || privateProperties.ValueKind != JsonValueKind.Object)
         {
             return false;
         }
 
-        return string.Equals(
-            getStringOrNull(privateProperties, MANAGED_PROPERTY_NAME),
-            "true",
-            StringComparison.Ordinal);
+        return string.Equals(getStringOrNull(privateProperties, MANAGED_PROPERTY_NAME), "true", StringComparison.Ordinal);
     }
 
-    internal static PlanId? tryGetManagedPlanIdOrNull(
-        JsonElement eventResource)
+    internal static PlanId? tryGetManagedPlanIdOrNull(JsonElement eventResource)
     {
         JsonElement extendedProperties;
         JsonElement privateProperties;
         if (eventResource.ValueKind != JsonValueKind.Object
-            || eventResource.TryGetProperty(
-                "extendedProperties",
-                out extendedProperties) == false
+            || eventResource.TryGetProperty("extendedProperties", out extendedProperties) == false
             || extendedProperties.ValueKind != JsonValueKind.Object
-            || extendedProperties.TryGetProperty(
-                "private",
-                out privateProperties) == false
+            || extendedProperties.TryGetProperty("private", out privateProperties) == false
             || privateProperties.ValueKind != JsonValueKind.Object
-            || string.Equals(
-                getStringOrNull(
-                    privateProperties,
-                    MANAGED_PROPERTY_NAME),
-                "true",
-                StringComparison.Ordinal) == false)
+            || string.Equals(getStringOrNull(privateProperties, MANAGED_PROPERTY_NAME), "true", StringComparison.Ordinal) == false)
         {
             return null;
         }
 
         Guid planIdValue;
-        return Guid.TryParseExact(
-                getStringOrNull(
-                    privateProperties,
-                    PLAN_ID_PROPERTY_NAME),
-                "N",
-                out planIdValue)
-            && planIdValue != Guid.Empty
-                ? new PlanId(planIdValue)
-                : null;
+        return Guid.TryParseExact(getStringOrNull(privateProperties, PLAN_ID_PROPERTY_NAME), "N", out planIdValue) && planIdValue != Guid.Empty ? new PlanId(planIdValue) : null;
     }
 
-    private static JsonObject createDateTimeResource(
-        DateTimeOffset dateTime,
-        CalendarTimeZoneId timeZoneId)
+    private static JsonObject createDateTimeResource(DateTimeOffset dateTime, CalendarTimeZoneId timeZoneId)
     {
         return new JsonObject
         {
@@ -221,8 +176,7 @@ internal static class GoogleCalendarEventResourceFactory
     private static string? getStringOrNull(JsonElement element, string propertyName)
     {
         JsonElement property;
-        if (element.TryGetProperty(propertyName, out property) == false
-            || property.ValueKind != JsonValueKind.String)
+        if (element.TryGetProperty(propertyName, out property) == false || property.ValueKind != JsonValueKind.String)
         {
             return null;
         }

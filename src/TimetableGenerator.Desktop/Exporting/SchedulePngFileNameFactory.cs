@@ -67,30 +67,18 @@ internal static class SchedulePngFileNameFactory
     {
         if (copyNumber < 1)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(copyNumber),
-                copyNumber,
-                "A PNG export folder copy number must be positive.");
+            throw new ArgumentOutOfRangeException(nameof(copyNumber), copyNumber, "A PNG export folder copy number must be positive.");
         }
 
-        string copySuffix = copyNumber == 1
-            ? string.Empty
-            : " (" + copyNumber + ")";
+        string copySuffix = copyNumber == 1 ? string.Empty : " (" + copyNumber + ")";
         return createFileSystemComponent(getBaseName(planNameOrNull), copySuffix);
     }
 
-    public static string CreateBatchCandidate(
-        PlanName? planNameOrNull,
-        SchedulePngCandidateNumber candidateNumber)
+    public static string CreateBatchCandidate(PlanName? planNameOrNull, SchedulePngCandidateNumber candidateNumber)
     {
         int digitCount = candidateNumber.Total.ToString(CultureInfo.InvariantCulture).Length;
-        string sequenceText = candidateNumber.Value.ToString(
-            "D" + digitCount,
-            CultureInfo.InvariantCulture);
-        string suffix = " ("
-            + sequenceText
-            + ")"
-            + PNG_EXTENSION;
+        string sequenceText = candidateNumber.Value.ToString("D" + digitCount, CultureInfo.InvariantCulture);
+        string suffix = " (" + sequenceText + ")" + PNG_EXTENSION;
         return createFileSystemComponent(getBaseName(planNameOrNull), suffix);
     }
 
@@ -112,8 +100,7 @@ internal static class SchedulePngFileNameFactory
         foreach (char character in value)
         {
             bool isPlatformInvalid = Array.IndexOf(platformInvalidCharacters, character) >= 0;
-            bool isWindowsInvalid = character < ' '
-                || WINDOWS_INVALID_FILE_NAME_CHARACTERS.Contains(character);
+            bool isWindowsInvalid = character < ' ' || WINDOWS_INVALID_FILE_NAME_CHARACTERS.Contains(character);
             sanitizedNameBuilder.Append(isPlatformInvalid || isWindowsInvalid ? REPLACEMENT_CHARACTER : character);
         }
 

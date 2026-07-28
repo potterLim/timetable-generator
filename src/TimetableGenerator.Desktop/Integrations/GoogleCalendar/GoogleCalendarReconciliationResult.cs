@@ -10,10 +10,7 @@ internal readonly record struct GoogleCalendarReconciliationResult
 
     public int DeletedEventCount { get; }
 
-    public GoogleCalendarReconciliationResult(
-        int createdEventCount,
-        int updatedEventCount,
-        int deletedEventCount)
+    public GoogleCalendarReconciliationResult(int createdEventCount, int updatedEventCount, int deletedEventCount)
     {
         if (createdEventCount < 0)
         {

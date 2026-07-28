@@ -35,11 +35,7 @@ internal sealed class App : Avalonia.Application
 
         EWindowChromePlatform platform = WindowChromeLayoutPolicy.FindCurrentPlatform();
         WindowChromeInsets titleBarInsets = WindowChromeLayoutPolicy.FindTitleBarInsets(platform);
-        Resources[TITLE_BAR_CONTENT_PADDING_RESOURCE_KEY] = new Thickness(
-            titleBarInsets.Left,
-            0.0,
-            titleBarInsets.Right,
-            0.0);
+        Resources[TITLE_BAR_CONTENT_PADDING_RESOURCE_KEY] = new Thickness(titleBarInsets.Left, 0.0, titleBarInsets.Right, 0.0);
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -112,9 +108,7 @@ internal sealed class App : Avalonia.Application
         mainWindowOrNull.Activate();
     }
 
-    private void onDesktopLifetimeExit(
-        object? senderOrNull,
-        ControlledApplicationLifetimeExitEventArgs eventArgs)
+    private void onDesktopLifetimeExit(object? senderOrNull, ControlledApplicationLifetimeExitEventArgs eventArgs)
     {
         if (mActivatableLifetimeOrNull != null)
         {
@@ -175,9 +169,7 @@ internal sealed class App : Avalonia.Application
         }
     }
 
-    private static bool isOpenWindow(
-        IClassicDesktopStyleApplicationLifetime desktopLifetime,
-        Window window)
+    private static bool isOpenWindow(IClassicDesktopStyleApplicationLifetime desktopLifetime, Window window)
     {
         foreach (Window openWindow in desktopLifetime.Windows)
         {

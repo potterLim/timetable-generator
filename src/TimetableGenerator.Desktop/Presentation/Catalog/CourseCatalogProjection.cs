@@ -44,9 +44,7 @@ internal sealed class CourseCatalogProjection
         }
     }
 
-    public CourseCatalogProjection(
-        CourseCatalogDocument document,
-        IEnumerable<CatalogCourseProjection> courses)
+    public CourseCatalogProjection(CourseCatalogDocument document, IEnumerable<CatalogCourseProjection> courses)
     {
         if (document == null)
         {
@@ -71,16 +69,12 @@ internal sealed class CourseCatalogProjection
 
         if (coursesById.Count != sourceCoursesById.Count)
         {
-            throw new ArgumentException(
-                "Catalog projections must preserve every source course.",
-                nameof(courses));
+            throw new ArgumentException("Catalog projections must preserve every source course.", nameof(courses));
         }
 
         if (offeringsById.Count != sourceOfferingsById.Count)
         {
-            throw new ArgumentException(
-                "Catalog projections must preserve every source offering.",
-                nameof(courses));
+            throw new ArgumentException("Catalog projections must preserve every source offering.", nameof(courses));
         }
 
         Document = document;
@@ -139,15 +133,13 @@ internal sealed class CourseCatalogProjection
         bool hasOffering = mOfferingsById.TryGetValue(offeringId, out offeringOrNull);
         if (hasOffering == false || offeringOrNull == null)
         {
-            throw new KeyNotFoundException(
-                "No projected offering exists for " + offeringId + ".");
+            throw new KeyNotFoundException("No projected offering exists for " + offeringId + ".");
         }
 
         return offeringOrNull;
     }
 
-    private static Dictionary<CourseId, CatalogCourse> createSourceCoursesById(
-        IEnumerable<CatalogCourse> sourceCourses)
+    private static Dictionary<CourseId, CatalogCourse> createSourceCoursesById(IEnumerable<CatalogCourse> sourceCourses)
     {
         Dictionary<CourseId, CatalogCourse> sourceCoursesById = new Dictionary<CourseId, CatalogCourse>();
         foreach (CatalogCourse sourceCourse in sourceCourses)
@@ -158,8 +150,7 @@ internal sealed class CourseCatalogProjection
         return sourceCoursesById;
     }
 
-    private static Dictionary<OfferingId, CatalogOffering> createSourceOfferingsById(
-        IEnumerable<CatalogOffering> sourceOfferings)
+    private static Dictionary<OfferingId, CatalogOffering> createSourceOfferingsById(IEnumerable<CatalogOffering> sourceOfferings)
     {
         Dictionary<OfferingId, CatalogOffering> sourceOfferingsById = new Dictionary<OfferingId, CatalogOffering>();
         foreach (CatalogOffering sourceOffering in sourceOfferings)
@@ -192,10 +183,7 @@ internal sealed class CourseCatalogProjection
         return copiedCourses;
     }
 
-    private static void validateSourceCourse(
-        CatalogCourseProjection course,
-        IReadOnlyDictionary<CourseId, CatalogCourse> sourceCoursesById,
-        IDictionary<CourseId, CatalogCourseProjection> coursesById)
+    private static void validateSourceCourse(CatalogCourseProjection course, IReadOnlyDictionary<CourseId, CatalogCourse> sourceCoursesById, IDictionary<CourseId, CatalogCourseProjection> coursesById)
     {
         if (course == null)
         {
@@ -208,47 +196,33 @@ internal sealed class CourseCatalogProjection
             || sourceCourseOrNull == null
             || ReferenceEquals(sourceCourseOrNull, course.Course) == false)
         {
-            throw new ArgumentException(
-                "Projected courses must come from the source catalog document.",
-                nameof(course));
+            throw new ArgumentException("Projected courses must come from the source catalog document.", nameof(course));
         }
 
         if (coursesById.TryAdd(course.Course.Id, course) == false)
         {
-            throw new ArgumentException(
-                "Catalog projections cannot contain duplicate courses.",
-                nameof(course));
+            throw new ArgumentException("Catalog projections cannot contain duplicate courses.", nameof(course));
         }
     }
 
-    private static void validateSourceOffering(
-        CatalogOfferingProjection offering,
-        IReadOnlyDictionary<OfferingId, CatalogOffering> sourceOfferingsById,
-        IDictionary<OfferingId, CatalogOfferingProjection> offeringsById)
+    private static void validateSourceOffering(CatalogOfferingProjection offering, IReadOnlyDictionary<OfferingId, CatalogOffering> sourceOfferingsById, IDictionary<OfferingId, CatalogOfferingProjection> offeringsById)
     {
         CatalogOffering? sourceOfferingOrNull;
-        bool hasSourceOffering = sourceOfferingsById.TryGetValue(
-            offering.Offering.Id,
-            out sourceOfferingOrNull);
+        bool hasSourceOffering = sourceOfferingsById.TryGetValue(offering.Offering.Id, out sourceOfferingOrNull);
         if (hasSourceOffering == false
             || sourceOfferingOrNull == null
             || ReferenceEquals(sourceOfferingOrNull, offering.Offering) == false)
         {
-            throw new ArgumentException(
-                "Projected offerings must come from the source catalog document.",
-                nameof(offering));
+            throw new ArgumentException("Projected offerings must come from the source catalog document.", nameof(offering));
         }
 
         if (offeringsById.TryAdd(offering.Offering.Id, offering) == false)
         {
-            throw new ArgumentException(
-                "Catalog projections cannot contain duplicate offerings.",
-                nameof(offering));
+            throw new ArgumentException("Catalog projections cannot contain duplicate offerings.", nameof(offering));
         }
     }
 
-    private static IReadOnlyList<OfferingUnitName> collectOfferingUnitNames(
-        IEnumerable<CatalogCourseProjection> courses)
+    private static IReadOnlyList<OfferingUnitName> collectOfferingUnitNames(IEnumerable<CatalogCourseProjection> courses)
     {
         SortedDictionary<string, OfferingUnitName> offeringUnitNamesByValue = new SortedDictionary<string, OfferingUnitName>(StringComparer.Ordinal);
         foreach (CatalogCourseProjection course in courses)
@@ -262,8 +236,7 @@ internal sealed class CourseCatalogProjection
         return new List<OfferingUnitName>(offeringUnitNamesByValue.Values).AsReadOnly();
     }
 
-    private static IReadOnlyList<CatalogRequirementGroup> createRequirementGroups(
-        IReadOnlyList<CatalogCourseProjection> courses)
+    private static IReadOnlyList<CatalogRequirementGroup> createRequirementGroups(IReadOnlyList<CatalogCourseProjection> courses)
     {
         SortedDictionary<ERequirementType, List<CatalogCourseProjection>> coursesByRequirement = new SortedDictionary<ERequirementType, List<CatalogCourseProjection>>();
         foreach (CatalogCourseProjection course in courses)
@@ -283,8 +256,7 @@ internal sealed class CourseCatalogProjection
         }
 
         List<CatalogRequirementGroup> requirementGroups = new List<CatalogRequirementGroup>();
-        foreach (KeyValuePair<ERequirementType, List<CatalogCourseProjection>> pair
-            in coursesByRequirement)
+        foreach (KeyValuePair<ERequirementType, List<CatalogCourseProjection>> pair in coursesByRequirement)
         {
             requirementGroups.Add(new CatalogRequirementGroup(pair.Key, pair.Value));
         }

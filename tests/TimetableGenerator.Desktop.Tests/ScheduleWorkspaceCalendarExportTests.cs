@@ -76,13 +76,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                 menu.ShowAt(exportButton);
                 Dispatcher.UIThread.RunJobs();
                 assertExportPngImageIconPresentation(pngAction);
-                assertExportRasterLogoPresentation(
-                    allPngAction,
-                    "ExportAllPngLogoSlot",
-                    "ExportAllPngLogoImage",
-                    24.0,
-                    24.0,
-                    null);
+                assertExportAllPngMultipleImageIconPresentation(allPngAction);
                 assertAppleCalendarIconPresentation(appleAction);
                 assertExportRasterLogoPresentation(
                     googleAction,
@@ -137,9 +131,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
 
             Assert.Equal(workspace.ActivePlan.PlanId, planOrNull.PlanId);
             Assert.Equal(workspace.ActivePlan.Name, planOrNull.CalendarName);
-            Assert.Equal(
-                "한동대학교 2026-2 시간표입니다.",
-                planOrNull.CalendarDescription.Value);
+            Assert.Equal("한동대학교 2026-2 시간표입니다.", planOrNull.CalendarDescription.Value);
             Assert.Equal("Asia/Seoul", planOrNull.TimeZoneId.Value);
             Assert.Equal(TimeSpan.FromHours(9.0), planOrNull.TimeZoneId.FindUtcOffset(planOrNull.Events[0].FirstOccurrenceDate, planOrNull.Events[0].StartTime).Value);
             Assert.NotEmpty(planOrNull.Events);
@@ -263,8 +255,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                 {
                     if (eventArgs.Property == TextBlock.TextProperty)
                     {
-                        liveRegionTransitions.Add(
-                            (statusText.Text, AutomationProperties.GetLiveSetting(statusText)));
+                        liveRegionTransitions.Add((statusText.Text, AutomationProperties.GetLiveSetting(statusText)));
                     }
                 };
             Assert.True(string.IsNullOrEmpty(statusText.Text));
@@ -376,9 +367,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
     {
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         await workspace.RecommendationRefreshTask;
-        GoogleCalendarExportResult result = GoogleCalendarExportResult.Fail(
-            EGoogleCalendarExportStatus.NotConfigured,
-            "test_not_configured");
+        GoogleCalendarExportResult result = GoogleCalendarExportResult.Fail(EGoogleCalendarExportStatus.NotConfigured, "test_not_configured");
         RecordingGoogleCalendarExporter googleExporter = new RecordingGoogleCalendarExporter(result);
         ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(createServices(googleExporter, createUnavailableAppleExporter()), TEST_EXPORT_STATUS_DURATION);
         workspaceView.DataContext = workspace;
@@ -470,9 +459,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
     {
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         await workspace.RecommendationRefreshTask;
-        GoogleCalendarExportResult result = GoogleCalendarExportResult.Fail(
-            EGoogleCalendarExportStatus.Failed,
-            "test_export_failure");
+        GoogleCalendarExportResult result = GoogleCalendarExportResult.Fail(EGoogleCalendarExportStatus.Failed, "test_export_failure");
         RecordingGoogleCalendarExporter googleExporter = new RecordingGoogleCalendarExporter(result);
         ScheduleWorkspaceView workspaceView = new ScheduleWorkspaceView(createServices(googleExporter, createUnavailableAppleExporter()), TEST_EXPORT_STATUS_DURATION);
         workspaceView.DataContext = workspace;
@@ -573,13 +560,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
                 menu.ShowAt(exportButton);
                 Dispatcher.UIThread.RunJobs();
                 assertExportPngImageIconPresentation(pngAction);
-                assertExportRasterLogoPresentation(
-                    allPngAction,
-                    "ExportAllPngLogoSlot",
-                    "ExportAllPngLogoImage",
-                    24.0,
-                    24.0,
-                    null);
+                assertExportAllPngMultipleImageIconPresentation(allPngAction);
                 assertAppleCalendarIconPresentation(appleAction);
                 assertExportRasterLogoPresentation(
                     googleAction,
@@ -676,10 +657,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
 
     private static GoogleCalendarExportResult createSuccessfulGoogleResult()
     {
-        return GoogleCalendarExportResult.Complete(
-            new GoogleCalendarId("test-calendar@group.calendar.google.com"),
-            new PlanName("2026-2학기 시간표"),
-            new GoogleCalendarReconciliationResult(1, 0, 0));
+        return GoogleCalendarExportResult.Complete(new GoogleCalendarId("test-calendar@group.calendar.google.com"), new PlanName("2026-2학기 시간표"), new GoogleCalendarReconciliationResult(1, 0, 0));
     }
 
     private static Window showInWindow(ScheduleWorkspaceView workspaceView)
@@ -749,6 +727,65 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             24.0,
             24.0,
             null);
+    }
+
+    private static void assertExportAllPngMultipleImageIconPresentation(MenuItem menuItem)
+    {
+        assertExportMenuItemPresentation(menuItem);
+        Grid iconSlot = Assert.IsType<Grid>(menuItem.Icon);
+        Assert.Equal("ExportAllPngLogoSlot", iconSlot.Name);
+        Assert.Equal(24.0, iconSlot.Width);
+        Assert.Equal(24.0, iconSlot.Height);
+        Assert.Equal(HorizontalAlignment.Center, iconSlot.HorizontalAlignment);
+        Assert.Equal(VerticalAlignment.Center, iconSlot.VerticalAlignment);
+        Assert.Contains("export-menu-logo-slot", iconSlot.Classes);
+
+        Image backImage = findRequiredImage(iconSlot, "ExportAllPngBackImage");
+        Image middleImage = findRequiredImage(iconSlot, "ExportAllPngMiddleImage");
+        Image frontImage = findRequiredImage(iconSlot, "ExportAllPngFrontImage");
+        assertStackedPngImagePresentation(backImage, 12.0, new Thickness(1.0, 2.0, 0.0, 0.0), -8.0);
+        assertStackedPngImagePresentation(middleImage, 12.0, new Thickness(11.0, 2.0, 0.0, 0.0), 8.0);
+        assertStackedPngImagePresentation(frontImage, 16.0, new Thickness(4.0, 8.0, 0.0, 0.0), null);
+        Assert.Collection(
+            iconSlot.Children,
+            child => Assert.Same(backImage, child),
+            child => Assert.Same(middleImage, child),
+            child => Assert.Same(frontImage, child));
+    }
+
+    private static Image findRequiredImage(Grid iconSlot, string imageName)
+    {
+        Image? imageOrNull = iconSlot.FindControl<Image>(imageName);
+        Assert.NotNull(imageOrNull);
+        if (imageOrNull == null)
+        {
+            throw new InvalidOperationException("The stacked PNG export image was not found: " + imageName);
+        }
+
+        return imageOrNull;
+    }
+
+    private static void assertStackedPngImagePresentation(Image image, double size, Thickness margin, double? rotationAngleOrNull)
+    {
+        Assert.NotNull(image.Source);
+        Assert.Equal(size, image.Width);
+        Assert.Equal(size, image.Height);
+        Assert.Equal(margin, image.Margin);
+        Assert.Equal(HorizontalAlignment.Left, image.HorizontalAlignment);
+        Assert.Equal(VerticalAlignment.Top, image.VerticalAlignment);
+        Assert.Equal(Stretch.Uniform, image.Stretch);
+        Assert.Contains("export-menu-logo", image.Classes);
+
+        if (rotationAngleOrNull.HasValue)
+        {
+            Assert.Equal(RelativePoint.Center, image.RenderTransformOrigin);
+            RotateTransform rotation = Assert.IsType<RotateTransform>(image.RenderTransform);
+            Assert.Equal(rotationAngleOrNull.Value, rotation.Angle);
+        }
+        else
+        {
+            Assert.Null(image.RenderTransform);
+        }
     }
 
     private static Grid assertExportRasterLogoPresentation(
@@ -858,15 +895,9 @@ public sealed class ScheduleWorkspaceCalendarExportTests
         }
 
         double menuItemCenterY = menuItem.Bounds.Height / 2.0;
-        double iconCenterY = iconOriginOrNull.Value.Y
-            + (iconPresenter.Bounds.Height / 2.0);
+        double iconCenterY = iconOriginOrNull.Value.Y + (iconPresenter.Bounds.Height / 2.0);
         double iconCenterDelta = iconCenterY - menuItemCenterY;
-        Assert.True(
-            Math.Abs(iconCenterDelta) <= MAXIMUM_CENTER_DELTA_DIP,
-            "Export menu icon center delta=" + iconCenterDelta
-                + ", item height=" + menuItem.Bounds.Height
-                + ", icon top=" + iconOriginOrNull.Value.Y
-                + ", icon height=" + iconPresenter.Bounds.Height + ".");
+        Assert.True(Math.Abs(iconCenterDelta) <= MAXIMUM_CENTER_DELTA_DIP, "Export menu icon center delta=" + iconCenterDelta + ", item height=" + menuItem.Bounds.Height + ", icon top=" + iconOriginOrNull.Value.Y + ", icon height=" + iconPresenter.Bounds.Height + ".");
 
         string headerText = Assert.IsType<string>(menuItem.Header);
         TextBlock header = menuItem.GetVisualDescendants()
@@ -879,15 +910,9 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             throw new InvalidOperationException("The export menu header geometry could not be resolved.");
         }
 
-        double headerCenterY = headerOriginOrNull.Value.Y
-            + (header.Bounds.Height / 2.0);
+        double headerCenterY = headerOriginOrNull.Value.Y + (header.Bounds.Height / 2.0);
         double headerCenterDelta = headerCenterY - menuItemCenterY;
-        Assert.True(
-            Math.Abs(headerCenterDelta) <= MAXIMUM_CENTER_DELTA_DIP,
-            "Export menu header center delta=" + headerCenterDelta
-                + ", item height=" + menuItem.Bounds.Height
-                + ", header top=" + headerOriginOrNull.Value.Y
-                + ", header height=" + header.Bounds.Height + ".");
+        Assert.True(Math.Abs(headerCenterDelta) <= MAXIMUM_CENTER_DELTA_DIP, "Export menu header center delta=" + headerCenterDelta + ", item height=" + menuItem.Bounds.Height + ", header top=" + headerOriginOrNull.Value.Y + ", header height=" + header.Bounds.Height + ".");
     }
 
     private static ThemeVariant[] getProductThemeVariants()
@@ -913,10 +938,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             }
         }
 
-        public async Task<GoogleCalendarExportResult> ExportAsync(
-            GoogleCalendarExportPlan plan,
-            ICalendarNameConflictResolver conflictResolver,
-            CancellationToken cancellationToken)
+        public async Task<GoogleCalendarExportResult> ExportAsync(GoogleCalendarExportPlan plan, ICalendarNameConflictResolver conflictResolver, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(plan);
             ArgumentNullException.ThrowIfNull(conflictResolver);
@@ -968,10 +990,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             }
         }
 
-        public async Task<AppleCalendarExportResult> ExportAsync(
-            CalendarExportDocument document,
-            ICalendarNameConflictResolver conflictResolver,
-            CancellationToken cancellationToken)
+        public async Task<AppleCalendarExportResult> ExportAsync(CalendarExportDocument document, ICalendarNameConflictResolver conflictResolver, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(document);
             ArgumentNullException.ThrowIfNull(conflictResolver);
@@ -1005,10 +1024,7 @@ public sealed class ScheduleWorkspaceCalendarExportTests
             mResults = new Queue<GoogleCalendarExportResult>(results);
         }
 
-        public Task<GoogleCalendarExportResult> ExportAsync(
-            GoogleCalendarExportPlan plan,
-            ICalendarNameConflictResolver conflictResolver,
-            CancellationToken cancellationToken)
+        public Task<GoogleCalendarExportResult> ExportAsync(GoogleCalendarExportPlan plan, ICalendarNameConflictResolver conflictResolver, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(plan);
             ArgumentNullException.ThrowIfNull(conflictResolver);

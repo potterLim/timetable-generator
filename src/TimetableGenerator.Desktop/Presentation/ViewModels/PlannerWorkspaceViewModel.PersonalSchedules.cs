@@ -201,9 +201,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                 return string.Empty;
             }
 
-            return "시간표에서 개인 일정 '"
-                + mPersonalSchedulePendingDeletionOrNull.Title
-                + "'을 삭제합니다.";
+            return "시간표에서 개인 일정 '" + mPersonalSchedulePendingDeletionOrNull.Title + "'을 삭제합니다.";
         }
     }
 

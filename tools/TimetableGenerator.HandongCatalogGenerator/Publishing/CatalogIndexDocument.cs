@@ -32,9 +32,7 @@ internal sealed class CatalogIndexDocument
         Entries = normalizedEntries.AsReadOnly();
     }
 
-    public static CatalogIndexDocument CreateWithUpsertedEntry(
-        CatalogIndexEntry entry,
-        IEnumerable<CatalogIndexEntry> existingEntries)
+    public static CatalogIndexDocument CreateWithUpsertedEntry(CatalogIndexEntry entry, IEnumerable<CatalogIndexEntry> existingEntries)
     {
         ArgumentNullException.ThrowIfNull(entry);
         ArgumentNullException.ThrowIfNull(existingEntries);

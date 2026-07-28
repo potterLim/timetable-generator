@@ -13,40 +13,28 @@ internal sealed class HandongOfferingInformationNormalizer
 
     private static readonly Regex ADDITIONAL_INSTRUCTOR_FORMAT = new Regex("외\\s*(?<count>[0-9]+)\\s*명$", RegexOptions.CultureInvariant);
 
-    public HandongOfferingInformationNormalizationResult NormalizeOfferingInformation(
-        HandongRawOfferingRow row)
+    public HandongOfferingInformationNormalizationResult NormalizeOfferingInformation(HandongRawOfferingRow row)
     {
         IReadOnlyList<string> lines = HandongCellValueReader.getNonEmptyLines(row, EHandongColumn.OfferingInformation);
         if (lines.Count == 0)
         {
-            throw new InvalidHandongSourceRecordException(
-                row.SourceRecordNumber,
-                EHandongColumn.OfferingInformation,
-                "Offering unit and instruction session are required.");
+            throw new InvalidHandongSourceRecordException(row.SourceRecordNumber, EHandongColumn.OfferingInformation, "Offering unit and instruction session are required.");
         }
 
         Match offeringInformationMatch = OFFERING_INFORMATION_FORMAT.Match(lines[0]);
         if (offeringInformationMatch.Success == false)
         {
-            throw new InvalidHandongSourceRecordException(
-                row.SourceRecordNumber,
-                EHandongColumn.OfferingInformation,
-                "The offering information must end with 주간 or 야간.");
+            throw new InvalidHandongSourceRecordException(row.SourceRecordNumber, EHandongColumn.OfferingInformation, "The offering information must end with 주간 or 야간.");
         }
 
         OfferingUnitName offeringUnitName = new OfferingUnitName(offeringInformationMatch.Groups["unit"].Value);
         EInstructionSession instructionSession = parseInstructionSession(offeringInformationMatch.Groups["session"].Value, row);
         InstructorAssignment instructorAssignment = normalizeInstructorAssignment(lines, row);
 
-        return new HandongOfferingInformationNormalizationResult(
-            offeringUnitName,
-            instructionSession,
-            instructorAssignment);
+        return new HandongOfferingInformationNormalizationResult(offeringUnitName, instructionSession, instructorAssignment);
     }
 
-    private static EInstructionSession parseInstructionSession(
-        string sourceValue,
-        HandongRawOfferingRow row)
+    private static EInstructionSession parseInstructionSession(string sourceValue, HandongRawOfferingRow row)
     {
         switch (sourceValue)
         {
@@ -55,16 +43,11 @@ internal sealed class HandongOfferingInformationNormalizer
             case "야간":
                 return EInstructionSession.Evening;
             default:
-                throw new InvalidHandongSourceRecordException(
-                    row.SourceRecordNumber,
-                    EHandongColumn.OfferingInformation,
-                    "Unsupported instruction session: " + sourceValue);
+                throw new InvalidHandongSourceRecordException(row.SourceRecordNumber, EHandongColumn.OfferingInformation, "Unsupported instruction session: " + sourceValue);
         }
     }
 
-    private static InstructorAssignment normalizeInstructorAssignment(
-        IReadOnlyList<string> lines,
-        HandongRawOfferingRow row)
+    private static InstructorAssignment normalizeInstructorAssignment(IReadOnlyList<string> lines, HandongRawOfferingRow row)
     {
         if (lines.Count == 1)
         {
@@ -84,10 +67,7 @@ internal sealed class HandongOfferingInformationNormalizer
             bool isCountParsed = int.TryParse(additionalInstructorMatch.Groups["count"].Value, NumberStyles.None, CultureInfo.InvariantCulture, out additionalInstructorCountValue);
             if (isCountParsed == false)
             {
-                throw new InvalidHandongSourceRecordException(
-                    row.SourceRecordNumber,
-                    EHandongColumn.OfferingInformation,
-                    "The additional instructor count is invalid.");
+                throw new InvalidHandongSourceRecordException(row.SourceRecordNumber, EHandongColumn.OfferingInformation, "The additional instructor count is invalid.");
             }
         }
 

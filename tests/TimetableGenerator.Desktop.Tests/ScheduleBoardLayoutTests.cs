@@ -69,16 +69,8 @@ public sealed class ScheduleBoardLayoutTests
     {
         DailyTimeRange timeRange = new DailyTimeRange(new ScheduleTime(11, 30), new ScheduleTime(12, 15));
 
-        Assert.Equal(
-            "월요일: 11:30–12:15",
-            ScheduleBoardDayRange.CreateFullDayTimeDisplayText(
-                EDay.Monday,
-                timeRange));
-        Assert.Equal(
-            "월·수: 11:30–12:15",
-            ScheduleBoardDayRange.CreateShortDayTimeDisplayText(
-                new[] { EDay.Monday, EDay.Wednesday },
-                timeRange));
+        Assert.Equal("월요일: 11:30–12:15", ScheduleBoardDayRange.CreateFullDayTimeDisplayText(EDay.Monday, timeRange));
+        Assert.Equal("월·수: 11:30–12:15", ScheduleBoardDayRange.CreateShortDayTimeDisplayText(new[] { EDay.Monday, EDay.Wednesday }, timeRange));
     }
 
     [Fact]
@@ -187,10 +179,7 @@ public sealed class ScheduleBoardLayoutTests
     [InlineData(23, 0, 1_410)]
     [InlineData(23, 30, 1_440)]
     [InlineData(23, 59, 1_440)]
-    public void TimeAxisEndsAtTheFirstHalfHourStrictlyAfterTheLatestEntry(
-        int endHour,
-        int endMinute,
-        int expectedEndMinute)
+    public void TimeAxisEndsAtTheFirstHalfHourStrictlyAfterTheLatestEntry(int endHour, int endMinute, int expectedEndMinute)
     {
         ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForEntries(
             new ScheduleEntry[]

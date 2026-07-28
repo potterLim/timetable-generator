@@ -44,23 +44,13 @@ public sealed class CatalogGenerationServiceTests
     [TestMethod]
     public async Task GenerateAsync_UnconfirmedInstructorAndMissingMeeting_PreservesStatesAsync()
     {
-        string sourceHtml = HandongExportTestHtml.Create()
-            .Replace(
-                "<td>GLS&nbsp;주간<br><font color=\"blue\">테스트 담당자</font></td>",
-                "<td>GLS&nbsp;주간<br><font color=\"blue\">Unconfirmed</font></td>",
-                StringComparison.Ordinal)
-            .Replace(
-                "<td>화5,금5<br>Tue5,Fri5<br><br><br></td>",
-                "<td>&nbsp;</td>",
-                StringComparison.Ordinal);
+        string sourceHtml = HandongExportTestHtml.Create().Replace("<td>GLS&nbsp;주간<br><font color=\"blue\">테스트 담당자</font></td>", "<td>GLS&nbsp;주간<br><font color=\"blue\">Unconfirmed</font></td>", StringComparison.Ordinal).Replace("<td>화5,금5<br>Tue5,Fri5<br><br><br></td>", "<td>&nbsp;</td>", StringComparison.Ordinal);
         using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(sourceHtml))
         using (TemporaryCatalogOutputRoot outputRoot = new TemporaryCatalogOutputRoot())
         {
             CatalogGenerationService service = new CatalogGenerationService();
 
-            CatalogGenerationResult result = await service.GenerateAsync(
-                createRequest(sourceFile, outputRoot, 1),
-                CancellationToken.None);
+            CatalogGenerationResult result = await service.GenerateAsync(createRequest(sourceFile, outputRoot, 1), CancellationToken.None);
             using (JsonDocument document = JsonDocument.Parse(await File.ReadAllBytesAsync(result.CatalogPath.Value)))
             {
                 JsonElement offering = document.RootElement.GetProperty("offerings")[0];
@@ -81,21 +71,13 @@ public sealed class CatalogGenerationServiceTests
     [TestMethod]
     public async Task GenerateAsync_DamagedEnglishSchedule_UsesKoreanScheduleAndReportsMismatchAsync()
     {
-        string sourceHtml = HandongExportTestHtml.Create()
-            .Replace("Tue5,Fri5", "Tue5,Fr", StringComparison.Ordinal)
-            .Replace(
-                "테스트 담당자</font>",
-                "테스트 담당자 외 2명</font>",
-                StringComparison.Ordinal)
-            .Replace("<td>2</td>", "<td>.5</td>", StringComparison.Ordinal);
+        string sourceHtml = HandongExportTestHtml.Create().Replace("Tue5,Fri5", "Tue5,Fr", StringComparison.Ordinal).Replace("테스트 담당자</font>", "테스트 담당자 외 2명</font>", StringComparison.Ordinal).Replace("<td>2</td>", "<td>.5</td>", StringComparison.Ordinal);
         using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(sourceHtml))
         using (TemporaryCatalogOutputRoot outputRoot = new TemporaryCatalogOutputRoot())
         {
             CatalogGenerationService service = new CatalogGenerationService();
 
-            CatalogGenerationResult result = await service.GenerateAsync(
-                createRequest(sourceFile, outputRoot, 1),
-                CancellationToken.None);
+            CatalogGenerationResult result = await service.GenerateAsync(createRequest(sourceFile, outputRoot, 1), CancellationToken.None);
             using (JsonDocument document = JsonDocument.Parse(await File.ReadAllBytesAsync(result.CatalogPath.Value)))
             {
                 JsonElement root = document.RootElement;
@@ -123,9 +105,7 @@ public sealed class CatalogGenerationServiceTests
         {
             CatalogGenerationRequest request = createRequest(sourceFile, outputRoot, 1);
             CatalogGenerationService service = new CatalogGenerationService();
-            CatalogGenerationResult initialResult = await service.GenerateAsync(
-                request,
-                CancellationToken.None);
+            CatalogGenerationResult initialResult = await service.GenerateAsync(request, CancellationToken.None);
             await File.WriteAllTextAsync(initialResult.CatalogPath.Value, "different content");
 
             CatalogGenerationException exception =
@@ -138,16 +118,9 @@ public sealed class CatalogGenerationServiceTests
         }
     }
 
-    private static CatalogGenerationRequest createRequest(
-        TemporaryHandongSourceFile sourceFile,
-        TemporaryCatalogOutputRoot outputRoot,
-        int revision)
+    private static CatalogGenerationRequest createRequest(TemporaryHandongSourceFile sourceFile, TemporaryCatalogOutputRoot outputRoot, int revision)
     {
-        return new CatalogGenerationRequest(
-            sourceFile.FilePath,
-            AcademicTerm.Parse("2026-2"),
-            new CatalogRevision(revision),
-            outputRoot.OutputRootPath);
+        return new CatalogGenerationRequest(sourceFile.FilePath, AcademicTerm.Parse("2026-2"), new CatalogRevision(revision), outputRoot.OutputRootPath);
     }
 
     private static void assertCatalogDocument(byte[] content)
@@ -160,9 +133,7 @@ public sealed class CatalogGenerationServiceTests
             JsonElement offering = root.GetProperty("offerings")[0];
             Assert.AreEqual("01", offering.GetProperty("sectionCode").GetString());
             Assert.AreEqual("scheduled", offering.GetProperty("schedule").GetProperty("status").GetString());
-            Assert.AreEqual(
-                "테스트 담당자",
-                offering.GetProperty("instructorAssignment").GetProperty("displayText").GetString());
+            Assert.AreEqual("테스트 담당자", offering.GetProperty("instructorAssignment").GetProperty("displayText").GetString());
         }
     }
 }

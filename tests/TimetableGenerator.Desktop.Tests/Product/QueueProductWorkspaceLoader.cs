@@ -12,8 +12,7 @@ internal sealed class QueueProductWorkspaceLoader : IProductWorkspaceLoader
 
     public int LoadCount { get; private set; }
 
-    public QueueProductWorkspaceLoader(
-        IEnumerable<Func<CancellationToken, Task<ProductWorkspacePresentation>>> loads)
+    public QueueProductWorkspaceLoader(IEnumerable<Func<CancellationToken, Task<ProductWorkspacePresentation>>> loads)
     {
         if (loads == null)
         {

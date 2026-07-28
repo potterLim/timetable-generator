@@ -10,9 +10,7 @@ internal sealed class ProductCatalogUpdateResult
 
     public CatalogRevision CandidateRevision { get; }
 
-    public ProductCatalogUpdateResult(
-        EProductCatalogUpdateStatus status,
-        CatalogRevision candidateRevision)
+    public ProductCatalogUpdateResult(EProductCatalogUpdateStatus status, CatalogRevision candidateRevision)
     {
         if (Enum.IsDefined(typeof(EProductCatalogUpdateStatus), status) == false)
         {
@@ -21,9 +19,7 @@ internal sealed class ProductCatalogUpdateResult
 
         if (candidateRevision.IsValid == false)
         {
-            throw new ArgumentException(
-                "Catalog update results require a valid candidate revision.",
-                nameof(candidateRevision));
+            throw new ArgumentException("Catalog update results require a valid candidate revision.", nameof(candidateRevision));
         }
 
         Status = status;

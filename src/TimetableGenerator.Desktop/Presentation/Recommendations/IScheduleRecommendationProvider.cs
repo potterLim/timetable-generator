@@ -7,8 +7,5 @@ namespace TimetableGenerator.Desktop.Presentation.Recommendations;
 
 internal interface IScheduleRecommendationProvider
 {
-    ScheduleRecommendationResult Generate(
-        PlanningPlan plan,
-        ScheduleRecommendationLimit recommendationLimit,
-        CancellationToken cancellationToken);
+    ScheduleRecommendationResult Generate(PlanningPlan plan, ScheduleRecommendationLimit recommendationLimit, CancellationToken cancellationToken);
 }

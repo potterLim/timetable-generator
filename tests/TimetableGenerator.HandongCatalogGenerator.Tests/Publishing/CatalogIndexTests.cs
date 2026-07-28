@@ -14,9 +14,7 @@ public sealed class CatalogIndexTests
     public void WriteThenRead_ValidIndex_PreservesEntriesAndHashMetadata()
     {
         CatalogIndexEntry entry = createEntry("2026-2", 1, 'a');
-        CatalogIndexDocument document = new CatalogIndexDocument(
-            entry,
-            new[] { entry });
+        CatalogIndexDocument document = new CatalogIndexDocument(entry, new[] { entry });
 
         byte[] content = CatalogIndexJsonWriter.Write(document);
         CatalogIndexDocument parsed = CatalogIndexReader.Read(content);
@@ -26,10 +24,7 @@ public sealed class CatalogIndexTests
         Assert.AreEqual(entry.Sha256, parsed.Entries[0].Sha256);
         Assert.AreEqual((byte)'\n', content[^1]);
         string contentText = Encoding.UTF8.GetString(content);
-        Assert.IsTrue(
-            contentText.Contains(
-                "handong-global-university/2026-2/catalog-r0001.json",
-                StringComparison.Ordinal));
+        Assert.IsTrue(contentText.Contains("handong-global-university/2026-2/catalog-r0001.json", StringComparison.Ordinal));
         Assert.IsFalse(contentText.Contains("updatedAt", StringComparison.Ordinal));
         Assert.IsFalse(contentText.Contains("publishedAt", StringComparison.Ordinal));
     }
@@ -41,9 +36,7 @@ public sealed class CatalogIndexTests
         CatalogIndexEntry previousTerm = createEntry("2026-1", 1, 'a');
         CatalogIndexEntry revisionOne = createEntry("2026-2", 1, 'c');
 
-        CatalogIndexDocument document = CatalogIndexDocument.CreateWithUpsertedEntry(
-            revisionOne,
-            new[] { revisionTwo, previousTerm });
+        CatalogIndexDocument document = CatalogIndexDocument.CreateWithUpsertedEntry(revisionOne, new[] { revisionTwo, previousTerm });
 
         Assert.HasCount(3, document.Entries);
         Assert.AreEqual(previousTerm.CatalogId, document.Entries[0].CatalogId);
@@ -58,15 +51,7 @@ public sealed class CatalogIndexTests
         CatalogIndexEntry entry = createEntry("2026-2", 1, 'a');
         CatalogIndexDocument document = new CatalogIndexDocument(entry, new[] { entry });
         string currentContent = Encoding.UTF8.GetString(CatalogIndexJsonWriter.Write(document));
-        string preReleaseContent = currentContent
-            .Replace(
-                "  \"schemaVersion\": 1,\n",
-                "  \"schemaVersion\": 1,\n  \"updatedAt\": \"2026-07-16T00:00:00Z\",\n",
-                StringComparison.Ordinal)
-            .Replace(
-                "      \"revision\": 1,\n",
-                "      \"revision\": 1,\n      \"publishedAt\": \"2026-07-16T00:00:00Z\",\n",
-                StringComparison.Ordinal);
+        string preReleaseContent = currentContent.Replace("  \"schemaVersion\": 1,\n", "  \"schemaVersion\": 1,\n  \"updatedAt\": \"2026-07-16T00:00:00Z\",\n", StringComparison.Ordinal).Replace("      \"revision\": 1,\n", "      \"revision\": 1,\n      \"publishedAt\": \"2026-07-16T00:00:00Z\",\n", StringComparison.Ordinal);
 
         CatalogIndexDocument parsed = CatalogIndexReader.Read(Encoding.UTF8.GetBytes(preReleaseContent));
         string rewrittenContent = Encoding.UTF8.GetString(CatalogIndexJsonWriter.Write(parsed));
@@ -75,12 +60,7 @@ public sealed class CatalogIndexTests
         using (JsonDocument rewrittenDocument = JsonDocument.Parse(rewrittenContent))
         {
             Assert.AreEqual(1, rewrittenDocument.RootElement.GetProperty("schemaVersion").GetInt32());
-            Assert.AreEqual(
-                1,
-                rewrittenDocument.RootElement
-                    .GetProperty("catalogs")[0]
-                    .GetProperty("catalogSchemaVersion")
-                    .GetInt32());
+            Assert.AreEqual(1, rewrittenDocument.RootElement.GetProperty("catalogs")[0].GetProperty("catalogSchemaVersion").GetInt32());
         }
 
         Assert.IsFalse(rewrittenContent.Contains("updatedAt", StringComparison.Ordinal));
@@ -92,12 +72,7 @@ public sealed class CatalogIndexTests
     {
         CatalogIndexEntry entry = createEntry("2026-2", 1, 'a');
         CatalogIndexDocument document = new CatalogIndexDocument(entry, new[] { entry });
-        string unsupportedContent = Encoding.UTF8
-            .GetString(CatalogIndexJsonWriter.Write(document))
-            .Replace(
-                "  \"schemaVersion\": 1,\n",
-                "  \"schemaVersion\": 2,\n",
-                StringComparison.Ordinal);
+        string unsupportedContent = Encoding.UTF8.GetString(CatalogIndexJsonWriter.Write(document)).Replace("  \"schemaVersion\": 1,\n", "  \"schemaVersion\": 2,\n", StringComparison.Ordinal);
 
         Assert.ThrowsExactly<CatalogIndexFormatException>(
             () => CatalogIndexReader.Read(Encoding.UTF8.GetBytes(unsupportedContent)));

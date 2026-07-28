@@ -9,9 +9,7 @@ public abstract class PlanningWorkspaceAutosaveState
 
     public PlanningWorkspace Workspace { get; }
 
-    private protected PlanningWorkspaceAutosaveState(
-        EPlanningWorkspaceAutosaveStatus status,
-        PlanningWorkspace workspace)
+    private protected PlanningWorkspaceAutosaveState(EPlanningWorkspaceAutosaveStatus status, PlanningWorkspace workspace)
     {
         if (workspace == null)
         {

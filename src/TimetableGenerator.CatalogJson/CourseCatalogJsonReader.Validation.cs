@@ -15,16 +15,12 @@ public static partial class CourseCatalogJsonReader
     {
         if (counts.CourseCount.Value != courses.Count)
         {
-            throw new CatalogJsonFormatException(
-                "$.counts.courses",
-                "the declared course count does not match the courses array.");
+            throw new CatalogJsonFormatException("$.counts.courses", "the declared course count does not match the courses array.");
         }
 
         if (counts.OfferingCount.Value != offerings.Count)
         {
-            throw new CatalogJsonFormatException(
-                "$.counts.offerings",
-                "the declared offering count does not match the offerings array.");
+            throw new CatalogJsonFormatException("$.counts.offerings", "the declared offering count does not match the offerings array.");
         }
 
         int scheduledOfferingCount = 0;
@@ -66,8 +62,7 @@ public static partial class CourseCatalogJsonReader
                 ++instructorUnconfirmedCount;
             }
 
-            if (instructor.Status == EInstructorAssignmentStatus.Confirmed
-                && instructor.GetAdditionalInstructorCount().Value > 0)
+            if (instructor.Status == EInstructorAssignmentStatus.Confirmed && instructor.GetAdditionalInstructorCount().Value > 0)
             {
                 ++multiInstructorDisplayCount;
             }
@@ -79,9 +74,7 @@ public static partial class CourseCatalogJsonReader
 
             if (sourceRecordNumbers.Add(metadata.SourceRecordNumber) == false)
             {
-                throw new CatalogJsonFormatException(
-                    "$.offerings[" + offeringIndex + "].sourceRecordNumber",
-                    "source record numbers must be unique.");
+                throw new CatalogJsonFormatException("$.offerings[" + offeringIndex + "].sourceRecordNumber", "source record numbers must be unique.");
             }
         }
 
@@ -94,25 +87,18 @@ public static partial class CourseCatalogJsonReader
         requireCount(dataQuality.SourceRemarkLookupOnlyCount.Value, sourceRemarkLookupOnlyCount, "$.dataQuality.sourceRemarkLookupOnly");
     }
 
-    private static void validateOfferingMetadataPair(
-        CatalogOffering offering,
-        CatalogOfferingMetadata metadata,
-        int offeringIndex)
+    private static void validateOfferingMetadataPair(CatalogOffering offering, CatalogOfferingMetadata metadata, int offeringIndex)
     {
         string offeringPath = "$.offerings[" + offeringIndex + "]";
         if (offering.Id != metadata.OfferingId)
         {
-            throw new CatalogJsonFormatException(
-                offeringPath,
-                "offering metadata must preserve the matching offering ID.");
+            throw new CatalogJsonFormatException(offeringPath, "offering metadata must preserve the matching offering ID.");
         }
 
         bool hasScheduledSource = metadata.Logistics.HasScheduleSourceText;
         if (offering.MeetingSchedule.IsScheduled != hasScheduledSource)
         {
-            throw new CatalogJsonFormatException(
-                offeringPath + ".schedule",
-                "schedule source metadata must match the meeting schedule status.");
+            throw new CatalogJsonFormatException(offeringPath + ".schedule", "schedule source metadata must match the meeting schedule status.");
         }
     }
 
@@ -120,9 +106,7 @@ public static partial class CourseCatalogJsonReader
     {
         if (declaredCount != actualCount)
         {
-            throw new CatalogJsonFormatException(
-                path,
-                "the declared count does not match the parsed offering states.");
+            throw new CatalogJsonFormatException(path, "the declared count does not match the parsed offering states.");
         }
     }
 }

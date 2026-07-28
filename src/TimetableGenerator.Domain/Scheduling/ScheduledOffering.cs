@@ -31,9 +31,7 @@ public sealed class ScheduledOffering
 
         if (catalogOffering.MeetingSchedule.IsScheduled == false)
         {
-            throw new ArgumentException(
-                "Scheduled offering projections require a provided meeting schedule.",
-                nameof(catalogOffering));
+            throw new ArgumentException("Scheduled offering projections require a provided meeting schedule.", nameof(catalogOffering));
         }
 
         OfferingId = catalogOffering.Id;

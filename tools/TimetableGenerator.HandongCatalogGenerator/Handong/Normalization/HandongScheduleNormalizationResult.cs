@@ -9,9 +9,7 @@ internal sealed class HandongScheduleNormalizationResult
 
     public EEnglishScheduleComparison EnglishScheduleComparison { get; }
 
-    public HandongScheduleNormalizationResult(
-        MeetingSchedule schedule,
-        EEnglishScheduleComparison englishScheduleComparison)
+    public HandongScheduleNormalizationResult(MeetingSchedule schedule, EEnglishScheduleComparison englishScheduleComparison)
     {
         if (schedule == null)
         {
@@ -23,12 +21,9 @@ internal sealed class HandongScheduleNormalizationResult
             throw new ArgumentOutOfRangeException(nameof(englishScheduleComparison));
         }
 
-        if (schedule.Status == EMeetingScheduleStatus.NotProvided &&
-            englishScheduleComparison != EEnglishScheduleComparison.NotApplicable)
+        if (schedule.Status == EMeetingScheduleStatus.NotProvided && englishScheduleComparison != EEnglishScheduleComparison.NotApplicable)
         {
-            throw new ArgumentException(
-                "Schedules without meeting data cannot have an English comparison.",
-                nameof(englishScheduleComparison));
+            throw new ArgumentException("Schedules without meeting data cannot have an English comparison.", nameof(englishScheduleComparison));
         }
 
         Schedule = schedule;

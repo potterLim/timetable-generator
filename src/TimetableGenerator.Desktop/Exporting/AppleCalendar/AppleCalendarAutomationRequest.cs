@@ -78,8 +78,7 @@ internal sealed class AppleCalendarAutomationRequest
             Array.Empty<AppleCalendarAutomationEvent>());
     }
 
-    public static AppleCalendarAutomationRequest CreateMutationRequest(
-        AppleCalendarExportMutation mutation)
+    public static AppleCalendarAutomationRequest CreateMutationRequest(AppleCalendarExportMutation mutation)
     {
         if (mutation == null)
         {
@@ -97,10 +96,7 @@ internal sealed class AppleCalendarAutomationRequest
                 break;
             case EAppleCalendarExportMutationKind.None:
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(mutation),
-                    mutation.Kind,
-                    "Apple Calendar automation requires a supported mutation.");
+                throw new ArgumentOutOfRangeException(nameof(mutation), mutation.Kind, "Apple Calendar automation requires a supported mutation.");
         }
 
         IReadOnlyList<AppleCalendarAutomationEvent> events = AppleCalendarEventOccurrenceProjector.Project(mutation.Document, mutation.CalendarOwnershipPlanId);

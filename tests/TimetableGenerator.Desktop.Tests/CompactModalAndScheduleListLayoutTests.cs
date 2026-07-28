@@ -56,9 +56,7 @@ public sealed class CompactModalAndScheduleListLayoutTests
             Dispatcher.UIThread.RunJobs();
 
             Border dialog = findRequiredControl<Border>(host, "CourseChoiceEditorDialog");
-            CourseChoiceEditorView editor = findRequiredControl<CourseChoiceEditorView>(
-                host,
-                "CourseChoiceEditor");
+            CourseChoiceEditorView editor = findRequiredControl<CourseChoiceEditorView>(host, "CourseChoiceEditor");
             ScrollViewer editorScrollViewer = editor.GetVisualDescendants()
                 .OfType<ScrollViewer>()
                 .Single(candidate => Grid.GetRow(candidate) == 2);
@@ -96,17 +94,14 @@ public sealed class CompactModalAndScheduleListLayoutTests
                         candidate => candidate.Classes.Contains(
                             "course-choice-offering-actions"));
 
-                Assert.True(
-                    offeringRow.Bounds.Height >= 56.0 - GEOMETRY_TOLERANCE);
+                Assert.True(offeringRow.Bounds.Height >= 56.0 - GEOMETRY_TOLERANCE);
                 Assert.InRange(Math.Abs(information.Bounds.Height - 36.0), 0.0, GEOMETRY_TOLERANCE);
                 Assert.InRange(Math.Abs(actions.Bounds.Height - 36.0), 0.0, GEOMETRY_TOLERANCE);
                 assertVerticallyCentered(information, offeringRow, offeringRow);
                 assertVerticallyCentered(actions, offeringRow, offeringRow);
             }
 
-            Assert.True(
-                editorScrollViewer.Extent.Width
-                <= editorScrollViewer.Viewport.Width + GEOMETRY_TOLERANCE);
+            Assert.True(editorScrollViewer.Extent.Width <= editorScrollViewer.Viewport.Width + GEOMETRY_TOLERANCE);
 
             window.KeyPress(Key.Escape, RawInputModifiers.None, PhysicalKey.Escape, string.Empty);
             Dispatcher.UIThread.RunJobs();
@@ -125,9 +120,7 @@ public sealed class CompactModalAndScheduleListLayoutTests
     public void PersonalScheduleEditorKeepsScrollableFieldsAndActionsReachableAtCompactSize()
     {
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
-        MainWindow window = new MainWindow(
-            PlannerWorkspaceTestFactory.CreateShell(workspace),
-            ProductAppearanceTestFactory.CreateViewModel());
+        MainWindow window = new MainWindow(PlannerWorkspaceTestFactory.CreateShell(workspace), ProductAppearanceTestFactory.CreateViewModel());
         window.Width = MINIMUM_PRODUCT_WINDOW_WIDTH;
         window.Height = COMPACT_HEIGHT;
 
@@ -163,9 +156,7 @@ public sealed class CompactModalAndScheduleListLayoutTests
             Assert.True(cancelButton.IsEffectivelyVisible);
             Assert.True(saveButton.IsEffectivelyVisible);
             Assert.True(editorScrollViewer.Extent.Height > editorScrollViewer.Viewport.Height);
-            Assert.True(
-                editorScrollViewer.Extent.Width
-                <= editorScrollViewer.Viewport.Width + GEOMETRY_TOLERANCE);
+            Assert.True(editorScrollViewer.Extent.Width <= editorScrollViewer.Viewport.Width + GEOMETRY_TOLERANCE);
 
             editorScrollViewer.ScrollToEnd();
             Dispatcher.UIThread.RunJobs();
@@ -296,12 +287,8 @@ public sealed class CompactModalAndScheduleListLayoutTests
         Point position = positionOrNull.Value;
         Assert.True(position.X >= -GEOMETRY_TOLERANCE);
         Assert.True(position.Y >= -GEOMETRY_TOLERANCE);
-        Assert.True(
-            position.X + control.Bounds.Width
-            <= dialog.Bounds.Width + GEOMETRY_TOLERANCE);
-        Assert.True(
-            position.Y + control.Bounds.Height
-            <= dialog.Bounds.Height + GEOMETRY_TOLERANCE);
+        Assert.True(position.X + control.Bounds.Width <= dialog.Bounds.Width + GEOMETRY_TOLERANCE);
+        Assert.True(position.Y + control.Bounds.Height <= dialog.Bounds.Height + GEOMETRY_TOLERANCE);
     }
 
     private static void assertControlFitsViewport(Control control, ScrollViewer scrollViewer)
@@ -315,9 +302,7 @@ public sealed class CompactModalAndScheduleListLayoutTests
 
         Point position = positionOrNull.Value;
         Assert.True(position.Y >= -GEOMETRY_TOLERANCE);
-        Assert.True(
-            position.Y + control.Bounds.Height
-            <= scrollViewer.Viewport.Height + GEOMETRY_TOLERANCE);
+        Assert.True(position.Y + control.Bounds.Height <= scrollViewer.Viewport.Height + GEOMETRY_TOLERANCE);
     }
 
     private static void assertDialogFitsWindow(Border dialog, Window window)
@@ -332,12 +317,8 @@ public sealed class CompactModalAndScheduleListLayoutTests
         Point position = positionOrNull.Value;
         Assert.True(position.X >= -GEOMETRY_TOLERANCE);
         Assert.True(position.Y >= -GEOMETRY_TOLERANCE);
-        Assert.True(
-            position.X + dialog.Bounds.Width
-            <= window.ClientSize.Width + GEOMETRY_TOLERANCE);
-        Assert.True(
-            position.Y + dialog.Bounds.Height
-            <= window.ClientSize.Height + GEOMETRY_TOLERANCE);
+        Assert.True(position.X + dialog.Bounds.Width <= window.ClientSize.Width + GEOMETRY_TOLERANCE);
+        Assert.True(position.Y + dialog.Bounds.Height <= window.ClientSize.Height + GEOMETRY_TOLERANCE);
     }
 
     private static void assertVerticallyCentered(Control content, Control row, Control coordinateSpace)
@@ -351,8 +332,7 @@ public sealed class CompactModalAndScheduleListLayoutTests
             throw new InvalidOperationException("The schedule list row geometry was not available.");
         }
 
-        double contentCenter = contentPositionOrNull.Value.Y
-            + (content.Bounds.Height / 2.0);
+        double contentCenter = contentPositionOrNull.Value.Y + (content.Bounds.Height / 2.0);
         double rowCenter = rowPositionOrNull.Value.Y + (row.Bounds.Height / 2.0);
         Assert.InRange(Math.Abs(contentCenter - rowCenter), 0.0, GEOMETRY_TOLERANCE);
     }

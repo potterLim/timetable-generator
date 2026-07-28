@@ -8,9 +8,7 @@ public sealed class PlanningWorkspaceConcurrencyException : Exception
 
     public PlanningWorkspaceConcurrencyToken ActualToken { get; }
 
-    public PlanningWorkspaceConcurrencyException(
-        PlanningWorkspaceConcurrencyToken expectedToken,
-        PlanningWorkspaceConcurrencyToken actualToken)
+    public PlanningWorkspaceConcurrencyException(PlanningWorkspaceConcurrencyToken expectedToken, PlanningWorkspaceConcurrencyToken actualToken)
         : base("The planning workspace changed after it was loaded.")
     {
         ExpectedToken = expectedToken;

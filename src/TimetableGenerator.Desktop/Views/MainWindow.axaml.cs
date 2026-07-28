@@ -37,9 +37,7 @@ internal sealed partial class MainWindow : Window
 
     public bool UsesProductCaptionControls { get; }
 
-    public MainWindow(
-        ProductShellViewModel productShellViewModel,
-        ProductAppearanceViewModel appearance)
+    public MainWindow(ProductShellViewModel productShellViewModel, ProductAppearanceViewModel appearance)
     {
         ArgumentNullException.ThrowIfNull(productShellViewModel);
         ArgumentNullException.ThrowIfNull(appearance);
@@ -106,8 +104,7 @@ internal sealed partial class MainWindow : Window
 
     private void onClosing(object? senderOrNull, WindowClosingEventArgs eventArgs)
     {
-        if (eventArgs.CloseReason == WindowCloseReason.ApplicationShutdown
-            || eventArgs.CloseReason == WindowCloseReason.OSShutdown)
+        if (eventArgs.CloseReason == WindowCloseReason.ApplicationShutdown || eventArgs.CloseReason == WindowCloseReason.OSShutdown)
         {
             mShouldExitApplicationAfterClose = true;
         }
@@ -159,8 +156,7 @@ internal sealed partial class MainWindow : Window
     private static void requestExplicitApplicationShutdown()
     {
         IClassicDesktopStyleApplicationLifetime? desktopLifetimeOrNull = Avalonia.Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
-        if (desktopLifetimeOrNull == null
-            || desktopLifetimeOrNull.ShutdownMode != ShutdownMode.OnExplicitShutdown)
+        if (desktopLifetimeOrNull == null || desktopLifetimeOrNull.ShutdownMode != ShutdownMode.OnExplicitShutdown)
         {
             return;
         }
@@ -183,9 +179,7 @@ internal sealed partial class MainWindow : Window
         {
             updateAppearanceInteraction();
         }
-        else if (eventArgs.PropertyName
-            == nameof(ProductShellViewModel.HasShutdownError)
-            && mProductShellViewModel.HasShutdownError)
+        else if (eventArgs.PropertyName == nameof(ProductShellViewModel.HasShutdownError) && mProductShellViewModel.HasShutdownError)
         {
             Dispatcher.UIThread.Post(focusContinueEditingButton, DispatcherPriority.Input);
         }
@@ -216,9 +210,7 @@ internal sealed partial class MainWindow : Window
         }
 
         DisplayScale displayScale = new DisplayScale(primaryScreenOrNull.Scaling);
-        WindowWorkingArea workingArea = new WindowWorkingArea(
-            primaryScreenOrNull.WorkingArea,
-            displayScale);
+        WindowWorkingArea workingArea = new WindowWorkingArea(primaryScreenOrNull.WorkingArea, displayScale);
         InitialWindowPlacement placement = InitialWindowPlacementPolicy.CreatePlacement(workingArea);
 
         MinWidth = placement.EffectiveMinimumSize.Width;

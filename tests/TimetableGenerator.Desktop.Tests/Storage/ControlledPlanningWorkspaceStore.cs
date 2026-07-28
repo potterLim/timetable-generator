@@ -90,10 +90,7 @@ internal sealed class ControlledPlanningWorkspaceStore : IPlanningWorkspaceStore
         return Task.FromResult(PlanningWorkspaceLoadResult.CreateNotFound());
     }
 
-    public async Task<PlanningWorkspaceConcurrencyToken> SaveAsync(
-        PlanningWorkspace workspace,
-        PlanningWorkspaceConcurrencyToken expectedToken,
-        CancellationToken cancellationToken)
+    public async Task<PlanningWorkspaceConcurrencyToken> SaveAsync(PlanningWorkspace workspace, PlanningWorkspaceConcurrencyToken expectedToken, CancellationToken cancellationToken)
     {
         ControlledSaveAttempt saveAttempt;
         lock (mSynchronizationRoot)

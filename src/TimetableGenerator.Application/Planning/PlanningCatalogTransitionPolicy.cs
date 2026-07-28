@@ -5,9 +5,7 @@ namespace TimetableGenerator.Application.Planning;
 
 public static class PlanningCatalogTransitionPolicy
 {
-    public static EPlanningCatalogTransitionStatus EvaluateTransition(
-        PlanCatalogBinding currentBinding,
-        PlanCatalogBinding candidateBinding)
+    public static EPlanningCatalogTransitionStatus EvaluateTransition(PlanCatalogBinding currentBinding, PlanCatalogBinding candidateBinding)
     {
         if (currentBinding == null)
         {
@@ -34,9 +32,7 @@ public static class PlanningCatalogTransitionPolicy
             return EPlanningCatalogTransitionStatus.AcademicTermMismatch;
         }
 
-        bool isSameCatalogRevision = currentBinding.CatalogId
-                == candidateBinding.CatalogId
-            && currentBinding.Revision == candidateBinding.Revision;
+        bool isSameCatalogRevision = currentBinding.CatalogId == candidateBinding.CatalogId && currentBinding.Revision == candidateBinding.Revision;
         if (isSameCatalogRevision && currentBinding.ArtifactSha256 != candidateBinding.ArtifactSha256)
         {
             return EPlanningCatalogTransitionStatus.ArtifactSha256Mismatch;

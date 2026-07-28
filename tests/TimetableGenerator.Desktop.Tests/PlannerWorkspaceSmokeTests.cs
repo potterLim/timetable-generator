@@ -438,9 +438,7 @@ public sealed class PlannerWorkspaceSmokeTests
             Assert.False(workspace.IsWorkspaceInteractionEnabled);
             Assert.Equal("시간표 비우기 확인", workspace.PlanEditingDialogAccessibleName);
             Assert.Equal(originalPlanName.Value, workspace.PlanPendingClearName);
-            Assert.Equal(
-                "'" + originalPlanName.Value + "'의 모든 내용을 지웁니다.",
-                workspace.PlanClearDescription);
+            Assert.Equal("'" + originalPlanName.Value + "'의 모든 내용을 지웁니다.", workspace.PlanClearDescription);
             Assert.False(workspace.ActivePlan.IsCompletelyEmpty);
 
             workspace.CancelClearActivePlanCommand.Execute(null);

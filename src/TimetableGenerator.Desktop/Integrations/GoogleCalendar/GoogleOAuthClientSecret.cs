@@ -14,18 +14,14 @@ internal sealed record GoogleOAuthClientSecret
             || value.Length > MAXIMUM_LENGTH
             || string.Equals(value, value.Trim(), StringComparison.Ordinal) == false)
         {
-            throw new ArgumentException(
-                "Google OAuth client secrets must contain a bounded non-whitespace value.",
-                nameof(value));
+            throw new ArgumentException("Google OAuth client secrets must contain a bounded non-whitespace value.", nameof(value));
         }
 
         foreach (char character in value)
         {
             if (char.IsControl(character))
             {
-                throw new ArgumentException(
-                    "Google OAuth client secrets cannot contain control characters.",
-                    nameof(value));
+                throw new ArgumentException("Google OAuth client secrets cannot contain control characters.", nameof(value));
             }
         }
 

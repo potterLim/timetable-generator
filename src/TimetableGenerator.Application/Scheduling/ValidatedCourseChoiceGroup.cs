@@ -27,14 +27,11 @@ internal sealed class ValidatedCourseChoiceGroup
 
         List<ValidatedOfferingCandidate> preferredCandidates = new List<ValidatedOfferingCandidate>();
         List<ValidatedOfferingCandidate> acceptableCandidates = new List<ValidatedOfferingCandidate>();
-        foreach (ValidatedOfferingCandidate offeringCandidate
-            in offeringCandidates)
+        foreach (ValidatedOfferingCandidate offeringCandidate in offeringCandidates)
         {
             if (offeringCandidate == null)
             {
-                throw new ArgumentException(
-                    "Validated course choice groups cannot contain null candidates.",
-                    nameof(offeringCandidates));
+                throw new ArgumentException("Validated course choice groups cannot contain null candidates.", nameof(offeringCandidates));
             }
 
             if (offeringCandidate.Preference == EOfferingPreference.Preferred)
@@ -49,17 +46,13 @@ internal sealed class ValidatedCourseChoiceGroup
 
         if (preferredCandidates.Count == 0 && acceptableCandidates.Count == 0)
         {
-            throw new ArgumentException(
-                "Validated course choice groups require an eligible offering.",
-                nameof(offeringCandidates));
+            throw new ArgumentException("Validated course choice groups require an eligible offering.", nameof(offeringCandidates));
         }
 
         List<ValidatedOfferingCandidate> copiedCandidates = new List<ValidatedOfferingCandidate>(preferredCandidates.Count + acceptableCandidates.Count);
         copiedCandidates.AddRange(preferredCandidates);
         copiedCandidates.AddRange(acceptableCandidates);
         mOfferingCandidates = copiedCandidates.AsReadOnly();
-        MinimumScore = preferredCandidates.Count > 0
-            ? RecommendationScore.ZERO
-            : new RecommendationScore(1);
+        MinimumScore = preferredCandidates.Count > 0 ? RecommendationScore.ZERO : new RecommendationScore(1);
     }
 }

@@ -32,8 +32,7 @@ internal sealed class FileGoogleCalendarExportLeaseProvider
         string? directoryPathOrNull = Path.GetDirectoryName(mPath.Value);
         if (directoryPathOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The Google Calendar export lock path does not contain a directory.");
+            throw new InvalidOperationException("The Google Calendar export lock path does not contain a directory.");
         }
 
         Directory.CreateDirectory(directoryPathOrNull);
@@ -56,9 +55,7 @@ internal sealed class FileGoogleCalendarExportLeaseProvider
             {
                 if (waitTimer.Elapsed >= MAXIMUM_WAIT)
                 {
-                    throw new IOException(
-                        "Another process did not release the Google Calendar export lock.",
-                        exception);
+                    throw new IOException("Another process did not release the Google Calendar export lock.", exception);
                 }
 
                 await Task.Delay(RETRY_DELAY, cancellationToken).ConfigureAwait(false);
@@ -71,8 +68,7 @@ internal sealed class FileGoogleCalendarExportLeaseProvider
         if (OperatingSystem.IsWindows())
         {
             int nativeErrorCode = exception.HResult & 0xFFFF;
-            return nativeErrorCode == WINDOWS_ERROR_SHARING_VIOLATION
-                || nativeErrorCode == WINDOWS_ERROR_LOCK_VIOLATION;
+            return nativeErrorCode == WINDOWS_ERROR_SHARING_VIOLATION || nativeErrorCode == WINDOWS_ERROR_LOCK_VIOLATION;
         }
 
         return OperatingSystem.IsMacOS() || OperatingSystem.IsLinux();

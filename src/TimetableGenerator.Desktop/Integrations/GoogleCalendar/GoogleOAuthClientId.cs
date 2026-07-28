@@ -16,14 +16,9 @@ internal sealed record GoogleOAuthClientId
         }
 
         string normalizedValue = value.Trim();
-        if (normalizedValue.EndsWith(
-            DESKTOP_CLIENT_ID_SUFFIX,
-            StringComparison.Ordinal) == false
-            || normalizedValue.Length == DESKTOP_CLIENT_ID_SUFFIX.Length)
+        if (normalizedValue.EndsWith(DESKTOP_CLIENT_ID_SUFFIX, StringComparison.Ordinal) == false || normalizedValue.Length == DESKTOP_CLIENT_ID_SUFFIX.Length)
         {
-            throw new ArgumentException(
-                "Google OAuth client IDs must identify a Google desktop client.",
-                nameof(value));
+            throw new ArgumentException("Google OAuth client IDs must identify a Google desktop client.", nameof(value));
         }
 
         int prefixLength = normalizedValue.Length - DESKTOP_CLIENT_ID_SUFFIX.Length;

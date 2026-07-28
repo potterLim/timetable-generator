@@ -64,10 +64,7 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
         mHttpClientOwnership = httpClientOwnership;
     }
 
-    public static RemoteCatalogSynchronizer Create(
-        CatalogIndexEndpoint endpoint,
-        CatalogSynchronizationLimits limits,
-        CatalogCacheFileStore cacheStore)
+    public static RemoteCatalogSynchronizer Create(CatalogIndexEndpoint endpoint, CatalogSynchronizationLimits limits, CatalogCacheFileStore cacheStore)
     {
         if (endpoint == null)
         {
@@ -109,8 +106,7 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
         }
     }
 
-    public async Task<VerifiedCatalogPackage> SynchronizeDefaultCatalogAsync(
-        CancellationToken cancellationToken)
+    public async Task<VerifiedCatalogPackage> SynchronizeDefaultCatalogAsync(CancellationToken cancellationToken)
     {
         VerifiedCatalogPackage package = await DownloadDefaultCatalogAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -128,48 +124,33 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
         }
         catch (CatalogCachePersistenceException exception)
         {
-            throw new RemoteCatalogSynchronizationException(
-                ERemoteCatalogSynchronizationFailureKind.LocalPersistence,
-                "The verified remote catalog could not be installed in the offline cache.",
-                exception);
+            throw new RemoteCatalogSynchronizationException(ERemoteCatalogSynchronizationFailureKind.LocalPersistence, "The verified remote catalog could not be installed in the offline cache.", exception);
         }
     }
 
-    public async Task<VerifiedCatalogPackage> DownloadDefaultCatalogAsync(
-        CancellationToken cancellationToken)
+    public async Task<VerifiedCatalogPackage> DownloadDefaultCatalogAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         try
         {
-            byte[] indexBytes = await downloadContentAsync(
-                mEndpoint.Value,
-                mLimits.Index,
-                cancellationToken).ConfigureAwait(false);
+            byte[] indexBytes = await downloadContentAsync(mEndpoint.Value, mLimits.Index, cancellationToken).ConfigureAwait(false);
             CatalogIndexDocument index = CatalogIndexJsonReader.Read(indexBytes);
             CatalogIndexEntry entry = index.FindDefaultEntry();
             if (entry.File.Size.Value > mLimits.Catalog.Bytes)
             {
-                throw new RemoteCatalogSynchronizationException(
-                    ERemoteCatalogSynchronizationFailureKind.ResourceLimit,
-                    "The index declares a catalog larger than the configured download limit.");
+                throw new RemoteCatalogSynchronizationException(ERemoteCatalogSynchronizationFailureKind.ResourceLimit, "The index declares a catalog larger than the configured download limit.");
             }
 
             Uri catalogUri = mEndpoint.ResolveCatalogUri(entry.File.RelativePath);
             CatalogResourceByteLimit declaredCatalogLimit = new CatalogResourceByteLimit(entry.File.Size.Value);
-            byte[] catalogBytes = await downloadContentAsync(
-                catalogUri,
-                declaredCatalogLimit,
-                cancellationToken).ConfigureAwait(false);
+            byte[] catalogBytes = await downloadContentAsync(catalogUri, declaredCatalogLimit, cancellationToken).ConfigureAwait(false);
             VerifiedCatalogPackage package = VerifiedCatalogPackage.ReadAndVerify(indexBytes, catalogBytes);
             return package;
         }
         catch (OperationCanceledException exception) when (
             cancellationToken.IsCancellationRequested == false)
         {
-            throw new RemoteCatalogSynchronizationException(
-                ERemoteCatalogSynchronizationFailureKind.Network,
-                "The remote catalog request timed out.",
-                exception);
+            throw new RemoteCatalogSynchronizationException(ERemoteCatalogSynchronizationFailureKind.Network, "The remote catalog request timed out.", exception);
         }
         catch (OperationCanceledException)
         {
@@ -181,32 +162,19 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
         }
         catch (CatalogJsonFormatException exception)
         {
-            throw new RemoteCatalogSynchronizationException(
-                ERemoteCatalogSynchronizationFailureKind.InvalidRemoteData,
-                "The remote catalog package failed strict verification.",
-                exception);
+            throw new RemoteCatalogSynchronizationException(ERemoteCatalogSynchronizationFailureKind.InvalidRemoteData, "The remote catalog package failed strict verification.", exception);
         }
         catch (HttpRequestException exception)
         {
-            throw new RemoteCatalogSynchronizationException(
-                ERemoteCatalogSynchronizationFailureKind.Network,
-                "The remote catalog service could not be reached successfully.",
-                exception);
+            throw new RemoteCatalogSynchronizationException(ERemoteCatalogSynchronizationFailureKind.Network, "The remote catalog service could not be reached successfully.", exception);
         }
         catch (IOException exception)
         {
-            throw new RemoteCatalogSynchronizationException(
-                ERemoteCatalogSynchronizationFailureKind.Network,
-                "The remote catalog response could not be read.",
-                exception);
+            throw new RemoteCatalogSynchronizationException(ERemoteCatalogSynchronizationFailureKind.Network, "The remote catalog response could not be read.", exception);
         }
     }
 
-    internal static RemoteCatalogSynchronizer createForTesting(
-        HttpClient httpClient,
-        CatalogIndexEndpoint endpoint,
-        CatalogSynchronizationLimits limits,
-        CatalogCacheFileStore cacheStore)
+    internal static RemoteCatalogSynchronizer createForTesting(HttpClient httpClient, CatalogIndexEndpoint endpoint, CatalogSynchronizationLimits limits, CatalogCacheFileStore cacheStore)
     {
         return new RemoteCatalogSynchronizer(
             httpClient,
@@ -216,43 +184,27 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
             EHttpClientOwnership.External);
     }
 
-    private async Task<byte[]> downloadContentAsync(
-        Uri resourceUri,
-        CatalogResourceByteLimit byteLimit,
-        CancellationToken cancellationToken)
+    private async Task<byte[]> downloadContentAsync(Uri resourceUri, CatalogResourceByteLimit byteLimit, CancellationToken cancellationToken)
     {
         using (HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, resourceUri))
         {
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("identity"));
-            using (HttpResponseMessage response = await mHttpClient.SendAsync(
-                request,
-                HttpCompletionOption.ResponseHeadersRead,
-                cancellationToken).ConfigureAwait(false))
+            using (HttpResponseMessage response = await mHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false))
             {
                 requireSameOriginResponse(response);
                 if (response.IsSuccessStatusCode == false)
                 {
-                    throw new RemoteCatalogSynchronizationException(
-                        ERemoteCatalogSynchronizationFailureKind.Network,
-                        "The remote catalog service returned HTTP status "
-                        + (int)response.StatusCode
-                        + ".");
+                    throw new RemoteCatalogSynchronizationException(ERemoteCatalogSynchronizationFailureKind.Network, "The remote catalog service returned HTTP status " + (int)response.StatusCode + ".");
                 }
 
                 long? declaredLengthOrNull = response.Content.Headers.ContentLength;
                 if (declaredLengthOrNull.HasValue && declaredLengthOrNull.Value > byteLimit.Bytes)
                 {
-                    throw new RemoteCatalogSynchronizationException(
-                        ERemoteCatalogSynchronizationFailureKind.ResourceLimit,
-                        "The remote catalog response exceeds its configured size limit.");
+                    throw new RemoteCatalogSynchronizationException(ERemoteCatalogSynchronizationFailureKind.ResourceLimit, "The remote catalog response exceeds its configured size limit.");
                 }
 
-                return await readBoundedContentAsync(
-                    response.Content,
-                    declaredLengthOrNull,
-                    byteLimit,
-                    cancellationToken).ConfigureAwait(false);
+                return await readBoundedContentAsync(response.Content, declaredLengthOrNull, byteLimit, cancellationToken).ConfigureAwait(false);
             }
         }
     }
@@ -262,17 +214,11 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
         Uri? responseUriOrNull = response.RequestMessage?.RequestUri;
         if (responseUriOrNull == null || mEndpoint.IsSameOrigin(responseUriOrNull) == false)
         {
-            throw new RemoteCatalogSynchronizationException(
-                ERemoteCatalogSynchronizationFailureKind.SecurityPolicy,
-                "The remote catalog service redirected outside the configured origin.");
+            throw new RemoteCatalogSynchronizationException(ERemoteCatalogSynchronizationFailureKind.SecurityPolicy, "The remote catalog service redirected outside the configured origin.");
         }
     }
 
-    private static async Task<byte[]> readBoundedContentAsync(
-        HttpContent content,
-        long? declaredLengthOrNull,
-        CatalogResourceByteLimit byteLimit,
-        CancellationToken cancellationToken)
+    private static async Task<byte[]> readBoundedContentAsync(HttpContent content, long? declaredLengthOrNull, CatalogResourceByteLimit byteLimit, CancellationToken cancellationToken)
     {
         int initialCapacity = 0;
         if (declaredLengthOrNull.HasValue)
@@ -286,9 +232,7 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
             byte[] buffer = new byte[DOWNLOAD_BUFFER_SIZE];
             while (true)
             {
-                int readCount = await responseStream.ReadAsync(
-                    buffer.AsMemory(0, buffer.Length),
-                    cancellationToken).ConfigureAwait(false);
+                int readCount = await responseStream.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken).ConfigureAwait(false);
                 if (readCount == 0)
                 {
                     break;
@@ -297,9 +241,7 @@ public sealed class RemoteCatalogSynchronizer : IDisposable
                 long nextLength = contentStream.Length + readCount;
                 if (nextLength > byteLimit.Bytes)
                 {
-                    throw new RemoteCatalogSynchronizationException(
-                        ERemoteCatalogSynchronizationFailureKind.ResourceLimit,
-                        "The remote catalog response exceeds its configured size limit.");
+                    throw new RemoteCatalogSynchronizationException(ERemoteCatalogSynchronizationFailureKind.ResourceLimit, "The remote catalog response exceeds its configured size limit.");
                 }
 
                 contentStream.Write(buffer, 0, readCount);

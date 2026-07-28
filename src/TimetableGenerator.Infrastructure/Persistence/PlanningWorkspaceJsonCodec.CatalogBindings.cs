@@ -22,19 +22,14 @@ public sealed partial class PlanningWorkspaceJsonCodec
                 "artifactSha256",
             });
         CatalogId catalogId = new CatalogId(readString(properties["catalogId"], context + ".catalogId"));
-        InstitutionId institutionId = new InstitutionId(
-            readString(properties["institutionId"], context + ".institutionId"));
+        InstitutionId institutionId = new InstitutionId(readString(properties["institutionId"], context + ".institutionId"));
         AcademicTerm term = AcademicTerm.Parse(readString(properties["term"], context + ".term"));
-        CatalogRevision revision = new CatalogRevision(
-            readInt32(properties["revision"], context + ".revision"));
+        CatalogRevision revision = new CatalogRevision(readInt32(properties["revision"], context + ".revision"));
         CatalogArtifactSha256 artifactSha256 = new CatalogArtifactSha256(readString(properties["artifactSha256"], context + ".artifactSha256"));
         return new PlanCatalogBinding(catalogId, institutionId, term, revision, artifactSha256);
     }
 
-    private static void writeCatalogBinding(
-        Utf8JsonWriter writer,
-        string propertyName,
-        PlanCatalogBinding catalogBinding)
+    private static void writeCatalogBinding(Utf8JsonWriter writer, string propertyName, PlanCatalogBinding catalogBinding)
     {
         writer.WriteStartObject(propertyName);
         writer.WriteString("catalogId", catalogBinding.CatalogId.Value);

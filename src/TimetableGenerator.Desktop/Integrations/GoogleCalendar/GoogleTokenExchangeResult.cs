@@ -10,10 +10,7 @@ internal sealed class GoogleTokenExchangeResult
 
     public string? DiagnosticCodeOrNull { get; }
 
-    private GoogleTokenExchangeResult(
-        GoogleAccessToken? accessTokenOrNull,
-        EGoogleTokenExchangeFailureKind failureKind,
-        string? diagnosticCodeOrNull)
+    private GoogleTokenExchangeResult(GoogleAccessToken? accessTokenOrNull, EGoogleTokenExchangeFailureKind failureKind, string? diagnosticCodeOrNull)
     {
         if (Enum.IsDefined(typeof(EGoogleTokenExchangeFailureKind), failureKind) == false)
         {
@@ -23,9 +20,7 @@ internal sealed class GoogleTokenExchangeResult
         bool isCompleted = accessTokenOrNull != null;
         if (isCompleted != (failureKind == EGoogleTokenExchangeFailureKind.None))
         {
-            throw new ArgumentException(
-                "Token exchange completion and failure state do not match.",
-                nameof(failureKind));
+            throw new ArgumentException("Token exchange completion and failure state do not match.", nameof(failureKind));
         }
 
         AccessTokenOrNull = accessTokenOrNull;
@@ -38,9 +33,7 @@ internal sealed class GoogleTokenExchangeResult
         return new GoogleTokenExchangeResult(accessToken, EGoogleTokenExchangeFailureKind.None, null);
     }
 
-    public static GoogleTokenExchangeResult Fail(
-        EGoogleTokenExchangeFailureKind failureKind,
-        string diagnosticCode)
+    public static GoogleTokenExchangeResult Fail(EGoogleTokenExchangeFailureKind failureKind, string diagnosticCode)
     {
         if (failureKind == EGoogleTokenExchangeFailureKind.None)
         {
@@ -49,9 +42,7 @@ internal sealed class GoogleTokenExchangeResult
 
         if (string.IsNullOrWhiteSpace(diagnosticCode))
         {
-            throw new ArgumentException(
-                "Failed token exchanges require a diagnostic code.",
-                nameof(diagnosticCode));
+            throw new ArgumentException("Failed token exchanges require a diagnostic code.", nameof(diagnosticCode));
         }
 
         return new GoogleTokenExchangeResult(null, failureKind, diagnosticCode);

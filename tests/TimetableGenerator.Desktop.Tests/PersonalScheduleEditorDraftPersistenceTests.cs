@@ -74,19 +74,14 @@ public sealed class PersonalScheduleEditorDraftPersistenceTests
         }
     }
 
-    private static void bindExplicitDraft(
-        TextBox input,
-        PlannerWorkspaceViewModel workspace,
-        string propertyName)
+    private static void bindExplicitDraft(TextBox input, PlannerWorkspaceViewModel workspace, string propertyName)
     {
-        input.Bind(
-            TextBox.TextProperty,
-            new Binding(propertyName)
-            {
-                Mode = BindingMode.TwoWay,
-                Source = workspace,
-                UpdateSourceTrigger = UpdateSourceTrigger.Explicit,
-            });
+        input.Bind(TextBox.TextProperty, new Binding(propertyName)
+        {
+            Mode = BindingMode.TwoWay,
+            Source = workspace,
+            UpdateSourceTrigger = UpdateSourceTrigger.Explicit,
+        });
     }
 
     private static TControl findRequiredControl<TControl>(Control root, string name)

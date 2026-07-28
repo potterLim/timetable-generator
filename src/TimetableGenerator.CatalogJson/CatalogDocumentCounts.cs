@@ -12,11 +12,7 @@ public sealed class CatalogDocumentCounts
 
     public CatalogMeetingNotProvidedCount MeetingNotProvidedCount { get; }
 
-    public CatalogDocumentCounts(
-        CatalogCourseCount courseCount,
-        CatalogOfferingCount offeringCount,
-        CatalogScheduledOfferingCount scheduledOfferingCount,
-        CatalogMeetingNotProvidedCount meetingNotProvidedCount)
+    public CatalogDocumentCounts(CatalogCourseCount courseCount, CatalogOfferingCount offeringCount, CatalogScheduledOfferingCount scheduledOfferingCount, CatalogMeetingNotProvidedCount meetingNotProvidedCount)
     {
         if (courseCount.IsValid == false)
         {

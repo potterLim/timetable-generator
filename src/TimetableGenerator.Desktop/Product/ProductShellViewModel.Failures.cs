@@ -50,10 +50,7 @@ internal sealed partial class ProductShellViewModel
                 case ERemoteCatalogSynchronizationFailureKind.SecurityPolicy:
                     return "서버의 과목 데이터를 안전하게 검증할 수 없습니다. 기존 데이터는 변경하지 않았습니다.";
                 default:
-                    throw new ArgumentOutOfRangeException(
-                        nameof(exception),
-                        synchronizationExceptionOrNull.FailureKind,
-                        "Unknown remote catalog synchronization failure kind.");
+                    throw new ArgumentOutOfRangeException(nameof(exception), synchronizationExceptionOrNull.FailureKind, "Unknown remote catalog synchronization failure kind.");
             }
         }
 
@@ -67,8 +64,7 @@ internal sealed partial class ProductShellViewModel
             return "다른 앱 창에서 시간표가 변경되었습니다. 이 창을 닫고 다시 열어 최신 내용을 불러와 주세요.";
         }
 
-        if (exception is CatalogCacheUpgradeRequiredException
-            || exception is PlanningWorkspaceUpgradeRequiredException)
+        if (exception is CatalogCacheUpgradeRequiredException || exception is PlanningWorkspaceUpgradeRequiredException)
         {
             return "더 새로운 버전에서 저장한 데이터입니다. 앱을 업데이트한 뒤 다시 열어 주세요.";
         }

@@ -88,13 +88,6 @@ public sealed class AcademicTermPlanNameFactoryTests
             academicTerm,
             new CatalogRevision(1),
             new CatalogArtifactSha256(new string('a', 64)));
-        return new PlanningPlan(
-            PlanId.CreateNew(),
-            new PlanName(planName),
-            catalogBinding,
-            new PlanningPlanContent(
-                Array.Empty<CourseChoiceGroup>(),
-                Array.Empty<UnscheduledOfferingSelection>(),
-                Array.Empty<PersonalSchedule>()));
+        return new PlanningPlan(PlanId.CreateNew(), new PlanName(planName), catalogBinding, new PlanningPlanContent(Array.Empty<CourseChoiceGroup>(), Array.Empty<UnscheduledOfferingSelection>(), Array.Empty<PersonalSchedule>()));
     }
 }

@@ -17,27 +17,16 @@ public sealed class CourseChoiceGroupEditingTests
         PlanningWorkspace workspace = createEmptyWorkspace();
         PlanningPlan plan = workspace.GetActivePlan();
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
-        CourseChoiceGroup originalGroup = createGroup(
-            CourseChoiceGroupId.CreateNew(),
-            EOfferingPreference.Acceptable);
+        CourseChoiceGroup originalGroup = createGroup(CourseChoiceGroupId.CreateNew(), EOfferingPreference.Acceptable);
 
         PlanningWorkspace withGroup = editor.AddCourseChoiceGroup(workspace, plan.Id, originalGroup);
         CourseChoiceGroup updatedGroup = createGroup(originalGroup.Id, EOfferingPreference.Preferred);
         PlanningWorkspace withUpdate = editor.UpdateCourseChoiceGroup(withGroup, plan.Id, updatedGroup);
-        PlanningWorkspace withoutGroup = editor.RemoveCourseChoiceGroup(
-            withUpdate,
-            plan.Id,
-            updatedGroup.Id);
+        PlanningWorkspace withoutGroup = editor.RemoveCourseChoiceGroup(withUpdate, plan.Id, updatedGroup.Id);
 
         Assert.AreSame(originalGroup, withGroup.GetActivePlan().CourseChoiceGroups[0]);
         Assert.AreSame(updatedGroup, withUpdate.GetActivePlan().CourseChoiceGroups[0]);
-        Assert.AreEqual(
-            EOfferingPreference.Preferred,
-            withUpdate.GetActivePlan()
-                .CourseChoiceGroups[0]
-                .CourseCandidates[0]
-                .OfferingCandidates[0]
-                .Preference);
+        Assert.AreEqual(EOfferingPreference.Preferred, withUpdate.GetActivePlan().CourseChoiceGroups[0].CourseCandidates[0].OfferingCandidates[0].Preference);
         Assert.IsEmpty(withoutGroup.GetActivePlan().CourseChoiceGroups);
     }
 
@@ -47,15 +36,10 @@ public sealed class CourseChoiceGroupEditingTests
         PlanningWorkspace workspace = createEmptyWorkspace();
         PlanningPlan plan = workspace.GetActivePlan();
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();
-        CourseChoiceGroup group = createGroup(
-            CourseChoiceGroupId.CreateNew(),
-            EOfferingPreference.Acceptable);
+        CourseChoiceGroup group = createGroup(CourseChoiceGroupId.CreateNew(), EOfferingPreference.Acceptable);
         PlanningWorkspace withGroup = editor.AddCourseChoiceGroup(workspace, plan.Id, group);
 
-        PlanningWorkspace withoutFirstCourse = editor.RemoveCourse(
-            withGroup,
-            plan.Id,
-            new CourseId("institution:AAA10001"));
+        PlanningWorkspace withoutFirstCourse = editor.RemoveCourse(withGroup, plan.Id, new CourseId("institution:AAA10001"));
 
         CourseChoiceGroup remainingGroup = withoutFirstCourse.GetActivePlan().CourseChoiceGroups[0];
         Assert.AreEqual(group.Id, remainingGroup.Id);
@@ -77,9 +61,7 @@ public sealed class CourseChoiceGroupEditingTests
                         EDay.Monday,
                         1),
                 });
-        CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(
-            new CatalogCourse[] { course },
-            new CatalogOffering[] { offering });
+        CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(new CatalogCourse[] { course }, new CatalogOffering[] { offering });
         PlanningPlan plan = new PlanningPlan(
             PlanId.CreateNew(),
             new PlanName("기본 계획"),
@@ -89,14 +71,8 @@ public sealed class CourseChoiceGroupEditingTests
                 catalog.Term,
                 catalog.Revision,
                 new CatalogArtifactSha256(new string('a', 64))),
-            new PlanningPlanContent(
-                Array.Empty<CourseChoiceGroup>(),
-                Array.Empty<UnscheduledOfferingSelection>(),
-                Array.Empty<PersonalSchedule>()));
-        PlanningWorkspace workspace = new PlanningWorkspace(
-            plan.CatalogBinding,
-            plan.Id,
-            new PlanningPlan[] { plan });
+            new PlanningPlanContent(Array.Empty<CourseChoiceGroup>(), Array.Empty<UnscheduledOfferingSelection>(), Array.Empty<PersonalSchedule>()));
+        PlanningWorkspace workspace = new PlanningWorkspace(plan.CatalogBinding, plan.Id, new PlanningPlan[] { plan });
         PlanningWorkspaceSession session = new PlanningWorkspaceSession(catalog, workspace);
         CourseChoiceGroup group = new CourseChoiceGroup(
             CourseChoiceGroupId.CreateNew(),
@@ -145,23 +121,11 @@ public sealed class CourseChoiceGroupEditingTests
             AcademicTerm.Parse("2026-2"),
             new CatalogRevision(1),
             new CatalogArtifactSha256(new string('a', 64)));
-        PlanningPlan plan = new PlanningPlan(
-            PlanId.CreateNew(),
-            new PlanName("기본 계획"),
-            binding,
-            new PlanningPlanContent(
-                Array.Empty<CourseChoiceGroup>(),
-                Array.Empty<UnscheduledOfferingSelection>(),
-                Array.Empty<PersonalSchedule>()));
-        return new PlanningWorkspace(
-            plan.CatalogBinding,
-            plan.Id,
-            new PlanningPlan[] { plan });
+        PlanningPlan plan = new PlanningPlan(PlanId.CreateNew(), new PlanName("기본 계획"), binding, new PlanningPlanContent(Array.Empty<CourseChoiceGroup>(), Array.Empty<UnscheduledOfferingSelection>(), Array.Empty<PersonalSchedule>()));
+        return new PlanningWorkspace(plan.CatalogBinding, plan.Id, new PlanningPlan[] { plan });
     }
 
-    private static CourseChoiceGroup createGroup(
-        CourseChoiceGroupId groupId,
-        EOfferingPreference firstPreference)
+    private static CourseChoiceGroup createGroup(CourseChoiceGroupId groupId, EOfferingPreference firstPreference)
     {
         CourseCandidate firstCourse = new CourseCandidate(
             new CourseId("institution:AAA10001"),
@@ -179,9 +143,6 @@ public sealed class CourseChoiceGroupEditingTests
                     new OfferingId("institution:term:BBB10001:01"),
                     EOfferingPreference.Acceptable),
             });
-        return new CourseChoiceGroup(
-            groupId,
-            ECourseChoiceCardinality.ExactlyOne,
-            new CourseCandidate[] { firstCourse, secondCourse });
+        return new CourseChoiceGroup(groupId, ECourseChoiceCardinality.ExactlyOne, new CourseCandidate[] { firstCourse, secondCourse });
     }
 }

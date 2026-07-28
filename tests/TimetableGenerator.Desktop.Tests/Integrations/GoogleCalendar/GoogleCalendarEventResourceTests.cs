@@ -16,11 +16,7 @@ public sealed class GoogleCalendarEventResourceTests
     {
         PlanId planId = new PlanId(Guid.Parse("71f3be04-d4c6-41d4-a269-792321e71423"));
         GoogleCalendarExportEvent exportEvent = createEvent("course:ITP30003");
-        TimeZoneInfo windowsTimeZone = TimeZoneInfo.CreateCustomTimeZone(
-            "Korea Standard Time",
-            TimeSpan.FromHours(9.0),
-            "Korea Standard Time",
-            "Korea Standard Time");
+        TimeZoneInfo windowsTimeZone = TimeZoneInfo.CreateCustomTimeZone("Korea Standard Time", TimeSpan.FromHours(9.0), "Korea Standard Time", "Korea Standard Time");
         CalendarTimeZoneId timeZoneId = CalendarTimeZoneId.CreateFromSystemTimeZone(windowsTimeZone);
 
         JsonObject resource = GoogleCalendarEventResourceFactory.Create(planId, timeZoneId, exportEvent);
@@ -32,9 +28,7 @@ public sealed class GoogleCalendarEventResourceTests
 
         Assert.Equal("2026-08-31T11:30:00+09:00", startDateTime.GetValue<string>());
         Assert.Equal("Asia/Seoul", startTimeZone.GetValue<string>());
-        Assert.Equal(
-            "RRULE:FREQ=WEEKLY;BYDAY=MO,TH;UNTIL=20261220T145959Z",
-            recurrenceRule.GetValue<string>());
+        Assert.Equal("RRULE:FREQ=WEEKLY;BYDAY=MO,TH;UNTIL=20261220T145959Z", recurrenceRule.GetValue<string>());
     }
 
     [Fact]
@@ -63,19 +57,14 @@ public sealed class GoogleCalendarEventResourceTests
         PlanId planId = new PlanId(Guid.Parse("71f3be04-d4c6-41d4-a269-792321e71423"));
         GoogleCalendarExportEvent exportEvent = createEvent("course:ITP30003");
 
-        JsonObject resource = GoogleCalendarEventResourceFactory.Create(
-            planId,
-            new CalendarTimeZoneId("America/New_York"),
-            exportEvent);
+        JsonObject resource = GoogleCalendarEventResourceFactory.Create(planId, new CalendarTimeZoneId("America/New_York"), exportEvent);
         JsonObject start = Assert.IsType<JsonObject>(resource["start"]);
         JsonValue startDateTime = Assert.IsAssignableFrom<JsonValue>(start["dateTime"]);
         JsonArray recurrence = Assert.IsType<JsonArray>(resource["recurrence"]);
         JsonValue recurrenceRule = Assert.IsAssignableFrom<JsonValue>(recurrence[0]);
 
         Assert.Equal("2026-08-31T11:30:00-04:00", startDateTime.GetValue<string>());
-        Assert.Equal(
-            "RRULE:FREQ=WEEKLY;BYDAY=MO,TH;UNTIL=20261221T045959Z",
-            recurrenceRule.GetValue<string>());
+        Assert.Equal("RRULE:FREQ=WEEKLY;BYDAY=MO,TH;UNTIL=20261221T045959Z", recurrenceRule.GetValue<string>());
     }
 
     [Fact]
@@ -120,12 +109,7 @@ public sealed class GoogleCalendarEventResourceTests
                 new ScheduleTime(11, 30),
                 new ScheduleTime(12, 15)),
             new EDay[] { EDay.Thursday, EDay.Monday });
-        AcademicTermCalendarMetadata metadata = new AcademicTermCalendarMetadata(
-            AcademicTerm.Parse("2027-1"),
-            new AcademicTermDateRange(
-                new DateOnly(2027, 3, 1),
-                new DateOnly(2027, 6, 20)),
-            new CalendarTimeZoneId("Asia/Seoul"));
+        AcademicTermCalendarMetadata metadata = new AcademicTermCalendarMetadata(AcademicTerm.Parse("2027-1"), new AcademicTermDateRange(new DateOnly(2027, 3, 1), new DateOnly(2027, 6, 20)), new CalendarTimeZoneId("Asia/Seoul"));
         CalendarExportDocument document = new CalendarExportDocument(
             PlanId.CreateNew(),
             new PlanName("졸업 준비"),
@@ -135,14 +119,8 @@ public sealed class GoogleCalendarEventResourceTests
 
         GoogleCalendarExportPlan plan = GoogleCalendarExportPlan.CreateFromDocument(document);
 
-        Assert.Equal(
-            "테스트대학교 2027-1 시간표입니다.",
-            plan.CalendarDescription.Value);
-        Assert.Equal(
-            TimeSpan.FromHours(9.0),
-            plan.TimeZoneId.FindUtcOffset(
-                plan.Events[0].FirstOccurrenceDate,
-                plan.Events[0].StartTime).Value);
+        Assert.Equal("테스트대학교 2027-1 시간표입니다.", plan.CalendarDescription.Value);
+        Assert.Equal(TimeSpan.FromHours(9.0), plan.TimeZoneId.FindUtcOffset(plan.Events[0].FirstOccurrenceDate, plan.Events[0].StartTime).Value);
         Assert.Equal(new EDay[] { EDay.Monday, EDay.Thursday }, plan.Events[0].Days);
         Assert.Equal(new DateOnly(2027, 3, 1), plan.Events[0].FirstOccurrenceDate);
         Assert.Equal(new DateOnly(2027, 6, 20), plan.Events[0].LastOccurrenceDate);

@@ -609,10 +609,7 @@ public sealed class CourseSearchExperienceTests
         }
     }
 
-    private static void assertMatchKind(
-        CourseSearchItem course,
-        string queryText,
-        ECourseSearchMatchKind expectedKind)
+    private static void assertMatchKind(CourseSearchItem course, string queryText, ECourseSearchMatchKind expectedKind)
     {
         CourseSearchMatch? matchOrNull = course.FindSearchMatchOrNull(CourseSearchQuery.Create(queryText));
         Assert.NotNull(matchOrNull);
@@ -674,7 +671,6 @@ public sealed class CourseSearchExperienceTests
             throw new InvalidOperationException("The control position could not be resolved.");
         }
 
-        return controlOriginOrNull.Value
-            + new Vector(control.Bounds.Width / 2.0, control.Bounds.Height / 2.0);
+        return controlOriginOrNull.Value + new Vector(control.Bounds.Width / 2.0, control.Bounds.Height / 2.0);
     }
 }

@@ -104,10 +104,7 @@ internal sealed class CourseChoiceDraftCourseItem : ObservableObject
         }
     }
 
-    private CourseChoiceDraftCourseItem(
-        CatalogCourseProjection projection,
-        IReadOnlyDictionary<OfferingId, EOfferingPreference> savedPreferences,
-        EOfferingPreference defaultPreference)
+    private CourseChoiceDraftCourseItem(CatalogCourseProjection projection, IReadOnlyDictionary<OfferingId, EOfferingPreference> savedPreferences, EOfferingPreference defaultPreference)
     {
         if (projection == null)
         {
@@ -128,9 +125,7 @@ internal sealed class CourseChoiceDraftCourseItem : ObservableObject
         Offerings = createOfferings(projection, savedPreferences, defaultPreference);
         if (Offerings.Count == 0)
         {
-            throw new ArgumentException(
-                "Course choice drafts require at least one offering.",
-                nameof(projection));
+            throw new ArgumentException("Course choice drafts require at least one offering.", nameof(projection));
         }
 
         foreach (CourseOfferingPreferenceItem offering in Offerings)
@@ -141,25 +136,17 @@ internal sealed class CourseChoiceDraftCourseItem : ObservableObject
 
     public static CourseChoiceDraftCourseItem CreateNew(CatalogCourseProjection projection)
     {
-        return new CourseChoiceDraftCourseItem(
-            projection,
-            new Dictionary<OfferingId, EOfferingPreference>(),
-            EOfferingPreference.Acceptable);
+        return new CourseChoiceDraftCourseItem(projection, new Dictionary<OfferingId, EOfferingPreference>(), EOfferingPreference.Acceptable);
     }
 
-    public static CourseChoiceDraftCourseItem Restore(
-        CatalogCourseProjection projection,
-        IEnumerable<OfferingCandidate> savedCandidates)
+    public static CourseChoiceDraftCourseItem Restore(CatalogCourseProjection projection, IEnumerable<OfferingCandidate> savedCandidates)
     {
         if (savedCandidates == null)
         {
             throw new ArgumentNullException(nameof(savedCandidates));
         }
 
-        return new CourseChoiceDraftCourseItem(
-            projection,
-            createSavedPreferences(savedCandidates),
-            EOfferingPreference.Excluded);
+        return new CourseChoiceDraftCourseItem(projection, createSavedPreferences(savedCandidates), EOfferingPreference.Excluded);
     }
 
     public CourseCandidate CreateCandidate()
@@ -183,10 +170,7 @@ internal sealed class CourseChoiceDraftCourseItem : ObservableObject
         setProperty(ref mCanRemove, false, nameof(CanRemove));
     }
 
-    private static ObservableCollection<CourseOfferingPreferenceItem> createOfferings(
-        CatalogCourseProjection projection,
-        IReadOnlyDictionary<OfferingId, EOfferingPreference> savedPreferences,
-        EOfferingPreference defaultPreference)
+    private static ObservableCollection<CourseOfferingPreferenceItem> createOfferings(CatalogCourseProjection projection, IReadOnlyDictionary<OfferingId, EOfferingPreference> savedPreferences, EOfferingPreference defaultPreference)
     {
         ObservableCollection<CourseOfferingPreferenceItem> offerings = new ObservableCollection<CourseOfferingPreferenceItem>();
         foreach (CatalogOfferingProjection offering in projection.Offerings)
@@ -204,8 +188,7 @@ internal sealed class CourseChoiceDraftCourseItem : ObservableObject
         return offerings;
     }
 
-    private static Dictionary<OfferingId, EOfferingPreference> createSavedPreferences(
-        IEnumerable<OfferingCandidate> savedCandidates)
+    private static Dictionary<OfferingId, EOfferingPreference> createSavedPreferences(IEnumerable<OfferingCandidate> savedCandidates)
     {
         Dictionary<OfferingId, EOfferingPreference> preferences = new Dictionary<OfferingId, EOfferingPreference>();
         foreach (OfferingCandidate candidate in savedCandidates)

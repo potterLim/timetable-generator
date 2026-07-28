@@ -23,10 +23,7 @@ public readonly record struct AcademicPeriod
     {
         if (value < MINIMUM_VALUE || value > MAXIMUM_VALUE)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "Academic periods must be between 1 and 10.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Academic periods must be between 1 and 10.");
         }
 
         Value = value;

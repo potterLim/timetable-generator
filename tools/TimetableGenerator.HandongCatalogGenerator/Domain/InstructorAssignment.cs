@@ -29,10 +29,7 @@ internal sealed class InstructorAssignment
         }
     }
 
-    private InstructorAssignment(
-        EInstructorAssignmentStatus status,
-        InstructorDisplayText? displayTextOrNull,
-        AdditionalInstructorCount? additionalInstructorCountOrNull)
+    private InstructorAssignment(EInstructorAssignmentStatus status, InstructorDisplayText? displayTextOrNull, AdditionalInstructorCount? additionalInstructorCountOrNull)
     {
         if (Enum.IsDefined(typeof(EInstructorAssignmentStatus), status) == false)
         {
@@ -50,19 +47,14 @@ internal sealed class InstructorAssignment
         mAdditionalInstructorCountOrNull = additionalInstructorCountOrNull;
     }
 
-    public static InstructorAssignment CreateConfirmed(
-        InstructorDisplayText displayText,
-        AdditionalInstructorCount additionalInstructorCount)
+    public static InstructorAssignment CreateConfirmed(InstructorDisplayText displayText, AdditionalInstructorCount additionalInstructorCount)
     {
         if (displayText == null)
         {
             throw new ArgumentNullException(nameof(displayText));
         }
 
-        return new InstructorAssignment(
-            EInstructorAssignmentStatus.Confirmed,
-            displayText,
-            additionalInstructorCount);
+        return new InstructorAssignment(EInstructorAssignmentStatus.Confirmed, displayText, additionalInstructorCount);
     }
 
     public InstructorDisplayText GetDisplayText()

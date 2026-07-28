@@ -14,10 +14,7 @@ namespace TimetableGenerator.Desktop.Tests;
 
 public sealed class ScheduleListGroupingTests
 {
-    private static readonly ScheduleInstructorSummary CONFIRMED_INSTRUCTOR = new ScheduleInstructorSummary(
-        InstructorAssignmentMetadata.CreateConfirmed(
-            new InstructorDisplayText("김교수"),
-            new AdditionalInstructorCount(0)));
+    private static readonly ScheduleInstructorSummary CONFIRMED_INSTRUCTOR = new ScheduleInstructorSummary(InstructorAssignmentMetadata.CreateConfirmed(new InstructorDisplayText("김교수"), new AdditionalInstructorCount(0)));
 
     private static readonly ScheduleLocationSummary ASSIGNED_LOCATION = new ScheduleLocationSummary(LocationAssignmentMetadata.CreateAssigned(new ClassroomDisplayText("NTH 311")));
 
@@ -49,8 +46,7 @@ public sealed class ScheduleListGroupingTests
             CONFIRMED_INSTRUCTOR,
             ASSIGNED_LOCATION);
 
-        ScheduleListGroup group = Assert.Single(ScheduleListProjector.Project(
-            new ScheduleEntry[] { fridayEntry, mondayEntry }));
+        ScheduleListGroup group = Assert.Single(ScheduleListProjector.Project(new ScheduleEntry[] { fridayEntry, mondayEntry }));
         ScheduleListOccurrence occurrence = Assert.Single(group.Occurrences);
         CourseScheduleListSource source = Assert.IsType<CourseScheduleListSource>(Assert.Single(group.Sources));
 
@@ -92,8 +88,7 @@ public sealed class ScheduleListGroupingTests
             CONFIRMED_INSTRUCTOR,
             ASSIGNED_LOCATION);
 
-        ScheduleListGroup group = Assert.Single(ScheduleListProjector.Project(
-            new ScheduleEntry[] { fridayEntry, wednesdayEntry }));
+        ScheduleListGroup group = Assert.Single(ScheduleListProjector.Project(new ScheduleEntry[] { fridayEntry, wednesdayEntry }));
 
         Assert.True(group.HasMultipleOccurrences);
         Assert.Collection(
@@ -126,13 +121,9 @@ public sealed class ScheduleListGroupingTests
             new PersonalScheduleTitle("project lab"),
             EDay.Wednesday,
             AcademicPeriodTimeTable.GetTimeRange(courseEntry.Slot),
-            new PersonalScheduleDetails(
-                new PersonalScheduleSection("01"),
-                new PersonalScheduleInstructor("김교수"),
-                new PersonalScheduleLocation("NTH 311")));
+            new PersonalScheduleDetails(new PersonalScheduleSection("01"), new PersonalScheduleInstructor("김교수"), new PersonalScheduleLocation("NTH 311")));
 
-        ScheduleListGroup group = Assert.Single(ScheduleListProjector.Project(
-            new ScheduleEntry[] { personalEntry, courseEntry }));
+        ScheduleListGroup group = Assert.Single(ScheduleListProjector.Project(new ScheduleEntry[] { personalEntry, courseEntry }));
         ScheduleListOccurrence occurrence = Assert.Single(group.Occurrences);
         CourseScheduleListSource courseSource = Assert.IsType<CourseScheduleListSource>(
             group.Sources.Single(
@@ -175,11 +166,9 @@ public sealed class ScheduleListGroupingTests
             new AcademicPeriod(3),
             CONFIRMED_INSTRUCTOR,
             new ScheduleLocationSummary(
-                LocationAssignmentMetadata.CreateAssigned(
-                    new ClassroomDisplayText("OH 401"))));
+                LocationAssignmentMetadata.CreateAssigned(new ClassroomDisplayText("OH 401"))));
 
-        ScheduleListGroup group = Assert.Single(ScheduleListProjector.Project(
-            new ScheduleEntry[] { secondSection, firstSection }));
+        ScheduleListGroup group = Assert.Single(ScheduleListProjector.Project(new ScheduleEntry[] { secondSection, firstSection }));
 
         Assert.Equal("제품 디자인", group.TitleDisplayText);
         Assert.Equal(2, group.Occurrences.Count);
@@ -201,22 +190,15 @@ public sealed class ScheduleListGroupingTests
             new PersonalScheduleTitle("랩 미팅"),
             EDay.Monday,
             timeRange,
-            new PersonalScheduleDetails(
-                new PersonalScheduleSection("A"),
-                null,
-                null));
+            new PersonalScheduleDetails(new PersonalScheduleSection("A"), null, null));
         PersonalScheduleEntry thursdayEntry = createPersonalEntry(
             thursdayScheduleId,
             new PersonalScheduleTitle("랩 미팅"),
             EDay.Thursday,
             timeRange,
-            new PersonalScheduleDetails(
-                new PersonalScheduleSection("A"),
-                null,
-                null));
+            new PersonalScheduleDetails(new PersonalScheduleSection("A"), null, null));
 
-        ScheduleListGroup group = Assert.Single(ScheduleListProjector.Project(
-            new ScheduleEntry[] { thursdayEntry, mondayEntry }));
+        ScheduleListGroup group = Assert.Single(ScheduleListProjector.Project(new ScheduleEntry[] { thursdayEntry, mondayEntry }));
         ScheduleListOccurrence occurrence = Assert.Single(group.Occurrences);
         IReadOnlyList<PersonalScheduleId> retainedScheduleIds = occurrence.Sources
             .Cast<PersonalScheduleListSource>()
@@ -255,9 +237,7 @@ public sealed class ScheduleListGroupingTests
         PersonalScheduleListSource source = Assert.IsType<PersonalScheduleListSource>(Assert.Single(occurrence.Sources));
 
         Assert.Equal("저녁 모임", group.TitleDisplayText);
-        Assert.Equal(
-            new EDay[] { EDay.Wednesday, EDay.Sunday },
-            occurrence.Days);
+        Assert.Equal(new EDay[] { EDay.Wednesday, EDay.Sunday }, occurrence.Days);
         Assert.Equal("수·일: 18:00–19:00", occurrence.ScheduleDisplayText);
         Assert.Equal(scheduleId, source.ScheduleId);
         Assert.Contains("수요일, 일요일 18:00–19:00", group.AccessibleName);
@@ -350,11 +330,7 @@ public sealed class ScheduleListGroupingTests
         PersonalScheduleDetails details)
     {
         WeeklyTimeRange weeklyTimeRange = new WeeklyTimeRange(day, timeRange);
-        PersonalSchedule schedule = new PersonalSchedule(
-            scheduleId,
-            title,
-            new WeeklyTimeRange[] { weeklyTimeRange },
-            details);
+        PersonalSchedule schedule = new PersonalSchedule(scheduleId, title, new WeeklyTimeRange[] { weeklyTimeRange }, details);
         return new PersonalScheduleEntry(schedule, weeklyTimeRange);
     }
 }

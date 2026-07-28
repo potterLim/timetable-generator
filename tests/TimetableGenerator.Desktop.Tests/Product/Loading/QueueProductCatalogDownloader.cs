@@ -13,8 +13,7 @@ internal sealed class QueueProductCatalogDownloader : IProductCatalogDownloader
 
     public int DownloadCount { get; private set; }
 
-    public QueueProductCatalogDownloader(
-        IEnumerable<Func<CancellationToken, Task<VerifiedCatalogPackage>>> downloads)
+    public QueueProductCatalogDownloader(IEnumerable<Func<CancellationToken, Task<VerifiedCatalogPackage>>> downloads)
     {
         if (downloads == null)
         {

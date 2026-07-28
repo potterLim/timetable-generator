@@ -18,11 +18,7 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
         Assert.Equal(new DateOnly(2026, 8, 31), metadata.DateRange.StartDate);
         Assert.Equal(new DateOnly(2026, 12, 20), metadata.DateRange.EndDate);
         Assert.Equal("Asia/Seoul", metadata.TimeZoneId.Value);
-        Assert.Equal(
-            TimeSpan.FromHours(9),
-            metadata.TimeZoneId.FindUtcOffset(
-                new DateOnly(2026, 8, 31),
-                new TimeOnly(11, 30)).Value);
+        Assert.Equal(TimeSpan.FromHours(9), metadata.TimeZoneId.FindUtcOffset(new DateOnly(2026, 8, 31), new TimeOnly(11, 30)).Value);
     }
 
     [Fact]
@@ -38,9 +34,7 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
     [Fact]
     public void UtcMetadataUsesZeroOffsetAndPreservesTheInclusiveTermEnd()
     {
-        AcademicTermCalendarMetadata metadata = AcademicTermCalendarMetadataRegistry.findByTerm(
-            AcademicTerm.Parse("2026-2"),
-            new CalendarTimeZoneId("Etc/UTC"));
+        AcademicTermCalendarMetadata metadata = AcademicTermCalendarMetadataRegistry.findByTerm(AcademicTerm.Parse("2026-2"), new CalendarTimeZoneId("Etc/UTC"));
 
         CalendarUtcOffset localOffset = metadata.TimeZoneId.FindUtcOffset(new DateOnly(2026, 8, 31), new TimeOnly(11, 30));
         DateTimeOffset lastIncludedInstant = metadata.GetLastIncludedInstantUtc();
@@ -87,10 +81,7 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
         Assert.Throws<ArgumentException>(
             () => new AcademicTermCalendarMetadata(
                 AcademicTerm.Parse("2026-2"),
-                new AcademicTermDateRange(
-                    new DateOnly(2026, 8, 31),
-                    new DateOnly(2026, 12, 20)),
-                default));
+                new AcademicTermDateRange(new DateOnly(2026, 8, 31), new DateOnly(2026, 12, 20)), default));
     }
 
     [Fact]
@@ -109,12 +100,8 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
     {
         CalendarTimeZoneId timeZoneId = new CalendarTimeZoneId("America/New_York");
 
-        CalendarUtcOffset winterOffset = timeZoneId.FindUtcOffset(
-            new DateOnly(2026, 1, 15),
-            new TimeOnly(11, 30));
-        CalendarUtcOffset summerOffset = timeZoneId.FindUtcOffset(
-            new DateOnly(2026, 7, 15),
-            new TimeOnly(11, 30));
+        CalendarUtcOffset winterOffset = timeZoneId.FindUtcOffset(new DateOnly(2026, 1, 15), new TimeOnly(11, 30));
+        CalendarUtcOffset summerOffset = timeZoneId.FindUtcOffset(new DateOnly(2026, 7, 15), new TimeOnly(11, 30));
 
         Assert.Equal(TimeSpan.FromHours(-5), winterOffset.Value);
         Assert.Equal(TimeSpan.FromHours(-4), summerOffset.Value);
@@ -136,9 +123,7 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
     {
         CalendarTimeZoneId timeZoneId = new CalendarTimeZoneId("America/New_York");
 
-        DateTimeOffset resolvedTime = timeZoneId.ResolveLocalDateTime(
-            new DateOnly(2026, 11, 1),
-            new TimeOnly(1, 30));
+        DateTimeOffset resolvedTime = timeZoneId.ResolveLocalDateTime(new DateOnly(2026, 11, 1), new TimeOnly(1, 30));
 
         Assert.Equal(TimeSpan.FromHours(-4.0), resolvedTime.Offset);
         Assert.Equal(
@@ -163,11 +148,7 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
     [Fact]
     public void WindowsSystemTimeZoneIdIsNormalizedToIana()
     {
-        TimeZoneInfo windowsTimeZone = TimeZoneInfo.CreateCustomTimeZone(
-            "Korea Standard Time",
-            TimeSpan.FromHours(9.0),
-            "Korea Standard Time",
-            "Korea Standard Time");
+        TimeZoneInfo windowsTimeZone = TimeZoneInfo.CreateCustomTimeZone("Korea Standard Time", TimeSpan.FromHours(9.0), "Korea Standard Time", "Korea Standard Time");
 
         CalendarTimeZoneId timeZoneId = CalendarTimeZoneId.CreateFromSystemTimeZone(windowsTimeZone);
 
@@ -187,11 +168,7 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
     [Fact]
     public void UnknownSystemTimeZoneIdCannotBeExported()
     {
-        TimeZoneInfo unsupportedTimeZone = TimeZoneInfo.CreateCustomTimeZone(
-            "Product Custom Time",
-            TimeSpan.FromHours(3.0),
-            "Product Custom Time",
-            "Product Custom Time");
+        TimeZoneInfo unsupportedTimeZone = TimeZoneInfo.CreateCustomTimeZone("Product Custom Time", TimeSpan.FromHours(3.0), "Product Custom Time", "Product Custom Time");
 
         Assert.Throws<ArgumentException>(
             () => CalendarTimeZoneId.CreateFromSystemTimeZone(
@@ -200,8 +177,6 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
 
     private static AcademicTermCalendarMetadata getSeoulCalendarMetadata()
     {
-        return AcademicTermCalendarMetadataRegistry.findByTerm(
-            AcademicTerm.Parse("2026-2"),
-            new CalendarTimeZoneId("Asia/Seoul"));
+        return AcademicTermCalendarMetadataRegistry.findByTerm(AcademicTerm.Parse("2026-2"), new CalendarTimeZoneId("Asia/Seoul"));
     }
 }

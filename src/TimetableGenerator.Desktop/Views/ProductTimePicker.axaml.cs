@@ -136,9 +136,7 @@ internal sealed partial class ProductTimePicker : UserControl
             }
 
             ScheduleTime selectedTime = selectedTimeOrNull.Value;
-            ETimePickerMeridiem meridiem = selectedTime.Hour < HOURS_PER_HALF_DAY
-                ? ETimePickerMeridiem.AnteMeridiem
-                : ETimePickerMeridiem.PostMeridiem;
+            ETimePickerMeridiem meridiem = selectedTime.Hour < HOURS_PER_HALF_DAY ? ETimePickerMeridiem.AnteMeridiem : ETimePickerMeridiem.PostMeridiem;
             int twelveHourValue = selectedTime.Hour % HOURS_PER_HALF_DAY;
             if (twelveHourValue == 0)
             {
@@ -175,9 +173,7 @@ internal sealed partial class ProductTimePicker : UserControl
         AutomationProperties.SetName(mMinuteInput, contextName + " 분");
     }
 
-    private static int findTwentyFourHourValue(
-        TimePickerMeridiemOption meridiem,
-        TimePickerHourOption hour)
+    private static int findTwentyFourHourValue(TimePickerMeridiemOption meridiem, TimePickerHourOption hour)
     {
         int normalizedHour = hour.Value % HOURS_PER_HALF_DAY;
         switch (meridiem.Meridiem)
@@ -187,10 +183,7 @@ internal sealed partial class ProductTimePicker : UserControl
             case ETimePickerMeridiem.PostMeridiem:
                 return normalizedHour + HOURS_PER_HALF_DAY;
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(meridiem),
-                    meridiem.Meridiem,
-                    "Unknown time picker meridiem.");
+                throw new ArgumentOutOfRangeException(nameof(meridiem), meridiem.Meridiem, "Unknown time picker meridiem.");
         }
     }
 

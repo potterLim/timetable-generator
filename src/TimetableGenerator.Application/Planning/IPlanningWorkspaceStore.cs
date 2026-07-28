@@ -8,8 +8,5 @@ public interface IPlanningWorkspaceStore
 {
     Task<PlanningWorkspaceLoadResult> LoadAsync(CancellationToken cancellationToken);
 
-    Task<PlanningWorkspaceConcurrencyToken> SaveAsync(
-        PlanningWorkspace workspace,
-        PlanningWorkspaceConcurrencyToken expectedToken,
-        CancellationToken cancellationToken);
+    Task<PlanningWorkspaceConcurrencyToken> SaveAsync(PlanningWorkspace workspace, PlanningWorkspaceConcurrencyToken expectedToken, CancellationToken cancellationToken);
 }

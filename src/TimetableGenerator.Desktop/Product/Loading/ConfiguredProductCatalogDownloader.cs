@@ -14,10 +14,7 @@ internal sealed class ConfiguredProductCatalogDownloader : IProductCatalogDownlo
 
     private readonly CatalogCacheFileStore mCacheStore;
 
-    public ConfiguredProductCatalogDownloader(
-        CatalogSourceConfigurationLoader configurationLoader,
-        CatalogSynchronizationLimits synchronizationLimits,
-        CatalogCacheFileStore cacheStore)
+    public ConfiguredProductCatalogDownloader(CatalogSourceConfigurationLoader configurationLoader, CatalogSynchronizationLimits synchronizationLimits, CatalogCacheFileStore cacheStore)
     {
         if (configurationLoader == null)
         {
@@ -39,14 +36,10 @@ internal sealed class ConfiguredProductCatalogDownloader : IProductCatalogDownlo
         mCacheStore = cacheStore;
     }
 
-    public async Task<VerifiedCatalogPackage> DownloadDefaultCatalogAsync(
-        CancellationToken cancellationToken)
+    public async Task<VerifiedCatalogPackage> DownloadDefaultCatalogAsync(CancellationToken cancellationToken)
     {
         CatalogSourceConfiguration configuration = await mConfigurationLoader.LoadAsync(cancellationToken).ConfigureAwait(false);
-        using (RemoteCatalogSynchronizer synchronizer = RemoteCatalogSynchronizer.Create(
-            configuration.Endpoint,
-            mSynchronizationLimits,
-            mCacheStore))
+        using (RemoteCatalogSynchronizer synchronizer = RemoteCatalogSynchronizer.Create(configuration.Endpoint, mSynchronizationLimits, mCacheStore))
         {
             return await synchronizer.DownloadDefaultCatalogAsync(cancellationToken).ConfigureAwait(false);
         }

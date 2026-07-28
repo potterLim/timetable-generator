@@ -9,9 +9,7 @@ internal sealed class HandongCourseNameNormalizationResult
 
     public EnglishCourseName EnglishName { get; }
 
-    public HandongCourseNameNormalizationResult(
-        KoreanCourseName koreanName,
-        EnglishCourseName englishName)
+    public HandongCourseNameNormalizationResult(KoreanCourseName koreanName, EnglishCourseName englishName)
     {
         if (koreanName == null)
         {

@@ -7,9 +7,7 @@ public sealed class MeetingSchedule
 {
     private readonly IReadOnlyList<MeetingSlot> mSlots;
 
-    public static MeetingSchedule NotProvided { get; } = new MeetingSchedule(
-        EMeetingScheduleStatus.NotProvided,
-        Array.Empty<MeetingSlot>());
+    public static MeetingSchedule NotProvided { get; } = new MeetingSchedule(EMeetingScheduleStatus.NotProvided, Array.Empty<MeetingSlot>());
 
     public EMeetingScheduleStatus Status { get; }
 
@@ -61,8 +59,7 @@ public sealed class MeetingSchedule
         bool hasScheduledSlots = copiedSlots.Count > 0;
         if ((status == EMeetingScheduleStatus.Scheduled) != hasScheduledSlots)
         {
-            throw new ArgumentException(
-                "Scheduled meetings require slots and meetings without provided times cannot contain slots.");
+            throw new ArgumentException("Scheduled meetings require slots and meetings without provided times cannot contain slots.");
         }
 
         Status = status;

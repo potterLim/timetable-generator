@@ -23,9 +23,7 @@ public sealed class ScheduleRecommendationResult
     {
         get
         {
-            return Completion == EScheduleRecommendationCompletion.Completed
-                || Completion
-                    == EScheduleRecommendationCompletion.MaximumRecommendationCountReached;
+            return Completion == EScheduleRecommendationCompletion.Completed || Completion == EScheduleRecommendationCompletion.MaximumRecommendationCountReached;
         }
     }
 
@@ -37,10 +35,7 @@ public sealed class ScheduleRecommendationResult
         }
     }
 
-    private ScheduleRecommendationResult(
-        IEnumerable<ScheduleRecommendation> recommendations,
-        EScheduleRecommendationCompletion completion,
-        EPlanCatalogValidationError validationError)
+    private ScheduleRecommendationResult(IEnumerable<ScheduleRecommendation> recommendations, EScheduleRecommendationCompletion completion, EPlanCatalogValidationError validationError)
     {
         if (recommendations == null)
         {
@@ -62,9 +57,7 @@ public sealed class ScheduleRecommendationResult
         {
             if (recommendation == null)
             {
-                throw new ArgumentException(
-                    "Schedule recommendation results cannot contain null recommendations.",
-                    nameof(recommendations));
+                throw new ArgumentException("Schedule recommendation results cannot contain null recommendations.", nameof(recommendations));
             }
 
             copiedRecommendations.Add(recommendation);
@@ -79,9 +72,7 @@ public sealed class ScheduleRecommendationResult
 
         if (isInvalidPlan && copiedRecommendations.Count > 0)
         {
-            throw new ArgumentException(
-                "Invalid plan results cannot contain schedule recommendations.",
-                nameof(recommendations));
+            throw new ArgumentException("Invalid plan results cannot contain schedule recommendations.", nameof(recommendations));
         }
 
         mRecommendations = copiedRecommendations.AsReadOnly();
@@ -89,43 +80,28 @@ public sealed class ScheduleRecommendationResult
         ValidationError = validationError;
     }
 
-    internal static ScheduleRecommendationResult createCompleted(
-        IEnumerable<ScheduleRecommendation> recommendations,
-        EScheduleRecommendationCompletion completion)
+    internal static ScheduleRecommendationResult createCompleted(IEnumerable<ScheduleRecommendation> recommendations, EScheduleRecommendationCompletion completion)
     {
-        if (completion != EScheduleRecommendationCompletion.Completed
-            && completion
-                != EScheduleRecommendationCompletion.MaximumRecommendationCountReached)
+        if (completion != EScheduleRecommendationCompletion.Completed && completion != EScheduleRecommendationCompletion.MaximumRecommendationCountReached)
         {
             throw new ArgumentOutOfRangeException(nameof(completion));
         }
 
-        return new ScheduleRecommendationResult(
-            recommendations,
-            completion,
-            EPlanCatalogValidationError.None);
+        return new ScheduleRecommendationResult(recommendations, completion, EPlanCatalogValidationError.None);
     }
 
-    internal static ScheduleRecommendationResult createCanceled(
-        IEnumerable<ScheduleRecommendation> recommendations)
+    internal static ScheduleRecommendationResult createCanceled(IEnumerable<ScheduleRecommendation> recommendations)
     {
-        return new ScheduleRecommendationResult(
-            recommendations,
-            EScheduleRecommendationCompletion.Canceled,
-            EPlanCatalogValidationError.None);
+        return new ScheduleRecommendationResult(recommendations, EScheduleRecommendationCompletion.Canceled, EPlanCatalogValidationError.None);
     }
 
-    internal static ScheduleRecommendationResult createInvalidPlan(
-        EPlanCatalogValidationError validationError)
+    internal static ScheduleRecommendationResult createInvalidPlan(EPlanCatalogValidationError validationError)
     {
         if (validationError == EPlanCatalogValidationError.None)
         {
             throw new ArgumentOutOfRangeException(nameof(validationError));
         }
 
-        return new ScheduleRecommendationResult(
-            Array.Empty<ScheduleRecommendation>(),
-            EScheduleRecommendationCompletion.InvalidPlan,
-            validationError);
+        return new ScheduleRecommendationResult(Array.Empty<ScheduleRecommendation>(), EScheduleRecommendationCompletion.InvalidPlan, validationError);
     }
 }

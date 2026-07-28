@@ -20,10 +20,7 @@ public sealed class CourseChoiceGroup
         }
     }
 
-    public CourseChoiceGroup(
-        CourseChoiceGroupId id,
-        ECourseChoiceCardinality cardinality,
-        IEnumerable<CourseCandidate> courseCandidates)
+    public CourseChoiceGroup(CourseChoiceGroupId id, ECourseChoiceCardinality cardinality, IEnumerable<CourseCandidate> courseCandidates)
     {
         if (id.IsValid == false)
         {
@@ -47,26 +44,19 @@ public sealed class CourseChoiceGroup
         {
             if (courseCandidate == null)
             {
-                throw new ArgumentException(
-                    "Course choice groups cannot contain null course candidates.",
-                    nameof(courseCandidates));
+                throw new ArgumentException("Course choice groups cannot contain null course candidates.", nameof(courseCandidates));
             }
 
             if (courseIds.Add(courseCandidate.CourseId) == false)
             {
-                throw new ArgumentException(
-                    "Course choice groups cannot contain duplicate course IDs.",
-                    nameof(courseCandidates));
+                throw new ArgumentException("Course choice groups cannot contain duplicate course IDs.", nameof(courseCandidates));
             }
 
-            foreach (OfferingCandidate offeringCandidate
-                in courseCandidate.OfferingCandidates)
+            foreach (OfferingCandidate offeringCandidate in courseCandidate.OfferingCandidates)
             {
                 if (offeringIds.Add(offeringCandidate.OfferingId) == false)
                 {
-                    throw new ArgumentException(
-                        "Course choice groups cannot contain duplicate offering IDs.",
-                        nameof(courseCandidates));
+                    throw new ArgumentException("Course choice groups cannot contain duplicate offering IDs.", nameof(courseCandidates));
                 }
             }
 
@@ -75,9 +65,7 @@ public sealed class CourseChoiceGroup
 
         if (copiedCandidates.Count == 0)
         {
-            throw new ArgumentException(
-                "Course choice groups require at least one course candidate.",
-                nameof(courseCandidates));
+            throw new ArgumentException("Course choice groups require at least one course candidate.", nameof(courseCandidates));
         }
 
         Id = id;
@@ -85,10 +73,7 @@ public sealed class CourseChoiceGroup
         mCourseCandidates = copiedCandidates.AsReadOnly();
     }
 
-    public static CourseChoiceGroup CreateWithAcceptableOfferings(
-        CourseChoiceGroupId id,
-        CourseId courseId,
-        IEnumerable<OfferingId> offeringIds)
+    public static CourseChoiceGroup CreateWithAcceptableOfferings(CourseChoiceGroupId id, CourseId courseId, IEnumerable<OfferingId> offeringIds)
     {
         if (courseId == null)
         {

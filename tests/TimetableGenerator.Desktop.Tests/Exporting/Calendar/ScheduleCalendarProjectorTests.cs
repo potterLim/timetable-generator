@@ -18,10 +18,7 @@ public sealed class ScheduleCalendarProjectorTests
 {
     private static readonly InstitutionName INSTITUTION_NAME = new InstitutionName("한동대학교");
 
-    private static readonly ScheduleInstructorSummary CONFIRMED_INSTRUCTOR = new ScheduleInstructorSummary(
-        InstructorAssignmentMetadata.CreateConfirmed(
-            new InstructorDisplayText("김민수"),
-            new AdditionalInstructorCount(0)));
+    private static readonly ScheduleInstructorSummary CONFIRMED_INSTRUCTOR = new ScheduleInstructorSummary(InstructorAssignmentMetadata.CreateConfirmed(new InstructorDisplayText("김민수"), new AdditionalInstructorCount(0)));
 
     private static readonly ScheduleLocationSummary ASSIGNED_LOCATION = new ScheduleLocationSummary(LocationAssignmentMetadata.CreateAssigned(new ClassroomDisplayText("NTH 311")));
 
@@ -129,20 +126,12 @@ public sealed class ScheduleCalendarProjectorTests
             calendarEvent =>
             {
                 Assert.Equal(new EDay[] { EDay.Wednesday }, calendarEvent.Days);
-                Assert.Equal(
-                    new DailyTimeRange(
-                        new ScheduleTime(10, 0),
-                        new ScheduleTime(11, 15)),
-                    calendarEvent.TimeRange);
+                Assert.Equal(new DailyTimeRange(new ScheduleTime(10, 0), new ScheduleTime(11, 15)), calendarEvent.TimeRange);
             },
             calendarEvent =>
             {
                 Assert.Equal(new EDay[] { EDay.Friday }, calendarEvent.Days);
-                Assert.Equal(
-                    new DailyTimeRange(
-                        new ScheduleTime(10, 30),
-                        new ScheduleTime(11, 45)),
-                    calendarEvent.TimeRange);
+                Assert.Equal(new DailyTimeRange(new ScheduleTime(10, 30), new ScheduleTime(11, 45)), calendarEvent.TimeRange);
             });
         Assert.NotEqual(document.Events[0].Uid, document.Events[1].Uid);
     }
@@ -189,10 +178,7 @@ public sealed class ScheduleCalendarProjectorTests
             scheduleId,
             new PersonalScheduleTitle("랩 미팅"),
             new WeeklyTimeRange[] { mondayRange, fridayRange },
-            new PersonalScheduleDetails(
-                new PersonalScheduleSection("A"),
-                new PersonalScheduleInstructor("박교수"),
-                new PersonalScheduleLocation("OH 401")));
+            new PersonalScheduleDetails(new PersonalScheduleSection("A"), new PersonalScheduleInstructor("박교수"), new PersonalScheduleLocation("OH 401")));
         ScheduleRecommendation displayedSchedule = new ScheduleRecommendation(
             new ScheduleEntry[]
             {
@@ -220,16 +206,8 @@ public sealed class ScheduleCalendarProjectorTests
         PlanId planId = new PlanId(new Guid("33333333-3333-3333-3333-333333333333"));
         CourseId courseId = new CourseId("course-1");
         OfferingId offeringId = new OfferingId("offering-1");
-        CourseScheduleEntry mondayEntry = createCourseEntry(
-            courseId,
-            offeringId,
-            EDay.Monday,
-            new AcademicPeriod(3));
-        CourseScheduleEntry thursdayEntry = createCourseEntry(
-            courseId,
-            offeringId,
-            EDay.Thursday,
-            new AcademicPeriod(3));
+        CourseScheduleEntry mondayEntry = createCourseEntry(courseId, offeringId, EDay.Monday, new AcademicPeriod(3));
+        CourseScheduleEntry thursdayEntry = createCourseEntry(courseId, offeringId, EDay.Thursday, new AcademicPeriod(3));
 
         CalendarExportDocument firstDocument = ScheduleCalendarProjector.ProjectForGoogleCalendar(
             planId,
@@ -287,9 +265,7 @@ public sealed class ScheduleCalendarProjectorTests
                     }),
                 getAcademicCalendar());
 
-        Assert.NotEqual(
-            Assert.Single(thirdPeriodDocument.Events).Uid,
-            Assert.Single(fourthPeriodDocument.Events).Uid);
+        Assert.NotEqual(Assert.Single(thirdPeriodDocument.Events).Uid, Assert.Single(fourthPeriodDocument.Events).Uid);
     }
 
     [Fact]
@@ -297,13 +273,8 @@ public sealed class ScheduleCalendarProjectorTests
     {
         CourseId courseId = new CourseId("course-1");
         OfferingId offeringId = new OfferingId("offering-1");
-        CourseScheduleEntry entry = createCourseEntry(
-            courseId,
-            offeringId,
-            EDay.Monday,
-            new AcademicPeriod(3));
-        ScheduleRecommendation displayedSchedule = new ScheduleRecommendation(
-            new ScheduleEntry[] { entry, entry });
+        CourseScheduleEntry entry = createCourseEntry(courseId, offeringId, EDay.Monday, new AcademicPeriod(3));
+        ScheduleRecommendation displayedSchedule = new ScheduleRecommendation(new ScheduleEntry[] { entry, entry });
 
         Assert.Throws<ArgumentException>(
             () => ScheduleCalendarProjector.ProjectForGoogleCalendar(
@@ -314,11 +285,7 @@ public sealed class ScheduleCalendarProjectorTests
                 getAcademicCalendar()));
     }
 
-    private static CourseScheduleEntry createCourseEntry(
-        CourseId courseId,
-        OfferingId offeringId,
-        EDay day,
-        AcademicPeriod period)
+    private static CourseScheduleEntry createCourseEntry(CourseId courseId, OfferingId offeringId, EDay day, AcademicPeriod period)
     {
         return new CourseScheduleEntry(
             courseId,
@@ -336,8 +303,6 @@ public sealed class ScheduleCalendarProjectorTests
 
     private static AcademicTermCalendarMetadata getAcademicCalendar()
     {
-        return AcademicTermCalendarMetadataRegistry.findByTerm(
-            AcademicTerm.Parse("2026-2"),
-            new CalendarTimeZoneId("Asia/Seoul"));
+        return AcademicTermCalendarMetadataRegistry.findByTerm(AcademicTerm.Parse("2026-2"), new CalendarTimeZoneId("Asia/Seoul"));
     }
 }

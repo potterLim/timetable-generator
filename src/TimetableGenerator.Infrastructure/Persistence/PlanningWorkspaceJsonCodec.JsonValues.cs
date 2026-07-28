@@ -5,34 +5,21 @@ namespace TimetableGenerator.Infrastructure.Persistence;
 
 public sealed partial class PlanningWorkspaceJsonCodec
 {
-    private static Dictionary<string, JsonElement> readExactObject(
-        JsonElement element,
-        string context,
-        IReadOnlyList<string> expectedPropertyNames)
+    private static Dictionary<string, JsonElement> readExactObject(JsonElement element, string context, IReadOnlyList<string> expectedPropertyNames)
     {
         requireValueKind(element, JsonValueKind.Object, context);
-        HashSet<string> expectedNames = new HashSet<string>(
-            expectedPropertyNames,
-            System.StringComparer.Ordinal);
+        HashSet<string> expectedNames = new HashSet<string>(expectedPropertyNames, System.StringComparer.Ordinal);
         Dictionary<string, JsonElement> properties = new Dictionary<string, JsonElement>(System.StringComparer.Ordinal);
         foreach (JsonProperty property in element.EnumerateObject())
         {
             if (expectedNames.Contains(property.Name) == false)
             {
-                throw new WorkspaceDocumentException(
-                    context
-                    + " contains the unknown property '"
-                    + property.Name
-                    + "'.");
+                throw new WorkspaceDocumentException(context + " contains the unknown property '" + property.Name + "'.");
             }
 
             if (properties.TryAdd(property.Name, property.Value) == false)
             {
-                throw new WorkspaceDocumentException(
-                    context
-                    + " contains the duplicate property '"
-                    + property.Name
-                    + "'.");
+                throw new WorkspaceDocumentException(context + " contains the duplicate property '" + property.Name + "'.");
             }
         }
 
@@ -40,11 +27,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         {
             if (properties.ContainsKey(expectedPropertyName) == false)
             {
-                throw new WorkspaceDocumentException(
-                    context
-                    + " is missing the required property '"
-                    + expectedPropertyName
-                    + "'.");
+                throw new WorkspaceDocumentException(context + " is missing the required property '" + expectedPropertyName + "'.");
             }
         }
 
@@ -87,15 +70,11 @@ public sealed partial class PlanningWorkspaceJsonCodec
         return value;
     }
 
-    private static void requireValueKind(
-        JsonElement element,
-        JsonValueKind expectedKind,
-        string context)
+    private static void requireValueKind(JsonElement element, JsonValueKind expectedKind, string context)
     {
         if (element.ValueKind != expectedKind)
         {
-            throw new WorkspaceDocumentException(
-                context + " must be a JSON " + expectedKind + " value.");
+            throw new WorkspaceDocumentException(context + " must be a JSON " + expectedKind + " value.");
         }
     }
 }

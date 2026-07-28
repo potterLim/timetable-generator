@@ -16,9 +16,7 @@ internal sealed class GradingPolicy
         }
     }
 
-    public GradingPolicy(
-        EGradingType gradingType,
-        EPassFailOptionAvailability passFailOptionAvailability)
+    public GradingPolicy(EGradingType gradingType, EPassFailOptionAvailability passFailOptionAvailability)
     {
         if (Enum.IsDefined(typeof(EGradingType), gradingType) == false)
         {

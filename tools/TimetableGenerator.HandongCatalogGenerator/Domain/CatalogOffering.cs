@@ -59,9 +59,7 @@ internal sealed class CatalogOffering
 
         if (sourceRecordNumber.Value <= 0)
         {
-            throw new ArgumentException(
-                "Catalog offerings require a valid source record number.",
-                nameof(sourceRecordNumber));
+            throw new ArgumentException("Catalog offerings require a valid source record number.", nameof(sourceRecordNumber));
         }
 
         Key = key;

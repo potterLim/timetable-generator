@@ -15,9 +15,7 @@ internal sealed class ProductAppearanceSettingsFileStore
 
     private readonly ProductAppearanceSettingsJsonCodec mJsonCodec;
 
-    public ProductAppearanceSettingsFileStore(
-        ProductAppearanceSettingsFilePath filePath,
-        ProductAppearanceSettingsJsonCodec jsonCodec)
+    public ProductAppearanceSettingsFileStore(ProductAppearanceSettingsFilePath filePath, ProductAppearanceSettingsJsonCodec jsonCodec)
     {
         if (filePath == null)
         {
@@ -86,9 +84,7 @@ internal sealed class ProductAppearanceSettingsFileStore
         }
         catch (Exception exception) when (canWrapSaveFailure(exception))
         {
-            throw new ProductAppearanceSettingsException(
-                "The appearance settings could not be saved.",
-                exception);
+            throw new ProductAppearanceSettingsException("The appearance settings could not be saved.", exception);
         }
         finally
         {
@@ -98,10 +94,7 @@ internal sealed class ProductAppearanceSettingsFileStore
 
     private string createTemporaryFilePath()
     {
-        return mFilePath.Value
-            + "."
-            + Guid.NewGuid().ToString("N")
-            + ".tmp";
+        return mFilePath.Value + "." + Guid.NewGuid().ToString("N") + ".tmp";
     }
 
     private static bool canRecoverFromLoadFailure(Exception exception)
@@ -127,8 +120,7 @@ internal sealed class ProductAppearanceSettingsFileStore
                 File.Delete(temporaryFilePath);
             }
         }
-        catch (Exception exception) when (exception is IOException
-            || exception is UnauthorizedAccessException)
+        catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException)
         {
             Trace.TraceWarning("A temporary appearance settings file could not be removed: {0}", exception);
         }

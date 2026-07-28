@@ -19,17 +19,12 @@ internal readonly record struct ScheduleBoardDay
         ensureDefinedDay(day);
         if (columnIndex < 1)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(columnIndex),
-                columnIndex,
-                "Schedule day columns must follow the time column.");
+            throw new ArgumentOutOfRangeException(nameof(columnIndex), columnIndex, "Schedule day columns must follow the time column.");
         }
 
         if (string.IsNullOrWhiteSpace(shortDisplayName))
         {
-            throw new ArgumentException(
-                "Schedule days require a short display name.",
-                nameof(shortDisplayName));
+            throw new ArgumentException("Schedule days require a short display name.", nameof(shortDisplayName));
         }
 
         if (string.IsNullOrWhiteSpace(fullDisplayName))
@@ -56,10 +51,7 @@ internal readonly record struct ScheduleBoardDay
             case EDay.Sunday:
                 return;
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(day),
-                    day,
-                    "Schedule board days require a defined day of the week.");
+                throw new ArgumentOutOfRangeException(nameof(day), day, "Schedule board days require a defined day of the week.");
         }
     }
 }

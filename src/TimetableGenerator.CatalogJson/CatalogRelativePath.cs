@@ -41,9 +41,7 @@ public sealed record CatalogRelativePath
             || value.Contains('#')
             || isAbsoluteUri)
         {
-            throw new ArgumentException(
-                "Catalog paths must be plain relative paths without an origin, query, or fragment.",
-                nameof(value));
+            throw new ArgumentException("Catalog paths must be plain relative paths without an origin, query, or fragment.", nameof(value));
         }
 
         string[] segments = value.Split(PATH_SEPARATOR);
@@ -67,20 +65,14 @@ public sealed record CatalogRelativePath
         }
         catch (UriFormatException exception)
         {
-            throw new ArgumentException(
-                "Catalog paths cannot contain malformed escape sequences.",
-                nameof(value),
-                exception);
+            throw new ArgumentException("Catalog paths cannot contain malformed escape sequences.", nameof(value), exception);
         }
 
-        bool isDotSegment = string.Equals(decodedSegment, ".", StringComparison.Ordinal)
-            || string.Equals(decodedSegment, "..", StringComparison.Ordinal);
+        bool isDotSegment = string.Equals(decodedSegment, ".", StringComparison.Ordinal) || string.Equals(decodedSegment, "..", StringComparison.Ordinal);
         bool escapesSegment = decodedSegment.Contains(PATH_SEPARATOR) || decodedSegment.Contains('\\');
         if (isDotSegment || escapesSegment)
         {
-            throw new ArgumentException(
-                "Catalog paths cannot contain dot segments or encoded path separators.",
-                nameof(value));
+            throw new ArgumentException("Catalog paths cannot contain dot segments or encoded path separators.", nameof(value));
         }
     }
 }

@@ -8,11 +8,7 @@ namespace TimetableGenerator.CatalogJson;
 
 public static partial class CourseCatalogJsonReader
 {
-    private static CatalogSourceMetadata parseSource(
-        JsonElement element,
-        string path,
-        InstitutionId expectedProviderId,
-        AcademicTerm term)
+    private static CatalogSourceMetadata parseSource(JsonElement element, string path, InstitutionId expectedProviderId, AcademicTerm term)
     {
         StrictJsonObject sourceObject = StrictJsonObject.Create(
             element,
@@ -31,9 +27,7 @@ public static partial class CourseCatalogJsonReader
         InstitutionId providerId = new InstitutionId(sourceObject.GetString("providerId"));
         if (providerId != expectedProviderId)
         {
-            throw new CatalogJsonFormatException(
-                sourceObject.GetPropertyPath("providerId"),
-                "the source provider must match the catalog institution.");
+            throw new CatalogJsonFormatException(sourceObject.GetPropertyPath("providerId"), "the source provider must match the catalog institution.");
         }
 
         string logicalFileNameText = sourceObject.GetString("logicalFileName");
@@ -47,9 +41,7 @@ public static partial class CourseCatalogJsonReader
         CatalogJsonValueParser.RequireExactString(detectedMediaTypeText, "text/html", sourceObject.GetPropertyPath("detectedMediaType"));
         if (string.IsNullOrWhiteSpace(declaredCharsetText))
         {
-            throw new CatalogJsonFormatException(
-                sourceObject.GetPropertyPath("declaredCharset"),
-                "the declared source charset cannot be empty.");
+            throw new CatalogJsonFormatException(sourceObject.GetPropertyPath("declaredCharset"), "the declared source charset cannot be empty.");
         }
 
         CatalogJsonValueParser.RequireExactString(decodedWithText, "windows-949", sourceObject.GetPropertyPath("decodedWith"));
@@ -89,9 +81,7 @@ public static partial class CourseCatalogJsonReader
         bool isVersion = Version.TryParse(converterVersionText, out parsedVersionOrNull);
         if (isVersion == false || parsedVersionOrNull == null)
         {
-            throw new CatalogJsonFormatException(
-                converterObject.GetPropertyPath("version"),
-                "a numeric converter version is required.");
+            throw new CatalogJsonFormatException(converterObject.GetPropertyPath("version"), "a numeric converter version is required.");
         }
 
         CatalogConverterVersion converterVersion = new CatalogConverterVersion(parsedVersionOrNull);
@@ -110,17 +100,10 @@ public static partial class CourseCatalogJsonReader
                 "scheduledOfferings",
                 "meetingNotProvided",
             });
-        return new CatalogDocumentCounts(
-            new CatalogCourseCount(countsObject.GetInt32("courses")),
-            new CatalogOfferingCount(countsObject.GetInt32("offerings")),
-            new CatalogScheduledOfferingCount(countsObject.GetInt32("scheduledOfferings")),
-            new CatalogMeetingNotProvidedCount(countsObject.GetInt32("meetingNotProvided")));
+        return new CatalogDocumentCounts(new CatalogCourseCount(countsObject.GetInt32("courses")), new CatalogOfferingCount(countsObject.GetInt32("offerings")), new CatalogScheduledOfferingCount(countsObject.GetInt32("scheduledOfferings")), new CatalogMeetingNotProvidedCount(countsObject.GetInt32("meetingNotProvided")));
     }
 
-    private static CatalogDataQualityMetadata parseDataQuality(
-        JsonElement element,
-        string path,
-        IEnumerable<CourseId> knownCourseIds)
+    private static CatalogDataQualityMetadata parseDataQuality(JsonElement element, string path, IEnumerable<CourseId> knownCourseIds)
     {
         StrictJsonObject dataQualityObject = StrictJsonObject.Create(
             element,
@@ -136,31 +119,20 @@ public static partial class CourseCatalogJsonReader
                 "sourceRemarkLookupOnly",
                 "manualReview",
             });
-        EScheduleNormalizationSource normalizationSource = parseScheduleNormalizationSource(
-            dataQualityObject.GetString("scheduleNormalizationSource"),
-            dataQualityObject.GetPropertyPath("scheduleNormalizationSource"));
-        List<CatalogManualReview> manualReviews = parseManualReviews(
-            dataQualityObject.GetArray("manualReview"),
-            knownCourseIds);
+        EScheduleNormalizationSource normalizationSource = parseScheduleNormalizationSource(dataQualityObject.GetString("scheduleNormalizationSource"), dataQualityObject.GetPropertyPath("scheduleNormalizationSource"));
+        List<CatalogManualReview> manualReviews = parseManualReviews(dataQualityObject.GetArray("manualReview"), knownCourseIds);
         return new CatalogDataQualityMetadata(
             normalizationSource,
-            new CatalogSourceEnglishScheduleMismatchCount(
-                dataQualityObject.GetInt32("sourceEnglishScheduleMismatch")),
+            new CatalogSourceEnglishScheduleMismatchCount(dataQualityObject.GetInt32("sourceEnglishScheduleMismatch")),
             new CatalogRoomNotProvidedCount(dataQualityObject.GetInt32("roomNotProvided")),
-            new CatalogEnrollmentNotProvidedCount(
-                dataQualityObject.GetInt32("enrollmentNotProvided")),
-            new CatalogInstructorUnconfirmedCount(
-                dataQualityObject.GetInt32("instructorUnconfirmed")),
-            new CatalogMultiInstructorDisplayCount(
-                dataQualityObject.GetInt32("multiInstructorDisplay")),
-            new CatalogSourceRemarkLookupOnlyCount(
-                dataQualityObject.GetInt32("sourceRemarkLookupOnly")),
+            new CatalogEnrollmentNotProvidedCount(dataQualityObject.GetInt32("enrollmentNotProvided")),
+            new CatalogInstructorUnconfirmedCount(dataQualityObject.GetInt32("instructorUnconfirmed")),
+            new CatalogMultiInstructorDisplayCount(dataQualityObject.GetInt32("multiInstructorDisplay")),
+            new CatalogSourceRemarkLookupOnlyCount(dataQualityObject.GetInt32("sourceRemarkLookupOnly")),
             manualReviews);
     }
 
-    private static List<CatalogManualReview> parseManualReviews(
-        JsonElement manualReviewsElement,
-        IEnumerable<CourseId> knownCourseIds)
+    private static List<CatalogManualReview> parseManualReviews(JsonElement manualReviewsElement, IEnumerable<CourseId> knownCourseIds)
     {
         HashSet<CourseId> knownCourseIdSet = new HashSet<CourseId>(knownCourseIds);
         List<CatalogManualReview> manualReviews = new List<CatalogManualReview>();
@@ -181,17 +153,11 @@ public static partial class CourseCatalogJsonReader
             CourseId courseId = new CourseId(reviewObject.GetString("courseId"));
             if (knownCourseIdSet.Contains(courseId) == false)
             {
-                throw new CatalogJsonFormatException(
-                    reviewObject.GetPropertyPath("courseId"),
-                    "manual reviews must reference a course in the catalog.");
+                throw new CatalogJsonFormatException(reviewObject.GetPropertyPath("courseId"), "manual reviews must reference a course in the catalog.");
             }
 
-            EManualReviewField field = parseManualReviewField(
-                reviewObject.GetString("field"),
-                reviewObject.GetPropertyPath("field"));
-            EManualReviewReason reason = parseManualReviewReason(
-                reviewObject.GetString("reason"),
-                reviewObject.GetPropertyPath("reason"));
+            EManualReviewField field = parseManualReviewField(reviewObject.GetString("field"), reviewObject.GetPropertyPath("field"));
+            EManualReviewReason reason = parseManualReviewReason(reviewObject.GetString("reason"), reviewObject.GetPropertyPath("reason"));
             manualReviews.Add(new CatalogManualReview(courseId, field, reason, new CatalogManualReviewSourceValue(reviewObject.GetString("sourceValue"))));
             ++reviewIndex;
         }
@@ -199,18 +165,14 @@ public static partial class CourseCatalogJsonReader
         return manualReviews;
     }
 
-    private static EScheduleNormalizationSource parseScheduleNormalizationSource(
-        string value,
-        string path)
+    private static EScheduleNormalizationSource parseScheduleNormalizationSource(string value, string path)
     {
         switch (value)
         {
             case "koreanPeriodText":
                 return EScheduleNormalizationSource.KoreanPeriodText;
             default:
-                throw new CatalogJsonFormatException(
-                    path,
-                    "the schedule normalization source is not supported by schema v1.");
+                throw new CatalogJsonFormatException(path, "the schedule normalization source is not supported by schema v1.");
         }
     }
 
@@ -221,9 +183,7 @@ public static partial class CourseCatalogJsonReader
             case "name.en":
                 return EManualReviewField.EnglishCourseName;
             default:
-                throw new CatalogJsonFormatException(
-                    path,
-                    "the manual review field is not supported by schema v1.");
+                throw new CatalogJsonFormatException(path, "the manual review field is not supported by schema v1.");
         }
     }
 
@@ -234,9 +194,7 @@ public static partial class CourseCatalogJsonReader
             case "unexpectedQuestionMarkInSource":
                 return EManualReviewReason.UnexpectedQuestionMarkInSource;
             default:
-                throw new CatalogJsonFormatException(
-                    path,
-                    "the manual review reason is not supported by schema v1.");
+                throw new CatalogJsonFormatException(path, "the manual review reason is not supported by schema v1.");
         }
     }
 }

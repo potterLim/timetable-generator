@@ -13,11 +13,7 @@ public sealed class CatalogOffering
 
     public MeetingSchedule MeetingSchedule { get; }
 
-    public CatalogOffering(
-        OfferingId id,
-        CourseId courseId,
-        CourseSectionCode sectionCode,
-        MeetingSchedule meetingSchedule)
+    public CatalogOffering(OfferingId id, CourseId courseId, CourseSectionCode sectionCode, MeetingSchedule meetingSchedule)
     {
         if (id == null)
         {

@@ -42,10 +42,7 @@ public sealed class PlannerWorkspaceRenderTests
         window.Height = REFERENCE_HEIGHT;
         Assert.True(window.CanResize);
         EWindowChromePlatform windowChromePlatform = WindowChromeLayoutPolicy.FindCurrentPlatform();
-        Assert.Equal(
-            WindowChromeLayoutPolicy.FindWindowDecorations(
-                windowChromePlatform),
-            window.WindowDecorations);
+        Assert.Equal(WindowChromeLayoutPolicy.FindWindowDecorations(windowChromePlatform), window.WindowDecorations);
         Assert.True(window.ExtendClientAreaToDecorationsHint);
         Assert.Equal(56.0, window.ExtendClientAreaTitleBarHeightHint);
         Assert.True(window.ShowInTaskbar);
@@ -56,9 +53,7 @@ public sealed class PlannerWorkspaceRenderTests
             throw new InvalidOperationException("The product title bar could not be resolved.");
         }
 
-        Assert.Equal(
-            WindowDecorationsElementRole.TitleBar,
-            WindowDecorationProperties.GetElementRole(productTitleBarOrNull));
+        Assert.Equal(WindowDecorationsElementRole.TitleBar, WindowDecorationProperties.GetElementRole(productTitleBarOrNull));
 
         try
         {

@@ -9,8 +9,6 @@ internal static class ProductCatalogSynchronizationDefaults
 
     public static CatalogSynchronizationLimits CreateLimits()
     {
-        return new CatalogSynchronizationLimits(
-            new CatalogResourceByteLimit(MAXIMUM_INDEX_BYTES),
-            new CatalogResourceByteLimit(MAXIMUM_CATALOG_BYTES));
+        return new CatalogSynchronizationLimits(new CatalogResourceByteLimit(MAXIMUM_INDEX_BYTES), new CatalogResourceByteLimit(MAXIMUM_CATALOG_BYTES));
     }
 }

@@ -107,10 +107,7 @@ internal sealed partial class ScheduleBoardView
         return heading;
     }
 
-    private Button createPersonalScheduleEditButton(
-        Button scheduleCard,
-        PersonalScheduleEntry entry,
-        Flyout detailsFlyout)
+    private Button createPersonalScheduleEditButton(Button scheduleCard, PersonalScheduleEntry entry, Flyout detailsFlyout)
     {
         FluentIcon editIcon = new FluentIcon();
         editIcon.Icon = Icon.Edit;
@@ -125,10 +122,7 @@ internal sealed partial class ScheduleBoardView
         editButton.MinHeight = PERSONAL_SCHEDULE_EDIT_BUTTON_SIZE;
         editButton.Content = editIcon;
         editButton.Command = new DelegateCommand(
-            () => beginPersonalScheduleEditing(
-                scheduleCard,
-                entry.ScheduleId,
-                detailsFlyout),
+            () => beginPersonalScheduleEditing(scheduleCard, entry.ScheduleId, detailsFlyout),
             () => canEditPersonalSchedule(entry.ScheduleId));
         editButton.HorizontalAlignment = HorizontalAlignment.Right;
         editButton.VerticalAlignment = VerticalAlignment.Center;
@@ -142,14 +136,10 @@ internal sealed partial class ScheduleBoardView
     private bool canEditPersonalSchedule(PersonalScheduleId scheduleId)
     {
         ICommand? editCommandOrNull = EditPersonalScheduleCommand;
-        return editCommandOrNull != null
-            && editCommandOrNull.CanExecute(scheduleId);
+        return editCommandOrNull != null && editCommandOrNull.CanExecute(scheduleId);
     }
 
-    private void beginPersonalScheduleEditing(
-        Button scheduleCard,
-        PersonalScheduleId scheduleId,
-        Flyout detailsFlyout)
+    private void beginPersonalScheduleEditing(Button scheduleCard, PersonalScheduleId scheduleId, Flyout detailsFlyout)
     {
         ICommand? editCommandOrNull = EditPersonalScheduleCommand;
         if (editCommandOrNull == null || editCommandOrNull.CanExecute(scheduleId) == false)

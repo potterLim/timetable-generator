@@ -50,8 +50,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     {
         ScheduleEntry entry = createScheduleEntry(EDay.Monday, new AcademicPeriod(1));
 
-        ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForPngExport(
-            new ScheduleEntry[] { entry });
+        ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForPngExport(new ScheduleEntry[] { entry });
 
         Assert.Equal(new ScheduleBoardTimeBoundary(510), layout.TimeAxis.Start);
         Assert.Equal(new ScheduleBoardTimeBoundary(630), layout.TimeAxis.End);
@@ -70,8 +69,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     {
         ScheduleEntry entry = createScheduleEntry(EDay.Monday, new AcademicPeriod(5));
 
-        ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForPngExport(
-            new ScheduleEntry[] { entry });
+        ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForPngExport(new ScheduleEntry[] { entry });
 
         Assert.Equal(new ScheduleBoardTimeBoundary(870), layout.TimeAxis.Start);
         Assert.Equal(new ScheduleBoardTimeBoundary(990), layout.TimeAxis.End);
@@ -87,16 +85,12 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     {
         ScheduleEntry entry = createScheduleEntry(EDay.Thursday, new AcademicPeriod(6));
 
-        ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForPngExport(
-            new ScheduleEntry[] { entry });
+        ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForPngExport(new ScheduleEntry[] { entry });
 
         Assert.Equal(new ScheduleBoardTimeBoundary(1_080), layout.TimeAxis.End);
         Assert.Equal("17:30", layout.TimeAxis.GuideTimes[^1].ToString());
         Assert.Equal("17:00", layout.TimeAxis.LabelTimes[^1].ToString());
-        Assert.Equal(
-            3,
-            layout.TimeAxis.IncrementCount
-                - layout.TimeAxis.FindEndingRowOffset(entry.TimeRange.End));
+        Assert.Equal(3, layout.TimeAxis.IncrementCount - layout.TimeAxis.FindEndingRowOffset(entry.TimeRange.End));
     }
 
     [Fact]
@@ -104,22 +98,14 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     {
         ScheduleEntry entry = createScheduleEntry(EDay.Monday, new AcademicPeriod(10));
 
-        ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForPngExport(
-            new ScheduleEntry[] { entry });
+        ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForPngExport(new ScheduleEntry[] { entry });
 
-        Assert.Equal(
-            new DailyTimeRange(
-                new ScheduleTime(22, 30),
-                new ScheduleTime(23, 45)),
-            entry.TimeRange);
+        Assert.Equal(new DailyTimeRange(new ScheduleTime(22, 30), new ScheduleTime(23, 45)), entry.TimeRange);
         Assert.Equal(new ScheduleBoardTimeBoundary(1_290), layout.TimeAxis.Start);
         Assert.Equal(new ScheduleBoardTimeBoundary(1_440), layout.TimeAxis.End);
         Assert.Equal("23:30", layout.TimeAxis.GuideTimes[^1].ToString());
         Assert.Equal("23:00", layout.TimeAxis.LabelTimes[^1].ToString());
-        Assert.Equal(
-            3,
-            layout.TimeAxis.IncrementCount
-                - layout.TimeAxis.FindEndingRowOffset(entry.TimeRange.End));
+        Assert.Equal(3, layout.TimeAxis.IncrementCount - layout.TimeAxis.FindEndingRowOffset(entry.TimeRange.End));
     }
 
     [Fact]
@@ -127,8 +113,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     {
         ScheduleEntry sundayEntry = createScheduleEntry(EDay.Sunday, new AcademicPeriod(2));
 
-        ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForPngExport(
-            new ScheduleEntry[] { sundayEntry });
+        ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForPngExport(new ScheduleEntry[] { sundayEntry });
 
         Assert.Equal(7, layout.DayRange.DayCount);
         Assert.Equal(EDay.Saturday, layout.DayRange.Days[5].Day);
@@ -141,8 +126,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     public async Task PngSnapshotUsesOneCompleteBottomOutlineWithProductPaddingAsync()
     {
         ScheduleEntry sundayEntry = createScheduleEntry(EDay.Sunday, new AcademicPeriod(2));
-        ScheduleBoardView sourceBoard = createSourceBoard(
-            new ScheduleEntry[] { sundayEntry });
+        ScheduleBoardView sourceBoard = createSourceBoard(new ScheduleEntry[] { sundayEntry });
         Canvas exportHost = new Canvas();
         Grid root = new Grid();
         root.Children.Add(exportHost);
@@ -159,34 +143,22 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 Dispatcher.UIThread.RunJobs();
 
                 Border exportCanvas = Assert.IsType<Border>(snapshot.Surface);
-                Border exportSurface = Assert.IsType<Border>(
-                    exportCanvas.GetVisualDescendants()
+                Border exportSurface = Assert.IsType<Border>(exportCanvas.GetVisualDescendants()
                         .Single(control => control.Name == "BoardExportSurface"));
                 Grid boardGrid = findBoardGrid(snapshot.Surface);
                 Assert.DoesNotContain(
                     boardGrid.Children.OfType<Border>(),
                     border => border.Classes.Contains("schedule-end-boundary"));
-                Color expectedBoundaryColor = findRequiredThemeColor(
-                    "StrongBorderBrush",
-                    ThemeVariant.Light);
-                Color expectedBackgroundColor = findRequiredThemeColor(
-                    "ElevatedSurfaceBrush",
-                    ThemeVariant.Light);
+                Color expectedBoundaryColor = findRequiredThemeColor("StrongBorderBrush", ThemeVariant.Light);
+                Color expectedBackgroundColor = findRequiredThemeColor("ElevatedSurfaceBrush", ThemeVariant.Light);
 
                 Assert.Equal(new Thickness(0.0), exportCanvas.BorderThickness);
                 Assert.Equal(new Thickness(0.0, 0.0, 0.0, 8.0), exportCanvas.Padding);
                 Assert.Equal(new Thickness(1.0), exportSurface.BorderThickness);
-                Assert.Equal(
-                    expectedBoundaryColor,
-                    getRequiredSolidColor(exportSurface.BorderBrush));
+                Assert.Equal(expectedBoundaryColor, getRequiredSolidColor(exportSurface.BorderBrush));
 
                 Point exportSurfaceOrigin = getRequiredOrigin(exportSurface, exportCanvas);
-                Assert.Equal(
-                    8.0,
-                    exportCanvas.Bounds.Height
-                        - exportSurfaceOrigin.Y
-                        - exportSurface.Bounds.Height,
-                    3);
+                Assert.Equal(8.0, exportCanvas.Bounds.Height - exportSurfaceOrigin.Y - exportSurface.Bounds.Height, 3);
 
                 AvaloniaControlPngExporter exporter = new AvaloniaControlPngExporter(PngExportScale.PRODUCT_QUALITY);
                 using (MemoryStream destinationStream = new MemoryStream())
@@ -252,11 +224,8 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     {
         ScheduleEntry earlierAlternative = createScheduleEntry(EDay.Monday, new AcademicPeriod(1));
         ScheduleEntry currentEntry = createScheduleEntry(EDay.Tuesday, new AcademicPeriod(3));
-        ScheduleRecommendation currentSchedule = new ScheduleRecommendation(
-            new ScheduleEntry[] { currentEntry });
-        ScheduleBoardLayout sourceLayoutWithAlternative =
-            ScheduleBoardLayout.CreateForEntries(
-                new ScheduleEntry[] { earlierAlternative, currentEntry });
+        ScheduleRecommendation currentSchedule = new ScheduleRecommendation(new ScheduleEntry[] { currentEntry });
+        ScheduleBoardLayout sourceLayoutWithAlternative = ScheduleBoardLayout.CreateForEntries(new ScheduleEntry[] { earlierAlternative, currentEntry });
         ScheduleBoardView sourceBoard = new ScheduleBoardView();
         sourceBoard.DataContext = new ScheduleBoardPresentation(
             currentSchedule,
@@ -312,15 +281,8 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     {
         ScheduleEntry displayedEntry = createScheduleEntry(EDay.Monday, new AcademicPeriod(1));
         ScheduleEntry exportedEntry = createScheduleEntry(EDay.Sunday, new AcademicPeriod(2));
-        ScheduleBoardView sourceBoard = createSourceBoard(
-            new ScheduleEntry[] { displayedEntry });
-        ScheduleBoardPresentation exportedPresentation =
-            new ScheduleBoardPresentation(
-                new ScheduleRecommendation(
-                    new ScheduleEntry[] { exportedEntry }),
-                new PlanName("PNG 후보 내보내기 테스트"),
-                new InstitutionName("한동대학교"),
-                AcademicTerm.Parse("2026-2"));
+        ScheduleBoardView sourceBoard = createSourceBoard(new ScheduleEntry[] { displayedEntry });
+        ScheduleBoardPresentation exportedPresentation = new ScheduleBoardPresentation(new ScheduleRecommendation(new ScheduleEntry[] { exportedEntry }), new PlanName("PNG 후보 내보내기 테스트"), new InstitutionName("한동대학교"), AcademicTerm.Parse("2026-2"));
         Canvas exportHost = new Canvas();
         exportHost.IsHitTestVisible = false;
         exportHost.Opacity = 0.0;
@@ -341,11 +303,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
 
                 Assert.Equal(7, snapshot.Layout.DayRange.DayCount);
                 Assert.Equal(new ScheduleBoardTimeBoundary(570), snapshot.Layout.TimeAxis.Start);
-                Assert.Same(
-                    displayedEntry,
-                    Assert.Single(
-                        Assert.IsType<ScheduleBoardPresentation>(
-                            sourceBoard.DataContext).Schedule.Entries));
+                Assert.Same(displayedEntry, Assert.Single(Assert.IsType<ScheduleBoardPresentation>(sourceBoard.DataContext).Schedule.Entries));
             }
 
             Assert.Empty(exportHost.Children);
@@ -361,16 +319,9 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     {
         ScheduleEntry firstCandidateEntry = createScheduleEntry(EDay.Monday, new AcademicPeriod(1));
         ScheduleEntry secondCandidateEntry = createScheduleEntry(EDay.Sunday, new AcademicPeriod(5));
-        ScheduleBoardView sourceBoard = createSourceBoard(
-            new ScheduleEntry[] { firstCandidateEntry });
+        ScheduleBoardView sourceBoard = createSourceBoard(new ScheduleEntry[] { firstCandidateEntry });
         ScheduleBoardPresentation displayedPresentation = Assert.IsType<ScheduleBoardPresentation>(sourceBoard.DataContext);
-        ScheduleBoardPresentation secondCandidate =
-            new ScheduleBoardPresentation(
-                new ScheduleRecommendation(
-                    new ScheduleEntry[] { secondCandidateEntry }),
-                new PlanName("PNG 후보별 축 테스트"),
-                new InstitutionName("한동대학교"),
-                AcademicTerm.Parse("2026-2"));
+        ScheduleBoardPresentation secondCandidate = new ScheduleBoardPresentation(new ScheduleRecommendation(new ScheduleEntry[] { secondCandidateEntry }), new PlanName("PNG 후보별 축 테스트"), new InstitutionName("한동대학교"), AcademicTerm.Parse("2026-2"));
         Canvas exportHost = new Canvas();
         exportHost.IsHitTestVisible = false;
         exportHost.Opacity = 0.0;
@@ -390,21 +341,15 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 Assert.Equal(5, snapshot.Layout.DayRange.DayCount);
                 Assert.Equal(new ScheduleBoardTimeBoundary(510), snapshot.Layout.TimeAxis.Start);
                 Assert.Equal(new ScheduleBoardTimeBoundary(630), snapshot.Layout.TimeAxis.End);
-                Assert.Equal(
-                    new string[] { "09:00", "10:00" },
-                    findPngTimeLabelTexts(snapshot.Surface));
+                Assert.Equal(new string[] { "09:00", "10:00" }, findPngTimeLabelTexts(snapshot.Surface));
 
                 snapshot.update(secondCandidate, sourceBoard);
 
                 Assert.Equal(7, snapshot.Layout.DayRange.DayCount);
                 Assert.Equal(new ScheduleBoardTimeBoundary(870), snapshot.Layout.TimeAxis.Start);
                 Assert.Equal(new ScheduleBoardTimeBoundary(990), snapshot.Layout.TimeAxis.End);
-                Assert.Equal(
-                    new string[] { "15:00", "16:00" },
-                    findPngTimeLabelTexts(snapshot.Surface));
-                Assert.DoesNotContain(
-                    snapshot.Layout.TimeAxis.End.ToString(),
-                    findPngTimeLabelTexts(snapshot.Surface));
+                Assert.Equal(new string[] { "15:00", "16:00" }, findPngTimeLabelTexts(snapshot.Surface));
+                Assert.DoesNotContain(snapshot.Layout.TimeAxis.End.ToString(), findPngTimeLabelTexts(snapshot.Surface));
                 Assert.Same(displayedPresentation, sourceBoard.DataContext);
             }
 
@@ -420,8 +365,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     public async Task PngSnapshotUsesTheWednesdayFirstPeriodTimeAsync()
     {
         ScheduleEntry wednesdayEntry = createScheduleEntry(EDay.Wednesday, new AcademicPeriod(1));
-        ScheduleBoardView sourceBoard = createSourceBoard(
-            new ScheduleEntry[] { wednesdayEntry });
+        ScheduleBoardView sourceBoard = createSourceBoard(new ScheduleEntry[] { wednesdayEntry });
         Canvas exportHost = new Canvas();
         exportHost.IsHitTestVisible = false;
         exportHost.Opacity = 0.0;
@@ -463,11 +407,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                     using (Bitmap bitmap = new Bitmap(destinationStream))
                     {
                         assertBitmapContainsOpaqueContent(bitmap);
-                        assertBitmapContainsColor(
-                            bitmap,
-                            findRequiredThemeColor(
-                                "CourseBlueBackgroundBrush",
-                                ThemeVariant.Light));
+                        assertBitmapContainsColor(bitmap, findRequiredThemeColor("CourseBlueBackgroundBrush", ThemeVariant.Light));
                     }
                 }
             }
@@ -484,8 +424,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     public async Task NarrowSundayBoardExportsEveryWeekendColumnAtReadableWidthAsync()
     {
         ScheduleEntry sundayEntry = createScheduleEntry(EDay.Sunday, new AcademicPeriod(2));
-        ScheduleBoardView sourceBoard = createSourceBoard(
-            new ScheduleEntry[] { sundayEntry });
+        ScheduleBoardView sourceBoard = createSourceBoard(new ScheduleEntry[] { sundayEntry });
         sourceBoard.Width = 320.0;
         Canvas exportHost = new Canvas();
         exportHost.IsHitTestVisible = false;
@@ -634,33 +573,16 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     {
         ScheduleEntry courseEntry = createScheduleEntry(EDay.Monday, new AcademicPeriod(1));
         ScheduleEntry personalScheduleEntry = createPersonalScheduleEntry();
-        ScheduleBoardView scheduleBoard = createSourceBoard(
-            new ScheduleEntry[] { courseEntry, personalScheduleEntry });
+        ScheduleBoardView scheduleBoard = createSourceBoard(new ScheduleEntry[] { courseEntry, personalScheduleEntry });
         Window window = createWindow(scheduleBoard, ThemeVariant.Light);
 
         try
         {
             window.Show();
-            assertScheduleCardInteractionFeedback(
-                window,
-                scheduleBoard,
-                ThemeVariant.Light,
-                EScheduleCardKind.Course);
-            assertScheduleCardInteractionFeedback(
-                window,
-                scheduleBoard,
-                ThemeVariant.Light,
-                EScheduleCardKind.Personal);
-            assertScheduleCardInteractionFeedback(
-                window,
-                scheduleBoard,
-                ThemeVariant.Dark,
-                EScheduleCardKind.Course);
-            assertScheduleCardInteractionFeedback(
-                window,
-                scheduleBoard,
-                ThemeVariant.Dark,
-                EScheduleCardKind.Personal);
+            assertScheduleCardInteractionFeedback(window, scheduleBoard, ThemeVariant.Light, EScheduleCardKind.Course);
+            assertScheduleCardInteractionFeedback(window, scheduleBoard, ThemeVariant.Light, EScheduleCardKind.Personal);
+            assertScheduleCardInteractionFeedback(window, scheduleBoard, ThemeVariant.Dark, EScheduleCardKind.Course);
+            assertScheduleCardInteractionFeedback(window, scheduleBoard, ThemeVariant.Dark, EScheduleCardKind.Personal);
         }
         finally
         {
@@ -671,11 +593,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     private static ScheduleBoardView createSourceBoard(IReadOnlyList<ScheduleEntry> entries)
     {
         ScheduleBoardView sourceBoard = new ScheduleBoardView();
-        sourceBoard.DataContext = new ScheduleBoardPresentation(
-            new ScheduleRecommendation(entries),
-            new PlanName("PNG 내보내기 테스트"),
-            new InstitutionName("한동대학교"),
-            AcademicTerm.Parse("2026-2"));
+        sourceBoard.DataContext = new ScheduleBoardPresentation(new ScheduleRecommendation(entries), new PlanName("PNG 내보내기 테스트"), new InstitutionName("한동대학교"), AcademicTerm.Parse("2026-2"));
         return sourceBoard;
     }
 
@@ -714,11 +632,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     {
         DailyTimeRange timeRange = new DailyTimeRange(new ScheduleTime(8, 30), new ScheduleTime(9, 45));
         WeeklyTimeRange weeklyTimeRange = new WeeklyTimeRange(EDay.Tuesday, timeRange);
-        PersonalSchedule personalSchedule = new PersonalSchedule(
-            PersonalScheduleId.CreateNew(),
-            new PersonalScheduleTitle("상호작용 피드백 검증"),
-            new WeeklyTimeRange[] { weeklyTimeRange },
-            PersonalScheduleDetails.CreateEmpty());
+        PersonalSchedule personalSchedule = new PersonalSchedule(PersonalScheduleId.CreateNew(), new PersonalScheduleTitle("상호작용 피드백 검증"), new WeeklyTimeRange[] { weeklyTimeRange }, PersonalScheduleDetails.CreateEmpty());
         return new PersonalScheduleEntry(personalSchedule, weeklyTimeRange);
     }
 
@@ -781,38 +695,20 @@ public sealed class ScheduleBoardPngExportSnapshotTests
 
         Point exportSurfaceOrigin = getRequiredOrigin(exportSurface, exportCanvas);
         Point boardGridOrigin = getRequiredOrigin(boardGrid, exportCanvas);
-        int exportSurfaceBottom = (int)Math.Round(
-            (exportSurfaceOrigin.Y + exportSurface.Bounds.Height) * EXPORT_SCALE);
+        int exportSurfaceBottom = (int)Math.Round((exportSurfaceOrigin.Y + exportSurface.Bounds.Height) * EXPORT_SCALE);
         int expectedPaddingPixels = (int)Math.Round(exportCanvas.Padding.Bottom * EXPORT_SCALE);
-        int timeColumnX = (int)Math.Round(
-            (boardGridOrigin.X + (boardGrid.ColumnDefinitions[0].ActualWidth / 2.0)) * EXPORT_SCALE);
-        int firstDayColumnX = (int)Math.Round(
-            (boardGridOrigin.X
-                + boardGrid.ColumnDefinitions[0].ActualWidth
-                + (boardGrid.ColumnDefinitions[1].ActualWidth / 2.0))
-                * EXPORT_SCALE);
+        int timeColumnX = (int)Math.Round((boardGridOrigin.X + (boardGrid.ColumnDefinitions[0].ActualWidth / 2.0)) * EXPORT_SCALE);
+        int firstDayColumnX = (int)Math.Round((boardGridOrigin.X + boardGrid.ColumnDefinitions[0].ActualWidth + (boardGrid.ColumnDefinitions[1].ActualWidth / 2.0)) * EXPORT_SCALE);
 
         Assert.Equal(expectedPaddingPixels, bitmap.PixelSize.Height - exportSurfaceBottom);
-        using (WriteableBitmap pixelCopy = new WriteableBitmap(
-            bitmap.PixelSize,
-            new Vector(96.0, 96.0),
-            PixelFormat.Bgra8888,
-            AlphaFormat.Premul))
+        using (WriteableBitmap pixelCopy = new WriteableBitmap(bitmap.PixelSize, new Vector(96.0, 96.0), PixelFormat.Bgra8888, AlphaFormat.Premul))
         using (ILockedFramebuffer framebuffer = pixelCopy.Lock())
         {
             bitmap.CopyPixels(framebuffer);
-            Assert.Equal(
-                expectedBoundaryColor,
-                readPixelColor(framebuffer, timeColumnX, exportSurfaceBottom - 1));
-            Assert.Equal(
-                expectedBoundaryColor,
-                readPixelColor(framebuffer, firstDayColumnX, exportSurfaceBottom - 1));
-            Assert.Equal(
-                expectedBackgroundColor,
-                readPixelColor(framebuffer, timeColumnX, bitmap.PixelSize.Height - 1));
-            Assert.Equal(
-                expectedBackgroundColor,
-                readPixelColor(framebuffer, firstDayColumnX, bitmap.PixelSize.Height - 1));
+            Assert.Equal(expectedBoundaryColor, readPixelColor(framebuffer, timeColumnX, exportSurfaceBottom - 1));
+            Assert.Equal(expectedBoundaryColor, readPixelColor(framebuffer, firstDayColumnX, exportSurfaceBottom - 1));
+            Assert.Equal(expectedBackgroundColor, readPixelColor(framebuffer, timeColumnX, bitmap.PixelSize.Height - 1));
+            Assert.Equal(expectedBackgroundColor, readPixelColor(framebuffer, firstDayColumnX, bitmap.PixelSize.Height - 1));
         }
     }
 
@@ -845,11 +741,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
         }
     }
 
-    private static void assertScheduleCardInteractionFeedback(
-        Window window,
-        ScheduleBoardView scheduleBoard,
-        ThemeVariant themeVariant,
-        EScheduleCardKind cardKind)
+    private static void assertScheduleCardInteractionFeedback(Window window, ScheduleBoardView scheduleBoard, ThemeVariant themeVariant, EScheduleCardKind cardKind)
     {
         window.RequestedThemeVariant = themeVariant;
         Dispatcher.UIThread.RunJobs();
@@ -900,10 +792,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             throw new InvalidOperationException("The schedule card position could not be resolved.");
         }
 
-        Point cardCenter = cardOriginOrNull.Value
-            + new Vector(
-                scheduleCard.Bounds.Width / 2.0,
-                scheduleCard.Bounds.Height / 2.0);
+        Point cardCenter = cardOriginOrNull.Value + new Vector(scheduleCard.Bounds.Width / 2.0, scheduleCard.Bounds.Height / 2.0);
         window.MouseMove(cardCenter, RawInputModifiers.None);
         Dispatcher.UIThread.RunJobs();
 
@@ -951,33 +840,21 @@ public sealed class ScheduleBoardPngExportSnapshotTests
 
     private static void assertBitmapContainsOpaqueContent(Bitmap bitmap)
     {
-        using (WriteableBitmap pixelCopy = new WriteableBitmap(
-            bitmap.PixelSize,
-            new Vector(96.0, 96.0),
-            PixelFormat.Bgra8888,
-            AlphaFormat.Premul))
+        using (WriteableBitmap pixelCopy = new WriteableBitmap(bitmap.PixelSize, new Vector(96.0, 96.0), PixelFormat.Bgra8888, AlphaFormat.Premul))
         using (ILockedFramebuffer framebuffer = pixelCopy.Lock())
         {
             bitmap.CopyPixels(framebuffer);
             int sampleX = Math.Min(10, bitmap.PixelSize.Width - 1);
             int sampleY = Math.Min(10, bitmap.PixelSize.Height - 1);
-            int alphaOffset = (sampleY * framebuffer.RowBytes)
-                + (sampleX * 4)
-                + 3;
+            int alphaOffset = (sampleY * framebuffer.RowBytes) + (sampleX * 4) + 3;
             byte alpha = Marshal.ReadByte(framebuffer.Address, alphaOffset);
             Assert.Equal(byte.MaxValue, alpha);
         }
     }
 
-    private static void assertBitmapContainsColor(
-        Bitmap bitmap,
-        Color expectedColor)
+    private static void assertBitmapContainsColor(Bitmap bitmap, Color expectedColor)
     {
-        using (WriteableBitmap pixelCopy = new WriteableBitmap(
-            bitmap.PixelSize,
-            new Vector(96.0, 96.0),
-            PixelFormat.Bgra8888,
-            AlphaFormat.Premul))
+        using (WriteableBitmap pixelCopy = new WriteableBitmap(bitmap.PixelSize, new Vector(96.0, 96.0), PixelFormat.Bgra8888, AlphaFormat.Premul))
         using (ILockedFramebuffer framebuffer = pixelCopy.Lock())
         {
             bitmap.CopyPixels(framebuffer);
@@ -986,18 +863,10 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 for (int x = 0; x < bitmap.PixelSize.Width; ++x)
                 {
                     int pixelOffset = (y * framebuffer.RowBytes) + (x * 4);
-                    byte blue = Marshal.ReadByte(
-                        framebuffer.Address,
-                        pixelOffset);
-                    byte green = Marshal.ReadByte(
-                        framebuffer.Address,
-                        pixelOffset + 1);
-                    byte red = Marshal.ReadByte(
-                        framebuffer.Address,
-                        pixelOffset + 2);
-                    byte alpha = Marshal.ReadByte(
-                        framebuffer.Address,
-                        pixelOffset + 3);
+                    byte blue = Marshal.ReadByte(framebuffer.Address, pixelOffset);
+                    byte green = Marshal.ReadByte(framebuffer.Address, pixelOffset + 1);
+                    byte red = Marshal.ReadByte(framebuffer.Address, pixelOffset + 2);
+                    byte alpha = Marshal.ReadByte(framebuffer.Address, pixelOffset + 3);
                     if (blue == expectedColor.B
                         && green == expectedColor.G
                         && red == expectedColor.R
@@ -1009,8 +878,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             }
         }
 
-        Assert.Fail(
-            "The exported PNG did not contain the expected schedule-card color.");
+        Assert.Fail("The exported PNG did not contain the expected schedule-card color.");
     }
 
     private static Color getRequiredSolidColor(IBrush? brushOrNull)

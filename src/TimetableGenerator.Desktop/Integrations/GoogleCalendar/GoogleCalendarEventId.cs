@@ -48,9 +48,7 @@ internal sealed record GoogleCalendarEventId
         string normalizedValue = value.Trim();
         if (normalizedValue.Length < 5 || normalizedValue.Length > 1024)
         {
-            throw new ArgumentException(
-                "Google Calendar event IDs must contain between 5 and 1024 characters.",
-                nameof(value));
+            throw new ArgumentException("Google Calendar event IDs must contain between 5 and 1024 characters.", nameof(value));
         }
 
         foreach (char character in normalizedValue)
@@ -58,9 +56,7 @@ internal sealed record GoogleCalendarEventId
             bool isValid = character is >= 'a' and <= 'v' || character is >= '0' and <= '9';
             if (isValid == false)
             {
-                throw new ArgumentException(
-                    "Google Calendar event IDs must use base32hex characters.",
-                    nameof(value));
+                throw new ArgumentException("Google Calendar event IDs must use base32hex characters.", nameof(value));
             }
         }
 

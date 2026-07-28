@@ -149,9 +149,7 @@ internal sealed class CourseOfferingPreferenceItem : ObservableObject
     {
         get
         {
-            return CourseName + ", " + SectionDisplayText + ", "
-                + EnglishInstructionAccessibleText + ", 선택 상태 "
-                + getPreferenceDisplayName(Preference);
+            return CourseName + ", " + SectionDisplayText + ", " + EnglishInstructionAccessibleText + ", 선택 상태 " + getPreferenceDisplayName(Preference);
         }
     }
 
@@ -185,10 +183,7 @@ internal sealed class CourseOfferingPreferenceItem : ObservableObject
 
     public ICommand SelectExcludedCommand { get; }
 
-    public CourseOfferingPreferenceItem(
-        CatalogCourseProjection courseProjection,
-        CatalogOfferingProjection projection,
-        EOfferingPreference preference)
+    public CourseOfferingPreferenceItem(CatalogCourseProjection courseProjection, CatalogOfferingProjection projection, EOfferingPreference preference)
     {
         if (courseProjection == null)
         {
@@ -202,9 +197,7 @@ internal sealed class CourseOfferingPreferenceItem : ObservableObject
 
         if (projection.Offering.CourseId != courseProjection.Course.Id)
         {
-            throw new ArgumentException(
-                "Course offering preferences must belong to the projected course.",
-                nameof(projection));
+            throw new ArgumentException("Course offering preferences must belong to the projected course.", nameof(projection));
         }
 
         if (Enum.IsDefined(typeof(EOfferingPreference), preference) == false)

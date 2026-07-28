@@ -42,17 +42,14 @@ internal sealed class PlanCatalogValidator
         List<ValidatedCourseChoiceGroup> validatedGroups = new List<ValidatedCourseChoiceGroup>();
         foreach (CourseChoiceGroup courseChoiceGroup in plan.CourseChoiceGroups)
         {
-            EPlanCatalogValidationError choiceError = validateCourseChoiceGroup(
-                courseChoiceGroup,
-                validatedGroups);
+            EPlanCatalogValidationError choiceError = validateCourseChoiceGroup(courseChoiceGroup, validatedGroups);
             if (choiceError != EPlanCatalogValidationError.None)
             {
                 return PlanCatalogValidationResult.CreateInvalid(choiceError);
             }
         }
 
-        foreach (UnscheduledOfferingSelection selection
-            in plan.UnscheduledOfferingSelections)
+        foreach (UnscheduledOfferingSelection selection in plan.UnscheduledOfferingSelections)
         {
             EPlanCatalogValidationError selectionError = validateUnscheduledSelection(selection);
             if (selectionError != EPlanCatalogValidationError.None)
@@ -81,26 +78,20 @@ internal sealed class PlanCatalogValidator
         return EPlanCatalogValidationError.None;
     }
 
-    private EPlanCatalogValidationError validateCourseChoiceGroup(
-        CourseChoiceGroup courseChoiceGroup,
-        ICollection<ValidatedCourseChoiceGroup> validatedGroups)
+    private EPlanCatalogValidationError validateCourseChoiceGroup(CourseChoiceGroup courseChoiceGroup, ICollection<ValidatedCourseChoiceGroup> validatedGroups)
     {
         List<ValidatedOfferingCandidate> validatedCandidates = new List<ValidatedOfferingCandidate>();
-        foreach (CourseCandidate courseCandidate
-            in courseChoiceGroup.CourseCandidates)
+        foreach (CourseCandidate courseCandidate in courseChoiceGroup.CourseCandidates)
         {
             if (mCoursesById.ContainsKey(courseCandidate.CourseId) == false)
             {
                 return EPlanCatalogValidationError.CourseNotFound;
             }
 
-            foreach (OfferingCandidate offeringCandidate
-                in courseCandidate.OfferingCandidates)
+            foreach (OfferingCandidate offeringCandidate in courseCandidate.OfferingCandidates)
             {
                 CatalogOffering? catalogOfferingOrNull;
-                bool hasOffering = mOfferingsById.TryGetValue(
-                    offeringCandidate.OfferingId,
-                    out catalogOfferingOrNull);
+                bool hasOffering = mOfferingsById.TryGetValue(offeringCandidate.OfferingId, out catalogOfferingOrNull);
                 if (hasOffering == false || catalogOfferingOrNull == null)
                 {
                     return EPlanCatalogValidationError.OfferingNotFound;
@@ -129,8 +120,7 @@ internal sealed class PlanCatalogValidator
         return EPlanCatalogValidationError.None;
     }
 
-    private EPlanCatalogValidationError validateUnscheduledSelection(
-        UnscheduledOfferingSelection selection)
+    private EPlanCatalogValidationError validateUnscheduledSelection(UnscheduledOfferingSelection selection)
     {
         if (mCoursesById.ContainsKey(selection.CourseId) == false)
         {

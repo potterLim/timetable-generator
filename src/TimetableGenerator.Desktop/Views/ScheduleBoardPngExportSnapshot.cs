@@ -66,10 +66,7 @@ internal sealed class ScheduleBoardPngExportSnapshot : IDisposable
         mIsDisposed = true;
     }
 
-    internal static ScheduleBoardPngExportSnapshot create(
-        Canvas host,
-        ScheduleBoardPresentation sourcePresentation,
-        ScheduleBoardView sizingBoard)
+    internal static ScheduleBoardPngExportSnapshot create(Canvas host, ScheduleBoardPresentation sourcePresentation, ScheduleBoardView sizingBoard)
     {
         ArgumentNullException.ThrowIfNull(host);
         ArgumentNullException.ThrowIfNull(sourcePresentation);
@@ -100,16 +97,14 @@ internal sealed class ScheduleBoardPngExportSnapshot : IDisposable
         }
 
         ScheduleBoardLayout exportLayout = ScheduleBoardLayout.CreateForPngExport(sourcePresentation.Schedule.Entries);
-        ScheduleBoardPresentation exportPresentation =
-            new ScheduleBoardPresentation(
-                sourcePresentation.Schedule,
-                exportLayout,
-                sourcePresentation.PlanName,
-                sourcePresentation.InstitutionName,
-                sourcePresentation.AcademicTerm);
+        ScheduleBoardPresentation exportPresentation = new ScheduleBoardPresentation(
+            sourcePresentation.Schedule,
+            exportLayout,
+            sourcePresentation.PlanName,
+            sourcePresentation.InstitutionName,
+            sourcePresentation.AcademicTerm);
 
-        double minimumWidth = NON_DAY_CONTENT_WIDTH
-            + (exportLayout.DayRange.DayCount * MINIMUM_DAY_COLUMN_WIDTH);
+        double minimumWidth = NON_DAY_CONTENT_WIDTH + (exportLayout.DayRange.DayCount * MINIMUM_DAY_COLUMN_WIDTH);
         double exportWidth = Math.Max(sizingBoard.Bounds.Width, minimumWidth);
         if (double.IsFinite(exportWidth) == false || exportWidth <= 0.0)
         {

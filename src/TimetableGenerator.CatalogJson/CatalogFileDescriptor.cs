@@ -51,9 +51,7 @@ public sealed class CatalogFileDescriptor
 
         if (size.IsValid == false)
         {
-            throw new ArgumentException(
-                "Catalog file descriptors require a valid positive size.",
-                nameof(size));
+            throw new ArgumentException("Catalog file descriptors require a valid positive size.", nameof(size));
         }
 
         RelativePath = relativePath;

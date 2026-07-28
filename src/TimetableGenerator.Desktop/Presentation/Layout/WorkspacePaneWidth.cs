@@ -10,10 +10,7 @@ internal readonly record struct WorkspacePaneWidth
     {
         if (double.IsNaN(value) || double.IsInfinity(value) || value <= 0.0)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "Workspace pane width must be finite and positive.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Workspace pane width must be finite and positive.");
         }
 
         Value = value;

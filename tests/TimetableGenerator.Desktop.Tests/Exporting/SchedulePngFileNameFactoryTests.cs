@@ -46,9 +46,7 @@ public sealed class SchedulePngFileNameFactoryTests
     [InlineData("LPT³", "LPT³-.png")]
     [InlineData("LPT³.txt", "LPT³-.txt.png")]
     [InlineData("일정.", "일정.png")]
-    public void FileNameAvoidsWindowsReservedOrTrailingValues(
-        string planNameValue,
-        string expectedFileName)
+    public void FileNameAvoidsWindowsReservedOrTrailingValues(string planNameValue, string expectedFileName)
     {
         string fileName = SchedulePngFileNameFactory.Create(new PlanName(planNameValue));
 
@@ -85,16 +83,11 @@ public sealed class SchedulePngFileNameFactoryTests
     [InlineData(1, 4, "2026-2학기 시간표 (1).png")]
     [InlineData(1, 24, "2026-2학기 시간표 (01).png")]
     [InlineData(24, 24, "2026-2학기 시간표 (24).png")]
-    public void BatchCandidateFileNameSortsInRecommendationOrder(
-        int value,
-        int total,
-        string expectedFileName)
+    public void BatchCandidateFileNameSortsInRecommendationOrder(int value, int total, string expectedFileName)
     {
         SchedulePngCandidateNumber candidateNumber = new SchedulePngCandidateNumber(value, total);
 
-        string fileName = SchedulePngFileNameFactory.CreateBatchCandidate(
-            new PlanName("2026-2학기 시간표"),
-            candidateNumber);
+        string fileName = SchedulePngFileNameFactory.CreateBatchCandidate(new PlanName("2026-2학기 시간표"), candidateNumber);
 
         Assert.Equal(expectedFileName, fileName);
     }

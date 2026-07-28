@@ -41,10 +41,7 @@ public sealed class CatalogDataQualityMetadata
     {
         if (Enum.IsDefined(typeof(EScheduleNormalizationSource), scheduleNormalizationSource) == false)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(scheduleNormalizationSource),
-                scheduleNormalizationSource,
-                "The schedule normalization source is unsupported.");
+            throw new ArgumentOutOfRangeException(nameof(scheduleNormalizationSource), scheduleNormalizationSource, "The schedule normalization source is unsupported.");
         }
 
         if (manualReviews == null)
@@ -57,9 +54,7 @@ public sealed class CatalogDataQualityMetadata
         {
             if (manualReview == null)
             {
-                throw new ArgumentException(
-                    "Data quality metadata cannot contain null manual reviews.",
-                    nameof(manualReviews));
+                throw new ArgumentException("Data quality metadata cannot contain null manual reviews.", nameof(manualReviews));
             }
 
             copiedManualReviews.Add(manualReview);

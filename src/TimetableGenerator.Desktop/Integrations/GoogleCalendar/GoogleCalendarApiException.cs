@@ -16,10 +16,7 @@ internal sealed class GoogleCalendarApiException : Exception
     {
     }
 
-    public GoogleCalendarApiException(
-        HttpStatusCode statusCode,
-        string diagnosticCode,
-        EGoogleCalendarApiFailureKind failureKind)
+    public GoogleCalendarApiException(HttpStatusCode statusCode, string diagnosticCode, EGoogleCalendarApiFailureKind failureKind)
         : base("The Google Calendar API request failed with status " + (int)statusCode + ".")
     {
         if (diagnosticCode == null)
@@ -27,8 +24,7 @@ internal sealed class GoogleCalendarApiException : Exception
             throw new ArgumentNullException(nameof(diagnosticCode));
         }
 
-        if (Enum.IsDefined(typeof(EGoogleCalendarApiFailureKind), failureKind) == false
-            || failureKind == EGoogleCalendarApiFailureKind.None)
+        if (Enum.IsDefined(typeof(EGoogleCalendarApiFailureKind), failureKind) == false || failureKind == EGoogleCalendarApiFailureKind.None)
         {
             throw new ArgumentOutOfRangeException(nameof(failureKind));
         }

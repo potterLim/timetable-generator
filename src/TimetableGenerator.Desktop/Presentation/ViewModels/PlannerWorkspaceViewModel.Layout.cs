@@ -198,15 +198,13 @@ internal sealed partial class PlannerWorkspaceViewModel
             return true;
         }
 
-        if (CoursePaneDisplayMode == SplitViewDisplayMode.Overlay
-            && IsCoursePaneOpen)
+        if (CoursePaneDisplayMode == SplitViewDisplayMode.Overlay && IsCoursePaneOpen)
         {
             IsCoursePaneOpen = false;
             return true;
         }
 
-        if (InspectorPaneDisplayMode == SplitViewDisplayMode.Overlay
-            && IsInspectorPaneOpen)
+        if (InspectorPaneDisplayMode == SplitViewDisplayMode.Overlay && IsInspectorPaneOpen)
         {
             IsInspectorPaneOpen = false;
             return true;
@@ -279,10 +277,7 @@ internal sealed partial class PlannerWorkspaceViewModel
                 setInspectorPanePresentation(SplitViewDisplayMode.Overlay, COLLAPSED_INSPECTOR_PANE_WIDTH);
                 break;
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(LayoutMode),
-                    LayoutMode,
-                    "Unknown workspace layout mode.");
+                throw new ArgumentOutOfRangeException(nameof(LayoutMode), LayoutMode, "Unknown workspace layout mode.");
         }
     }
 
@@ -294,17 +289,14 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private void closeCoursePaneBeforeOpeningInspectorOverlay()
     {
-        bool areBothPanesOverlay = CoursePaneDisplayMode == SplitViewDisplayMode.Overlay
-            && InspectorPaneDisplayMode == SplitViewDisplayMode.Overlay;
+        bool areBothPanesOverlay = CoursePaneDisplayMode == SplitViewDisplayMode.Overlay && InspectorPaneDisplayMode == SplitViewDisplayMode.Overlay;
         if (areBothPanesOverlay)
         {
             IsCoursePaneOpen = false;
         }
     }
 
-    private void setCoursePanePresentation(
-        SplitViewDisplayMode displayMode,
-        WorkspacePaneWidth paneWidth)
+    private void setCoursePanePresentation(SplitViewDisplayMode displayMode, WorkspacePaneWidth paneWidth)
     {
         mCoursePaneDisplayMode = displayMode;
         mCoursePaneWidth = paneWidth;
@@ -313,9 +305,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         raisePropertyChanged(nameof(UsesCourseOverlayPresentation));
     }
 
-    private void setInspectorPanePresentation(
-        SplitViewDisplayMode displayMode,
-        WorkspacePaneWidth paneWidth)
+    private void setInspectorPanePresentation(SplitViewDisplayMode displayMode, WorkspacePaneWidth paneWidth)
     {
         mInspectorPaneDisplayMode = displayMode;
         mInspectorPaneWidth = paneWidth;

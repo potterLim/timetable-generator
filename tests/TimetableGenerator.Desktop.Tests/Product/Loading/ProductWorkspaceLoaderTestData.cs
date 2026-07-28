@@ -22,22 +22,14 @@ internal static class ProductWorkspaceLoaderTestData
         return createCatalogPackage(revision, DEFAULT_INSTITUTION_ID, DEFAULT_TERM, DEFAULT_COURSE_CODE);
     }
 
-    public static VerifiedCatalogPackage CreateCatalogPackage(
-        CatalogRevision revision,
-        InstitutionId institutionId,
-        AcademicTerm term)
+    public static VerifiedCatalogPackage CreateCatalogPackage(CatalogRevision revision, InstitutionId institutionId, AcademicTerm term)
     {
         return createCatalogPackage(revision, institutionId, term, DEFAULT_COURSE_CODE);
     }
 
-    public static VerifiedCatalogPackage CreateCatalogPackageWithoutSavedCourse(
-        CatalogRevision revision)
+    public static VerifiedCatalogPackage CreateCatalogPackageWithoutSavedCourse(CatalogRevision revision)
     {
-        return createCatalogPackage(
-            revision,
-            DEFAULT_INSTITUTION_ID,
-            DEFAULT_TERM,
-            new CourseCode("CSE99999"));
+        return createCatalogPackage(revision, DEFAULT_INSTITUTION_ID, DEFAULT_TERM, new CourseCode("CSE99999"));
     }
 
     public static PlanningWorkspace CreateEmptyWorkspace(CatalogRevision revision)
@@ -48,17 +40,13 @@ internal static class ProductWorkspaceLoaderTestData
     public static PlanningWorkspace CreateWorkspaceWithValidSelection(CatalogRevision revision)
     {
         CourseChoiceGroup choiceGroup = createCourseChoiceGroup(new OfferingId(OFFERING_ID));
-        return createWorkspace(
-            revision,
-            new CourseChoiceGroup[] { choiceGroup });
+        return createWorkspace(revision, new CourseChoiceGroup[] { choiceGroup });
     }
 
     public static PlanningWorkspace CreateWorkspaceWithMissingOffering(CatalogRevision revision)
     {
         CourseChoiceGroup choiceGroup = createCourseChoiceGroup(new OfferingId("missing-offering"));
-        return createWorkspace(
-            revision,
-            new CourseChoiceGroup[] { choiceGroup });
+        return createWorkspace(revision, new CourseChoiceGroup[] { choiceGroup });
     }
 
     public static PlanningWorkspace CreateWorkspaceWithoutPlans(CatalogRevision revision)
@@ -66,11 +54,7 @@ internal static class ProductWorkspaceLoaderTestData
         return new PlanningWorkspace(createCatalogBinding(revision), null, Array.Empty<PlanningPlan>());
     }
 
-    private static VerifiedCatalogPackage createCatalogPackage(
-        CatalogRevision revision,
-        InstitutionId institutionId,
-        AcademicTerm term,
-        CourseCode courseCode)
+    private static VerifiedCatalogPackage createCatalogPackage(CatalogRevision revision, InstitutionId institutionId, AcademicTerm term, CourseCode courseCode)
     {
         if (revision.IsValid == false)
         {
@@ -97,20 +81,11 @@ internal static class ProductWorkspaceLoaderTestData
         return VerifiedCatalogPackage.ReadAndVerify(indexBytes, catalogBytes);
     }
 
-    private static byte[] createCatalogBytes(
-        CatalogRevision revision,
-        InstitutionId institutionId,
-        AcademicTerm term,
-        CourseCode courseCode)
+    private static byte[] createCatalogBytes(CatalogRevision revision, InstitutionId institutionId, AcademicTerm term, CourseCode courseCode)
     {
         string catalogId = createCatalogId(revision, institutionId, term);
         string courseId = institutionId.Value + ":" + courseCode.Value;
-        string offeringId = institutionId.Value
-            + ":"
-            + term.Id
-            + ":"
-            + courseCode.Value
-            + ":01";
+        string offeringId = institutionId.Value + ":" + term.Id + ":" + courseCode.Value + ":01";
         string revisionText = revision.Value.ToString(CultureInfo.InvariantCulture);
         string academicYearText = term.AcademicYear.Value.ToString(CultureInfo.InvariantCulture);
         string semesterText = term.Semester.Value.ToString(CultureInfo.InvariantCulture);
@@ -220,11 +195,7 @@ internal static class ProductWorkspaceLoaderTestData
         return Encoding.UTF8.GetBytes(json);
     }
 
-    private static byte[] createIndexBytes(
-        CatalogRevision revision,
-        InstitutionId institutionId,
-        AcademicTerm term,
-        byte[] catalogBytes)
+    private static byte[] createIndexBytes(CatalogRevision revision, InstitutionId institutionId, AcademicTerm term, byte[] catalogBytes)
     {
         string catalogId = createCatalogId(revision, institutionId, term);
         string revisionText = revision.Value.ToString(CultureInfo.InvariantCulture);
@@ -273,31 +244,16 @@ internal static class ProductWorkspaceLoaderTestData
         return Encoding.UTF8.GetBytes(json);
     }
 
-    private static PlanningWorkspace createWorkspace(
-        CatalogRevision revision,
-        CourseChoiceGroup[] courseChoiceGroups)
+    private static PlanningWorkspace createWorkspace(CatalogRevision revision, CourseChoiceGroup[] courseChoiceGroups)
     {
         PlanId planId = PlanId.CreateNew();
-        PlanningPlan plan = new PlanningPlan(
-            planId,
-            new PlanName("저장된 시간표"),
-            createCatalogBinding(revision),
-            new PlanningPlanContent(
-                courseChoiceGroups,
-                Array.Empty<UnscheduledOfferingSelection>(),
-                Array.Empty<PersonalSchedule>()));
-        return new PlanningWorkspace(
-            plan.CatalogBinding,
-            planId,
-            new PlanningPlan[] { plan });
+        PlanningPlan plan = new PlanningPlan(planId, new PlanName("저장된 시간표"), createCatalogBinding(revision), new PlanningPlanContent(courseChoiceGroups, Array.Empty<UnscheduledOfferingSelection>(), Array.Empty<PersonalSchedule>()));
+        return new PlanningWorkspace(plan.CatalogBinding, planId, new PlanningPlan[] { plan });
     }
 
     private static CourseChoiceGroup createCourseChoiceGroup(OfferingId offeringId)
     {
-        return CourseChoiceGroup.CreateWithAcceptableOfferings(
-            CourseChoiceGroupId.CreateNew(),
-            new CourseId(COURSE_ID),
-            new OfferingId[] { offeringId });
+        return CourseChoiceGroup.CreateWithAcceptableOfferings(CourseChoiceGroupId.CreateNew(), new CourseId(COURSE_ID), new OfferingId[] { offeringId });
     }
 
     private static PlanCatalogBinding createCatalogBinding(CatalogRevision revision)
@@ -310,10 +266,7 @@ internal static class ProductWorkspaceLoaderTestData
         return createCatalogId(revision, DEFAULT_INSTITUTION_ID, DEFAULT_TERM);
     }
 
-    private static string createCatalogId(
-        CatalogRevision revision,
-        InstitutionId institutionId,
-        AcademicTerm term)
+    private static string createCatalogId(CatalogRevision revision, InstitutionId institutionId, AcademicTerm term)
     {
         return institutionId.Value + ":" + term.Id + ":" + revision.FileComponent;
     }

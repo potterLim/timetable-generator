@@ -100,8 +100,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            bool hasDefaultFilters = SelectedUnitFilter.Scope == ECourseFilterScope.All
-                && SelectedRequirementFilter.Scope == ECourseFilterScope.All;
+            bool hasDefaultFilters = SelectedUnitFilter.Scope == ECourseFilterScope.All && SelectedRequirementFilter.Scope == ECourseFilterScope.All;
             if (string.IsNullOrWhiteSpace(SearchText) && hasDefaultFilters)
             {
                 return "전체 과목 (" + mAllCourses.Count + "개)";
@@ -115,9 +114,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return VisibleCourses.Count == 0
-                ? ECourseSearchResultState.Empty
-                : ECourseSearchResultState.Populated;
+            return VisibleCourses.Count == 0 ? ECourseSearchResultState.Empty : ECourseSearchResultState.Populated;
         }
     }
 
@@ -180,8 +177,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
-    private static IReadOnlyList<CourseSearchItem> createCourseItems(
-        CourseCatalogProjection catalogProjection)
+    private static IReadOnlyList<CourseSearchItem> createCourseItems(CourseCatalogProjection catalogProjection)
     {
         List<CourseSearchItem> courses = new List<CourseSearchItem>();
         foreach (CatalogCourseProjection course in catalogProjection.Courses)
@@ -221,8 +217,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         return compareCourseItems(left.Course, right.Course);
     }
 
-    private static ObservableCollection<CourseUnitFilterOption> createUnitFilters(
-        CourseCatalogProjection catalogProjection)
+    private static ObservableCollection<CourseUnitFilterOption> createUnitFilters(CourseCatalogProjection catalogProjection)
     {
         ObservableCollection<CourseUnitFilterOption> filters = new ObservableCollection<CourseUnitFilterOption>();
         filters.Add(CourseUnitFilterOption.CreateAll());
@@ -234,13 +229,11 @@ internal sealed partial class PlannerWorkspaceViewModel
         return filters;
     }
 
-    private static ObservableCollection<RequirementFilterOption> createRequirementFilters(
-        CourseCatalogProjection catalogProjection)
+    private static ObservableCollection<RequirementFilterOption> createRequirementFilters(CourseCatalogProjection catalogProjection)
     {
         ObservableCollection<RequirementFilterOption> filters = new ObservableCollection<RequirementFilterOption>();
         filters.Add(RequirementFilterOption.CreateAll());
-        foreach (CatalogRequirementGroup requirementGroup
-            in catalogProjection.RequirementGroups)
+        foreach (CatalogRequirementGroup requirementGroup in catalogProjection.RequirementGroups)
         {
             filters.Add(RequirementFilterOption.CreateSpecific(requirementGroup.RequirementType));
         }
@@ -310,8 +303,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             throw new ArgumentNullException(nameof(course));
         }
 
-        foreach (UnscheduledOfferingSelection selection
-            in ActivePlan.Plan.UnscheduledOfferingSelections)
+        foreach (UnscheduledOfferingSelection selection in ActivePlan.Plan.UnscheduledOfferingSelections)
         {
             if (selection.CourseId == course.CourseId)
             {
@@ -365,9 +357,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             }
         }
 
-        throw new ArgumentException(
-            "The selected course must belong to the course choice group.",
-            nameof(courseId));
+        throw new ArgumentException("The selected course must belong to the course choice group.", nameof(courseId));
     }
 
     private CourseSearchItem findCourseById(CourseId courseId)
@@ -380,15 +370,12 @@ internal sealed partial class PlannerWorkspaceViewModel
             }
         }
 
-        throw new ArgumentException(
-            "The selected course option must belong to the active catalog.",
-            nameof(courseId));
+        throw new ArgumentException("The selected course option must belong to the active catalog.", nameof(courseId));
     }
 
     private PlanCourseChoiceGroupItem findActivePlanCourseChoiceGroupItem(CourseChoiceGroupId groupId)
     {
-        foreach (PlanCourseChoiceGroupItem groupItem
-            in ActivePlan.CourseChoiceGroups)
+        foreach (PlanCourseChoiceGroupItem groupItem in ActivePlan.CourseChoiceGroups)
         {
             if (groupItem.GroupId == groupId)
             {
@@ -396,8 +383,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             }
         }
 
-        throw new InvalidOperationException(
-            "The active plan did not contain its projected course choice group.");
+        throw new InvalidOperationException("The active plan did not contain its projected course choice group.");
     }
 
     private void resetCourseSearch()
@@ -466,8 +452,7 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private bool matchesCurrentFilters(CourseSearchItem course)
     {
-        return SelectedUnitFilter.Matches(course.Projection)
-            && SelectedRequirementFilter.Matches(course.Projection);
+        return SelectedUnitFilter.Matches(course.Projection) && SelectedRequirementFilter.Matches(course.Projection);
     }
 
     private IReadOnlyList<CourseSearchItem> findRankedVisibleCourses(CourseSearchQuery query)
@@ -527,8 +512,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             return ECourseSelectionAction.None;
         }
 
-        foreach (UnscheduledOfferingSelection selection
-            in ActivePlan.Plan.UnscheduledOfferingSelections)
+        foreach (UnscheduledOfferingSelection selection in ActivePlan.Plan.UnscheduledOfferingSelections)
         {
             if (selection.CourseId == courseId)
             {
@@ -541,8 +525,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             if (groupContainsCourse(group, courseId))
             {
                 CourseCandidate selectedCourseCandidate = findCourseCandidate(group, courseId);
-                bool isDirectSelection = group.CourseCandidates.Count == 1
-                    && selectedCourseCandidate.OfferingCandidates.Count == 1;
+                bool isDirectSelection = group.CourseCandidates.Count == 1 && selectedCourseCandidate.OfferingCandidates.Count == 1;
                 return isDirectSelection ? ECourseSelectionAction.Remove : ECourseSelectionAction.Edit;
             }
         }
@@ -557,14 +540,11 @@ internal sealed partial class PlannerWorkspaceViewModel
             return null;
         }
 
-        foreach (UnscheduledOfferingSelection selection
-            in ActivePlan.Plan.UnscheduledOfferingSelections)
+        foreach (UnscheduledOfferingSelection selection in ActivePlan.Plan.UnscheduledOfferingSelections)
         {
             if (selection.CourseId == courseId)
             {
-                return PlanningCourseSelection.CreateTimeNotProvidedOffering(
-                    selection.CourseId,
-                    selection.OfferingId);
+                return PlanningCourseSelection.CreateTimeNotProvidedOffering(selection.CourseId, selection.OfferingId);
             }
         }
 

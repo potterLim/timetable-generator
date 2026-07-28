@@ -8,8 +8,5 @@ namespace TimetableGenerator.Desktop.Product.CatalogUpdates;
 
 internal interface IProductCatalogUpdateService
 {
-    Task<ProductCatalogUpdateResult> CheckAndStageAsync(
-        VerifiedCatalogPackage activePackage,
-        PlanningWorkspace workspaceSnapshot,
-        CancellationToken cancellationToken);
+    Task<ProductCatalogUpdateResult> CheckAndStageAsync(VerifiedCatalogPackage activePackage, PlanningWorkspace workspaceSnapshot, CancellationToken cancellationToken);
 }

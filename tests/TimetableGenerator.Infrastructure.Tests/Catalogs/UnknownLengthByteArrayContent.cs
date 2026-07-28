@@ -26,10 +26,7 @@ internal sealed class UnknownLengthByteArrayContent : HttpContent
         return stream.WriteAsync(mContent, 0, mContent.Length);
     }
 
-    protected override Task SerializeToStreamAsync(
-        Stream stream,
-        TransportContext? context,
-        CancellationToken cancellationToken)
+    protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context, CancellationToken cancellationToken)
     {
         return stream.WriteAsync(mContent, cancellationToken).AsTask();
     }

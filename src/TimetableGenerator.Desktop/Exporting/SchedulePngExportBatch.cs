@@ -25,17 +25,13 @@ internal sealed class SchedulePngExportBatch
         ArgumentNullException.ThrowIfNull(candidates);
         if (candidates.Count <= 1)
         {
-            throw new ArgumentException(
-                "A batch PNG export requires multiple timetable candidates.",
-                nameof(candidates));
+            throw new ArgumentException("A batch PNG export requires multiple timetable candidates.", nameof(candidates));
         }
 
         ScheduleBoardPresentation firstCandidate = candidates[0];
         if (firstCandidate == null)
         {
-            throw new ArgumentException(
-                "A batch PNG export cannot contain null candidates.",
-                nameof(candidates));
+            throw new ArgumentException("A batch PNG export cannot contain null candidates.", nameof(candidates));
         }
 
         PlanName = firstCandidate.PlanName;
@@ -44,16 +40,12 @@ internal sealed class SchedulePngExportBatch
         {
             if (candidate == null)
             {
-                throw new ArgumentException(
-                    "A batch PNG export cannot contain null candidates.",
-                    nameof(candidates));
+                throw new ArgumentException("A batch PNG export cannot contain null candidates.", nameof(candidates));
             }
 
             if (candidate.PlanName != PlanName)
             {
-                throw new ArgumentException(
-                    "Every PNG export candidate must belong to the same plan.",
-                    nameof(candidates));
+                throw new ArgumentException("Every PNG export candidate must belong to the same plan.", nameof(candidates));
             }
 
             copiedCandidates.Add(candidate);

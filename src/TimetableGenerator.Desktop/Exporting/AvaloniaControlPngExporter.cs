@@ -23,33 +23,22 @@ public sealed class AvaloniaControlPngExporter : IControlPngExporter
         mExportScale = exportScale;
     }
 
-    public Task ExportControlAsync(
-        Control sourceControl,
-        Stream destinationStream,
-        CancellationToken cancellationToken)
+    public Task ExportControlAsync(Control sourceControl, Stream destinationStream, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(sourceControl);
         ArgumentNullException.ThrowIfNull(destinationStream);
 
         if (destinationStream.CanWrite == false)
         {
-            throw new ArgumentException(
-                "The PNG destination stream must be writable.",
-                nameof(destinationStream));
+            throw new ArgumentException("The PNG destination stream must be writable.", nameof(destinationStream));
         }
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        return renderAndEncodeAsync(
-            sourceControl,
-            destinationStream,
-            cancellationToken);
+        return renderAndEncodeAsync(sourceControl, destinationStream, cancellationToken);
     }
 
-    private async Task renderAndEncodeAsync(
-        Control sourceControl,
-        Stream destinationStream,
-        CancellationToken cancellationToken)
+    private async Task renderAndEncodeAsync(Control sourceControl, Stream destinationStream, CancellationToken cancellationToken)
     {
         RenderTargetBitmap renderedBitmap = await Dispatcher.UIThread.InvokeAsync(
             delegate
@@ -80,9 +69,7 @@ public sealed class AvaloniaControlPngExporter : IControlPngExporter
         }
         finally
         {
-            await Dispatcher.UIThread.InvokeAsync(
-                renderedBitmap.Dispose,
-                DispatcherPriority.Background);
+            await Dispatcher.UIThread.InvokeAsync(renderedBitmap.Dispose, DispatcherPriority.Background);
         }
     }
 
@@ -93,8 +80,7 @@ public sealed class AvaloniaControlPngExporter : IControlPngExporter
             controlSize.Width <= 0.0 ||
             controlSize.Height <= 0.0)
         {
-            throw new InvalidOperationException(
-                "The source control must have a positive arranged size before PNG export.");
+            throw new InvalidOperationException("The source control must have a positive arranged size before PNG export.");
         }
 
         double scaledWidth = Math.Ceiling(controlSize.Width * mExportScale.Multiplier);

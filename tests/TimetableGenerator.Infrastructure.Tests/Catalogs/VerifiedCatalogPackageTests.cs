@@ -19,8 +19,6 @@ public sealed class VerifiedCatalogPackageTests
         Assert.AreEqual(package.Entry.Institution.Id, binding.InstitutionId);
         Assert.AreEqual(package.Entry.Term, binding.Term);
         Assert.AreEqual(package.Entry.Revision, binding.Revision);
-        Assert.AreEqual(
-            new CatalogArtifactSha256(package.Entry.File.Sha256.HexValue),
-            binding.ArtifactSha256);
+        Assert.AreEqual(new CatalogArtifactSha256(package.Entry.File.Sha256.HexValue), binding.ArtifactSha256);
     }
 }

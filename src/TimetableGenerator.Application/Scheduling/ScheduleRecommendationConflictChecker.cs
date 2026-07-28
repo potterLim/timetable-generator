@@ -8,10 +8,7 @@ namespace TimetableGenerator.Application.Scheduling;
 
 internal static class ScheduleRecommendationConflictChecker
 {
-    public static bool CanAddOffering(
-        ScheduleSearchNode node,
-        ScheduledOffering offering,
-        IReadOnlyList<PersonalSchedule> personalSchedules)
+    public static bool CanAddOffering(ScheduleSearchNode node, ScheduledOffering offering, IReadOnlyList<PersonalSchedule> personalSchedules)
     {
         if (node == null)
         {
@@ -38,8 +35,7 @@ internal static class ScheduleRecommendationConflictChecker
             WeeklyTimeRange offeringTimeRange = AcademicPeriodTimeTable.GetWeeklyTimeRange(slot);
             foreach (PersonalSchedule personalSchedule in personalSchedules)
             {
-                foreach (WeeklyTimeRange personalTimeRange
-                    in personalSchedule.TimeRanges)
+                foreach (WeeklyTimeRange personalTimeRange in personalSchedule.TimeRanges)
                 {
                     if (ScheduleConflictDetector.HasConflict(offeringTimeRange, personalTimeRange))
                     {

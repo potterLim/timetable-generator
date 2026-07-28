@@ -45,11 +45,7 @@ public sealed class WorkspaceEmptyStateTests
             ScheduleWorkspaceView scheduleWorkspace = findRequiredDescendant<ScheduleWorkspaceView>(host);
             PlanInspectorView planInspector = findRequiredDescendant<PlanInspectorView>(host);
 
-            assertEmptyScheduleState(
-                scheduleWorkspace,
-                false,
-                "과목을 선택해 시간표를 구성해 보세요",
-                "과목을 선택하면 가능한 시간표를 자동으로 만듭니다.");
+            assertEmptyScheduleState(scheduleWorkspace, false, "과목을 선택해 시간표를 구성해 보세요", "과목을 선택하면 가능한 시간표를 자동으로 만듭니다.");
             workspace.OpenInspectorPaneCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
             assertEmptyInspectorState(planInspector);
@@ -92,27 +88,15 @@ public sealed class WorkspaceEmptyStateTests
         }
     }
 
-    private static void assertEmptyScheduleState(
-        ScheduleWorkspaceView scheduleWorkspace,
-        bool areRecommendationActionsVisible,
-        string expectedHeading,
-        string expectedDescription)
+    private static void assertEmptyScheduleState(ScheduleWorkspaceView scheduleWorkspace, bool areRecommendationActionsVisible, string expectedHeading, string expectedDescription)
     {
-        StackPanel recommendationActions = findRequiredControl<StackPanel>(
-            scheduleWorkspace,
-            "RecommendationActions");
-        Grid scheduleBoardContainer = findRequiredControl<Grid>(
-            scheduleWorkspace,
-            "ScheduleBoardContainer");
+        StackPanel recommendationActions = findRequiredControl<StackPanel>(scheduleWorkspace, "RecommendationActions");
+        Grid scheduleBoardContainer = findRequiredControl<Grid>(scheduleWorkspace, "ScheduleBoardContainer");
         Border scheduleEmptyState = findRequiredControl<Border>(scheduleWorkspace, "ScheduleEmptyState");
         Button exportButton = findRequiredControl<Button>(scheduleWorkspace, "ExportScheduleButton");
-        Button openInspectorPane = findRequiredControl<Button>(
-            scheduleWorkspace,
-            "OpenInspectorPaneButton");
+        Button openInspectorPane = findRequiredControl<Button>(scheduleWorkspace, "OpenInspectorPaneButton");
         TextBlock heading = findRequiredControl<TextBlock>(scheduleWorkspace, "ScheduleEmptyStateHeading");
-        TextBlock description = findRequiredControl<TextBlock>(
-            scheduleWorkspace,
-            "ScheduleEmptyStateDescription");
+        TextBlock description = findRequiredControl<TextBlock>(scheduleWorkspace, "ScheduleEmptyStateDescription");
 
         Assert.Equal(areRecommendationActionsVisible, recommendationActions.IsVisible);
         Assert.False(scheduleBoardContainer.IsVisible);
@@ -127,17 +111,11 @@ public sealed class WorkspaceEmptyStateTests
 
     private static void assertPopulatedScheduleState(ScheduleWorkspaceView scheduleWorkspace)
     {
-        StackPanel recommendationActions = findRequiredControl<StackPanel>(
-            scheduleWorkspace,
-            "RecommendationActions");
-        Grid scheduleBoardContainer = findRequiredControl<Grid>(
-            scheduleWorkspace,
-            "ScheduleBoardContainer");
+        StackPanel recommendationActions = findRequiredControl<StackPanel>(scheduleWorkspace, "RecommendationActions");
+        Grid scheduleBoardContainer = findRequiredControl<Grid>(scheduleWorkspace, "ScheduleBoardContainer");
         Border scheduleEmptyState = findRequiredControl<Border>(scheduleWorkspace, "ScheduleEmptyState");
         Button exportButton = findRequiredControl<Button>(scheduleWorkspace, "ExportScheduleButton");
-        Button openInspectorPane = findRequiredControl<Button>(
-            scheduleWorkspace,
-            "OpenInspectorPaneButton");
+        Button openInspectorPane = findRequiredControl<Button>(scheduleWorkspace, "OpenInspectorPaneButton");
 
         Assert.True(recommendationActions.IsVisible);
         Assert.True(scheduleBoardContainer.IsVisible);
@@ -151,18 +129,12 @@ public sealed class WorkspaceEmptyStateTests
     {
         Border emptyPlanState = findRequiredControl<Border>(planInspector, "EmptyPlanState");
         ListBox scheduledCourses = findRequiredControl<ListBox>(planInspector, "ScheduledCoursesList");
-        Expander timeNotProvidedCourses = findRequiredControl<Expander>(
-            planInspector,
-            "TimeNotProvidedCoursesExpander");
+        Expander timeNotProvidedCourses = findRequiredControl<Expander>(planInspector, "TimeNotProvidedCoursesExpander");
         Border iconSurface = findRequiredControl<Border>(planInspector, "EmptyPlanStateIconSurface");
-        StackPanel emptyPlanStateContent = findRequiredControl<StackPanel>(
-            planInspector,
-            "EmptyPlanStateContent");
+        StackPanel emptyPlanStateContent = findRequiredControl<StackPanel>(planInspector, "EmptyPlanStateContent");
         TextBlock heading = findRequiredControl<TextBlock>(planInspector, "EmptyPlanStateHeading");
         TextBlock description = findRequiredControl<TextBlock>(planInspector, "EmptyPlanStateDescription");
-        Button addPersonalScheduleButton = findRequiredControl<Button>(
-            planInspector,
-            "AddPersonalScheduleButton");
+        Button addPersonalScheduleButton = findRequiredControl<Button>(planInspector, "AddPersonalScheduleButton");
 
         Assert.True(emptyPlanState.IsVisible);
         Assert.False(scheduledCourses.IsVisible);
@@ -188,12 +160,8 @@ public sealed class WorkspaceEmptyStateTests
     {
         Border emptyPlanState = findRequiredControl<Border>(planInspector, "EmptyPlanState");
         ListBox scheduledCourses = findRequiredControl<ListBox>(planInspector, "ScheduledCoursesList");
-        Expander timeNotProvidedCourses = findRequiredControl<Expander>(
-            planInspector,
-            "TimeNotProvidedCoursesExpander");
-        Border personalScheduleEmptyState = findRequiredControl<Border>(
-            planInspector,
-            "PersonalScheduleEmptyState");
+        Expander timeNotProvidedCourses = findRequiredControl<Expander>(planInspector, "TimeNotProvidedCoursesExpander");
+        Border personalScheduleEmptyState = findRequiredControl<Border>(planInspector, "PersonalScheduleEmptyState");
 
         Assert.False(emptyPlanState.IsVisible);
         Assert.True(scheduledCourses.IsVisible);
@@ -210,9 +178,7 @@ public sealed class WorkspaceEmptyStateTests
     {
         Border emptyPlanState = findRequiredControl<Border>(planInspector, "EmptyPlanState");
         ListBox scheduledCourses = findRequiredControl<ListBox>(planInspector, "ScheduledCoursesList");
-        Expander timeNotProvidedCourses = findRequiredControl<Expander>(
-            planInspector,
-            "TimeNotProvidedCoursesExpander");
+        Expander timeNotProvidedCourses = findRequiredControl<Expander>(planInspector, "TimeNotProvidedCoursesExpander");
 
         Assert.False(emptyPlanState.IsVisible);
         Assert.True(scheduledCourses.IsVisible);
@@ -221,9 +187,7 @@ public sealed class WorkspaceEmptyStateTests
         assertSectionCounts(planInspector, "수강 선택 (1)", "개인 일정 (0)");
     }
 
-    private static void assertExpectedCreditsSummary(
-        PlanInspectorView planInspector,
-        string expectedCreditsDisplayText)
+    private static void assertExpectedCreditsSummary(PlanInspectorView planInspector, string expectedCreditsDisplayText)
     {
         TextBlock label = findRequiredControl<TextBlock>(planInspector, "ExpectedCreditsLabel");
         TextBlock value = findRequiredControl<TextBlock>(planInspector, "ExpectedCreditsValue");
@@ -233,17 +197,10 @@ public sealed class WorkspaceEmptyStateTests
         Assert.Equal("예상 학점 " + expectedCreditsDisplayText, AutomationProperties.GetName(value));
     }
 
-    private static void assertSectionCounts(
-        PlanInspectorView planInspector,
-        string expectedScheduledCourseHeading,
-        string expectedPersonalScheduleHeading)
+    private static void assertSectionCounts(PlanInspectorView planInspector, string expectedScheduledCourseHeading, string expectedPersonalScheduleHeading)
     {
-        TextBlock scheduledCoursesHeading = findRequiredControl<TextBlock>(
-            planInspector,
-            "ScheduledCoursesHeading");
-        TextBlock personalSchedulesHeading = findRequiredControl<TextBlock>(
-            planInspector,
-            "PersonalSchedulesHeading");
+        TextBlock scheduledCoursesHeading = findRequiredControl<TextBlock>(planInspector, "ScheduledCoursesHeading");
+        TextBlock personalSchedulesHeading = findRequiredControl<TextBlock>(planInspector, "PersonalSchedulesHeading");
 
         Assert.Equal(expectedScheduledCourseHeading, scheduledCoursesHeading.Text);
         Assert.Equal(expectedPersonalScheduleHeading, personalSchedulesHeading.Text);
@@ -255,18 +212,13 @@ public sealed class WorkspaceEmptyStateTests
         TControl? controlOrNull = root.GetVisualDescendants().OfType<TControl>().FirstOrDefault();
         if (controlOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The required workspace descendant was not found: "
-                + typeof(TControl).Name);
+            throw new InvalidOperationException("The required workspace descendant was not found: " + typeof(TControl).Name);
         }
 
         return controlOrNull;
     }
 
-    private static void assertControlSharesHorizontalCenter(
-        Control coordinateRoot,
-        Control container,
-        Control centeredControl)
+    private static void assertControlSharesHorizontalCenter(Control coordinateRoot, Control container, Control centeredControl)
     {
         Point? containerOriginOrNull = container.TranslatePoint(new Point(0.0, 0.0), coordinateRoot);
         Point? controlOriginOrNull = centeredControl.TranslatePoint(new Point(0.0, 0.0), coordinateRoot);
@@ -277,10 +229,8 @@ public sealed class WorkspaceEmptyStateTests
             throw new InvalidOperationException("The empty plan state control position could not be resolved.");
         }
 
-        double containerCenterX = containerOriginOrNull.Value.X
-            + (container.Bounds.Width / 2.0);
-        double controlCenterX = controlOriginOrNull.Value.X
-            + (centeredControl.Bounds.Width / 2.0);
+        double containerCenterX = containerOriginOrNull.Value.X + (container.Bounds.Width / 2.0);
+        double controlCenterX = controlOriginOrNull.Value.X + (centeredControl.Bounds.Width / 2.0);
         Assert.InRange(Math.Abs(controlCenterX - containerCenterX), 0.0, 0.5);
     }
 

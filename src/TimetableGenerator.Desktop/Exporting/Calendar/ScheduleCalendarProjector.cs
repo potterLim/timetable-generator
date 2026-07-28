@@ -59,9 +59,7 @@ internal static class ScheduleCalendarProjector
     {
         if (planId.IsValid == false)
         {
-            throw new ArgumentException(
-                "Schedule calendar projection requires a valid plan ID.",
-                nameof(planId));
+            throw new ArgumentException("Schedule calendar projection requires a valid plan ID.", nameof(planId));
         }
 
         if (planName == null)
@@ -89,9 +87,7 @@ internal static class ScheduleCalendarProjector
         {
             CalendarEventSourceIdentity sourceIdentity = createSourceIdentity(scheduleEntry);
             CalendarEventProjectionGroupKey key = new CalendarEventProjectionGroupKey(sourceIdentity, scheduleEntry.TimeRange);
-            CalendarEventContent content = createEventContent(
-                scheduleEntry,
-                courseSummaryStyle);
+            CalendarEventContent content = createEventContent(scheduleEntry, courseSummaryStyle);
 
             CalendarEventProjectionGroup? existingGroupOrNull;
             bool hasExistingGroup = groupsByKey.TryGetValue(key, out existingGroupOrNull);
@@ -143,16 +139,12 @@ internal static class ScheduleCalendarProjector
         throw new ArgumentOutOfRangeException(nameof(entry), entry, "Unknown schedule entry type.");
     }
 
-    private static CalendarEventContent createEventContent(
-        ScheduleEntry entry,
-        ECourseSummaryStyle courseSummaryStyle)
+    private static CalendarEventContent createEventContent(ScheduleEntry entry, ECourseSummaryStyle courseSummaryStyle)
     {
         CourseScheduleEntry? courseEntryOrNull = entry as CourseScheduleEntry;
         if (courseEntryOrNull != null)
         {
-            return createCourseEventContent(
-                courseEntryOrNull,
-                courseSummaryStyle);
+            return createCourseEventContent(courseEntryOrNull, courseSummaryStyle);
         }
 
         PersonalScheduleEntry? personalEntryOrNull = entry as PersonalScheduleEntry;
@@ -164,9 +156,7 @@ internal static class ScheduleCalendarProjector
         throw new ArgumentOutOfRangeException(nameof(entry), entry, "Unknown schedule entry type.");
     }
 
-    private static CalendarEventContent createCourseEventContent(
-        CourseScheduleEntry entry,
-        ECourseSummaryStyle courseSummaryStyle)
+    private static CalendarEventContent createCourseEventContent(CourseScheduleEntry entry, ECourseSummaryStyle courseSummaryStyle)
     {
         string summary = findCourseSummary(entry, courseSummaryStyle);
         string location = entry.HasAssignedLocation ? entry.LocationDisplayText : string.Empty;
@@ -180,15 +170,10 @@ internal static class ScheduleCalendarProjector
             descriptionLines.Add("교수: " + entry.InstructorDisplayText);
         }
 
-        return new CalendarEventContent(
-            summary,
-            location,
-            string.Join(DESCRIPTION_LINE_SEPARATOR, descriptionLines));
+        return new CalendarEventContent(summary, location, string.Join(DESCRIPTION_LINE_SEPARATOR, descriptionLines));
     }
 
-    private static string findCourseSummary(
-        CourseScheduleEntry entry,
-        ECourseSummaryStyle courseSummaryStyle)
+    private static string findCourseSummary(CourseScheduleEntry entry, ECourseSummaryStyle courseSummaryStyle)
     {
         switch (courseSummaryStyle)
         {
@@ -197,10 +182,7 @@ internal static class ScheduleCalendarProjector
             case ECourseSummaryStyle.NameWithSection:
                 return entry.NameWithSection;
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(courseSummaryStyle),
-                    courseSummaryStyle,
-                    "Unknown course calendar summary style.");
+                throw new ArgumentOutOfRangeException(nameof(courseSummaryStyle), courseSummaryStyle, "Unknown course calendar summary style.");
         }
     }
 
@@ -218,15 +200,10 @@ internal static class ScheduleCalendarProjector
         }
 
         string location = entry.HasLocation ? entry.LocationDisplayText : string.Empty;
-        return new CalendarEventContent(
-            entry.Title,
-            location,
-            string.Join(DESCRIPTION_LINE_SEPARATOR, descriptionLines));
+        return new CalendarEventContent(entry.Title, location, string.Join(DESCRIPTION_LINE_SEPARATOR, descriptionLines));
     }
 
-    private static int compareGroups(
-        CalendarEventProjectionGroup left,
-        CalendarEventProjectionGroup right)
+    private static int compareGroups(CalendarEventProjectionGroup left, CalendarEventProjectionGroup right)
     {
         int startComparison = left.Key.TimeRange.Start.CompareTo(right.Key.TimeRange.Start);
         if (startComparison != 0)
@@ -234,18 +211,12 @@ internal static class ScheduleCalendarProjector
             return startComparison;
         }
 
-        int summaryComparison = string.Compare(
-            left.Content.Summary,
-            right.Content.Summary,
-            StringComparison.Ordinal);
+        int summaryComparison = string.Compare(left.Content.Summary, right.Content.Summary, StringComparison.Ordinal);
         if (summaryComparison != 0)
         {
             return summaryComparison;
         }
 
-        return string.Compare(
-            left.Key.SourceIdentity.Value,
-            right.Key.SourceIdentity.Value,
-            StringComparison.Ordinal);
+        return string.Compare(left.Key.SourceIdentity.Value, right.Key.SourceIdentity.Value, StringComparison.Ordinal);
     }
 }

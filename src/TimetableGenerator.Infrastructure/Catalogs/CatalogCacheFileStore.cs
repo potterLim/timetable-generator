@@ -69,22 +69,16 @@ public sealed class CatalogCacheFileStore
         }
         catch (GenerationFileStorageLockException exception)
         {
-            throw new CatalogCachePersistenceException(
-                "Another application instance is using the catalog cache.",
-                exception.Failure);
+            throw new CatalogCachePersistenceException("Another application instance is using the catalog cache.", exception.Failure);
         }
         catch (Exception exception) when (
             FileSystemExceptionClassifier.IsFileSystemException(exception))
         {
-            throw new CatalogCachePersistenceException(
-                "The catalog cache generations could not be loaded.",
-                exception);
+            throw new CatalogCachePersistenceException("The catalog cache generations could not be loaded.", exception);
         }
     }
 
-    public async Task<CatalogCacheLoadResult> LoadMatchingAsync(
-        PlanCatalogBinding catalogBinding,
-        CancellationToken cancellationToken)
+    public async Task<CatalogCacheLoadResult> LoadMatchingAsync(PlanCatalogBinding catalogBinding, CancellationToken cancellationToken)
     {
         if (catalogBinding == null)
         {
@@ -118,16 +112,12 @@ public sealed class CatalogCacheFileStore
         }
         catch (GenerationFileStorageLockException exception)
         {
-            throw new CatalogCachePersistenceException(
-                "Another application instance is using the catalog cache.",
-                exception.Failure);
+            throw new CatalogCachePersistenceException("Another application instance is using the catalog cache.", exception.Failure);
         }
         catch (Exception exception) when (
             FileSystemExceptionClassifier.IsFileSystemException(exception))
         {
-            throw new CatalogCachePersistenceException(
-                "The catalog cache generations could not be searched.",
-                exception);
+            throw new CatalogCachePersistenceException("The catalog cache generations could not be searched.", exception);
         }
     }
 
@@ -136,10 +126,7 @@ public sealed class CatalogCacheFileStore
         await saveAsync(package, null, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task SaveRetainingAsync(
-        VerifiedCatalogPackage package,
-        PlanCatalogBinding protectedBinding,
-        CancellationToken cancellationToken)
+    public async Task SaveRetainingAsync(VerifiedCatalogPackage package, PlanCatalogBinding protectedBinding, CancellationToken cancellationToken)
     {
         if (package == null)
         {
@@ -154,10 +141,7 @@ public sealed class CatalogCacheFileStore
         await saveAsync(package, protectedBinding, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task saveAsync(
-        VerifiedCatalogPackage package,
-        PlanCatalogBinding? protectedBindingOrNull,
-        CancellationToken cancellationToken)
+    private async Task saveAsync(VerifiedCatalogPackage package, PlanCatalogBinding? protectedBindingOrNull, CancellationToken cancellationToken)
     {
         if (package == null)
         {
@@ -168,10 +152,7 @@ public sealed class CatalogCacheFileStore
         {
             using (GenerationFileStorageAccess storageAccess = await mFileStorage.AcquireCreatingDirectoryAsync(cancellationToken).ConfigureAwait(false))
             {
-                await saveWithoutLockAsync(
-                    package,
-                    protectedBindingOrNull,
-                    cancellationToken).ConfigureAwait(false);
+                await saveWithoutLockAsync(package, protectedBindingOrNull, cancellationToken).ConfigureAwait(false);
             }
         }
         catch (OperationCanceledException)
@@ -184,22 +165,16 @@ public sealed class CatalogCacheFileStore
         }
         catch (CatalogCacheDocumentException exception)
         {
-            throw new CatalogCachePersistenceException(
-                "The verified catalog package does not fit the configured cache.",
-                exception);
+            throw new CatalogCachePersistenceException("The verified catalog package does not fit the configured cache.", exception);
         }
         catch (GenerationFileStorageLockException exception)
         {
-            throw new CatalogCachePersistenceException(
-                "Another application instance is using the catalog cache.",
-                exception.Failure);
+            throw new CatalogCachePersistenceException("Another application instance is using the catalog cache.", exception.Failure);
         }
         catch (Exception exception) when (
             FileSystemExceptionClassifier.IsFileSystemException(exception))
         {
-            throw new CatalogCachePersistenceException(
-                "The verified catalog package could not be cached atomically.",
-                exception);
+            throw new CatalogCachePersistenceException("The verified catalog package could not be cached atomically.", exception);
         }
     }
 
@@ -231,9 +206,7 @@ public sealed class CatalogCacheFileStore
             GenerationFile generationFile = generationFiles[index];
             try
             {
-                CatalogCacheDocument document = await readDocumentAsync(
-                    generationFile.Path,
-                    cancellationToken).ConfigureAwait(false);
+                CatalogCacheDocument document = await readDocumentAsync(generationFile.Path, cancellationToken).ConfigureAwait(false);
                 requireMatchingGeneration(document, generationFile);
                 if (index == 0)
                 {
@@ -252,14 +225,10 @@ public sealed class CatalogCacheFileStore
             }
         }
 
-        throw new CatalogCachePersistenceException(
-            "No valid catalog cache generation could be loaded.",
-            new AggregateException(failures));
+        throw new CatalogCachePersistenceException("No valid catalog cache generation could be loaded.", new AggregateException(failures));
     }
 
-    private async Task<CatalogCacheLoadResult> loadMatchingWithoutLockAsync(
-        PlanCatalogBinding catalogBinding,
-        CancellationToken cancellationToken)
+    private async Task<CatalogCacheLoadResult> loadMatchingWithoutLockAsync(PlanCatalogBinding catalogBinding, CancellationToken cancellationToken)
     {
         IReadOnlyList<GenerationFile> generationFiles = mFileStorage.GetGenerationFiles();
         if (generationFiles.Count == 0)
@@ -275,9 +244,7 @@ public sealed class CatalogCacheFileStore
             GenerationFile generationFile = generationFiles[index];
             try
             {
-                CatalogCacheDocument document = await readDocumentAsync(
-                    generationFile.Path,
-                    cancellationToken).ConfigureAwait(false);
+                CatalogCacheDocument document = await readDocumentAsync(generationFile.Path, cancellationToken).ConfigureAwait(false);
                 requireMatchingGeneration(document, generationFile);
                 ++validGenerationCount;
 
@@ -313,21 +280,16 @@ public sealed class CatalogCacheFileStore
             return CatalogCacheLoadResult.createNotFound();
         }
 
-        throw new CatalogCachePersistenceException(
-            "No valid catalog cache generation could be searched.",
-            new AggregateException(failures));
+        throw new CatalogCachePersistenceException("No valid catalog cache generation could be searched.", new AggregateException(failures));
     }
 
-    private async Task<CatalogCacheDocument> readDocumentAsync(
-        GenerationFilePath path,
-        CancellationToken cancellationToken)
+    private async Task<CatalogCacheDocument> readDocumentAsync(GenerationFilePath path, CancellationToken cancellationToken)
     {
         FileInfo fileInfo = new FileInfo(path.Value);
         long documentLength = fileInfo.Length;
         if (documentLength > mLimits.MaximumCacheDocumentBytes)
         {
-            throw new CatalogCacheDocumentSizeException(
-                "The catalog cache document exceeds the configured size limit.");
+            throw new CatalogCacheDocumentSizeException("The catalog cache document exceeds the configured size limit.");
         }
 
         byte[] content = await File.ReadAllBytesAsync(path.Value, cancellationToken).ConfigureAwait(false);
@@ -336,16 +298,10 @@ public sealed class CatalogCacheFileStore
         return document;
     }
 
-    private async Task saveWithoutLockAsync(
-        VerifiedCatalogPackage package,
-        PlanCatalogBinding? protectedBindingOrNull,
-        CancellationToken cancellationToken)
+    private async Task saveWithoutLockAsync(VerifiedCatalogPackage package, PlanCatalogBinding? protectedBindingOrNull, CancellationToken cancellationToken)
     {
         IReadOnlyList<GenerationFile> generationFiles = mFileStorage.GetGenerationFiles();
-        bool shouldWriteGeneration = await shouldWriteGenerationAsync(
-            generationFiles,
-            package,
-            cancellationToken).ConfigureAwait(false);
+        bool shouldWriteGeneration = await shouldWriteGenerationAsync(generationFiles, package, cancellationToken).ConfigureAwait(false);
         if (shouldWriteGeneration == false)
         {
             return;
@@ -356,50 +312,36 @@ public sealed class CatalogCacheFileStore
 
         CatalogCacheDocument document = new CatalogCacheDocument(nextGeneration, package);
         byte[] content = mCodec.Serialize(document);
-        GenerationFile committedGeneration = await mFileStorage.CommitAsync(
-            nextFileGeneration,
-            content,
-            cancellationToken).ConfigureAwait(false);
+        GenerationFile committedGeneration = await mFileStorage.CommitAsync(nextFileGeneration, content, cancellationToken).ConfigureAwait(false);
 
         CatalogCacheDocument verifiedDocument;
         try
         {
-            verifiedDocument = await readDocumentAsync(
-                committedGeneration.Path,
-                CancellationToken.None).ConfigureAwait(false);
+            verifiedDocument = await readDocumentAsync(committedGeneration.Path, CancellationToken.None).ConfigureAwait(false);
         }
         catch (Exception exception) when (isRecoverableGenerationException(exception))
         {
             mFileStorage.TryDeleteGeneration(committedGeneration);
-            throw new CatalogCachePersistenceException(
-                "The committed catalog cache generation could not be read back.",
-                exception);
+            throw new CatalogCachePersistenceException("The committed catalog cache generation could not be read back.", exception);
         }
 
         if (verifiedDocument.Generation != nextGeneration)
         {
             mFileStorage.TryDeleteGeneration(committedGeneration);
-            throw new CatalogCachePersistenceException(
-                "The committed catalog cache generation could not be verified.",
-                new InvalidDataException(committedGeneration.Path.Value));
+            throw new CatalogCachePersistenceException("The committed catalog cache generation could not be verified.", new InvalidDataException(committedGeneration.Path.Value));
         }
 
         await pruneOldGenerationsAsync(protectedBindingOrNull).ConfigureAwait(false);
     }
 
-    private async Task<bool> shouldWriteGenerationAsync(
-        IReadOnlyList<GenerationFile> generationFiles,
-        VerifiedCatalogPackage package,
-        CancellationToken cancellationToken)
+    private async Task<bool> shouldWriteGenerationAsync(IReadOnlyList<GenerationFile> generationFiles, VerifiedCatalogPackage package, CancellationToken cancellationToken)
     {
         for (int index = 0; index < generationFiles.Count; ++index)
         {
             GenerationFile generationFile = generationFiles[index];
             try
             {
-                CatalogCacheDocument document = await readDocumentAsync(
-                    generationFile.Path,
-                    cancellationToken).ConfigureAwait(false);
+                CatalogCacheDocument document = await readDocumentAsync(generationFile.Path, cancellationToken).ConfigureAwait(false);
                 requireMatchingGeneration(document, generationFile);
                 bool isNewestGeneration = index == 0;
                 bool isSameCatalogArtifact = hasSameCatalogArtifact(document.Package, package);
@@ -411,9 +353,7 @@ public sealed class CatalogCacheFileStore
             }
             catch (CatalogCacheDocumentSizeException exception)
             {
-                throw new CatalogCachePersistenceException(
-                    "A catalog cache generation is too large to replace safely.",
-                    exception);
+                throw new CatalogCachePersistenceException("A catalog cache generation is too large to replace safely.", exception);
             }
             catch (Exception exception) when (isRecoverableGenerationException(exception))
             {
@@ -424,41 +364,32 @@ public sealed class CatalogCacheFileStore
         return true;
     }
 
-    private static bool hasSameCatalogArtifact(
-        VerifiedCatalogPackage first,
-        VerifiedCatalogPackage second)
+    private static bool hasSameCatalogArtifact(VerifiedCatalogPackage first, VerifiedCatalogPackage second)
     {
         return first.Entry.CatalogId == second.Entry.CatalogId
             && first.Entry.Revision == second.Entry.Revision
             && first.Entry.File.Sha256 == second.Entry.File.Sha256;
     }
 
-    private static bool hasMatchingCatalogBinding(
-        VerifiedCatalogPackage package,
-        PlanCatalogBinding catalogBinding)
+    private static bool hasMatchingCatalogBinding(VerifiedCatalogPackage package, PlanCatalogBinding catalogBinding)
     {
         return package.CreatePlanCatalogBinding() == catalogBinding;
     }
 
-    private static void requireMatchingGeneration(
-        CatalogCacheDocument document,
-        GenerationFile generationFile)
+    private static void requireMatchingGeneration(CatalogCacheDocument document, GenerationFile generationFile)
     {
         if (document.Generation.Value != generationFile.Generation.Value)
         {
-            throw new CatalogCacheDocumentException(
-                "The catalog cache generation does not match its file name.");
+            throw new CatalogCacheDocumentException("The catalog cache generation does not match its file name.");
         }
     }
 
-    private static CatalogCacheUpgradeRequiredException createUpgradeRequiredException(
-        UnsupportedCatalogCacheSchemaVersionException exception)
+    private static CatalogCacheUpgradeRequiredException createUpgradeRequiredException(UnsupportedCatalogCacheSchemaVersionException exception)
     {
         return new CatalogCacheUpgradeRequiredException(exception.SchemaVersion, exception);
     }
 
-    private static CatalogCacheGeneration getNextGeneration(
-        IReadOnlyList<GenerationFile> generationFiles)
+    private static CatalogCacheGeneration getNextGeneration(IReadOnlyList<GenerationFile> generationFiles)
     {
         if (generationFiles.Count == 0)
         {
@@ -485,9 +416,7 @@ public sealed class CatalogCacheFileStore
             {
                 try
                 {
-                    CatalogCacheDocument document = await readDocumentAsync(
-                        generationFile.Path,
-                        CancellationToken.None).ConfigureAwait(false);
+                    CatalogCacheDocument document = await readDocumentAsync(generationFile.Path, CancellationToken.None).ConfigureAwait(false);
                     requireMatchingGeneration(document, generationFile);
                     if (hasMatchingCatalogBinding(document.Package, protectedBindingOrNull))
                     {

@@ -35,9 +35,7 @@ public sealed class PlanningPlanTests
         };
         CourseCandidate courseCandidate = new CourseCandidate(courseId, mutableOfferingCandidates);
 
-        mutableOfferingCandidates.Add(new OfferingCandidate(
-            createOfferingId("CSE30001", "02"),
-            EOfferingPreference.Acceptable));
+        mutableOfferingCandidates.Add(new OfferingCandidate(createOfferingId("CSE30001", "02"), EOfferingPreference.Acceptable));
 
         Assert.HasCount(1, courseCandidate.OfferingCandidates);
         Assert.ThrowsExactly<ArgumentException>(
@@ -64,11 +62,7 @@ public sealed class PlanningPlanTests
         CourseChoiceGroup courseChoiceGroup = createCourseChoiceGroup("CSE30001", "01");
         UnscheduledOfferingSelection unscheduledSelection = new UnscheduledOfferingSelection(createCourseId("CSE30002"), createOfferingId("CSE30002", "01"));
 
-        PlanningPlan plan = createPlan(
-            PlanId.CreateNew(),
-            "기본 시간표",
-            new CourseChoiceGroup[] { courseChoiceGroup },
-            new UnscheduledOfferingSelection[] { unscheduledSelection });
+        PlanningPlan plan = createPlan(PlanId.CreateNew(), "기본 시간표", new CourseChoiceGroup[] { courseChoiceGroup }, new UnscheduledOfferingSelection[] { unscheduledSelection });
 
         Assert.HasCount(1, plan.CourseChoiceGroups);
         Assert.HasCount(1, plan.UnscheduledOfferingSelections);
@@ -82,9 +76,7 @@ public sealed class PlanningPlanTests
         CourseId courseId = createCourseId("CSE30001");
         CourseChoiceGroup firstChoiceGroup = createCourseChoiceGroup("CSE30001", "01");
         CourseChoiceGroup duplicateCourseChoiceGroup = createCourseChoiceGroup("CSE30001", "02");
-        UnscheduledOfferingSelection mixedSelection = new UnscheduledOfferingSelection(
-            courseId,
-            createOfferingId("CSE30001", "03"));
+        UnscheduledOfferingSelection mixedSelection = new UnscheduledOfferingSelection(courseId, createOfferingId("CSE30001", "03"));
 
         Assert.ThrowsExactly<ArgumentException>(
             () => createPlan(
@@ -107,48 +99,24 @@ public sealed class PlanningPlanTests
     [TestMethod]
     public void EmptyNewPlanIsAValidNamedWorkspaceDocument()
     {
-        PlanningPlan plan = createPlan(
-            PlanId.CreateNew(),
-            "새 시간표",
-            Array.Empty<CourseChoiceGroup>(),
-            Array.Empty<UnscheduledOfferingSelection>());
+        PlanningPlan plan = createPlan(PlanId.CreateNew(), "새 시간표", Array.Empty<CourseChoiceGroup>(), Array.Empty<UnscheduledOfferingSelection>());
 
         Assert.IsEmpty(plan.CourseChoiceGroups);
         Assert.IsEmpty(plan.UnscheduledOfferingSelections);
         Assert.IsFalse(plan.HasUnscheduledOfferingSelections);
     }
 
-    private static PlanningPlan createPlan(
-        PlanId planId,
-        string planName,
-        IEnumerable<CourseChoiceGroup> courseChoiceGroups,
-        IEnumerable<UnscheduledOfferingSelection> unscheduledOfferingSelections)
+    private static PlanningPlan createPlan(PlanId planId, string planName, IEnumerable<CourseChoiceGroup> courseChoiceGroups, IEnumerable<UnscheduledOfferingSelection> unscheduledOfferingSelections)
     {
-        return new PlanningPlan(
-            planId,
-            new PlanName(planName),
-            createCatalogBinding(),
-            new PlanningPlanContent(
-                courseChoiceGroups,
-                unscheduledOfferingSelections,
-                Array.Empty<PersonalSchedule>()));
+        return new PlanningPlan(planId, new PlanName(planName), createCatalogBinding(), new PlanningPlanContent(courseChoiceGroups, unscheduledOfferingSelections, Array.Empty<PersonalSchedule>()));
     }
 
-    private static CourseChoiceGroup createCourseChoiceGroup(
-        string courseCodeValue,
-        string sectionCodeValue)
+    private static CourseChoiceGroup createCourseChoiceGroup(string courseCodeValue, string sectionCodeValue)
     {
         CourseId courseId = createCourseId(courseCodeValue);
-        OfferingCandidate offeringCandidate = new OfferingCandidate(
-            createOfferingId(courseCodeValue, sectionCodeValue),
-            EOfferingPreference.Acceptable);
-        CourseCandidate courseCandidate = new CourseCandidate(
-            courseId,
-            new OfferingCandidate[] { offeringCandidate });
-        return new CourseChoiceGroup(
-            CourseChoiceGroupId.CreateNew(),
-            ECourseChoiceCardinality.ExactlyOne,
-            new CourseCandidate[] { courseCandidate });
+        OfferingCandidate offeringCandidate = new OfferingCandidate(createOfferingId(courseCodeValue, sectionCodeValue), EOfferingPreference.Acceptable);
+        CourseCandidate courseCandidate = new CourseCandidate(courseId, new OfferingCandidate[] { offeringCandidate });
+        return new CourseChoiceGroup(CourseChoiceGroupId.CreateNew(), ECourseChoiceCardinality.ExactlyOne, new CourseCandidate[] { courseCandidate });
     }
 
     private static PlanCatalogBinding createCatalogBinding()
@@ -168,10 +136,6 @@ public sealed class PlanningPlanTests
 
     private static OfferingId createOfferingId(string courseCodeValue, string sectionCodeValue)
     {
-        return new OfferingId(
-            "handong-global-university:2026-2:"
-            + courseCodeValue
-            + ":"
-            + sectionCodeValue);
+        return new OfferingId("handong-global-university:2026-2:" + courseCodeValue + ":" + sectionCodeValue);
     }
 }

@@ -47,14 +47,10 @@ public sealed class CatalogCacheFileStoreTests
             VerifiedCatalogPackage secondPackage = CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithKoreanName("최신 자료구조");
             await store.SaveAsync(firstPackage, CancellationToken.None);
             string firstGenerationPath = getGenerationPath(testDirectoryPath, 1L);
-            byte[] firstGenerationBefore = await File.ReadAllBytesAsync(
-                firstGenerationPath,
-                CancellationToken.None);
+            byte[] firstGenerationBefore = await File.ReadAllBytesAsync(firstGenerationPath, CancellationToken.None);
 
             await store.SaveAsync(secondPackage, CancellationToken.None);
-            byte[] firstGenerationAfter = await File.ReadAllBytesAsync(
-                firstGenerationPath,
-                CancellationToken.None);
+            byte[] firstGenerationAfter = await File.ReadAllBytesAsync(firstGenerationPath, CancellationToken.None);
             CatalogCacheLoadResult result = await store.LoadAsync(CancellationToken.None);
 
             CollectionAssert.AreEqual(firstGenerationBefore, firstGenerationAfter);
@@ -82,9 +78,7 @@ public sealed class CatalogCacheFileStoreTests
             await store.SaveAsync(latestPackage, CancellationToken.None);
             PlanCatalogBinding catalogBinding = createBinding(boundPackage);
 
-            CatalogCacheLoadResult result = await store.LoadMatchingAsync(
-                catalogBinding,
-                CancellationToken.None);
+            CatalogCacheLoadResult result = await store.LoadMatchingAsync(catalogBinding, CancellationToken.None);
 
             Assert.AreEqual(ECatalogCacheLoadStatus.RecoveredPreviousGeneration, result.Status);
             Assert.AreEqual(catalogBinding.CatalogId, result.GetPackage().Entry.CatalogId);
@@ -139,21 +133,11 @@ public sealed class CatalogCacheFileStoreTests
                 package.Entry.Revision,
                 new CatalogArtifactSha256(new string('0', 64)));
 
-            CatalogCacheLoadResult catalogIdResult = await store.LoadMatchingAsync(
-                differentCatalogIdBinding,
-                CancellationToken.None);
-            CatalogCacheLoadResult institutionResult = await store.LoadMatchingAsync(
-                differentInstitutionBinding,
-                CancellationToken.None);
-            CatalogCacheLoadResult termResult = await store.LoadMatchingAsync(
-                differentTermBinding,
-                CancellationToken.None);
-            CatalogCacheLoadResult revisionResult = await store.LoadMatchingAsync(
-                differentRevisionBinding,
-                CancellationToken.None);
-            CatalogCacheLoadResult artifactResult = await store.LoadMatchingAsync(
-                differentArtifactBinding,
-                CancellationToken.None);
+            CatalogCacheLoadResult catalogIdResult = await store.LoadMatchingAsync(differentCatalogIdBinding, CancellationToken.None);
+            CatalogCacheLoadResult institutionResult = await store.LoadMatchingAsync(differentInstitutionBinding, CancellationToken.None);
+            CatalogCacheLoadResult termResult = await store.LoadMatchingAsync(differentTermBinding, CancellationToken.None);
+            CatalogCacheLoadResult revisionResult = await store.LoadMatchingAsync(differentRevisionBinding, CancellationToken.None);
+            CatalogCacheLoadResult artifactResult = await store.LoadMatchingAsync(differentArtifactBinding, CancellationToken.None);
 
             Assert.AreEqual(ECatalogCacheLoadStatus.NotFound, catalogIdResult.Status);
             Assert.AreEqual(ECatalogCacheLoadStatus.NotFound, institutionResult.Status);
@@ -183,9 +167,7 @@ public sealed class CatalogCacheFileStoreTests
                 new byte[] { 0x01, 0x02, 0x03 },
                 CancellationToken.None);
 
-            CatalogCacheLoadResult result = await store.LoadMatchingAsync(
-                createBinding(boundPackage),
-                CancellationToken.None);
+            CatalogCacheLoadResult result = await store.LoadMatchingAsync(createBinding(boundPackage), CancellationToken.None);
 
             Assert.AreEqual(ECatalogCacheLoadStatus.RecoveredPreviousGeneration, result.Status);
             Assert.AreEqual(boundPackage.Entry.Revision, result.GetPackage().Entry.Revision);
@@ -230,14 +212,8 @@ public sealed class CatalogCacheFileStoreTests
         try
         {
             CatalogCacheFileStore store = createStore(testDirectoryPath);
-            await store.SaveAsync(
-                CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithKoreanName(
-                    "이전 자료구조"),
-                CancellationToken.None);
-            await store.SaveAsync(
-                CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithKoreanName(
-                    "손상될 자료구조"),
-                CancellationToken.None);
+            await store.SaveAsync(CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithKoreanName("이전 자료구조"), CancellationToken.None);
+            await store.SaveAsync(CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithKoreanName("손상될 자료구조"), CancellationToken.None);
             await File.WriteAllBytesAsync(
                 getGenerationPath(testDirectoryPath, 2L),
                 new byte[] { 0x01, 0x02, 0x03 },
@@ -263,14 +239,10 @@ public sealed class CatalogCacheFileStoreTests
             CatalogCacheFileStore store = createStore(testDirectoryPath);
             VerifiedCatalogPackage package = CatalogSynchronizationTestDocuments.CreateVerifiedPackage();
             await store.SaveAsync(package, CancellationToken.None);
-            byte[] firstGenerationBefore = await File.ReadAllBytesAsync(
-                getGenerationPath(testDirectoryPath, 1L),
-                CancellationToken.None);
+            byte[] firstGenerationBefore = await File.ReadAllBytesAsync(getGenerationPath(testDirectoryPath, 1L), CancellationToken.None);
 
             await store.SaveAsync(package, CancellationToken.None);
-            byte[] firstGenerationAfter = await File.ReadAllBytesAsync(
-                getGenerationPath(testDirectoryPath, 1L),
-                CancellationToken.None);
+            byte[] firstGenerationAfter = await File.ReadAllBytesAsync(getGenerationPath(testDirectoryPath, 1L), CancellationToken.None);
 
             CollectionAssert.AreEqual(firstGenerationBefore, firstGenerationAfter);
             Assert.HasCount(1, Directory.GetFiles(testDirectoryPath, "catalog.g*.cache"));
@@ -288,14 +260,8 @@ public sealed class CatalogCacheFileStoreTests
         try
         {
             Directory.CreateDirectory(testDirectoryPath);
-            await File.WriteAllBytesAsync(
-                getGenerationPath(testDirectoryPath, 1L),
-                new byte[] { 0x01 },
-                CancellationToken.None);
-            await File.WriteAllBytesAsync(
-                getGenerationPath(testDirectoryPath, 2L),
-                new byte[] { 0x02 },
-                CancellationToken.None);
+            await File.WriteAllBytesAsync(getGenerationPath(testDirectoryPath, 1L), new byte[] { 0x01 }, CancellationToken.None);
+            await File.WriteAllBytesAsync(getGenerationPath(testDirectoryPath, 2L), new byte[] { 0x02 }, CancellationToken.None);
             CatalogCacheFileStore store = createStore(testDirectoryPath);
 
             await Assert.ThrowsExactlyAsync<CatalogCachePersistenceException>(
@@ -314,9 +280,7 @@ public sealed class CatalogCacheFileStoreTests
         try
         {
             CatalogCacheFileStore store = createStore(testDirectoryPath);
-            await store.SaveAsync(
-                CatalogSynchronizationTestDocuments.CreateVerifiedPackage(),
-                CancellationToken.None);
+            await store.SaveAsync(CatalogSynchronizationTestDocuments.CreateVerifiedPackage(), CancellationToken.None);
             string generationPath = getGenerationPath(testDirectoryPath, 1L);
             await writeSchemaVersionAsync(generationPath, 2);
             byte[][] contentBeforeSave = await readGenerationContentsAsync(testDirectoryPath);
@@ -327,9 +291,7 @@ public sealed class CatalogCacheFileStoreTests
             CatalogCacheUpgradeRequiredException saveException =
                 await Assert.ThrowsExactlyAsync<CatalogCacheUpgradeRequiredException>(
                     () => store.SaveAsync(
-                        CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithKoreanName(
-                            "덮어쓰면 안 되는 자료구조"),
-                        CancellationToken.None));
+                        CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithKoreanName("덮어쓰면 안 되는 자료구조"), CancellationToken.None));
             byte[][] contentAfterSave = await readGenerationContentsAsync(testDirectoryPath);
 
             Assert.AreEqual(2, loadException.UnsupportedSchemaVersion);
@@ -349,9 +311,7 @@ public sealed class CatalogCacheFileStoreTests
         try
         {
             CatalogCacheFileStore store = createStore(testDirectoryPath);
-            await store.SaveAsync(
-                CatalogSynchronizationTestDocuments.CreateVerifiedPackage(),
-                CancellationToken.None);
+            await store.SaveAsync(CatalogSynchronizationTestDocuments.CreateVerifiedPackage(), CancellationToken.None);
             await writeSchemaVersionAsync(getGenerationPath(testDirectoryPath, 1L), 2);
             await File.WriteAllBytesAsync(
                 getGenerationPath(testDirectoryPath, 2L),
@@ -363,9 +323,7 @@ public sealed class CatalogCacheFileStoreTests
                 () => store.LoadAsync(CancellationToken.None));
             await Assert.ThrowsExactlyAsync<CatalogCacheUpgradeRequiredException>(
                 () => store.SaveAsync(
-                    CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithKoreanName(
-                        "미래 캐시를 숨기면 안 되는 자료구조"),
-                    CancellationToken.None));
+                    CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithKoreanName("미래 캐시를 숨기면 안 되는 자료구조"), CancellationToken.None));
             byte[][] contentAfterSave = await readGenerationContentsAsync(testDirectoryPath);
 
             assertGenerationContentsEqual(contentBeforeSave, contentAfterSave);
@@ -419,9 +377,7 @@ public sealed class CatalogCacheFileStoreTests
             }
 
             string[] generationPaths = Directory.GetFiles(testDirectoryPath, "catalog.g*.cache");
-            CatalogCacheLoadResult protectedLoad = await store.LoadMatchingAsync(
-                protectedBinding,
-                CancellationToken.None);
+            CatalogCacheLoadResult protectedLoad = await store.LoadMatchingAsync(protectedBinding, CancellationToken.None);
 
             Assert.HasCount(6, generationPaths);
             Assert.IsTrue(File.Exists(getGenerationPath(testDirectoryPath, 1L)));
@@ -477,9 +433,7 @@ public sealed class CatalogCacheFileStoreTests
                 bool wasCanceled = false;
                 try
                 {
-                    await store.SaveAsync(
-                        CatalogSynchronizationTestDocuments.CreateVerifiedPackage(),
-                        cancellationSource.Token);
+                    await store.SaveAsync(CatalogSynchronizationTestDocuments.CreateVerifiedPackage(), cancellationSource.Token);
                 }
                 catch (OperationCanceledException)
                 {
@@ -503,12 +457,8 @@ public sealed class CatalogCacheFileStoreTests
         try
         {
             CatalogCacheFileStore store = createStore(testDirectoryPath);
-            await store.SaveAsync(
-                CatalogSynchronizationTestDocuments.CreateVerifiedPackage(),
-                CancellationToken.None);
-            File.Move(
-                getGenerationPath(testDirectoryPath, 1L),
-                getGenerationPath(testDirectoryPath, long.MaxValue));
+            await store.SaveAsync(CatalogSynchronizationTestDocuments.CreateVerifiedPackage(), CancellationToken.None);
+            File.Move(getGenerationPath(testDirectoryPath, 1L), getGenerationPath(testDirectoryPath, long.MaxValue));
 
             InvalidOperationException exception =
                 await Assert.ThrowsExactlyAsync<InvalidOperationException>(
@@ -527,8 +477,7 @@ public sealed class CatalogCacheFileStoreTests
 
     private static CatalogCacheFileStore createStore(string testDirectoryPath)
     {
-        CatalogCacheFilePath cachePath = new CatalogCacheFilePath(
-            Path.Combine(testDirectoryPath, "catalog.cache"));
+        CatalogCacheFilePath cachePath = new CatalogCacheFilePath(Path.Combine(testDirectoryPath, "catalog.cache"));
         return new CatalogCacheFileStore(cachePath, createLimits());
     }
 
@@ -539,9 +488,7 @@ public sealed class CatalogCacheFileStoreTests
 
     private static CatalogSynchronizationLimits createLimits()
     {
-        return new CatalogSynchronizationLimits(
-            new CatalogResourceByteLimit(64_000L),
-            new CatalogResourceByteLimit(1_000_000L));
+        return new CatalogSynchronizationLimits(new CatalogResourceByteLimit(64_000L), new CatalogResourceByteLimit(1_000_000L));
     }
 
     private static string createTestDirectoryPath()
@@ -551,18 +498,14 @@ public sealed class CatalogCacheFileStoreTests
 
     private static string getGenerationPath(string testDirectoryPath, long generation)
     {
-        string fileName = "catalog.g"
-            + generation.ToString("D20", CultureInfo.InvariantCulture)
-            + ".cache";
+        string fileName = "catalog.g" + generation.ToString("D20", CultureInfo.InvariantCulture) + ".cache";
         return Path.Combine(testDirectoryPath, fileName);
     }
 
     private static async Task writeSchemaVersionAsync(string generationPath, int schemaVersion)
     {
         byte[] content = await File.ReadAllBytesAsync(generationPath, CancellationToken.None);
-        BinaryPrimitives.WriteInt32LittleEndian(
-            content.AsSpan(CACHE_SCHEMA_VERSION_OFFSET, sizeof(int)),
-            schemaVersion);
+        BinaryPrimitives.WriteInt32LittleEndian(content.AsSpan(CACHE_SCHEMA_VERSION_OFFSET, sizeof(int)), schemaVersion);
         await File.WriteAllBytesAsync(generationPath, content, CancellationToken.None);
     }
 
@@ -579,9 +522,7 @@ public sealed class CatalogCacheFileStoreTests
         return contents;
     }
 
-    private static void assertGenerationContentsEqual(
-        byte[][] expectedContents,
-        byte[][] actualContents)
+    private static void assertGenerationContentsEqual(byte[][] expectedContents, byte[][] actualContents)
     {
         Assert.HasCount(expectedContents.Length, actualContents);
         for (int index = 0; index < expectedContents.Length; ++index)

@@ -67,10 +67,7 @@ internal sealed class CourseCatalog
         }
     }
 
-    public CourseCatalog(
-        IEnumerable<CatalogCourse> courses,
-        IEnumerable<CatalogOffering> offerings,
-        CatalogDataQuality dataQuality)
+    public CourseCatalog(IEnumerable<CatalogCourse> courses, IEnumerable<CatalogOffering> offerings, CatalogDataQuality dataQuality)
     {
         if (courses == null)
         {

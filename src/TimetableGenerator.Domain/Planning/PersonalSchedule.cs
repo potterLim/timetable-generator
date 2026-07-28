@@ -26,11 +26,7 @@ public sealed class PersonalSchedule
 
     public PersonalScheduleDetails Details { get; }
 
-    public PersonalSchedule(
-        PersonalScheduleId id,
-        PersonalScheduleTitle title,
-        IEnumerable<WeeklyTimeRange> timeRanges,
-        PersonalScheduleDetails details)
+    public PersonalSchedule(PersonalScheduleId id, PersonalScheduleTitle title, IEnumerable<WeeklyTimeRange> timeRanges, PersonalScheduleDetails details)
     {
         if (id.IsValid == false)
         {
@@ -60,17 +56,14 @@ public sealed class PersonalSchedule
         Details = details;
     }
 
-    private static IReadOnlyList<WeeklyTimeRange> copyAndValidateTimeRanges(
-        IEnumerable<WeeklyTimeRange> timeRanges)
+    private static IReadOnlyList<WeeklyTimeRange> copyAndValidateTimeRanges(IEnumerable<WeeklyTimeRange> timeRanges)
     {
         List<WeeklyTimeRange> copiedTimeRanges = new List<WeeklyTimeRange>();
         foreach (WeeklyTimeRange timeRange in timeRanges)
         {
             if (timeRange.IsValid == false)
             {
-                throw new ArgumentException(
-                    "Personal schedules require valid weekly time ranges.",
-                    nameof(timeRanges));
+                throw new ArgumentException("Personal schedules require valid weekly time ranges.", nameof(timeRanges));
             }
 
             ensureSupportedDay(timeRange.Day, timeRanges);
@@ -80,16 +73,12 @@ public sealed class PersonalSchedule
             {
                 if (copiedTimeRange.TimeRange != timeRange.TimeRange)
                 {
-                    throw new ArgumentException(
-                        "One personal schedule must use the same time on every day.",
-                        nameof(timeRanges));
+                    throw new ArgumentException("One personal schedule must use the same time on every day.", nameof(timeRanges));
                 }
 
                 if (ScheduleConflictDetector.HasConflict(copiedTimeRange, timeRange))
                 {
-                    throw new ArgumentException(
-                        "A personal schedule cannot contain overlapping time ranges.",
-                        nameof(timeRanges));
+                    throw new ArgumentException("A personal schedule cannot contain overlapping time ranges.", nameof(timeRanges));
                 }
             }
 
@@ -98,33 +87,25 @@ public sealed class PersonalSchedule
 
         if (copiedTimeRanges.Count == 0)
         {
-            throw new ArgumentException(
-                "Personal schedules require at least one weekly time range.",
-                nameof(timeRanges));
+            throw new ArgumentException("Personal schedules require at least one weekly time range.", nameof(timeRanges));
         }
 
         copiedTimeRanges.Sort(compareTimeRanges);
         return copiedTimeRanges.AsReadOnly();
     }
 
-    private static void ensureSupportedTimeRange(
-        WeeklyTimeRange timeRange,
-        IEnumerable<WeeklyTimeRange> timeRanges)
+    private static void ensureSupportedTimeRange(WeeklyTimeRange timeRange, IEnumerable<WeeklyTimeRange> timeRanges)
     {
         bool hasSupportedStartMinute = timeRange.TimeRange.Start.Minute % TIME_INCREMENT_MINUTES == 0;
         bool hasSupportedEndMinute = timeRange.TimeRange.End.Minute % TIME_INCREMENT_MINUTES == 0;
         if (hasSupportedStartMinute == false || hasSupportedEndMinute == false)
         {
-            throw new ArgumentException(
-                "Personal schedules require five-minute time increments.",
-                nameof(timeRanges));
+            throw new ArgumentException("Personal schedules require five-minute time increments.", nameof(timeRanges));
         }
 
         if (timeRange.TimeRange.DurationMinutes < MINIMUM_DURATION_MINUTES)
         {
-            throw new ArgumentException(
-                "Personal schedules require a duration of at least 15 minutes.",
-                nameof(timeRanges));
+            throw new ArgumentException("Personal schedules require a duration of at least 15 minutes.", nameof(timeRanges));
         }
     }
 
@@ -141,9 +122,7 @@ public sealed class PersonalSchedule
             case EDay.Sunday:
                 return;
             default:
-                throw new ArgumentException(
-                    "Personal schedules require a day from Monday through Sunday.",
-                    nameof(timeRanges));
+                throw new ArgumentException("Personal schedules require a day from Monday through Sunday.", nameof(timeRanges));
         }
     }
 

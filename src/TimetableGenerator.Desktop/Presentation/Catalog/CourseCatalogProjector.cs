@@ -26,9 +26,7 @@ internal static class CourseCatalogProjector
             bool hasCourse = offeringsByCourseId.TryGetValue(offering.CourseId, out courseOfferingsOrNull);
             if (hasCourse == false || courseOfferingsOrNull == null)
             {
-                throw new ArgumentException(
-                    "Every catalog offering must reference a projected course.",
-                    nameof(document));
+                throw new ArgumentException("Every catalog offering must reference a projected course.", nameof(document));
             }
 
             courseOfferingsOrNull.Add(offeringProjection);

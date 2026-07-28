@@ -11,10 +11,7 @@ internal sealed class HandongOfferingNormalizationResult
 
     public EEnglishScheduleComparison EnglishScheduleComparison { get; }
 
-    public HandongOfferingNormalizationResult(
-        CatalogCourse course,
-        CatalogOffering offering,
-        EEnglishScheduleComparison englishScheduleComparison)
+    public HandongOfferingNormalizationResult(CatalogCourse course, CatalogOffering offering, EEnglishScheduleComparison englishScheduleComparison)
     {
         if (course == null)
         {

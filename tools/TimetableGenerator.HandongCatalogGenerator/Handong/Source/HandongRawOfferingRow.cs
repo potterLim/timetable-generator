@@ -12,18 +12,13 @@ internal sealed class HandongRawOfferingRow
     public SourceRecordNumber SourceRecordNumber { get; }
     public HandongSourceLinkMetadata? SourceLinkMetadataOrNull { get; }
 
-    public HandongRawOfferingRow(
-        SourceRecordNumber sourceRecordNumber,
-        IReadOnlyList<IReadOnlyList<string>> cellLinesByColumn,
-        HandongSourceLinkMetadata? sourceLinkMetadataOrNull)
+    public HandongRawOfferingRow(SourceRecordNumber sourceRecordNumber, IReadOnlyList<IReadOnlyList<string>> cellLinesByColumn, HandongSourceLinkMetadata? sourceLinkMetadataOrNull)
     {
         ArgumentNullException.ThrowIfNull(cellLinesByColumn);
 
         if (cellLinesByColumn.Count != HandongExportSchema.COLUMN_COUNT)
         {
-            throw new ArgumentException(
-                "A Handong offering row must contain exactly 16 columns.",
-                nameof(cellLinesByColumn));
+            throw new ArgumentException("A Handong offering row must contain exactly 16 columns.", nameof(cellLinesByColumn));
         }
 
         SourceRecordNumber = sourceRecordNumber;
@@ -37,8 +32,7 @@ internal sealed class HandongRawOfferingRow
         return mCellLinesByColumn[columnIndex];
     }
 
-    private static IReadOnlyList<IReadOnlyList<string>> copyCellLinesByColumn(
-        IReadOnlyList<IReadOnlyList<string>> cellLinesByColumn)
+    private static IReadOnlyList<IReadOnlyList<string>> copyCellLinesByColumn(IReadOnlyList<IReadOnlyList<string>> cellLinesByColumn)
     {
         List<IReadOnlyList<string>> copiedCellLinesByColumn = new List<IReadOnlyList<string>>(cellLinesByColumn.Count);
 

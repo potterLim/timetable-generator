@@ -79,10 +79,7 @@ internal sealed class ScheduleBoardDayRange
             }
         }
 
-        throw new ArgumentOutOfRangeException(
-            nameof(day),
-            day,
-            "The requested day is outside the visible schedule range.");
+        throw new ArgumentOutOfRangeException(nameof(day), day, "The requested day is outside the visible schedule range.");
     }
 
     public static string FindFullDayDisplayName(EDay day)
@@ -104,10 +101,7 @@ internal sealed class ScheduleBoardDayRange
             case EDay.Sunday:
                 return "일요일";
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(day),
-                    day,
-                    "Schedule boards require a defined day of the week.");
+                throw new ArgumentOutOfRangeException(nameof(day), day, "Schedule boards require a defined day of the week.");
         }
     }
 
@@ -117,9 +111,7 @@ internal sealed class ScheduleBoardDayRange
         return FindFullDayDisplayName(day) + ": " + timeRange;
     }
 
-    public static string CreateShortDayTimeDisplayText(
-        IReadOnlyList<EDay> days,
-        DailyTimeRange timeRange)
+    public static string CreateShortDayTimeDisplayText(IReadOnlyList<EDay> days, DailyTimeRange timeRange)
     {
         ArgumentNullException.ThrowIfNull(days);
         if (days.Count == 0)
@@ -175,10 +167,7 @@ internal sealed class ScheduleBoardDayRange
             case EDay.Sunday:
                 return "일";
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(day),
-                    day,
-                    "Schedule boards require a defined day of the week.");
+                throw new ArgumentOutOfRangeException(nameof(day), day, "Schedule boards require a defined day of the week.");
         }
     }
 

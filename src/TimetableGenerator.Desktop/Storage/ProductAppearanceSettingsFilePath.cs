@@ -21,9 +21,7 @@ internal sealed record ProductAppearanceSettingsFilePath
 
         if (Path.IsPathFullyQualified(value) == false)
         {
-            throw new ArgumentException(
-                "Appearance settings file paths must be fully qualified.",
-                nameof(value));
+            throw new ArgumentException("Appearance settings file paths must be fully qualified.", nameof(value));
         }
 
         string fullPath = Path.GetFullPath(value);

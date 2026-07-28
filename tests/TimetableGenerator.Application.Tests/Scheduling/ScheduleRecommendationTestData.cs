@@ -18,32 +18,17 @@ internal static class ScheduleRecommendationTestData
             new CourseCredits(3m));
     }
 
-    public static CatalogOffering CreateScheduledOffering(
-        string courseCodeValue,
-        string sectionCodeValue,
-        IEnumerable<MeetingSlot> meetingSlots)
+    public static CatalogOffering CreateScheduledOffering(string courseCodeValue, string sectionCodeValue, IEnumerable<MeetingSlot> meetingSlots)
     {
-        return new CatalogOffering(
-            CreateOfferingId(courseCodeValue, sectionCodeValue),
-            CreateCourseId(courseCodeValue),
-            new CourseSectionCode(sectionCodeValue),
-            MeetingSchedule.CreateScheduled(meetingSlots));
+        return new CatalogOffering(CreateOfferingId(courseCodeValue, sectionCodeValue), CreateCourseId(courseCodeValue), new CourseSectionCode(sectionCodeValue), MeetingSchedule.CreateScheduled(meetingSlots));
     }
 
-    public static CatalogOffering CreateUnscheduledOffering(
-        string courseCodeValue,
-        string sectionCodeValue)
+    public static CatalogOffering CreateUnscheduledOffering(string courseCodeValue, string sectionCodeValue)
     {
-        return new CatalogOffering(
-            CreateOfferingId(courseCodeValue, sectionCodeValue),
-            CreateCourseId(courseCodeValue),
-            new CourseSectionCode(sectionCodeValue),
-            MeetingSchedule.NotProvided);
+        return new CatalogOffering(CreateOfferingId(courseCodeValue, sectionCodeValue), CreateCourseId(courseCodeValue), new CourseSectionCode(sectionCodeValue), MeetingSchedule.NotProvided);
     }
 
-    public static CourseCatalog CreateCatalog(
-        IEnumerable<CatalogCourse> courses,
-        IEnumerable<CatalogOffering> offerings)
+    public static CourseCatalog CreateCatalog(IEnumerable<CatalogCourse> courses, IEnumerable<CatalogOffering> offerings)
     {
         return new CourseCatalog(
             new CatalogId("handong-global-university:2026-2:r0001"),
@@ -55,23 +40,12 @@ internal static class ScheduleRecommendationTestData
             offerings);
     }
 
-    public static PlanningPlan CreatePlan(
-        CourseCatalog catalog,
-        IEnumerable<CourseChoiceGroup> courseChoiceGroups,
-        IEnumerable<UnscheduledOfferingSelection> unscheduledSelections)
+    public static PlanningPlan CreatePlan(CourseCatalog catalog, IEnumerable<CourseChoiceGroup> courseChoiceGroups, IEnumerable<UnscheduledOfferingSelection> unscheduledSelections)
     {
-        return CreatePlan(
-            catalog,
-            courseChoiceGroups,
-            unscheduledSelections,
-            Array.Empty<PersonalSchedule>());
+        return CreatePlan(catalog, courseChoiceGroups, unscheduledSelections, Array.Empty<PersonalSchedule>());
     }
 
-    public static PlanningPlan CreatePlan(
-        CourseCatalog catalog,
-        IEnumerable<CourseChoiceGroup> courseChoiceGroups,
-        IEnumerable<UnscheduledOfferingSelection> unscheduledSelections,
-        IEnumerable<PersonalSchedule> personalSchedules)
+    public static PlanningPlan CreatePlan(CourseCatalog catalog, IEnumerable<CourseChoiceGroup> courseChoiceGroups, IEnumerable<UnscheduledOfferingSelection> unscheduledSelections, IEnumerable<PersonalSchedule> personalSchedules)
     {
         PlanCatalogBinding catalogBinding = new PlanCatalogBinding(
             catalog.Id,
@@ -79,50 +53,26 @@ internal static class ScheduleRecommendationTestData
             catalog.Term,
             catalog.Revision,
             new CatalogArtifactSha256(new string('a', 64)));
-        return new PlanningPlan(
-            PlanId.CreateNew(),
-            new PlanName("기본 시간표"),
-            catalogBinding,
-            new PlanningPlanContent(
-                courseChoiceGroups,
-                unscheduledSelections,
-                personalSchedules));
+        return new PlanningPlan(PlanId.CreateNew(), new PlanName("기본 시간표"), catalogBinding, new PlanningPlanContent(courseChoiceGroups, unscheduledSelections, personalSchedules));
     }
 
-    public static PlanningPlan CreatePlanWithBinding(
-        PlanCatalogBinding catalogBinding,
-        IEnumerable<CourseChoiceGroup> courseChoiceGroups,
-        IEnumerable<UnscheduledOfferingSelection> unscheduledSelections)
+    public static PlanningPlan CreatePlanWithBinding(PlanCatalogBinding catalogBinding, IEnumerable<CourseChoiceGroup> courseChoiceGroups, IEnumerable<UnscheduledOfferingSelection> unscheduledSelections)
     {
-        return new PlanningPlan(
-            PlanId.CreateNew(),
-            new PlanName("기본 시간표"),
-            catalogBinding,
-            new PlanningPlanContent(
-                courseChoiceGroups,
-                unscheduledSelections,
-                Array.Empty<PersonalSchedule>()));
+        return new PlanningPlan(PlanId.CreateNew(), new PlanName("기본 시간표"), catalogBinding, new PlanningPlanContent(courseChoiceGroups, unscheduledSelections, Array.Empty<PersonalSchedule>()));
     }
 
-    public static CourseCandidate CreateCourseCandidate(
-        string courseCodeValue,
-        EOfferingPreference preference,
-        params string[] sectionCodeValues)
+    public static CourseCandidate CreateCourseCandidate(string courseCodeValue, EOfferingPreference preference, params string[] sectionCodeValues)
     {
         List<OfferingCandidate> offeringCandidates = new List<OfferingCandidate>();
         foreach (string sectionCodeValue in sectionCodeValues)
         {
-            offeringCandidates.Add(new OfferingCandidate(
-                CreateOfferingId(courseCodeValue, sectionCodeValue),
-                preference));
+            offeringCandidates.Add(new OfferingCandidate(CreateOfferingId(courseCodeValue, sectionCodeValue), preference));
         }
 
         return new CourseCandidate(CreateCourseId(courseCodeValue), offeringCandidates);
     }
 
-    public static CourseChoiceGroup CreateCourseChoiceGroup(
-        string courseCodeValue,
-        params string[] sectionCodeValues)
+    public static CourseChoiceGroup CreateCourseChoiceGroup(string courseCodeValue, params string[] sectionCodeValues)
     {
         List<OfferingId> offeringIds = new List<OfferingId>();
         foreach (string sectionCodeValue in sectionCodeValues)
@@ -130,28 +80,17 @@ internal static class ScheduleRecommendationTestData
             offeringIds.Add(CreateOfferingId(courseCodeValue, sectionCodeValue));
         }
 
-        return CourseChoiceGroup.CreateWithAcceptableOfferings(
-            CourseChoiceGroupId.CreateNew(),
-            CreateCourseId(courseCodeValue),
-            offeringIds);
+        return CourseChoiceGroup.CreateWithAcceptableOfferings(CourseChoiceGroupId.CreateNew(), CreateCourseId(courseCodeValue), offeringIds);
     }
 
-    public static CourseChoiceGroup CreateCourseChoiceGroupFromCandidates(
-        params CourseCandidate[] courseCandidates)
+    public static CourseChoiceGroup CreateCourseChoiceGroupFromCandidates(params CourseCandidate[] courseCandidates)
     {
-        return new CourseChoiceGroup(
-            CourseChoiceGroupId.CreateNew(),
-            ECourseChoiceCardinality.ExactlyOne,
-            courseCandidates);
+        return new CourseChoiceGroup(CourseChoiceGroupId.CreateNew(), ECourseChoiceCardinality.ExactlyOne, courseCandidates);
     }
 
-    public static UnscheduledOfferingSelection CreateUnscheduledSelection(
-        string courseCodeValue,
-        string sectionCodeValue)
+    public static UnscheduledOfferingSelection CreateUnscheduledSelection(string courseCodeValue, string sectionCodeValue)
     {
-        return new UnscheduledOfferingSelection(
-            CreateCourseId(courseCodeValue),
-            CreateOfferingId(courseCodeValue, sectionCodeValue));
+        return new UnscheduledOfferingSelection(CreateCourseId(courseCodeValue), CreateOfferingId(courseCodeValue, sectionCodeValue));
     }
 
     public static CourseId CreateCourseId(string courseCodeValue)
@@ -161,11 +100,7 @@ internal static class ScheduleRecommendationTestData
 
     public static OfferingId CreateOfferingId(string courseCodeValue, string sectionCodeValue)
     {
-        return new OfferingId(
-            "handong-global-university:2026-2:"
-            + courseCodeValue
-            + ":"
-            + sectionCodeValue);
+        return new OfferingId("handong-global-university:2026-2:" + courseCodeValue + ":" + sectionCodeValue);
     }
 
     public static MeetingSlot CreateMeetingSlot(EDay day, int periodValue)

@@ -19,10 +19,7 @@ public readonly record struct SourceRecordNumber
     {
         if (value <= 0L)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "Source record numbers must be positive.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Source record numbers must be positive.");
         }
 
         Value = value;

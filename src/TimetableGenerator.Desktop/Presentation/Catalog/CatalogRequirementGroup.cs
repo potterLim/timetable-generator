@@ -20,9 +20,7 @@ internal sealed class CatalogRequirementGroup
         }
     }
 
-    public CatalogRequirementGroup(
-        ERequirementType requirementType,
-        IEnumerable<CatalogCourseProjection> courses)
+    public CatalogRequirementGroup(ERequirementType requirementType, IEnumerable<CatalogCourseProjection> courses)
     {
         if (Enum.IsDefined(typeof(ERequirementType), requirementType) == false)
         {
@@ -40,23 +38,17 @@ internal sealed class CatalogRequirementGroup
         {
             if (course == null)
             {
-                throw new ArgumentException(
-                    "Requirement groups cannot contain null course projections.",
-                    nameof(courses));
+                throw new ArgumentException("Requirement groups cannot contain null course projections.", nameof(courses));
             }
 
             if (hasRequirementType(course, requirementType) == false)
             {
-                throw new ArgumentException(
-                    "Requirement groups can contain only matching courses.",
-                    nameof(courses));
+                throw new ArgumentException("Requirement groups can contain only matching courses.", nameof(courses));
             }
 
             if (uniqueCourseIds.Add(course.Course.Id) == false)
             {
-                throw new ArgumentException(
-                    "Requirement groups cannot contain duplicate courses.",
-                    nameof(courses));
+                throw new ArgumentException("Requirement groups cannot contain duplicate courses.", nameof(courses));
             }
 
             copiedCourses.Add(course);
@@ -71,9 +63,7 @@ internal sealed class CatalogRequirementGroup
         mCourses = copiedCourses.AsReadOnly();
     }
 
-    private static bool hasRequirementType(
-        CatalogCourseProjection course,
-        ERequirementType requirementType)
+    private static bool hasRequirementType(CatalogCourseProjection course, ERequirementType requirementType)
     {
         foreach (ERequirementType courseRequirementType in course.RequirementTypes)
         {

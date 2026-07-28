@@ -44,11 +44,7 @@ internal readonly record struct FileGeneration
         }
 
         long parsedValue;
-        bool isParsed = long.TryParse(
-            value.AsSpan(1),
-            NumberStyles.None,
-            CultureInfo.InvariantCulture,
-            out parsedValue);
+        bool isParsed = long.TryParse(value.AsSpan(1), NumberStyles.None, CultureInfo.InvariantCulture, out parsedValue);
         if (isParsed == false || parsedValue < FIRST_GENERATION)
         {
             return false;

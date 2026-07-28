@@ -12,18 +12,11 @@ internal readonly record struct InitialWindowPlacement
 
     public PixelPoint Position { get; }
 
-    public InitialWindowPlacement(
-        WindowLogicalSize initialSize,
-        WindowLogicalSize effectiveMinimumSize,
-        PixelPoint position)
+    public InitialWindowPlacement(WindowLogicalSize initialSize, WindowLogicalSize effectiveMinimumSize, PixelPoint position)
     {
-        if (initialSize.Width < effectiveMinimumSize.Width
-            || initialSize.Height < effectiveMinimumSize.Height)
+        if (initialSize.Width < effectiveMinimumSize.Width || initialSize.Height < effectiveMinimumSize.Height)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(effectiveMinimumSize),
-                effectiveMinimumSize,
-                "Effective minimum size cannot exceed the initial size.");
+            throw new ArgumentOutOfRangeException(nameof(effectiveMinimumSize), effectiveMinimumSize, "Effective minimum size cannot exceed the initial size.");
         }
 
         InitialSize = initialSize;

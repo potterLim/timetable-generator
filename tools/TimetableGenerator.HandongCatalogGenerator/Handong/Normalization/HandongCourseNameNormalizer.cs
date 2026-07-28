@@ -11,10 +11,7 @@ internal sealed class HandongCourseNameNormalizer
         IReadOnlyList<string> lines = HandongCellValueReader.getNonEmptyLines(row, EHandongColumn.CourseName);
         if (lines.Count < 2)
         {
-            throw new InvalidHandongSourceRecordException(
-                row.SourceRecordNumber,
-                EHandongColumn.CourseName,
-                "Korean and English course names are required.");
+            throw new InvalidHandongSourceRecordException(row.SourceRecordNumber, EHandongColumn.CourseName, "Korean and English course names are required.");
         }
 
         string englishNameValue = HandongCellValueReader.getCombinedText(lines, 1);
@@ -23,10 +20,7 @@ internal sealed class HandongCourseNameNormalizer
             && englishNameValue[englishNameValue.Length - 1] == ')';
         if (hasSourceWrapper == false)
         {
-            throw new InvalidHandongSourceRecordException(
-                row.SourceRecordNumber,
-                EHandongColumn.CourseName,
-                "The English course name must use the source's outer parentheses.");
+            throw new InvalidHandongSourceRecordException(row.SourceRecordNumber, EHandongColumn.CourseName, "The English course name must use the source's outer parentheses.");
         }
 
         englishNameValue = englishNameValue.Substring(1, englishNameValue.Length - 2).Trim();

@@ -15,14 +15,7 @@ internal sealed partial class ScheduleBoardView
         scheduleCard.Content = createScheduleCardContent(new ScheduleCardContent(entry));
         scheduleCard.Flyout = createCourseEntryFlyout(entry);
 
-        string accessibleName = entry.Code + ", "
-            + entry.SectionDisplayText + ", "
-            + entry.CourseDetails.CreditsDisplayText + ", "
-            + entry.Name + ", "
-            + ScheduleBoardDayRange.FindFullDayDisplayName(entry.Day) + " "
-            + entry.TimeRange + ", "
-            + entry.InstructorDisplayText + ", "
-            + entry.LocationDisplayText;
+        string accessibleName = entry.Code + ", " + entry.SectionDisplayText + ", " + entry.CourseDetails.CreditsDisplayText + ", " + entry.Name + ", " + ScheduleBoardDayRange.FindFullDayDisplayName(entry.Day) + " " + entry.TimeRange + ", " + entry.InstructorDisplayText + ", " + entry.LocationDisplayText;
         AutomationProperties.SetName(scheduleCard, accessibleName);
         AutomationProperties.SetHelpText(scheduleCard, "선택하면 과목의 전체 시간, 교수, 강의실 정보를 엽니다.");
         ToolTip.SetTip(scheduleCard, entry.Name + " · " + entry.SectionDisplayText + Environment.NewLine + "선택하여 과목 상세 정보 보기");
@@ -32,13 +25,7 @@ internal sealed partial class ScheduleBoardView
     private Flyout createCourseEntryFlyout(CourseScheduleEntry entry)
     {
         StackPanel details = createDetailsPanel();
-        TextBlock identity = createFlyoutIdentity(
-            entry.Code
-                + " · "
-                + entry.SectionDisplayText
-                + " · "
-                + entry.CourseDetails.CreditsDisplayText,
-            "AccentBrush");
+        TextBlock identity = createFlyoutIdentity(entry.Code + " · " + entry.SectionDisplayText + " · " + entry.CourseDetails.CreditsDisplayText, "AccentBrush");
         details.Children.Add(identity);
         details.Children.Add(createFlyoutTitle(entry.Name));
         details.Children.Add(createFlyoutSeparator());

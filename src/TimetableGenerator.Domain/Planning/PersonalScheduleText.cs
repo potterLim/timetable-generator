@@ -19,9 +19,7 @@ internal static class PersonalScheduleText
 
         if (normalizedValue.Length > maximumLength)
         {
-            throw new ArgumentException(
-                fieldDescription + " cannot exceed " + maximumLength + " characters.",
-                nameof(value));
+            throw new ArgumentException(fieldDescription + " cannot exceed " + maximumLength + " characters.", nameof(value));
         }
 
         if (normalizedValue.Contains('\r') || normalizedValue.Contains('\n'))

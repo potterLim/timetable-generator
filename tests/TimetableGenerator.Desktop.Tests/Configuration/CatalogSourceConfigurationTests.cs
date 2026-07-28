@@ -62,9 +62,7 @@ public sealed class CatalogSourceConfigurationTests
         CatalogSourceConfigurationPath path = createConfigurationPath("configured.json");
         string directoryPath = getDirectoryPath(path);
         Directory.CreateDirectory(directoryPath);
-        await File.WriteAllTextAsync(
-            path.Value,
-            "{\"schemaVersion\":1,\"indexUri\":\"https://file.example/v1/index.json\"}");
+        await File.WriteAllTextAsync(path.Value, "{\"schemaVersion\":1,\"indexUri\":\"https://file.example/v1/index.json\"}");
         CatalogSourceConfigurationLoader loader = new CatalogSourceConfigurationLoader(
             path,
             delegate
@@ -105,10 +103,7 @@ public sealed class CatalogSourceConfigurationTests
 
     private static CatalogSourceConfigurationPath createConfigurationPath(string fileName)
     {
-        string directoryPath = Path.Combine(
-            Path.GetTempPath(),
-            "TimetableGenerator.Desktop.Tests",
-            Guid.NewGuid().ToString("N"));
+        string directoryPath = Path.Combine(Path.GetTempPath(), "TimetableGenerator.Desktop.Tests", Guid.NewGuid().ToString("N"));
         return new CatalogSourceConfigurationPath(Path.Combine(directoryPath, fileName));
     }
 

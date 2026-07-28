@@ -15,22 +15,18 @@ public sealed partial class PlanningWorkspaceJsonCodec
 
     private const string LEGACY_COURSE_CHOICE_GROUP_ID_NAMESPACE = "timetable-generator:legacy-course-choice-group";
 
-    private static void writeCourseChoiceGroup(
-        Utf8JsonWriter writer,
-        CourseChoiceGroup courseChoiceGroup)
+    private static void writeCourseChoiceGroup(Utf8JsonWriter writer, CourseChoiceGroup courseChoiceGroup)
     {
         writer.WriteStartObject();
         writer.WriteString("id", courseChoiceGroup.Id.ToString());
         writer.WriteString("cardinality", getCardinalityJsonValue(courseChoiceGroup.Cardinality));
         writer.WriteStartArray("courseCandidates");
-        foreach (CourseCandidate courseCandidate
-            in courseChoiceGroup.CourseCandidates)
+        foreach (CourseCandidate courseCandidate in courseChoiceGroup.CourseCandidates)
         {
             writer.WriteStartObject();
             writer.WriteString("courseId", courseCandidate.CourseId.Value);
             writer.WriteStartArray("offeringCandidates");
-            foreach (OfferingCandidate offeringCandidate
-                in courseCandidate.OfferingCandidates)
+            foreach (OfferingCandidate offeringCandidate in courseCandidate.OfferingCandidates)
             {
                 writer.WriteStartObject();
                 writer.WriteString("offeringId", offeringCandidate.OfferingId.Value);
@@ -93,10 +89,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
                 offeringElement,
                 "offering candidate",
                 new string[] { "offeringId", "preference" });
-            OfferingId offeringId = new OfferingId(
-                readString(
-                    properties["offeringId"],
-                    "offeringCandidate.offeringId"));
+            OfferingId offeringId = new OfferingId(readString(properties["offeringId"], "offeringCandidate.offeringId"));
             EOfferingPreference preference = readOfferingPreference(properties["preference"]);
             offeringCandidates.Add(new OfferingCandidate(offeringId, preference));
         }
@@ -104,8 +97,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         return offeringCandidates.AsReadOnly();
     }
 
-    private static IReadOnlyList<LegacyScheduledCourseChoiceDocument> readLegacyScheduledChoiceDocuments(
-        JsonElement element)
+    private static IReadOnlyList<LegacyScheduledCourseChoiceDocument> readLegacyScheduledChoiceDocuments(JsonElement element)
     {
         requireValueKind(element, JsonValueKind.Array, "plan.scheduledChoices");
         List<LegacyScheduledCourseChoiceDocument> choices = new List<LegacyScheduledCourseChoiceDocument>();
@@ -119,8 +111,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
             JsonElement offeringIdsElement = properties["offeringIds"];
             requireValueKind(offeringIdsElement, JsonValueKind.Array, "scheduledChoice.offeringIds");
             List<OfferingId> offeringIds = new List<OfferingId>();
-            foreach (JsonElement offeringIdElement
-                in offeringIdsElement.EnumerateArray())
+            foreach (JsonElement offeringIdElement in offeringIdsElement.EnumerateArray())
             {
                 offeringIds.Add(new OfferingId(readString(offeringIdElement, "scheduledChoice.offeringIds[]")));
             }
@@ -131,28 +122,20 @@ public sealed partial class PlanningWorkspaceJsonCodec
         return choices.AsReadOnly();
     }
 
-    private static IReadOnlyList<CourseChoiceGroup> migrateLegacyScheduledChoiceDocuments(
-            PlanId planId,
-            IReadOnlyList<LegacyScheduledCourseChoiceDocument> legacyChoiceDocuments)
+    private static IReadOnlyList<CourseChoiceGroup> migrateLegacyScheduledChoiceDocuments(PlanId planId, IReadOnlyList<LegacyScheduledCourseChoiceDocument> legacyChoiceDocuments)
     {
         List<CourseChoiceGroup> courseChoiceGroups = new List<CourseChoiceGroup>(legacyChoiceDocuments.Count);
         for (int choiceIndex = 0; choiceIndex < legacyChoiceDocuments.Count; ++choiceIndex)
         {
             LegacyScheduledCourseChoiceDocument legacyChoiceDocument = legacyChoiceDocuments[choiceIndex];
-            CourseChoiceGroupId groupId = createLegacyCourseChoiceGroupId(
-                planId,
-                legacyChoiceDocument.CourseId,
-                choiceIndex);
+            CourseChoiceGroupId groupId = createLegacyCourseChoiceGroupId(planId, legacyChoiceDocument.CourseId, choiceIndex);
             courseChoiceGroups.Add(CourseChoiceGroup.CreateWithAcceptableOfferings(groupId, legacyChoiceDocument.CourseId, legacyChoiceDocument.OfferingIds));
         }
 
         return courseChoiceGroups.AsReadOnly();
     }
 
-    private static CourseChoiceGroupId createLegacyCourseChoiceGroupId(
-        PlanId planId,
-        CourseId courseId,
-        int choiceIndex)
+    private static CourseChoiceGroupId createLegacyCourseChoiceGroupId(PlanId planId, CourseId courseId, int choiceIndex)
     {
         string identity = string.Concat(
             LEGACY_COURSE_CHOICE_GROUP_ID_NAMESPACE,
@@ -216,10 +199,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
             case ECourseChoiceCardinality.ExactlyOne:
                 return "exactlyOne";
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(cardinality),
-                    cardinality,
-                    "Unknown course choice cardinality.");
+                throw new ArgumentOutOfRangeException(nameof(cardinality), cardinality, "Unknown course choice cardinality.");
         }
     }
 
@@ -234,10 +214,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
             case EOfferingPreference.Excluded:
                 return "excluded";
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(preference),
-                    preference,
-                    "Unknown offering preference.");
+                throw new ArgumentOutOfRangeException(nameof(preference), preference, "Unknown offering preference.");
         }
     }
 }

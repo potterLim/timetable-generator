@@ -27,10 +27,7 @@ public sealed class PngExportScale
             multiplier < MINIMUM_MULTIPLIER ||
             multiplier > MAXIMUM_MULTIPLIER)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(multiplier),
-                multiplier,
-                $"PNG export scale must be between {MINIMUM_MULTIPLIER} and {MAXIMUM_MULTIPLIER}.");
+            throw new ArgumentOutOfRangeException(nameof(multiplier), multiplier, $"PNG export scale must be between {MINIMUM_MULTIPLIER} and {MAXIMUM_MULTIPLIER}.");
         }
 
         return new PngExportScale(multiplier);

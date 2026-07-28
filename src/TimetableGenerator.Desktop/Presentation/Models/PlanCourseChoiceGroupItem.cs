@@ -133,17 +133,14 @@ internal sealed class PlanCourseChoiceGroupItem
 
         if (Courses.Count == 0)
         {
-            throw new ArgumentException(
-                "Plan course choice groups require at least one course.",
-                nameof(group));
+            throw new ArgumentException("Plan course choice groups require at least one course.", nameof(group));
         }
 
         MinimumCredits = new CourseCredits(minimumCreditValue);
         MaximumCredits = new CourseCredits(maximumCreditValue);
     }
 
-    public void SynchronizeSelectedOfferings(
-        ScheduleRecommendationBookmark? recommendationBookmarkOrNull)
+    public void SynchronizeSelectedOfferings(ScheduleRecommendationBookmark? recommendationBookmarkOrNull)
     {
         foreach (PlanCourseChoiceCandidateItem course in Courses)
         {

@@ -23,22 +23,14 @@ public sealed class CourseCatalogProjectorTests
         Assert.Equal(2, programmingCourse.Offerings.Count);
         Assert.Equal(2, programmingCourse.ScheduledOfferingIds.Count);
         Assert.Empty(programmingCourse.TimeNotProvidedOfferingIds);
-        Assert.Equal(
-            new OfferingId("offering-programming-primary"),
-            programmingCourse.ScheduledOfferingIds[0]);
-        Assert.Equal(
-            new OfferingId("offering-programming-alternative"),
-            programmingCourse.ScheduledOfferingIds[1]);
+        Assert.Equal(new OfferingId("offering-programming-primary"), programmingCourse.ScheduledOfferingIds[0]);
+        Assert.Equal(new OfferingId("offering-programming-alternative"), programmingCourse.ScheduledOfferingIds[1]);
 
         CatalogCourseProjection seminarCourse = projection.FindCourseById(new CourseId("course-seminar"));
         Assert.Empty(seminarCourse.ScheduledOfferingIds);
         Assert.Equal(2, seminarCourse.TimeNotProvidedOfferingIds.Count);
-        Assert.Equal(
-            new OfferingId("offering-seminar-unscheduled"),
-            seminarCourse.TimeNotProvidedOfferingIds[0]);
-        Assert.Equal(
-            new OfferingId("offering-seminar-unscheduled-02"),
-            seminarCourse.TimeNotProvidedOfferingIds[1]);
+        Assert.Equal(new OfferingId("offering-seminar-unscheduled"), seminarCourse.TimeNotProvidedOfferingIds[0]);
+        Assert.Equal(new OfferingId("offering-seminar-unscheduled-02"), seminarCourse.TimeNotProvidedOfferingIds[1]);
     }
 
     [Fact]
@@ -57,15 +49,11 @@ public sealed class CourseCatalogProjectorTests
             unitName => unitName == new OfferingUnitName("ICT창업학부"));
 
         Assert.Equal(2, projection.RequirementGroups.Count);
-        CatalogRequirementGroup majorRequiredGroup = findRequirementGroup(
-            projection,
-            ERequirementType.MajorRequired);
+        CatalogRequirementGroup majorRequiredGroup = findRequirementGroup(projection, ERequirementType.MajorRequired);
         Assert.Single(majorRequiredGroup.Courses);
         Assert.Equal(new CourseId("course-programming"), majorRequiredGroup.Courses[0].Course.Id);
 
-        CatalogRequirementGroup generalElectiveGroup = findRequirementGroup(
-            projection,
-            ERequirementType.GeneralElective);
+        CatalogRequirementGroup generalElectiveGroup = findRequirementGroup(projection, ERequirementType.GeneralElective);
         Assert.Equal(2, generalElectiveGroup.Courses.Count);
     }
 
@@ -122,17 +110,11 @@ public sealed class CourseCatalogProjectorTests
         CourseId programmingCourseId = new CourseId("course-programming");
         CourseId seminarCourseId = new CourseId("course-seminar");
 
-        Assert.Equal(
-            originalProjection.FindCourseById(programmingCourseId).Accent,
-            reorderedProjection.FindCourseById(programmingCourseId).Accent);
-        Assert.Equal(
-            originalProjection.FindCourseById(seminarCourseId).Accent,
-            reorderedProjection.FindCourseById(seminarCourseId).Accent);
+        Assert.Equal(originalProjection.FindCourseById(programmingCourseId).Accent, reorderedProjection.FindCourseById(programmingCourseId).Accent);
+        Assert.Equal(originalProjection.FindCourseById(seminarCourseId).Accent, reorderedProjection.FindCourseById(seminarCourseId).Accent);
     }
 
-    private static CatalogRequirementGroup findRequirementGroup(
-        CourseCatalogProjection projection,
-        ERequirementType requirementType)
+    private static CatalogRequirementGroup findRequirementGroup(CourseCatalogProjection projection, ERequirementType requirementType)
     {
         foreach (CatalogRequirementGroup requirementGroup in projection.RequirementGroups)
         {

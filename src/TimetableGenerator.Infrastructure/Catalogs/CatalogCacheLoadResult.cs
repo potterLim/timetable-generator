@@ -16,15 +16,11 @@ public sealed class CatalogCacheLoadResult
         }
     }
 
-    private CatalogCacheLoadResult(
-        ECatalogCacheLoadStatus status,
-        VerifiedCatalogPackage? packageOrNull)
+    private CatalogCacheLoadResult(ECatalogCacheLoadStatus status, VerifiedCatalogPackage? packageOrNull)
     {
         if (status == ECatalogCacheLoadStatus.NotFound && packageOrNull != null)
         {
-            throw new ArgumentException(
-                "A not-found cache result cannot contain a catalog package.",
-                nameof(packageOrNull));
+            throw new ArgumentException("A not-found cache result cannot contain a catalog package.", nameof(packageOrNull));
         }
 
         if (status != ECatalogCacheLoadStatus.NotFound && packageOrNull == null)
@@ -56,8 +52,7 @@ public sealed class CatalogCacheLoadResult
         return new CatalogCacheLoadResult(ECatalogCacheLoadStatus.LoadedLatestGeneration, package);
     }
 
-    internal static CatalogCacheLoadResult createRecoveredPreviousGeneration(
-        VerifiedCatalogPackage package)
+    internal static CatalogCacheLoadResult createRecoveredPreviousGeneration(VerifiedCatalogPackage package)
     {
         return new CatalogCacheLoadResult(ECatalogCacheLoadStatus.RecoveredPreviousGeneration, package);
     }

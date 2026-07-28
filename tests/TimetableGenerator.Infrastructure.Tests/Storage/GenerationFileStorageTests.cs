@@ -23,14 +23,9 @@ public sealed class GenerationFileStorageTests
 
             using (GenerationFileStorageAccess storageAccess = await storage.AcquireCreatingDirectoryAsync(CancellationToken.None))
             {
-                GenerationFile generationFile = await storage.CommitAsync(
-                    new FileGeneration(1L),
-                    content,
-                    CancellationToken.None);
+                GenerationFile generationFile = await storage.CommitAsync(new FileGeneration(1L), content, CancellationToken.None);
 
-                byte[] committedContent = await File.ReadAllBytesAsync(
-                    generationFile.Path.Value,
-                    CancellationToken.None);
+                byte[] committedContent = await File.ReadAllBytesAsync(generationFile.Path.Value, CancellationToken.None);
                 CollectionAssert.AreEqual(content, committedContent);
                 Assert.IsEmpty(Directory.GetFiles(testDirectoryPath, "*.tmp"));
             }
@@ -51,10 +46,7 @@ public sealed class GenerationFileStorageTests
             using (GenerationFileStorageAccess storageAccess = await storage.AcquireCreatingDirectoryAsync(CancellationToken.None))
             {
                 FileGeneration generation = new FileGeneration(1L);
-                await storage.CommitAsync(
-                    generation,
-                    new byte[] { 0x01 },
-                    CancellationToken.None);
+                await storage.CommitAsync(generation, new byte[] { 0x01 }, CancellationToken.None);
 
                 await Assert.ThrowsExactlyAsync<IOException>(
                     () => storage.CommitAsync(
@@ -63,9 +55,7 @@ public sealed class GenerationFileStorageTests
                         CancellationToken.None));
 
                 Assert.IsEmpty(Directory.GetFiles(testDirectoryPath, "*.tmp"));
-                byte[] committedContent = await File.ReadAllBytesAsync(
-                    getGenerationPath(testDirectoryPath, generation),
-                    CancellationToken.None);
+                byte[] committedContent = await File.ReadAllBytesAsync(getGenerationPath(testDirectoryPath, generation), CancellationToken.None);
                 CollectionAssert.AreEqual(new byte[] { 0x01 }, committedContent);
             }
         }
@@ -82,22 +72,10 @@ public sealed class GenerationFileStorageTests
         try
         {
             Directory.CreateDirectory(testDirectoryPath);
-            await File.WriteAllTextAsync(
-                getGenerationPath(testDirectoryPath, new FileGeneration(1L)),
-                "first",
-                CancellationToken.None);
-            await File.WriteAllTextAsync(
-                getGenerationPath(testDirectoryPath, new FileGeneration(3L)),
-                "third",
-                CancellationToken.None);
-            await File.WriteAllTextAsync(
-                Path.Combine(testDirectoryPath, "product.g3.data"),
-                "invalid width",
-                CancellationToken.None);
-            await File.WriteAllTextAsync(
-                Path.Combine(testDirectoryPath, "other.g00000000000000000002.data"),
-                "other product",
-                CancellationToken.None);
+            await File.WriteAllTextAsync(getGenerationPath(testDirectoryPath, new FileGeneration(1L)), "first", CancellationToken.None);
+            await File.WriteAllTextAsync(getGenerationPath(testDirectoryPath, new FileGeneration(3L)), "third", CancellationToken.None);
+            await File.WriteAllTextAsync(Path.Combine(testDirectoryPath, "product.g3.data"), "invalid width", CancellationToken.None);
+            await File.WriteAllTextAsync(Path.Combine(testDirectoryPath, "other.g00000000000000000002.data"), "other product", CancellationToken.None);
             GenerationFileStorage storage = createStorage(testDirectoryPath);
 
             IReadOnlyList<GenerationFile> generationFiles = storage.GetGenerationFiles();
@@ -124,10 +102,7 @@ public sealed class GenerationFileStorageTests
                 GenerationFile? firstGenerationOrNull = null;
                 for (long generationValue = 1L; generationValue <= 7L; ++generationValue)
                 {
-                    GenerationFile generationFile = await storage.CommitAsync(
-                        new FileGeneration(generationValue),
-                        new byte[] { checked((byte)generationValue) },
-                        CancellationToken.None);
+                    GenerationFile generationFile = await storage.CommitAsync(new FileGeneration(generationValue), new byte[] { checked((byte)generationValue) }, CancellationToken.None);
                     if (generationValue == 1L)
                     {
                         firstGenerationOrNull = generationFile;
@@ -190,17 +165,12 @@ public sealed class GenerationFileStorageTests
 
     private static string getGenerationPath(string testDirectoryPath, FileGeneration generation)
     {
-        return Path.Combine(
-            testDirectoryPath,
-            "product." + generation.FileComponent + ".data");
+        return Path.Combine(testDirectoryPath, "product." + generation.FileComponent + ".data");
     }
 
     private static string createTestDirectoryPath()
     {
-        return Path.Combine(
-            Path.GetTempPath(),
-            "TimetableGenerator.Infrastructure.Tests",
-            Guid.NewGuid().ToString("N"));
+        return Path.Combine(Path.GetTempPath(), "TimetableGenerator.Infrastructure.Tests", Guid.NewGuid().ToString("N"));
     }
 
     private static void deleteTestDirectory(string testDirectoryPath)

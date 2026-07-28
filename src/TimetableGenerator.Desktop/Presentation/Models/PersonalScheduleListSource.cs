@@ -11,9 +11,7 @@ internal sealed class PersonalScheduleListSource : ScheduleListSource
     {
         if (scheduleId.IsValid == false)
         {
-            throw new System.ArgumentException(
-                "Personal schedule list sources require a valid schedule ID.",
-                nameof(scheduleId));
+            throw new System.ArgumentException("Personal schedule list sources require a valid schedule ID.", nameof(scheduleId));
         }
 
         ScheduleId = scheduleId;
@@ -22,7 +20,6 @@ internal sealed class PersonalScheduleListSource : ScheduleListSource
     internal override bool hasSameIdentityAs(ScheduleListSource other)
     {
         PersonalScheduleListSource? personalSourceOrNull = other as PersonalScheduleListSource;
-        return personalSourceOrNull != null
-            && personalSourceOrNull.ScheduleId == ScheduleId;
+        return personalSourceOrNull != null && personalSourceOrNull.ScheduleId == ScheduleId;
     }
 }

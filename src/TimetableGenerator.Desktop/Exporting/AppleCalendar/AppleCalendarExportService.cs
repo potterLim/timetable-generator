@@ -25,15 +25,11 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
     }
 
     public AppleCalendarExportService(IAppleCalendarNativeBridge nativeBridge)
-        : this(
-            nativeBridge,
-            NoOpAppleCalendarExportLeaseProvider.Instance)
+        : this(nativeBridge, NoOpAppleCalendarExportLeaseProvider.Instance)
     {
     }
 
-    internal AppleCalendarExportService(
-        IAppleCalendarNativeBridge nativeBridge,
-        IAppleCalendarExportLeaseProvider exportLeaseProvider)
+    internal AppleCalendarExportService(IAppleCalendarNativeBridge nativeBridge, IAppleCalendarExportLeaseProvider exportLeaseProvider)
     {
         if (nativeBridge == null)
         {
@@ -49,10 +45,7 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
         mExportLeaseProvider = exportLeaseProvider;
     }
 
-    public async Task<AppleCalendarExportResult> ExportAsync(
-        CalendarExportDocument document,
-        ICalendarNameConflictResolver conflictResolver,
-        CancellationToken cancellationToken)
+    public async Task<AppleCalendarExportResult> ExportAsync(CalendarExportDocument document, ICalendarNameConflictResolver conflictResolver, CancellationToken cancellationToken)
     {
         if (document == null)
         {
@@ -67,47 +60,32 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
         cancellationToken.ThrowIfCancellationRequested();
         if (IsAvailable == false)
         {
-            return AppleCalendarExportResult.Fail(
-                EAppleCalendarExportStatus.Unavailable,
-                "apple_calendar_native_bridge_unavailable");
+            return AppleCalendarExportResult.Fail(EAppleCalendarExportStatus.Unavailable, "apple_calendar_native_bridge_unavailable");
         }
 
         if (document.Events.Count == 0)
         {
-            return AppleCalendarExportResult.Fail(
-                EAppleCalendarExportStatus.Failed,
-                "apple_calendar_export_requires_events");
+            return AppleCalendarExportResult.Fail(EAppleCalendarExportStatus.Failed, "apple_calendar_export_requires_events");
         }
 
         try
         {
             await using (IAppleCalendarExportLease exportLease = await mExportLeaseProvider.AcquireAsync(cancellationToken).ConfigureAwait(false))
             {
-                return await exportWithConflictResolutionAsync(
-                        document,
-                        conflictResolver,
-                        cancellationToken)
-                    .ConfigureAwait(false);
+                return await exportWithConflictResolutionAsync(document, conflictResolver, cancellationToken).ConfigureAwait(false);
             }
         }
         catch (AppleCalendarNativeBridgeException exception)
         {
             return createFailureResult(exception);
         }
-        catch (Exception exception) when (
-            exception is IOException
-            || exception is UnauthorizedAccessException)
+        catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException)
         {
-            return AppleCalendarExportResult.Fail(
-                EAppleCalendarExportStatus.Failed,
-                "apple_calendar_local_state_failed");
+            return AppleCalendarExportResult.Fail(EAppleCalendarExportStatus.Failed, "apple_calendar_local_state_failed");
         }
     }
 
-    private async Task<AppleCalendarExportResult> exportWithConflictResolutionAsync(
-        CalendarExportDocument document,
-        ICalendarNameConflictResolver conflictResolver,
-        CancellationToken cancellationToken)
+    private async Task<AppleCalendarExportResult> exportWithConflictResolutionAsync(CalendarExportDocument document, ICalendarNameConflictResolver conflictResolver, CancellationToken cancellationToken)
     {
         AppleCalendarNativeBridgeException? latestConflictExceptionOrNull = null;
         for (int attempt = 0; attempt < MAXIMUM_DESTINATION_ATTEMPTS; ++attempt)
@@ -116,9 +94,7 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
             AppleCalendarExportMutation? mutationOrNull = await createMutationOrNullAsync(document, calendars, conflictResolver, cancellationToken);
             if (mutationOrNull == null)
             {
-                return AppleCalendarExportResult.Fail(
-                    EAppleCalendarExportStatus.Cancelled,
-                    null);
+                return AppleCalendarExportResult.Fail(EAppleCalendarExportStatus.Cancelled, null);
             }
 
             try
@@ -127,9 +103,7 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
                 ensureNativeResultMatchesMutation(nativeResult, mutationOrNull);
                 return AppleCalendarExportResult.Complete(nativeResult);
             }
-            catch (AppleCalendarNativeBridgeException exception) when (
-                exception.FailureKind
-                    == EAppleCalendarNativeFailureKind.CalendarChanged)
+            catch (AppleCalendarNativeBridgeException exception) when (exception.FailureKind == EAppleCalendarNativeFailureKind.CalendarChanged)
             {
                 latestConflictExceptionOrNull = exception;
             }
@@ -137,87 +111,56 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
 
         if (latestConflictExceptionOrNull == null)
         {
-            throw new AppleCalendarNativeBridgeException(
-                EAppleCalendarNativeFailureKind.CalendarChanged,
-                "apple_calendar_destination_changed");
+            throw new AppleCalendarNativeBridgeException(EAppleCalendarNativeFailureKind.CalendarChanged, "apple_calendar_destination_changed");
         }
 
         throw latestConflictExceptionOrNull;
     }
 
-    private async Task<AppleCalendarExportMutation?> createMutationOrNullAsync(
-        CalendarExportDocument document,
-        IReadOnlyList<AppleCalendarDescriptor> calendars,
-        ICalendarNameConflictResolver conflictResolver,
-        CancellationToken cancellationToken)
+    private async Task<AppleCalendarExportMutation?> createMutationOrNullAsync(CalendarExportDocument document, IReadOnlyList<AppleCalendarDescriptor> calendars, ICalendarNameConflictResolver conflictResolver, CancellationToken cancellationToken)
     {
         IReadOnlyList<AppleCalendarDescriptor> matchingCalendars = findMatchingCalendars(document.CalendarName, calendars);
         if (matchingCalendars.Count == 0)
         {
-            return AppleCalendarExportMutation.CreateNew(
-                document,
-                document.CalendarName);
+            return AppleCalendarExportMutation.CreateNew(document, document.CalendarName);
         }
 
         AppleCalendarDescriptor? replaceableCalendarOrNull = findSoleReplaceableCalendarOrNull(matchingCalendars);
         ECalendarReplacementAvailability replacementAvailability = replaceableCalendarOrNull == null ? ECalendarReplacementAvailability.Unavailable : ECalendarReplacementAvailability.Available;
-        PlanName nextAvailableName = CalendarNameConflictPolicy.FindNextAvailableName(
-            document.CalendarName,
-            getCalendarNames(calendars));
-        CalendarNameConflict conflict = new CalendarNameConflict(
-            ECalendarExportProvider.Apple,
-            document.CalendarName,
-            nextAvailableName,
-            replacementAvailability);
+        PlanName nextAvailableName = CalendarNameConflictPolicy.FindNextAvailableName(document.CalendarName, getCalendarNames(calendars));
+        CalendarNameConflict conflict = new CalendarNameConflict(ECalendarExportProvider.Apple, document.CalendarName, nextAvailableName, replacementAvailability);
         ECalendarNameConflictResolution resolution = await conflictResolver.ResolveAsync(conflict, cancellationToken);
         CalendarNameConflictPolicy.EnsureResolutionIsSupported(conflict, resolution);
 
         switch (resolution)
         {
             case ECalendarNameConflictResolution.ReplaceExisting:
-                return AppleCalendarExportMutation.ReplaceExisting(
-                    document,
-                    document.CalendarName,
-                    replaceableCalendarOrNull!.CalendarId,
-                    replaceableCalendarOrNull.ManagedPlanIdOrNull!.Value);
+                return AppleCalendarExportMutation.ReplaceExisting(document, document.CalendarName, replaceableCalendarOrNull!.CalendarId, replaceableCalendarOrNull.ManagedPlanIdOrNull!.Value);
             case ECalendarNameConflictResolution.CreateWithAvailableName:
-                return AppleCalendarExportMutation.CreateNew(
-                    document,
-                    nextAvailableName);
+                return AppleCalendarExportMutation.CreateNew(document, nextAvailableName);
             case ECalendarNameConflictResolution.Cancel:
                 return null;
             case ECalendarNameConflictResolution.None:
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(resolution),
-                    resolution,
-                    "A supported Apple Calendar conflict resolution is required.");
+                throw new ArgumentOutOfRangeException(nameof(resolution), resolution, "A supported Apple Calendar conflict resolution is required.");
         }
     }
 
-    private async Task<IReadOnlyList<AppleCalendarDescriptor>>
-        getValidatedCalendarsAsync(
-            PlanName requestedDestinationName,
-            CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<AppleCalendarDescriptor>> getValidatedCalendarsAsync(PlanName requestedDestinationName, CancellationToken cancellationToken)
     {
         IReadOnlyList<AppleCalendarDescriptor>? calendarsOrNull = await mNativeBridge.GetCalendarsAsync(requestedDestinationName, cancellationToken);
         if (calendarsOrNull == null)
         {
-            throw new AppleCalendarNativeBridgeException(
-                EAppleCalendarNativeFailureKind.OperationFailed,
-                "apple_calendar_invalid_snapshot");
+            throw new AppleCalendarNativeBridgeException(EAppleCalendarNativeFailureKind.OperationFailed, "apple_calendar_invalid_snapshot");
         }
 
         List<AppleCalendarDescriptor> calendars = new List<AppleCalendarDescriptor>(calendarsOrNull.Count);
         HashSet<AppleCalendarId> calendarIds = new HashSet<AppleCalendarId>();
         foreach (AppleCalendarDescriptor? calendarOrNull in calendarsOrNull)
         {
-            if (calendarOrNull == null
-                || calendarIds.Add(calendarOrNull.CalendarId) == false)
+            if (calendarOrNull == null || calendarIds.Add(calendarOrNull.CalendarId) == false)
             {
-                throw new AppleCalendarNativeBridgeException(
-                    EAppleCalendarNativeFailureKind.OperationFailed,
-                    "apple_calendar_invalid_snapshot");
+                throw new AppleCalendarNativeBridgeException(EAppleCalendarNativeFailureKind.OperationFailed, "apple_calendar_invalid_snapshot");
             }
 
             calendars.Add(calendarOrNull);
@@ -226,18 +169,13 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
         return calendars.AsReadOnly();
     }
 
-    private static IReadOnlyList<AppleCalendarDescriptor> findMatchingCalendars(
-        PlanName requestedName,
-        IReadOnlyList<AppleCalendarDescriptor> calendars)
+    private static IReadOnlyList<AppleCalendarDescriptor> findMatchingCalendars(PlanName requestedName, IReadOnlyList<AppleCalendarDescriptor> calendars)
     {
         List<AppleCalendarDescriptor> matchingCalendars = new List<AppleCalendarDescriptor>();
         foreach (AppleCalendarDescriptor calendar in calendars)
         {
             PlanName? displayNameOrNull = tryCreatePlanNameOrNull(calendar.DisplayName);
-            if (displayNameOrNull != null
-                && CalendarNameConflictPolicy.IsSameName(
-                    requestedName,
-                    displayNameOrNull))
+            if (displayNameOrNull != null && CalendarNameConflictPolicy.IsSameName(requestedName, displayNameOrNull))
             {
                 matchingCalendars.Add(calendar);
             }
@@ -246,11 +184,9 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
         return matchingCalendars.AsReadOnly();
     }
 
-    private static AppleCalendarDescriptor? findSoleReplaceableCalendarOrNull(
-        IReadOnlyList<AppleCalendarDescriptor> matchingCalendars)
+    private static AppleCalendarDescriptor? findSoleReplaceableCalendarOrNull(IReadOnlyList<AppleCalendarDescriptor> matchingCalendars)
     {
-        if (matchingCalendars.Count != 1
-            || matchingCalendars[0].CanReplace == false)
+        if (matchingCalendars.Count != 1 || matchingCalendars[0].CanReplace == false)
         {
             return null;
         }
@@ -258,8 +194,7 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
         return matchingCalendars[0];
     }
 
-    private static IReadOnlyList<PlanName> getCalendarNames(
-        IReadOnlyList<AppleCalendarDescriptor> calendars)
+    private static IReadOnlyList<PlanName> getCalendarNames(IReadOnlyList<AppleCalendarDescriptor> calendars)
     {
         List<PlanName> calendarNames = new List<PlanName>(calendars.Count);
         foreach (AppleCalendarDescriptor calendar in calendars)
@@ -277,8 +212,7 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
     private static PlanName? tryCreatePlanNameOrNull(string value)
     {
         string normalizedValue = value.Trim();
-        if (normalizedValue.Length == 0
-            || normalizedValue.Length > PlanName.MAXIMUM_LENGTH)
+        if (normalizedValue.Length == 0 || normalizedValue.Length > PlanName.MAXIMUM_LENGTH)
         {
             return null;
         }
@@ -286,37 +220,25 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
         return new PlanName(normalizedValue);
     }
 
-    private static void ensureNativeResultMatchesMutation(
-        AppleCalendarNativeExportResult nativeResult,
-        AppleCalendarExportMutation mutation)
+    private static void ensureNativeResultMatchesMutation(AppleCalendarNativeExportResult nativeResult, AppleCalendarExportMutation mutation)
     {
         if (nativeResult == null)
         {
-            throw new AppleCalendarNativeBridgeException(
-                EAppleCalendarNativeFailureKind.OperationFailed,
-                "apple_calendar_invalid_export_result");
+            throw new AppleCalendarNativeBridgeException(EAppleCalendarNativeFailureKind.OperationFailed, "apple_calendar_invalid_export_result");
         }
 
-        if (CalendarNameConflictPolicy.IsSameName(
-                nativeResult.CalendarName,
-                mutation.DestinationName) == false)
+        if (CalendarNameConflictPolicy.IsSameName(nativeResult.CalendarName, mutation.DestinationName) == false)
         {
-            throw new AppleCalendarNativeBridgeException(
-                EAppleCalendarNativeFailureKind.OperationFailed,
-                "apple_calendar_destination_mismatch");
+            throw new AppleCalendarNativeBridgeException(EAppleCalendarNativeFailureKind.OperationFailed, "apple_calendar_destination_mismatch");
         }
 
-        if (mutation.Kind == EAppleCalendarExportMutationKind.ReplaceExisting
-            && nativeResult.CalendarId != mutation.ExistingCalendarIdOrNull)
+        if (mutation.Kind == EAppleCalendarExportMutationKind.ReplaceExisting && nativeResult.CalendarId != mutation.ExistingCalendarIdOrNull)
         {
-            throw new AppleCalendarNativeBridgeException(
-                EAppleCalendarNativeFailureKind.OperationFailed,
-                "apple_calendar_destination_mismatch");
+            throw new AppleCalendarNativeBridgeException(EAppleCalendarNativeFailureKind.OperationFailed, "apple_calendar_destination_mismatch");
         }
     }
 
-    private static AppleCalendarExportResult createFailureResult(
-        AppleCalendarNativeBridgeException exception)
+    private static AppleCalendarExportResult createFailureResult(AppleCalendarNativeBridgeException exception)
     {
         EAppleCalendarExportStatus status;
         switch (exception.FailureKind)
@@ -333,14 +255,9 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
                 break;
             case EAppleCalendarNativeFailureKind.None:
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(exception),
-                    exception.FailureKind,
-                    "Apple Calendar failures require a supported failure kind.");
+                throw new ArgumentOutOfRangeException(nameof(exception), exception.FailureKind, "Apple Calendar failures require a supported failure kind.");
         }
 
-        return AppleCalendarExportResult.Fail(
-            status,
-            exception.DiagnosticCode);
+        return AppleCalendarExportResult.Fail(status, exception.DiagnosticCode);
     }
 }

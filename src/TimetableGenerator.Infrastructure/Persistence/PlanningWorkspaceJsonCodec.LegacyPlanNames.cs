@@ -55,19 +55,12 @@ public sealed partial class PlanningWorkspaceJsonCodec
 
         string planNumberText = plan.Name.Value.Substring(numberedNamePrefix.Length);
         int planNumber;
-        bool hasPlanNumber = int.TryParse(
-            planNumberText,
-            System.Globalization.NumberStyles.None,
-            System.Globalization.CultureInfo.InvariantCulture,
-            out planNumber);
+        bool hasPlanNumber = int.TryParse(planNumberText, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out planNumber);
         if (hasPlanNumber == false || planNumber < FIRST_ADDITIONAL_PLAN_NUMBER)
         {
             return null;
         }
 
-        return termPlanName
-            + " ("
-            + planNumber.ToString(System.Globalization.CultureInfo.InvariantCulture)
-            + ")";
+        return termPlanName + " (" + planNumber.ToString(System.Globalization.CultureInfo.InvariantCulture) + ")";
     }
 }

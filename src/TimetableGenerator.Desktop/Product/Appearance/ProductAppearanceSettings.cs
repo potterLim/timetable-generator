@@ -16,10 +16,7 @@ internal sealed record ProductAppearanceSettings
                 ThemePreference = themePreference;
                 break;
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(themePreference),
-                    themePreference,
-                    "Unknown product theme preference.");
+                throw new ArgumentOutOfRangeException(nameof(themePreference), themePreference, "Unknown product theme preference.");
         }
     }
 

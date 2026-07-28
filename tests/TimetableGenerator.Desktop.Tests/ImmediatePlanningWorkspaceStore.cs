@@ -20,16 +20,10 @@ internal sealed class ImmediatePlanningWorkspaceStore : IPlanningWorkspaceStore
             return Task.FromResult(PlanningWorkspaceLoadResult.CreateNotFound());
         }
 
-        return Task.FromResult(
-            PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(
-                LastSavedWorkspaceOrNull,
-                mConcurrencyToken));
+        return Task.FromResult(PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(LastSavedWorkspaceOrNull, mConcurrencyToken));
     }
 
-    public Task<PlanningWorkspaceConcurrencyToken> SaveAsync(
-        PlanningWorkspace workspace,
-        PlanningWorkspaceConcurrencyToken expectedToken,
-        CancellationToken cancellationToken)
+    public Task<PlanningWorkspaceConcurrencyToken> SaveAsync(PlanningWorkspace workspace, PlanningWorkspaceConcurrencyToken expectedToken, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (expectedToken != mConcurrencyToken)

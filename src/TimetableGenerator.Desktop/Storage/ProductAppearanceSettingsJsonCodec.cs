@@ -54,9 +54,7 @@ internal sealed class ProductAppearanceSettingsJsonCodec
         }
         catch (JsonException exception)
         {
-            throw new ProductAppearanceSettingsException(
-                "The appearance settings document is not valid JSON.",
-                exception);
+            throw new ProductAppearanceSettingsException("The appearance settings document is not valid JSON.", exception);
         }
     }
 
@@ -64,8 +62,7 @@ internal sealed class ProductAppearanceSettingsJsonCodec
     {
         if (element.ValueKind != JsonValueKind.Object)
         {
-            throw new ProductAppearanceSettingsException(
-                "The appearance settings document must be a JSON object.");
+            throw new ProductAppearanceSettingsException("The appearance settings document must be a JSON object.");
         }
 
         bool hasSchemaVersion = false;
@@ -95,10 +92,7 @@ internal sealed class ProductAppearanceSettingsJsonCodec
                     hasThemePreference = true;
                     break;
                 default:
-                    throw new ProductAppearanceSettingsException(
-                        "The appearance settings document contains the unknown property '"
-                        + property.Name
-                        + "'.");
+                    throw new ProductAppearanceSettingsException("The appearance settings document contains the unknown property '" + property.Name + "'.");
             }
         }
 
@@ -114,10 +108,7 @@ internal sealed class ProductAppearanceSettingsJsonCodec
 
         if (schemaVersion != SCHEMA_VERSION)
         {
-            throw new ProductAppearanceSettingsException(
-                "The appearance settings schema version is not supported: "
-                + schemaVersion
-                + ".");
+            throw new ProductAppearanceSettingsException("The appearance settings schema version is not supported: " + schemaVersion + ".");
         }
 
         return new ProductAppearanceSettings(themePreference);
@@ -156,8 +147,7 @@ internal sealed class ProductAppearanceSettingsJsonCodec
             case DARK_THEME_VALUE:
                 return EProductThemePreference.Dark;
             default:
-                throw new ProductAppearanceSettingsException(
-                    "themePreference must be 'system', 'light', or 'dark'.");
+                throw new ProductAppearanceSettingsException("themePreference must be 'system', 'light', or 'dark'.");
         }
     }
 
@@ -172,26 +162,17 @@ internal sealed class ProductAppearanceSettingsJsonCodec
             case EProductThemePreference.Dark:
                 return DARK_THEME_VALUE;
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(themePreference),
-                    themePreference,
-                    "Unknown product theme preference.");
+                throw new ArgumentOutOfRangeException(nameof(themePreference), themePreference, "Unknown product theme preference.");
         }
     }
 
     private static ProductAppearanceSettingsException createDuplicatePropertyException(string propertyName)
     {
-        return new ProductAppearanceSettingsException(
-            "The appearance settings document contains the duplicate property '"
-            + propertyName
-            + "'.");
+        return new ProductAppearanceSettingsException("The appearance settings document contains the duplicate property '" + propertyName + "'.");
     }
 
     private static ProductAppearanceSettingsException createMissingPropertyException(string propertyName)
     {
-        return new ProductAppearanceSettingsException(
-            "The appearance settings document is missing the required property '"
-            + propertyName
-            + "'.");
+        return new ProductAppearanceSettingsException("The appearance settings document is missing the required property '" + propertyName + "'.");
     }
 }

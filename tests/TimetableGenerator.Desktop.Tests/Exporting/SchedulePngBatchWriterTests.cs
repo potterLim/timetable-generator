@@ -157,39 +157,22 @@ public sealed class SchedulePngBatchWriterTests
             using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createStaging(parentDirectoryPath, CancellationToken.None))
             {
                 stagingDirectoryPath = directory.DirectoryPath;
-                Assert.StartsWith(
-                    ".timetable-generator-png-staging-",
-                    Path.GetFileName(stagingDirectoryPath),
-                    StringComparison.Ordinal);
+                Assert.StartsWith(".timetable-generator-png-staging-", Path.GetFileName(stagingDirectoryPath), StringComparison.Ordinal);
                 using (Stream stream = directory.createFile("후보.png"))
                 {
                     stream.WriteByte(1);
                 }
 
-                string finalDirectoryPath = Path.Combine(
-                    parentDirectoryPath,
-                    SchedulePngFileNameFactory.CreateBatchFolderName(planName));
+                string finalDirectoryPath = Path.Combine(parentDirectoryPath, SchedulePngFileNameFactory.CreateBatchFolderName(planName));
                 Assert.False(Directory.Exists(finalDirectoryPath));
 
-                directory.commitAsUniqueBatch(
-                    planName,
-                    CancellationToken.None);
+                directory.commitAsUniqueBatch(planName, CancellationToken.None);
 
                 Assert.False(Directory.Exists(stagingDirectoryPath));
-                Assert.Equal(
-                    finalDirectoryPath,
-                    directory.DirectoryPath);
+                Assert.Equal(finalDirectoryPath, directory.DirectoryPath);
                 Assert.True(Directory.Exists(finalDirectoryPath));
-                Assert.True(
-                    File.Exists(
-                        Path.Combine(
-                            finalDirectoryPath,
-                            "후보.png")));
-                Assert.False(
-                    File.Exists(
-                        Path.Combine(
-                            finalDirectoryPath,
-                            ".timetable-generator-exporting")));
+                Assert.True(File.Exists(Path.Combine(finalDirectoryPath, "후보.png")));
+                Assert.False(File.Exists(Path.Combine(finalDirectoryPath, ".timetable-generator-exporting")));
             }
         }
         finally
@@ -217,9 +200,7 @@ public sealed class SchedulePngBatchWriterTests
             }
 
             Assert.False(Directory.Exists(stagingDirectoryPath));
-            Assert.Empty(
-                Directory.GetFileSystemEntries(
-                    parentDirectoryPath));
+            Assert.Empty(Directory.GetFileSystemEntries(parentDirectoryPath));
         }
         finally
         {
@@ -394,8 +375,7 @@ public sealed class SchedulePngBatchWriterTests
                     {
                         stagingDirectoryPathOrNull = directory.DirectoryPath;
                         SchedulePngBatchExportException exception =
-                            await Assert.ThrowsAsync<
-                                SchedulePngBatchExportException>(
+                            await Assert.ThrowsAsync<SchedulePngBatchExportException>(
                                     delegate
                                     {
                                         return writer.exportAsync(
@@ -409,16 +389,8 @@ public sealed class SchedulePngBatchWriterTests
                         Assert.Equal(2, exception.SuccessfulCount);
                         Assert.Equal(1, exception.FailedCount);
                         Assert.Equal(3, exporter.ExportCallCount);
-                        Assert.True(
-                            Directory.Exists(
-                                stagingDirectoryPathOrNull));
-                        Assert.False(
-                            Directory.Exists(
-                                Path.Combine(
-                                    parentDirectoryPath,
-                                    SchedulePngFileNameFactory
-                                        .CreateBatchFolderName(
-                                            exportBatch.PlanName))));
+                        Assert.True(Directory.Exists(stagingDirectoryPathOrNull));
+                        Assert.False(Directory.Exists(Path.Combine(parentDirectoryPath, SchedulePngFileNameFactory.CreateBatchFolderName(exportBatch.PlanName))));
                     }
                 }
                 finally
@@ -428,12 +400,8 @@ public sealed class SchedulePngBatchWriterTests
             }
 
             Assert.NotNull(stagingDirectoryPathOrNull);
-            Assert.False(
-                Directory.Exists(
-                    stagingDirectoryPathOrNull));
-            Assert.Empty(
-                Directory.GetFileSystemEntries(
-                    parentDirectoryPath));
+            Assert.False(Directory.Exists(stagingDirectoryPathOrNull));
+            Assert.Empty(Directory.GetFileSystemEntries(parentDirectoryPath));
         }
         finally
         {
@@ -455,10 +423,7 @@ public sealed class SchedulePngBatchWriterTests
                 List<ScheduleBoardPresentation> candidates = new List<ScheduleBoardPresentation>();
                 for (int candidateIndex = 0; candidateIndex < 64; ++candidateIndex)
                 {
-                    candidates.Add(
-                        candidateIndex % 2 == 0
-                            ? firstCandidate
-                            : secondCandidate);
+                    candidates.Add(candidateIndex % 2 == 0 ? firstCandidate : secondCandidate);
                 }
 
                 SchedulePngExportBatch exportBatch = new SchedulePngExportBatch(candidates);
@@ -503,11 +468,8 @@ public sealed class SchedulePngBatchWriterTests
                     }
 
                     Assert.True(inputCallbackRan);
-                    Assert.True(
-                        exporter.InputWasResponsiveDuringBatch);
-                    Assert.Equal(
-                        exportBatch.Candidates.Count,
-                        exporter.ExportCallCount);
+                    Assert.True(exporter.InputWasResponsiveDuringBatch);
+                    Assert.Equal(exportBatch.Candidates.Count, exporter.ExportCallCount);
                 }
                 finally
                 {
@@ -555,8 +517,7 @@ public sealed class SchedulePngBatchWriterTests
                         using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createStaging(parentDirectoryPath, cancellationSource.Token))
                         {
                             stagingDirectoryPathOrNull = directory.DirectoryPath;
-                            await Assert.ThrowsAnyAsync<
-                                OperationCanceledException>(
+                            await Assert.ThrowsAnyAsync<OperationCanceledException>(
                                     delegate
                                     {
                                         return writer.exportAsync(
@@ -576,12 +537,8 @@ public sealed class SchedulePngBatchWriterTests
             }
 
             Assert.NotNull(stagingDirectoryPathOrNull);
-            Assert.False(
-                Directory.Exists(
-                    stagingDirectoryPathOrNull));
-            Assert.Empty(
-                Directory.GetFileSystemEntries(
-                    parentDirectoryPath));
+            Assert.False(Directory.Exists(stagingDirectoryPathOrNull));
+            Assert.Empty(Directory.GetFileSystemEntries(parentDirectoryPath));
         }
         finally
         {
@@ -669,10 +626,7 @@ public sealed class SchedulePngBatchWriterTests
 
     private static string createTemporaryDirectory()
     {
-        string path = Path.Combine(
-            Path.GetTempPath(),
-            "TimetableGeneratorTests",
-            Guid.NewGuid().ToString("N"));
+        string path = Path.Combine(Path.GetTempPath(), "TimetableGeneratorTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(path);
         return path;
     }
@@ -686,28 +640,16 @@ public sealed class SchedulePngBatchWriterTests
     {
         DailyTimeRange dailyTimeRange = new DailyTimeRange(start, end);
         WeeklyTimeRange weeklyTimeRange = new WeeklyTimeRange(day, dailyTimeRange);
-        PersonalSchedule personalSchedule = new PersonalSchedule(
-            PersonalScheduleId.CreateNew(),
-            new PersonalScheduleTitle(title),
-            new WeeklyTimeRange[] { weeklyTimeRange },
-            PersonalScheduleDetails.CreateEmpty());
+        PersonalSchedule personalSchedule = new PersonalSchedule(PersonalScheduleId.CreateNew(), new PersonalScheduleTitle(title), new WeeklyTimeRange[] { weeklyTimeRange }, PersonalScheduleDetails.CreateEmpty());
         PersonalScheduleEntry entry = new PersonalScheduleEntry(personalSchedule, weeklyTimeRange);
-        return new ScheduleBoardPresentation(
-            new ScheduleRecommendation(new ScheduleEntry[] { entry }),
-            planName,
-            new InstitutionName("한동대학교"),
-            AcademicTerm.Parse("2026-2"));
+        return new ScheduleBoardPresentation(new ScheduleRecommendation(new ScheduleEntry[] { entry }), planName, new InstitutionName("한동대학교"), AcademicTerm.Parse("2026-2"));
     }
 
     private static void assertPngContainsRenderedBoard(string filePath)
     {
         using (FileStream stream = File.OpenRead(filePath))
         using (Bitmap bitmap = new Bitmap(stream))
-        using (WriteableBitmap pixelCopy = new WriteableBitmap(
-            bitmap.PixelSize,
-            new Vector(96.0, 96.0),
-            PixelFormat.Bgra8888,
-            AlphaFormat.Premul))
+        using (WriteableBitmap pixelCopy = new WriteableBitmap(bitmap.PixelSize, new Vector(96.0, 96.0), PixelFormat.Bgra8888, AlphaFormat.Premul))
         using (ILockedFramebuffer framebuffer = pixelCopy.Lock())
         {
             bitmap.CopyPixels(framebuffer);
@@ -723,10 +665,7 @@ public sealed class SchedulePngBatchWriterTests
                 }
             }
 
-            Assert.True(
-                sampledColors.Count >= 4,
-                "The exported PNG contained only a flat background: "
-                    + filePath);
+            Assert.True(sampledColors.Count >= 4, "The exported PNG contained only a flat background: " + filePath);
         }
     }
 
@@ -741,18 +680,14 @@ public sealed class SchedulePngBatchWriterTests
             mFailingCallNumber = failingCallNumber;
         }
 
-        public Task ExportControlAsync(
-            Control sourceControl,
-            Stream destinationStream,
-            CancellationToken cancellationToken)
+        public Task ExportControlAsync(Control sourceControl, Stream destinationStream, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ExportCallCount++;
             destinationStream.WriteByte(1);
             if (ExportCallCount == mFailingCallNumber)
             {
-                throw new IOException(
-                    "Synthetic candidate export failure.");
+                throw new IOException("Synthetic candidate export failure.");
             }
 
             return Task.CompletedTask;
@@ -768,16 +703,12 @@ public sealed class SchedulePngBatchWriterTests
 
         public bool InputWasResponsiveDuringBatch { get; private set; }
 
-        public ResponsiveRecordingPngExporter(
-            Func<bool> readInputResponsiveness)
+        public ResponsiveRecordingPngExporter(Func<bool> readInputResponsiveness)
         {
             mReadInputResponsiveness = readInputResponsiveness ?? throw new ArgumentNullException(nameof(readInputResponsiveness));
         }
 
-        public Task ExportControlAsync(
-            Control sourceControl,
-            Stream destinationStream,
-            CancellationToken cancellationToken)
+        public Task ExportControlAsync(Control sourceControl, Stream destinationStream, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ExportCallCount++;
@@ -792,22 +723,17 @@ public sealed class SchedulePngBatchWriterTests
     {
         private readonly CancellationTokenSource mCancellationSource;
 
-        public CancellingPngExporter(
-            CancellationTokenSource cancellationSource)
+        public CancellingPngExporter(CancellationTokenSource cancellationSource)
         {
             mCancellationSource = cancellationSource ?? throw new ArgumentNullException(nameof(cancellationSource));
         }
 
-        public Task ExportControlAsync(
-            Control sourceControl,
-            Stream destinationStream,
-            CancellationToken cancellationToken)
+        public Task ExportControlAsync(Control sourceControl, Stream destinationStream, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             destinationStream.WriteByte(1);
             mCancellationSource.Cancel();
-            return Task.FromCanceled(
-                mCancellationSource.Token);
+            return Task.FromCanceled(mCancellationSource.Token);
         }
     }
 
@@ -833,10 +759,7 @@ public sealed class SchedulePngBatchWriterTests
             }
         }
 
-        public Task ExportControlAsync(
-            Control sourceControl,
-            Stream destinationStream,
-            CancellationToken cancellationToken)
+        public Task ExportControlAsync(Control sourceControl, Stream destinationStream, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             mSurfaces.Add(sourceControl);

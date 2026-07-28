@@ -19,16 +19,11 @@ public sealed class PlanningWorkspaceLoadResult
         }
     }
 
-    private PlanningWorkspaceLoadResult(
-        EPlanningWorkspaceLoadStatus status,
-        PlanningWorkspace? workspaceOrNull,
-        PlanningWorkspaceConcurrencyToken concurrencyToken)
+    private PlanningWorkspaceLoadResult(EPlanningWorkspaceLoadStatus status, PlanningWorkspace? workspaceOrNull, PlanningWorkspaceConcurrencyToken concurrencyToken)
     {
         if (status == EPlanningWorkspaceLoadStatus.NotFound && workspaceOrNull != null)
         {
-            throw new ArgumentException(
-                "A not-found workspace result cannot contain a workspace.",
-                nameof(workspaceOrNull));
+            throw new ArgumentException("A not-found workspace result cannot contain a workspace.", nameof(workspaceOrNull));
         }
 
         if (status != EPlanningWorkspaceLoadStatus.NotFound && workspaceOrNull == null)
@@ -36,19 +31,14 @@ public sealed class PlanningWorkspaceLoadResult
             throw new ArgumentNullException(nameof(workspaceOrNull));
         }
 
-        if (status == EPlanningWorkspaceLoadStatus.NotFound
-            && concurrencyToken.RepresentsMissingWorkspace == false)
+        if (status == EPlanningWorkspaceLoadStatus.NotFound && concurrencyToken.RepresentsMissingWorkspace == false)
         {
-            throw new ArgumentException(
-                "A not-found workspace result requires the missing-workspace token.",
-                nameof(concurrencyToken));
+            throw new ArgumentException("A not-found workspace result requires the missing-workspace token.", nameof(concurrencyToken));
         }
 
         if (status != EPlanningWorkspaceLoadStatus.NotFound && concurrencyToken.RepresentsMissingWorkspace)
         {
-            throw new ArgumentException(
-                "A found workspace result requires a persisted concurrency token.",
-                nameof(concurrencyToken));
+            throw new ArgumentException("A found workspace result requires a persisted concurrency token.", nameof(concurrencyToken));
         }
 
         Status = status;
@@ -58,39 +48,26 @@ public sealed class PlanningWorkspaceLoadResult
 
     public static PlanningWorkspaceLoadResult CreateNotFound()
     {
-        return new PlanningWorkspaceLoadResult(
-            EPlanningWorkspaceLoadStatus.NotFound,
-            null,
-            PlanningWorkspaceConcurrencyToken.MissingWorkspace);
+        return new PlanningWorkspaceLoadResult(EPlanningWorkspaceLoadStatus.NotFound, null, PlanningWorkspaceConcurrencyToken.MissingWorkspace);
     }
 
-    public static PlanningWorkspaceLoadResult CreateLoadedLatestGeneration(
-        PlanningWorkspace workspace,
-        PlanningWorkspaceConcurrencyToken concurrencyToken)
+    public static PlanningWorkspaceLoadResult CreateLoadedLatestGeneration(PlanningWorkspace workspace, PlanningWorkspaceConcurrencyToken concurrencyToken)
     {
         if (workspace == null)
         {
             throw new ArgumentNullException(nameof(workspace));
         }
 
-        return new PlanningWorkspaceLoadResult(
-            EPlanningWorkspaceLoadStatus.LoadedLatestGeneration,
-            workspace,
-            concurrencyToken);
+        return new PlanningWorkspaceLoadResult(EPlanningWorkspaceLoadStatus.LoadedLatestGeneration, workspace, concurrencyToken);
     }
 
-    public static PlanningWorkspaceLoadResult CreateRecoveredPreviousGeneration(
-        PlanningWorkspace workspace,
-        PlanningWorkspaceConcurrencyToken concurrencyToken)
+    public static PlanningWorkspaceLoadResult CreateRecoveredPreviousGeneration(PlanningWorkspace workspace, PlanningWorkspaceConcurrencyToken concurrencyToken)
     {
         if (workspace == null)
         {
             throw new ArgumentNullException(nameof(workspace));
         }
 
-        return new PlanningWorkspaceLoadResult(
-            EPlanningWorkspaceLoadStatus.RecoveredPreviousGeneration,
-            workspace,
-            concurrencyToken);
+        return new PlanningWorkspaceLoadResult(EPlanningWorkspaceLoadStatus.RecoveredPreviousGeneration, workspace, concurrencyToken);
     }
 }

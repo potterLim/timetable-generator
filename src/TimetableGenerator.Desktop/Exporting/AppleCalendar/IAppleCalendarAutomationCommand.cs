@@ -7,8 +7,5 @@ internal interface IAppleCalendarAutomationCommand
 {
     bool IsAvailable { get; }
 
-    Task<string> ExecuteAsync(
-        EAppleCalendarAutomationOperation operation,
-        string requestJson,
-        CancellationToken cancellationToken);
+    Task<string> ExecuteAsync(EAppleCalendarAutomationOperation operation, string requestJson, CancellationToken cancellationToken);
 }

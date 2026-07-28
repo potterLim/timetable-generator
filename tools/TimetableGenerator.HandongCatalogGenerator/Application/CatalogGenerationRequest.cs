@@ -10,11 +10,7 @@ internal sealed record CatalogGenerationRequest
     public CatalogRevision Revision { get; }
     public CatalogOutputRootPath OutputRootPath { get; }
 
-    public CatalogGenerationRequest(
-        CatalogSourceFilePath sourceFilePath,
-        AcademicTerm term,
-        CatalogRevision revision,
-        CatalogOutputRootPath outputRootPath)
+    public CatalogGenerationRequest(CatalogSourceFilePath sourceFilePath, AcademicTerm term, CatalogRevision revision, CatalogOutputRootPath outputRootPath)
     {
         if (sourceFilePath == null)
         {

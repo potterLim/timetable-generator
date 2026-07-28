@@ -7,11 +7,7 @@ namespace TimetableGenerator.HandongCatalogGenerator.Publishing;
 
 internal static class AtomicFileWriter
 {
-    public static async Task WriteAsync(
-        string destinationPath,
-        ReadOnlyMemory<byte> content,
-        EExistingFileBehavior existingFileBehavior,
-        CancellationToken cancellationToken)
+    public static async Task WriteAsync(string destinationPath, ReadOnlyMemory<byte> content, EExistingFileBehavior existingFileBehavior, CancellationToken cancellationToken)
     {
         string? directoryPathOrNull = Path.GetDirectoryName(destinationPath);
         if (string.IsNullOrEmpty(directoryPathOrNull))

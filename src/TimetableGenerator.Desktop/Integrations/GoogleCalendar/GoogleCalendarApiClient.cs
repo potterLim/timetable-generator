@@ -36,9 +36,7 @@ internal sealed class GoogleCalendarApiClient
         mHttpClient = httpClient;
     }
 
-    public async Task<IReadOnlyList<GoogleCalendarDescriptor>> ListCalendarsAsync(
-        GoogleAccessToken accessToken,
-        CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<GoogleCalendarDescriptor>> ListCalendarsAsync(GoogleAccessToken accessToken, CancellationToken cancellationToken)
     {
         List<GoogleCalendarDescriptor> calendars = new List<GoogleCalendarDescriptor>();
         GoogleCalendarPaginationGuard paginationGuard = new GoogleCalendarPaginationGuard(MAXIMUM_CALENDAR_LIST_PAGE_COUNT, "calendar_list_invalid_pagination");
@@ -46,31 +44,21 @@ internal sealed class GoogleCalendarApiClient
         do
         {
             paginationGuard.BeginPage();
-            string relativeUri = "users/me/calendarList?maxResults="
-                + MAXIMUM_CALENDAR_LIST_PAGE_SIZE.ToString(CultureInfo.InvariantCulture)
-                + "&showHidden=true";
+            string relativeUri = "users/me/calendarList?maxResults=" + MAXIMUM_CALENDAR_LIST_PAGE_SIZE.ToString(CultureInfo.InvariantCulture) + "&showHidden=true";
             if (pageTokenOrNull != null)
             {
                 relativeUri += "&pageToken=" + Uri.EscapeDataString(pageTokenOrNull);
             }
 
-            using (HttpRequestMessage request = createRequest(
-                HttpMethod.Get,
-                relativeUri,
-                accessToken))
+            using (HttpRequestMessage request = createRequest(HttpMethod.Get, relativeUri, accessToken))
             {
-                using (HttpResponseMessage response = await sendAsync(
-                    request,
-                    cancellationToken).ConfigureAwait(false))
+                using (HttpResponseMessage response = await sendAsync(request, cancellationToken).ConfigureAwait(false))
                 {
                     await ensureSuccessAsync(response, "calendar_list_failed", cancellationToken).ConfigureAwait(false);
-                    using (JsonDocument document = await readJsonAsync(
-                        response,
-                        cancellationToken).ConfigureAwait(false))
+                    using (JsonDocument document = await readJsonAsync(response, cancellationToken).ConfigureAwait(false))
                     {
                         JsonElement items;
-                        if (document.RootElement.TryGetProperty("items", out items)
-                            && items.ValueKind == JsonValueKind.Array)
+                        if (document.RootElement.TryGetProperty("items", out items) && items.ValueKind == JsonValueKind.Array)
                         {
                             foreach (JsonElement item in items.EnumerateArray())
                             {
@@ -89,21 +77,11 @@ internal sealed class GoogleCalendarApiClient
                                     continue;
                                 }
 
-                                calendars.Add(
-                                    new GoogleCalendarDescriptor(
-                                        new GoogleCalendarId(idOrNull),
-                                        displayNameOrNull,
-                                        getBooleanOrDefault(item, "primary"),
-                                        tryParseLegacyManagedPlanIdOrNull(
-                                            descriptionOrNull),
-                                        parseAccessRole(item)));
+                                calendars.Add(new GoogleCalendarDescriptor(new GoogleCalendarId(idOrNull), displayNameOrNull, getBooleanOrDefault(item, "primary"), tryParseLegacyManagedPlanIdOrNull(descriptionOrNull), parseAccessRole(item)));
                             }
                         }
 
-                        pageTokenOrNull = paginationGuard.AcceptNextPageTokenOrNull(
-                            getStringOrNull(
-                                document.RootElement,
-                                "nextPageToken"));
+                        pageTokenOrNull = paginationGuard.AcceptNextPageTokenOrNull(getStringOrNull(document.RootElement, "nextPageToken"));
                     }
                 }
             }
@@ -113,29 +91,15 @@ internal sealed class GoogleCalendarApiClient
         return calendars.AsReadOnly();
     }
 
-    public async Task<GoogleCalendarId> CreatePlanCalendarAsync(
-        GoogleAccessToken accessToken,
-        GoogleCalendarExportPlan plan,
-        CancellationToken cancellationToken)
+    public async Task<GoogleCalendarId> CreatePlanCalendarAsync(GoogleAccessToken accessToken, GoogleCalendarExportPlan plan, CancellationToken cancellationToken)
     {
         JsonObject resource = createCalendarResource(plan);
-        using (HttpRequestMessage request = createJsonRequest(
-            HttpMethod.Post,
-            "calendars",
-            accessToken,
-            resource))
+        using (HttpRequestMessage request = createJsonRequest(HttpMethod.Post, "calendars", accessToken, resource))
         {
-            using (HttpResponseMessage response = await sendAsync(
-                request,
-                cancellationToken).ConfigureAwait(false))
+            using (HttpResponseMessage response = await sendAsync(request, cancellationToken).ConfigureAwait(false))
             {
-                await ensureSuccessAsync(
-                    response,
-                    "calendar_create_failed",
-                    cancellationToken).ConfigureAwait(false);
-                using (JsonDocument document = await readJsonAsync(
-                    response,
-                    cancellationToken).ConfigureAwait(false))
+                await ensureSuccessAsync(response, "calendar_create_failed", cancellationToken).ConfigureAwait(false);
+                using (JsonDocument document = await readJsonAsync(response, cancellationToken).ConfigureAwait(false))
                 {
                     string? idOrNull = getStringOrNull(document.RootElement, "id");
                     if (string.IsNullOrWhiteSpace(idOrNull))
@@ -149,65 +113,31 @@ internal sealed class GoogleCalendarApiClient
         }
     }
 
-    public async Task UpdatePlanCalendarAsync(
-        GoogleAccessToken accessToken,
-        GoogleCalendarId calendarId,
-        GoogleCalendarExportPlan plan,
-        PlanId pendingManagedPlanId,
-        CancellationToken cancellationToken)
+    public async Task UpdatePlanCalendarAsync(GoogleAccessToken accessToken, GoogleCalendarId calendarId, GoogleCalendarExportPlan plan, PlanId pendingManagedPlanId, CancellationToken cancellationToken)
     {
-        JsonObject resource = createCalendarResource(
-            plan,
-            createPlanMarker(pendingManagedPlanId));
-        using (HttpRequestMessage request = createJsonRequest(
-            HttpMethod.Put,
-            "calendars/" + escapePathSegment(calendarId.Value),
-            accessToken,
-            resource))
+        JsonObject resource = createCalendarResource(plan, createPlanMarker(pendingManagedPlanId));
+        using (HttpRequestMessage request = createJsonRequest(HttpMethod.Put, "calendars/" + escapePathSegment(calendarId.Value), accessToken, resource))
         {
-            using (HttpResponseMessage response = await sendAsync(
-                request,
-                cancellationToken).ConfigureAwait(false))
+            using (HttpResponseMessage response = await sendAsync(request, cancellationToken).ConfigureAwait(false))
             {
-                await ensureSuccessAsync(
-                    response,
-                    "calendar_update_failed",
-                    cancellationToken).ConfigureAwait(false);
+                await ensureSuccessAsync(response, "calendar_update_failed", cancellationToken).ConfigureAwait(false);
             }
         }
     }
 
-    public async Task FinalizePlanCalendarAsync(
-        GoogleAccessToken accessToken,
-        GoogleCalendarId calendarId,
-        GoogleCalendarExportPlan plan,
-        CancellationToken cancellationToken)
+    public async Task FinalizePlanCalendarAsync(GoogleAccessToken accessToken, GoogleCalendarId calendarId, GoogleCalendarExportPlan plan, CancellationToken cancellationToken)
     {
-        JsonObject resource = createCalendarResource(
-            plan,
-            plan.CalendarDescription.Value);
-        using (HttpRequestMessage request = createJsonRequest(
-            HttpMethod.Put,
-            "calendars/" + escapePathSegment(calendarId.Value),
-            accessToken,
-            resource))
+        JsonObject resource = createCalendarResource(plan, plan.CalendarDescription.Value);
+        using (HttpRequestMessage request = createJsonRequest(HttpMethod.Put, "calendars/" + escapePathSegment(calendarId.Value), accessToken, resource))
         {
-            using (HttpResponseMessage response = await sendAsync(
-                request,
-                cancellationToken).ConfigureAwait(false))
+            using (HttpResponseMessage response = await sendAsync(request, cancellationToken).ConfigureAwait(false))
             {
-                await ensureSuccessAsync(
-                    response,
-                    "calendar_finalize_failed",
-                    cancellationToken).ConfigureAwait(false);
+                await ensureSuccessAsync(response, "calendar_finalize_failed", cancellationToken).ConfigureAwait(false);
             }
         }
     }
 
-    public async Task<PlanId?> FindManagedPlanIdAsync(
-        GoogleAccessToken accessToken,
-        GoogleCalendarId calendarId,
-        CancellationToken cancellationToken)
+    public async Task<PlanId?> FindManagedPlanIdAsync(GoogleAccessToken accessToken, GoogleCalendarId calendarId, CancellationToken cancellationToken)
     {
         HashSet<PlanId> planIds = new HashSet<PlanId>();
         GoogleCalendarPaginationGuard paginationGuard = new GoogleCalendarPaginationGuard(MAXIMUM_EVENT_LIST_PAGE_COUNT, "managed_calendar_probe_invalid_pagination");
@@ -215,26 +145,15 @@ internal sealed class GoogleCalendarApiClient
         do
         {
             paginationGuard.BeginPage();
-            string relativeUri = "calendars/"
-                + escapePathSegment(calendarId.Value)
-                + "/events?maxResults="
-                + MAXIMUM_EVENT_LIST_PAGE_SIZE.ToString(CultureInfo.InvariantCulture)
-                + "&showDeleted=false&singleEvents=false&privateExtendedProperty="
-                + Uri.EscapeDataString(
-                    GoogleCalendarEventResourceFactory.CreateManagedPropertyFilter());
+            string relativeUri = "calendars/" + escapePathSegment(calendarId.Value) + "/events?maxResults=" + MAXIMUM_EVENT_LIST_PAGE_SIZE.ToString(CultureInfo.InvariantCulture) + "&showDeleted=false&singleEvents=false&privateExtendedProperty=" + Uri.EscapeDataString(GoogleCalendarEventResourceFactory.CreateManagedPropertyFilter());
             if (pageTokenOrNull != null)
             {
                 relativeUri += "&pageToken=" + Uri.EscapeDataString(pageTokenOrNull);
             }
 
-            using (HttpRequestMessage request = createRequest(
-                HttpMethod.Get,
-                relativeUri,
-                accessToken))
+            using (HttpRequestMessage request = createRequest(HttpMethod.Get, relativeUri, accessToken))
             {
-                using (HttpResponseMessage response = await sendAsync(
-                    request,
-                    cancellationToken).ConfigureAwait(false))
+                using (HttpResponseMessage response = await sendAsync(request, cancellationToken).ConfigureAwait(false))
                 {
                     if (response.StatusCode == HttpStatusCode.NotFound)
                     {
@@ -243,33 +162,20 @@ internal sealed class GoogleCalendarApiClient
 
                     if (response.StatusCode == HttpStatusCode.Forbidden)
                     {
-                        bool isRateLimited = await containsRateLimitReasonAsync(
-                            response,
-                            cancellationToken).ConfigureAwait(false);
+                        bool isRateLimited = await containsRateLimitReasonAsync(response, cancellationToken).ConfigureAwait(false);
                         if (isRateLimited)
                         {
-                            throw new GoogleCalendarApiException(
-                                response.StatusCode,
-                                "managed_calendar_probe_failed",
-                                EGoogleCalendarApiFailureKind.Transient);
+                            throw new GoogleCalendarApiException(response.StatusCode, "managed_calendar_probe_failed", EGoogleCalendarApiFailureKind.Transient);
                         }
 
                         return null;
                     }
 
-                    await ensureSuccessAsync(
-                        response,
-                        "managed_calendar_probe_failed",
-                        cancellationToken).ConfigureAwait(false);
-                    using (JsonDocument document = await readJsonAsync(
-                        response,
-                        cancellationToken).ConfigureAwait(false))
+                    await ensureSuccessAsync(response, "managed_calendar_probe_failed", cancellationToken).ConfigureAwait(false);
+                    using (JsonDocument document = await readJsonAsync(response, cancellationToken).ConfigureAwait(false))
                     {
                         JsonElement items;
-                        if (document.RootElement.TryGetProperty(
-                                "items",
-                                out items)
-                            && items.ValueKind == JsonValueKind.Array)
+                        if (document.RootElement.TryGetProperty("items", out items) && items.ValueKind == JsonValueKind.Array)
                         {
                             foreach (JsonElement item in items.EnumerateArray())
                             {
@@ -285,10 +191,7 @@ internal sealed class GoogleCalendarApiClient
                             }
                         }
 
-                        pageTokenOrNull = paginationGuard.AcceptNextPageTokenOrNull(
-                            getStringOrNull(
-                                document.RootElement,
-                                "nextPageToken"));
+                        pageTokenOrNull = paginationGuard.AcceptNextPageTokenOrNull(getStringOrNull(document.RootElement, "nextPageToken"));
                     }
                 }
             }
@@ -303,18 +206,9 @@ internal sealed class GoogleCalendarApiClient
         return null;
     }
 
-    public async Task<GoogleCalendarReconciliationResult> ReconcileEventsAsync(
-        GoogleAccessToken accessToken,
-        GoogleCalendarId calendarId,
-        GoogleCalendarExportPlan plan,
-        CancellationToken cancellationToken)
+    public async Task<GoogleCalendarReconciliationResult> ReconcileEventsAsync(GoogleAccessToken accessToken, GoogleCalendarId calendarId, GoogleCalendarExportPlan plan, CancellationToken cancellationToken)
     {
-        return await ReconcileEventsAsync(
-            accessToken,
-            calendarId,
-            plan,
-            null,
-            cancellationToken).ConfigureAwait(false);
+        return await ReconcileEventsAsync(accessToken, calendarId, plan, null, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<GoogleCalendarReconciliationResult> ReconcileEventsAsync(
@@ -324,19 +218,10 @@ internal sealed class GoogleCalendarApiClient
         PlanId? replacedPlanIdOrNull,
         CancellationToken cancellationToken)
     {
-        HashSet<GoogleCalendarEventId> existingEventIds = await listManagedEventIdsAsync(
-            accessToken,
-            calendarId,
-            plan.PlanId,
-            cancellationToken).ConfigureAwait(false);
-        if (replacedPlanIdOrNull.HasValue
-            && replacedPlanIdOrNull.Value != plan.PlanId)
+        HashSet<GoogleCalendarEventId> existingEventIds = await listManagedEventIdsAsync(accessToken, calendarId, plan.PlanId, cancellationToken).ConfigureAwait(false);
+        if (replacedPlanIdOrNull.HasValue && replacedPlanIdOrNull.Value != plan.PlanId)
         {
-            HashSet<GoogleCalendarEventId> replacedPlanEventIds = await listManagedEventIdsAsync(
-                accessToken,
-                calendarId,
-                replacedPlanIdOrNull.Value,
-                cancellationToken).ConfigureAwait(false);
+            HashSet<GoogleCalendarEventId> replacedPlanEventIds = await listManagedEventIdsAsync(accessToken, calendarId, replacedPlanIdOrNull.Value, cancellationToken).ConfigureAwait(false);
             existingEventIds.UnionWith(replacedPlanEventIds);
         }
 
@@ -347,18 +232,10 @@ internal sealed class GoogleCalendarApiClient
         {
             GoogleCalendarEventId eventId = GoogleCalendarEventId.Create(plan.PlanId, exportEvent.SourceId);
             desiredEventIds.Add(eventId);
-            JsonObject resource = GoogleCalendarEventResourceFactory.Create(
-                plan.PlanId,
-                plan.TimeZoneId,
-                exportEvent);
+            JsonObject resource = GoogleCalendarEventResourceFactory.Create(plan.PlanId, plan.TimeZoneId, exportEvent);
             if (existingEventIds.Contains(eventId))
             {
-                await updateEventAsync(
-                    accessToken,
-                    calendarId,
-                    eventId,
-                    resource,
-                    cancellationToken).ConfigureAwait(false);
+                await updateEventAsync(accessToken, calendarId, eventId, resource, cancellationToken).ConfigureAwait(false);
                 updatedEventCount++;
             }
             else
@@ -376,18 +253,11 @@ internal sealed class GoogleCalendarApiClient
                 continue;
             }
 
-            await deleteEventAsync(
-                accessToken,
-                calendarId,
-                existingEventId,
-                cancellationToken).ConfigureAwait(false);
+            await deleteEventAsync(accessToken, calendarId, existingEventId, cancellationToken).ConfigureAwait(false);
             deletedEventCount++;
         }
 
-        return new GoogleCalendarReconciliationResult(
-            createdEventCount,
-            updatedEventCount,
-            deletedEventCount);
+        return new GoogleCalendarReconciliationResult(createdEventCount, updatedEventCount, deletedEventCount);
     }
 
     internal static string createPlanMarker(PlanId planId)
@@ -400,11 +270,7 @@ internal sealed class GoogleCalendarApiClient
         return "TimetableGenerator-Plan:" + planId.Value.ToString("N");
     }
 
-    private async Task<HashSet<GoogleCalendarEventId>> listManagedEventIdsAsync(
-        GoogleAccessToken accessToken,
-        GoogleCalendarId calendarId,
-        PlanId planId,
-        CancellationToken cancellationToken)
+    private async Task<HashSet<GoogleCalendarEventId>> listManagedEventIdsAsync(GoogleAccessToken accessToken, GoogleCalendarId calendarId, PlanId planId, CancellationToken cancellationToken)
     {
         HashSet<GoogleCalendarEventId> eventIds = new HashSet<GoogleCalendarEventId>();
         GoogleCalendarPaginationGuard paginationGuard = new GoogleCalendarPaginationGuard(MAXIMUM_EVENT_LIST_PAGE_COUNT, "event_list_invalid_pagination");
@@ -412,45 +278,25 @@ internal sealed class GoogleCalendarApiClient
         do
         {
             paginationGuard.BeginPage();
-            string relativeUri = "calendars/"
-                + escapePathSegment(calendarId.Value)
-                + "/events?maxResults="
-                + MAXIMUM_EVENT_LIST_PAGE_SIZE.ToString(CultureInfo.InvariantCulture)
-                + "&showDeleted=false&singleEvents=false&privateExtendedProperty="
-                + Uri.EscapeDataString(
-                    GoogleCalendarEventResourceFactory.CreateManagedPropertyFilter())
-                + "&privateExtendedProperty="
-                + Uri.EscapeDataString(
-                    GoogleCalendarEventResourceFactory.CreatePlanPropertyFilter(
-                        planId));
+            string relativeUri = "calendars/" + escapePathSegment(calendarId.Value) + "/events?maxResults=" + MAXIMUM_EVENT_LIST_PAGE_SIZE.ToString(CultureInfo.InvariantCulture) + "&showDeleted=false&singleEvents=false&privateExtendedProperty=" + Uri.EscapeDataString(GoogleCalendarEventResourceFactory.CreateManagedPropertyFilter()) + "&privateExtendedProperty=" + Uri.EscapeDataString(GoogleCalendarEventResourceFactory.CreatePlanPropertyFilter(planId));
             if (pageTokenOrNull != null)
             {
                 relativeUri += "&pageToken=" + Uri.EscapeDataString(pageTokenOrNull);
             }
 
-            using (HttpRequestMessage request = createRequest(
-                HttpMethod.Get,
-                relativeUri,
-                accessToken))
+            using (HttpRequestMessage request = createRequest(HttpMethod.Get, relativeUri, accessToken))
             {
-                using (HttpResponseMessage response = await sendAsync(
-                    request,
-                    cancellationToken).ConfigureAwait(false))
+                using (HttpResponseMessage response = await sendAsync(request, cancellationToken).ConfigureAwait(false))
                 {
                     await ensureSuccessAsync(response, "event_list_failed", cancellationToken).ConfigureAwait(false);
-                    using (JsonDocument document = await readJsonAsync(
-                        response,
-                        cancellationToken).ConfigureAwait(false))
+                    using (JsonDocument document = await readJsonAsync(response, cancellationToken).ConfigureAwait(false))
                     {
                         JsonElement items;
-                        if (document.RootElement.TryGetProperty("items", out items)
-                            && items.ValueKind == JsonValueKind.Array)
+                        if (document.RootElement.TryGetProperty("items", out items) && items.ValueKind == JsonValueKind.Array)
                         {
                             foreach (JsonElement item in items.EnumerateArray())
                             {
-                                if (GoogleCalendarEventResourceFactory.isManagedByPlan(
-                                        item,
-                                        planId) == false)
+                                if (GoogleCalendarEventResourceFactory.isManagedByPlan(item, planId) == false)
                                 {
                                     continue;
                                 }
@@ -463,10 +309,7 @@ internal sealed class GoogleCalendarApiClient
                             }
                         }
 
-                        pageTokenOrNull = paginationGuard.AcceptNextPageTokenOrNull(
-                            getStringOrNull(
-                                document.RootElement,
-                                "nextPageToken"));
+                        pageTokenOrNull = paginationGuard.AcceptNextPageTokenOrNull(getStringOrNull(document.RootElement, "nextPageToken"));
                     }
                 }
             }
@@ -476,69 +319,33 @@ internal sealed class GoogleCalendarApiClient
         return eventIds;
     }
 
-    private async Task createEventAsync(
-        GoogleAccessToken accessToken,
-        GoogleCalendarId calendarId,
-        JsonObject resource,
-        CancellationToken cancellationToken)
+    private async Task createEventAsync(GoogleAccessToken accessToken, GoogleCalendarId calendarId, JsonObject resource, CancellationToken cancellationToken)
     {
-        using (HttpRequestMessage request = createJsonRequest(
-            HttpMethod.Post,
-            "calendars/" + escapePathSegment(calendarId.Value) + "/events",
-            accessToken,
-            resource))
+        using (HttpRequestMessage request = createJsonRequest(HttpMethod.Post, "calendars/" + escapePathSegment(calendarId.Value) + "/events", accessToken, resource))
         {
-            using (HttpResponseMessage response = await sendAsync(
-                request,
-                cancellationToken).ConfigureAwait(false))
+            using (HttpResponseMessage response = await sendAsync(request, cancellationToken).ConfigureAwait(false))
             {
                 await ensureSuccessAsync(response, "event_create_failed", cancellationToken).ConfigureAwait(false);
             }
         }
     }
 
-    private async Task updateEventAsync(
-        GoogleAccessToken accessToken,
-        GoogleCalendarId calendarId,
-        GoogleCalendarEventId eventId,
-        JsonObject resource,
-        CancellationToken cancellationToken)
+    private async Task updateEventAsync(GoogleAccessToken accessToken, GoogleCalendarId calendarId, GoogleCalendarEventId eventId, JsonObject resource, CancellationToken cancellationToken)
     {
-        using (HttpRequestMessage request = createJsonRequest(
-            HttpMethod.Put,
-            "calendars/"
-                + escapePathSegment(calendarId.Value)
-                + "/events/"
-                + escapePathSegment(eventId.Value),
-            accessToken,
-            resource))
+        using (HttpRequestMessage request = createJsonRequest(HttpMethod.Put, "calendars/" + escapePathSegment(calendarId.Value) + "/events/" + escapePathSegment(eventId.Value), accessToken, resource))
         {
-            using (HttpResponseMessage response = await sendAsync(
-                request,
-                cancellationToken).ConfigureAwait(false))
+            using (HttpResponseMessage response = await sendAsync(request, cancellationToken).ConfigureAwait(false))
             {
                 await ensureSuccessAsync(response, "event_update_failed", cancellationToken).ConfigureAwait(false);
             }
         }
     }
 
-    private async Task deleteEventAsync(
-        GoogleAccessToken accessToken,
-        GoogleCalendarId calendarId,
-        GoogleCalendarEventId eventId,
-        CancellationToken cancellationToken)
+    private async Task deleteEventAsync(GoogleAccessToken accessToken, GoogleCalendarId calendarId, GoogleCalendarEventId eventId, CancellationToken cancellationToken)
     {
-        using (HttpRequestMessage request = createRequest(
-            HttpMethod.Delete,
-            "calendars/"
-                + escapePathSegment(calendarId.Value)
-                + "/events/"
-                + escapePathSegment(eventId.Value),
-            accessToken))
+        using (HttpRequestMessage request = createRequest(HttpMethod.Delete, "calendars/" + escapePathSegment(calendarId.Value) + "/events/" + escapePathSegment(eventId.Value), accessToken))
         {
-            using (HttpResponseMessage response = await sendAsync(
-                request,
-                cancellationToken).ConfigureAwait(false))
+            using (HttpResponseMessage response = await sendAsync(request, cancellationToken).ConfigureAwait(false))
             {
                 if (response.StatusCode != HttpStatusCode.NotFound)
                 {
@@ -550,14 +357,10 @@ internal sealed class GoogleCalendarApiClient
 
     private static JsonObject createCalendarResource(GoogleCalendarExportPlan plan)
     {
-        return createCalendarResource(
-            plan,
-            createPlanMarker(plan.PlanId));
+        return createCalendarResource(plan, createPlanMarker(plan.PlanId));
     }
 
-    private static JsonObject createCalendarResource(
-        GoogleCalendarExportPlan plan,
-        string description)
+    private static JsonObject createCalendarResource(GoogleCalendarExportPlan plan, string description)
     {
         return new JsonObject
         {
@@ -567,21 +370,14 @@ internal sealed class GoogleCalendarApiClient
         };
     }
 
-    private static HttpRequestMessage createJsonRequest(
-        HttpMethod method,
-        string relativeUri,
-        GoogleAccessToken accessToken,
-        JsonObject resource)
+    private static HttpRequestMessage createJsonRequest(HttpMethod method, string relativeUri, GoogleAccessToken accessToken, JsonObject resource)
     {
         HttpRequestMessage request = createRequest(method, relativeUri, accessToken);
         request.Content = new StringContent(resource.ToJsonString(), Encoding.UTF8, "application/json");
         return request;
     }
 
-    private static HttpRequestMessage createRequest(
-        HttpMethod method,
-        string relativeUri,
-        GoogleAccessToken accessToken)
+    private static HttpRequestMessage createRequest(HttpMethod method, string relativeUri, GoogleAccessToken accessToken)
     {
         if (accessToken == null)
         {
@@ -594,26 +390,16 @@ internal sealed class GoogleCalendarApiClient
         return request;
     }
 
-    private async Task<HttpResponseMessage> sendAsync(
-        HttpRequestMessage request,
-        CancellationToken cancellationToken)
+    private async Task<HttpResponseMessage> sendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        return await mHttpClient.SendAsync(
-            request,
-            HttpCompletionOption.ResponseHeadersRead,
-            cancellationToken).ConfigureAwait(false);
+        return await mHttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
     }
 
-    private static async Task<JsonDocument> readJsonAsync(
-        HttpResponseMessage response,
-        CancellationToken cancellationToken)
+    private static async Task<JsonDocument> readJsonAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
         try
         {
-            byte[] content = await GoogleHttpResponseBodyReader.ReadAsync(
-                response.Content,
-                MAXIMUM_RESPONSE_BODY_BYTES,
-                cancellationToken).ConfigureAwait(false);
+            byte[] content = await GoogleHttpResponseBodyReader.ReadAsync(response.Content, MAXIMUM_RESPONSE_BODY_BYTES, cancellationToken).ConfigureAwait(false);
             return JsonDocument.Parse(content);
         }
         catch (GoogleHttpResponseBodyLimitExceededException)
@@ -630,10 +416,7 @@ internal sealed class GoogleCalendarApiClient
         }
     }
 
-    private static async Task ensureSuccessAsync(
-        HttpResponseMessage response,
-        string diagnosticCode,
-        CancellationToken cancellationToken)
+    private static async Task ensureSuccessAsync(HttpResponseMessage response, string diagnosticCode, CancellationToken cancellationToken)
     {
         if (response.IsSuccessStatusCode)
         {
@@ -646,25 +429,15 @@ internal sealed class GoogleCalendarApiClient
             isTransient = await containsRateLimitReasonAsync(response, cancellationToken).ConfigureAwait(false);
         }
 
-        throw new GoogleCalendarApiException(
-            response.StatusCode,
-            diagnosticCode,
-            isTransient
-                ? EGoogleCalendarApiFailureKind.Transient
-                : EGoogleCalendarApiFailureKind.Permanent);
+        throw new GoogleCalendarApiException(response.StatusCode, diagnosticCode, isTransient ? EGoogleCalendarApiFailureKind.Transient : EGoogleCalendarApiFailureKind.Permanent);
     }
 
-    private static async Task<bool> containsRateLimitReasonAsync(
-        HttpResponseMessage response,
-        CancellationToken cancellationToken)
+    private static async Task<bool> containsRateLimitReasonAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
         byte[] content;
         try
         {
-            content = await GoogleHttpResponseBodyReader.ReadAsync(
-                response.Content,
-                MAXIMUM_RESPONSE_BODY_BYTES,
-                cancellationToken).ConfigureAwait(false);
+            content = await GoogleHttpResponseBodyReader.ReadAsync(response.Content, MAXIMUM_RESPONSE_BODY_BYTES, cancellationToken).ConfigureAwait(false);
         }
         catch (GoogleHttpResponseBodyLimitExceededException)
         {
@@ -672,9 +445,7 @@ internal sealed class GoogleCalendarApiClient
         }
         catch (IOException exception)
         {
-            throw new HttpRequestException(
-                "The Google Calendar error response body could not be read.",
-                exception);
+            throw new HttpRequestException("The Google Calendar error response body could not be read.", exception);
         }
 
         try
@@ -694,18 +465,9 @@ internal sealed class GoogleCalendarApiClient
                 foreach (JsonElement errorDetail in errors.EnumerateArray())
                 {
                     string? reasonOrNull = getStringOrNull(errorDetail, "reason");
-                    if (string.Equals(
-                        reasonOrNull,
-                        "userRateLimitExceeded",
-                        StringComparison.Ordinal)
-                        || string.Equals(
-                            reasonOrNull,
-                            "rateLimitExceeded",
-                            StringComparison.Ordinal)
-                        || string.Equals(
-                            reasonOrNull,
-                            "quotaExceeded",
-                            StringComparison.Ordinal))
+                    if (string.Equals(reasonOrNull, "userRateLimitExceeded", StringComparison.Ordinal)
+                        || string.Equals(reasonOrNull, "rateLimitExceeded", StringComparison.Ordinal)
+                        || string.Equals(reasonOrNull, "quotaExceeded", StringComparison.Ordinal))
                     {
                         return true;
                     }
@@ -762,34 +524,22 @@ internal sealed class GoogleCalendarApiClient
             "freeBusyReader" => EGoogleCalendarAccessRole.FreeBusyReader,
             "reader" => EGoogleCalendarAccessRole.Reader,
             "writer" => EGoogleCalendarAccessRole.Writer,
-            "writerWithoutPrivateAccess" =>
-                EGoogleCalendarAccessRole.WriterWithoutPrivateAccess,
+            "writerWithoutPrivateAccess" => EGoogleCalendarAccessRole.WriterWithoutPrivateAccess,
             "owner" => EGoogleCalendarAccessRole.Owner,
             null => EGoogleCalendarAccessRole.None,
             _ => EGoogleCalendarAccessRole.None,
         };
     }
 
-    private static PlanId? tryParseLegacyManagedPlanIdOrNull(
-        string? descriptionOrNull)
+    private static PlanId? tryParseLegacyManagedPlanIdOrNull(string? descriptionOrNull)
     {
         const string MARKER_PREFIX = "TimetableGenerator-Plan:";
-        if (descriptionOrNull == null
-            || descriptionOrNull.StartsWith(
-                MARKER_PREFIX,
-                StringComparison.Ordinal) == false)
+        if (descriptionOrNull == null || descriptionOrNull.StartsWith(MARKER_PREFIX, StringComparison.Ordinal) == false)
         {
             return null;
         }
 
         Guid planIdValue;
-        return Guid.TryParseExact(
-                descriptionOrNull[MARKER_PREFIX.Length..],
-                "N",
-                out planIdValue)
-            && planIdValue != Guid.Empty
-                ? new PlanId(planIdValue)
-                : null;
+        return Guid.TryParseExact(descriptionOrNull[MARKER_PREFIX.Length..], "N", out planIdValue) && planIdValue != Guid.Empty ? new PlanId(planIdValue) : null;
     }
-
 }

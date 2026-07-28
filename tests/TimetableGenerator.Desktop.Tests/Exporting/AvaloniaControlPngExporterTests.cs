@@ -236,9 +236,7 @@ public sealed class AvaloniaControlPngExporterTests
         return sourceControl;
     }
 
-    private static void assertBitmapContainsColor(
-        Bitmap bitmap,
-        Color expectedColor)
+    private static void assertBitmapContainsColor(Bitmap bitmap, Color expectedColor)
     {
         using (WriteableBitmap pixelCopy = new WriteableBitmap(bitmap.PixelSize, new Vector(96.0, 96.0), PixelFormat.Bgra8888, AlphaFormat.Premul))
         using (ILockedFramebuffer framebuffer = pixelCopy.Lock())
@@ -334,10 +332,7 @@ public sealed class AvaloniaControlPngExporterTests
             mInnerStream.Flush();
         }
 
-        public override int Read(
-            byte[] buffer,
-            int offset,
-            int count)
+        public override int Read(byte[] buffer, int offset, int count)
         {
             throw new NotSupportedException();
         }
@@ -357,10 +352,7 @@ public sealed class AvaloniaControlPngExporterTests
             mInnerStream.SetLength(value);
         }
 
-        public override void Write(
-            byte[] buffer,
-            int offset,
-            int count)
+        public override void Write(byte[] buffer, int offset, int count)
         {
             waitForReleaseOnFirstWrite();
             mInnerStream.Write(buffer, offset, count);

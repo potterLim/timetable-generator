@@ -7,10 +7,7 @@ namespace TimetableGenerator.Application.Planning;
 
 public static class PlanningWorkspaceCatalogRebinder
 {
-    public static PlanningWorkspaceCatalogRebindResult TryRebind(
-        CourseCatalog newCatalog,
-        PlanCatalogBinding newBinding,
-        PlanningWorkspace workspace)
+    public static PlanningWorkspaceCatalogRebindResult TryRebind(CourseCatalog newCatalog, PlanCatalogBinding newBinding, PlanningWorkspace workspace)
     {
         if (newCatalog == null)
         {
@@ -39,20 +36,14 @@ public static class PlanningWorkspaceCatalogRebinder
 
         Dictionary<CourseId, CatalogCourse> coursesById = createCoursesById(newCatalog);
         Dictionary<OfferingId, CatalogOffering> offeringsById = createOfferingsById(newCatalog);
-        EPlanningWorkspaceCatalogRebindStatus validationStatus = validatePlans(
-            workspace,
-            coursesById,
-            offeringsById);
+        EPlanningWorkspaceCatalogRebindStatus validationStatus = validatePlans(workspace, coursesById, offeringsById);
         if (validationStatus != EPlanningWorkspaceCatalogRebindStatus.Rebound)
         {
             return PlanningWorkspaceCatalogRebindResult.createFailure(validationStatus);
         }
 
         List<PlanningPlan> reboundPlans = createReboundPlans(workspace, newBinding);
-        PlanningWorkspace reboundWorkspace = new PlanningWorkspace(
-            newBinding,
-            workspace.ActivePlanIdOrNull,
-            reboundPlans);
+        PlanningWorkspace reboundWorkspace = new PlanningWorkspace(newBinding, workspace.ActivePlanIdOrNull, reboundPlans);
         return PlanningWorkspaceCatalogRebindResult.createRebound(reboundWorkspace);
     }
 
@@ -64,14 +55,11 @@ public static class PlanningWorkspaceCatalogRebinder
             && binding.Revision == catalog.Revision;
         if (hasMatchingCatalogIdentity == false)
         {
-            throw new ArgumentException(
-                "The new catalog binding must identify the supplied course catalog.",
-                nameof(binding));
+            throw new ArgumentException("The new catalog binding must identify the supplied course catalog.", nameof(binding));
         }
     }
 
-    private static EPlanningWorkspaceCatalogRebindStatus? getTransitionFailureOrNull(
-            EPlanningCatalogTransitionStatus transitionStatus)
+    private static EPlanningWorkspaceCatalogRebindStatus? getTransitionFailureOrNull(EPlanningCatalogTransitionStatus transitionStatus)
     {
         switch (transitionStatus)
         {
@@ -87,10 +75,7 @@ public static class PlanningWorkspaceCatalogRebinder
             case EPlanningCatalogTransitionStatus.ArtifactSha256Mismatch:
                 return EPlanningWorkspaceCatalogRebindStatus.CatalogArtifactSha256Mismatch;
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(transitionStatus),
-                    transitionStatus,
-                    "Unknown catalog transition status.");
+                throw new ArgumentOutOfRangeException(nameof(transitionStatus), transitionStatus, "Unknown catalog transition status.");
         }
     }
 
@@ -116,10 +101,7 @@ public static class PlanningWorkspaceCatalogRebinder
         return offeringsById;
     }
 
-    private static EPlanningWorkspaceCatalogRebindStatus validatePlans(
-        PlanningWorkspace workspace,
-        IReadOnlyDictionary<CourseId, CatalogCourse> coursesById,
-        IReadOnlyDictionary<OfferingId, CatalogOffering> offeringsById)
+    private static EPlanningWorkspaceCatalogRebindStatus validatePlans(PlanningWorkspace workspace, IReadOnlyDictionary<CourseId, CatalogCourse> coursesById, IReadOnlyDictionary<OfferingId, CatalogOffering> offeringsById)
     {
         foreach (PlanningPlan plan in workspace.Plans)
         {
@@ -133,10 +115,7 @@ public static class PlanningWorkspaceCatalogRebinder
         return EPlanningWorkspaceCatalogRebindStatus.Rebound;
     }
 
-    private static EPlanningWorkspaceCatalogRebindStatus validatePlan(
-        PlanningPlan plan,
-        IReadOnlyDictionary<CourseId, CatalogCourse> coursesById,
-        IReadOnlyDictionary<OfferingId, CatalogOffering> offeringsById)
+    private static EPlanningWorkspaceCatalogRebindStatus validatePlan(PlanningPlan plan, IReadOnlyDictionary<CourseId, CatalogCourse> coursesById, IReadOnlyDictionary<OfferingId, CatalogOffering> offeringsById)
     {
         foreach (CourseChoiceGroup courseChoiceGroup in plan.CourseChoiceGroups)
         {
@@ -147,8 +126,7 @@ public static class PlanningWorkspaceCatalogRebinder
             }
         }
 
-        foreach (UnscheduledOfferingSelection selection
-            in plan.UnscheduledOfferingSelections)
+        foreach (UnscheduledOfferingSelection selection in plan.UnscheduledOfferingSelections)
         {
             EPlanningWorkspaceCatalogRebindStatus selectionStatus = validateUnscheduledSelection(selection, coursesById, offeringsById);
             if (selectionStatus != EPlanningWorkspaceCatalogRebindStatus.Rebound)
@@ -160,21 +138,16 @@ public static class PlanningWorkspaceCatalogRebinder
         return EPlanningWorkspaceCatalogRebindStatus.Rebound;
     }
 
-    private static EPlanningWorkspaceCatalogRebindStatus validateCourseChoiceGroup(
-        CourseChoiceGroup courseChoiceGroup,
-        IReadOnlyDictionary<CourseId, CatalogCourse> coursesById,
-        IReadOnlyDictionary<OfferingId, CatalogOffering> offeringsById)
+    private static EPlanningWorkspaceCatalogRebindStatus validateCourseChoiceGroup(CourseChoiceGroup courseChoiceGroup, IReadOnlyDictionary<CourseId, CatalogCourse> coursesById, IReadOnlyDictionary<OfferingId, CatalogOffering> offeringsById)
     {
-        foreach (CourseCandidate courseCandidate
-            in courseChoiceGroup.CourseCandidates)
+        foreach (CourseCandidate courseCandidate in courseChoiceGroup.CourseCandidates)
         {
             if (coursesById.ContainsKey(courseCandidate.CourseId) == false)
             {
                 return EPlanningWorkspaceCatalogRebindStatus.CourseNotFound;
             }
 
-            foreach (OfferingCandidate offeringCandidate
-                in courseCandidate.OfferingCandidates)
+            foreach (OfferingCandidate offeringCandidate in courseCandidate.OfferingCandidates)
             {
                 CatalogOffering? offeringOrNull;
                 bool hasOffering = offeringsById.TryGetValue(offeringCandidate.OfferingId, out offeringOrNull);
@@ -193,10 +166,7 @@ public static class PlanningWorkspaceCatalogRebinder
         return EPlanningWorkspaceCatalogRebindStatus.Rebound;
     }
 
-    private static EPlanningWorkspaceCatalogRebindStatus validateUnscheduledSelection(
-        UnscheduledOfferingSelection selection,
-        IReadOnlyDictionary<CourseId, CatalogCourse> coursesById,
-        IReadOnlyDictionary<OfferingId, CatalogOffering> offeringsById)
+    private static EPlanningWorkspaceCatalogRebindStatus validateUnscheduledSelection(UnscheduledOfferingSelection selection, IReadOnlyDictionary<CourseId, CatalogCourse> coursesById, IReadOnlyDictionary<OfferingId, CatalogOffering> offeringsById)
     {
         if (coursesById.ContainsKey(selection.CourseId) == false)
         {
@@ -223,9 +193,7 @@ public static class PlanningWorkspaceCatalogRebinder
         return EPlanningWorkspaceCatalogRebindStatus.Rebound;
     }
 
-    private static List<PlanningPlan> createReboundPlans(
-        PlanningWorkspace workspace,
-        PlanCatalogBinding newBinding)
+    private static List<PlanningPlan> createReboundPlans(PlanningWorkspace workspace, PlanCatalogBinding newBinding)
     {
         List<PlanningPlan> reboundPlans = new List<PlanningPlan>(workspace.Plans.Count);
         foreach (PlanningPlan plan in workspace.Plans)

@@ -14,10 +14,7 @@ internal readonly record struct AcademicPeriod
     {
         if (value < FIRST_PERIOD || value > LAST_PERIOD)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "Academic periods must be between 1 and 10.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Academic periods must be between 1 and 10.");
         }
 
         Value = value;

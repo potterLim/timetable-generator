@@ -440,10 +440,7 @@ public sealed class ProductControlVisualStateTests
         closeGlyph.Width = 11.0;
         closeGlyph.Height = 11.0;
         closeGlyph.Stretch = Stretch.Uniform;
-        closeGlyph.Data = Geometry.Parse(
-            "M1169 1024l879 -879l-145 -145l-879 879l-879 -879" +
-            "l-145 145l879 879l-879 879l145 145l879 -879" +
-            "l879 879l145 -145z");
+        closeGlyph.Data = Geometry.Parse("M1169 1024l879 -879l-145 -145l-879 879l-879 -879" + "l-145 145l879 879l-879 879l145 145l879 -879" + "l879 879l145 -145z");
         closeGlyph.Bind(
             Shape.FillProperty,
             new Binding
@@ -551,14 +548,10 @@ public sealed class ProductControlVisualStateTests
             throw new InvalidOperationException("The control position could not be resolved.");
         }
 
-        return controlOriginOrNull.Value
-            + new Vector(control.Bounds.Width / 2.0, control.Bounds.Height / 2.0);
+        return controlOriginOrNull.Value + new Vector(control.Bounds.Width / 2.0, control.Bounds.Height / 2.0);
     }
 
-    private static void assertControlsShareVerticalCenter(
-        Control root,
-        Control firstControl,
-        Control secondControl)
+    private static void assertControlsShareVerticalCenter(Control root, Control firstControl, Control secondControl)
     {
         Point? firstOriginOrNull = firstControl.TranslatePoint(new Point(0.0, 0.0), root);
         Point? secondOriginOrNull = secondControl.TranslatePoint(new Point(0.0, 0.0), root);
@@ -569,28 +562,20 @@ public sealed class ProductControlVisualStateTests
             throw new InvalidOperationException("The button content geometry could not be resolved.");
         }
 
-        double firstCenterY = firstOriginOrNull.Value.Y
-            + (firstControl.Bounds.Height / 2.0);
-        double secondCenterY = secondOriginOrNull.Value.Y
-            + (secondControl.Bounds.Height / 2.0);
+        double firstCenterY = firstOriginOrNull.Value.Y + (firstControl.Bounds.Height / 2.0);
+        double secondCenterY = secondOriginOrNull.Value.Y + (secondControl.Bounds.Height / 2.0);
 
         Assert.InRange(Math.Abs(firstCenterY - secondCenterY), 0.0, 0.5);
     }
 
-    private static void assertButtonBrush(
-        IBrush? actualBrushOrNull,
-        ColorToken expectedColorToken,
-        ThemeVariant themeVariant)
+    private static void assertButtonBrush(IBrush? actualBrushOrNull, ColorToken expectedColorToken, ThemeVariant themeVariant)
     {
         SolidColorBrush actualBrush = Assert.IsType<SolidColorBrush>(actualBrushOrNull);
         SolidColorBrush expectedBrush = findRequiredThemeBrush(expectedColorToken, themeVariant);
         Assert.Equal(expectedBrush.Color, actualBrush.Color);
     }
 
-    private static void assertRenderedButtonBackground(
-        Button button,
-        ColorToken expectedColorToken,
-        ThemeVariant themeVariant)
+    private static void assertRenderedButtonBackground(Button button, ColorToken expectedColorToken, ThemeVariant themeVariant)
     {
         ContentPresenter contentPresenter = button.GetVisualDescendants().OfType<ContentPresenter>().Single();
         assertButtonBrush(contentPresenter.Background, expectedColorToken, themeVariant);
@@ -614,9 +599,7 @@ public sealed class ProductControlVisualStateTests
         Assert.Equal(borderThickness, presenter.BorderThickness);
     }
 
-    private static SolidColorBrush findRequiredThemeBrush(
-        ColorToken colorToken,
-        ThemeVariant themeVariant)
+    private static SolidColorBrush findRequiredThemeBrush(ColorToken colorToken, ThemeVariant themeVariant)
     {
         Avalonia.Application? applicationOrNull = Avalonia.Application.Current;
         Assert.NotNull(applicationOrNull);
@@ -626,17 +609,12 @@ public sealed class ProductControlVisualStateTests
         }
 
         object? resourceOrNull;
-        bool hasResource = applicationOrNull.TryGetResource(
-            colorToken.Value,
-            themeVariant,
-            out resourceOrNull);
+        bool hasResource = applicationOrNull.TryGetResource(colorToken.Value, themeVariant, out resourceOrNull);
         Assert.True(hasResource, "Missing brush resource: " + colorToken.Value);
         return Assert.IsType<SolidColorBrush>(resourceOrNull);
     }
 
-    private static ControlTheme findRequiredControlTheme(
-        ControlThemeToken controlThemeToken,
-        ThemeVariant themeVariant)
+    private static ControlTheme findRequiredControlTheme(ControlThemeToken controlThemeToken, ThemeVariant themeVariant)
     {
         Avalonia.Application? applicationOrNull = Avalonia.Application.Current;
         Assert.NotNull(applicationOrNull);
@@ -646,10 +624,7 @@ public sealed class ProductControlVisualStateTests
         }
 
         object? resourceOrNull;
-        bool hasResource = applicationOrNull.TryGetResource(
-            controlThemeToken.Value,
-            themeVariant,
-            out resourceOrNull);
+        bool hasResource = applicationOrNull.TryGetResource(controlThemeToken.Value, themeVariant, out resourceOrNull);
         Assert.True(hasResource, "Missing control theme: " + controlThemeToken.Value);
 
         return Assert.IsType<ControlTheme>(resourceOrNull);

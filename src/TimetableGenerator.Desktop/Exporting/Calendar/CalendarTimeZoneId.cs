@@ -12,8 +12,7 @@ internal readonly record struct CalendarTimeZoneId
     {
         get
         {
-            return mIsInitialized
-                && string.IsNullOrWhiteSpace(Value) == false;
+            return mIsInitialized && string.IsNullOrWhiteSpace(Value) == false;
         }
     }
 
@@ -29,9 +28,7 @@ internal readonly record struct CalendarTimeZoneId
         bool hasWindowsTimeZoneEquivalent = TimeZoneInfo.TryConvertIanaIdToWindowsId(normalizedValue, out windowsTimeZoneIdOrNull);
         if (hasWindowsTimeZoneEquivalent == false || string.IsNullOrWhiteSpace(windowsTimeZoneIdOrNull))
         {
-            throw new ArgumentException(
-                "Calendar time-zone IDs must be IANA identifiers supported on every target platform.",
-                nameof(value));
+            throw new ArgumentException("Calendar time-zone IDs must be IANA identifiers supported on every target platform.", nameof(value));
         }
 
         try
@@ -40,17 +37,11 @@ internal readonly record struct CalendarTimeZoneId
         }
         catch (TimeZoneNotFoundException exception)
         {
-            throw new ArgumentException(
-                "The calendar time-zone ID is not installed on this system.",
-                nameof(value),
-                exception);
+            throw new ArgumentException("The calendar time-zone ID is not installed on this system.", nameof(value), exception);
         }
         catch (InvalidTimeZoneException exception)
         {
-            throw new ArgumentException(
-                "The calendar time-zone ID has invalid transition data.",
-                nameof(value),
-                exception);
+            throw new ArgumentException("The calendar time-zone ID has invalid transition data.", nameof(value), exception);
         }
 
         Value = normalizedValue;
@@ -70,14 +61,10 @@ internal readonly record struct CalendarTimeZoneId
         }
 
         string? ianaTimeZoneIdOrNull;
-        bool hasIanaTimeZoneId = TimeZoneInfo.TryConvertWindowsIdToIanaId(
-            timeZone.Id,
-            out ianaTimeZoneIdOrNull);
+        bool hasIanaTimeZoneId = TimeZoneInfo.TryConvertWindowsIdToIanaId(timeZone.Id, out ianaTimeZoneIdOrNull);
         if (hasIanaTimeZoneId == false || string.IsNullOrWhiteSpace(ianaTimeZoneIdOrNull))
         {
-            throw new ArgumentException(
-                "The system time zone cannot be represented by a portable IANA identifier.",
-                nameof(timeZone));
+            throw new ArgumentException("The system time zone cannot be represented by a portable IANA identifier.", nameof(timeZone));
         }
 
         return new CalendarTimeZoneId(ianaTimeZoneIdOrNull);
@@ -89,10 +76,7 @@ internal readonly record struct CalendarTimeZoneId
         TimeZoneInfo timeZone = findSystemTimeZone();
         if (timeZone.IsInvalidTime(localDateTime))
         {
-            throw new InvalidOperationException(
-                "The calendar local time does not exist in time zone "
-                    + Value
-                    + ".");
+            throw new InvalidOperationException("The calendar local time does not exist in time zone " + Value + ".");
         }
 
         TimeSpan utcOffset;
@@ -130,9 +114,7 @@ internal readonly record struct CalendarTimeZoneId
         return TimeZoneInfo.FindSystemTimeZoneById(Value);
     }
 
-    private static TimeSpan findFirstOccurrenceUtcOffset(
-        TimeZoneInfo timeZone,
-        DateTime ambiguousLocalDateTime)
+    private static TimeSpan findFirstOccurrenceUtcOffset(TimeZoneInfo timeZone, DateTime ambiguousLocalDateTime)
     {
         TimeSpan[] possibleOffsets = timeZone.GetAmbiguousTimeOffsets(ambiguousLocalDateTime);
         return possibleOffsets[0] > possibleOffsets[1] ? possibleOffsets[0] : possibleOffsets[1];

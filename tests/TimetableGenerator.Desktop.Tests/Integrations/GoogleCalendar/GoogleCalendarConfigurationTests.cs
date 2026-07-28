@@ -31,10 +31,7 @@ public sealed class GoogleCalendarConfigurationTests
         GoogleCalendarOAuthConfigurationPath path = createTemporaryPath();
         string directoryPath = getDirectoryPath(path);
         Directory.CreateDirectory(directoryPath);
-        File.WriteAllText(
-            path.Value,
-            "{\"schemaVersion\":1,\"clientId\":\"desktop-client.apps.googleusercontent.com\"}",
-            Encoding.UTF8);
+        File.WriteAllText(path.Value, "{\"schemaVersion\":1,\"clientId\":\"desktop-client.apps.googleusercontent.com\"}", Encoding.UTF8);
         ProductGoogleCalendarOAuthConfigurationProvider provider =
             new ProductGoogleCalendarOAuthConfigurationProvider(
                 delegate
@@ -63,11 +60,7 @@ public sealed class GoogleCalendarConfigurationTests
         GoogleCalendarOAuthConfigurationPath path = createTemporaryPath();
         string directoryPath = getDirectoryPath(path);
         Directory.CreateDirectory(directoryPath);
-        File.WriteAllText(
-            path.Value,
-            "{\"schemaVersion\":2,\"clientId\":\"desktop-client.apps.googleusercontent.com\","
-                + "\"clientSecret\":\"native-client-secret\"}",
-            Encoding.UTF8);
+        File.WriteAllText(path.Value, "{\"schemaVersion\":2,\"clientId\":\"desktop-client.apps.googleusercontent.com\"," + "\"clientSecret\":\"native-client-secret\"}", Encoding.UTF8);
         ProductGoogleCalendarOAuthConfigurationProvider provider =
             new ProductGoogleCalendarOAuthConfigurationProvider(
                 delegate
@@ -143,9 +136,7 @@ public sealed class GoogleCalendarConfigurationTests
             new ProductGoogleCalendarOAuthConfigurationProvider(
                 delegate
                 {
-                    return new GoogleCalendarOAuthEnvironmentValues(
-                        "environment-client.apps.googleusercontent.com",
-                        "environment-secret");
+                    return new GoogleCalendarOAuthEnvironmentValues("environment-client.apps.googleusercontent.com", "environment-secret");
                 },
                 createTemporaryPath());
 

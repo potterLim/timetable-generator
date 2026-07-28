@@ -5,6 +5,5 @@ namespace TimetableGenerator.Desktop.Exporting.AppleCalendar;
 
 internal interface IAppleCalendarExportLeaseProvider
 {
-    Task<IAppleCalendarExportLease> AcquireAsync(
-        CancellationToken cancellationToken);
+    Task<IAppleCalendarExportLease> AcquireAsync(CancellationToken cancellationToken);
 }

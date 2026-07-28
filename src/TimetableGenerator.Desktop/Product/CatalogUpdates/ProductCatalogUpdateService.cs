@@ -15,9 +15,7 @@ internal sealed class ProductCatalogUpdateService : IProductCatalogUpdateService
 
     private readonly CatalogCacheFileStore mCatalogCacheStore;
 
-    public ProductCatalogUpdateService(
-        IProductCatalogDownloader catalogDownloader,
-        CatalogCacheFileStore catalogCacheStore)
+    public ProductCatalogUpdateService(IProductCatalogDownloader catalogDownloader, CatalogCacheFileStore catalogCacheStore)
     {
         if (catalogDownloader == null)
         {
@@ -33,10 +31,7 @@ internal sealed class ProductCatalogUpdateService : IProductCatalogUpdateService
         mCatalogCacheStore = catalogCacheStore;
     }
 
-    public async Task<ProductCatalogUpdateResult> CheckAndStageAsync(
-        VerifiedCatalogPackage activePackage,
-        PlanningWorkspace workspaceSnapshot,
-        CancellationToken cancellationToken)
+    public async Task<ProductCatalogUpdateResult> CheckAndStageAsync(VerifiedCatalogPackage activePackage, PlanningWorkspace workspaceSnapshot, CancellationToken cancellationToken)
     {
         if (activePackage == null)
         {
@@ -53,54 +48,37 @@ internal sealed class ProductCatalogUpdateService : IProductCatalogUpdateService
         EPlanningCatalogTransitionStatus transitionStatus = PlanningCatalogTransitionPolicy.EvaluateTransition(activeBinding, candidatePackage.CreatePlanCatalogBinding());
         if (transitionStatus == EPlanningCatalogTransitionStatus.ExactMatch)
         {
-            return new ProductCatalogUpdateResult(
-                EProductCatalogUpdateStatus.Current,
-                candidatePackage.Entry.Revision);
+            return new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.Current, candidatePackage.Entry.Revision);
         }
 
         if (transitionStatus == EPlanningCatalogTransitionStatus.ArtifactSha256Mismatch)
         {
-            return new ProductCatalogUpdateResult(
-                EProductCatalogUpdateStatus.RevisionArtifactChanged,
-                candidatePackage.Entry.Revision);
+            return new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.RevisionArtifactChanged, candidatePackage.Entry.Revision);
         }
 
         if (transitionStatus != EPlanningCatalogTransitionStatus.UpgradeEligible)
         {
-            return new ProductCatalogUpdateResult(
-                EProductCatalogUpdateStatus.TransitionRejected,
-                candidatePackage.Entry.Revision);
+            return new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.TransitionRejected, candidatePackage.Entry.Revision);
         }
 
         PlanningWorkspaceCatalogRebindResult rebindResult = PlanningWorkspaceCatalogRebinder.TryRebind(candidatePackage.Document.Catalog, candidatePackage.CreatePlanCatalogBinding(), workspaceSnapshot);
         if (rebindResult.IsRebound == false)
         {
-            return new ProductCatalogUpdateResult(
-                EProductCatalogUpdateStatus.WorkspaceIncompatible,
-                candidatePackage.Entry.Revision);
+            return new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.WorkspaceIncompatible, candidatePackage.Entry.Revision);
         }
 
-        await mCatalogCacheStore.SaveRetainingAsync(
-            candidatePackage,
-            activeBinding,
-            cancellationToken).ConfigureAwait(false);
-        return new ProductCatalogUpdateResult(
-            EProductCatalogUpdateStatus.Staged,
-            candidatePackage.Entry.Revision);
+        await mCatalogCacheStore.SaveRetainingAsync(candidatePackage, activeBinding, cancellationToken).ConfigureAwait(false);
+        return new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.Staged, candidatePackage.Entry.Revision);
     }
 
-    private static PlanCatalogBinding requireWorkspaceBinding(
-        VerifiedCatalogPackage activePackage,
-        PlanningWorkspace workspaceSnapshot)
+    private static PlanCatalogBinding requireWorkspaceBinding(VerifiedCatalogPackage activePackage, PlanningWorkspace workspaceSnapshot)
     {
         PlanCatalogBinding activeBinding = workspaceSnapshot.CatalogBinding;
 
         EPlanningCatalogTransitionStatus activeTransitionStatus = PlanningCatalogTransitionPolicy.EvaluateTransition(activeBinding, activePackage.CreatePlanCatalogBinding());
         if (activeTransitionStatus != EPlanningCatalogTransitionStatus.ExactMatch)
         {
-            throw new ArgumentException(
-                "The active workspace must match its verified catalog package.",
-                nameof(activePackage));
+            throw new ArgumentException("The active workspace must match its verified catalog package.", nameof(activePackage));
         }
 
         return activeBinding;

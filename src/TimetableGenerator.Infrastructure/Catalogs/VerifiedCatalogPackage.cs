@@ -47,9 +47,7 @@ public sealed class VerifiedCatalogPackage
         Document = document;
     }
 
-    public static VerifiedCatalogPackage ReadAndVerify(
-        ReadOnlyMemory<byte> indexBytes,
-        ReadOnlyMemory<byte> catalogBytes)
+    public static VerifiedCatalogPackage ReadAndVerify(ReadOnlyMemory<byte> indexBytes, ReadOnlyMemory<byte> catalogBytes)
     {
         CatalogIndexDocument index = CatalogIndexJsonReader.Read(indexBytes);
         CatalogIndexEntry entry = index.FindDefaultEntry();

@@ -22,10 +22,7 @@ internal readonly record struct ScheduleBoardTimeBoundary
     {
         if (minutesFromMidnight < 0 || minutesFromMidnight > MINUTES_PER_DAY)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(minutesFromMidnight),
-                minutesFromMidnight,
-                "Schedule board time boundaries must be between 00:00 and 24:00.");
+            throw new ArgumentOutOfRangeException(nameof(minutesFromMidnight), minutesFromMidnight, "Schedule board time boundaries must be between 00:00 and 24:00.");
         }
 
         MinutesFromMidnight = minutesFromMidnight;

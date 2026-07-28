@@ -38,9 +38,7 @@ internal sealed class CatalogCourse
 
         if (firstSourceRecordNumber.Value <= 0)
         {
-            throw new ArgumentException(
-                "Catalog courses require a valid source record number.",
-                nameof(firstSourceRecordNumber));
+            throw new ArgumentException("Catalog courses require a valid source record number.", nameof(firstSourceRecordNumber));
         }
 
         Code = code;

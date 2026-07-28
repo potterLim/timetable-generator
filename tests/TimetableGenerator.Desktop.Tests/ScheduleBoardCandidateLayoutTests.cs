@@ -21,10 +21,7 @@ public sealed class ScheduleBoardCandidateLayoutTests
     [Fact]
     public void CandidateEntriesControlTimeAxisWhileSharedEntriesControlDayRange()
     {
-        ScheduleEntry candidateEntry = createEntry(
-            EDay.Monday,
-            new ScheduleTime(12, 0),
-            new ScheduleTime(13, 15));
+        ScheduleEntry candidateEntry = createEntry(EDay.Monday, new ScheduleTime(12, 0), new ScheduleTime(13, 15));
         ScheduleBoardDayRange sharedDayRange =
             ScheduleBoardDayRange.CreateForEntries(
                 new ScheduleEntry[]
@@ -36,9 +33,7 @@ public sealed class ScheduleBoardCandidateLayoutTests
                         new ScheduleTime(9, 0)),
                 });
 
-        ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForEntries(
-            new ScheduleEntry[] { candidateEntry },
-            sharedDayRange);
+        ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForEntries(new ScheduleEntry[] { candidateEntry }, sharedDayRange);
 
         Assert.Equal(new ScheduleBoardTimeBoundary(690), layout.TimeAxis.Start);
         Assert.Equal(new ScheduleBoardTimeBoundary(810), layout.TimeAxis.End);
@@ -50,9 +45,7 @@ public sealed class ScheduleBoardCandidateLayoutTests
     public void ChangingCandidatePresentationResetsVerticalScrollPosition()
     {
         ScheduleBoardView scheduleBoard = new ScheduleBoardView();
-        scheduleBoard.DataContext = createPresentation(
-            createCourseEntry(EDay.Monday, new AcademicPeriod(1)),
-            createCourseEntry(EDay.Monday, new AcademicPeriod(9)));
+        scheduleBoard.DataContext = createPresentation(createCourseEntry(EDay.Monday, new AcademicPeriod(1)), createCourseEntry(EDay.Monday, new AcademicPeriod(9)));
         Window window = new Window
         {
             Width = 800.0,
@@ -75,9 +68,7 @@ public sealed class ScheduleBoardCandidateLayoutTests
             Dispatcher.UIThread.RunJobs();
             Assert.True(scrollViewerOrNull.Offset.Y > 0.0);
 
-            scheduleBoard.DataContext = createPresentation(
-                createCourseEntry(EDay.Tuesday, new AcademicPeriod(3)),
-                createCourseEntry(EDay.Tuesday, new AcademicPeriod(10)));
+            scheduleBoard.DataContext = createPresentation(createCourseEntry(EDay.Tuesday, new AcademicPeriod(3)), createCourseEntry(EDay.Tuesday, new AcademicPeriod(10)));
             Dispatcher.UIThread.RunJobs();
 
             Assert.Equal(0.0, scrollViewerOrNull.Offset.Y);
@@ -92,19 +83,10 @@ public sealed class ScheduleBoardCandidateLayoutTests
     [AvaloniaFact]
     public void MidnightStartLabelUsesTheFirstTimeRowsInsteadOfTheHeaderRow()
     {
-        WeeklyTimeRange timeRange = new WeeklyTimeRange(
-            EDay.Monday,
-            new DailyTimeRange(
-                new ScheduleTime(0, 15),
-                new ScheduleTime(0, 45)));
-        PersonalSchedule personalSchedule = new PersonalSchedule(
-            PersonalScheduleId.CreateNew(),
-            new PersonalScheduleTitle("자정 일정"),
-            new WeeklyTimeRange[] { timeRange },
-            PersonalScheduleDetails.CreateEmpty());
+        WeeklyTimeRange timeRange = new WeeklyTimeRange(EDay.Monday, new DailyTimeRange(new ScheduleTime(0, 15), new ScheduleTime(0, 45)));
+        PersonalSchedule personalSchedule = new PersonalSchedule(PersonalScheduleId.CreateNew(), new PersonalScheduleTitle("자정 일정"), new WeeklyTimeRange[] { timeRange }, PersonalScheduleDetails.CreateEmpty());
         ScheduleBoardView scheduleBoard = new ScheduleBoardView();
-        scheduleBoard.DataContext = createPresentation(
-            new PersonalScheduleEntry(personalSchedule, timeRange));
+        scheduleBoard.DataContext = createPresentation(new PersonalScheduleEntry(personalSchedule, timeRange));
         Window window = new Window
         {
             Width = 800.0,
@@ -137,11 +119,7 @@ public sealed class ScheduleBoardCandidateLayoutTests
 
     private static ScheduleBoardPresentation createPresentation(params ScheduleEntry[] entries)
     {
-        return new ScheduleBoardPresentation(
-            new ScheduleRecommendation(entries),
-            new PlanName("후보별 시간축 테스트"),
-            new InstitutionName("한동대학교"),
-            AcademicTerm.Parse("2026-2"));
+        return new ScheduleBoardPresentation(new ScheduleRecommendation(entries), new PlanName("후보별 시간축 테스트"), new InstitutionName("한동대학교"), AcademicTerm.Parse("2026-2"));
     }
 
     private static ScheduleEntry createCourseEntry(EDay day, AcademicPeriod period)

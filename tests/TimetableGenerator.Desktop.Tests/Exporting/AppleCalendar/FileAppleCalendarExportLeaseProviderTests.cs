@@ -77,22 +77,14 @@ public sealed class FileAppleCalendarExportLeaseProviderTests
         }
     }
 
-    private static FileAppleCalendarExportLeaseProvider createProvider(
-        string directoryPath)
+    private static FileAppleCalendarExportLeaseProvider createProvider(string directoryPath)
     {
-        return new FileAppleCalendarExportLeaseProvider(
-            new AppleCalendarExportLockFilePath(
-                Path.Combine(
-                    directoryPath,
-                    "apple-calendar-export.lock")));
+        return new FileAppleCalendarExportLeaseProvider(new AppleCalendarExportLockFilePath(Path.Combine(directoryPath, "apple-calendar-export.lock")));
     }
 
     private static string createDirectoryPath()
     {
-        return Path.Combine(
-            Path.GetTempPath(),
-            "TimetableGenerator.Desktop.Tests",
-            Guid.NewGuid().ToString("N"));
+        return Path.Combine(Path.GetTempPath(), "TimetableGenerator.Desktop.Tests", Guid.NewGuid().ToString("N"));
     }
 
     private static void deleteDirectory(string directoryPath)

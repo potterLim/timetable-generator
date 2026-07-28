@@ -28,8 +28,7 @@ internal sealed class GoogleCalendarExportResult
         int deletedEventCount,
         string? diagnosticCodeOrNull)
     {
-        if (Enum.IsDefined(typeof(EGoogleCalendarExportStatus), status) == false
-            || status == EGoogleCalendarExportStatus.None)
+        if (Enum.IsDefined(typeof(EGoogleCalendarExportStatus), status) == false || status == EGoogleCalendarExportStatus.None)
         {
             throw new ArgumentOutOfRangeException(nameof(status));
         }
@@ -47,10 +46,7 @@ internal sealed class GoogleCalendarExportResult
         DiagnosticCodeOrNull = diagnosticCodeOrNull;
     }
 
-    public static GoogleCalendarExportResult Complete(
-        GoogleCalendarId calendarId,
-        PlanName calendarName,
-        GoogleCalendarReconciliationResult reconciliationResult)
+    public static GoogleCalendarExportResult Complete(GoogleCalendarId calendarId, PlanName calendarName, GoogleCalendarReconciliationResult reconciliationResult)
     {
         if (calendarId == null)
         {
@@ -72,15 +68,11 @@ internal sealed class GoogleCalendarExportResult
             null);
     }
 
-    public static GoogleCalendarExportResult Fail(
-        EGoogleCalendarExportStatus status,
-        string? diagnosticCodeOrNull)
+    public static GoogleCalendarExportResult Fail(EGoogleCalendarExportStatus status, string? diagnosticCodeOrNull)
     {
         if (status == EGoogleCalendarExportStatus.None || status == EGoogleCalendarExportStatus.Success)
         {
-            throw new ArgumentException(
-                "Completed Google Calendar exports require completion details.",
-                nameof(status));
+            throw new ArgumentException("Completed Google Calendar exports require completion details.", nameof(status));
         }
 
         return new GoogleCalendarExportResult(status, null, null, 0, 0, 0, diagnosticCodeOrNull);

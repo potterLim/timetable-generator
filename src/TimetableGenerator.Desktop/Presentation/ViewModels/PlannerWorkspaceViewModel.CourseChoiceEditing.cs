@@ -49,9 +49,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return mEditingCourseChoiceGroupIdOrNull.HasValue
-                ? "수강 선택 수정"
-                : "수강 선택 설정";
+            return mEditingCourseChoiceGroupIdOrNull.HasValue ? "수강 선택 수정" : "수강 선택 설정";
         }
     }
 
@@ -117,8 +115,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return HasAlternativeCourseSearchText
-                && HasAlternativeCourseSearchResults == false;
+            return HasAlternativeCourseSearchText && HasAlternativeCourseSearchResults == false;
         }
     }
 
@@ -248,9 +245,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         bool hasRemovedCourse = CourseChoiceDraftCourses.Remove(course);
         if (hasRemovedCourse == false)
         {
-            throw new ArgumentException(
-                "The removed draft course must belong to the active editor.",
-                nameof(course));
+            throw new ArgumentException("The removed draft course must belong to the active editor.", nameof(course));
         }
 
         course.DraftChanged -= onCourseChoiceDraftChanged;
@@ -264,8 +259,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             throw new ArgumentNullException(nameof(course));
         }
 
-        if (containsDraftCourse(course.CourseId)
-            || isCourseSelectedOutsideEditedGroup(course.CourseId))
+        if (containsDraftCourse(course.CourseId) || isCourseSelectedOutsideEditedGroup(course.CourseId))
         {
             return;
         }
@@ -289,13 +283,8 @@ internal sealed partial class PlannerWorkspaceViewModel
             courseCandidates.Add(draftCourse.CreateCandidate());
         }
 
-        CourseChoiceGroupId groupId = mEditingCourseChoiceGroupIdOrNull.HasValue
-            ? mEditingCourseChoiceGroupIdOrNull.Value
-            : CourseChoiceGroupId.CreateNew();
-        CourseChoiceGroup group = new CourseChoiceGroup(
-            groupId,
-            ECourseChoiceCardinality.ExactlyOne,
-            courseCandidates);
+        CourseChoiceGroupId groupId = mEditingCourseChoiceGroupIdOrNull.HasValue ? mEditingCourseChoiceGroupIdOrNull.Value : CourseChoiceGroupId.CreateNew();
+        CourseChoiceGroup group = new CourseChoiceGroup(groupId, ECourseChoiceCardinality.ExactlyOne, courseCandidates);
         if (mEditingCourseChoiceGroupIdOrNull.HasValue)
         {
             mSession.UpdateCourseChoiceGroup(group);
@@ -321,9 +310,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             course.CourseId,
             new OfferingCandidate[]
             {
-                new OfferingCandidate(
-                    offeringId,
-                    EOfferingPreference.Acceptable),
+                new OfferingCandidate(offeringId, EOfferingPreference.Acceptable),
             });
         return new CourseChoiceGroup(
             CourseChoiceGroupId.CreateNew(),
@@ -331,8 +318,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             new CourseCandidate[] { courseCandidate });
     }
 
-    private void prepareCourseChoiceDraft(
-        CourseChoiceGroupId? editingCourseChoiceGroupIdOrNull)
+    private void prepareCourseChoiceDraft(CourseChoiceGroupId? editingCourseChoiceGroupIdOrNull)
     {
         foreach (CourseChoiceDraftCourseItem course in CourseChoiceDraftCourses)
         {
@@ -353,9 +339,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         addDraftCourse(draftCourse);
     }
 
-    private void restoreDraftCourse(
-        CatalogCourseProjection projection,
-        IEnumerable<OfferingCandidate> savedCandidates)
+    private void restoreDraftCourse(CatalogCourseProjection projection, IEnumerable<OfferingCandidate> savedCandidates)
     {
         CourseChoiceDraftCourseItem draftCourse = CourseChoiceDraftCourseItem.Restore(projection, savedCandidates);
         addDraftCourse(draftCourse);
@@ -408,9 +392,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         refreshAlternativeCourseSearchResults();
     }
 
-    private void onCourseChoiceDraftChanged(
-        object? senderOrNull,
-        EventArgs eventArgs)
+    private void onCourseChoiceDraftChanged(object? senderOrNull, EventArgs eventArgs)
     {
         updateCourseChoiceDraftState();
     }
@@ -422,8 +404,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         raiseAlternativeSearchStateChanged();
     }
 
-    private IReadOnlyList<CourseChoiceAlternativeSearchItem>
-        findAlternativeCourseSearchResults()
+    private IReadOnlyList<CourseChoiceAlternativeSearchItem> findAlternativeCourseSearchResults()
     {
         List<CourseChoiceAlternativeSearchItem> searchResults = new List<CourseChoiceAlternativeSearchItem>();
         if (string.IsNullOrWhiteSpace(AlternativeCourseSearchText))
@@ -452,9 +433,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         return searchResults;
     }
 
-    private static IReadOnlyDictionary<CourseId, CourseChoiceAlternativeSearchItem>
-        createAlternativeCourseSearchItemsByCourseId(
-            IReadOnlyList<CourseSearchItem> courses)
+    private static IReadOnlyDictionary<CourseId, CourseChoiceAlternativeSearchItem> createAlternativeCourseSearchItemsByCourseId(IReadOnlyList<CourseSearchItem> courses)
     {
         Dictionary<CourseId, CourseChoiceAlternativeSearchItem> searchItemsByCourseId = new Dictionary<CourseId, CourseChoiceAlternativeSearchItem>();
         foreach (CourseSearchItem course in courses)
@@ -471,8 +450,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         return searchItemsByCourseId;
     }
 
-    private static CourseId findAlternativeCourseSearchItemId(
-        CourseChoiceAlternativeSearchItem course)
+    private static CourseId findAlternativeCourseSearchItemId(CourseChoiceAlternativeSearchItem course)
     {
         return course.CourseId;
     }
@@ -494,8 +472,7 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         foreach (CourseChoiceGroup group in ActivePlan.Plan.CourseChoiceGroups)
         {
-            if (mEditingCourseChoiceGroupIdOrNull.HasValue
-                && group.Id == mEditingCourseChoiceGroupIdOrNull.Value)
+            if (mEditingCourseChoiceGroupIdOrNull.HasValue && group.Id == mEditingCourseChoiceGroupIdOrNull.Value)
             {
                 continue;
             }
@@ -509,8 +486,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             }
         }
 
-        foreach (UnscheduledOfferingSelection selection
-            in ActivePlan.Plan.UnscheduledOfferingSelections)
+        foreach (UnscheduledOfferingSelection selection in ActivePlan.Plan.UnscheduledOfferingSelections)
         {
             if (selection.CourseId == courseId)
             {
@@ -521,8 +497,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         return false;
     }
 
-    private CourseChoiceGroup findActiveCourseChoiceGroup(
-        CourseChoiceGroupId groupId)
+    private CourseChoiceGroup findActiveCourseChoiceGroup(CourseChoiceGroupId groupId)
     {
         foreach (CourseChoiceGroup group in ActivePlan.Plan.CourseChoiceGroups)
         {
@@ -532,9 +507,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             }
         }
 
-        throw new ArgumentException(
-            "The course choice group must belong to the active plan.",
-            nameof(groupId));
+        throw new ArgumentException("The course choice group must belong to the active plan.", nameof(groupId));
     }
 
     private void raiseAlternativeSearchStateChanged()

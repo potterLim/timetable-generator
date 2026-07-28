@@ -12,11 +12,7 @@ internal sealed class OfferingClassification
 
     public GeneralEducationCategoryAssignment GeneralEducationCategory { get; }
 
-    public OfferingClassification(
-        ERequirementType requirementType,
-        OfferingUnitName offeringUnitName,
-        EInstructionSession instructionSession,
-        GeneralEducationCategoryAssignment generalEducationCategory)
+    public OfferingClassification(ERequirementType requirementType, OfferingUnitName offeringUnitName, EInstructionSession instructionSession, GeneralEducationCategoryAssignment generalEducationCategory)
     {
         if (Enum.IsDefined(typeof(ERequirementType), requirementType) == false)
         {

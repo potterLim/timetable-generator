@@ -21,10 +21,7 @@ internal readonly record struct CatalogRevision
     {
         if (value < MINIMUM_REVISION)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "The catalog revision must be positive.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "The catalog revision must be positive.");
         }
 
         Value = value;

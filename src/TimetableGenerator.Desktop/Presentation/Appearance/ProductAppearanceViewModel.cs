@@ -67,9 +67,7 @@ internal sealed partial class ProductAppearanceViewModel : ObservableObject
         }
     }
 
-    public ProductAppearanceViewModel(
-        IProductAppearanceSettingsStore settingsStore,
-        IProductThemeVariantService themeVariantService)
+    public ProductAppearanceViewModel(IProductAppearanceSettingsStore settingsStore, IProductThemeVariantService themeVariantService)
     {
         if (settingsStore == null)
         {

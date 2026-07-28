@@ -50,9 +50,7 @@ public sealed class InitialWindowPlacementPolicyTests
         assertPlacementInvariants(placement, workingArea);
     }
 
-    private static void assertPlacementInvariants(
-        InitialWindowPlacement placement,
-        WindowWorkingArea workingArea)
+    private static void assertPlacementInvariants(InitialWindowPlacement placement, WindowWorkingArea workingArea)
     {
         Assert.True(placement.InitialSize.Width >= placement.EffectiveMinimumSize.Width);
         Assert.True(placement.InitialSize.Height >= placement.EffectiveMinimumSize.Height);

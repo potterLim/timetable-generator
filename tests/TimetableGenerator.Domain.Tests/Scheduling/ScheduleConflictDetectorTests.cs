@@ -35,11 +35,7 @@ public sealed class ScheduleConflictDetectorTests
     [TestMethod]
     public void UnscheduledCatalogOfferingCannotBecomeAScheduledProjection()
     {
-        CatalogOffering unscheduledOffering = new CatalogOffering(
-            new OfferingId("handong-global-university:2026-2:CSE30001:01"),
-            new CourseId("handong-global-university:CSE30001"),
-            new CourseSectionCode("01"),
-            MeetingSchedule.NotProvided);
+        CatalogOffering unscheduledOffering = new CatalogOffering(new OfferingId("handong-global-university:2026-2:CSE30001:01"), new CourseId("handong-global-university:CSE30001"), new CourseSectionCode("01"), MeetingSchedule.NotProvided);
 
         Assert.ThrowsExactly<ArgumentException>(
             () => new ScheduledOffering(unscheduledOffering));
@@ -65,17 +61,11 @@ public sealed class ScheduleConflictDetectorTests
         int endHour,
         int endMinute)
     {
-        DailyTimeRange timeRange = new DailyTimeRange(
-            new ScheduleTime(startHour, startMinute),
-            new ScheduleTime(endHour, endMinute));
+        DailyTimeRange timeRange = new DailyTimeRange(new ScheduleTime(startHour, startMinute), new ScheduleTime(endHour, endMinute));
         return new WeeklyTimeRange(day, timeRange);
     }
 
-    private static ScheduledOffering createScheduledOffering(
-        string courseCodeValue,
-        string sectionCodeValue,
-        EDay day,
-        int periodValue)
+    private static ScheduledOffering createScheduledOffering(string courseCodeValue, string sectionCodeValue, EDay day, int periodValue)
     {
         CourseId courseId = new CourseId("handong-global-university:" + courseCodeValue);
         CatalogOffering catalogOffering = new CatalogOffering(

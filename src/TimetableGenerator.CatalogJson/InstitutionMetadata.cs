@@ -11,10 +11,7 @@ public sealed class InstitutionMetadata
 
     public EnglishInstitutionName EnglishName { get; }
 
-    public InstitutionMetadata(
-        InstitutionId id,
-        InstitutionName koreanName,
-        EnglishInstitutionName englishName)
+    public InstitutionMetadata(InstitutionId id, InstitutionName koreanName, EnglishInstitutionName englishName)
     {
         if (id == null)
         {

@@ -50,15 +50,9 @@ public sealed class WorkspacePanelAccessibilityTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            ScrollViewer scrollViewer = findRequiredControl<ScrollViewer>(
-                inspector,
-                "PlanInspectorScrollViewer");
-            StackPanel scrollableContent = findRequiredControl<StackPanel>(
-                inspector,
-                "PlanInspectorScrollableContent");
-            Border personalScheduleEmptyState = findRequiredControl<Border>(
-                inspector,
-                "PersonalScheduleEmptyState");
+            ScrollViewer scrollViewer = findRequiredControl<ScrollViewer>(inspector, "PlanInspectorScrollViewer");
+            StackPanel scrollableContent = findRequiredControl<StackPanel>(inspector, "PlanInspectorScrollableContent");
+            Border personalScheduleEmptyState = findRequiredControl<Border>(inspector, "PersonalScheduleEmptyState");
 
             if (scrollViewer.Extent.Height > scrollViewer.Viewport.Height)
             {
@@ -66,14 +60,11 @@ public sealed class WorkspacePanelAccessibilityTests
                 Dispatcher.UIThread.RunJobs();
             }
 
-            Point? emptyStateTopLeftOrNull = personalScheduleEmptyState.TranslatePoint(
-                new Point(0.0, 0.0),
-                scrollViewer);
+            Point? emptyStateTopLeftOrNull = personalScheduleEmptyState.TranslatePoint(new Point(0.0, 0.0), scrollViewer);
             Assert.NotNull(emptyStateTopLeftOrNull);
             if (emptyStateTopLeftOrNull == null)
             {
-                throw new InvalidOperationException(
-                    "The personal schedule state was not attached to the inspector viewport.");
+                throw new InvalidOperationException("The personal schedule state was not attached to the inspector viewport.");
             }
 
             Point emptyStateTopLeft = emptyStateTopLeftOrNull.Value;
@@ -115,22 +106,15 @@ public sealed class WorkspacePanelAccessibilityTests
 
             Border emptyPlanState = findRequiredControl<Border>(inspector, "EmptyPlanState");
             Assert.Empty(emptyPlanState.GetVisualDescendants().OfType<Button>());
-            Button addPersonalScheduleButton = findRequiredControl<Button>(
-                inspector,
-                "AddPersonalScheduleButton");
-            Assert.True(
-                ReferenceEquals(
-                    addPersonalScheduleButton.Command,
-                    workspace.BeginAddPersonalScheduleCommand));
+            Button addPersonalScheduleButton = findRequiredControl<Button>(inspector, "AddPersonalScheduleButton");
+            Assert.True(ReferenceEquals(addPersonalScheduleButton.Command, workspace.BeginAddPersonalScheduleCommand));
             Assert.Equal("개인 일정 추가", AutomationProperties.GetName(addPersonalScheduleButton));
 
             Button managementButton = findRequiredControl<Button>(inspector, "PlanManagementButton");
             TextBlock inspectorPaneTitle = findRequiredControl<TextBlock>(inspector, "InspectorPaneTitle");
             TextBlock managementTitle = findRequiredControl<TextBlock>(inspector, "PlanManagementTitle");
             Assert.Equal("시간표 편집", AutomationProperties.GetName(inspector));
-            Assert.Equal(
-                AutomationLandmarkType.Complementary,
-                AutomationProperties.GetLandmarkType(inspector));
+            Assert.Equal(AutomationLandmarkType.Complementary, AutomationProperties.GetLandmarkType(inspector));
             Assert.Equal("시간표 편집", inspectorPaneTitle.Text);
             Assert.Equal(2, (int)AutomationProperties.GetHeadingLevel(inspectorPaneTitle));
             Assert.Equal(workspace.ActivePlan.DisplayName, managementTitle.Text);
@@ -216,9 +200,7 @@ public sealed class WorkspacePanelAccessibilityTests
                 Assert.Equal(searchBox.Bounds.Width, departmentFilter.Bounds.Width, 3);
                 Assert.Equal(departmentFilter.Bounds.Width, requirementFilter.Bounds.Width, 3);
                 Assert.Equal(departmentFilter.Bounds.X, requirementFilter.Bounds.X, 3);
-                Assert.True(
-                    requirementFilter.Bounds.Top
-                        >= departmentFilter.Bounds.Bottom + 7.5);
+                Assert.True(requirementFilter.Bounds.Top >= departmentFilter.Bounds.Bottom + 7.5);
 
                 ComboBox[] selectors = courseBrowser.GetVisualDescendants().OfType<ComboBox>().ToArray();
                 Assert.NotEmpty(selectors);
@@ -344,11 +326,7 @@ public sealed class WorkspacePanelAccessibilityTests
                 Dispatcher.UIThread.RunJobs();
 
                 Assert.Contains("added", courseCard.Classes);
-                Assert.Equal(
-                    getRequiredApplicationColor(
-                        "SelectionSurfaceBrush",
-                        courseCard.ActualThemeVariant),
-                    getRequiredSolidColor(courseCard.Background));
+                Assert.Equal(getRequiredApplicationColor("SelectionSurfaceBrush", courseCard.ActualThemeVariant), getRequiredSolidColor(courseCard.Background));
                 assertTransparent(itemPresenter.Background);
 
                 Point? cardOriginOrNull = courseCard.TranslatePoint(new Point(0.0, 0.0), window);
@@ -358,19 +336,12 @@ public sealed class WorkspacePanelAccessibilityTests
                     throw new InvalidOperationException("The course card position could not be resolved.");
                 }
 
-                Point cardCenter = cardOriginOrNull.Value
-                    + new Vector(
-                        courseCard.Bounds.Width / 2.0,
-                        courseCard.Bounds.Height / 2.0);
+                Point cardCenter = cardOriginOrNull.Value + new Vector(courseCard.Bounds.Width / 2.0, courseCard.Bounds.Height / 2.0);
                 window.MouseMove(cardCenter, RawInputModifiers.None);
                 Dispatcher.UIThread.RunJobs();
 
                 Assert.True(courseCard.IsPointerOver);
-                Assert.Equal(
-                    getRequiredApplicationColor(
-                        "SelectionHoverSurfaceBrush",
-                        courseCard.ActualThemeVariant),
-                    getRequiredSolidColor(courseCard.Background));
+                Assert.Equal(getRequiredApplicationColor("SelectionHoverSurfaceBrush", courseCard.ActualThemeVariant), getRequiredSolidColor(courseCard.Background));
                 assertTransparent(itemPresenter.Background);
             }
             finally
@@ -504,9 +475,7 @@ public sealed class WorkspacePanelAccessibilityTests
             candidate => ReferenceEquals(candidate.Command, nestedActionCommand));
     }
 
-    private static void assertCourseListDelegatesFocusToAction(
-        ListBox listBox,
-        ICommand directAddCommand)
+    private static void assertCourseListDelegatesFocusToAction(ListBox listBox, ICommand directAddCommand)
     {
         assertListDelegatesFocusToAction(
             listBox,
@@ -515,9 +484,7 @@ public sealed class WorkspacePanelAccessibilityTests
                     || candidate.Flyout != null));
     }
 
-    private static void assertListDelegatesFocusToAction(
-        ListBox listBox,
-        Func<Button, bool> isExpectedAction)
+    private static void assertListDelegatesFocusToAction(ListBox listBox, Func<Button, bool> isExpectedAction)
     {
         Control? itemContainerOrNull = listBox.ContainerFromIndex(0);
         Assert.NotNull(itemContainerOrNull);

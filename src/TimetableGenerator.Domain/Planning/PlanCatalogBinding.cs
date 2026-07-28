@@ -39,9 +39,7 @@ public sealed record PlanCatalogBinding
 
         if (revision.IsValid == false)
         {
-            throw new ArgumentException(
-                "Plan catalog bindings require a valid catalog revision.",
-                nameof(revision));
+            throw new ArgumentException("Plan catalog bindings require a valid catalog revision.", nameof(revision));
         }
 
         if (artifactSha256 == null)

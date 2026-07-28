@@ -13,10 +13,7 @@ internal readonly record struct AcademicSemester
     {
         if (value < FIRST_SEMESTER || value > SECOND_SEMESTER)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "Only the first and second academic semesters are supported.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Only the first and second academic semesters are supported.");
         }
 
         Value = value;

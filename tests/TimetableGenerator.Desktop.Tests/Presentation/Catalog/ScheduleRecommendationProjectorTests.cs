@@ -38,35 +38,21 @@ public sealed class ScheduleRecommendationProjectorTests
         Assert.Equal("오석관 301", mondayEntry.LocationDisplayText);
         Assert.True(mondayEntry.HasConfirmedInstructor);
         Assert.True(mondayEntry.HasAssignedLocation);
-        Assert.Equal(
-            EInstructorAssignmentStatus.Confirmed,
-            mondayEntry.CourseDetails.InstructorSummary.AssignmentStatus);
-        Assert.Equal(
-            ELocationAssignmentStatus.Assigned,
-            mondayEntry.CourseDetails.LocationSummary.AssignmentStatus);
+        Assert.Equal(EInstructorAssignmentStatus.Confirmed, mondayEntry.CourseDetails.InstructorSummary.AssignmentStatus);
+        Assert.Equal(ELocationAssignmentStatus.Assigned, mondayEntry.CourseDetails.LocationSummary.AssignmentStatus);
         Assert.Equal(new CourseCredits(3m), mondayEntry.CourseDetails.Credits);
         Assert.Equal(EDay.Monday, mondayEntry.Day);
         Assert.Equal(new AcademicPeriod(1), mondayEntry.Period);
         Assert.Equal(new MeetingSlot(EDay.Monday, new AcademicPeriod(1)), mondayEntry.Slot);
-        Assert.Equal(
-            new DailyTimeRange(
-                new ScheduleTime(9, 0),
-                new ScheduleTime(10, 15)),
-            mondayEntry.TimeRange);
-        Assert.Equal(
-            catalogProjection.FindCourseById(new CourseId("course-programming")).Accent,
-            mondayEntry.Accent);
+        Assert.Equal(new DailyTimeRange(new ScheduleTime(9, 0), new ScheduleTime(10, 15)), mondayEntry.TimeRange);
+        Assert.Equal(catalogProjection.FindCourseById(new CourseId("course-programming")).Accent, mondayEntry.Accent);
 
         CourseScheduleEntry? wednesdayEntryOrNull = projectedRecommendation.Entries[1] as CourseScheduleEntry;
         Assert.NotNull(wednesdayEntryOrNull);
         CourseScheduleEntry wednesdayEntry = wednesdayEntryOrNull;
         Assert.Equal(EDay.Wednesday, wednesdayEntry.Day);
         Assert.Equal(new AcademicPeriod(2), wednesdayEntry.Period);
-        Assert.Equal(
-            new DailyTimeRange(
-                new ScheduleTime(10, 0),
-                new ScheduleTime(11, 15)),
-            wednesdayEntry.TimeRange);
+        Assert.Equal(new DailyTimeRange(new ScheduleTime(10, 0), new ScheduleTime(11, 15)), wednesdayEntry.TimeRange);
     }
 
     [Fact]
@@ -83,12 +69,8 @@ public sealed class ScheduleRecommendationProjectorTests
         Assert.False(notProvidedEntry.HasAssignedLocation);
         Assert.Equal("교수 정보 없음", notProvidedEntry.InstructorDisplayText);
         Assert.Equal("강의실 미정", notProvidedEntry.LocationDisplayText);
-        Assert.Equal(
-            EInstructorAssignmentStatus.NotProvided,
-            notProvidedEntry.CourseDetails.InstructorSummary.AssignmentStatus);
-        Assert.Equal(
-            ELocationAssignmentStatus.NotProvided,
-            notProvidedEntry.CourseDetails.LocationSummary.AssignmentStatus);
+        Assert.Equal(EInstructorAssignmentStatus.NotProvided, notProvidedEntry.CourseDetails.InstructorSummary.AssignmentStatus);
+        Assert.Equal(ELocationAssignmentStatus.NotProvided, notProvidedEntry.CourseDetails.LocationSummary.AssignmentStatus);
 
         CourseCatalogDocument unconfirmedDocument = CatalogProjectionTestFixture.CreateDocumentWithScheduledAlternativeCourse();
         CourseCatalogProjection unconfirmedCatalog = CourseCatalogProjector.Project(unconfirmedDocument);
@@ -101,12 +83,8 @@ public sealed class ScheduleRecommendationProjectorTests
         Assert.False(unconfirmedEntry.HasAssignedLocation);
         Assert.Equal("교수 미정", unconfirmedEntry.InstructorDisplayText);
         Assert.Equal("강의실 미정", unconfirmedEntry.LocationDisplayText);
-        Assert.Equal(
-            EInstructorAssignmentStatus.Unconfirmed,
-            unconfirmedEntry.CourseDetails.InstructorSummary.AssignmentStatus);
-        Assert.Equal(
-            ELocationAssignmentStatus.NotProvided,
-            unconfirmedEntry.CourseDetails.LocationSummary.AssignmentStatus);
+        Assert.Equal(EInstructorAssignmentStatus.Unconfirmed, unconfirmedEntry.CourseDetails.InstructorSummary.AssignmentStatus);
+        Assert.Equal(ELocationAssignmentStatus.NotProvided, unconfirmedEntry.CourseDetails.LocationSummary.AssignmentStatus);
     }
 
     [Fact]

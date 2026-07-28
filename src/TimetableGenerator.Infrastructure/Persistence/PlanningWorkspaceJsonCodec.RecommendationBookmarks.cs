@@ -8,9 +8,7 @@ namespace TimetableGenerator.Infrastructure.Persistence;
 
 public sealed partial class PlanningWorkspaceJsonCodec
 {
-    private static void writeLastViewedRecommendation(
-        Utf8JsonWriter writer,
-        ScheduleRecommendationBookmark? recommendationBookmarkOrNull)
+    private static void writeLastViewedRecommendation(Utf8JsonWriter writer, ScheduleRecommendationBookmark? recommendationBookmarkOrNull)
     {
         if (recommendationBookmarkOrNull == null)
         {
@@ -20,8 +18,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
 
         writer.WriteStartObject("lastViewedRecommendation");
         writer.WriteStartArray("scheduledOfferingIds");
-        foreach (OfferingId offeringId
-            in recommendationBookmarkOrNull.SelectedOfferingIds)
+        foreach (OfferingId offeringId in recommendationBookmarkOrNull.SelectedOfferingIds)
         {
             writer.WriteStringValue(offeringId.Value);
         }
@@ -30,8 +27,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         writer.WriteEndObject();
     }
 
-    private static ScheduleRecommendationBookmark? readLastViewedRecommendationOrNull(
-        JsonElement element)
+    private static ScheduleRecommendationBookmark? readLastViewedRecommendationOrNull(JsonElement element)
     {
         if (element.ValueKind == JsonValueKind.Null)
         {
@@ -45,12 +41,9 @@ public sealed partial class PlanningWorkspaceJsonCodec
         JsonElement offeringIdsElement = properties["scheduledOfferingIds"];
         requireValueKind(offeringIdsElement, JsonValueKind.Array, "plan.lastViewedRecommendation.scheduledOfferingIds");
         List<OfferingId> offeringIds = new List<OfferingId>();
-        foreach (JsonElement offeringIdElement
-            in offeringIdsElement.EnumerateArray())
+        foreach (JsonElement offeringIdElement in offeringIdsElement.EnumerateArray())
         {
-            string offeringIdValue = readString(
-                offeringIdElement,
-                "plan.lastViewedRecommendation.scheduledOfferingIds[]");
+            string offeringIdValue = readString(offeringIdElement, "plan.lastViewedRecommendation.scheduledOfferingIds[]");
             offeringIds.Add(new OfferingId(offeringIdValue));
         }
 

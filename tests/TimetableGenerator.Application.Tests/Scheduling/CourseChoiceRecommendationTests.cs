@@ -47,14 +47,8 @@ public sealed class CourseChoiceRecommendationTests
                     acceptableOffering.Id,
                     EOfferingPreference.Acceptable),
             });
-        CourseChoiceGroup courseChoiceGroup = new CourseChoiceGroup(
-            CourseChoiceGroupId.CreateNew(),
-            ECourseChoiceCardinality.ExactlyOne,
-            new CourseCandidate[] { firstCandidate, secondCandidate });
-        PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
-            catalog,
-            new CourseChoiceGroup[] { courseChoiceGroup },
-            Array.Empty<UnscheduledOfferingSelection>());
+        CourseChoiceGroup courseChoiceGroup = new CourseChoiceGroup(CourseChoiceGroupId.CreateNew(), ECourseChoiceCardinality.ExactlyOne, new CourseCandidate[] { firstCandidate, secondCandidate });
+        PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(catalog, new CourseChoiceGroup[] { courseChoiceGroup }, Array.Empty<UnscheduledOfferingSelection>());
 
         ScheduleRecommendationResult result = generate(catalog, plan, 10);
 
@@ -105,26 +99,18 @@ public sealed class CourseChoiceRecommendationTests
                         acceptableOffering.Id,
                         EOfferingPreference.Acceptable),
                 });
-            groups.Add(new CourseChoiceGroup(
-                CourseChoiceGroupId.CreateNew(),
-                ECourseChoiceCardinality.ExactlyOne,
-                new CourseCandidate[] { courseCandidate }));
+            groups.Add(new CourseChoiceGroup(CourseChoiceGroupId.CreateNew(), ECourseChoiceCardinality.ExactlyOne, new CourseCandidate[] { courseCandidate }));
         }
 
         CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(courses, offerings);
-        PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
-            catalog,
-            groups,
-            Array.Empty<UnscheduledOfferingSelection>());
+        PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(catalog, groups, Array.Empty<UnscheduledOfferingSelection>());
 
         ScheduleRecommendationResult result = generate(catalog, plan, 4);
 
         CollectionAssert.AreEqual(
             new int[] { 0, 1, 1, 1 },
             getScoreValues(result));
-        Assert.AreEqual(
-            EScheduleRecommendationCompletion.MaximumRecommendationCountReached,
-            result.Completion);
+        Assert.AreEqual(EScheduleRecommendationCompletion.MaximumRecommendationCountReached, result.Completion);
     }
 
     [TestMethod]
@@ -140,11 +126,7 @@ public sealed class CourseChoiceRecommendationTests
             () => new RecommendationScore(-1));
     }
 
-    private static CatalogOffering createOffering(
-        string courseCode,
-        string sectionCode,
-        EDay day,
-        int period)
+    private static CatalogOffering createOffering(string courseCode, string sectionCode, EDay day, int period)
     {
         return ScheduleRecommendationTestData.CreateScheduledOffering(
             courseCode,
@@ -155,22 +137,14 @@ public sealed class CourseChoiceRecommendationTests
             });
     }
 
-    private static ScheduleRecommendationResult generate(
-        CourseCatalog catalog,
-        PlanningPlan plan,
-        int limit)
+    private static ScheduleRecommendationResult generate(CourseCatalog catalog, PlanningPlan plan, int limit)
     {
-        ScheduleRecommendationRequest request = new ScheduleRecommendationRequest(
-            catalog,
-            plan,
-            new ScheduleRecommendationLimit(limit));
+        ScheduleRecommendationRequest request = new ScheduleRecommendationRequest(catalog, plan, new ScheduleRecommendationLimit(limit));
         ScheduleRecommendationGenerator generator = new ScheduleRecommendationGenerator();
         return generator.GenerateRecommendations(request, CancellationToken.None);
     }
 
-    private static OfferingId getOfferingId(
-        ScheduleRecommendationResult result,
-        int recommendationIndex)
+    private static OfferingId getOfferingId(ScheduleRecommendationResult result, int recommendationIndex)
     {
         return result.Recommendations[recommendationIndex].ScheduledOfferings[0].OfferingId;
     }

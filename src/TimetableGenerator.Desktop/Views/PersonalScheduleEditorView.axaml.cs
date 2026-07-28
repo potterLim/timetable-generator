@@ -81,10 +81,7 @@ internal sealed partial class PersonalScheduleEditorView : UserControl
             case EPersonalScheduleDraftValidationError.None:
                 return;
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(validationError),
-                    validationError,
-                    "Unknown personal schedule validation error.");
+                throw new ArgumentOutOfRangeException(nameof(validationError), validationError, "Unknown personal schedule validation error.");
         }
 
         focusControl(target);
@@ -98,16 +95,11 @@ internal sealed partial class PersonalScheduleEditorView : UserControl
         commitTextInput(mLocationInput);
     }
 
-    private void onDayOptionContainerPrepared(
-        object? senderOrNull,
-        ContainerPreparedEventArgs eventArgs)
+    private void onDayOptionContainerPrepared(object? senderOrNull, ContainerPreparedEventArgs eventArgs)
     {
         if (eventArgs.Index < 0 || eventArgs.Index >= WEEKDAY_COLUMN_COUNT)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(eventArgs),
-                eventArgs.Index,
-                "The personal schedule day container index is outside the week.");
+            throw new ArgumentOutOfRangeException(nameof(eventArgs), eventArgs.Index, "The personal schedule day container index is outside the week.");
         }
 
         Grid.SetColumn(eventArgs.Container, eventArgs.Index);
@@ -132,9 +124,7 @@ internal sealed partial class PersonalScheduleEditorView : UserControl
 
     private static void commitTextInput(TextBox input)
     {
-        BindingExpressionBase? bindingOrNull = BindingOperations.GetBindingExpressionBase(
-            input,
-            TextBox.TextProperty);
+        BindingExpressionBase? bindingOrNull = BindingOperations.GetBindingExpressionBase(input, TextBox.TextProperty);
         if (bindingOrNull == null)
         {
             throw new InvalidOperationException("The personal schedule text input requires a two-way binding: " + input.Name);
@@ -149,8 +139,7 @@ internal sealed partial class PersonalScheduleEditorView : UserControl
             .OfType<ToggleButton>()
             .FirstOrDefault(
                 candidate => candidate.DataContext
-                    is PersonalScheduleDayOption dayOption
-                    && dayOption.Day == day);
+                    is PersonalScheduleDayOption dayOption && dayOption.Day == day);
         if (dayInputOrNull == null)
         {
             throw new InvalidOperationException("The personal schedule day input was not found: " + day);

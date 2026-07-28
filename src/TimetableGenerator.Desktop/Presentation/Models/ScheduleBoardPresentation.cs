@@ -28,11 +28,7 @@ internal sealed class ScheduleBoardPresentation
         }
     }
 
-    public ScheduleBoardPresentation(
-        ScheduleRecommendation schedule,
-        PlanName planName,
-        InstitutionName institutionName,
-        AcademicTerm academicTerm)
+    public ScheduleBoardPresentation(ScheduleRecommendation schedule, PlanName planName, InstitutionName institutionName, AcademicTerm academicTerm)
         : this(
             schedule,
             createLayout(schedule),
@@ -71,9 +67,7 @@ internal sealed class ScheduleBoardPresentation
 
         if (academicTerm.IsValid == false)
         {
-            throw new ArgumentException(
-                "Schedule board presentations require a valid academic term.",
-                nameof(academicTerm));
+            throw new ArgumentException("Schedule board presentations require a valid academic term.", nameof(academicTerm));
         }
 
         Schedule = schedule;

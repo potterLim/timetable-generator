@@ -11,10 +11,7 @@ internal readonly record struct CatalogFileSize
     {
         if (value < 0)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "Catalog file sizes cannot be negative.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Catalog file sizes cannot be negative.");
         }
 
         Value = value;

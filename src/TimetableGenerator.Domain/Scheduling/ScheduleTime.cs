@@ -29,8 +29,7 @@ public readonly record struct ScheduleTime : IComparable<ScheduleTime>
     {
         get
         {
-            return MinutesFromMidnight >= 0
-                && MinutesFromMidnight < MINUTES_PER_DAY;
+            return MinutesFromMidnight >= 0 && MinutesFromMidnight < MINUTES_PER_DAY;
         }
     }
 
@@ -38,18 +37,12 @@ public readonly record struct ScheduleTime : IComparable<ScheduleTime>
     {
         if (hour < 0 || hour > 23)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(hour),
-                hour,
-                "Schedule hours must be between 0 and 23.");
+            throw new ArgumentOutOfRangeException(nameof(hour), hour, "Schedule hours must be between 0 and 23.");
         }
 
         if (minute < 0 || minute > 59)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(minute),
-                minute,
-                "Schedule minutes must be between 0 and 59.");
+            throw new ArgumentOutOfRangeException(nameof(minute), minute, "Schedule minutes must be between 0 and 59.");
         }
 
         MinutesFromMidnight = (hour * MINUTES_PER_HOUR) + minute;

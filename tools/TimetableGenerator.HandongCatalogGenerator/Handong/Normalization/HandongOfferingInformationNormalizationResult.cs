@@ -11,10 +11,7 @@ internal sealed class HandongOfferingInformationNormalizationResult
 
     public InstructorAssignment InstructorAssignment { get; }
 
-    public HandongOfferingInformationNormalizationResult(
-        OfferingUnitName offeringUnitName,
-        EInstructionSession instructionSession,
-        InstructorAssignment instructorAssignment)
+    public HandongOfferingInformationNormalizationResult(OfferingUnitName offeringUnitName, EInstructionSession instructionSession, InstructorAssignment instructorAssignment)
     {
         if (offeringUnitName == null)
         {

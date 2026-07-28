@@ -23,11 +23,7 @@ public sealed record PlanName
 
         if (normalizedValue.Length > MAXIMUM_LENGTH)
         {
-            throw new ArgumentException(
-                "Plan names cannot exceed "
-                    + MAXIMUM_LENGTH
-                    + " characters.",
-                nameof(value));
+            throw new ArgumentException("Plan names cannot exceed " + MAXIMUM_LENGTH + " characters.", nameof(value));
         }
 
         bool hasLineBreak = normalizedValue.Contains('\r') || normalizedValue.Contains('\n');

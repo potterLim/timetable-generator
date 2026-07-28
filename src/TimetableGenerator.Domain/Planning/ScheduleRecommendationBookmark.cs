@@ -38,16 +38,12 @@ public sealed class ScheduleRecommendationBookmark
         {
             if (offeringId == null)
             {
-                throw new ArgumentException(
-                    "Schedule recommendation bookmarks cannot contain null offering IDs.",
-                    nameof(selectedOfferingIds));
+                throw new ArgumentException("Schedule recommendation bookmarks cannot contain null offering IDs.", nameof(selectedOfferingIds));
             }
 
             if (uniqueOfferingIds.Add(offeringId) == false)
             {
-                throw new ArgumentException(
-                    "Schedule recommendation bookmarks require unique offering IDs.",
-                    nameof(selectedOfferingIds));
+                throw new ArgumentException("Schedule recommendation bookmarks require unique offering IDs.", nameof(selectedOfferingIds));
             }
 
             copiedOfferingIds.Add(offeringId);
@@ -55,9 +51,7 @@ public sealed class ScheduleRecommendationBookmark
 
         if (copiedOfferingIds.Count == 0)
         {
-            throw new ArgumentException(
-                "Schedule recommendation bookmarks require at least one offering ID.",
-                nameof(selectedOfferingIds));
+            throw new ArgumentException("Schedule recommendation bookmarks require at least one offering ID.", nameof(selectedOfferingIds));
         }
 
         copiedOfferingIds.Sort(compareOfferingIds);
@@ -109,9 +103,7 @@ public sealed class ScheduleRecommendationBookmark
         {
             if (offeringId == null)
             {
-                throw new ArgumentException(
-                    "Compared recommendation offerings cannot contain null IDs.",
-                    parameterName);
+                throw new ArgumentException("Compared recommendation offerings cannot contain null IDs.", parameterName);
             }
 
             if (candidateOfferingIds.Add(offeringId) == false)

@@ -44,9 +44,7 @@ internal sealed class ValidatedOfferingCandidate
         Score = createScore(preference);
     }
 
-    public ValidatedOfferingCandidate(
-        UnscheduledOfferingSelection selection,
-        EOfferingPreference preference)
+    public ValidatedOfferingCandidate(UnscheduledOfferingSelection selection, EOfferingPreference preference)
     {
         if (selection == null)
         {
@@ -67,8 +65,7 @@ internal sealed class ValidatedOfferingCandidate
     {
         if (mScheduledOfferingOrNull == null)
         {
-            throw new InvalidOperationException(
-                "Time-not-provided candidates do not have a scheduled offering.");
+            throw new InvalidOperationException("Time-not-provided candidates do not have a scheduled offering.");
         }
 
         return mScheduledOfferingOrNull;
@@ -87,9 +84,7 @@ internal sealed class ValidatedOfferingCandidate
     private static RecommendationScore createScore(EOfferingPreference preference)
     {
         validatePreference(preference);
-        return preference == EOfferingPreference.Preferred
-            ? RecommendationScore.ZERO
-            : new RecommendationScore(1);
+        return preference == EOfferingPreference.Preferred ? RecommendationScore.ZERO : new RecommendationScore(1);
     }
 
     private static void validatePreference(EOfferingPreference preference)

@@ -6,19 +6,14 @@ public sealed class RemoteCatalogSynchronizationException : Exception
 {
     public ERemoteCatalogSynchronizationFailureKind FailureKind { get; }
 
-    public RemoteCatalogSynchronizationException(
-        ERemoteCatalogSynchronizationFailureKind failureKind,
-        string message)
+    public RemoteCatalogSynchronizationException(ERemoteCatalogSynchronizationFailureKind failureKind, string message)
         : base(message)
     {
         validateFailureKind(failureKind);
         FailureKind = failureKind;
     }
 
-    public RemoteCatalogSynchronizationException(
-        ERemoteCatalogSynchronizationFailureKind failureKind,
-        string message,
-        Exception innerException)
+    public RemoteCatalogSynchronizationException(ERemoteCatalogSynchronizationFailureKind failureKind, string message, Exception innerException)
         : base(message, innerException)
     {
         validateFailureKind(failureKind);

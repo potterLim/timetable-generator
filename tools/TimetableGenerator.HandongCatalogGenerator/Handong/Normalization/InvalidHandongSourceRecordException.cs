@@ -10,10 +10,7 @@ internal sealed class InvalidHandongSourceRecordException : Exception
 
     public EHandongColumn Column { get; }
 
-    public InvalidHandongSourceRecordException(
-        SourceRecordNumber sourceRecordNumber,
-        EHandongColumn column,
-        string technicalDetails)
+    public InvalidHandongSourceRecordException(SourceRecordNumber sourceRecordNumber, EHandongColumn column, string technicalDetails)
         : base(createMessage(sourceRecordNumber, column, technicalDetails))
     {
         if (Enum.IsDefined(typeof(EHandongColumn), column) == false)
@@ -30,12 +27,8 @@ internal sealed class InvalidHandongSourceRecordException : Exception
         Column = column;
     }
 
-    private static string createMessage(
-        SourceRecordNumber sourceRecordNumber,
-        EHandongColumn column,
-        string technicalDetails)
+    private static string createMessage(SourceRecordNumber sourceRecordNumber, EHandongColumn column, string technicalDetails)
     {
-        return "Source record " + sourceRecordNumber + ", column " + column + ": " +
-            technicalDetails;
+        return "Source record " + sourceRecordNumber + ", column " + column + ": " + technicalDetails;
     }
 }

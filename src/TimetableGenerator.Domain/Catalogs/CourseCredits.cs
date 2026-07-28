@@ -21,10 +21,7 @@ public readonly record struct CourseCredits
     {
         if (value < 0m || value % CREDIT_INCREMENT != 0m)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "Course credits must be nonnegative and use 0.5-credit increments.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Course credits must be nonnegative and use 0.5-credit increments.");
         }
 
         Value = value;

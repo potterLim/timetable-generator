@@ -23,6 +23,7 @@ using FluentIcons.Avalonia;
 using TimetableGenerator.Desktop.Presentation.Layout;
 using TimetableGenerator.Desktop.Presentation.Models;
 using TimetableGenerator.Desktop.Presentation.ViewModels;
+using TimetableGenerator.Desktop.Storage;
 using TimetableGenerator.Desktop.Tests.Storage;
 using TimetableGenerator.Desktop.Views;
 
@@ -33,6 +34,8 @@ namespace TimetableGenerator.Desktop.Tests;
 public sealed class ProductWorkspaceInteractionTests
 {
     private const double MINIMUM_PRODUCT_HEIGHT = 640.0;
+
+    private static readonly TimeSpan AUTOSAVE_INDICATOR_REVEAL_WAIT = TimeSpan.FromMilliseconds(750.0);
 
     [AvaloniaFact]
     public void PlanCloseUsesACenteredModalAndPreservesTheRequestedPlanName()
@@ -64,9 +67,7 @@ public sealed class ProductWorkspaceInteractionTests
             Assert.True(editingOverlay.IsVisible);
             Assert.False(workspaceSurface.IsEnabled);
             Assert.Equal(requestedPlanName, workspace.PlanPendingDeletionName);
-            Assert.Equal(
-                "삭제할 시간표: '" + requestedPlanName + "'",
-                workspace.PlanDeletionDescription);
+            Assert.Equal("삭제할 시간표: '" + requestedPlanName + "'", workspace.PlanDeletionDescription);
             Assert.True(cancelButton.IsKeyboardFocusWithin);
             Assert.Equal(384.0, editingDialog.MaxWidth);
             Assert.Equal(384.0, editingDialog.Bounds.Width);
@@ -212,9 +213,7 @@ public sealed class ProductWorkspaceInteractionTests
             ScheduleWorkspaceView scheduleWorkspace = host.GetVisualDescendants().OfType<ScheduleWorkspaceView>().Single();
             Grid scheduleSurface = findRequiredControl<Grid>(scheduleWorkspace, "ScheduleContentSurface");
             Point surfacePosition = findRequiredPosition(scheduleSurface, window);
-            Point clickPosition = new Point(
-                surfacePosition.X + 8.0,
-                surfacePosition.Y + scheduleSurface.Bounds.Height - 8.0);
+            Point clickPosition = new Point(surfacePosition.X + 8.0, surfacePosition.Y + scheduleSurface.Bounds.Height - 8.0);
             window.MouseMove(clickPosition, RawInputModifiers.None);
             window.MouseDown(clickPosition, MouseButton.Left, RawInputModifiers.None);
             window.MouseUp(clickPosition, MouseButton.Left, RawInputModifiers.None);
@@ -264,10 +263,7 @@ public sealed class ProductWorkspaceInteractionTests
             Dispatcher.UIThread.RunJobs();
 
             double widthWithInspectorPane = scheduleWorkspace.Bounds.Width;
-            Assert.InRange(
-                widthWithInspectorPane - widthWithBothPanes,
-                workspace.CoursePaneWidth - 1.0,
-                workspace.CoursePaneWidth + 1.0);
+            Assert.InRange(widthWithInspectorPane - widthWithBothPanes, workspace.CoursePaneWidth - 1.0, workspace.CoursePaneWidth + 1.0);
 
             workspace.CloseInspectorPaneCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
@@ -298,12 +294,8 @@ public sealed class ProductWorkspaceInteractionTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            ScheduleWorkspaceView scheduleWorkspace = host.GetVisualDescendants()
-                .OfType<ScheduleWorkspaceView>()
-                .Single();
-            Button openInspector = findRequiredControl<Button>(
-                scheduleWorkspace,
-                "OpenInspectorPaneButton");
+            ScheduleWorkspaceView scheduleWorkspace = host.GetVisualDescendants().OfType<ScheduleWorkspaceView>().Single();
+            Button openInspector = findRequiredControl<Button>(scheduleWorkspace, "OpenInspectorPaneButton");
             workspace.OpenInspectorPaneCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
 
@@ -349,9 +341,7 @@ public sealed class ProductWorkspaceInteractionTests
             Assert.Contains("overlay", inspectorPaneHost.Classes);
 
             Point buttonPosition = findRequiredPosition(openCoursePane, window);
-            Point clickPosition = new Point(
-                buttonPosition.X + (openCoursePane.Bounds.Width / 2.0),
-                buttonPosition.Y + (openCoursePane.Bounds.Height / 2.0));
+            Point clickPosition = new Point(buttonPosition.X + (openCoursePane.Bounds.Width / 2.0), buttonPosition.Y + (openCoursePane.Bounds.Height / 2.0));
 
             window.MouseMove(clickPosition, RawInputModifiers.None);
             window.MouseDown(clickPosition, MouseButton.Left, RawInputModifiers.None);
@@ -369,9 +359,7 @@ public sealed class ProductWorkspaceInteractionTests
 
             Grid scheduleSurface = findRequiredControl<Grid>(scheduleWorkspace, "ScheduleContentSurface");
             Point surfacePosition = findRequiredPosition(scheduleSurface, window);
-            Point scheduleClickPosition = new Point(
-                surfacePosition.X + 8.0,
-                surfacePosition.Y + scheduleSurface.Bounds.Height - 8.0);
+            Point scheduleClickPosition = new Point(surfacePosition.X + 8.0, surfacePosition.Y + scheduleSurface.Bounds.Height - 8.0);
 
             window.MouseMove(scheduleClickPosition, RawInputModifiers.None);
             window.MouseDown(scheduleClickPosition, MouseButton.Left, RawInputModifiers.None);
@@ -434,9 +422,7 @@ public sealed class ProductWorkspaceInteractionTests
             Assert.Equal(HorizontalAlignment.Center, confirmButton.HorizontalContentAlignment);
             Assert.Equal(VerticalAlignment.Center, confirmButton.VerticalContentAlignment);
             Assert.InRange(dialogPosition.X, 15.0, 17.0);
-            Assert.True(
-                dialogPosition.X + dialog.Bounds.Width
-                <= host.Bounds.Width - 15.0);
+            Assert.True(dialogPosition.X + dialog.Bounds.Width <= host.Bounds.Width - 15.0);
 
             workspace.CancelClearActivePlanCommand.Execute(null);
             Dispatcher.UIThread.RunJobs();
@@ -477,11 +463,7 @@ public sealed class ProductWorkspaceInteractionTests
             }
 
             Point managementButtonPosition = findRequiredPosition(managementButton, window);
-            Point managementClickPosition = new Point(
-                managementButtonPosition.X
-                    + (managementButton.Bounds.Width / 2.0),
-                managementButtonPosition.Y
-                    + (managementButton.Bounds.Height / 2.0));
+            Point managementClickPosition = new Point(managementButtonPosition.X + (managementButton.Bounds.Width / 2.0), managementButtonPosition.Y + (managementButton.Bounds.Height / 2.0));
             window.MouseMove(managementClickPosition, RawInputModifiers.None);
             window.MouseDown(managementClickPosition, MouseButton.Left, RawInputModifiers.None);
             window.MouseUp(managementClickPosition, MouseButton.Left, RawInputModifiers.None);
@@ -504,9 +486,7 @@ public sealed class ProductWorkspaceInteractionTests
             }
 
             Point clearButtonPosition = findRequiredPosition(clearButton, popupTopLevelOrNull);
-            Point clickPosition = new Point(
-                clearButtonPosition.X + (clearButton.Bounds.Width / 2.0),
-                clearButtonPosition.Y + (clearButton.Bounds.Height / 2.0));
+            Point clickPosition = new Point(clearButtonPosition.X + (clearButton.Bounds.Width / 2.0), clearButtonPosition.Y + (clearButton.Bounds.Height / 2.0));
 
             popupTopLevelOrNull.MouseMove(clickPosition, RawInputModifiers.None);
             popupTopLevelOrNull.MouseDown(clickPosition, MouseButton.Left, RawInputModifiers.None);
@@ -559,9 +539,7 @@ public sealed class ProductWorkspaceInteractionTests
 
             Point addButtonPosition = addButtonPositionOrNull.Value;
             Assert.True(addButtonPosition.X >= 0.0);
-            Assert.True(
-                addButtonPosition.X + addPlanButton.Bounds.Width
-                <= host.Bounds.Width + 1.0);
+            Assert.True(addButtonPosition.X + addPlanButton.Bounds.Width <= host.Bounds.Width + 1.0);
             Assert.Equal("새 시간표 만들기", AutomationProperties.GetName(addPlanButton));
         }
         finally
@@ -671,12 +649,8 @@ public sealed class ProductWorkspaceInteractionTests
             Assert.True(closeButton.IsVisible);
             Assert.True(closeButton.IsEnabled);
             Assert.True(closeButton.Command?.CanExecute(null));
-            Assert.Equal(
-                workspace.ActivePlan.CloseButtonAccessibleName,
-                AutomationProperties.GetName(closeButton));
-            Assert.Equal(
-                workspace.ActivePlan.CloseButtonHelpText,
-                AutomationProperties.GetHelpText(closeButton));
+            Assert.Equal(workspace.ActivePlan.CloseButtonAccessibleName, AutomationProperties.GetName(closeButton));
+            Assert.Equal(workspace.ActivePlan.CloseButtonHelpText, AutomationProperties.GetHelpText(closeButton));
             Assert.Equal(workspace.ActivePlan.CloseButtonHelpText, ToolTip.GetTip(closeButton));
 
             closeButton.Command?.Execute(null);
@@ -786,6 +760,101 @@ public sealed class ProductWorkspaceInteractionTests
     }
 
     [AvaloniaFact]
+    public async Task FastAutosaveCompletesWithoutShowingAStatusAsync()
+    {
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+        ProductWorkspaceHostView host = new ProductWorkspaceHostView();
+        host.DataContext = workspace;
+        Window window = createWindow(host, 1_280.0);
+
+        try
+        {
+            await workspace.RecommendationRefreshTask;
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            StackPanel savingStatus = findRequiredControl<StackPanel>(host, "WorkspaceAutosaveSavingStatus");
+
+            workspace.BeginRenamePlanCommand.Execute(null);
+            workspace.PlanNameDraft = "빠른 자동 저장 확인";
+            workspace.ConfirmPlanNameCommand.Execute(null);
+            await workspace.FlushAutosaveAsync(CancellationToken.None);
+            Dispatcher.UIThread.RunJobs();
+            await Task.Delay(AUTOSAVE_INDICATOR_REVEAL_WAIT, TestContext.Current.CancellationToken);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal(EPlanningWorkspaceAutosaveStatus.Saved, workspace.AutosaveStatus);
+            Assert.Equal(string.Empty, workspace.AutosaveStatusText);
+            Assert.False(workspace.IsAutosaveSaving);
+            Assert.False(savingStatus.IsVisible);
+            Assert.DoesNotContain(host.GetVisualDescendants().OfType<TextBlock>(), textBlock => textBlock.Text == "자동 저장됨");
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task AutosaveSavingIndicatorAppearsOnlyForLongRunningSavesAsync()
+    {
+        ControlledPlanningWorkspaceStore store = new ControlledPlanningWorkspaceStore();
+        ControlledSaveAttempt saveAttempt = new ControlledSaveAttempt();
+        ControlledSaveAttempt followupSaveAttempt = new ControlledSaveAttempt();
+        followupSaveAttempt.CompleteSuccessfully();
+        store.EnqueueSaveAttempt(saveAttempt);
+        store.EnqueueSaveAttempt(followupSaveAttempt);
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace(store);
+        ProductWorkspaceHostView host = new ProductWorkspaceHostView();
+        host.DataContext = workspace;
+        Window window = createWindow(host, 1_280.0);
+
+        try
+        {
+            await workspace.RecommendationRefreshTask;
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            StackPanel savingStatus = findRequiredControl<StackPanel>(host, "WorkspaceAutosaveSavingStatus");
+
+            Assert.False(workspace.IsAutosaveSaving);
+            Assert.False(savingStatus.IsVisible);
+            Assert.DoesNotContain(host.GetVisualDescendants().OfType<TextBlock>(), textBlock => textBlock.Text == "자동 저장됨");
+
+            workspace.BeginRenamePlanCommand.Execute(null);
+            workspace.PlanNameDraft = "느린 자동 저장 확인";
+            workspace.ConfirmPlanNameCommand.Execute(null);
+            await saveAttempt.WaitForStartAsync();
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal(EPlanningWorkspaceAutosaveStatus.Saving, workspace.AutosaveStatus);
+            Assert.False(workspace.IsAutosaveSaving);
+            Assert.False(savingStatus.IsVisible);
+
+            await Task.Delay(AUTOSAVE_INDICATOR_REVEAL_WAIT, TestContext.Current.CancellationToken);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.True(workspace.IsAutosaveSaving);
+            Assert.True(savingStatus.IsEffectivelyVisible);
+            Assert.Contains(savingStatus.GetVisualDescendants().OfType<TextBlock>(), textBlock => textBlock.Text == "저장 중...");
+
+            saveAttempt.CompleteSuccessfully();
+            await workspace.FlushAutosaveAsync(CancellationToken.None);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal(EPlanningWorkspaceAutosaveStatus.Saved, workspace.AutosaveStatus);
+            Assert.Equal(string.Empty, workspace.AutosaveStatusText);
+            Assert.False(workspace.IsAutosaveSaving);
+            Assert.False(savingStatus.IsVisible);
+            Assert.DoesNotContain(host.GetVisualDescendants().OfType<TextBlock>(), textBlock => textBlock.Text == "자동 저장됨");
+        }
+        finally
+        {
+            window.Close();
+            workspace.Dispose();
+        }
+    }
+
+    [AvaloniaFact]
     public async Task EmptyWorkspaceKeepsAutosaveFailureRecoveryVisibleAsync()
     {
         ControlledPlanningWorkspaceStore store = new ControlledPlanningWorkspaceStore();
@@ -804,13 +873,7 @@ public sealed class ProductWorkspaceInteractionTests
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
-            StackPanel savedStatus = findRequiredControl<StackPanel>(
-                host,
-                "EmptyWorkspaceAutosaveSavedStatus");
-            Assert.True(savedStatus.IsEffectivelyVisible);
-            Assert.Contains(
-                savedStatus.GetVisualDescendants().OfType<TextBlock>(),
-                textBlock => textBlock.Text == "자동 저장됨");
+            Assert.DoesNotContain(host.GetVisualDescendants().OfType<TextBlock>(), textBlock => textBlock.Text == "자동 저장됨");
             Button createFirstPlanButton = findRequiredControl<Button>(host, "CreateFirstPlanButton");
             createFirstPlanButton.Command?.Execute(null);
             workspace.ConfirmPlanNameCommand.Execute(null);
@@ -828,7 +891,6 @@ public sealed class ProductWorkspaceInteractionTests
             Button retryButton = findRequiredControl<Button>(host, "EmptyWorkspaceRetryAutosaveButton");
             Assert.True(workspace.IsWorkspaceEmpty);
             Assert.True(workspace.HasAutosaveError);
-            Assert.False(savedStatus.IsVisible);
             Assert.True(retryButton.IsEffectivelyVisible);
             Assert.True(retryButton.IsEnabled);
             Assert.Equal("저장 다시 시도", AutomationProperties.GetName(retryButton));
@@ -841,10 +903,8 @@ public sealed class ProductWorkspaceInteractionTests
 
             Assert.False(workspace.HasAutosaveError);
             Assert.False(retryButton.IsVisible);
-            Assert.True(savedStatus.IsEffectivelyVisible);
-            Assert.Contains(
-                savedStatus.GetVisualDescendants().OfType<TextBlock>(),
-                textBlock => textBlock.Text == "자동 저장됨");
+            Assert.Equal(string.Empty, workspace.AutosaveStatusText);
+            Assert.DoesNotContain(host.GetVisualDescendants().OfType<TextBlock>(), textBlock => textBlock.Text == "자동 저장됨");
         }
         finally
         {
@@ -941,19 +1001,14 @@ public sealed class ProductWorkspaceInteractionTests
 
             TextBlock validationMessage = findRequiredControl<TextBlock>(host, "PlanNameValidationMessage");
             Assert.True(string.IsNullOrEmpty(validationMessage.Text));
-            Assert.Equal(
-                AutomationLiveSetting.Off,
-                AutomationProperties.GetLiveSetting(validationMessage));
+            Assert.Equal(AutomationLiveSetting.Off, AutomationProperties.GetLiveSetting(validationMessage));
             List<(string? Text, AutomationLiveSetting LiveSetting)> liveRegionTransitions = new List<(string? Text, AutomationLiveSetting LiveSetting)>();
             validationMessage.PropertyChanged +=
                 (object? senderOrNull, AvaloniaPropertyChangedEventArgs eventArgs) =>
                 {
                     if (eventArgs.Property == TextBlock.TextProperty)
                     {
-                        liveRegionTransitions.Add(
-                            (
-                                validationMessage.Text,
-                                AutomationProperties.GetLiveSetting(validationMessage)));
+                        liveRegionTransitions.Add((validationMessage.Text, AutomationProperties.GetLiveSetting(validationMessage)));
                     }
                 };
 
@@ -980,18 +1035,14 @@ public sealed class ProductWorkspaceInteractionTests
 
             Assert.Equal(editorTextLength, editor.SelectionEnd);
             Assert.Equal(workspace.PlanNameValidationMessage, AutomationProperties.GetHelpText(editor));
-            Assert.Equal(
-                AutomationLiveSetting.Assertive,
-                AutomationProperties.GetLiveSetting(validationMessage));
+            Assert.Equal(AutomationLiveSetting.Assertive, AutomationProperties.GetLiveSetting(validationMessage));
 
             workspace.PlanNameDraft = "고유한 시간표 이름";
             Dispatcher.UIThread.RunJobs();
 
             Assert.False(workspace.HasPlanNameValidationMessage);
             Assert.Equal(string.Empty, validationMessage.Text);
-            Assert.Equal(
-                AutomationLiveSetting.Off,
-                AutomationProperties.GetLiveSetting(validationMessage));
+            Assert.Equal(AutomationLiveSetting.Off, AutomationProperties.GetLiveSetting(validationMessage));
 
             workspace.PlanNameDraft = duplicatePlanName;
             workspace.ConfirmPlanNameCommand.Execute(null);
@@ -999,9 +1050,7 @@ public sealed class ProductWorkspaceInteractionTests
 
             Assert.True(workspace.HasPlanNameValidationMessage);
             Assert.Equal(workspace.PlanNameValidationMessage, validationMessage.Text);
-            Assert.Equal(
-                AutomationLiveSetting.Assertive,
-                AutomationProperties.GetLiveSetting(validationMessage));
+            Assert.Equal(AutomationLiveSetting.Assertive, AutomationProperties.GetLiveSetting(validationMessage));
             Assert.NotEmpty(liveRegionTransitions);
             Assert.All(
                 liveRegionTransitions,
@@ -1037,17 +1086,11 @@ public sealed class ProductWorkspaceInteractionTests
 
             ScheduleWorkspaceView scheduleWorkspace = host.GetVisualDescendants().OfType<ScheduleWorkspaceView>().Single();
             Grid commandBar = findRequiredControl<Grid>(scheduleWorkspace, "WorkspaceCommandBar");
-            StackPanel supportingActions = findRequiredControl<StackPanel>(
-                scheduleWorkspace,
-                "WorkspaceSupportingActions");
-            StackPanel headerActions = findRequiredControl<StackPanel>(
-                scheduleWorkspace,
-                "WorkspaceHeaderActions");
+            StackPanel supportingActions = findRequiredControl<StackPanel>(scheduleWorkspace, "WorkspaceSupportingActions");
+            StackPanel headerActions = findRequiredControl<StackPanel>(scheduleWorkspace, "WorkspaceHeaderActions");
             Button openCoursePane = findRequiredControl<Button>(scheduleWorkspace, "OpenCoursePaneButton");
             Button scheduleViewMode = findRequiredControl<Button>(scheduleWorkspace, "ScheduleViewModeButton");
-            Button addPersonalSchedule = findRequiredControl<Button>(
-                scheduleWorkspace,
-                "WorkspaceAddPersonalScheduleButton");
+            Button addPersonalSchedule = findRequiredControl<Button>(scheduleWorkspace, "WorkspaceAddPersonalScheduleButton");
             Button openInspector = findRequiredControl<Button>(scheduleWorkspace, "OpenInspectorPaneButton");
             Button export = findRequiredControl<Button>(scheduleWorkspace, "ExportScheduleButton");
 
@@ -1057,9 +1100,7 @@ public sealed class ProductWorkspaceInteractionTests
             Assert.Equal("시간표 작업 영역", AutomationProperties.GetName(scheduleWorkspace));
             Assert.Null(scheduleWorkspace.FindControl<TextBlock>("ScheduleWorkspaceTitle"));
             Assert.Equal(40.0, commandBar.Bounds.Height);
-            Assert.True(
-                supportingActions.Children.IndexOf(openCoursePane)
-                < supportingActions.Children.IndexOf(scheduleViewMode));
+            Assert.True(supportingActions.Children.IndexOf(openCoursePane) < supportingActions.Children.IndexOf(scheduleViewMode));
             assertCompoundHeaderButtonAlignment(scheduleViewMode);
             assertCompoundHeaderButtonAlignment(addPersonalSchedule);
             assertCompoundHeaderButtonAlignment(openInspector);
@@ -1088,15 +1129,11 @@ public sealed class ProductWorkspaceInteractionTests
 
             double supportingRight = supportingPosition.X + supportingActions.Bounds.Width;
             double headerRight = headerPosition.X + headerActions.Bounds.Width;
-            double scheduleViewModeCenterY = scheduleViewModePosition.Y
-                + (scheduleViewMode.Bounds.Height / 2.0);
-            double addPersonalScheduleCenterY = addPersonalSchedulePosition.Y
-                + (addPersonalSchedule.Bounds.Height / 2.0);
+            double scheduleViewModeCenterY = scheduleViewModePosition.Y + (scheduleViewMode.Bounds.Height / 2.0);
+            double addPersonalScheduleCenterY = addPersonalSchedulePosition.Y + (addPersonalSchedule.Bounds.Height / 2.0);
             double openInspectorRight = openInspectorPosition.X + openInspector.Bounds.Width;
-            double openInspectorCenterY = openInspectorPosition.Y
-                + (openInspector.Bounds.Height / 2.0);
-            double exportCenterY = exportPosition.Y
-                + (export.Bounds.Height / 2.0);
+            double openInspectorCenterY = openInspectorPosition.Y + (openInspector.Bounds.Height / 2.0);
+            double exportCenterY = exportPosition.Y + (export.Bounds.Height / 2.0);
 
             Assert.Equal(18.0, commandBarPosition.Y);
             Assert.True(supportingRight <= headerPosition.X + 1.0);
@@ -1111,9 +1148,7 @@ public sealed class ProductWorkspaceInteractionTests
             Assert.True(openCoursePane.IsEffectivelyVisible);
             Point openCoursePanePosition = findRequiredPosition(openCoursePane, scheduleWorkspace);
             scheduleViewModePosition = findRequiredPosition(scheduleViewMode, scheduleWorkspace);
-            Assert.True(
-                openCoursePanePosition.X + openCoursePane.Bounds.Width
-                <= scheduleViewModePosition.X + 1.0);
+            Assert.True(openCoursePanePosition.X + openCoursePane.Bounds.Width <= scheduleViewModePosition.X + 1.0);
 
             workspace.IsCoursePaneOpen = true;
             Dispatcher.UIThread.RunJobs();
@@ -1169,8 +1204,7 @@ public sealed class ProductWorkspaceInteractionTests
         Point? positionOrNull = control.TranslatePoint(new Point(0.0, 0.0), relativeTo);
         if (positionOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The workspace control was not attached to the requested surface.");
+            throw new InvalidOperationException("The workspace control was not attached to the requested surface.");
         }
 
         return positionOrNull.Value;

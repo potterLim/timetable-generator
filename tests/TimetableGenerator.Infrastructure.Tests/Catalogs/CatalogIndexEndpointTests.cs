@@ -16,9 +16,7 @@ public sealed class CatalogIndexEndpointTests
 
         Uri catalogUri = endpoint.ResolveCatalogUri(relativePath);
 
-        Assert.AreEqual(
-            "https://catalog.example.edu/catalog/v1/handong-global-university/2026-2/catalog-r0001.json",
-            catalogUri.AbsoluteUri);
+        Assert.AreEqual("https://catalog.example.edu/catalog/v1/handong-global-university/2026-2/catalog-r0001.json", catalogUri.AbsoluteUri);
         Assert.IsTrue(endpoint.IsSameOrigin(catalogUri));
         Assert.IsFalse(endpoint.IsSameOrigin(new Uri("https://other.example.edu/catalog.json")));
     }

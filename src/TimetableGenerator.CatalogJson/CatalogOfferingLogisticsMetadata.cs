@@ -16,9 +16,7 @@ public sealed class CatalogOfferingLogisticsMetadata
         }
     }
 
-    private CatalogOfferingLogisticsMetadata(
-        KoreanScheduleSourceText? scheduleSourceTextOrNull,
-        LocationAssignmentMetadata location)
+    private CatalogOfferingLogisticsMetadata(KoreanScheduleSourceText? scheduleSourceTextOrNull, LocationAssignmentMetadata location)
     {
         if (location == null)
         {
@@ -29,9 +27,7 @@ public sealed class CatalogOfferingLogisticsMetadata
         Location = location;
     }
 
-    public static CatalogOfferingLogisticsMetadata CreateScheduled(
-        KoreanScheduleSourceText scheduleSourceText,
-        LocationAssignmentMetadata location)
+    public static CatalogOfferingLogisticsMetadata CreateScheduled(KoreanScheduleSourceText scheduleSourceText, LocationAssignmentMetadata location)
     {
         if (scheduleSourceText == null)
         {
@@ -41,8 +37,7 @@ public sealed class CatalogOfferingLogisticsMetadata
         return new CatalogOfferingLogisticsMetadata(scheduleSourceText, location);
     }
 
-    public static CatalogOfferingLogisticsMetadata CreateWithoutProvidedSchedule(
-        LocationAssignmentMetadata location)
+    public static CatalogOfferingLogisticsMetadata CreateWithoutProvidedSchedule(LocationAssignmentMetadata location)
     {
         return new CatalogOfferingLogisticsMetadata(null, location);
     }

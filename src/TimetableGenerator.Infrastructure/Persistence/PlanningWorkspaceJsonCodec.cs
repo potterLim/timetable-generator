@@ -52,21 +52,15 @@ public sealed partial class PlanningWorkspaceJsonCodec
         }
         catch (JsonException exception)
         {
-            throw new WorkspaceDocumentException(
-                "The planning workspace document is not valid JSON.",
-                exception);
+            throw new WorkspaceDocumentException("The planning workspace document is not valid JSON.", exception);
         }
         catch (ArgumentException exception)
         {
-            throw new WorkspaceDocumentException(
-                "The planning workspace document violates product invariants.",
-                exception);
+            throw new WorkspaceDocumentException("The planning workspace document violates product invariants.", exception);
         }
         catch (FormatException exception)
         {
-            throw new WorkspaceDocumentException(
-                "The planning workspace document contains an invalid formatted value.",
-                exception);
+            throw new WorkspaceDocumentException("The planning workspace document contains an invalid formatted value.", exception);
         }
     }
 
@@ -102,8 +96,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
 
         writer.WriteEndArray();
         writer.WriteStartArray("unscheduledSelections");
-        foreach (UnscheduledOfferingSelection selection in
-            plan.UnscheduledOfferingSelections)
+        foreach (UnscheduledOfferingSelection selection in plan.UnscheduledOfferingSelections)
         {
             writer.WriteStartObject();
             writer.WriteString("courseId", selection.CourseId.Value);
@@ -139,9 +132,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         }
     }
 
-    private static PlanningWorkspaceDocument readWorkspaceVersion(
-        JsonElement element,
-        int schemaVersion)
+    private static PlanningWorkspaceDocument readWorkspaceVersion(JsonElement element, int schemaVersion)
     {
         IReadOnlyList<string> expectedPropertyNames;
         if (schemaVersion == CURRENT_SCHEMA_VERSION)
@@ -166,12 +157,8 @@ public sealed partial class PlanningWorkspaceJsonCodec
             };
         }
 
-        Dictionary<string, JsonElement> properties = readExactObject(
-            element,
-            "workspace",
-            expectedPropertyNames);
-        WorkspaceGeneration generation = new WorkspaceGeneration(
-            readInt64(properties["generation"], "generation"));
+        Dictionary<string, JsonElement> properties = readExactObject(element, "workspace", expectedPropertyNames);
+        WorkspaceGeneration generation = new WorkspaceGeneration(readInt64(properties["generation"], "generation"));
         JsonElement plansElement = properties["plans"];
         requireValueKind(plansElement, JsonValueKind.Array, "plans");
         List<PlanningPlan> plans = new List<PlanningPlan>();
@@ -196,8 +183,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         {
             if (plans.Count == 0)
             {
-                throw new WorkspaceDocumentException(
-                    "Legacy planning workspace documents require at least one plan.");
+                throw new WorkspaceDocumentException("Legacy planning workspace documents require at least one plan.");
             }
 
             catalogBinding = plans[0].CatalogBinding;
@@ -287,10 +273,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
             };
         }
 
-        Dictionary<string, JsonElement> properties = readExactObject(
-            element,
-            "plan",
-            expectedPropertyNames);
+        Dictionary<string, JsonElement> properties = readExactObject(element, "plan", expectedPropertyNames);
         PlanId planId = readPlanId(properties["id"], "plan.id");
         PlanName planName = new PlanName(readString(properties["name"], "plan.name"));
         PlanCatalogBinding catalogBinding = readCatalogBinding(properties["catalog"], "plan.catalog");
@@ -325,10 +308,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
             planId,
             planName,
             catalogBinding,
-            new PlanningPlanContent(
-                courseChoiceGroups,
-                unscheduledSelections,
-                personalSchedules),
+            new PlanningPlanContent(courseChoiceGroups, unscheduledSelections, personalSchedules),
             lastViewedRecommendationOrNull);
     }
 
@@ -342,14 +322,8 @@ public sealed partial class PlanningWorkspaceJsonCodec
                 selectionElement,
                 "unscheduled selection",
                 new string[] { "courseId", "offeringId" });
-            CourseId courseId = new CourseId(
-                readString(
-                    properties["courseId"],
-                    "unscheduledSelection.courseId"));
-            OfferingId offeringId = new OfferingId(
-                readString(
-                    properties["offeringId"],
-                    "unscheduledSelection.offeringId"));
+            CourseId courseId = new CourseId(readString(properties["courseId"], "unscheduledSelection.courseId"));
+            OfferingId offeringId = new OfferingId(readString(properties["offeringId"], "unscheduledSelection.offeringId"));
             selections.Add(new UnscheduledOfferingSelection(courseId, offeringId));
         }
 
@@ -378,10 +352,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         return readPlanId(element, context);
     }
 
-    private static void writeOptionalPlanId(
-        Utf8JsonWriter writer,
-        string propertyName,
-        PlanId? planIdOrNull)
+    private static void writeOptionalPlanId(Utf8JsonWriter writer, string propertyName, PlanId? planIdOrNull)
     {
         if (planIdOrNull.HasValue == false)
         {

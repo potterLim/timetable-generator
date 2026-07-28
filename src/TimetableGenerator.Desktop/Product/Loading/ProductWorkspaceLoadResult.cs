@@ -25,8 +25,7 @@ internal sealed class ProductWorkspaceLoadResult
     {
         get
         {
-            return (RecoveryFlags
-                & EProductWorkspaceRecoveryFlags.CatalogPreviousGeneration) != 0;
+            return (RecoveryFlags & EProductWorkspaceRecoveryFlags.CatalogPreviousGeneration) != 0;
         }
     }
 
@@ -34,8 +33,7 @@ internal sealed class ProductWorkspaceLoadResult
     {
         get
         {
-            return (RecoveryFlags
-                & EProductWorkspaceRecoveryFlags.WorkspacePreviousGeneration) != 0;
+            return (RecoveryFlags & EProductWorkspaceRecoveryFlags.WorkspacePreviousGeneration) != 0;
         }
     }
 
@@ -43,8 +41,7 @@ internal sealed class ProductWorkspaceLoadResult
     {
         get
         {
-            return (RecoveryFlags
-                & EProductWorkspaceRecoveryFlags.WorkspaceCatalogRebound) != 0;
+            return (RecoveryFlags & EProductWorkspaceRecoveryFlags.WorkspaceCatalogRebound) != 0;
         }
     }
 
@@ -52,8 +49,7 @@ internal sealed class ProductWorkspaceLoadResult
     {
         get
         {
-            return (RecoveryFlags
-                & EProductWorkspaceRecoveryFlags.WorkspaceCreated) != 0;
+            return (RecoveryFlags & EProductWorkspaceRecoveryFlags.WorkspaceCreated) != 0;
         }
     }
 
@@ -82,9 +78,7 @@ internal sealed class ProductWorkspaceLoadResult
 
         if (workspaceConcurrencyToken.RepresentsMissingWorkspace)
         {
-            throw new ArgumentException(
-                "A loaded product workspace requires a persisted concurrency token.",
-                nameof(workspaceConcurrencyToken));
+            throw new ArgumentException("A loaded product workspace requires a persisted concurrency token.", nameof(workspaceConcurrencyToken));
         }
 
         if (Enum.IsDefined(typeof(EProductCatalogOrigin), catalogOrigin) == false)
@@ -98,30 +92,17 @@ internal sealed class ProductWorkspaceLoadResult
             throw new ArgumentOutOfRangeException(nameof(recoveryFlags));
         }
 
-        bool isRemoteWithRecoveredCache =
-            catalogOrigin == EProductCatalogOrigin.RemoteDownload
-            && (recoveryFlags
-                & EProductWorkspaceRecoveryFlags.CatalogPreviousGeneration) != 0;
+        bool isRemoteWithRecoveredCache = catalogOrigin == EProductCatalogOrigin.RemoteDownload && (recoveryFlags & EProductWorkspaceRecoveryFlags.CatalogPreviousGeneration) != 0;
         if (isRemoteWithRecoveredCache)
         {
-            throw new ArgumentException(
-                "A remotely downloaded catalog cannot be a recovered cache generation.",
-                nameof(recoveryFlags));
+            throw new ArgumentException("A remotely downloaded catalog cannot be a recovered cache generation.", nameof(recoveryFlags));
         }
 
-        bool isCreatedAndRecovered =
-            (recoveryFlags & EProductWorkspaceRecoveryFlags.WorkspaceCreated) != 0
-            && (recoveryFlags
-                & EProductWorkspaceRecoveryFlags.WorkspacePreviousGeneration) != 0;
-        bool isCreatedAndRebound =
-            (recoveryFlags & EProductWorkspaceRecoveryFlags.WorkspaceCreated) != 0
-            && (recoveryFlags
-                & EProductWorkspaceRecoveryFlags.WorkspaceCatalogRebound) != 0;
+        bool isCreatedAndRecovered = (recoveryFlags & EProductWorkspaceRecoveryFlags.WorkspaceCreated) != 0 && (recoveryFlags & EProductWorkspaceRecoveryFlags.WorkspacePreviousGeneration) != 0;
+        bool isCreatedAndRebound = (recoveryFlags & EProductWorkspaceRecoveryFlags.WorkspaceCreated) != 0 && (recoveryFlags & EProductWorkspaceRecoveryFlags.WorkspaceCatalogRebound) != 0;
         if (isCreatedAndRecovered || isCreatedAndRebound)
         {
-            throw new ArgumentException(
-                "A newly created workspace cannot also be recovered or rebound.",
-                nameof(recoveryFlags));
+            throw new ArgumentException("A newly created workspace cannot also be recovered or rebound.", nameof(recoveryFlags));
         }
 
         requireWorkspaceBindingMatchesCatalog(catalogPackage, workspace);
@@ -134,16 +115,12 @@ internal sealed class ProductWorkspaceLoadResult
         RecoveryFlags = recoveryFlags;
     }
 
-    private static void requireWorkspaceBindingMatchesCatalog(
-        VerifiedCatalogPackage catalogPackage,
-        PlanningWorkspace workspace)
+    private static void requireWorkspaceBindingMatchesCatalog(VerifiedCatalogPackage catalogPackage, PlanningWorkspace workspace)
     {
         PlanCatalogBinding packageBinding = catalogPackage.CreatePlanCatalogBinding();
         if (workspace.CatalogBinding != packageBinding)
         {
-            throw new ArgumentException(
-                "The loaded workspace must be bound to the loaded catalog.",
-                nameof(workspace));
+            throw new ArgumentException("The loaded workspace must be bound to the loaded catalog.", nameof(workspace));
         }
 
         foreach (PlanningPlan plan in workspace.Plans)
@@ -151,9 +128,7 @@ internal sealed class ProductWorkspaceLoadResult
             PlanCatalogBinding binding = plan.CatalogBinding;
             if (binding != packageBinding)
             {
-                throw new ArgumentException(
-                    "Every loaded plan must be bound to the loaded catalog.",
-                    nameof(workspace));
+                throw new ArgumentException("Every loaded plan must be bound to the loaded catalog.", nameof(workspace));
             }
         }
     }

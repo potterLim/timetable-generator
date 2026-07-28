@@ -14,8 +14,6 @@ public sealed class Sha256DigestTests
 
         Sha256Digest digest = Sha256Digest.Compute(content);
 
-        Assert.AreEqual(
-            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
-            digest.HexValue);
+        Assert.AreEqual("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", digest.HexValue);
     }
 }

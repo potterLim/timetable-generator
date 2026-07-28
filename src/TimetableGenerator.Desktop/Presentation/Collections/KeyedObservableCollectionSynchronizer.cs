@@ -7,10 +7,7 @@ namespace TimetableGenerator.Desktop.Presentation.Collections;
 
 internal static class KeyedObservableCollectionSynchronizer
 {
-    public static void Synchronize<TItem, TKey>(
-        ObservableCollection<TItem> currentItems,
-        IReadOnlyList<TItem> desiredItems,
-        Func<TItem, TKey> findKey)
+    public static void Synchronize<TItem, TKey>(ObservableCollection<TItem> currentItems, IReadOnlyList<TItem> desiredItems, Func<TItem, TKey> findKey)
         where TKey : notnull
     {
         Debug.Assert(currentItems != null);
@@ -65,10 +62,7 @@ internal static class KeyedObservableCollectionSynchronizer
         }
     }
 
-    private static void removeItemsNotInDesiredCollection<TItem, TKey>(
-        ObservableCollection<TItem> currentItems,
-        IReadOnlySet<TKey> desiredKeys,
-        Func<TItem, TKey> findKey)
+    private static void removeItemsNotInDesiredCollection<TItem, TKey>(ObservableCollection<TItem> currentItems, IReadOnlySet<TKey> desiredKeys, Func<TItem, TKey> findKey)
         where TKey : notnull
     {
         for (int index = currentItems.Count - 1; index >= 0; --index)

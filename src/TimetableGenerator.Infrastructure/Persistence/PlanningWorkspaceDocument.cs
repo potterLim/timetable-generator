@@ -13,9 +13,7 @@ public sealed class PlanningWorkspaceDocument
     {
         if (generation.IsValid == false)
         {
-            throw new ArgumentException(
-                "Planning workspace documents require a valid generation.",
-                nameof(generation));
+            throw new ArgumentException("Planning workspace documents require a valid generation.", nameof(generation));
         }
 
         if (workspace == null)

@@ -20,9 +20,7 @@ internal static class ScheduleListProjector
         {
             if (entry == null)
             {
-                throw new ArgumentException(
-                    "Schedule list projections cannot contain null entries.",
-                    nameof(entries));
+                throw new ArgumentException("Schedule list projections cannot contain null entries.", nameof(entries));
             }
 
             ScheduleListProjectionItem item = createProjectionItem(entry);
@@ -57,9 +55,7 @@ internal static class ScheduleListProjector
                 courseEntryOrNull.Day,
                 courseEntryOrNull.TimeRange,
                 new ScheduleListMetadata(courseEntryOrNull),
-                new CourseScheduleListSource(
-                    courseEntryOrNull.CourseId,
-                    courseEntryOrNull.OfferingId));
+                new CourseScheduleListSource(courseEntryOrNull.CourseId, courseEntryOrNull.OfferingId));
         }
 
         PersonalScheduleEntry? personalEntryOrNull = entry as PersonalScheduleEntry;
@@ -70,8 +66,7 @@ internal static class ScheduleListProjector
                 personalEntryOrNull.Day,
                 personalEntryOrNull.TimeRange,
                 new ScheduleListMetadata(personalEntryOrNull),
-                new PersonalScheduleListSource(
-                    personalEntryOrNull.ScheduleId));
+                new PersonalScheduleListSource(personalEntryOrNull.ScheduleId));
         }
 
         throw new InvalidOperationException("Schedule lists require a supported schedule entry type.");
@@ -147,8 +142,7 @@ internal static class ScheduleListProjector
             }
 
             ScheduleListOccurrenceBuilder? matchingBuilderOrNull = null;
-            foreach (ScheduleListOccurrenceBuilder occurrenceBuilder
-                in mOccurrenceBuilders)
+            foreach (ScheduleListOccurrenceBuilder occurrenceBuilder in mOccurrenceBuilders)
             {
                 if (occurrenceBuilder.HasSamePresentationMetadata(item))
                 {
@@ -173,30 +167,20 @@ internal static class ScheduleListProjector
             List<ScheduleListSource> groupSources = collectUniqueSources();
             string? sharedSectionOrNull = findSharedSectionOrNull();
             List<ScheduleListOccurrence> occurrences = new List<ScheduleListOccurrence>(mOccurrenceBuilders.Count);
-            foreach (ScheduleListOccurrenceBuilder occurrenceBuilder
-                in mOccurrenceBuilders)
+            foreach (ScheduleListOccurrenceBuilder occurrenceBuilder in mOccurrenceBuilders)
             {
-                ScheduleListOccurrence occurrence = sharedSectionOrNull == null
-                    ? occurrenceBuilder.Build()
-                    : occurrenceBuilder.BuildWithSectionInTitle();
+                ScheduleListOccurrence occurrence = sharedSectionOrNull == null ? occurrenceBuilder.Build() : occurrenceBuilder.BuildWithSectionInTitle();
                 occurrences.Add(occurrence);
             }
 
-            string titleDisplayText = sharedSectionOrNull == null
-                ? mTitle
-                : mTitle + "(" + sharedSectionOrNull + ")";
-            return new ScheduleListGroup(
-                mTitle,
-                titleDisplayText,
-                occurrences.AsReadOnly(),
-                groupSources.AsReadOnly());
+            string titleDisplayText = sharedSectionOrNull == null ? mTitle : mTitle + "(" + sharedSectionOrNull + ")";
+            return new ScheduleListGroup(mTitle, titleDisplayText, occurrences.AsReadOnly(), groupSources.AsReadOnly());
         }
 
         private List<ScheduleListSource> collectUniqueSources()
         {
             List<ScheduleListSource> sources = new List<ScheduleListSource>();
-            foreach (ScheduleListOccurrenceBuilder occurrenceBuilder
-                in mOccurrenceBuilders)
+            foreach (ScheduleListOccurrenceBuilder occurrenceBuilder in mOccurrenceBuilders)
             {
                 foreach (ScheduleListSource source in occurrenceBuilder.Sources)
                 {
@@ -211,8 +195,7 @@ internal static class ScheduleListProjector
         private string? findSharedSectionOrNull()
         {
             string? sharedSectionOrNull = null;
-            foreach (ScheduleListOccurrenceBuilder occurrenceBuilder
-                in mOccurrenceBuilders)
+            foreach (ScheduleListOccurrenceBuilder occurrenceBuilder in mOccurrenceBuilders)
             {
                 if (string.IsNullOrWhiteSpace(occurrenceBuilder.Metadata.SectionDisplayText))
                 {
@@ -225,10 +208,7 @@ internal static class ScheduleListProjector
                     continue;
                 }
 
-                if (string.Equals(
-                    sharedSectionOrNull,
-                    occurrenceBuilder.Metadata.SectionDisplayText,
-                    StringComparison.Ordinal) == false)
+                if (string.Equals(sharedSectionOrNull, occurrenceBuilder.Metadata.SectionDisplayText, StringComparison.Ordinal) == false)
                 {
                     return null;
                 }
@@ -237,9 +217,7 @@ internal static class ScheduleListProjector
             return sharedSectionOrNull;
         }
 
-        private static int compareOccurrenceBuilders(
-            ScheduleListOccurrenceBuilder left,
-            ScheduleListOccurrenceBuilder right)
+        private static int compareOccurrenceBuilders(ScheduleListOccurrenceBuilder left, ScheduleListOccurrenceBuilder right)
         {
             int dayComparison = left.EarliestDay.CompareTo(right.EarliestDay);
             if (dayComparison != 0)
@@ -253,28 +231,19 @@ internal static class ScheduleListProjector
                 return timeComparison;
             }
 
-            int sectionComparison = string.Compare(
-                left.Metadata.SectionDisplayText,
-                right.Metadata.SectionDisplayText,
-                StringComparison.Ordinal);
+            int sectionComparison = string.Compare(left.Metadata.SectionDisplayText, right.Metadata.SectionDisplayText, StringComparison.Ordinal);
             if (sectionComparison != 0)
             {
                 return sectionComparison;
             }
 
-            int locationComparison = string.Compare(
-                left.Metadata.LocationDisplayText,
-                right.Metadata.LocationDisplayText,
-                StringComparison.Ordinal);
+            int locationComparison = string.Compare(left.Metadata.LocationDisplayText, right.Metadata.LocationDisplayText, StringComparison.Ordinal);
             if (locationComparison != 0)
             {
                 return locationComparison;
             }
 
-            return string.Compare(
-                left.Metadata.ResponsiblePersonDisplayText,
-                right.Metadata.ResponsiblePersonDisplayText,
-                StringComparison.Ordinal);
+            return string.Compare(left.Metadata.ResponsiblePersonDisplayText, right.Metadata.ResponsiblePersonDisplayText, StringComparison.Ordinal);
         }
     }
 
@@ -324,17 +293,14 @@ internal static class ScheduleListProjector
 
         public bool HasSamePresentationMetadata(ScheduleListProjectionItem item)
         {
-            return TimeRange == item.TimeRange
-                && Metadata.HasSameContentAs(item.Metadata);
+            return TimeRange == item.TimeRange && Metadata.HasSameContentAs(item.Metadata);
         }
 
         public void Add(ScheduleListProjectionItem item)
         {
             if (HasSamePresentationMetadata(item) == false)
             {
-                throw new ArgumentException(
-                    "Only matching schedule metadata can share an occurrence.",
-                    nameof(item));
+                throw new ArgumentException("Only matching schedule metadata can share an occurrence.", nameof(item));
             }
 
             if (mDays.Contains(item.Day) == false)
@@ -359,11 +325,7 @@ internal static class ScheduleListProjector
         {
             List<ScheduleListSource> orderedSources = new List<ScheduleListSource>(mSources);
             orderedSources.Sort(compareSources);
-            return new ScheduleListOccurrence(
-                mDays.AsReadOnly(),
-                TimeRange,
-                metadata,
-                orderedSources.AsReadOnly());
+            return new ScheduleListOccurrence(mDays.AsReadOnly(), TimeRange, metadata, orderedSources.AsReadOnly());
         }
     }
 
@@ -394,9 +356,7 @@ internal static class ScheduleListProjector
         }
     }
 
-    private static void addUniqueSource(
-        ICollection<ScheduleListSource> sources,
-        ScheduleListSource candidate)
+    private static void addUniqueSource(ICollection<ScheduleListSource> sources, ScheduleListSource candidate)
     {
         foreach (ScheduleListSource source in sources)
         {
@@ -421,19 +381,13 @@ internal static class ScheduleListProjector
         CourseScheduleListSource? rightCourseOrNull = right as CourseScheduleListSource;
         if (leftCourseOrNull != null && rightCourseOrNull != null)
         {
-            int courseComparison = string.Compare(
-                leftCourseOrNull.CourseId.Value,
-                rightCourseOrNull.CourseId.Value,
-                StringComparison.Ordinal);
+            int courseComparison = string.Compare(leftCourseOrNull.CourseId.Value, rightCourseOrNull.CourseId.Value, StringComparison.Ordinal);
             if (courseComparison != 0)
             {
                 return courseComparison;
             }
 
-            return string.Compare(
-                leftCourseOrNull.OfferingId.Value,
-                rightCourseOrNull.OfferingId.Value,
-                StringComparison.Ordinal);
+            return string.Compare(leftCourseOrNull.OfferingId.Value, rightCourseOrNull.OfferingId.Value, StringComparison.Ordinal);
         }
 
         PersonalScheduleListSource leftPersonal = (PersonalScheduleListSource)left;

@@ -62,8 +62,7 @@ internal sealed partial class ProductAppearanceViewModel
 
             lock (mPersistenceSync)
             {
-                bool isCurrentTaskComplete =
-                    ReferenceEquals(persistenceTask, mPersistenceTask)
+                bool isCurrentTaskComplete = ReferenceEquals(persistenceTask, mPersistenceTask)
                     && mIsPersistenceWorkerRunning == false
                     && mPendingSettingsOrNull == null;
                 if (isCurrentTaskComplete)
@@ -125,16 +124,12 @@ internal sealed partial class ProductAppearanceViewModel
             ProductAppearanceSettings completedSettings = pendingSettingsOrNull;
             ProductAppearanceSettingsException? completedFailureOrNull = failureOrNull;
             Dispatcher.UIThread.Post(
-                () => applyPersistenceResult(
-                    completedSettings,
-                    completedFailureOrNull),
+                () => applyPersistenceResult(completedSettings, completedFailureOrNull),
                 DispatcherPriority.Background);
         }
     }
 
-    private void applyPersistenceResult(
-        ProductAppearanceSettings completedSettings,
-        ProductAppearanceSettingsException? failureOrNull)
+    private void applyPersistenceResult(ProductAppearanceSettings completedSettings, ProductAppearanceSettingsException? failureOrNull)
     {
         if (completedSettings.ThemePreference != mThemePreference)
         {

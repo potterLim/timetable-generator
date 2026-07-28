@@ -14,10 +14,7 @@ internal readonly record struct WindowWorkingArea
     {
         if (bounds.Width <= 0 || bounds.Height <= 0)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(bounds),
-                bounds,
-                "Window working area must have positive dimensions.");
+            throw new ArgumentOutOfRangeException(nameof(bounds), bounds, "Window working area must have positive dimensions.");
         }
 
         Bounds = bounds;

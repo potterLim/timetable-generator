@@ -28,9 +28,7 @@ internal sealed class TemporaryHandongSourceFile : IDisposable
             throw new ArgumentNullException(nameof(sourceBytes));
         }
 
-        mDirectoryPath = Path.Combine(
-            Path.GetTempPath(),
-            TEST_DIRECTORY_PREFIX + Guid.NewGuid().ToString("N"));
+        mDirectoryPath = Path.Combine(Path.GetTempPath(), TEST_DIRECTORY_PREFIX + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(mDirectoryPath);
 
         string sourceFilePath = Path.Combine(mDirectoryPath, "source.xls");
@@ -49,10 +47,7 @@ internal sealed class TemporaryHandongSourceFile : IDisposable
     private static Encoding createCp949Encoding()
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-        return Encoding.GetEncoding(
-            CP949_CODE_PAGE,
-            EncoderFallback.ExceptionFallback,
-            DecoderFallback.ExceptionFallback);
+        return Encoding.GetEncoding(CP949_CODE_PAGE, EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback);
     }
 
     private static byte[] encodeCp949(string sourceHtml)

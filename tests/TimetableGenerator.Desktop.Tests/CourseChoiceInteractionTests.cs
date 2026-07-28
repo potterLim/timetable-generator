@@ -135,17 +135,9 @@ public sealed class CourseChoiceInteractionTests
             CourseChoiceDraftCourseItem seminarDraft = workspace
                 .CourseChoiceDraftCourses
                 .Single(candidate => candidate.Name == "세미나 3");
-            Assert.Contains(
-                "프로그래밍 I",
-                programmingDraft.Offerings[0].PreferredButtonAccessibleName,
-                StringComparison.Ordinal);
-            Assert.Contains(
-                "세미나 3",
-                seminarDraft.Offerings[0].PreferredButtonAccessibleName,
-                StringComparison.Ordinal);
-            Assert.NotEqual(
-                programmingDraft.Offerings[0].PreferredButtonAccessibleName,
-                seminarDraft.Offerings[0].PreferredButtonAccessibleName);
+            Assert.Contains("프로그래밍 I", programmingDraft.Offerings[0].PreferredButtonAccessibleName, StringComparison.Ordinal);
+            Assert.Contains("세미나 3", seminarDraft.Offerings[0].PreferredButtonAccessibleName, StringComparison.Ordinal);
+            Assert.NotEqual(programmingDraft.Offerings[0].PreferredButtonAccessibleName, seminarDraft.Offerings[0].PreferredButtonAccessibleName);
             Assert.All(
                 seminarDraft.Offerings,
                 offering => Assert.True(offering.IsAcceptable));
@@ -348,27 +340,15 @@ public sealed class CourseChoiceInteractionTests
             Assert.Equal("조합에서 우선 사용", ToolTip.GetTip(preferenceButtons[0]));
             Assert.Equal("조합 후보로 사용", ToolTip.GetTip(preferenceButtons[1]));
             Assert.Equal("조합에서 사용하지 않음", ToolTip.GetTip(preferenceButtons[2]));
-            assertBrushUsesResource(
-                preferenceButtons[2].BorderBrush,
-                "ControlBorderBrush",
-                window.ActualThemeVariant);
-            assertBrushUsesResource(
-                preferenceButtons[0].BorderBrush,
-                "ControlBorderBrush",
-                window.ActualThemeVariant);
+            assertBrushUsesResource(preferenceButtons[2].BorderBrush, "ControlBorderBrush", window.ActualThemeVariant);
+            assertBrushUsesResource(preferenceButtons[0].BorderBrush, "ControlBorderBrush", window.ActualThemeVariant);
             Assert.Equal(new Thickness(1.0), preferenceButtons[0].BorderThickness);
-            assertBrushUsesResource(
-                selectedPreferenceButton.BorderBrush,
-                "SelectionIndicatorBrush",
-                window.ActualThemeVariant);
+            assertBrushUsesResource(selectedPreferenceButton.BorderBrush, "SelectionIndicatorBrush", window.ActualThemeVariant);
             Assert.Equal(new Thickness(1.0), selectedPreferenceButton.BorderThickness);
             Assert.True(firstPreferenceButton.Focus());
             Assert.True(selectedPreferenceButton.Focus(NavigationMethod.Tab));
             Dispatcher.UIThread.RunJobs();
-            assertBrushUsesResource(
-                selectedPreferenceButton.BorderBrush,
-                "ProductFocusStrokeBrush",
-                window.ActualThemeVariant);
+            assertBrushUsesResource(selectedPreferenceButton.BorderBrush, "ProductFocusStrokeBrush", window.ActualThemeVariant);
             Assert.Equal(new Thickness(2.0), selectedPreferenceButton.BorderThickness);
 
             ThemeVariant[] themeVariants =
@@ -410,18 +390,12 @@ public sealed class CourseChoiceInteractionTests
                 Point selectedPreferenceCenter = findControlCenter(window, selectedExcludedPreferenceButton);
                 window.MouseMove(selectedPreferenceCenter, RawInputModifiers.None);
                 Dispatcher.UIThread.RunJobs();
-                assertSelectedPreferenceVisuals(
-                    selectedExcludedPreferenceButton,
-                    themeVariant,
-                    "SelectionHoverSurfaceBrush");
+                assertSelectedPreferenceVisuals(selectedExcludedPreferenceButton, themeVariant, "SelectionHoverSurfaceBrush");
                 assertPreferenceOutlineEnclosesControl(selectedExcludedPreferenceButton);
 
                 window.MouseDown(selectedPreferenceCenter, MouseButton.Left, RawInputModifiers.None);
                 Dispatcher.UIThread.RunJobs();
-                assertSelectedPreferenceVisuals(
-                    selectedExcludedPreferenceButton,
-                    themeVariant,
-                    "SelectionPressedSurfaceBrush");
+                assertSelectedPreferenceVisuals(selectedExcludedPreferenceButton, themeVariant, "SelectionPressedSurfaceBrush");
                 window.MouseUp(selectedPreferenceCenter, MouseButton.Left, RawInputModifiers.None);
                 Dispatcher.UIThread.RunJobs();
 
@@ -473,10 +447,7 @@ public sealed class CourseChoiceInteractionTests
         return Assert.Single(workspace.VisibleCourses);
     }
 
-    private static void assertBrushUsesResource(
-        IBrush? actualBrushOrNull,
-        string resourceKey,
-        ThemeVariant themeVariant)
+    private static void assertBrushUsesResource(IBrush? actualBrushOrNull, string resourceKey, ThemeVariant themeVariant)
     {
         Avalonia.Application? applicationOrNull = Avalonia.Application.Current;
         Assert.NotNull(applicationOrNull);
@@ -493,10 +464,7 @@ public sealed class CourseChoiceInteractionTests
         Assert.Equal(expectedBrush.Color, actualBrush.Color);
     }
 
-    private static void assertSelectedPreferenceVisuals(
-        RadioButton preferenceButton,
-        ThemeVariant themeVariant,
-        string backgroundResourceKey)
+    private static void assertSelectedPreferenceVisuals(RadioButton preferenceButton, ThemeVariant themeVariant, string backgroundResourceKey)
     {
         assertBrushUsesResource(preferenceButton.Background, backgroundResourceKey, themeVariant);
         assertBrushUsesResource(preferenceButton.BorderBrush, "SelectionIndicatorBrush", themeVariant);
@@ -504,9 +472,7 @@ public sealed class CourseChoiceInteractionTests
         Assert.Equal(FontWeight.SemiBold, preferenceButton.FontWeight);
     }
 
-    private static void assertSelectedPreferenceFocusVisuals(
-        RadioButton preferenceButton,
-        ThemeVariant themeVariant)
+    private static void assertSelectedPreferenceFocusVisuals(RadioButton preferenceButton, ThemeVariant themeVariant)
     {
         assertBrushUsesResource(preferenceButton.Background, "SelectionSurfaceBrush", themeVariant);
         assertBrushUsesResource(preferenceButton.BorderBrush, "ProductFocusStrokeBrush", themeVariant);
@@ -515,10 +481,7 @@ public sealed class CourseChoiceInteractionTests
         Assert.Equal(FontWeight.SemiBold, preferenceButton.FontWeight);
     }
 
-    private static void assertUnselectedPreferenceVisuals(
-        RadioButton preferenceButton,
-        ThemeVariant themeVariant,
-        string backgroundResourceKey)
+    private static void assertUnselectedPreferenceVisuals(RadioButton preferenceButton, ThemeVariant themeVariant, string backgroundResourceKey)
     {
         Assert.Equal(false, preferenceButton.IsChecked);
         assertBrushUsesResource(preferenceButton.Background, backgroundResourceKey, themeVariant);
@@ -559,8 +522,7 @@ public sealed class CourseChoiceInteractionTests
             throw new InvalidOperationException("The preference control position could not be resolved.");
         }
 
-        return controlOriginOrNull.Value
-            + new Vector(control.Bounds.Width / 2.0, control.Bounds.Height / 2.0);
+        return controlOriginOrNull.Value + new Vector(control.Bounds.Width / 2.0, control.Bounds.Height / 2.0);
     }
 
     private static TControl findRequiredControl<TControl>(Control root, string name)

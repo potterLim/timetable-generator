@@ -13,10 +13,7 @@ internal sealed class RequirementFilterOption
 
     public string DisplayName { get; }
 
-    private RequirementFilterOption(
-        ECourseFilterScope scope,
-        ERequirementType? requirementTypeOrNull,
-        string displayName)
+    private RequirementFilterOption(ECourseFilterScope scope, ERequirementType? requirementTypeOrNull, string displayName)
     {
         Scope = scope;
         mRequirementTypeOrNull = requirementTypeOrNull;
@@ -35,10 +32,7 @@ internal sealed class RequirementFilterOption
             throw new ArgumentOutOfRangeException(nameof(requirementType));
         }
 
-        return new RequirementFilterOption(
-            ECourseFilterScope.Specific,
-            requirementType,
-            findDisplayName(requirementType));
+        return new RequirementFilterOption(ECourseFilterScope.Specific, requirementType, findDisplayName(requirementType));
     }
 
     public bool Matches(CatalogCourseProjection course)
@@ -86,10 +80,7 @@ internal sealed class RequirementFilterOption
             case ERequirementType.FreeElective:
                 return "자유선택";
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(requirementType),
-                    requirementType,
-                    "Unknown requirement type.");
+                throw new ArgumentOutOfRangeException(nameof(requirementType), requirementType, "Unknown requirement type.");
         }
     }
 }

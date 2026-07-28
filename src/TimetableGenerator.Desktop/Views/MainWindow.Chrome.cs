@@ -34,9 +34,7 @@ internal sealed partial class MainWindow
         PropertyChanged -= onWindowChromePropertyChanged;
     }
 
-    private void onWindowChromePropertyChanged(
-        object? senderOrNull,
-        AvaloniaPropertyChangedEventArgs eventArgs)
+    private void onWindowChromePropertyChanged(object? senderOrNull, AvaloniaPropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.Property == WindowStateProperty)
         {
@@ -83,27 +81,19 @@ internal sealed partial class MainWindow
         string? previousNameOrNull = maximizeRestorePeerOrNull?.GetName();
         string? previousHelpTextOrNull = maximizeRestorePeerOrNull?.GetHelpText();
 
-        maximizeRestoreIcon.Icon = isMaximized
-            ? FluentIcons.Common.Icon.SquareMultiple
-            : FluentIcons.Common.Icon.Square;
+        maximizeRestoreIcon.Icon = isMaximized ? FluentIcons.Common.Icon.SquareMultiple : FluentIcons.Common.Icon.Square;
         AutomationProperties.SetName(maximizeRestoreButton, actionName);
         ToolTip.SetTip(maximizeRestoreButton, actionName);
         if (maximizeRestorePeerOrNull != null)
         {
             if (string.Equals(previousNameOrNull, actionName, StringComparison.Ordinal) == false)
             {
-                maximizeRestorePeerOrNull.RaisePropertyChangedEvent(
-                    AutomationElementIdentifiers.NameProperty,
-                    previousNameOrNull,
-                    actionName);
+                maximizeRestorePeerOrNull.RaisePropertyChangedEvent(AutomationElementIdentifiers.NameProperty, previousNameOrNull, actionName);
             }
 
             if (string.Equals(previousHelpTextOrNull, actionName, StringComparison.Ordinal) == false)
             {
-                maximizeRestorePeerOrNull.RaisePropertyChangedEvent(
-                    AutomationElementIdentifiers.HelpTextProperty,
-                    previousHelpTextOrNull,
-                    actionName);
+                maximizeRestorePeerOrNull.RaisePropertyChangedEvent(AutomationElementIdentifiers.HelpTextProperty, previousHelpTextOrNull, actionName);
             }
         }
     }

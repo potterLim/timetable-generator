@@ -44,8 +44,7 @@ internal sealed class ScheduleBoardTimeAxis
     {
         get
         {
-            return (End.MinutesFromMidnight - Start.MinutesFromMidnight)
-                / LAYOUT_INCREMENT_MINUTES;
+            return (End.MinutesFromMidnight - Start.MinutesFromMidnight) / LAYOUT_INCREMENT_MINUTES;
         }
     }
 
@@ -83,18 +82,14 @@ internal sealed class ScheduleBoardTimeAxis
     {
         ensureTimeIsWithinAxis(time);
         int minuteOffset = time.MinutesFromMidnight - Start.MinutesFromMidnight;
-        return (minuteOffset + LAYOUT_INCREMENT_MINUTES - 1)
-            / LAYOUT_INCREMENT_MINUTES;
+        return (minuteOffset + LAYOUT_INCREMENT_MINUTES - 1) / LAYOUT_INCREMENT_MINUTES;
     }
 
     public int FindBoundaryRowOffset(ScheduleBoardTimeBoundary boundary)
     {
         if (boundary.CompareTo(Start) < 0 || boundary.CompareTo(End) > 0)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(boundary),
-                boundary,
-                "The time boundary is outside the visible schedule axis.");
+            throw new ArgumentOutOfRangeException(nameof(boundary), boundary, "The time boundary is outside the visible schedule axis.");
         }
 
         int minuteOffset = boundary.MinutesFromMidnight - Start.MinutesFromMidnight;
@@ -107,11 +102,7 @@ internal sealed class ScheduleBoardTimeAxis
 
         if (entries.Count == 0)
         {
-            return new ScheduleBoardTimeAxis(
-                new ScheduleBoardTimeBoundary(
-                    EMPTY_FALLBACK_START_MINUTE),
-                new ScheduleBoardTimeBoundary(
-                    EMPTY_FALLBACK_END_MINUTE));
+            return new ScheduleBoardTimeAxis(new ScheduleBoardTimeBoundary(EMPTY_FALLBACK_START_MINUTE), new ScheduleBoardTimeBoundary(EMPTY_FALLBACK_END_MINUTE));
         }
 
         int earliestMinute = entries[0].TimeRange.Start.MinutesFromMidnight;
@@ -123,18 +114,11 @@ internal sealed class ScheduleBoardTimeAxis
         }
 
         int startMinute = Math.Max(0, roundDown(earliestMinute, MINUTES_PER_HOUR) - START_CONTEXT_MINUTES);
-        int endMinute = Math.Min(
-            MINUTES_PER_DAY,
-            roundDown(latestMinute, GUIDE_INTERVAL_MINUTES)
-                + GUIDE_INTERVAL_MINUTES);
-        return new ScheduleBoardTimeAxis(
-            new ScheduleBoardTimeBoundary(startMinute),
-            new ScheduleBoardTimeBoundary(endMinute));
+        int endMinute = Math.Min(MINUTES_PER_DAY, roundDown(latestMinute, GUIDE_INTERVAL_MINUTES) + GUIDE_INTERVAL_MINUTES);
+        return new ScheduleBoardTimeAxis(new ScheduleBoardTimeBoundary(startMinute), new ScheduleBoardTimeBoundary(endMinute));
     }
 
-    private static IReadOnlyList<ScheduleBoardTimeBoundary> createGuideTimes(
-        ScheduleBoardTimeBoundary start,
-        ScheduleBoardTimeBoundary end)
+    private static IReadOnlyList<ScheduleBoardTimeBoundary> createGuideTimes(ScheduleBoardTimeBoundary start, ScheduleBoardTimeBoundary end)
     {
         List<ScheduleBoardTimeBoundary> guideTimes = new List<ScheduleBoardTimeBoundary>();
         for (int guideMinute = start.MinutesFromMidnight + GUIDE_INTERVAL_MINUTES; guideMinute < end.MinutesFromMidnight; guideMinute += GUIDE_INTERVAL_MINUTES)
@@ -145,16 +129,10 @@ internal sealed class ScheduleBoardTimeAxis
         return guideTimes.AsReadOnly();
     }
 
-    private static IReadOnlyList<ScheduleBoardTimeBoundary> createLabelTimes(
-        ScheduleBoardTimeBoundary start,
-        ScheduleBoardTimeBoundary end)
+    private static IReadOnlyList<ScheduleBoardTimeBoundary> createLabelTimes(ScheduleBoardTimeBoundary start, ScheduleBoardTimeBoundary end)
     {
         List<ScheduleBoardTimeBoundary> labelTimes = new List<ScheduleBoardTimeBoundary>();
-        int firstLabelMinute = start.IsFullHour
-            ? start.MinutesFromMidnight
-            : roundUp(
-                start.MinutesFromMidnight + 1,
-                LABEL_INTERVAL_MINUTES);
+        int firstLabelMinute = start.IsFullHour ? start.MinutesFromMidnight : roundUp(start.MinutesFromMidnight + 1, LABEL_INTERVAL_MINUTES);
         for (int labelMinute = firstLabelMinute; labelMinute < end.MinutesFromMidnight; labelMinute += LABEL_INTERVAL_MINUTES)
         {
             labelTimes.Add(new ScheduleBoardTimeBoundary(labelMinute));
@@ -169,10 +147,7 @@ internal sealed class ScheduleBoardTimeAxis
             || time.MinutesFromMidnight < Start.MinutesFromMidnight
             || time.MinutesFromMidnight > End.MinutesFromMidnight)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(time),
-                time,
-                "The schedule time is outside the visible time axis.");
+            throw new ArgumentOutOfRangeException(nameof(time), time, "The schedule time is outside the visible time axis.");
         }
     }
 

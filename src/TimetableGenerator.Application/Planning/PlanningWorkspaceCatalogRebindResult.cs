@@ -17,9 +17,7 @@ public sealed class PlanningWorkspaceCatalogRebindResult
         }
     }
 
-    private PlanningWorkspaceCatalogRebindResult(
-        EPlanningWorkspaceCatalogRebindStatus status,
-        PlanningWorkspace? reboundWorkspaceOrNull)
+    private PlanningWorkspaceCatalogRebindResult(EPlanningWorkspaceCatalogRebindStatus status, PlanningWorkspace? reboundWorkspaceOrNull)
     {
         if (Enum.IsDefined(typeof(EPlanningWorkspaceCatalogRebindStatus), status) == false)
         {
@@ -29,30 +27,24 @@ public sealed class PlanningWorkspaceCatalogRebindResult
         bool hasReboundWorkspace = reboundWorkspaceOrNull != null;
         if ((status == EPlanningWorkspaceCatalogRebindStatus.Rebound) != hasReboundWorkspace)
         {
-            throw new ArgumentException(
-                "Only a successful catalog rebind can contain a workspace.",
-                nameof(reboundWorkspaceOrNull));
+            throw new ArgumentException("Only a successful catalog rebind can contain a workspace.", nameof(reboundWorkspaceOrNull));
         }
 
         Status = status;
         ReboundWorkspaceOrNull = reboundWorkspaceOrNull;
     }
 
-    internal static PlanningWorkspaceCatalogRebindResult createRebound(
-        PlanningWorkspace reboundWorkspace)
+    internal static PlanningWorkspaceCatalogRebindResult createRebound(PlanningWorkspace reboundWorkspace)
     {
         if (reboundWorkspace == null)
         {
             throw new ArgumentNullException(nameof(reboundWorkspace));
         }
 
-        return new PlanningWorkspaceCatalogRebindResult(
-            EPlanningWorkspaceCatalogRebindStatus.Rebound,
-            reboundWorkspace);
+        return new PlanningWorkspaceCatalogRebindResult(EPlanningWorkspaceCatalogRebindStatus.Rebound, reboundWorkspace);
     }
 
-    internal static PlanningWorkspaceCatalogRebindResult createFailure(
-        EPlanningWorkspaceCatalogRebindStatus status)
+    internal static PlanningWorkspaceCatalogRebindResult createFailure(EPlanningWorkspaceCatalogRebindStatus status)
     {
         if (status == EPlanningWorkspaceCatalogRebindStatus.Rebound)
         {

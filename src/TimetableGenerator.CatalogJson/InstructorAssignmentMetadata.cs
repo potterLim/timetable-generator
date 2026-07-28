@@ -8,15 +8,9 @@ public sealed class InstructorAssignmentMetadata
 
     private readonly AdditionalInstructorCount? mAdditionalInstructorCountOrNull;
 
-    public static InstructorAssignmentMetadata Unconfirmed { get; } = new InstructorAssignmentMetadata(
-        EInstructorAssignmentStatus.Unconfirmed,
-        null,
-        null);
+    public static InstructorAssignmentMetadata Unconfirmed { get; } = new InstructorAssignmentMetadata(EInstructorAssignmentStatus.Unconfirmed, null, null);
 
-    public static InstructorAssignmentMetadata NotProvided { get; } = new InstructorAssignmentMetadata(
-        EInstructorAssignmentStatus.NotProvided,
-        null,
-        null);
+    public static InstructorAssignmentMetadata NotProvided { get; } = new InstructorAssignmentMetadata(EInstructorAssignmentStatus.NotProvided, null, null);
 
     public EInstructorAssignmentStatus Status { get; }
 
@@ -28,17 +22,12 @@ public sealed class InstructorAssignmentMetadata
         }
     }
 
-    private InstructorAssignmentMetadata(
-        EInstructorAssignmentStatus status,
-        InstructorDisplayText? displayTextOrNull,
-        AdditionalInstructorCount? additionalInstructorCountOrNull)
+    private InstructorAssignmentMetadata(EInstructorAssignmentStatus status, InstructorDisplayText? displayTextOrNull, AdditionalInstructorCount? additionalInstructorCountOrNull)
     {
-        bool hasConfirmedValues = displayTextOrNull != null
-            && additionalInstructorCountOrNull.HasValue;
+        bool hasConfirmedValues = displayTextOrNull != null && additionalInstructorCountOrNull.HasValue;
         if ((status == EInstructorAssignmentStatus.Confirmed) != hasConfirmedValues)
         {
-            throw new ArgumentException(
-                "Confirmed instructors require display text and an additional instructor count.");
+            throw new ArgumentException("Confirmed instructors require display text and an additional instructor count.");
         }
 
         Status = status;
@@ -46,19 +35,14 @@ public sealed class InstructorAssignmentMetadata
         mAdditionalInstructorCountOrNull = additionalInstructorCountOrNull;
     }
 
-    public static InstructorAssignmentMetadata CreateConfirmed(
-        InstructorDisplayText displayText,
-        AdditionalInstructorCount additionalInstructorCount)
+    public static InstructorAssignmentMetadata CreateConfirmed(InstructorDisplayText displayText, AdditionalInstructorCount additionalInstructorCount)
     {
         if (displayText == null)
         {
             throw new ArgumentNullException(nameof(displayText));
         }
 
-        return new InstructorAssignmentMetadata(
-            EInstructorAssignmentStatus.Confirmed,
-            displayText,
-            additionalInstructorCount);
+        return new InstructorAssignmentMetadata(EInstructorAssignmentStatus.Confirmed, displayText, additionalInstructorCount);
     }
 
     public InstructorDisplayText GetDisplayText()

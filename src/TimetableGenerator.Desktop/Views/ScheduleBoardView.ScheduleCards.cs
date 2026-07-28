@@ -81,10 +81,7 @@ internal sealed partial class ScheduleBoardView
         return separator;
     }
 
-    private Flyout createDetailsFlyout(
-        StackPanel details,
-        string accessibleName,
-        EDay day)
+    private Flyout createDetailsFlyout(StackPanel details, string accessibleName, EDay day)
     {
         Border detailsSurface = new Border();
         detailsSurface.Padding = new Thickness(6.0);
@@ -102,9 +99,7 @@ internal sealed partial class ScheduleBoardView
     {
         ScheduleBoardDay boardDay = mRenderedLayout.DayRange.FindDay(day);
         bool isInRightHalf = (boardDay.ColumnIndex * 2) >= mRenderedLayout.DayRange.TotalColumnCount;
-        return isInRightHalf
-            ? PlacementMode.BottomEdgeAlignedRight
-            : PlacementMode.BottomEdgeAlignedLeft;
+        return isInRightHalf ? PlacementMode.BottomEdgeAlignedRight : PlacementMode.BottomEdgeAlignedLeft;
     }
 
     private static Grid createDetailRow(string label, string value)

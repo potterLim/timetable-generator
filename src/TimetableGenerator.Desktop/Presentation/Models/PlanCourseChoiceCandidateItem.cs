@@ -78,9 +78,7 @@ internal sealed class PlanCourseChoiceCandidateItem : ObservableObject
         }
     }
 
-    public PlanCourseChoiceCandidateItem(
-        CatalogCourseProjection projection,
-        CourseCandidate courseCandidate)
+    public PlanCourseChoiceCandidateItem(CatalogCourseProjection projection, CourseCandidate courseCandidate)
     {
         if (projection == null)
         {
@@ -94,9 +92,7 @@ internal sealed class PlanCourseChoiceCandidateItem : ObservableObject
 
         if (projection.Course.Id != courseCandidate.CourseId)
         {
-            throw new ArgumentException(
-                "Plan course candidates must match their catalog projection.",
-                nameof(courseCandidate));
+            throw new ArgumentException("Plan course candidates must match their catalog projection.", nameof(courseCandidate));
         }
 
         mProjection = projection;
@@ -111,12 +107,10 @@ internal sealed class PlanCourseChoiceCandidateItem : ObservableObject
         OfferingSummary = createOfferingSummary(courseCandidate);
     }
 
-    public void SynchronizeSelectedOffering(
-        ScheduleRecommendationBookmark? recommendationBookmarkOrNull)
+    public void SynchronizeSelectedOffering(ScheduleRecommendationBookmark? recommendationBookmarkOrNull)
     {
         CatalogOfferingProjection? selectedOfferingOrNull = findSelectedOfferingOrNull(recommendationBookmarkOrNull);
-        bool hasTimeNotProvidedSelection = selectedOfferingOrNull != null
-            && selectedOfferingOrNull.Offering.MeetingSchedule.IsScheduled == false;
+        bool hasTimeNotProvidedSelection = selectedOfferingOrNull != null && selectedOfferingOrNull.Offering.MeetingSchedule.IsScheduled == false;
         string displayText = string.Empty;
         if (hasTimeNotProvidedSelection && selectedOfferingOrNull != null)
         {
@@ -127,16 +121,14 @@ internal sealed class PlanCourseChoiceCandidateItem : ObservableObject
         setProperty(ref mHasSelectedTimeNotProvidedOffering, hasTimeNotProvidedSelection, nameof(HasSelectedTimeNotProvidedOffering));
     }
 
-    private CatalogOfferingProjection? findSelectedOfferingOrNull(
-        ScheduleRecommendationBookmark? recommendationBookmarkOrNull)
+    private CatalogOfferingProjection? findSelectedOfferingOrNull(ScheduleRecommendationBookmark? recommendationBookmarkOrNull)
     {
         if (recommendationBookmarkOrNull == null)
         {
             return null;
         }
 
-        foreach (OfferingCandidate offeringCandidate
-            in mCourseCandidate.OfferingCandidates)
+        foreach (OfferingCandidate offeringCandidate in mCourseCandidate.OfferingCandidates)
         {
             if (recommendationBookmarkOrNull.ContainsOffering(offeringCandidate.OfferingId) == false)
             {
@@ -151,8 +143,7 @@ internal sealed class PlanCourseChoiceCandidateItem : ObservableObject
                 }
             }
 
-            throw new InvalidOperationException(
-                "A selected plan offering is missing from its catalog projection.");
+            throw new InvalidOperationException("A selected plan offering is missing from its catalog projection.");
         }
 
         return null;
@@ -163,8 +154,7 @@ internal sealed class PlanCourseChoiceCandidateItem : ObservableObject
         int preferredCount = 0;
         int acceptableCount = 0;
         int excludedCount = 0;
-        foreach (OfferingCandidate offeringCandidate
-            in courseCandidate.OfferingCandidates)
+        foreach (OfferingCandidate offeringCandidate in courseCandidate.OfferingCandidates)
         {
             switch (offeringCandidate.Preference)
             {
@@ -178,10 +168,7 @@ internal sealed class PlanCourseChoiceCandidateItem : ObservableObject
                     ++excludedCount;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(
-                        nameof(courseCandidate),
-                        offeringCandidate.Preference,
-                        "Unknown offering preference.");
+                    throw new ArgumentOutOfRangeException(nameof(courseCandidate), offeringCandidate.Preference, "Unknown offering preference.");
             }
         }
 
@@ -197,8 +184,7 @@ internal sealed class PlanCourseChoiceCandidateItem : ObservableObject
     private static string createOfferingSummary(CourseCandidate courseCandidate)
     {
         int eligibleCount = 0;
-        foreach (OfferingCandidate offeringCandidate
-            in courseCandidate.OfferingCandidates)
+        foreach (OfferingCandidate offeringCandidate in courseCandidate.OfferingCandidates)
         {
             if (offeringCandidate.IsEligible)
             {

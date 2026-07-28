@@ -197,10 +197,7 @@ public sealed class PersonalSchedulePaneStateTests
                 candidate => candidate.Day == day);
         if (matchingOptionOrNull == null)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(day),
-                day,
-                "The personal schedule day option was not found.");
+            throw new ArgumentOutOfRangeException(nameof(day), day, "The personal schedule day option was not found.");
         }
 
         matchingOptionOrNull.IsSelected = true;
@@ -225,9 +222,7 @@ public sealed class PersonalSchedulePaneStateTests
         }
 
         Point buttonPosition = buttonPositionOrNull.Value;
-        Point clickPosition = new Point(
-            buttonPosition.X + (button.Bounds.Width / 2.0),
-            buttonPosition.Y + (button.Bounds.Height / 2.0));
+        Point clickPosition = new Point(buttonPosition.X + (button.Bounds.Width / 2.0), buttonPosition.Y + (button.Bounds.Height / 2.0));
         window.MouseMove(clickPosition, RawInputModifiers.None);
         window.MouseDown(clickPosition, MouseButton.Left, RawInputModifiers.None);
         window.MouseUp(clickPosition, MouseButton.Left, RawInputModifiers.None);

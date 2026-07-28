@@ -12,12 +12,10 @@ internal sealed class NoOpAppleCalendarExportLeaseProvider
     {
     }
 
-    public Task<IAppleCalendarExportLease> AcquireAsync(
-        CancellationToken cancellationToken)
+    public Task<IAppleCalendarExportLease> AcquireAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        return Task.FromResult<IAppleCalendarExportLease>(
-            NoOpLease.Instance);
+        return Task.FromResult<IAppleCalendarExportLease>(NoOpLease.Instance);
     }
 
     private sealed class NoOpLease : IAppleCalendarExportLease

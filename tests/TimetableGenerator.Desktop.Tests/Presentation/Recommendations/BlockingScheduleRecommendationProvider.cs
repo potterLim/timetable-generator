@@ -50,10 +50,7 @@ internal sealed class BlockingScheduleRecommendationProvider :
         mSecondCallStartedSource = createCompletionSource();
     }
 
-    public ScheduleRecommendationResult Generate(
-        PlanningPlan plan,
-        ScheduleRecommendationLimit recommendationLimit,
-        CancellationToken cancellationToken)
+    public ScheduleRecommendationResult Generate(PlanningPlan plan, ScheduleRecommendationLimit recommendationLimit, CancellationToken cancellationToken)
     {
         int callNumber = Interlocked.Increment(ref mCallCount);
         if (callNumber == 1)
@@ -69,8 +66,7 @@ internal sealed class BlockingScheduleRecommendationProvider :
         {
             cancellationToken.WaitHandle.WaitOne();
             cancellationToken.ThrowIfCancellationRequested();
-            throw new System.InvalidOperationException(
-                "The blocking recommendation provider resumed without cancellation.");
+            throw new System.InvalidOperationException("The blocking recommendation provider resumed without cancellation.");
         }
         catch (OperationCanceledException)
             when (callNumber == 1)

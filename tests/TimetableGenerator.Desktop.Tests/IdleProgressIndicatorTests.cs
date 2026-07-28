@@ -23,18 +23,14 @@ public sealed class IdleProgressIndicatorTests
         PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
         await workspace.RecommendationRefreshTask;
         ProductShellViewModel shell = PlannerWorkspaceTestFactory.CreateShell(workspace);
-        MainWindow window = new MainWindow(
-            shell,
-            ProductAppearanceTestFactory.CreateViewModel());
+        MainWindow window = new MainWindow(shell, ProductAppearanceTestFactory.CreateViewModel());
 
         try
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            ProgressBar[] progressIndicators = window.GetVisualDescendants()
-                .OfType<ProgressBar>()
-                .ToArray();
+            ProgressBar[] progressIndicators = window.GetVisualDescendants().OfType<ProgressBar>().ToArray();
             Assert.Equal(5, progressIndicators.Length);
             Assert.All(
                 progressIndicators,

@@ -31,8 +31,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         return false;
     }
 
-    private void showPersonalScheduleValidationError(
-        EPersonalScheduleDraftValidationError validationError)
+    private void showPersonalScheduleValidationError(EPersonalScheduleDraftValidationError validationError)
     {
         if (validationError == EPersonalScheduleDraftValidationError.None)
         {
@@ -45,8 +44,7 @@ internal sealed partial class PlannerWorkspaceViewModel
         raisePropertyChanged(nameof(HasPersonalScheduleValidationMessage));
     }
 
-    private static string getPersonalScheduleValidationMessage(
-        EPersonalScheduleDraftValidationError validationError)
+    private static string getPersonalScheduleValidationMessage(EPersonalScheduleDraftValidationError validationError)
     {
         switch (validationError)
         {
@@ -55,9 +53,7 @@ internal sealed partial class PlannerWorkspaceViewModel
             case EPersonalScheduleDraftValidationError.TitleRequired:
                 return "이름을 입력해 주세요.";
             case EPersonalScheduleDraftValidationError.TitleInvalid:
-                return "이름은 줄바꿈 없이 "
-                    + PersonalScheduleTitle.MAXIMUM_LENGTH
-                    + "자 이내로 입력해 주세요.";
+                return "이름은 줄바꿈 없이 " + PersonalScheduleTitle.MAXIMUM_LENGTH + "자 이내로 입력해 주세요.";
             case EPersonalScheduleDraftValidationError.DayRequired:
                 return "적용할 요일을 하나 이상 선택해 주세요.";
             case EPersonalScheduleDraftValidationError.StartTimeRequired:
@@ -66,34 +62,21 @@ internal sealed partial class PlannerWorkspaceViewModel
                 return "종료 시간을 입력해 주세요.";
             case EPersonalScheduleDraftValidationError.StartTimePrecisionInvalid:
             case EPersonalScheduleDraftValidationError.EndTimePrecisionInvalid:
-                return "시간은 "
-                    + PersonalSchedule.TIME_INCREMENT_MINUTES
-                    + "분 단위로 입력해 주세요.";
+                return "시간은 " + PersonalSchedule.TIME_INCREMENT_MINUTES + "분 단위로 입력해 주세요.";
             case EPersonalScheduleDraftValidationError.EndNotAfterStart:
                 return "종료 시간은 시작 시간보다 늦어야 합니다.";
             case EPersonalScheduleDraftValidationError.DurationTooShort:
-                return "개인 일정은 "
-                    + PersonalSchedule.MINIMUM_DURATION_MINUTES
-                    + "분 이상으로 입력해 주세요.";
+                return "개인 일정은 " + PersonalSchedule.MINIMUM_DURATION_MINUTES + "분 이상으로 입력해 주세요.";
             case EPersonalScheduleDraftValidationError.SectionInvalid:
-                return "분반은 줄바꿈 없이 "
-                    + PersonalScheduleSection.MAXIMUM_LENGTH
-                    + "자 이내로 입력해 주세요.";
+                return "분반은 줄바꿈 없이 " + PersonalScheduleSection.MAXIMUM_LENGTH + "자 이내로 입력해 주세요.";
             case EPersonalScheduleDraftValidationError.InstructorInvalid:
-                return "교수·담당자는 줄바꿈 없이 "
-                    + PersonalScheduleInstructor.MAXIMUM_LENGTH
-                    + "자 이내로 입력해 주세요.";
+                return "교수·담당자는 줄바꿈 없이 " + PersonalScheduleInstructor.MAXIMUM_LENGTH + "자 이내로 입력해 주세요.";
             case EPersonalScheduleDraftValidationError.LocationInvalid:
-                return "장소는 줄바꿈 없이 "
-                    + PersonalScheduleLocation.MAXIMUM_LENGTH
-                    + "자 이내로 입력해 주세요.";
+                return "장소는 줄바꿈 없이 " + PersonalScheduleLocation.MAXIMUM_LENGTH + "자 이내로 입력해 주세요.";
             case EPersonalScheduleDraftValidationError.Overlap:
                 return "같은 요일과 시간에 다른 개인 일정이 있습니다.";
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(validationError),
-                    validationError,
-                    "Unknown personal schedule validation error.");
+                throw new ArgumentOutOfRangeException(nameof(validationError), validationError, "Unknown personal schedule validation error.");
         }
     }
 
@@ -148,23 +131,17 @@ internal sealed partial class PlannerWorkspaceViewModel
             return EPersonalScheduleDraftValidationError.DurationTooShort;
         }
 
-        if (hasInvalidOptionalPersonalScheduleText(
-            PersonalScheduleSectionDraft,
-            PersonalScheduleSection.MAXIMUM_LENGTH))
+        if (hasInvalidOptionalPersonalScheduleText(PersonalScheduleSectionDraft, PersonalScheduleSection.MAXIMUM_LENGTH))
         {
             return EPersonalScheduleDraftValidationError.SectionInvalid;
         }
 
-        if (hasInvalidOptionalPersonalScheduleText(
-            PersonalScheduleInstructorDraft,
-            PersonalScheduleInstructor.MAXIMUM_LENGTH))
+        if (hasInvalidOptionalPersonalScheduleText(PersonalScheduleInstructorDraft, PersonalScheduleInstructor.MAXIMUM_LENGTH))
         {
             return EPersonalScheduleDraftValidationError.InstructorInvalid;
         }
 
-        if (hasInvalidOptionalPersonalScheduleText(
-            PersonalScheduleLocationDraft,
-            PersonalScheduleLocation.MAXIMUM_LENGTH))
+        if (hasInvalidOptionalPersonalScheduleText(PersonalScheduleLocationDraft, PersonalScheduleLocation.MAXIMUM_LENGTH))
         {
             return EPersonalScheduleDraftValidationError.LocationInvalid;
         }
@@ -174,16 +151,14 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private static bool hasSupportedTimePrecision(ScheduleTime value)
     {
-        bool usesSupportedIncrement = value.Minute
-            % PersonalSchedule.TIME_INCREMENT_MINUTES == 0;
+        bool usesSupportedIncrement = value.Minute % PersonalSchedule.TIME_INCREMENT_MINUTES == 0;
         return value.IsValid && usesSupportedIncrement;
     }
 
     private static bool hasInvalidOptionalPersonalScheduleText(string value, int maximumLength)
     {
         string normalizedValue = value.Trim();
-        return normalizedValue.Length > 0
-            && hasInvalidPersonalScheduleText(normalizedValue, maximumLength);
+        return normalizedValue.Length > 0 && hasInvalidPersonalScheduleText(normalizedValue, maximumLength);
     }
 
     private static bool hasInvalidPersonalScheduleText(string value, int maximumLength)

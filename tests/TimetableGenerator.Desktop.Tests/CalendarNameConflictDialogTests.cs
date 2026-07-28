@@ -21,32 +21,20 @@ public sealed class CalendarNameConflictDialogTests
     [AvaloniaFact]
     public void ReplaceableConflictOffersBothDestinationChoices()
     {
-        CalendarNameConflict conflict = createConflict(
-            ECalendarExportProvider.Google,
-            ECalendarReplacementAvailability.Available);
+        CalendarNameConflict conflict = createConflict(ECalendarExportProvider.Google, ECalendarReplacementAvailability.Available);
 
         CalendarNameConflictDialog dialog = new CalendarNameConflictDialog(conflict);
 
         try
         {
-            TextBlock currentNameDescription = findRequiredControl<TextBlock>(
-                dialog,
-                "CurrentNameDescription");
-            TextBlock availableNameDescription = findRequiredControl<TextBlock>(
-                dialog,
-                "AvailableNameDescription");
-            TextBlock unavailableDescription = findRequiredControl<TextBlock>(
-                dialog,
-                "ReplacementUnavailableDescription");
+            TextBlock currentNameDescription = findRequiredControl<TextBlock>(dialog, "CurrentNameDescription");
+            TextBlock availableNameDescription = findRequiredControl<TextBlock>(dialog, "AvailableNameDescription");
+            TextBlock unavailableDescription = findRequiredControl<TextBlock>(dialog, "ReplacementUnavailableDescription");
             Button replaceButton = findRequiredControl<Button>(dialog, "ReplaceButton");
             Button createButton = findRequiredControl<Button>(dialog, "CreateButton");
 
-            Assert.Equal(
-                "현재 이름: \"2026-2학기 시간표\"",
-                currentNameDescription.Text);
-            Assert.Equal(
-                "새 이름: \"2026-2학기 시간표 (2)\"",
-                availableNameDescription.Text);
+            Assert.Equal("현재 이름: \"2026-2학기 시간표\"", currentNameDescription.Text);
+            Assert.Equal("새 이름: \"2026-2학기 시간표 (2)\"", availableNameDescription.Text);
             Assert.True(replaceButton.IsEnabled);
             Assert.False(unavailableDescription.IsVisible);
             Assert.Equal("기존 캘린더 대체", AutomationProperties.GetName(replaceButton));
@@ -62,17 +50,13 @@ public sealed class CalendarNameConflictDialogTests
     [AvaloniaFact]
     public void UnsafeConflictDisablesReplacementWithoutHidingTheSafeChoice()
     {
-        CalendarNameConflict conflict = createConflict(
-            ECalendarExportProvider.Apple,
-            ECalendarReplacementAvailability.Unavailable);
+        CalendarNameConflict conflict = createConflict(ECalendarExportProvider.Apple, ECalendarReplacementAvailability.Unavailable);
 
         CalendarNameConflictDialog dialog = new CalendarNameConflictDialog(conflict);
 
         try
         {
-            TextBlock unavailableDescription = findRequiredControl<TextBlock>(
-                dialog,
-                "ReplacementUnavailableDescription");
+            TextBlock unavailableDescription = findRequiredControl<TextBlock>(dialog, "ReplacementUnavailableDescription");
             Button replaceButton = findRequiredControl<Button>(dialog, "ReplaceButton");
             Button createButton = findRequiredControl<Button>(dialog, "CreateButton");
 
@@ -91,17 +75,9 @@ public sealed class CalendarNameConflictDialogTests
     [AvaloniaFact]
     public void LongNamesRemainInsideTheShownDialogInEveryProductTheme()
     {
-        string requestedName = "긴 한글 English 괄호 ("
-            + new string('가', 57)
-            + ")";
-        string availableName = "Long English 한국어 ("
-            + new string('B', 57)
-            + ")";
-        CalendarNameConflict conflict = new CalendarNameConflict(
-            ECalendarExportProvider.Google,
-            new PlanName(requestedName),
-            new PlanName(availableName),
-            ECalendarReplacementAvailability.Available);
+        string requestedName = "긴 한글 English 괄호 (" + new string('가', 57) + ")";
+        string availableName = "Long English 한국어 (" + new string('B', 57) + ")";
+        CalendarNameConflict conflict = new CalendarNameConflict(ECalendarExportProvider.Google, new PlanName(requestedName), new PlanName(availableName), ECalendarReplacementAvailability.Available);
         ThemeVariant[] themes =
         {
             ThemeVariant.Light,
@@ -123,12 +99,8 @@ public sealed class CalendarNameConflictDialogTests
                 Button createButton = findRequiredControl<Button>(dialog, "CreateButton");
 
                 Assert.True(dialog.ClientSize.Width <= 460.0);
-                Assert.True(
-                    currentNameDescription.Bounds.Right
-                        <= dialog.ClientSize.Width - 24.0);
-                Assert.True(
-                    availableNameDescription.Bounds.Right
-                        <= dialog.ClientSize.Width - 24.0);
+                Assert.True(currentNameDescription.Bounds.Right <= dialog.ClientSize.Width - 24.0);
+                Assert.True(availableNameDescription.Bounds.Right <= dialog.ClientSize.Width - 24.0);
                 Assert.True(currentNameDescription.Bounds.Height > 21.0);
                 Assert.True(availableNameDescription.Bounds.Height > 21.0);
                 Assert.True(createButton.IsFocused);
@@ -145,10 +117,7 @@ public sealed class CalendarNameConflictDialogTests
     {
         Window owner = new Window();
         owner.Show();
-        CalendarNameConflictDialog dialog = new CalendarNameConflictDialog(
-            createConflict(
-                ECalendarExportProvider.Apple,
-                ECalendarReplacementAvailability.Available));
+        CalendarNameConflictDialog dialog = new CalendarNameConflictDialog(createConflict(ECalendarExportProvider.Apple, ECalendarReplacementAvailability.Available));
 
         try
         {
@@ -164,9 +133,7 @@ public sealed class CalendarNameConflictDialogTests
             Dispatcher.UIThread.RunJobs();
 
             Assert.True(escapeEvent.Handled);
-            Assert.Equal(
-                ECalendarNameConflictResolution.Cancel,
-                await resultTask);
+            Assert.Equal(ECalendarNameConflictResolution.Cancel, await resultTask);
         }
         finally
         {
@@ -179,15 +146,9 @@ public sealed class CalendarNameConflictDialogTests
         }
     }
 
-    private static CalendarNameConflict createConflict(
-        ECalendarExportProvider provider,
-        ECalendarReplacementAvailability replacementAvailability)
+    private static CalendarNameConflict createConflict(ECalendarExportProvider provider, ECalendarReplacementAvailability replacementAvailability)
     {
-        return new CalendarNameConflict(
-            provider,
-            new PlanName("2026-2학기 시간표"),
-            new PlanName("2026-2학기 시간표 (2)"),
-            replacementAvailability);
+        return new CalendarNameConflict(provider, new PlanName("2026-2학기 시간표"), new PlanName("2026-2학기 시간표 (2)"), replacementAvailability);
     }
 
     private static TControl findRequiredControl<TControl>(Control root, string controlName)
@@ -196,9 +157,7 @@ public sealed class CalendarNameConflictDialogTests
         TControl? controlOrNull = root.FindControl<TControl>(controlName);
         if (controlOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The calendar conflict dialog control is unavailable: "
-                    + controlName);
+            throw new InvalidOperationException("The calendar conflict dialog control is unavailable: " + controlName);
         }
 
         return controlOrNull;

@@ -26,8 +26,7 @@ internal sealed class AppleCalendarExportResult
         int deletedEventCount,
         string? diagnosticCodeOrNull)
     {
-        if (Enum.IsDefined(typeof(EAppleCalendarExportStatus), status) == false
-            || status == EAppleCalendarExportStatus.None)
+        if (Enum.IsDefined(typeof(EAppleCalendarExportStatus), status) == false || status == EAppleCalendarExportStatus.None)
         {
             throw new ArgumentOutOfRangeException(nameof(status));
         }
@@ -66,15 +65,11 @@ internal sealed class AppleCalendarExportResult
             null);
     }
 
-    public static AppleCalendarExportResult Fail(
-        EAppleCalendarExportStatus status,
-        string? diagnosticCodeOrNull)
+    public static AppleCalendarExportResult Fail(EAppleCalendarExportStatus status, string? diagnosticCodeOrNull)
     {
         if (status == EAppleCalendarExportStatus.None || status == EAppleCalendarExportStatus.Success)
         {
-            throw new ArgumentException(
-                "Completed Apple Calendar exports require completion details.",
-                nameof(status));
+            throw new ArgumentException("Completed Apple Calendar exports require completion details.", nameof(status));
         }
 
         return new AppleCalendarExportResult(status, null, null, 0, 0, diagnosticCodeOrNull);

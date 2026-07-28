@@ -17,9 +17,7 @@ internal static class AcademicTermCalendarMetadataRegistry
         return new AcademicTermCalendarMetadata(term, dateRange, localTimeZoneId);
     }
 
-    internal static AcademicTermCalendarMetadata findByTerm(
-        AcademicTerm term,
-        CalendarTimeZoneId timeZoneId)
+    internal static AcademicTermCalendarMetadata findByTerm(AcademicTerm term, CalendarTimeZoneId timeZoneId)
     {
         AcademicTermDateRange dateRange = findDateRange(term);
         return new AcademicTermCalendarMetadata(term, dateRange, timeZoneId);
@@ -29,9 +27,7 @@ internal static class AcademicTermCalendarMetadataRegistry
     {
         if (term.IsValid == false)
         {
-            throw new ArgumentException(
-                "Calendar metadata lookup requires a valid academic term.",
-                nameof(term));
+            throw new ArgumentException("Calendar metadata lookup requires a valid academic term.", nameof(term));
         }
 
         if (term == SECOND_SEMESTER_2026)
@@ -39,7 +35,6 @@ internal static class AcademicTermCalendarMetadataRegistry
             return SECOND_SEMESTER_2026_DATE_RANGE;
         }
 
-        throw new NotSupportedException(
-            "Calendar export is not configured for academic term " + term + ".");
+        throw new NotSupportedException("Calendar export is not configured for academic term " + term + ".");
     }
 }

@@ -1,8 +1,6 @@
 [CmdletBinding()]
 param(
-    [string] $Path = (
-        Join-Path $PSScriptRoot `
-            "../src/TimetableGenerator.Desktop/google-calendar.local.json")
+    [string] $Path = (Join-Path $PSScriptRoot "../src/TimetableGenerator.Desktop/google-calendar.local.json")
 )
 
 $ErrorActionPreference = "Stop"

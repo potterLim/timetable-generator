@@ -40,9 +40,7 @@ internal static class CatalogSourceConfigurationJsonReader
         }
         catch (JsonException exception)
         {
-            throw new CatalogSourceConfigurationException(
-                "The catalog source configuration is not valid UTF-8 JSON.",
-                exception);
+            throw new CatalogSourceConfigurationException("The catalog source configuration is not valid UTF-8 JSON.", exception);
         }
         catch (ArgumentException exception)
         {
@@ -54,8 +52,7 @@ internal static class CatalogSourceConfigurationJsonReader
     {
         if (rootElement.ValueKind != JsonValueKind.Object)
         {
-            throw new CatalogSourceConfigurationException(
-                "The catalog source configuration root must be an object.");
+            throw new CatalogSourceConfigurationException("The catalog source configuration root must be an object.");
         }
 
         HashSet<string> discoveredPropertyNames = new HashSet<string>(StringComparer.Ordinal);
@@ -63,25 +60,18 @@ internal static class CatalogSourceConfigurationJsonReader
         {
             if (EXPECTED_PROPERTY_NAMES.Contains(property.Name) == false)
             {
-                throw new CatalogSourceConfigurationException(
-                    "The catalog source configuration contains an unknown property: "
-                    + property.Name
-                    + ".");
+                throw new CatalogSourceConfigurationException("The catalog source configuration contains an unknown property: " + property.Name + ".");
             }
 
             if (discoveredPropertyNames.Add(property.Name) == false)
             {
-                throw new CatalogSourceConfigurationException(
-                    "The catalog source configuration contains a duplicate property: "
-                    + property.Name
-                    + ".");
+                throw new CatalogSourceConfigurationException("The catalog source configuration contains a duplicate property: " + property.Name + ".");
             }
         }
 
         if (discoveredPropertyNames.SetEquals(EXPECTED_PROPERTY_NAMES) == false)
         {
-            throw new CatalogSourceConfigurationException(
-                "The catalog source configuration is missing a required property.");
+            throw new CatalogSourceConfigurationException("The catalog source configuration is missing a required property.");
         }
 
         JsonElement schemaVersionElement = rootElement.GetProperty("schemaVersion");
@@ -90,8 +80,7 @@ internal static class CatalogSourceConfigurationJsonReader
             || schemaVersionElement.TryGetInt32(out schemaVersion) == false
             || schemaVersion != SUPPORTED_SCHEMA_VERSION)
         {
-            throw new CatalogSourceConfigurationException(
-                "The catalog source configuration schema is not supported.");
+            throw new CatalogSourceConfigurationException("The catalog source configuration schema is not supported.");
         }
 
         JsonElement indexUriElement = rootElement.GetProperty("indexUri");
@@ -114,9 +103,7 @@ internal static class CatalogSourceConfigurationJsonReader
         return createConfiguration(value, ECatalogSourceOrigin.Environment);
     }
 
-    private static CatalogSourceConfiguration createConfiguration(
-        string indexUriText,
-        ECatalogSourceOrigin origin)
+    private static CatalogSourceConfiguration createConfiguration(string indexUriText, ECatalogSourceOrigin origin)
     {
         Uri? indexUriOrNull;
         bool isValidUri = Uri.TryCreate(indexUriText.Trim(), UriKind.Absolute, out indexUriOrNull);

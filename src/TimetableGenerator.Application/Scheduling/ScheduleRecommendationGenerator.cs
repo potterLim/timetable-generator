@@ -8,9 +8,7 @@ namespace TimetableGenerator.Application.Scheduling;
 
 public sealed class ScheduleRecommendationGenerator
 {
-    public ScheduleRecommendationResult GenerateRecommendations(
-        ScheduleRecommendationRequest request,
-        CancellationToken cancellationToken)
+    public ScheduleRecommendationResult GenerateRecommendations(ScheduleRecommendationRequest request, CancellationToken cancellationToken)
     {
         if (request == null)
         {
@@ -31,18 +29,15 @@ public sealed class ScheduleRecommendationGenerator
 
         if (validationResult.CourseChoiceGroups.Count == 0)
         {
-            return createResultWithoutScheduledChoices(
-                validationResult.UnscheduledSelections,
-                request.Plan.PersonalSchedules);
+            return createResultWithoutScheduledChoices(validationResult.UnscheduledSelections, request.Plan.PersonalSchedules);
         }
 
-        ScheduleRecommendationGenerationState state =
-            new ScheduleRecommendationGenerationState(
-                validationResult.CourseChoiceGroups,
-                validationResult.UnscheduledSelections,
-                request.Plan.PersonalSchedules,
-                request.MaximumRecommendationCount,
-                cancellationToken);
+        ScheduleRecommendationGenerationState state = new ScheduleRecommendationGenerationState(
+            validationResult.CourseChoiceGroups,
+            validationResult.UnscheduledSelections,
+            request.Plan.PersonalSchedules,
+            request.MaximumRecommendationCount,
+            cancellationToken);
         generateRecommendations(state);
 
         if (state.Completion == EScheduleRecommendationCompletion.Canceled)
@@ -55,22 +50,14 @@ public sealed class ScheduleRecommendationGenerator
         return ScheduleRecommendationResult.createCompleted(state.Recommendations, state.Completion);
     }
 
-    private static ScheduleRecommendationResult createResultWithoutScheduledChoices(
-        IReadOnlyList<UnscheduledOfferingSelection> unscheduledSelections,
-        IReadOnlyList<PersonalSchedule> personalSchedules)
+    private static ScheduleRecommendationResult createResultWithoutScheduledChoices(IReadOnlyList<UnscheduledOfferingSelection> unscheduledSelections, IReadOnlyList<PersonalSchedule> personalSchedules)
     {
         if (unscheduledSelections.Count == 0 && personalSchedules.Count == 0)
         {
-            return ScheduleRecommendationResult.createCompleted(
-                Array.Empty<ScheduleRecommendation>(),
-                EScheduleRecommendationCompletion.Completed);
+            return ScheduleRecommendationResult.createCompleted(Array.Empty<ScheduleRecommendation>(), EScheduleRecommendationCompletion.Completed);
         }
 
-        ScheduleRecommendation recommendation = new ScheduleRecommendation(
-            Array.Empty<ScheduledOffering>(),
-            unscheduledSelections,
-            personalSchedules,
-            RecommendationScore.ZERO);
+        ScheduleRecommendation recommendation = new ScheduleRecommendation(Array.Empty<ScheduledOffering>(), unscheduledSelections, personalSchedules, RecommendationScore.ZERO);
         return ScheduleRecommendationResult.createCompleted(
             new ScheduleRecommendation[] { recommendation },
             EScheduleRecommendationCompletion.Completed);
@@ -100,8 +87,7 @@ public sealed class ScheduleRecommendationGenerator
             }
 
             ValidatedCourseChoiceGroup courseChoiceGroup = state.CourseChoiceGroups[node.NextGroupIndex];
-            foreach (ValidatedOfferingCandidate offeringCandidate
-                in courseChoiceGroup.OfferingCandidates)
+            foreach (ValidatedOfferingCandidate offeringCandidate in courseChoiceGroup.OfferingCandidates)
             {
                 if (state.CancellationToken.IsCancellationRequested)
                 {
@@ -109,11 +95,7 @@ public sealed class ScheduleRecommendationGenerator
                     return;
                 }
 
-                if (offeringCandidate.IsScheduled
-                    && ScheduleRecommendationConflictChecker.CanAddOffering(
-                        node,
-                        offeringCandidate.GetScheduledOffering(),
-                        state.PersonalSchedules) == false)
+                if (offeringCandidate.IsScheduled && ScheduleRecommendationConflictChecker.CanAddOffering(node, offeringCandidate.GetScheduledOffering(), state.PersonalSchedules) == false)
                 {
                     continue;
                 }
@@ -124,21 +106,14 @@ public sealed class ScheduleRecommendationGenerator
         }
     }
 
-    private static bool addCompletedRecommendation(
-        ScheduleRecommendationGenerationState state,
-        ScheduleSearchNode node)
+    private static bool addCompletedRecommendation(ScheduleRecommendationGenerationState state, ScheduleSearchNode node)
     {
         if (state.Recommendations.Count >= state.MaximumRecommendationCount.Value)
         {
             return true;
         }
 
-        ScheduleRecommendation recommendation = new ScheduleRecommendation(
-            node.SelectedOfferings,
-            state.CombineUnscheduledSelections(
-                node.SelectedUnscheduledSelections),
-            state.PersonalSchedules,
-            node.Score);
+        ScheduleRecommendation recommendation = new ScheduleRecommendation(node.SelectedOfferings, state.CombineUnscheduledSelections(node.SelectedUnscheduledSelections), state.PersonalSchedules, node.Score);
         state.Recommendations.Add(recommendation);
         return false;
     }

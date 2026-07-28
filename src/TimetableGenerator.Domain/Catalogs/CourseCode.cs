@@ -19,9 +19,7 @@ public sealed record CourseCode
         string normalizedValue = value.Trim();
         if (VALID_FORMAT.IsMatch(normalizedValue) == false)
         {
-            throw new ArgumentException(
-                "Course codes must contain three uppercase letters and five digits.",
-                nameof(value));
+            throw new ArgumentException("Course codes must contain three uppercase letters and five digits.", nameof(value));
         }
 
         Value = normalizedValue;

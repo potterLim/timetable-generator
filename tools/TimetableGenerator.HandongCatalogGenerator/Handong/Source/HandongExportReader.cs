@@ -21,9 +21,7 @@ internal static class HandongExportReader
 
     private static readonly Encoding CP949_ENCODING = createCp949Encoding();
 
-    public static async Task<HandongExportDocument> ReadAsync(
-        CatalogSourceFilePath sourceFilePath,
-        CancellationToken cancellationToken)
+    public static async Task<HandongExportDocument> ReadAsync(CatalogSourceFilePath sourceFilePath, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(sourceFilePath);
 
@@ -69,9 +67,7 @@ internal static class HandongExportReader
         }
     }
 
-    private static async Task<IHtmlDocument> parseSourceHtmlAsync(
-        string sourceHtml,
-        CancellationToken cancellationToken)
+    private static async Task<IHtmlDocument> parseSourceHtmlAsync(string sourceHtml, CancellationToken cancellationToken)
     {
         HtmlParserOptions parserOptions = default;
         parserOptions.IsScripting = false;
@@ -145,8 +141,7 @@ internal static class HandongExportReader
         }
 
         int separatorIndex = charsetTokenIndex + CHARSET_TOKEN.Length;
-        while (separatorIndex < metadataContent.Length
-            && char.IsWhiteSpace(metadataContent[separatorIndex]))
+        while (separatorIndex < metadataContent.Length && char.IsWhiteSpace(metadataContent[separatorIndex]))
         {
             ++separatorIndex;
         }
@@ -334,9 +329,7 @@ internal static class HandongExportReader
         return new ReadRowsResult(offeringRows, academicTerms);
     }
 
-    private static int compareAcademicTerms(
-        AcademicTerm leftAcademicTerm,
-        AcademicTerm rightAcademicTerm)
+    private static int compareAcademicTerms(AcademicTerm leftAcademicTerm, AcademicTerm rightAcademicTerm)
     {
         int academicYearComparison = leftAcademicTerm.AcademicYear.Value.CompareTo(rightAcademicTerm.AcademicYear.Value);
         if (academicYearComparison != 0)
@@ -352,9 +345,7 @@ internal static class HandongExportReader
         public IReadOnlyList<HandongRawOfferingRow> Rows { get; }
         public IReadOnlyList<AcademicTerm> AcademicTerms { get; }
 
-        public ReadRowsResult(
-            IReadOnlyList<HandongRawOfferingRow> rows,
-            IReadOnlyList<AcademicTerm> academicTerms)
+        public ReadRowsResult(IReadOnlyList<HandongRawOfferingRow> rows, IReadOnlyList<AcademicTerm> academicTerms)
         {
             Rows = rows;
             AcademicTerms = academicTerms;

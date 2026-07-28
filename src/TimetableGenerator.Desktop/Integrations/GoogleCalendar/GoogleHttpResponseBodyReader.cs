@@ -10,10 +10,7 @@ internal static class GoogleHttpResponseBodyReader
 {
     private const int BUFFER_SIZE_BYTES = 81_920;
 
-    public static async Task<byte[]> ReadAsync(
-        HttpContent content,
-        long maximumByteCount,
-        CancellationToken cancellationToken)
+    public static async Task<byte[]> ReadAsync(HttpContent content, long maximumByteCount, CancellationToken cancellationToken)
     {
         if (content == null)
         {
@@ -32,16 +29,12 @@ internal static class GoogleHttpResponseBodyReader
         }
 
         using (Stream source = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false))
-        using (MemoryStream destination = createDestination(
-            contentLengthOrNull,
-            maximumByteCount))
+        using (MemoryStream destination = createDestination(contentLengthOrNull, maximumByteCount))
         {
             byte[] buffer = new byte[BUFFER_SIZE_BYTES];
             while (true)
             {
-                int readByteCount = await source.ReadAsync(
-                    buffer.AsMemory(0, buffer.Length),
-                    cancellationToken).ConfigureAwait(false);
+                int readByteCount = await source.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken).ConfigureAwait(false);
                 if (readByteCount == 0)
                 {
                     return destination.ToArray();
@@ -52,9 +45,7 @@ internal static class GoogleHttpResponseBodyReader
                     throw new GoogleHttpResponseBodyLimitExceededException(maximumByteCount);
                 }
 
-                await destination.WriteAsync(
-                    buffer.AsMemory(0, readByteCount),
-                    cancellationToken).ConfigureAwait(false);
+                await destination.WriteAsync(buffer.AsMemory(0, readByteCount), cancellationToken).ConfigureAwait(false);
             }
         }
     }
@@ -66,9 +57,7 @@ internal static class GoogleHttpResponseBodyReader
             return new MemoryStream();
         }
 
-        long initialCapacity = Math.Min(
-            contentLengthOrNull.Value,
-            Math.Min(maximumByteCount, int.MaxValue));
+        long initialCapacity = Math.Min(contentLengthOrNull.Value, Math.Min(maximumByteCount, int.MaxValue));
         return new MemoryStream(checked((int)initialCapacity));
     }
 }

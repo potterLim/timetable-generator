@@ -53,9 +53,7 @@ public sealed class ProductWorkspaceLoaderTests
                         await context.Loader.LoadAsync(CancellationToken.None);
                     });
 
-            Assert.Equal(
-                EPlanningWorkspaceCatalogRebindStatus.CatalogArtifactSha256Mismatch,
-                exception.RebindStatus);
+            Assert.Equal(EPlanningWorkspaceCatalogRebindStatus.CatalogArtifactSha256Mismatch, exception.RebindStatus);
             Assert.Empty(context.WorkspaceStore.SavedWorkspaces);
             Assert.Equal(0, context.CatalogDownloader.DownloadCount);
         }
@@ -73,9 +71,7 @@ public sealed class ProductWorkspaceLoaderTests
                 cancellationToken.ThrowIfCancellationRequested();
                 return Task.FromResult(changedArtifactPackage);
             };
-        using (ProductWorkspaceLoaderTestContext context = createContext(
-            createLoadedWorkspaceResult(workspace),
-            download))
+        using (ProductWorkspaceLoaderTestContext context = createContext(createLoadedWorkspaceResult(workspace), download))
         {
             ProductWorkspaceCatalogCompatibilityException exception =
                 await Assert.ThrowsAsync<ProductWorkspaceCatalogCompatibilityException>(
@@ -85,9 +81,7 @@ public sealed class ProductWorkspaceLoaderTests
                     });
             CatalogCacheLoadResult cacheLoadResult = await context.CatalogCacheStore.LoadAsync(CancellationToken.None);
 
-            Assert.Equal(
-                EPlanningWorkspaceCatalogRebindStatus.CatalogArtifactSha256Mismatch,
-                exception.RebindStatus);
+            Assert.Equal(EPlanningWorkspaceCatalogRebindStatus.CatalogArtifactSha256Mismatch, exception.RebindStatus);
             Assert.False(cacheLoadResult.IsFound);
             Assert.Empty(context.WorkspaceStore.SavedWorkspaces);
             Assert.Equal(1, context.CatalogDownloader.DownloadCount);
@@ -134,9 +128,7 @@ public sealed class ProductWorkspaceLoaderTests
             Assert.Equal(catalogPackage.Entry.Institution.Id, activePlan.CatalogBinding.InstitutionId);
             Assert.Equal(catalogPackage.Entry.Term, activePlan.CatalogBinding.Term);
             Assert.Equal(catalogPackage.Entry.Revision, activePlan.CatalogBinding.Revision);
-            Assert.Equal(
-                catalogPackage.CreatePlanCatalogBinding().ArtifactSha256,
-                activePlan.CatalogBinding.ArtifactSha256);
+            Assert.Equal(catalogPackage.CreatePlanCatalogBinding().ArtifactSha256, activePlan.CatalogBinding.ArtifactSha256);
             Assert.Same(result.Workspace, Assert.Single(context.WorkspaceStore.SavedWorkspaces));
             Assert.Equal(0, context.CatalogDownloader.DownloadCount);
         }
@@ -183,9 +175,7 @@ public sealed class ProductWorkspaceLoaderTests
 
             Assert.Equal(latestRevision, result.CatalogPackage.Entry.Revision);
             Assert.Equal(latestRevision, result.Workspace.GetActivePlan().CatalogBinding.Revision);
-            Assert.Equal(
-                latestCatalogPackage.CreatePlanCatalogBinding().ArtifactSha256,
-                result.Workspace.GetActivePlan().CatalogBinding.ArtifactSha256);
+            Assert.Equal(latestCatalogPackage.CreatePlanCatalogBinding().ArtifactSha256, result.Workspace.GetActivePlan().CatalogBinding.ArtifactSha256);
             Assert.True(result.WasWorkspaceCatalogRebound);
             Assert.Equal(new PlanningWorkspaceConcurrencyToken(2L), result.WorkspaceConcurrencyToken);
             Assert.Same(result.Workspace, Assert.Single(context.WorkspaceStore.SavedWorkspaces));
@@ -220,11 +210,7 @@ public sealed class ProductWorkspaceLoaderTests
     {
         CatalogRevision currentRevision = new CatalogRevision(1);
         VerifiedCatalogPackage currentCatalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(currentRevision);
-        VerifiedCatalogPackage otherInstitutionCatalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackage(
-                new CatalogRevision(2),
-                new InstitutionId("another-university"),
-                AcademicTerm.Parse("2026-2"));
+        VerifiedCatalogPackage otherInstitutionCatalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(new CatalogRevision(2), new InstitutionId("another-university"), AcademicTerm.Parse("2026-2"));
         PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(currentRevision);
         using (ProductWorkspaceLoaderTestContext context = createContext(createLoadedWorkspaceResult(workspace)))
         {
@@ -245,11 +231,7 @@ public sealed class ProductWorkspaceLoaderTests
     {
         CatalogRevision currentRevision = new CatalogRevision(1);
         VerifiedCatalogPackage currentCatalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(currentRevision);
-        VerifiedCatalogPackage otherTermCatalogPackage =
-            ProductWorkspaceLoaderTestData.CreateCatalogPackage(
-                new CatalogRevision(2),
-                new InstitutionId("handong-global-university"),
-                AcademicTerm.Parse("2027-1"));
+        VerifiedCatalogPackage otherTermCatalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(new CatalogRevision(2), new InstitutionId("handong-global-university"), AcademicTerm.Parse("2027-1"));
         PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(currentRevision);
         using (ProductWorkspaceLoaderTestContext context = createContext(createLoadedWorkspaceResult(workspace)))
         {
@@ -309,14 +291,7 @@ public sealed class ProductWorkspaceLoaderTests
             Assert.Equal(EPlanningWorkspaceCatalogRebindStatus.OfferingNotFound, exception.RebindStatus);
             Assert.Empty(context.WorkspaceStore.SavedWorkspaces);
             Assert.Equal(0, context.CatalogDownloader.DownloadCount);
-            Assert.Equal(
-                "missing-offering",
-                workspace.GetActivePlan()
-                    .CourseChoiceGroups[0]
-                    .CourseCandidates[0]
-                    .OfferingCandidates[0]
-                    .OfferingId
-                    .Value);
+            Assert.Equal("missing-offering", workspace.GetActivePlan().CourseChoiceGroups[0].CourseCandidates[0].OfferingCandidates[0].OfferingId.Value);
         }
     }
 
@@ -352,9 +327,7 @@ public sealed class ProductWorkspaceLoaderTests
                 cancellationToken.ThrowIfCancellationRequested();
                 return Task.FromResult(catalogPackage);
             };
-        using (ProductWorkspaceLoaderTestContext context = createContext(
-            PlanningWorkspaceLoadResult.CreateNotFound(),
-            download))
+        using (ProductWorkspaceLoaderTestContext context = createContext(PlanningWorkspaceLoadResult.CreateNotFound(), download))
         {
             ProductWorkspaceLoadResult firstResult = await context.Loader.LoadAsync(CancellationToken.None);
             CatalogCacheLoadResult installedCache = await context.CatalogCacheStore.LoadAsync(CancellationToken.None);
@@ -385,9 +358,7 @@ public sealed class ProductWorkspaceLoaderTests
                 cancellationToken.ThrowIfCancellationRequested();
                 return Task.FromResult(downloadedCatalogPackage);
             };
-        using (ProductWorkspaceLoaderTestContext context = createContext(
-            createLoadedWorkspaceResult(workspace),
-            download))
+        using (ProductWorkspaceLoaderTestContext context = createContext(createLoadedWorkspaceResult(workspace), download))
         {
             ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(CancellationToken.None);
             CatalogCacheLoadResult installedCache = await context.CatalogCacheStore.LoadAsync(CancellationToken.None);
@@ -395,9 +366,7 @@ public sealed class ProductWorkspaceLoaderTests
             Assert.Equal(EProductCatalogOrigin.RemoteDownload, result.CatalogOrigin);
             Assert.True(result.WasWorkspaceCatalogRebound);
             Assert.Equal(downloadedRevision, result.Workspace.GetActivePlan().CatalogBinding.Revision);
-            Assert.Equal(
-                downloadedCatalogPackage.CreatePlanCatalogBinding().ArtifactSha256,
-                result.Workspace.GetActivePlan().CatalogBinding.ArtifactSha256);
+            Assert.Equal(downloadedCatalogPackage.CreatePlanCatalogBinding().ArtifactSha256, result.Workspace.GetActivePlan().CatalogBinding.ArtifactSha256);
             Assert.Equal(downloadedRevision, installedCache.GetPackage().Entry.Revision);
             Assert.Same(result.Workspace, Assert.Single(context.WorkspaceStore.SavedWorkspaces));
             Assert.Equal(1, context.CatalogDownloader.DownloadCount);
@@ -416,9 +385,7 @@ public sealed class ProductWorkspaceLoaderTests
                 cancellationToken.ThrowIfCancellationRequested();
                 return Task.FromResult(catalogPackage);
             };
-        using (ProductWorkspaceLoaderTestContext context = createContext(
-            createLoadedWorkspaceResult(workspace),
-            download))
+        using (ProductWorkspaceLoaderTestContext context = createContext(createLoadedWorkspaceResult(workspace), download))
         {
             await Assert.ThrowsAsync<ProductWorkspaceCatalogCompatibilityException>(
                 async delegate
@@ -474,33 +441,21 @@ public sealed class ProductWorkspaceLoaderTests
 
     private static PlanningWorkspaceLoadResult createLoadedWorkspaceResult(PlanningWorkspace workspace)
     {
-        return PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(
-            workspace,
-            new PlanningWorkspaceConcurrencyToken(1L));
+        return PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(workspace, new PlanningWorkspaceConcurrencyToken(1L));
     }
 
-    private static PlanningWorkspaceLoadResult createRecoveredWorkspaceResult(
-        PlanningWorkspace workspace)
+    private static PlanningWorkspaceLoadResult createRecoveredWorkspaceResult(PlanningWorkspace workspace)
     {
-        return PlanningWorkspaceLoadResult.CreateRecoveredPreviousGeneration(
-            workspace,
-            new PlanningWorkspaceConcurrencyToken(2L));
+        return PlanningWorkspaceLoadResult.CreateRecoveredPreviousGeneration(workspace, new PlanningWorkspaceConcurrencyToken(2L));
     }
 
-    private static ProductWorkspaceLoaderTestContext createContext(
-        PlanningWorkspaceLoadResult workspaceLoadResult)
+    private static ProductWorkspaceLoaderTestContext createContext(PlanningWorkspaceLoadResult workspaceLoadResult)
     {
-        return new ProductWorkspaceLoaderTestContext(
-            workspaceLoadResult,
-            Array.Empty<Func<CancellationToken, Task<VerifiedCatalogPackage>>>());
+        return new ProductWorkspaceLoaderTestContext(workspaceLoadResult, Array.Empty<Func<CancellationToken, Task<VerifiedCatalogPackage>>>());
     }
 
-    private static ProductWorkspaceLoaderTestContext createContext(
-        PlanningWorkspaceLoadResult workspaceLoadResult,
-        Func<CancellationToken, Task<VerifiedCatalogPackage>> download)
+    private static ProductWorkspaceLoaderTestContext createContext(PlanningWorkspaceLoadResult workspaceLoadResult, Func<CancellationToken, Task<VerifiedCatalogPackage>> download)
     {
-        return new ProductWorkspaceLoaderTestContext(
-            workspaceLoadResult,
-            new Func<CancellationToken, Task<VerifiedCatalogPackage>>[] { download });
+        return new ProductWorkspaceLoaderTestContext(workspaceLoadResult, new Func<CancellationToken, Task<VerifiedCatalogPackage>>[] { download });
     }
 }

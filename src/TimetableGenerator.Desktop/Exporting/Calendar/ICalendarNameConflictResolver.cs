@@ -5,7 +5,5 @@ namespace TimetableGenerator.Desktop.Exporting.Calendar;
 
 internal interface ICalendarNameConflictResolver
 {
-    Task<ECalendarNameConflictResolution> ResolveAsync(
-        CalendarNameConflict conflict,
-        CancellationToken cancellationToken);
+    Task<ECalendarNameConflictResolution> ResolveAsync(CalendarNameConflict conflict, CancellationToken cancellationToken);
 }

@@ -166,16 +166,10 @@ internal static class CatalogSynchronizationTestDocuments
             throw new ArgumentNullException(nameof(catalogBytes));
         }
 
-        return CreateIndexBytes(
-            VALID_RELATIVE_PATH,
-            new CatalogFileSize(catalogBytes.LongLength),
-            Sha256Digest.Compute(catalogBytes));
+        return CreateIndexBytes(VALID_RELATIVE_PATH, new CatalogFileSize(catalogBytes.LongLength), Sha256Digest.Compute(catalogBytes));
     }
 
-    public static byte[] CreateIndexBytes(
-        string relativePath,
-        CatalogFileSize fileSize,
-        Sha256Digest sha256)
+    public static byte[] CreateIndexBytes(string relativePath, CatalogFileSize fileSize, Sha256Digest sha256)
     {
         string json = $$"""
             {
@@ -232,9 +226,7 @@ internal static class CatalogSynchronizationTestDocuments
         return VerifiedCatalogPackage.ReadAndVerify(indexBytes, catalogBytes);
     }
 
-    public static VerifiedCatalogPackage CreateVerifiedPackageWithRevision(
-        CatalogRevision revision,
-        string koreanName)
+    public static VerifiedCatalogPackage CreateVerifiedPackageWithRevision(CatalogRevision revision, string koreanName)
     {
         if (revision.IsValid == false)
         {
@@ -243,17 +235,11 @@ internal static class CatalogSynchronizationTestDocuments
 
         byte[] catalogBytes = CreateCatalogBytesWithKoreanName(koreanName);
         catalogBytes = Replace(catalogBytes, "r0001", revision.FileComponent);
-        catalogBytes = Replace(
-            catalogBytes,
-            "\"revision\": 1",
-            "\"revision\": " + revision.Value.ToString(CultureInfo.InvariantCulture));
+        catalogBytes = Replace(catalogBytes, "\"revision\": 1", "\"revision\": " + revision.Value.ToString(CultureInfo.InvariantCulture));
 
         byte[] indexBytes = CreateValidIndexBytes(catalogBytes);
         indexBytes = Replace(indexBytes, "r0001", revision.FileComponent);
-        indexBytes = Replace(
-            indexBytes,
-            "\"revision\": 1",
-            "\"revision\": " + revision.Value.ToString(CultureInfo.InvariantCulture));
+        indexBytes = Replace(indexBytes, "\"revision\": 1", "\"revision\": " + revision.Value.ToString(CultureInfo.InvariantCulture));
         return VerifiedCatalogPackage.ReadAndVerify(indexBytes, catalogBytes);
     }
 

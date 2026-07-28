@@ -37,16 +37,12 @@ public sealed class CourseCandidate
         {
             if (offeringCandidate == null)
             {
-                throw new ArgumentException(
-                    "Course candidates cannot contain null offering candidates.",
-                    nameof(offeringCandidates));
+                throw new ArgumentException("Course candidates cannot contain null offering candidates.", nameof(offeringCandidates));
             }
 
             if (offeringIds.Add(offeringCandidate.OfferingId) == false)
             {
-                throw new ArgumentException(
-                    "Course candidates cannot contain duplicate offering IDs.",
-                    nameof(offeringCandidates));
+                throw new ArgumentException("Course candidates cannot contain duplicate offering IDs.", nameof(offeringCandidates));
             }
 
             if (offeringCandidate.IsEligible)
@@ -59,16 +55,12 @@ public sealed class CourseCandidate
 
         if (copiedCandidates.Count == 0)
         {
-            throw new ArgumentException(
-                "Course candidates require at least one offering candidate.",
-                nameof(offeringCandidates));
+            throw new ArgumentException("Course candidates require at least one offering candidate.", nameof(offeringCandidates));
         }
 
         if (hasEligibleOffering == false)
         {
-            throw new ArgumentException(
-                "Course candidates require at least one eligible offering.",
-                nameof(offeringCandidates));
+            throw new ArgumentException("Course candidates require at least one eligible offering.", nameof(offeringCandidates));
         }
 
         CourseId = courseId;

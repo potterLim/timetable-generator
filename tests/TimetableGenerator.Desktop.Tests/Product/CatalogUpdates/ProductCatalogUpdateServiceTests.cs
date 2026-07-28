@@ -26,14 +26,9 @@ public sealed class ProductCatalogUpdateServiceTests
         using (ProductWorkspaceLoaderTestContext context = createContext(candidatePackage))
         {
             await context.CatalogCacheStore.SaveAsync(activePackage, CancellationToken.None);
-            ProductCatalogUpdateService service = new ProductCatalogUpdateService(
-                context.CatalogDownloader,
-                context.CatalogCacheStore);
+            ProductCatalogUpdateService service = new ProductCatalogUpdateService(context.CatalogDownloader, context.CatalogCacheStore);
 
-            ProductCatalogUpdateResult result = await service.CheckAndStageAsync(
-                activePackage,
-                workspace,
-                CancellationToken.None);
+            ProductCatalogUpdateResult result = await service.CheckAndStageAsync(activePackage, workspace, CancellationToken.None);
             CatalogCacheLoadResult latestLoad = await context.CatalogCacheStore.LoadAsync(CancellationToken.None);
             CatalogCacheLoadResult protectedLoad = await context.CatalogCacheStore.LoadMatchingAsync(workspace.Plans[0].CatalogBinding, CancellationToken.None);
 
@@ -55,14 +50,9 @@ public sealed class ProductCatalogUpdateServiceTests
         PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateWorkspaceWithoutPlans(activeRevision);
         using (ProductWorkspaceLoaderTestContext context = createContext(candidatePackage))
         {
-            ProductCatalogUpdateService service = new ProductCatalogUpdateService(
-                context.CatalogDownloader,
-                context.CatalogCacheStore);
+            ProductCatalogUpdateService service = new ProductCatalogUpdateService(context.CatalogDownloader, context.CatalogCacheStore);
 
-            ProductCatalogUpdateResult result = await service.CheckAndStageAsync(
-                activePackage,
-                workspace,
-                CancellationToken.None);
+            ProductCatalogUpdateResult result = await service.CheckAndStageAsync(activePackage, workspace, CancellationToken.None);
             CatalogCacheLoadResult latestLoad = await context.CatalogCacheStore.LoadAsync(CancellationToken.None);
 
             Assert.Equal(EProductCatalogUpdateStatus.Staged, result.Status);
@@ -83,14 +73,9 @@ public sealed class ProductCatalogUpdateServiceTests
         using (ProductWorkspaceLoaderTestContext context = createContext(activePackage))
         {
             await context.CatalogCacheStore.SaveAsync(activePackage, CancellationToken.None);
-            ProductCatalogUpdateService service = new ProductCatalogUpdateService(
-                context.CatalogDownloader,
-                context.CatalogCacheStore);
+            ProductCatalogUpdateService service = new ProductCatalogUpdateService(context.CatalogDownloader, context.CatalogCacheStore);
 
-            ProductCatalogUpdateResult result = await service.CheckAndStageAsync(
-                activePackage,
-                workspace,
-                CancellationToken.None);
+            ProductCatalogUpdateResult result = await service.CheckAndStageAsync(activePackage, workspace, CancellationToken.None);
 
             Assert.Equal(EProductCatalogUpdateStatus.Current, result.Status);
         }
@@ -105,14 +90,9 @@ public sealed class ProductCatalogUpdateServiceTests
         PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateEmptyWorkspace(revision);
         using (ProductWorkspaceLoaderTestContext context = createContext(changedPackage))
         {
-            ProductCatalogUpdateService service = new ProductCatalogUpdateService(
-                context.CatalogDownloader,
-                context.CatalogCacheStore);
+            ProductCatalogUpdateService service = new ProductCatalogUpdateService(context.CatalogDownloader, context.CatalogCacheStore);
 
-            ProductCatalogUpdateResult result = await service.CheckAndStageAsync(
-                activePackage,
-                workspace,
-                CancellationToken.None);
+            ProductCatalogUpdateResult result = await service.CheckAndStageAsync(activePackage, workspace, CancellationToken.None);
 
             Assert.Equal(EProductCatalogUpdateStatus.RevisionArtifactChanged, result.Status);
             CatalogCacheLoadResult cacheLoad = await context.CatalogCacheStore.LoadAsync(CancellationToken.None);
@@ -129,9 +109,7 @@ public sealed class ProductCatalogUpdateServiceTests
         PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateEmptyWorkspace(revision);
         using (ProductWorkspaceLoaderTestContext context = createContext(candidatePackage))
         {
-            ProductCatalogUpdateService service = new ProductCatalogUpdateService(
-                context.CatalogDownloader,
-                context.CatalogCacheStore);
+            ProductCatalogUpdateService service = new ProductCatalogUpdateService(context.CatalogDownloader, context.CatalogCacheStore);
 
             await Assert.ThrowsAsync<ArgumentException>(
                 async delegate
@@ -153,14 +131,9 @@ public sealed class ProductCatalogUpdateServiceTests
         PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(activeRevision);
         using (ProductWorkspaceLoaderTestContext context = createContext(candidatePackage))
         {
-            ProductCatalogUpdateService service = new ProductCatalogUpdateService(
-                context.CatalogDownloader,
-                context.CatalogCacheStore);
+            ProductCatalogUpdateService service = new ProductCatalogUpdateService(context.CatalogDownloader, context.CatalogCacheStore);
 
-            ProductCatalogUpdateResult result = await service.CheckAndStageAsync(
-                activePackage,
-                workspace,
-                CancellationToken.None);
+            ProductCatalogUpdateResult result = await service.CheckAndStageAsync(activePackage, workspace, CancellationToken.None);
 
             Assert.Equal(EProductCatalogUpdateStatus.WorkspaceIncompatible, result.Status);
             CatalogCacheLoadResult cacheLoad = await context.CatalogCacheStore.LoadAsync(CancellationToken.None);
@@ -178,14 +151,9 @@ public sealed class ProductCatalogUpdateServiceTests
         PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateEmptyWorkspace(activeRevision);
         using (ProductWorkspaceLoaderTestContext context = createContext(candidatePackage))
         {
-            ProductCatalogUpdateService service = new ProductCatalogUpdateService(
-                context.CatalogDownloader,
-                context.CatalogCacheStore);
+            ProductCatalogUpdateService service = new ProductCatalogUpdateService(context.CatalogDownloader, context.CatalogCacheStore);
 
-            ProductCatalogUpdateResult result = await service.CheckAndStageAsync(
-                activePackage,
-                workspace,
-                CancellationToken.None);
+            ProductCatalogUpdateResult result = await service.CheckAndStageAsync(activePackage, workspace, CancellationToken.None);
 
             Assert.Equal(EProductCatalogUpdateStatus.TransitionRejected, result.Status);
             CatalogCacheLoadResult cacheLoad = await context.CatalogCacheStore.LoadAsync(CancellationToken.None);
@@ -193,8 +161,7 @@ public sealed class ProductCatalogUpdateServiceTests
         }
     }
 
-    private static ProductWorkspaceLoaderTestContext createContext(
-        VerifiedCatalogPackage candidatePackage)
+    private static ProductWorkspaceLoaderTestContext createContext(VerifiedCatalogPackage candidatePackage)
     {
         return new ProductWorkspaceLoaderTestContext(
             PlanningWorkspaceLoadResult.CreateNotFound(),

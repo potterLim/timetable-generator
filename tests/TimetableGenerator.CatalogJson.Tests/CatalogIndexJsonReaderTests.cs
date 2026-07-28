@@ -30,13 +30,8 @@ public sealed class CatalogIndexJsonReaderTests
     [TestMethod]
     public void ReadRejectsDuplicateProperty()
     {
-        byte[] validBytes = CatalogJsonTestDocuments.CreateValidIndexBytes(
-            new CatalogFileSize(1L),
-            VALID_SHA256);
-        byte[] invalidBytes = CatalogJsonTestDocuments.Replace(
-            validBytes,
-            "\"schemaVersion\": 1,",
-            "\"schemaVersion\": 1,\n  \"schemaVersion\": 1,");
+        byte[] validBytes = CatalogJsonTestDocuments.CreateValidIndexBytes(new CatalogFileSize(1L), VALID_SHA256);
+        byte[] invalidBytes = CatalogJsonTestDocuments.Replace(validBytes, "\"schemaVersion\": 1,", "\"schemaVersion\": 1,\n  \"schemaVersion\": 1,");
 
         CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(
             () => CatalogIndexJsonReader.Read(invalidBytes));
@@ -48,13 +43,8 @@ public sealed class CatalogIndexJsonReaderTests
     [TestMethod]
     public void ReadRejectsUnknownNestedProperty()
     {
-        byte[] validBytes = CatalogJsonTestDocuments.CreateValidIndexBytes(
-            new CatalogFileSize(1L),
-            VALID_SHA256);
-        byte[] invalidBytes = CatalogJsonTestDocuments.Replace(
-            validBytes,
-            "\"counts\": {\n        \"courses\": 1,",
-            "\"counts\": {\n        \"unexpected\": 0,\n        \"courses\": 1,");
+        byte[] validBytes = CatalogJsonTestDocuments.CreateValidIndexBytes(new CatalogFileSize(1L), VALID_SHA256);
+        byte[] invalidBytes = CatalogJsonTestDocuments.Replace(validBytes, "\"counts\": {\n        \"courses\": 1,", "\"counts\": {\n        \"unexpected\": 0,\n        \"courses\": 1,");
 
         CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(
             () => CatalogIndexJsonReader.Read(invalidBytes));
@@ -66,13 +56,8 @@ public sealed class CatalogIndexJsonReaderTests
     [TestMethod]
     public void ReadRejectsMissingRequiredProperty()
     {
-        byte[] validBytes = CatalogJsonTestDocuments.CreateValidIndexBytes(
-            new CatalogFileSize(1L),
-            VALID_SHA256);
-        byte[] invalidBytes = CatalogJsonTestDocuments.Replace(
-            validBytes,
-            "  \"defaultCatalogId\": \"handong-global-university:2026-2:r0001\",\n",
-            string.Empty);
+        byte[] validBytes = CatalogJsonTestDocuments.CreateValidIndexBytes(new CatalogFileSize(1L), VALID_SHA256);
+        byte[] invalidBytes = CatalogJsonTestDocuments.Replace(validBytes, "  \"defaultCatalogId\": \"handong-global-university:2026-2:r0001\",\n", string.Empty);
 
         CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(
             () => CatalogIndexJsonReader.Read(invalidBytes));
@@ -84,13 +69,8 @@ public sealed class CatalogIndexJsonReaderTests
     [TestMethod]
     public void ReadRejectsUnsupportedSchemaVersion()
     {
-        byte[] validBytes = CatalogJsonTestDocuments.CreateValidIndexBytes(
-            new CatalogFileSize(1L),
-            VALID_SHA256);
-        byte[] invalidBytes = CatalogJsonTestDocuments.Replace(
-            validBytes,
-            "\"schemaVersion\": 1",
-            "\"schemaVersion\": 2");
+        byte[] validBytes = CatalogJsonTestDocuments.CreateValidIndexBytes(new CatalogFileSize(1L), VALID_SHA256);
+        byte[] invalidBytes = CatalogJsonTestDocuments.Replace(validBytes, "\"schemaVersion\": 1", "\"schemaVersion\": 2");
 
         CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(
             () => CatalogIndexJsonReader.Read(invalidBytes));
@@ -102,13 +82,8 @@ public sealed class CatalogIndexJsonReaderTests
     [TestMethod]
     public void ReadRejectsUppercaseSha256()
     {
-        byte[] validBytes = CatalogJsonTestDocuments.CreateValidIndexBytes(
-            new CatalogFileSize(1L),
-            VALID_SHA256);
-        byte[] invalidBytes = CatalogJsonTestDocuments.Replace(
-            validBytes,
-            VALID_SHA256.HexValue,
-            VALID_SHA256.HexValue.ToUpperInvariant());
+        byte[] validBytes = CatalogJsonTestDocuments.CreateValidIndexBytes(new CatalogFileSize(1L), VALID_SHA256);
+        byte[] invalidBytes = CatalogJsonTestDocuments.Replace(validBytes, VALID_SHA256.HexValue, VALID_SHA256.HexValue.ToUpperInvariant());
 
         CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(
             () => CatalogIndexJsonReader.Read(invalidBytes));
@@ -134,10 +109,7 @@ public sealed class CatalogIndexJsonReaderTests
     [TestMethod]
     public void ReadRejectsSafeButUnexpectedCatalogPath()
     {
-        byte[] invalidBytes = CatalogJsonTestDocuments.CreateIndexBytes(
-            "handong-global-university/2026-2/other.json",
-            new CatalogFileSize(1L),
-            VALID_SHA256);
+        byte[] invalidBytes = CatalogJsonTestDocuments.CreateIndexBytes("handong-global-university/2026-2/other.json", new CatalogFileSize(1L), VALID_SHA256);
 
         CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(
             () => CatalogIndexJsonReader.Read(invalidBytes));

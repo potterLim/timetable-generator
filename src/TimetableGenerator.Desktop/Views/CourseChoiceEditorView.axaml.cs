@@ -21,8 +21,7 @@ internal sealed partial class CourseChoiceEditorView : UserControl
             .FirstOrDefault(
                 static candidate => candidate.Classes.Contains("preference-choice")
                     && candidate.IsChecked == true);
-        if (selectedPreferenceButtonOrNull != null
-            && selectedPreferenceButtonOrNull.Focus(NavigationMethod.Pointer))
+        if (selectedPreferenceButtonOrNull != null && selectedPreferenceButtonOrNull.Focus(NavigationMethod.Pointer))
         {
             return;
         }
@@ -31,8 +30,7 @@ internal sealed partial class CourseChoiceEditorView : UserControl
             .OfType<RadioButton>()
             .FirstOrDefault(
                 static candidate => candidate.Classes.Contains("preference-choice"));
-        if (firstPreferenceButtonOrNull != null
-            && firstPreferenceButtonOrNull.Focus(NavigationMethod.Pointer))
+        if (firstPreferenceButtonOrNull != null && firstPreferenceButtonOrNull.Focus(NavigationMethod.Pointer))
         {
             return;
         }

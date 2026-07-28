@@ -34,12 +34,7 @@ internal sealed class GoogleCalendarExportPlan
         AcademicTerm academicTerm,
         CalendarTimeZoneId timeZoneId,
         IReadOnlyList<GoogleCalendarExportEvent> events)
-        : this(
-            planId,
-            calendarName,
-            GoogleCalendarDescription.Create(institutionName, academicTerm),
-            timeZoneId,
-            events)
+        : this(planId, calendarName, GoogleCalendarDescription.Create(institutionName, academicTerm), timeZoneId, events)
     {
     }
 
@@ -67,9 +62,7 @@ internal sealed class GoogleCalendarExportPlan
 
         if (timeZoneId.IsValid == false)
         {
-            throw new ArgumentException(
-                "Google Calendar exports require a valid time-zone ID.",
-                nameof(timeZoneId));
+            throw new ArgumentException("Google Calendar exports require a valid time-zone ID.", nameof(timeZoneId));
         }
 
         if (events == null)
@@ -88,9 +81,7 @@ internal sealed class GoogleCalendarExportPlan
 
             if (sourceIds.Add(exportEvent.SourceId) == false)
             {
-                throw new ArgumentException(
-                    "Google Calendar event source IDs must be unique within a plan.",
-                    nameof(events));
+                throw new ArgumentException("Google Calendar event source IDs must be unique within a plan.", nameof(events));
             }
 
             eventSnapshot.Add(exportEvent);
@@ -113,16 +104,12 @@ internal sealed class GoogleCalendarExportPlan
         List<GoogleCalendarExportEvent> events = new List<GoogleCalendarExportEvent>(document.Events.Count);
         foreach (RecurringCalendarEvent calendarEvent in document.Events)
         {
-            DateOnly firstOccurrenceDate = findFirstOccurrenceDate(
-                document.AcademicCalendar,
-                calendarEvent.Days);
+            DateOnly firstOccurrenceDate = findFirstOccurrenceDate(document.AcademicCalendar, calendarEvent.Days);
             events.Add(
                 new GoogleCalendarExportEvent(
                     new GoogleCalendarSourceEventId(calendarEvent.Uid.Value),
                     calendarEvent.Content,
-                    new GoogleCalendarRecurrenceDateRange(
-                        firstOccurrenceDate,
-                        document.AcademicCalendar.DateRange.EndDate),
+                    new GoogleCalendarRecurrenceDateRange(firstOccurrenceDate, document.AcademicCalendar.DateRange.EndDate),
                     calendarEvent.TimeRange,
                     calendarEvent.Days));
         }
@@ -138,17 +125,10 @@ internal sealed class GoogleCalendarExportPlan
 
     public GoogleCalendarExportPlan WithCalendarName(PlanName calendarName)
     {
-        return new GoogleCalendarExportPlan(
-            PlanId,
-            calendarName,
-            CalendarDescription,
-            TimeZoneId,
-            mEvents);
+        return new GoogleCalendarExportPlan(PlanId, calendarName, CalendarDescription, TimeZoneId, mEvents);
     }
 
-    private static DateOnly findFirstOccurrenceDate(
-        AcademicTermCalendarMetadata academicCalendar,
-        IReadOnlyList<EDay> days)
+    private static DateOnly findFirstOccurrenceDate(AcademicTermCalendarMetadata academicCalendar, IReadOnlyList<EDay> days)
     {
         DateOnly firstOccurrenceDate = academicCalendar.FindFirstOccurrenceDate(days[0]);
         for (int dayIndex = 1; dayIndex < days.Count; ++dayIndex)

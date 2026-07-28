@@ -24,10 +24,7 @@ internal static class CatalogPackageWriter
         string indexPath = CatalogFileLayout.GetIndexPath(outputRootPath);
         IReadOnlyList<CatalogIndexEntry> existingEntries = await readExistingEntriesAsync(indexPath, cancellationToken).ConfigureAwait(false);
 
-        await ensureImmutableCatalogAsync(
-            catalogPath,
-            catalogContent,
-            cancellationToken).ConfigureAwait(false);
+        await ensureImmutableCatalogAsync(catalogPath, catalogContent, cancellationToken).ConfigureAwait(false);
 
         Sha256Digest catalogSha256 = Sha256Digest.Compute(catalogContent.Span);
         CatalogFileSize catalogFileSize = new CatalogFileSize(catalogContent.Length);
@@ -40,11 +37,7 @@ internal static class CatalogPackageWriter
             catalog.OfferingCount);
         CatalogIndexDocument indexDocument = CatalogIndexDocument.CreateWithUpsertedEntry(currentEntry, existingEntries);
         byte[] indexContent = CatalogIndexJsonWriter.Write(indexDocument);
-        await AtomicFileWriter.WriteAsync(
-            indexPath,
-            indexContent,
-            EExistingFileBehavior.Replace,
-            cancellationToken).ConfigureAwait(false);
+        await AtomicFileWriter.WriteAsync(indexPath, indexContent, EExistingFileBehavior.Replace, cancellationToken).ConfigureAwait(false);
 
         return new CatalogPackageWriteResult(
             catalogPath,
@@ -54,9 +47,7 @@ internal static class CatalogPackageWriter
             catalogSha256);
     }
 
-    private static async Task<IReadOnlyList<CatalogIndexEntry>> readExistingEntriesAsync(
-        string indexPath,
-        CancellationToken cancellationToken)
+    private static async Task<IReadOnlyList<CatalogIndexEntry>> readExistingEntriesAsync(string indexPath, CancellationToken cancellationToken)
     {
         if (File.Exists(indexPath) == false)
         {
@@ -69,41 +60,25 @@ internal static class CatalogPackageWriter
         return existingDocument.Entries;
     }
 
-    private static async Task ensureImmutableCatalogAsync(
-        string catalogPath,
-        ReadOnlyMemory<byte> catalogContent,
-        CancellationToken cancellationToken)
+    private static async Task ensureImmutableCatalogAsync(string catalogPath, ReadOnlyMemory<byte> catalogContent, CancellationToken cancellationToken)
     {
         if (File.Exists(catalogPath))
         {
-            await ensureExistingContentMatchesAsync(
-                catalogPath,
-                catalogContent,
-                cancellationToken).ConfigureAwait(false);
+            await ensureExistingContentMatchesAsync(catalogPath, catalogContent, cancellationToken).ConfigureAwait(false);
             return;
         }
 
         try
         {
-            await AtomicFileWriter.WriteAsync(
-                catalogPath,
-                catalogContent,
-                EExistingFileBehavior.Reject,
-                cancellationToken).ConfigureAwait(false);
+            await AtomicFileWriter.WriteAsync(catalogPath, catalogContent, EExistingFileBehavior.Reject, cancellationToken).ConfigureAwait(false);
         }
         catch (IOException) when (File.Exists(catalogPath))
         {
-            await ensureExistingContentMatchesAsync(
-                catalogPath,
-                catalogContent,
-                cancellationToken).ConfigureAwait(false);
+            await ensureExistingContentMatchesAsync(catalogPath, catalogContent, cancellationToken).ConfigureAwait(false);
         }
     }
 
-    private static async Task ensureExistingContentMatchesAsync(
-        string catalogPath,
-        ReadOnlyMemory<byte> expectedContent,
-        CancellationToken cancellationToken)
+    private static async Task ensureExistingContentMatchesAsync(string catalogPath, ReadOnlyMemory<byte> expectedContent, CancellationToken cancellationToken)
     {
         byte[] existingContent = await File.ReadAllBytesAsync(catalogPath, cancellationToken).ConfigureAwait(false);
         if (expectedContent.Span.SequenceEqual(existingContent) == false)

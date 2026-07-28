@@ -23,9 +23,7 @@ public sealed class CourseCatalogTests
                 }));
         CatalogOffering unscheduledOffering = createOffering(course.Id, "02", MeetingSchedule.NotProvided);
 
-        CourseCatalog catalog = createCatalog(
-            new CatalogCourse[] { course },
-            new CatalogOffering[] { scheduledOffering, unscheduledOffering });
+        CourseCatalog catalog = createCatalog(new CatalogCourse[] { course }, new CatalogOffering[] { scheduledOffering, unscheduledOffering });
 
         Assert.HasCount(1, catalog.Courses);
         Assert.HasCount(2, catalog.Offerings);
@@ -38,10 +36,7 @@ public sealed class CourseCatalogTests
     {
         CatalogCourse course = createCourse("CSE30001");
         CatalogOffering offering = createOffering(course.Id, "01", MeetingSchedule.NotProvided);
-        CatalogOffering orphanedOffering = createOffering(
-            new CourseId("handong-global-university:CSE30002"),
-            "02",
-            MeetingSchedule.NotProvided);
+        CatalogOffering orphanedOffering = createOffering(new CourseId("handong-global-university:CSE30002"), "02", MeetingSchedule.NotProvided);
 
         Assert.ThrowsExactly<ArgumentException>(
             () => createCatalog(
@@ -84,25 +79,12 @@ public sealed class CourseCatalogTests
             new CourseCredits(3m));
     }
 
-    private static CatalogOffering createOffering(
-        CourseId courseId,
-        string sectionCodeValue,
-        MeetingSchedule meetingSchedule)
+    private static CatalogOffering createOffering(CourseId courseId, string sectionCodeValue, MeetingSchedule meetingSchedule)
     {
-        return new CatalogOffering(
-            new OfferingId(
-                "handong-global-university:2026-2:"
-                + courseId.Value
-                + ":"
-                + sectionCodeValue),
-            courseId,
-            new CourseSectionCode(sectionCodeValue),
-            meetingSchedule);
+        return new CatalogOffering(new OfferingId("handong-global-university:2026-2:" + courseId.Value + ":" + sectionCodeValue), courseId, new CourseSectionCode(sectionCodeValue), meetingSchedule);
     }
 
-    private static CourseCatalog createCatalog(
-        IEnumerable<CatalogCourse> courses,
-        IEnumerable<CatalogOffering> offerings)
+    private static CourseCatalog createCatalog(IEnumerable<CatalogCourse> courses, IEnumerable<CatalogOffering> offerings)
     {
         return new CourseCatalog(
             new CatalogId("handong-global-university:2026-2:r0001"),

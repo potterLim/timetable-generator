@@ -86,8 +86,7 @@ internal sealed class CourseSearchItem : ObservableObject
         {
             if (HasSingleOfferingDetails)
             {
-                return InstructorCreditDisplayText + " · "
-                    + SelectedSelectionOption.EnglishInstructionDisplayText;
+                return InstructorCreditDisplayText + " · " + SelectedSelectionOption.EnglishInstructionDisplayText;
             }
 
             return InstructorCreditDisplayText;
@@ -106,8 +105,7 @@ internal sealed class CourseSearchItem : ObservableObject
     {
         get
         {
-            string accessibleName = Code + ", " + Name + ", "
-                + InstructorDisplayText + ", " + CreditDisplayText;
+            string accessibleName = Code + ", " + Name + ", " + InstructorDisplayText + ", " + CreditDisplayText;
             if (HasSingleOfferingDetails)
             {
                 return accessibleName + ", " + EnglishInstructionAccessibleText;
@@ -158,9 +156,7 @@ internal sealed class CourseSearchItem : ObservableObject
 
             if (containsSelectionOption(value) == false)
             {
-                throw new ArgumentException(
-                    "The selected course option must belong to this course.",
-                    nameof(value));
+                throw new ArgumentException("The selected course option must belong to this course.", nameof(value));
             }
 
             if (setProperty(ref mSelectedSelectionOption, value))
@@ -277,8 +273,7 @@ internal sealed class CourseSearchItem : ObservableObject
 
             if (SelectedSelectionOption.IsDirectAdd)
             {
-                return Name + ", " + SelectedSelectionOption.AccessibleName
-                    + ", 현재 시간표에 추가";
+                return Name + ", " + SelectedSelectionOption.AccessibleName + ", 현재 시간표에 추가";
             }
 
             if (ScheduledOfferingCount > 1)
@@ -368,9 +363,7 @@ internal sealed class CourseSearchItem : ObservableObject
         List<CourseSelectionOption> selectionOptions = createSelectionOptions(projection);
         if (selectionOptions.Count == 0)
         {
-            throw new ArgumentException(
-                "Searchable courses require at least one selectable offering.",
-                nameof(projection));
+            throw new ArgumentException("Searchable courses require at least one selectable offering.", nameof(projection));
         }
 
         mSelectionOptions = new ObservableCollection<CourseSelectionOption>(selectionOptions);
@@ -443,9 +436,7 @@ internal sealed class CourseSearchItem : ObservableObject
 
         if (selectionOrNull.CourseId != CourseId)
         {
-            throw new ArgumentException(
-                "The synchronized selection must belong to this course.",
-                nameof(selectionOrNull));
+            throw new ArgumentException("The synchronized selection must belong to this course.", nameof(selectionOrNull));
         }
 
         CourseSelectionOption? matchingOptionOrNull = findSelectionOptionOrNull(selectionOrNull);
@@ -466,8 +457,7 @@ internal sealed class CourseSearchItem : ObservableObject
             throw new ArgumentNullException(nameof(courseChoiceGroup));
         }
 
-        foreach (CourseCandidate courseCandidate
-            in courseChoiceGroup.CourseCandidates)
+        foreach (CourseCandidate courseCandidate in courseChoiceGroup.CourseCandidates)
         {
             if (courseCandidate.CourseId == CourseId)
             {
@@ -476,9 +466,7 @@ internal sealed class CourseSearchItem : ObservableObject
             }
         }
 
-        throw new ArgumentException(
-            "The synchronized course choice group must contain this course.",
-            nameof(courseChoiceGroup));
+        throw new ArgumentException("The synchronized course choice group must contain this course.", nameof(courseChoiceGroup));
     }
 
     public void SynchronizeSelectedAction(ECourseSelectionAction selectionAction)
@@ -492,9 +480,7 @@ internal sealed class CourseSearchItem : ObservableObject
         bool hasAction = selectionAction != ECourseSelectionAction.None;
         if (isActionExpected != hasAction)
         {
-            throw new ArgumentException(
-                "Selected courses require an available selected-course action.",
-                nameof(selectionAction));
+            throw new ArgumentException("Selected courses require an available selected-course action.", nameof(selectionAction));
         }
 
         if (mCourseSelectionAction != selectionAction)
@@ -505,8 +491,7 @@ internal sealed class CourseSearchItem : ObservableObject
         }
     }
 
-    private static List<CourseSelectionOption> createSelectionOptions(
-        CatalogCourseProjection projection)
+    private static List<CourseSelectionOption> createSelectionOptions(CatalogCourseProjection projection)
     {
         List<CourseSelectionOption> options = new List<CourseSelectionOption>();
         if (projection.ScheduledOfferingIds.Count > 0)
@@ -514,17 +499,13 @@ internal sealed class CourseSearchItem : ObservableObject
             PlanningCourseSelection scheduledSelection = PlanningCourseSelection.CreateScheduledAlternatives(projection.Course.Id, projection.ScheduledOfferingIds);
             if (projection.ScheduledOfferingIds.Count == 1)
             {
-                CatalogOfferingProjection scheduledOffering = findOffering(
-                    projection,
-                    projection.ScheduledOfferingIds[0]);
+                CatalogOfferingProjection scheduledOffering = findOffering(projection, projection.ScheduledOfferingIds[0]);
                 string scheduledDisplayName = scheduledOffering.Offering.SectionCode.Value + "분반 · " + scheduledOffering.ScheduleSummary;
                 options.Add(CourseSelectionOption.CreateDirectAdd(scheduledSelection, EMeetingScheduleStatus.Scheduled, scheduledDisplayName, scheduledOffering.EnglishInstructionPercentage));
             }
             else
             {
-                string scheduledDisplayName = "시간이 정해진 "
-                    + projection.ScheduledOfferingIds.Count
-                    + "개 분반의 선호 설정";
+                string scheduledDisplayName = "시간이 정해진 " + projection.ScheduledOfferingIds.Count + "개 분반의 선호 설정";
                 options.Add(CourseSelectionOption.CreatePreferenceEditor(scheduledSelection, scheduledDisplayName));
             }
         }
@@ -533,18 +514,14 @@ internal sealed class CourseSearchItem : ObservableObject
         {
             CatalogOfferingProjection offering = findOffering(projection, offeringId);
             PlanningCourseSelection selection = PlanningCourseSelection.CreateTimeNotProvidedOffering(projection.Course.Id, offeringId);
-            string displayName = offering.Offering.SectionCode.Value
-                + "분반 · 시간 미정 · "
-                + offering.InstructorSummary;
+            string displayName = offering.Offering.SectionCode.Value + "분반 · 시간 미정 · " + offering.InstructorSummary;
             options.Add(CourseSelectionOption.CreateDirectAdd(selection, EMeetingScheduleStatus.NotProvided, displayName, offering.EnglishInstructionPercentage));
         }
 
         return options;
     }
 
-    private static CatalogOfferingProjection findOffering(
-        CatalogCourseProjection projection,
-        OfferingId offeringId)
+    private static CatalogOfferingProjection findOffering(CatalogCourseProjection projection, OfferingId offeringId)
     {
         foreach (CatalogOfferingProjection offering in projection.Offerings)
         {
@@ -554,8 +531,7 @@ internal sealed class CourseSearchItem : ObservableObject
             }
         }
 
-        throw new InvalidOperationException(
-            "A projected course did not contain one of its declared offering IDs.");
+        throw new InvalidOperationException("A projected course did not contain one of its declared offering IDs.");
     }
 
     private static string createInstructorSummary(CatalogCourseProjection projection)
@@ -613,36 +589,19 @@ internal sealed class CourseSearchItem : ObservableObject
             if (offeringIds.Count == 1)
             {
                 CatalogOfferingProjection offering = findOffering(Projection, offeringIds[0]);
-                return CourseSelectionOption.CreateDirectAdd(
-                    selection,
-                    EMeetingScheduleStatus.Scheduled,
-                    offering.Offering.SectionCode.Value
-                        + "분반 · 저장된 분반 선택",
-                    offering.EnglishInstructionPercentage);
+                return CourseSelectionOption.CreateDirectAdd(selection, EMeetingScheduleStatus.Scheduled, offering.Offering.SectionCode.Value + "분반 · 저장된 분반 선택", offering.EnglishInstructionPercentage);
             }
 
-            return CourseSelectionOption.CreatePreferenceEditor(
-                selection,
-                "저장된 " + offeringIds.Count + "개 분반에서 자동 선택");
+            return CourseSelectionOption.CreatePreferenceEditor(selection, "저장된 " + offeringIds.Count + "개 분반에서 자동 선택");
         }
 
         if (selection.Kind == EPlanningCourseSelectionKind.TimeNotProvidedOffering)
         {
-            CatalogOfferingProjection offering = findOffering(
-                Projection,
-                selection.GetTimeNotProvidedOfferingId());
-            return CourseSelectionOption.CreateDirectAdd(
-                selection,
-                EMeetingScheduleStatus.NotProvided,
-                offering.Offering.SectionCode.Value
-                    + "분반 · 저장된 시간 미정 선택",
-                offering.EnglishInstructionPercentage);
+            CatalogOfferingProjection offering = findOffering(Projection, selection.GetTimeNotProvidedOfferingId());
+            return CourseSelectionOption.CreateDirectAdd(selection, EMeetingScheduleStatus.NotProvided, offering.Offering.SectionCode.Value + "분반 · 저장된 시간 미정 선택", offering.EnglishInstructionPercentage);
         }
 
-        throw new ArgumentOutOfRangeException(
-            nameof(selection),
-            selection.Kind,
-            "Unknown planning course selection kind.");
+        throw new ArgumentOutOfRangeException(nameof(selection), selection.Kind, "Unknown planning course selection kind.");
     }
 
     private void markAdded()

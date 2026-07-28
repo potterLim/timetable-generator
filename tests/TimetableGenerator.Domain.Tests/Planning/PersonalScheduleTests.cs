@@ -21,14 +21,7 @@ public sealed class PersonalScheduleTests
             new WeeklyTimeRange(EDay.Tuesday, timeRange),
         };
 
-        PersonalSchedule schedule = new PersonalSchedule(
-            PersonalScheduleId.CreateNew(),
-            new PersonalScheduleTitle("  랩 미팅  "),
-            mutableRanges,
-            new PersonalScheduleDetails(
-                new PersonalScheduleSection("  A  "),
-                new PersonalScheduleInstructor("  김교수  "),
-                new PersonalScheduleLocation("  느헤미야홀  ")));
+        PersonalSchedule schedule = new PersonalSchedule(PersonalScheduleId.CreateNew(), new PersonalScheduleTitle("  랩 미팅  "), mutableRanges, new PersonalScheduleDetails(new PersonalScheduleSection("  A  "), new PersonalScheduleInstructor("  김교수  "), new PersonalScheduleLocation("  느헤미야홀  ")));
 
         mutableRanges.Clear();
 
@@ -48,23 +41,14 @@ public sealed class PersonalScheduleTests
             () => createSchedule(
                 PersonalScheduleId.CreateNew(),
                 EDay.Monday,
-                createTimeRange(
-                    new ScheduleTime(12, 1),
-                    new ScheduleTime(12, 16))));
+                createTimeRange(new ScheduleTime(12, 1), new ScheduleTime(12, 16))));
         Assert.ThrowsExactly<ArgumentException>(
             () => createSchedule(
                 PersonalScheduleId.CreateNew(),
                 EDay.Monday,
-                createTimeRange(
-                    new ScheduleTime(12, 0),
-                    new ScheduleTime(12, 10))));
+                createTimeRange(new ScheduleTime(12, 0), new ScheduleTime(12, 10))));
 
-        PersonalSchedule boundarySchedule = createSchedule(
-            PersonalScheduleId.CreateNew(),
-            EDay.Monday,
-            createTimeRange(
-                new ScheduleTime(12, 0),
-                new ScheduleTime(12, 15)));
+        PersonalSchedule boundarySchedule = createSchedule(PersonalScheduleId.CreateNew(), EDay.Monday, createTimeRange(new ScheduleTime(12, 0), new ScheduleTime(12, 15)));
 
         Assert.AreEqual(15, boundarySchedule.TimeRanges[0].TimeRange.DurationMinutes);
     }
@@ -106,24 +90,9 @@ public sealed class PersonalScheduleTests
     public void PlanContentRejectsDuplicateIdsAndOverlappingSchedules()
     {
         PersonalScheduleId sharedId = PersonalScheduleId.CreateNew();
-        PersonalSchedule first = createSchedule(
-            sharedId,
-            EDay.Tuesday,
-            createTimeRange(
-                new ScheduleTime(12, 0),
-                new ScheduleTime(13, 0)));
-        PersonalSchedule duplicateId = createSchedule(
-            sharedId,
-            EDay.Wednesday,
-            createTimeRange(
-                new ScheduleTime(12, 0),
-                new ScheduleTime(13, 0)));
-        PersonalSchedule overlapping = createSchedule(
-            PersonalScheduleId.CreateNew(),
-            EDay.Tuesday,
-            createTimeRange(
-                new ScheduleTime(12, 30),
-                new ScheduleTime(13, 30)));
+        PersonalSchedule first = createSchedule(sharedId, EDay.Tuesday, createTimeRange(new ScheduleTime(12, 0), new ScheduleTime(13, 0)));
+        PersonalSchedule duplicateId = createSchedule(sharedId, EDay.Wednesday, createTimeRange(new ScheduleTime(12, 0), new ScheduleTime(13, 0)));
+        PersonalSchedule overlapping = createSchedule(PersonalScheduleId.CreateNew(), EDay.Tuesday, createTimeRange(new ScheduleTime(12, 30), new ScheduleTime(13, 30)));
 
         Assert.ThrowsExactly<ArgumentException>(
             () => createPlanContent(new PersonalSchedule[] { first, duplicateId }));
@@ -131,25 +100,14 @@ public sealed class PersonalScheduleTests
             () => createPlanContent(new PersonalSchedule[] { first, overlapping }));
     }
 
-    private static PersonalSchedule createSchedule(
-        PersonalScheduleId id,
-        EDay day,
-        DailyTimeRange timeRange)
+    private static PersonalSchedule createSchedule(PersonalScheduleId id, EDay day, DailyTimeRange timeRange)
     {
-        return new PersonalSchedule(
-            id,
-            new PersonalScheduleTitle("개인 일정"),
-            new WeeklyTimeRange[] { new WeeklyTimeRange(day, timeRange) },
-            PersonalScheduleDetails.CreateEmpty());
+        return new PersonalSchedule(id, new PersonalScheduleTitle("개인 일정"), new WeeklyTimeRange[] { new WeeklyTimeRange(day, timeRange) }, PersonalScheduleDetails.CreateEmpty());
     }
 
-    private static PlanningPlanContent createPlanContent(
-        IEnumerable<PersonalSchedule> personalSchedules)
+    private static PlanningPlanContent createPlanContent(IEnumerable<PersonalSchedule> personalSchedules)
     {
-        return new PlanningPlanContent(
-            Array.Empty<CourseChoiceGroup>(),
-            Array.Empty<UnscheduledOfferingSelection>(),
-            personalSchedules);
+        return new PlanningPlanContent(Array.Empty<CourseChoiceGroup>(), Array.Empty<UnscheduledOfferingSelection>(), personalSchedules);
     }
 
     private static DailyTimeRange createTimeRange(ScheduleTime start, ScheduleTime end)

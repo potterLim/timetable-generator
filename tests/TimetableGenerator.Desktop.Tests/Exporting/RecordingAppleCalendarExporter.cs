@@ -26,10 +26,7 @@ internal sealed class RecordingAppleCalendarExporter : IAppleCalendarExporter
         mResult = result;
     }
 
-    public Task<AppleCalendarExportResult> ExportAsync(
-        CalendarExportDocument document,
-        ICalendarNameConflictResolver conflictResolver,
-        CancellationToken cancellationToken)
+    public Task<AppleCalendarExportResult> ExportAsync(CalendarExportDocument document, ICalendarNameConflictResolver conflictResolver, CancellationToken cancellationToken)
     {
         if (document == null)
         {

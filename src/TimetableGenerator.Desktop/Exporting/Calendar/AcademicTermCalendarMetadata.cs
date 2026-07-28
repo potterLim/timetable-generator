@@ -13,10 +13,7 @@ internal sealed class AcademicTermCalendarMetadata
 
     public CalendarTimeZoneId TimeZoneId { get; }
 
-    public AcademicTermCalendarMetadata(
-        AcademicTerm term,
-        AcademicTermDateRange dateRange,
-        CalendarTimeZoneId timeZoneId)
+    public AcademicTermCalendarMetadata(AcademicTerm term, AcademicTermDateRange dateRange, CalendarTimeZoneId timeZoneId)
     {
         if (term.IsValid == false)
         {
@@ -25,16 +22,12 @@ internal sealed class AcademicTermCalendarMetadata
 
         if (dateRange.IsValid == false)
         {
-            throw new ArgumentException(
-                "Academic calendar metadata requires a valid date range.",
-                nameof(dateRange));
+            throw new ArgumentException("Academic calendar metadata requires a valid date range.", nameof(dateRange));
         }
 
         if (timeZoneId.IsValid == false)
         {
-            throw new ArgumentException(
-                "Academic calendar metadata requires a valid time-zone ID.",
-                nameof(timeZoneId));
+            throw new ArgumentException("Academic calendar metadata requires a valid time-zone ID.", nameof(timeZoneId));
         }
 
         Term = term;
@@ -49,8 +42,7 @@ internal sealed class AcademicTermCalendarMetadata
         DateOnly firstOccurrenceDate = DateRange.StartDate.AddDays(daysUntilTarget);
         if (firstOccurrenceDate > DateRange.EndDate)
         {
-            throw new InvalidOperationException(
-                "The academic calendar does not contain the requested weekday.");
+            throw new InvalidOperationException("The academic calendar does not contain the requested weekday.");
         }
 
         return firstOccurrenceDate;
@@ -82,10 +74,7 @@ internal sealed class AcademicTermCalendarMetadata
             case EDay.Sunday:
                 return DayOfWeek.Sunday;
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(day),
-                    day,
-                    "Calendar occurrences require a weekday from Monday through Sunday.");
+                throw new ArgumentOutOfRangeException(nameof(day), day, "Calendar occurrences require a weekday from Monday through Sunday.");
         }
     }
 }

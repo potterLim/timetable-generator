@@ -11,10 +11,7 @@ internal readonly record struct CatalogItemCount
     {
         if (value < 0)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(value),
-                value,
-                "Catalog item counts cannot be negative.");
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Catalog item counts cannot be negative.");
         }
 
         Value = value;

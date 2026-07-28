@@ -150,10 +150,7 @@ internal sealed partial class ScheduleWorkspaceView
         }
     }
 
-    private async Task exportSnapshotAsync(
-        ScheduleBoardPngExportSnapshot snapshot,
-        Stream destinationStream,
-        CancellationToken cancellationToken)
+    private async Task exportSnapshotAsync(ScheduleBoardPngExportSnapshot snapshot, Stream destinationStream, CancellationToken cancellationToken)
     {
         await mPngExporter.ExportControlAsync(snapshot.Surface, destinationStream, cancellationToken);
         await destinationStream.FlushAsync(cancellationToken);
@@ -164,8 +161,7 @@ internal sealed partial class ScheduleWorkspaceView
         TopLevel? topLevelOrNull = TopLevel.GetTopLevel(this);
         if (topLevelOrNull == null)
         {
-            throw new InvalidOperationException(
-                "The schedule export view is not attached to a product window.");
+            throw new InvalidOperationException("The schedule export view is not attached to a product window.");
         }
 
         return topLevelOrNull;
@@ -198,9 +194,7 @@ internal sealed partial class ScheduleWorkspaceView
         return createPngSaveOptions(planName, OperatingSystem.IsMacOS());
     }
 
-    internal static FilePickerSaveOptions createPngSaveOptions(
-        PlanName planName,
-        bool isMacOS)
+    internal static FilePickerSaveOptions createPngSaveOptions(PlanName planName, bool isMacOS)
     {
         ArgumentNullException.ThrowIfNull(planName);
         FilePickerSaveOptions options = new FilePickerSaveOptions();
@@ -228,10 +222,7 @@ internal sealed partial class ScheduleWorkspaceView
     internal static bool hasPngFileNameExtension(string fileName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
-        return string.Equals(
-            Path.GetExtension(fileName),
-            ".png",
-            StringComparison.OrdinalIgnoreCase);
+        return string.Equals(Path.GetExtension(fileName), ".png", StringComparison.OrdinalIgnoreCase);
     }
 
     private static FolderPickerOpenOptions createPngBatchFolderPickerOptions()
@@ -242,8 +233,7 @@ internal sealed partial class ScheduleWorkspaceView
         return options;
     }
 
-    private static void disposeUnselectedFolders(
-        System.Collections.Generic.IReadOnlyList<IStorageFolder> folders)
+    private static void disposeUnselectedFolders(System.Collections.Generic.IReadOnlyList<IStorageFolder> folders)
     {
         for (int folderIndex = 1; folderIndex < folders.Count; ++folderIndex)
         {
@@ -262,15 +252,9 @@ internal sealed partial class ScheduleWorkspaceView
         showExportFailure(exception, "PNG 이미지를 저장하지 못했습니다. 다시 시도해 주세요.");
     }
 
-    internal static string formatPngBatchFailureMessage(
-        SchedulePngBatchExportException exception)
+    internal static string formatPngBatchFailureMessage(SchedulePngBatchExportException exception)
     {
         ArgumentNullException.ThrowIfNull(exception);
-        return "가능한 시간표 "
-            + exception.SuccessfulCount
-            + "개 저장에 성공하고 "
-            + exception.FailedCount
-            + "개 저장에 실패했습니다. "
-            + "완성된 폴더는 만들지 않았습니다. 다시 시도해 주세요.";
+        return "가능한 시간표 " + exception.SuccessfulCount + "개 저장에 성공하고 " + exception.FailedCount + "개 저장에 실패했습니다. " + "완성된 폴더는 만들지 않았습니다. 다시 시도해 주세요.";
     }
 }

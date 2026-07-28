@@ -13,9 +13,7 @@ internal sealed record AppleCalendarDescription
         Value = value;
     }
 
-    public static AppleCalendarDescription Create(
-        InstitutionName institutionName,
-        AcademicTerm academicTerm)
+    public static AppleCalendarDescription Create(InstitutionName institutionName, AcademicTerm academicTerm)
     {
         if (institutionName == null)
         {
@@ -24,9 +22,7 @@ internal sealed record AppleCalendarDescription
 
         if (academicTerm.IsValid == false)
         {
-            throw new ArgumentException(
-                "Apple Calendar descriptions require a valid academic term.",
-                nameof(academicTerm));
+            throw new ArgumentException("Apple Calendar descriptions require a valid academic term.", nameof(academicTerm));
         }
 
         return new AppleCalendarDescription(institutionName.Value + " " + academicTerm.Id + " 시간표입니다.");

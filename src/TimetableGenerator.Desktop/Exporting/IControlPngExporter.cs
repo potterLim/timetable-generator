@@ -8,8 +8,5 @@ namespace TimetableGenerator.Desktop.Exporting;
 
 public interface IControlPngExporter
 {
-    Task ExportControlAsync(
-        Control sourceControl,
-        Stream destinationStream,
-        CancellationToken cancellationToken);
+    Task ExportControlAsync(Control sourceControl, Stream destinationStream, CancellationToken cancellationToken);
 }

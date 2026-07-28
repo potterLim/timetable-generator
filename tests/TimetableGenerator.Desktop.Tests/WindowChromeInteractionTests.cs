@@ -78,12 +78,8 @@ public sealed class WindowChromeInteractionTests
             Button closeButton = findRequiredControl<Button>(hostWindow, "WindowCloseButton");
             FluentIcon maximizeRestoreIcon = findRequiredControl<FluentIcon>(hostWindow, "WindowMaximizeRestoreIcon");
 
-            Assert.Equal(
-                WindowDecorationsElementRole.TitleBar,
-                WindowDecorationProperties.GetElementRole(titleBar));
-            Assert.Equal(
-                WindowDecorationsElementRole.User,
-                WindowDecorationProperties.GetElementRole(appearanceButton));
+            Assert.Equal(WindowDecorationsElementRole.TitleBar, WindowDecorationProperties.GetElementRole(titleBar));
+            Assert.Equal(WindowDecorationsElementRole.User, WindowDecorationProperties.GetElementRole(appearanceButton));
             Assert.True(appearanceButton.IsHitTestVisible);
             Assert.True(appearanceButton.Focusable);
             Assert.NotNull(appearanceButton.Flyout);
@@ -96,21 +92,9 @@ public sealed class WindowChromeInteractionTests
             Assert.Equal(insets.Right, titleBar.Padding.Right);
             Assert.Equal(platform == EWindowChromePlatform.Windows, captionButtons.IsVisible);
 
-            assertCaptionButton(
-                minimizeButton,
-                "WindowMinimizeButton",
-                "최소화",
-                WindowDecorationsElementRole.MinimizeButton);
-            assertCaptionButton(
-                maximizeRestoreButton,
-                "WindowMaximizeRestoreButton",
-                "최대화",
-                WindowDecorationsElementRole.MaximizeButton);
-            assertCaptionButton(
-                closeButton,
-                "WindowCloseButton",
-                "닫기",
-                WindowDecorationsElementRole.CloseButton);
+            assertCaptionButton(minimizeButton, "WindowMinimizeButton", "최소화", WindowDecorationsElementRole.MinimizeButton);
+            assertCaptionButton(maximizeRestoreButton, "WindowMaximizeRestoreButton", "최대화", WindowDecorationsElementRole.MaximizeButton);
+            assertCaptionButton(closeButton, "WindowCloseButton", "닫기", WindowDecorationsElementRole.CloseButton);
             (string Name, WindowDecorationsElementRole Role)[] resizeGrips =
             {
                 ("WindowResizeNorth", WindowDecorationsElementRole.ResizeN),
@@ -143,16 +127,8 @@ public sealed class WindowChromeInteractionTests
                 Assert.Equal("복원", maximizeRestorePeer.GetName());
                 Assert.Equal("복원", maximizeRestorePeer.GetHelpText());
                 Assert.Equal(Icon.SquareMultiple, maximizeRestoreIcon.Icon);
-                assertAutomationPropertyChange(
-                    propertyChanges,
-                    AutomationElementIdentifiers.NameProperty,
-                    "최대화",
-                    "복원");
-                assertAutomationPropertyChange(
-                    propertyChanges,
-                    AutomationElementIdentifiers.HelpTextProperty,
-                    "최대화",
-                    "복원");
+                assertAutomationPropertyChange(propertyChanges, AutomationElementIdentifiers.NameProperty, "최대화", "복원");
+                assertAutomationPropertyChange(propertyChanges, AutomationElementIdentifiers.HelpTextProperty, "최대화", "복원");
 
                 propertyChanges.Clear();
                 maximizeRestoreButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
@@ -161,16 +137,8 @@ public sealed class WindowChromeInteractionTests
                 Assert.Equal("최대화", maximizeRestorePeer.GetName());
                 Assert.Equal("최대화", maximizeRestorePeer.GetHelpText());
                 Assert.Equal(Icon.Square, maximizeRestoreIcon.Icon);
-                assertAutomationPropertyChange(
-                    propertyChanges,
-                    AutomationElementIdentifiers.NameProperty,
-                    "복원",
-                    "최대화");
-                assertAutomationPropertyChange(
-                    propertyChanges,
-                    AutomationElementIdentifiers.HelpTextProperty,
-                    "복원",
-                    "최대화");
+                assertAutomationPropertyChange(propertyChanges, AutomationElementIdentifiers.NameProperty, "복원", "최대화");
+                assertAutomationPropertyChange(propertyChanges, AutomationElementIdentifiers.HelpTextProperty, "복원", "최대화");
 
                 minimizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 Assert.Equal(WindowState.Minimized, hostWindow.WindowState);
@@ -183,11 +151,7 @@ public sealed class WindowChromeInteractionTests
         }
     }
 
-    private static void assertCaptionButton(
-        Button button,
-        string expectedAutomationId,
-        string expectedName,
-        WindowDecorationsElementRole expectedRole)
+    private static void assertCaptionButton(Button button, string expectedAutomationId, string expectedName, WindowDecorationsElementRole expectedRole)
     {
         Assert.Equal(expectedAutomationId, AutomationProperties.GetAutomationId(button));
         Assert.Equal(expectedName, AutomationProperties.GetName(button));
@@ -198,11 +162,7 @@ public sealed class WindowChromeInteractionTests
         Assert.Equal(expectedName, peer.GetName());
     }
 
-    private static void assertAutomationPropertyChange(
-        IEnumerable<AutomationPropertyChangedEventArgs> propertyChanges,
-        AutomationProperty property,
-        string expectedOldValue,
-        string expectedNewValue)
+    private static void assertAutomationPropertyChange(IEnumerable<AutomationPropertyChangedEventArgs> propertyChanges, AutomationProperty property, string expectedOldValue, string expectedNewValue)
     {
         AutomationPropertyChangedEventArgs propertyChange = Assert.Single(
             propertyChanges,

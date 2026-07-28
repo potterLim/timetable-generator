@@ -15,9 +15,7 @@ public sealed class PngSaveFilePickerOptionsTests
     [Fact]
     public void MacOSOptionsAvoidTheNativeFileTypeAccessoryView()
     {
-        FilePickerSaveOptions options = ScheduleWorkspaceView.createPngSaveOptions(
-            new PlanName("PNG 저장 테스트"),
-            true);
+        FilePickerSaveOptions options = ScheduleWorkspaceView.createPngSaveOptions(new PlanName("PNG 저장 테스트"), true);
 
         Assert.Equal("png", options.DefaultExtension);
         Assert.EndsWith(".png", options.SuggestedFileName);
@@ -28,9 +26,7 @@ public sealed class PngSaveFilePickerOptionsTests
     [Fact]
     public void OtherPlatformsKeepTheExplicitPngFileType()
     {
-        FilePickerSaveOptions options = ScheduleWorkspaceView.createPngSaveOptions(
-            new PlanName("PNG 저장 테스트"),
-            false);
+        FilePickerSaveOptions options = ScheduleWorkspaceView.createPngSaveOptions(new PlanName("PNG 저장 테스트"), false);
 
         Assert.NotNull(options.FileTypeChoices);
         FilePickerFileType fileType = Assert.Single(options.FileTypeChoices);
@@ -46,13 +42,9 @@ public sealed class PngSaveFilePickerOptionsTests
     [InlineData("시간표.PNG", true)]
     [InlineData("시간표", false)]
     [InlineData("시간표.jpg", false)]
-    public void DestinationFileNameMustKeepThePngExtension(
-        string fileName,
-        bool expectedResult)
+    public void DestinationFileNameMustKeepThePngExtension(string fileName, bool expectedResult)
     {
-        Assert.Equal(
-            expectedResult,
-            ScheduleWorkspaceView.hasPngFileNameExtension(fileName));
+        Assert.Equal(expectedResult, ScheduleWorkspaceView.hasPngFileNameExtension(fileName));
     }
 
     [Fact]
@@ -68,10 +60,6 @@ public sealed class PngSaveFilePickerOptionsTests
                         "synthetic failure"),
                 });
 
-        Assert.Equal(
-            "가능한 시간표 2개 저장에 성공하고 1개 저장에 실패했습니다. "
-                + "완성된 폴더는 만들지 않았습니다. 다시 시도해 주세요.",
-            ScheduleWorkspaceView.formatPngBatchFailureMessage(
-                exception));
+        Assert.Equal("가능한 시간표 2개 저장에 성공하고 1개 저장에 실패했습니다. " + "완성된 폴더는 만들지 않았습니다. 다시 시도해 주세요.", ScheduleWorkspaceView.formatPngBatchFailureMessage(exception));
     }
 }

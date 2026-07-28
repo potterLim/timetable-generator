@@ -16,9 +16,7 @@ internal sealed class OfferingDetails
         }
     }
 
-    public OfferingDetails(
-        ESyllabusAvailability syllabusAvailability,
-        ERemarksAvailability remarksAvailability)
+    public OfferingDetails(ESyllabusAvailability syllabusAvailability, ERemarksAvailability remarksAvailability)
     {
         if (Enum.IsDefined(typeof(ESyllabusAvailability), syllabusAvailability) == false)
         {

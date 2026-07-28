@@ -105,9 +105,7 @@ internal sealed class GoogleCalendarExportEvent
 
         if (timeRange.IsValid == false)
         {
-            throw new ArgumentException(
-                "Google Calendar events require a valid daily time range.",
-                nameof(timeRange));
+            throw new ArgumentException("Google Calendar events require a valid daily time range.", nameof(timeRange));
         }
 
         if (days == null)
@@ -137,9 +135,7 @@ internal sealed class GoogleCalendarExportEvent
         EDay firstOccurrenceDay = convertToDay(recurrenceDateRange.FirstOccurrenceDate.DayOfWeek);
         if (uniqueDays.Contains(firstOccurrenceDay) == false)
         {
-            throw new ArgumentException(
-                "The first occurrence date must match one of the event weekdays.",
-                nameof(recurrenceDateRange));
+            throw new ArgumentException("The first occurrence date must match one of the event weekdays.", nameof(recurrenceDateRange));
         }
 
         SourceId = sourceId;
@@ -162,10 +158,7 @@ internal sealed class GoogleCalendarExportEvent
             case EDay.Sunday:
                 return;
             default:
-                throw new ArgumentOutOfRangeException(
-                    nameof(day),
-                    day,
-                    "Google Calendar events require a weekday from Monday through Sunday.");
+                throw new ArgumentOutOfRangeException(nameof(day), day, "Google Calendar events require a weekday from Monday through Sunday.");
         }
     }
 

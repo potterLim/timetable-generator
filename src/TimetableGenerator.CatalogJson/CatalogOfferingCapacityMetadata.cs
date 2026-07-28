@@ -16,23 +16,18 @@ public sealed class CatalogOfferingCapacityMetadata
         }
     }
 
-    private CatalogOfferingCapacityMetadata(
-        OfferingSeatCapacity seatCapacity,
-        OfferingEnrollmentCount? currentEnrollmentOrNull)
+    private CatalogOfferingCapacityMetadata(OfferingSeatCapacity seatCapacity, OfferingEnrollmentCount? currentEnrollmentOrNull)
     {
         SeatCapacity = seatCapacity;
         mCurrentEnrollmentOrNull = currentEnrollmentOrNull;
     }
 
-    public static CatalogOfferingCapacityMetadata CreateWithoutCurrentEnrollment(
-        OfferingSeatCapacity seatCapacity)
+    public static CatalogOfferingCapacityMetadata CreateWithoutCurrentEnrollment(OfferingSeatCapacity seatCapacity)
     {
         return new CatalogOfferingCapacityMetadata(seatCapacity, null);
     }
 
-    public static CatalogOfferingCapacityMetadata CreateWithCurrentEnrollment(
-        OfferingSeatCapacity seatCapacity,
-        OfferingEnrollmentCount currentEnrollment)
+    public static CatalogOfferingCapacityMetadata CreateWithCurrentEnrollment(OfferingSeatCapacity seatCapacity, OfferingEnrollmentCount currentEnrollment)
     {
         return new CatalogOfferingCapacityMetadata(seatCapacity, currentEnrollment);
     }

@@ -33,23 +33,14 @@ public sealed class AppleCalendarExportServiceTests
         Assert.Equal(EAppleCalendarExportMutationKind.CreateNew, mutation.Kind);
         Assert.Equal("2026-2학기 시간표", mutation.DestinationName.Value);
         Assert.Null(mutation.ExistingCalendarIdOrNull);
-        Assert.Equal(
-            "2026-2학기 시간표",
-            Assert.Single(
-                nativeBridge.RequestedDestinationNames).Value);
+        Assert.Equal("2026-2학기 시간표", Assert.Single(nativeBridge.RequestedDestinationNames).Value);
     }
 
     [Fact]
     public async Task ManagedWritableNameCollisionCanReplaceExistingCalendarAsync()
     {
         AppleCalendarId existingCalendarId = new AppleCalendarId("existing-calendar");
-        RecordingAppleCalendarNativeBridge nativeBridge =
-            new RecordingAppleCalendarNativeBridge(
-                createCalendar(
-                    existingCalendarId,
-                    "2026-2학기 시간표",
-                    EAppleCalendarOwnership.ApplicationManaged,
-                    EAppleCalendarContentAccess.Writable));
+        RecordingAppleCalendarNativeBridge nativeBridge = new RecordingAppleCalendarNativeBridge(createCalendar(existingCalendarId, "2026-2학기 시간표", EAppleCalendarOwnership.ApplicationManaged, EAppleCalendarContentAccess.Writable));
         RecordingCalendarNameConflictResolver conflictResolver = new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.ReplaceExisting);
 
         AppleCalendarExportResult result = await new AppleCalendarExportService(nativeBridge).ExportAsync(createDocument(), conflictResolver, TestContext.Current.CancellationToken);
@@ -68,17 +59,7 @@ public sealed class AppleCalendarExportServiceTests
     [Fact]
     public async Task MultipleMatchingManagedCalendarsCannotBeReplacedAsync()
     {
-        RecordingAppleCalendarNativeBridge nativeBridge = new RecordingAppleCalendarNativeBridge(
-            createCalendar(
-                new AppleCalendarId("managed-calendar-one"),
-                "2026-2학기 시간표",
-                EAppleCalendarOwnership.ApplicationManaged,
-                EAppleCalendarContentAccess.Writable),
-            createCalendar(
-                new AppleCalendarId("managed-calendar-two"),
-                "2026-2학기 시간표",
-                EAppleCalendarOwnership.ApplicationManaged,
-                EAppleCalendarContentAccess.Writable));
+        RecordingAppleCalendarNativeBridge nativeBridge = new RecordingAppleCalendarNativeBridge(createCalendar(new AppleCalendarId("managed-calendar-one"), "2026-2학기 시간표", EAppleCalendarOwnership.ApplicationManaged, EAppleCalendarContentAccess.Writable), createCalendar(new AppleCalendarId("managed-calendar-two"), "2026-2학기 시간표", EAppleCalendarOwnership.ApplicationManaged, EAppleCalendarContentAccess.Writable));
         RecordingCalendarNameConflictResolver conflictResolver = new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.ReplaceExisting);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
@@ -91,12 +72,7 @@ public sealed class AppleCalendarExportServiceTests
     [Fact]
     public async Task ManagedReadOnlyCalendarCannotBeReplacedAsync()
     {
-        RecordingAppleCalendarNativeBridge nativeBridge = new RecordingAppleCalendarNativeBridge(
-            createCalendar(
-                new AppleCalendarId("managed-read-only-calendar"),
-                "2026-2학기 시간표",
-                EAppleCalendarOwnership.ApplicationManaged,
-                EAppleCalendarContentAccess.ReadOnly));
+        RecordingAppleCalendarNativeBridge nativeBridge = new RecordingAppleCalendarNativeBridge(createCalendar(new AppleCalendarId("managed-read-only-calendar"), "2026-2학기 시간표", EAppleCalendarOwnership.ApplicationManaged, EAppleCalendarContentAccess.ReadOnly));
         RecordingCalendarNameConflictResolver conflictResolver = new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.ReplaceExisting);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
@@ -110,56 +86,30 @@ public sealed class AppleCalendarExportServiceTests
     public async Task CalendarManagedByDifferentPlanCanBeReplacedWithoutChangingItsOwnershipPlanAsync()
     {
         PlanId existingCalendarOwnerPlanId = PlanId.CreateNew();
-        AppleCalendarDescriptor existingCalendar = new AppleCalendarDescriptor(
-            new AppleCalendarId("different-plan-calendar"),
-            "2026-2학기 시간표",
-            existingCalendarOwnerPlanId,
-            EAppleCalendarContentAccess.Writable);
-        RecordingAppleCalendarNativeBridge nativeBridge =
-            new RecordingAppleCalendarNativeBridge(existingCalendar);
-        RecordingCalendarNameConflictResolver conflictResolver =
-            new RecordingCalendarNameConflictResolver(
-                ECalendarNameConflictResolution.ReplaceExisting);
+        AppleCalendarDescriptor existingCalendar = new AppleCalendarDescriptor(new AppleCalendarId("different-plan-calendar"), "2026-2학기 시간표", existingCalendarOwnerPlanId, EAppleCalendarContentAccess.Writable);
+        RecordingAppleCalendarNativeBridge nativeBridge = new RecordingAppleCalendarNativeBridge(existingCalendar);
+        RecordingCalendarNameConflictResolver conflictResolver = new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.ReplaceExisting);
 
-        AppleCalendarExportResult result =
-            await new AppleCalendarExportService(nativeBridge).ExportAsync(
-                createDocument(),
-                conflictResolver,
-                TestContext.Current.CancellationToken);
+        AppleCalendarExportResult result = await new AppleCalendarExportService(nativeBridge).ExportAsync(createDocument(), conflictResolver, TestContext.Current.CancellationToken);
 
         Assert.Equal(EAppleCalendarExportStatus.Success, result.Status);
-        Assert.True(
-            Assert.Single(conflictResolver.Conflicts).CanReplace);
-        AppleCalendarExportMutation mutation =
-            Assert.Single(nativeBridge.AppliedMutations);
-        Assert.Equal(
-            existingCalendarOwnerPlanId,
-            mutation.CalendarOwnershipPlanId);
-        Assert.NotEqual(
-            mutation.Document.PlanId,
-            mutation.CalendarOwnershipPlanId);
+        Assert.True(Assert.Single(conflictResolver.Conflicts).CanReplace);
+        AppleCalendarExportMutation mutation = Assert.Single(nativeBridge.AppliedMutations);
+        Assert.Equal(existingCalendarOwnerPlanId, mutation.CalendarOwnershipPlanId);
+        Assert.NotEqual(mutation.Document.PlanId, mutation.CalendarOwnershipPlanId);
     }
 
     [Fact]
     public async Task DocumentWithoutEventsIsRejectedBeforeCalendarAccessAsync()
     {
-        RecordingAppleCalendarNativeBridge nativeBridge =
-            new RecordingAppleCalendarNativeBridge();
-        AppleCalendarExportService exporter =
-            new AppleCalendarExportService(nativeBridge);
-        RecordingCalendarNameConflictResolver conflictResolver =
-            new RecordingCalendarNameConflictResolver(
-                ECalendarNameConflictResolution.Cancel);
+        RecordingAppleCalendarNativeBridge nativeBridge = new RecordingAppleCalendarNativeBridge();
+        AppleCalendarExportService exporter = new AppleCalendarExportService(nativeBridge);
+        RecordingCalendarNameConflictResolver conflictResolver = new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.Cancel);
 
-        AppleCalendarExportResult result = await exporter.ExportAsync(
-            createDocument(Array.Empty<RecurringCalendarEvent>()),
-            conflictResolver,
-            TestContext.Current.CancellationToken);
+        AppleCalendarExportResult result = await exporter.ExportAsync(createDocument(Array.Empty<RecurringCalendarEvent>()), conflictResolver, TestContext.Current.CancellationToken);
 
         Assert.Equal(EAppleCalendarExportStatus.Failed, result.Status);
-        Assert.Equal(
-            "apple_calendar_export_requires_events",
-            result.DiagnosticCodeOrNull);
+        Assert.Equal("apple_calendar_export_requires_events", result.DiagnosticCodeOrNull);
         Assert.Equal(0, nativeBridge.CalendarSnapshotRequestCount);
         Assert.Empty(nativeBridge.AppliedMutations);
         Assert.Empty(conflictResolver.Conflicts);
@@ -168,18 +118,7 @@ public sealed class AppleCalendarExportServiceTests
     [Fact]
     public async Task UnmanagedCollisionCreatesFirstAvailableNumberedCalendarAsync()
     {
-        RecordingAppleCalendarNativeBridge nativeBridge =
-            new RecordingAppleCalendarNativeBridge(
-                createCalendar(
-                    new AppleCalendarId("personal-calendar"),
-                    "2026-2학기 시간표",
-                    EAppleCalendarOwnership.External,
-                    EAppleCalendarContentAccess.Writable),
-                createCalendar(
-                    new AppleCalendarId("existing-copy"),
-                    "2026-2학기 시간표 (2)",
-                    EAppleCalendarOwnership.ApplicationManaged,
-                    EAppleCalendarContentAccess.Writable));
+        RecordingAppleCalendarNativeBridge nativeBridge = new RecordingAppleCalendarNativeBridge(createCalendar(new AppleCalendarId("personal-calendar"), "2026-2학기 시간표", EAppleCalendarOwnership.External, EAppleCalendarContentAccess.Writable), createCalendar(new AppleCalendarId("existing-copy"), "2026-2학기 시간표 (2)", EAppleCalendarOwnership.ApplicationManaged, EAppleCalendarContentAccess.Writable));
         RecordingCalendarNameConflictResolver conflictResolver = new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.CreateWithAvailableName);
 
         AppleCalendarExportResult result = await new AppleCalendarExportService(nativeBridge).ExportAsync(createDocument(), conflictResolver, TestContext.Current.CancellationToken);
@@ -197,13 +136,7 @@ public sealed class AppleCalendarExportServiceTests
     [Fact]
     public async Task CancelledConflictDoesNotMutateCalendarAsync()
     {
-        RecordingAppleCalendarNativeBridge nativeBridge =
-            new RecordingAppleCalendarNativeBridge(
-                createCalendar(
-                    new AppleCalendarId("existing-calendar"),
-                    "2026-2학기 시간표",
-                    EAppleCalendarOwnership.ApplicationManaged,
-                    EAppleCalendarContentAccess.Writable));
+        RecordingAppleCalendarNativeBridge nativeBridge = new RecordingAppleCalendarNativeBridge(createCalendar(new AppleCalendarId("existing-calendar"), "2026-2학기 시간표", EAppleCalendarOwnership.ApplicationManaged, EAppleCalendarContentAccess.Writable));
         RecordingCalendarNameConflictResolver conflictResolver = new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.Cancel);
 
         AppleCalendarExportResult result = await new AppleCalendarExportService(nativeBridge).ExportAsync(createDocument(), conflictResolver, TestContext.Current.CancellationToken);
@@ -216,19 +149,9 @@ public sealed class AppleCalendarExportServiceTests
     [Fact]
     public async Task DestinationRaceReloadsNamesBeforeRetryingAsync()
     {
-        RecordingAppleCalendarNativeBridge nativeBridge =
-            new RecordingAppleCalendarNativeBridge(
-                createCalendar(
-                    new AppleCalendarId("existing-calendar"),
-                    "2026-2학기 시간표",
-                    EAppleCalendarOwnership.ApplicationManaged,
-                    EAppleCalendarContentAccess.Writable));
+        RecordingAppleCalendarNativeBridge nativeBridge = new RecordingAppleCalendarNativeBridge(createCalendar(new AppleCalendarId("existing-calendar"), "2026-2학기 시간표", EAppleCalendarOwnership.ApplicationManaged, EAppleCalendarContentAccess.Writable));
         nativeBridge.FailNextMutationForDestinationChange = true;
-        nativeBridge.CalendarAddedAfterDestinationChange = createCalendar(
-            new AppleCalendarId("racing-copy"),
-            "2026-2학기 시간표 (2)",
-            EAppleCalendarOwnership.External,
-            EAppleCalendarContentAccess.Writable);
+        nativeBridge.CalendarAddedAfterDestinationChange = createCalendar(new AppleCalendarId("racing-copy"), "2026-2학기 시간표 (2)", EAppleCalendarOwnership.External, EAppleCalendarContentAccess.Writable);
         RecordingCalendarNameConflictResolver conflictResolver = new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.CreateWithAvailableName);
 
         AppleCalendarExportResult result = await new AppleCalendarExportService(nativeBridge).ExportAsync(createDocument(), conflictResolver, TestContext.Current.CancellationToken);
@@ -300,9 +223,7 @@ public sealed class AppleCalendarExportServiceTests
 
         AppleCalendarExportResult result = await exporter.ExportAsync(createDocument(), new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.Cancel), TestContext.Current.CancellationToken);
 
-        Assert.Equal(
-            EAppleCalendarExportStatus.AccessDenied,
-            result.Status);
+        Assert.Equal(EAppleCalendarExportStatus.AccessDenied, result.Status);
         Assert.Equal(1, leaseProvider.AcquireCount);
         Assert.Equal(0, leaseProvider.ActiveLeaseCount);
     }
@@ -369,9 +290,7 @@ public sealed class AppleCalendarExportServiceTests
 
         AppleCalendarExportResult deniedResult = await deniedExportTask;
 
-        Assert.Equal(
-            EAppleCalendarExportStatus.AccessDenied,
-            deniedResult.Status);
+        Assert.Equal(EAppleCalendarExportStatus.AccessDenied, deniedResult.Status);
         Assert.Equal(0, nativeBridge.ApplyExportRequestCount);
 
         Task<AppleCalendarExportResult> retryTask = exporter.ExportAsync(createDocument(), new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.Cancel), TestContext.Current.CancellationToken);
@@ -380,9 +299,7 @@ public sealed class AppleCalendarExportServiceTests
 
         AppleCalendarExportResult retryResult = await retryTask;
 
-        Assert.Equal(
-            EAppleCalendarExportStatus.Success,
-            retryResult.Status);
+        Assert.Equal(EAppleCalendarExportStatus.Success, retryResult.Status);
         Assert.Equal(2, nativeBridge.CalendarSnapshotRequestCount);
         Assert.Equal(1, nativeBridge.ApplyExportRequestCount);
     }
@@ -413,20 +330,12 @@ public sealed class AppleCalendarExportServiceTests
     [Fact]
     public async Task ResolverCannotReplaceUnmanagedCalendarAsync()
     {
-        RecordingAppleCalendarNativeBridge nativeBridge =
-            new RecordingAppleCalendarNativeBridge(
-                createCalendar(
-                    new AppleCalendarId("personal-calendar"),
-                    "2026-2학기 시간표",
-                    EAppleCalendarOwnership.External,
-                    EAppleCalendarContentAccess.Writable));
+        RecordingAppleCalendarNativeBridge nativeBridge = new RecordingAppleCalendarNativeBridge(createCalendar(new AppleCalendarId("personal-calendar"), "2026-2학기 시간표", EAppleCalendarOwnership.External, EAppleCalendarContentAccess.Writable));
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => new AppleCalendarExportService(nativeBridge).ExportAsync(
                 createDocument(),
-                new RecordingCalendarNameConflictResolver(
-                    ECalendarNameConflictResolution.ReplaceExisting),
-                TestContext.Current.CancellationToken));
+                new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.ReplaceExisting), TestContext.Current.CancellationToken));
 
         Assert.Empty(nativeBridge.AppliedMutations);
     }
@@ -434,40 +343,19 @@ public sealed class AppleCalendarExportServiceTests
     [Fact]
     public void CalendarOwnershipMarkerRequiresAnExactNonEmptyPlanId()
     {
-        PlanId planId = new PlanId(
-            Guid.Parse("71f3be04-d4c6-41d4-a269-792321e71423"));
+        PlanId planId = new PlanId(Guid.Parse("71f3be04-d4c6-41d4-a269-792321e71423"));
         string marker = AppleCalendarOwnershipMarker.CreateForPlan(planId);
 
-        Assert.True(
-            AppleCalendarOwnershipMarker.IsApplicationManaged(marker));
-        Assert.False(
-            AppleCalendarOwnershipMarker.IsApplicationManaged(
-                AppleCalendarOwnershipMarker.PREFIX));
-        Assert.False(
-            AppleCalendarOwnershipMarker.IsApplicationManaged(
-                AppleCalendarOwnershipMarker.PREFIX + "not-a-plan-id"));
-        Assert.False(
-            AppleCalendarOwnershipMarker.IsApplicationManaged(
-                marker + "/unexpected"));
-        Assert.False(
-            AppleCalendarOwnershipMarker.IsApplicationManaged(
-                AppleCalendarOwnershipMarker.PREFIX
-                    + "00000000-0000-0000-0000-000000000000"));
+        Assert.True(AppleCalendarOwnershipMarker.IsApplicationManaged(marker));
+        Assert.False(AppleCalendarOwnershipMarker.IsApplicationManaged(AppleCalendarOwnershipMarker.PREFIX));
+        Assert.False(AppleCalendarOwnershipMarker.IsApplicationManaged(AppleCalendarOwnershipMarker.PREFIX + "not-a-plan-id"));
+        Assert.False(AppleCalendarOwnershipMarker.IsApplicationManaged(marker + "/unexpected"));
+        Assert.False(AppleCalendarOwnershipMarker.IsApplicationManaged(AppleCalendarOwnershipMarker.PREFIX + "00000000-0000-0000-0000-000000000000"));
     }
 
-    private static AppleCalendarDescriptor createCalendar(
-        AppleCalendarId calendarId,
-        string name,
-        EAppleCalendarOwnership ownership,
-        EAppleCalendarContentAccess contentAccess)
+    private static AppleCalendarDescriptor createCalendar(AppleCalendarId calendarId, string name, EAppleCalendarOwnership ownership, EAppleCalendarContentAccess contentAccess)
     {
-        return new AppleCalendarDescriptor(
-            calendarId,
-            name,
-            ownership == EAppleCalendarOwnership.ApplicationManaged
-                ? createDocument().PlanId
-                : null,
-            contentAccess);
+        return new AppleCalendarDescriptor(calendarId, name, ownership == EAppleCalendarOwnership.ApplicationManaged ? createDocument().PlanId : null, contentAccess);
     }
 
     private static CalendarExportDocument createDocument()
@@ -482,12 +370,10 @@ public sealed class AppleCalendarExportServiceTests
                 new ScheduleTime(11, 30),
                 new ScheduleTime(12, 15)),
             new EDay[] { EDay.Monday, EDay.Thursday });
-        return createDocument(
-            new RecurringCalendarEvent[] { calendarEvent });
+        return createDocument(new RecurringCalendarEvent[] { calendarEvent });
     }
 
-    private static CalendarExportDocument createDocument(
-        IReadOnlyList<RecurringCalendarEvent> events)
+    private static CalendarExportDocument createDocument(IReadOnlyList<RecurringCalendarEvent> events)
     {
         AcademicTermCalendarMetadata academicCalendar = AcademicTermCalendarMetadataRegistry.findByTerm(AcademicTerm.Parse("2026-2"), new CalendarTimeZoneId("Asia/Seoul"));
         return new CalendarExportDocument(
@@ -518,9 +404,7 @@ public sealed class AppleCalendarExportServiceTests
             mResolution = resolution;
         }
 
-        public Task<ECalendarNameConflictResolution> ResolveAsync(
-            CalendarNameConflict conflict,
-            CancellationToken cancellationToken)
+        public Task<ECalendarNameConflictResolution> ResolveAsync(CalendarNameConflict conflict, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             mConflicts.Add(conflict);
@@ -550,14 +434,12 @@ public sealed class AppleCalendarExportServiceTests
             }
         }
 
-        public Task<IAppleCalendarExportLease> AcquireAsync(
-            CancellationToken cancellationToken)
+        public Task<IAppleCalendarExportLease> AcquireAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             Interlocked.Increment(ref mAcquireCount);
             Interlocked.Increment(ref mActiveLeaseCount);
-            return Task.FromResult<IAppleCalendarExportLease>(
-                new RecordingLease(this));
+            return Task.FromResult<IAppleCalendarExportLease>(new RecordingLease(this));
         }
 
         private sealed class RecordingLease
@@ -568,8 +450,7 @@ public sealed class AppleCalendarExportServiceTests
 
             private int mWasDisposed;
 
-            public RecordingLease(
-                RecordingAppleCalendarExportLeaseProvider provider)
+            public RecordingLease(RecordingAppleCalendarExportLeaseProvider provider)
             {
                 mProvider = provider;
             }
@@ -578,8 +459,7 @@ public sealed class AppleCalendarExportServiceTests
             {
                 if (Interlocked.Exchange(ref mWasDisposed, 1) == 0)
                 {
-                    Interlocked.Decrement(
-                        ref mProvider.mActiveLeaseCount);
+                    Interlocked.Decrement(ref mProvider.mActiveLeaseCount);
                 }
 
                 return ValueTask.CompletedTask;
@@ -605,38 +485,24 @@ public sealed class AppleCalendarExportServiceTests
 
         public bool MutationObservedLease { get; private set; }
 
-        public LeaseObservingAppleCalendarNativeBridge(
-            RecordingAppleCalendarExportLeaseProvider leaseProvider)
+        public LeaseObservingAppleCalendarNativeBridge(RecordingAppleCalendarExportLeaseProvider leaseProvider)
         {
             mLeaseProvider = leaseProvider;
         }
 
-        public Task<IReadOnlyList<AppleCalendarDescriptor>>
-            GetCalendarsAsync(
-                PlanName requestedDestinationName,
-                CancellationToken cancellationToken)
+        public Task<IReadOnlyList<AppleCalendarDescriptor>> GetCalendarsAsync(PlanName requestedDestinationName, CancellationToken cancellationToken)
         {
-            ArgumentNullException.ThrowIfNull(
-                requestedDestinationName);
+            ArgumentNullException.ThrowIfNull(requestedDestinationName);
             cancellationToken.ThrowIfCancellationRequested();
             SnapshotObservedLease = mLeaseProvider.ActiveLeaseCount == 1;
-            return Task.FromResult<IReadOnlyList<
-                AppleCalendarDescriptor>>(
-                    Array.Empty<AppleCalendarDescriptor>());
+            return Task.FromResult<IReadOnlyList<AppleCalendarDescriptor>>(Array.Empty<AppleCalendarDescriptor>());
         }
 
-        public Task<AppleCalendarNativeExportResult> ApplyExportAsync(
-            AppleCalendarExportMutation mutation,
-            CancellationToken cancellationToken)
+        public Task<AppleCalendarNativeExportResult> ApplyExportAsync(AppleCalendarExportMutation mutation, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             MutationObservedLease = mLeaseProvider.ActiveLeaseCount == 1;
-            return Task.FromResult(
-                new AppleCalendarNativeExportResult(
-                    new AppleCalendarId("lease-observed-calendar"),
-                    mutation.DestinationName,
-                    mutation.Document.Events.Count,
-                    0));
+            return Task.FromResult(new AppleCalendarNativeExportResult(new AppleCalendarId("lease-observed-calendar"), mutation.DestinationName, mutation.Document.Events.Count, 0));
         }
     }
 
@@ -645,8 +511,7 @@ public sealed class AppleCalendarExportServiceTests
     {
         private readonly List<AppleCalendarDescriptor> mCalendars;
         private readonly List<AppleCalendarExportMutation> mAppliedMutations = new List<AppleCalendarExportMutation>();
-        private readonly List<PlanName> mRequestedDestinationNames =
-            new List<PlanName>();
+        private readonly List<PlanName> mRequestedDestinationNames = new List<PlanName>();
 
         public bool IsAvailable { get; set; } = true;
 
@@ -687,23 +552,17 @@ public sealed class AppleCalendarExportServiceTests
             mCalendars = new List<AppleCalendarDescriptor>(calendars);
         }
 
-        public Task<IReadOnlyList<AppleCalendarDescriptor>> GetCalendarsAsync(
-            PlanName requestedDestinationName,
-            CancellationToken cancellationToken)
+        public Task<IReadOnlyList<AppleCalendarDescriptor>> GetCalendarsAsync(PlanName requestedDestinationName, CancellationToken cancellationToken)
         {
-            ArgumentNullException.ThrowIfNull(
-                requestedDestinationName);
+            ArgumentNullException.ThrowIfNull(requestedDestinationName);
             cancellationToken.ThrowIfCancellationRequested();
-            mRequestedDestinationNames.Add(
-                requestedDestinationName);
+            mRequestedDestinationNames.Add(requestedDestinationName);
             CalendarSnapshotRequestCount++;
             IReadOnlyList<AppleCalendarDescriptor> snapshot = new List<AppleCalendarDescriptor>(mCalendars).AsReadOnly();
             return Task.FromResult(snapshot);
         }
 
-        public Task<AppleCalendarNativeExportResult> ApplyExportAsync(
-            AppleCalendarExportMutation mutation,
-            CancellationToken cancellationToken)
+        public Task<AppleCalendarNativeExportResult> ApplyExportAsync(AppleCalendarExportMutation mutation, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             mAppliedMutations.Add(mutation);
@@ -723,10 +582,7 @@ public sealed class AppleCalendarExportServiceTests
                     mCalendars.Add(CalendarAddedAfterDestinationChange);
                 }
 
-                return Task.FromException<AppleCalendarNativeExportResult>(
-                    new AppleCalendarNativeBridgeException(
-                        EAppleCalendarNativeFailureKind.CalendarChanged,
-                        "apple_calendar_destination_changed"));
+                return Task.FromException<AppleCalendarNativeExportResult>(new AppleCalendarNativeBridgeException(EAppleCalendarNativeFailureKind.CalendarChanged, "apple_calendar_destination_changed"));
             }
 
             AppleCalendarId? existingCalendarIdOrNull = mutation.ExistingCalendarIdOrNull;
@@ -741,20 +597,14 @@ public sealed class AppleCalendarExportServiceTests
             }
 
             int deletedEventCount = mutation.Kind == EAppleCalendarExportMutationKind.ReplaceExisting ? 1 : 0;
-            return Task.FromResult(
-                new AppleCalendarNativeExportResult(
-                    calendarId,
-                    mutation.DestinationName,
-                    mutation.Document.Events.Count,
-                    deletedEventCount));
+            return Task.FromResult(new AppleCalendarNativeExportResult(calendarId, mutation.DestinationName, mutation.Document.Events.Count, deletedEventCount));
         }
     }
 
     private sealed class ControlledPermissionAppleCalendarNativeBridge
         : IAppleCalendarNativeBridge
     {
-        private readonly TaskCompletionSource<
-            IReadOnlyList<AppleCalendarDescriptor>>[] mSnapshotSources;
+        private readonly TaskCompletionSource<IReadOnlyList<AppleCalendarDescriptor>>[] mSnapshotSources;
 
         private readonly TaskCompletionSource[] mSnapshotRequestSources;
 
@@ -770,81 +620,56 @@ public sealed class AppleCalendarExportServiceTests
 
         public int ApplyExportRequestCount { get; private set; }
 
-        public ControlledPermissionAppleCalendarNativeBridge(
-            int snapshotCount)
+        public ControlledPermissionAppleCalendarNativeBridge(int snapshotCount)
         {
             if (snapshotCount <= 0)
             {
-                throw new ArgumentOutOfRangeException(
-                    nameof(snapshotCount));
+                throw new ArgumentOutOfRangeException(nameof(snapshotCount));
             }
 
-            mSnapshotSources = new TaskCompletionSource<
-                IReadOnlyList<AppleCalendarDescriptor>>[snapshotCount];
+            mSnapshotSources = new TaskCompletionSource<IReadOnlyList<AppleCalendarDescriptor>>[snapshotCount];
             mSnapshotRequestSources = new TaskCompletionSource[snapshotCount];
             for (int index = 0; index < snapshotCount; ++index)
             {
-                mSnapshotSources[index] = new TaskCompletionSource<
-                    IReadOnlyList<AppleCalendarDescriptor>>(
-                    TaskCreationOptions.RunContinuationsAsynchronously);
+                mSnapshotSources[index] = new TaskCompletionSource<IReadOnlyList<AppleCalendarDescriptor>>(TaskCreationOptions.RunContinuationsAsynchronously);
                 mSnapshotRequestSources[index] = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             }
         }
 
-        public async Task<IReadOnlyList<AppleCalendarDescriptor>>
-            GetCalendarsAsync(
-                PlanName requestedDestinationName,
-                CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<AppleCalendarDescriptor>> GetCalendarsAsync(PlanName requestedDestinationName, CancellationToken cancellationToken)
         {
-            ArgumentNullException.ThrowIfNull(
-                requestedDestinationName);
+            ArgumentNullException.ThrowIfNull(requestedDestinationName);
             int requestIndex = CalendarSnapshotRequestCount;
             if (requestIndex >= mSnapshotSources.Length)
             {
-                throw new InvalidOperationException(
-                    "No controlled Apple Calendar snapshot remains.");
+                throw new InvalidOperationException("No controlled Apple Calendar snapshot remains.");
             }
 
             CalendarSnapshotRequestCount++;
             mSnapshotRequestSources[requestIndex].TrySetResult();
-            return await mSnapshotSources[requestIndex].Task
-                .WaitAsync(cancellationToken);
+            return await mSnapshotSources[requestIndex].Task.WaitAsync(cancellationToken);
         }
 
-        public Task<AppleCalendarNativeExportResult> ApplyExportAsync(
-            AppleCalendarExportMutation mutation,
-            CancellationToken cancellationToken)
+        public Task<AppleCalendarNativeExportResult> ApplyExportAsync(AppleCalendarExportMutation mutation, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ApplyExportRequestCount++;
-            return Task.FromResult(
-                new AppleCalendarNativeExportResult(
-                    new AppleCalendarId("controlled-calendar"),
-                    mutation.DestinationName,
-                    mutation.Document.Events.Count,
-                    0));
+            return Task.FromResult(new AppleCalendarNativeExportResult(new AppleCalendarId("controlled-calendar"), mutation.DestinationName, mutation.Document.Events.Count, 0));
         }
 
-        public Task WaitForSnapshotRequestAsync(
-            int requestIndex,
-            CancellationToken cancellationToken)
+        public Task WaitForSnapshotRequestAsync(int requestIndex, CancellationToken cancellationToken)
         {
-            return mSnapshotRequestSources[requestIndex].Task
-                .WaitAsync(cancellationToken);
+            return mSnapshotRequestSources[requestIndex].Task.WaitAsync(cancellationToken);
         }
 
         public void AllowSnapshot(int requestIndex)
         {
-            mSnapshotSources[requestIndex].TrySetResult(
-                Array.Empty<AppleCalendarDescriptor>());
+            mSnapshotSources[requestIndex].TrySetResult(Array.Empty<AppleCalendarDescriptor>());
         }
 
         public void DenySnapshot(int requestIndex)
         {
-            mSnapshotSources[requestIndex].TrySetException(
-                new AppleCalendarNativeBridgeException(
-                    EAppleCalendarNativeFailureKind.AccessDenied,
-                    "apple_calendar_automation_access_denied"));
+            mSnapshotSources[requestIndex].TrySetException(new AppleCalendarNativeBridgeException(EAppleCalendarNativeFailureKind.AccessDenied, "apple_calendar_automation_access_denied"));
         }
     }
 }

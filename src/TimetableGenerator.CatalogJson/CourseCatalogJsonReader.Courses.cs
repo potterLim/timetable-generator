@@ -7,9 +7,7 @@ namespace TimetableGenerator.CatalogJson;
 
 public static partial class CourseCatalogJsonReader
 {
-    private static List<CatalogCourse> parseCourses(
-        JsonElement coursesElement,
-        InstitutionId institutionId)
+    private static List<CatalogCourse> parseCourses(JsonElement coursesElement, InstitutionId institutionId)
     {
         List<CatalogCourse> courses = new List<CatalogCourse>();
         int courseIndex = 0;
@@ -28,10 +26,7 @@ public static partial class CourseCatalogJsonReader
         return courses;
     }
 
-    private static CatalogCourse parseCourse(
-        JsonElement element,
-        string path,
-        InstitutionId institutionId)
+    private static CatalogCourse parseCourse(JsonElement element, string path, InstitutionId institutionId)
     {
         StrictJsonObject courseObject = StrictJsonObject.Create(
             element,
@@ -62,8 +57,7 @@ public static partial class CourseCatalogJsonReader
         return new CatalogCourse(courseId, courseCode, koreanName, englishName, credits);
     }
 
-    private static Dictionary<CourseId, CourseCode> buildCourseCodesById(
-        IEnumerable<CatalogCourse> courses)
+    private static Dictionary<CourseId, CourseCode> buildCourseCodesById(IEnumerable<CatalogCourse> courses)
     {
         Dictionary<CourseId, CourseCode> courseCodesById = new Dictionary<CourseId, CourseCode>();
         foreach (CatalogCourse course in courses)

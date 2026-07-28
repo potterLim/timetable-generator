@@ -27,12 +27,9 @@ public sealed class ScheduleRecommendationBookmarkTests
         Assert.AreEqual(firstOfferingId, bookmark.SelectedOfferingIds[0]);
         Assert.AreEqual(secondOfferingId, bookmark.SelectedOfferingIds[1]);
         Assert.IsTrue(bookmark.ContainsOffering(secondOfferingId));
-        Assert.IsTrue(bookmark.HasSameOfferingIds(
-            new OfferingId[] { secondOfferingId, firstOfferingId }));
-        Assert.IsTrue(bookmark.HasSameScheduledOfferingIds(
-            new OfferingId[] { secondOfferingId, firstOfferingId }));
-        Assert.IsFalse(bookmark.HasSameScheduledOfferingIds(
-            new OfferingId[] { firstOfferingId }));
+        Assert.IsTrue(bookmark.HasSameOfferingIds(new OfferingId[] { secondOfferingId, firstOfferingId }));
+        Assert.IsTrue(bookmark.HasSameScheduledOfferingIds(new OfferingId[] { secondOfferingId, firstOfferingId }));
+        Assert.IsFalse(bookmark.HasSameScheduledOfferingIds(new OfferingId[] { firstOfferingId }));
         Assert.ThrowsExactly<ArgumentException>(
             () => new ScheduleRecommendationBookmark(
                 Array.Empty<OfferingId>()));
@@ -60,14 +57,8 @@ public sealed class ScheduleRecommendationBookmarkTests
                     excludedOfferingId,
                     EOfferingPreference.Excluded),
             });
-        CourseChoiceGroup courseChoiceGroup = new CourseChoiceGroup(
-            CourseChoiceGroupId.CreateNew(),
-            ECourseChoiceCardinality.ExactlyOne,
-            new CourseCandidate[] { courseCandidate });
-        PlanningPlanContent content = new PlanningPlanContent(
-            new CourseChoiceGroup[] { courseChoiceGroup },
-            Array.Empty<UnscheduledOfferingSelection>(),
-            Array.Empty<PersonalSchedule>());
+        CourseChoiceGroup courseChoiceGroup = new CourseChoiceGroup(CourseChoiceGroupId.CreateNew(), ECourseChoiceCardinality.ExactlyOne, new CourseCandidate[] { courseCandidate });
+        PlanningPlanContent content = new PlanningPlanContent(new CourseChoiceGroup[] { courseChoiceGroup }, Array.Empty<UnscheduledOfferingSelection>(), Array.Empty<PersonalSchedule>());
 
         PlanningPlan plan = new PlanningPlan(
             PlanId.CreateNew(),

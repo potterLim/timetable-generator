@@ -8,9 +8,7 @@ internal sealed class GoogleCalendarOAuthConfiguration
 
     public GoogleOAuthClientSecret? ClientSecretOrNull { get; }
 
-    public GoogleCalendarOAuthConfiguration(
-        GoogleOAuthClientId clientId,
-        GoogleOAuthClientSecret? clientSecretOrNull = null)
+    public GoogleCalendarOAuthConfiguration(GoogleOAuthClientId clientId, GoogleOAuthClientSecret? clientSecretOrNull = null)
     {
         if (clientId == null)
         {

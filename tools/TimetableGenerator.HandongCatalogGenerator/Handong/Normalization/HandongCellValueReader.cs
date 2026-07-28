@@ -7,9 +7,7 @@ namespace TimetableGenerator.HandongCatalogGenerator.Handong.Normalization;
 
 internal static class HandongCellValueReader
 {
-    internal static IReadOnlyList<string> getNonEmptyLines(
-        HandongRawOfferingRow row,
-        EHandongColumn column)
+    internal static IReadOnlyList<string> getNonEmptyLines(HandongRawOfferingRow row, EHandongColumn column)
     {
         if (row == null)
         {
@@ -22,10 +20,7 @@ internal static class HandongCellValueReader
         {
             if (sourceLine == null)
             {
-                throw new InvalidHandongSourceRecordException(
-                    row.SourceRecordNumber,
-                    column,
-                    "The source parser returned a null cell line.");
+                throw new InvalidHandongSourceRecordException(row.SourceRecordNumber, column, "The source parser returned a null cell line.");
             }
 
             string normalizedLine = sourceLine.Trim();
@@ -43,10 +38,7 @@ internal static class HandongCellValueReader
         IReadOnlyList<string> lines = getNonEmptyLines(row, column);
         if (lines.Count != 1)
         {
-            throw new InvalidHandongSourceRecordException(
-                row.SourceRecordNumber,
-                column,
-                "Expected exactly one non-empty line but found " + lines.Count + ".");
+            throw new InvalidHandongSourceRecordException(row.SourceRecordNumber, column, "Expected exactly one non-empty line but found " + lines.Count + ".");
         }
 
         return lines[0];

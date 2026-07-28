@@ -155,10 +155,7 @@ internal static class CatalogJsonTestDocuments
         return CreateIndexBytes(VALID_RELATIVE_PATH, fileSize, sha256);
     }
 
-    public static byte[] CreateIndexBytes(
-        string relativePath,
-        CatalogFileSize fileSize,
-        Sha256Digest sha256)
+    public static byte[] CreateIndexBytes(string relativePath, CatalogFileSize fileSize, Sha256Digest sha256)
     {
         string json = $$"""
             {

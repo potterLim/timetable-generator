@@ -86,34 +86,13 @@ public sealed class CatalogMetadataStrongTypingTests
     [TestMethod]
     public void MetadataPropertiesPreserveSemanticValueObjects()
     {
-        assertPropertyType(
-            typeof(CatalogDocumentCounts),
-            nameof(CatalogDocumentCounts.CourseCount),
-            typeof(CatalogCourseCount));
-        assertPropertyType(
-            typeof(CatalogDocumentCounts),
-            nameof(CatalogDocumentCounts.OfferingCount),
-            typeof(CatalogOfferingCount));
-        assertPropertyType(
-            typeof(CatalogDataQualityMetadata),
-            nameof(CatalogDataQualityMetadata.RoomNotProvidedCount),
-            typeof(CatalogRoomNotProvidedCount));
-        assertPropertyType(
-            typeof(CatalogSourceMetadata),
-            nameof(CatalogSourceMetadata.DeclaredCharset),
-            typeof(CatalogCharset));
-        assertPropertyType(
-            typeof(CatalogFileDescriptor),
-            nameof(CatalogFileDescriptor.ContentEncoding),
-            typeof(CatalogContentEncoding));
-        assertPropertyType(
-            typeof(CatalogConverterMetadata),
-            nameof(CatalogConverterMetadata.Version),
-            typeof(CatalogConverterVersion));
-        assertPropertyType(
-            typeof(CatalogManualReview),
-            nameof(CatalogManualReview.SourceValue),
-            typeof(CatalogManualReviewSourceValue));
+        assertPropertyType(typeof(CatalogDocumentCounts), nameof(CatalogDocumentCounts.CourseCount), typeof(CatalogCourseCount));
+        assertPropertyType(typeof(CatalogDocumentCounts), nameof(CatalogDocumentCounts.OfferingCount), typeof(CatalogOfferingCount));
+        assertPropertyType(typeof(CatalogDataQualityMetadata), nameof(CatalogDataQualityMetadata.RoomNotProvidedCount), typeof(CatalogRoomNotProvidedCount));
+        assertPropertyType(typeof(CatalogSourceMetadata), nameof(CatalogSourceMetadata.DeclaredCharset), typeof(CatalogCharset));
+        assertPropertyType(typeof(CatalogFileDescriptor), nameof(CatalogFileDescriptor.ContentEncoding), typeof(CatalogContentEncoding));
+        assertPropertyType(typeof(CatalogConverterMetadata), nameof(CatalogConverterMetadata.Version), typeof(CatalogConverterVersion));
+        assertPropertyType(typeof(CatalogManualReview), nameof(CatalogManualReview.SourceValue), typeof(CatalogManualReviewSourceValue));
     }
 
     [TestMethod]

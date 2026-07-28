@@ -21,10 +21,7 @@ internal readonly record struct WindowLogicalSize
     {
         if (double.IsNaN(length) || double.IsInfinity(length) || length <= 0.0)
         {
-            throw new ArgumentOutOfRangeException(
-                parameterName,
-                length,
-                "Window size must be finite and positive.");
+            throw new ArgumentOutOfRangeException(parameterName, length, "Window size must be finite and positive.");
         }
     }
 }

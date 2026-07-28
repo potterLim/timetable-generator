@@ -20,40 +20,19 @@ internal static class CatalogFileLayout
         return INSTITUTION_ID + ":" + courseCode.Value;
     }
 
-    public static string GetOfferingId(
-        AcademicTerm term,
-        CourseCode courseCode,
-        CourseSectionCode sectionCode)
+    public static string GetOfferingId(AcademicTerm term, CourseCode courseCode, CourseSectionCode sectionCode)
     {
-        return INSTITUTION_ID
-            + ":"
-            + term.Id
-            + ":"
-            + courseCode.Value
-            + ":"
-            + sectionCode.Value;
+        return INSTITUTION_ID + ":" + term.Id + ":" + courseCode.Value + ":" + sectionCode.Value;
     }
 
     public static string GetCatalogRelativePath(AcademicTerm term, CatalogRevision revision)
     {
-        return INSTITUTION_ID
-            + "/"
-            + term.Id
-            + "/catalog-"
-            + revision.FileComponent
-            + ".json";
+        return INSTITUTION_ID + "/" + term.Id + "/catalog-" + revision.FileComponent + ".json";
     }
 
-    public static string GetCatalogPath(
-        CatalogOutputRootPath outputRootPath,
-        AcademicTerm term,
-        CatalogRevision revision)
+    public static string GetCatalogPath(CatalogOutputRootPath outputRootPath, AcademicTerm term, CatalogRevision revision)
     {
-        return Path.Combine(
-            outputRootPath.Value,
-            INSTITUTION_ID,
-            term.Id,
-            "catalog-" + revision.FileComponent + ".json");
+        return Path.Combine(outputRootPath.Value, INSTITUTION_ID, term.Id, "catalog-" + revision.FileComponent + ".json");
     }
 
     public static string GetIndexPath(CatalogOutputRootPath outputRootPath)

@@ -29,10 +29,7 @@ public readonly record struct WorkspaceDocumentSizeLimit
     {
         if (bytes <= 0)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(bytes),
-                bytes,
-                "Workspace document size limits must be positive.");
+            throw new ArgumentOutOfRangeException(nameof(bytes), bytes, "Workspace document size limits must be positive.");
         }
 
         Bytes = bytes;

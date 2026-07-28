@@ -16,9 +16,7 @@ internal sealed class AppleCalendarDescriptor
     {
         get
         {
-            return ManagedPlanIdOrNull == null
-                ? EAppleCalendarOwnership.External
-                : EAppleCalendarOwnership.ApplicationManaged;
+            return ManagedPlanIdOrNull == null ? EAppleCalendarOwnership.External : EAppleCalendarOwnership.ApplicationManaged;
         }
     }
 
@@ -28,16 +26,11 @@ internal sealed class AppleCalendarDescriptor
     {
         get
         {
-            return ManagedPlanIdOrNull != null
-                && ContentAccess == EAppleCalendarContentAccess.Writable;
+            return ManagedPlanIdOrNull != null && ContentAccess == EAppleCalendarContentAccess.Writable;
         }
     }
 
-    public AppleCalendarDescriptor(
-        AppleCalendarId id,
-        string displayName,
-        PlanId? managedPlanIdOrNull,
-        EAppleCalendarContentAccess contentAccess)
+    public AppleCalendarDescriptor(AppleCalendarId id, string displayName, PlanId? managedPlanIdOrNull, EAppleCalendarContentAccess contentAccess)
     {
         if (id == null)
         {
@@ -55,12 +48,9 @@ internal sealed class AppleCalendarDescriptor
             throw new ArgumentException("Apple calendars require a display name.", nameof(displayName));
         }
 
-        if (managedPlanIdOrNull.HasValue
-            && managedPlanIdOrNull.Value.IsValid == false)
+        if (managedPlanIdOrNull.HasValue && managedPlanIdOrNull.Value.IsValid == false)
         {
-            throw new ArgumentException(
-                "Managed Apple calendars require a valid plan ID.",
-                nameof(managedPlanIdOrNull));
+            throw new ArgumentException("Managed Apple calendars require a valid plan ID.", nameof(managedPlanIdOrNull));
         }
 
         CalendarId = id;

@@ -7,8 +7,5 @@ namespace TimetableGenerator.Desktop.Integrations.GoogleCalendar;
 
 internal interface IGoogleCalendarExporter : IDisposable
 {
-    Task<GoogleCalendarExportResult> ExportAsync(
-        GoogleCalendarExportPlan plan,
-        ICalendarNameConflictResolver conflictResolver,
-        CancellationToken cancellationToken);
+    Task<GoogleCalendarExportResult> ExportAsync(GoogleCalendarExportPlan plan, ICalendarNameConflictResolver conflictResolver, CancellationToken cancellationToken);
 }

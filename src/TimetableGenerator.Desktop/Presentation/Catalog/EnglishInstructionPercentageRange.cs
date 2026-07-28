@@ -45,23 +45,18 @@ internal readonly record struct EnglishInstructionPercentageRange
         }
     }
 
-    public EnglishInstructionPercentageRange(
-        EnglishInstructionPercentage minimum,
-        EnglishInstructionPercentage maximum)
+    public EnglishInstructionPercentageRange(EnglishInstructionPercentage minimum, EnglishInstructionPercentage maximum)
     {
         if (minimum.Value > maximum.Value)
         {
-            throw new ArgumentException(
-                "The minimum English instruction percentage cannot exceed the maximum.",
-                nameof(minimum));
+            throw new ArgumentException("The minimum English instruction percentage cannot exceed the maximum.", nameof(minimum));
         }
 
         Minimum = minimum;
         Maximum = maximum;
     }
 
-    public static EnglishInstructionPercentageRange Create(
-        IEnumerable<EnglishInstructionPercentage> percentages)
+    public static EnglishInstructionPercentageRange Create(IEnumerable<EnglishInstructionPercentage> percentages)
     {
         if (percentages == null)
         {
@@ -72,9 +67,7 @@ internal readonly record struct EnglishInstructionPercentageRange
         {
             if (enumerator.MoveNext() == false)
             {
-                throw new ArgumentException(
-                    "An English instruction percentage range requires at least one value.",
-                    nameof(percentages));
+                throw new ArgumentException("An English instruction percentage range requires at least one value.", nameof(percentages));
             }
 
             EnglishInstructionPercentage minimum = enumerator.Current;
@@ -97,8 +90,7 @@ internal readonly record struct EnglishInstructionPercentageRange
         }
     }
 
-    public static EnglishInstructionPercentageRange CreateUniform(
-        EnglishInstructionPercentage percentage)
+    public static EnglishInstructionPercentageRange CreateUniform(EnglishInstructionPercentage percentage)
     {
         return new EnglishInstructionPercentageRange(percentage, percentage);
     }

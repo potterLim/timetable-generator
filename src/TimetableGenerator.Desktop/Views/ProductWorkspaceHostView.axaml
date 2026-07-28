@@ -212,6 +212,7 @@
             AutomationProperties.Name="자동 저장 상태"
             AutomationProperties.LiveSetting="Polite">
           <StackPanel
+              x:Name="WorkspaceAutosaveSavingStatus"
               Orientation="Horizontal"
               Spacing="8"
               IsVisible="{Binding IsAutosaveSaving}">
@@ -220,22 +221,6 @@
                 Height="3"
                 VerticalAlignment="Center"
                 IsIndeterminate="{Binding IsAutosaveSaving}" />
-            <TextBlock
-                Classes="secondary"
-                VerticalAlignment="Center"
-                Text="{Binding AutosaveStatusText}" />
-          </StackPanel>
-          <StackPanel
-              x:Name="WorkspaceAutosaveSavedStatus"
-              Orientation="Horizontal"
-              Spacing="6"
-              IsVisible="{Binding IsAutosaveSaved}">
-            <icons:FluentIcon
-                VerticalAlignment="Center"
-                FontSize="16"
-                Icon="CheckmarkCircle"
-                IconVariant="Regular"
-                Foreground="{DynamicResource SuccessBrush}" />
             <TextBlock
                 Classes="secondary"
                 VerticalAlignment="Center"
@@ -344,6 +329,7 @@
           </StackPanel>
         </Button>
         <StackPanel
+            x:Name="EmptyWorkspaceAutosaveSavingStatus"
             Margin="0,8,0,0"
             HorizontalAlignment="Center"
             Orientation="Horizontal"
@@ -355,25 +341,6 @@
               Height="3"
               VerticalAlignment="Center"
               IsIndeterminate="{Binding IsAutosaveSaving}" />
-          <TextBlock
-              Classes="secondary"
-              VerticalAlignment="Center"
-              Text="저장 중" />
-        </StackPanel>
-        <StackPanel
-            x:Name="EmptyWorkspaceAutosaveSavedStatus"
-            Margin="0,8,0,0"
-            HorizontalAlignment="Center"
-            Orientation="Horizontal"
-            Spacing="6"
-            IsVisible="{Binding IsAutosaveSaved}"
-            AutomationProperties.LiveSetting="Polite">
-          <icons:FluentIcon
-              VerticalAlignment="Center"
-              FontSize="16"
-              Icon="CheckmarkCircle"
-              IconVariant="Regular"
-              Foreground="{DynamicResource SuccessBrush}" />
           <TextBlock
               Classes="secondary"
               VerticalAlignment="Center"

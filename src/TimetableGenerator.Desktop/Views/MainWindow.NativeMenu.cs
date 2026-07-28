@@ -39,11 +39,7 @@ internal sealed partial class MainWindow
         windowMenu.Add(createNativeMenuAction("Minimize", new KeyGesture(Key.M, KeyModifiers.Meta), minimizeWindow, canMinimizeWindow));
         windowMenu.Add(createNativeMenuAction("Zoom", null, toggleWindowZoom, canZoomWindow));
         windowMenu.Add(new NativeMenuItemSeparator());
-        NativeMenuItem fullScreenMenuItem = createNativeMenuAction(
-            "Enter Full Screen",
-            new KeyGesture(Key.F, KeyModifiers.Control | KeyModifiers.Meta),
-            toggleFullScreen,
-            canToggleFullScreen);
+        NativeMenuItem fullScreenMenuItem = createNativeMenuAction("Enter Full Screen", new KeyGesture(Key.F, KeyModifiers.Control | KeyModifiers.Meta), toggleFullScreen, canToggleFullScreen);
         windowMenu.Add(fullScreenMenuItem);
         windowMenu.Add(new NativeMenuItemSeparator());
         windowMenu.Add(createNativeMenuAction("Bring All to Front", null, bringAllWindowsToFront));
@@ -87,11 +83,7 @@ internal sealed partial class MainWindow
         mNativeMenuCommands.Clear();
     }
 
-    private NativeMenuItem createNativeMenuAction(
-        string header,
-        KeyGesture? gestureOrNull,
-        Action execute,
-        Func<bool>? canExecuteOrNull = null)
+    private NativeMenuItem createNativeMenuAction(string header, KeyGesture? gestureOrNull, Action execute, Func<bool>? canExecuteOrNull = null)
     {
         DelegateCommand command = new DelegateCommand(execute, canExecuteOrNull);
         mNativeMenuCommands.Add(command);
@@ -110,9 +102,7 @@ internal sealed partial class MainWindow
     {
         if (mFullScreenNativeMenuItemOrNull != null)
         {
-            mFullScreenNativeMenuItemOrNull.Header = WindowState == WindowState.FullScreen
-                ? "Exit Full Screen"
-                : "Enter Full Screen";
+            mFullScreenNativeMenuItemOrNull.Header = WindowState == WindowState.FullScreen ? "Exit Full Screen" : "Enter Full Screen";
         }
 
         foreach (DelegateCommand command in mNativeMenuCommands)
@@ -208,8 +198,7 @@ internal sealed partial class MainWindow
 
     private bool canSelectAllFocusedText()
     {
-        return findFocusedTextBoxOrNull() != null
-            || findFocusedSelectableTextBlockOrNull() != null;
+        return findFocusedTextBoxOrNull() != null || findFocusedSelectableTextBlockOrNull() != null;
     }
 
     private void minimizeWindow()
@@ -225,9 +214,7 @@ internal sealed partial class MainWindow
 
     private void toggleWindowZoom()
     {
-        WindowState = WindowState == WindowState.Maximized
-            ? WindowState.Normal
-            : WindowState.Maximized;
+        WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
         synchronizeNativeMenuCommandState();
     }
 
@@ -236,12 +223,9 @@ internal sealed partial class MainWindow
         return CanMaximize && WindowState != WindowState.FullScreen;
     }
 
-    private void recordWindowStateBeforeFullScreen(
-        WindowState previousWindowState,
-        WindowState currentWindowState)
+    private void recordWindowStateBeforeFullScreen(WindowState previousWindowState, WindowState currentWindowState)
     {
-        if (previousWindowState != WindowState.FullScreen
-            && currentWindowState == WindowState.FullScreen)
+        if (previousWindowState != WindowState.FullScreen && currentWindowState == WindowState.FullScreen)
         {
             mWindowStateBeforeFullScreen = previousWindowState;
         }

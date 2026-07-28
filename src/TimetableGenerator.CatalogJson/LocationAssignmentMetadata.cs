@@ -6,9 +6,7 @@ public sealed class LocationAssignmentMetadata
 {
     private readonly ClassroomDisplayText? mDisplayTextOrNull;
 
-    public static LocationAssignmentMetadata NotProvided { get; } = new LocationAssignmentMetadata(
-        ELocationAssignmentStatus.NotProvided,
-        null);
+    public static LocationAssignmentMetadata NotProvided { get; } = new LocationAssignmentMetadata(ELocationAssignmentStatus.NotProvided, null);
 
     public ELocationAssignmentStatus Status { get; }
 
@@ -20,9 +18,7 @@ public sealed class LocationAssignmentMetadata
         }
     }
 
-    private LocationAssignmentMetadata(
-        ELocationAssignmentStatus status,
-        ClassroomDisplayText? displayTextOrNull)
+    private LocationAssignmentMetadata(ELocationAssignmentStatus status, ClassroomDisplayText? displayTextOrNull)
     {
         bool hasAssignedValue = displayTextOrNull != null;
         if ((status == ELocationAssignmentStatus.Assigned) != hasAssignedValue)

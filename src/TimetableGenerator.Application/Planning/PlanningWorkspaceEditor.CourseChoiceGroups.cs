@@ -7,10 +7,7 @@ namespace TimetableGenerator.Application.Planning;
 
 public sealed partial class PlanningWorkspaceEditor
 {
-    public PlanningWorkspace AddCourseChoiceGroup(
-        PlanningWorkspace workspace,
-        PlanId planId,
-        CourseChoiceGroup courseChoiceGroup)
+    public PlanningWorkspace AddCourseChoiceGroup(PlanningWorkspace workspace, PlanId planId, CourseChoiceGroup courseChoiceGroup)
     {
         if (workspace == null)
         {
@@ -28,10 +25,7 @@ public sealed partial class PlanningWorkspaceEditor
         return replaceCourseChoiceGroups(workspace, existingPlan, courseChoiceGroups);
     }
 
-    public PlanningWorkspace UpdateCourseChoiceGroup(
-        PlanningWorkspace workspace,
-        PlanId planId,
-        CourseChoiceGroup courseChoiceGroup)
+    public PlanningWorkspace UpdateCourseChoiceGroup(PlanningWorkspace workspace, PlanId planId, CourseChoiceGroup courseChoiceGroup)
     {
         if (workspace == null)
         {
@@ -67,10 +61,7 @@ public sealed partial class PlanningWorkspaceEditor
         return replaceCourseChoiceGroups(workspace, existingPlan, courseChoiceGroups);
     }
 
-    public PlanningWorkspace RemoveCourseChoiceGroup(
-        PlanningWorkspace workspace,
-        PlanId planId,
-        CourseChoiceGroupId courseChoiceGroupId)
+    public PlanningWorkspace RemoveCourseChoiceGroup(PlanningWorkspace workspace, PlanId planId, CourseChoiceGroupId courseChoiceGroupId)
     {
         if (workspace == null)
         {
@@ -79,16 +70,13 @@ public sealed partial class PlanningWorkspaceEditor
 
         if (courseChoiceGroupId.IsValid == false)
         {
-            throw new ArgumentException(
-                "Course choice group removal requires a valid ID.",
-                nameof(courseChoiceGroupId));
+            throw new ArgumentException("Course choice group removal requires a valid ID.", nameof(courseChoiceGroupId));
         }
 
         PlanningPlan existingPlan = findPlan(workspace, planId);
         List<CourseChoiceGroup> courseChoiceGroups = new List<CourseChoiceGroup>();
         bool hasRemovedGroup = false;
-        foreach (CourseChoiceGroup courseChoiceGroup
-            in existingPlan.CourseChoiceGroups)
+        foreach (CourseChoiceGroup courseChoiceGroup in existingPlan.CourseChoiceGroups)
         {
             if (courseChoiceGroup.Id == courseChoiceGroupId)
             {
@@ -108,33 +96,20 @@ public sealed partial class PlanningWorkspaceEditor
         return replaceCourseChoiceGroups(workspace, existingPlan, courseChoiceGroups);
     }
 
-    private static PlanningWorkspace replaceCourseChoiceGroups(
-        PlanningWorkspace workspace,
-        PlanningPlan existingPlan,
-        IEnumerable<CourseChoiceGroup> courseChoiceGroups)
+    private static PlanningWorkspace replaceCourseChoiceGroups(PlanningWorkspace workspace, PlanningPlan existingPlan, IEnumerable<CourseChoiceGroup> courseChoiceGroups)
     {
-        PlanningPlanContent content = new PlanningPlanContent(
-            courseChoiceGroups,
-            existingPlan.UnscheduledOfferingSelections,
-            existingPlan.PersonalSchedules);
-        PlanningPlan updatedPlan = new PlanningPlan(
-            existingPlan.Id,
-            existingPlan.Name,
-            existingPlan.CatalogBinding,
-            content);
+        PlanningPlanContent content = new PlanningPlanContent(courseChoiceGroups, existingPlan.UnscheduledOfferingSelections, existingPlan.PersonalSchedules);
+        PlanningPlan updatedPlan = new PlanningPlan(existingPlan.Id, existingPlan.Name, existingPlan.CatalogBinding, content);
         return replacePlan(workspace, updatedPlan);
     }
 
-    private static List<CourseChoiceGroup> copyCourseChoiceGroupsExceptCourse(
-        PlanningPlan plan,
-        CourseId courseId)
+    private static List<CourseChoiceGroup> copyCourseChoiceGroupsExceptCourse(PlanningPlan plan, CourseId courseId)
     {
         List<CourseChoiceGroup> courseChoiceGroups = new List<CourseChoiceGroup>();
         foreach (CourseChoiceGroup courseChoiceGroup in plan.CourseChoiceGroups)
         {
             List<CourseCandidate> remainingCandidates = new List<CourseCandidate>();
-            foreach (CourseCandidate courseCandidate
-                in courseChoiceGroup.CourseCandidates)
+            foreach (CourseCandidate courseCandidate in courseChoiceGroup.CourseCandidates)
             {
                 if (courseCandidate.CourseId != courseId)
                 {

@@ -33,17 +33,13 @@ internal sealed class CatalogOfferingProjection
 
         if (offering.Id != metadata.OfferingId)
         {
-            throw new ArgumentException(
-                "Offering metadata must describe the projected catalog offering.",
-                nameof(metadata));
+            throw new ArgumentException("Offering metadata must describe the projected catalog offering.", nameof(metadata));
         }
 
         bool hasProvidedSchedule = offering.MeetingSchedule.IsScheduled;
         if (hasProvidedSchedule != metadata.Logistics.HasScheduleSourceText)
         {
-            throw new ArgumentException(
-                "Offering schedule metadata must match the domain schedule status.",
-                nameof(metadata));
+            throw new ArgumentException("Offering schedule metadata must match the domain schedule status.", nameof(metadata));
         }
 
         Offering = offering;

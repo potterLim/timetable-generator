@@ -115,9 +115,7 @@ internal sealed class PersonalScheduleEntry : ScheduleEntry
 
         if (hasTimeRange == false)
         {
-            throw new ArgumentException(
-                "Personal schedule entries must reference one of their schedule ranges.",
-                nameof(timeRange));
+            throw new ArgumentException("Personal schedule entries must reference one of their schedule ranges.", nameof(timeRange));
         }
 
         Schedule = schedule;

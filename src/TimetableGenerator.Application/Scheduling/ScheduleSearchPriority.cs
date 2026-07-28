@@ -11,10 +11,7 @@ internal readonly record struct ScheduleSearchPriority :
 
     public long Sequence { get; }
 
-    public ScheduleSearchPriority(
-        RecommendationScore optimisticScore,
-        int remainingGroupCount,
-        long sequence)
+    public ScheduleSearchPriority(RecommendationScore optimisticScore, int remainingGroupCount, long sequence)
     {
         if (remainingGroupCount < 0)
         {

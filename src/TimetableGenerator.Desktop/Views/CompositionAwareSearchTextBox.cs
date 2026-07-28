@@ -12,17 +12,8 @@ namespace TimetableGenerator.Desktop.Views;
 
 internal sealed class CompositionAwareSearchTextBox : TextBox
 {
-    [SuppressMessage(
-        "Style",
-        "IDE1006:Naming Styles",
-        Justification = "Avalonia requires the {PropertyName}Property field convention.")]
-    public static readonly StyledProperty<string>
-        QueryTextProperty = AvaloniaProperty.Register<
-            CompositionAwareSearchTextBox,
-            string>(
-                nameof(QueryText),
-                string.Empty,
-                defaultBindingMode: BindingMode.TwoWay);
+    [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Avalonia requires the {PropertyName}Property field convention.")]
+    public static readonly StyledProperty<string> QueryTextProperty = AvaloniaProperty.Register<CompositionAwareSearchTextBox, string>(nameof(QueryText), string.Empty, defaultBindingMode: BindingMode.TwoWay);
 
     private TextPresenter? mTextPresenterOrNull;
 
@@ -64,16 +55,14 @@ internal sealed class CompositionAwareSearchTextBox : TextBox
         publishVisibleQueryText();
     }
 
-    protected override void OnAttachedToVisualTree(
-        VisualTreeAttachmentEventArgs eventArguments)
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs eventArguments)
     {
         base.OnAttachedToVisualTree(eventArguments);
         subscribeToTextPresenter();
         publishVisibleQueryText();
     }
 
-    protected override void OnDetachedFromVisualTree(
-        VisualTreeAttachmentEventArgs eventArguments)
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs eventArguments)
     {
         cancelDeferredQueryPublication();
         unsubscribeFromTextPresenter();
@@ -97,8 +86,7 @@ internal sealed class CompositionAwareSearchTextBox : TextBox
             return;
         }
 
-        if (change.Property == CaretIndexProperty
-            && hasPreeditText())
+        if (change.Property == CaretIndexProperty && hasPreeditText())
         {
             publishVisibleQueryText();
         }
@@ -162,9 +150,7 @@ internal sealed class CompositionAwareSearchTextBox : TextBox
         return string.IsNullOrEmpty(mTextPresenterOrNull?.PreeditText) == false;
     }
 
-    private void onTextPresenterPropertyChanged(
-        object? senderOrNull,
-        AvaloniaPropertyChangedEventArgs eventArguments)
+    private void onTextPresenterPropertyChanged(object? senderOrNull, AvaloniaPropertyChangedEventArgs eventArguments)
     {
         if (eventArguments.Property == TextPresenter.PreeditTextProperty)
         {
