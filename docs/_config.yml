@@ -5,11 +5,7 @@ url: https://potterlim.github.io
 baseurl: /timetable-generator
 permalink: pretty
 exclude:
-  - design
   - distribution.md
   - export-icon-assets.md
   - google-calendar-integration-setup.md
   - local
-  - macos-calendar-revalidation-handoff.md
-  - macos-release-validation-prompt.md
-  - public-release-checklist.md

@@ -63,6 +63,11 @@ dotnet test TimetableGenerator.sln --configuration Release --no-build --no-resto
 - [카탈로그 생성기](tools/TimetableGenerator.HandongCatalogGenerator/README.md)
 - [Google Calendar 연동 설정](docs/google-calendar-integration-setup.md)
 
+## 지원 및 정책
+
+설치·사용 문제는 [지원 안내](SUPPORT.md), 보안 문제는 [보안 정책](SECURITY.md)을 참고하세요.
+개인정보와 이용 조건은 제품 페이지의 [개인정보처리방침](https://potterlim.github.io/timetable-generator/privacy/)과 [이용약관](https://potterlim.github.io/timetable-generator/terms/)에서 확인할 수 있습니다.
+
 ## 라이선스
 
 이 저장소는 별도의 오픈 소스 라이선스를 제공하지 않습니다.
