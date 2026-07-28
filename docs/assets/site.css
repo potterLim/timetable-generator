@@ -29,6 +29,7 @@ body {
   color: var(--text);
   font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 16px;
+  line-break: strict;
   line-height: 1.75;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -441,6 +442,7 @@ h3 {
 .support-link strong {
   font-size: 16px;
   line-height: 1.45;
+  text-wrap: balance;
 }
 
 .support-link small {
@@ -448,6 +450,7 @@ h3 {
   color: var(--muted);
   font-size: 13px;
   line-height: 1.5;
+  text-wrap: pretty;
 }
 
 .support-link__arrow {
@@ -601,6 +604,10 @@ code {
 }
 
 @media (max-width: 760px) {
+  .hero__summary br {
+    display: none;
+  }
+
   .site-header__inner {
     min-height: 64px;
     align-items: flex-start;
