@@ -1,5 +1,5 @@
 title: Timetable Generator
-description: 대학 수강 과목과 분반을 조합해 충돌 없는 시간표를 만들고 Google Calendar로 내보내는 Windows·macOS 데스크톱 앱
+description: 수강 조건과 개인 일정을 반영해 가능한 시간표를 비교하고 이미지와 캘린더로 내보내는 데스크톱 앱
 lang: ko-KR
 url: https://potterlim.github.io
 baseurl: /timetable-generator
@@ -10,5 +10,6 @@ exclude:
   - export-icon-assets.md
   - google-calendar-integration-setup.md
   - local
+  - macos-calendar-revalidation-handoff.md
   - macos-release-validation-prompt.md
   - public-release-checklist.md

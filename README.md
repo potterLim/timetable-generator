@@ -1,111 +1,72 @@
 # Timetable Generator
 
-학교가 게시한 검증 가능한 과목 카탈로그에서 과목을 찾고, 시간이 겹치지 않는 분반 조합을 비교해 시간표를 만드는 Windows·macOS 데스크톱 앱입니다. 사용자가 CSV를 만들거나 학교 원본 파일의 열 구조를 이해할 필요가 없습니다.
+한동대학교 개설 과목과 개인 일정을 조합해
+수강 조건에 맞는 시간표를 만들고 비교하는 Windows·macOS 데스크톱 앱입니다.
 
-이 저장소는 한동대학교의 공식 서비스가 아닌 개인 프로젝트입니다. 학교의 학사 운영, 수강 신청 결과 또는 게시 데이터의 완전성을 보증하지 않으므로 최종 수강 정보는 학교의 공식 안내에서 다시 확인해야 합니다.
+[제품 안내](https://potterlim.github.io/timetable-generator/) · [최신 버전 다운로드](https://github.com/potterLim/timetable-generator/releases)
 
-자세한 제품 사용 방법은 [사용 설명서](instruction.md), 학교 원본 `.xls`를 배포 카탈로그로 만드는 절차는 [카탈로그 생성기 안내](tools/TimetableGenerator.HandongCatalogGenerator/README.md)를 참고하세요.
+> Timetable Generator는 한동대학교가 개발하거나 보증하는 공식 서비스가 아닙니다.
+> 실제 수강 신청 전에는 과목 정보와 수강 가능 여부를 학교의 공식 안내에서 확인하세요.
 
-개인정보와 로컬 데이터 처리는 [개인정보처리방침](PRIVACY.md), 제품 이용 조건은 [서비스 이용약관](TERMS.md), 보안 문제 제보는 [보안 정책](SECURITY.md), 일반적인 사용·설치 문제는 [지원 안내](SUPPORT.md)를 참고하세요.
-
-## 제품 경험
+## 주요 기능
 
 - 과목명·과목 코드·교수 검색과 개설 단위·이수 구분 필터
-- 분반별 `선호`·`가능`·`제외` 설정을 반영한 최대 24개의 충돌 없는 시간표
-- 서로 다른 과목을 `N개 과목 중 1개 선택`으로 묶어 정확히 한 과목만 배치하는 수강 선택
-- 시간표마다 독립적으로 저장되고 가능한 시간표와 PNG에 함께 반영되는 개인 일정
-- 이름을 붙일 수 있는 여러 시간표와 원자적 자동 저장
-- 학교가 시간을 제공하지 않은 분반의 명시적인 분리 표시
-- 현재 또는 모든 가능한 시간표의 고해상도 PNG 저장과 Google 캘린더 내보내기
-- macOS에서 Apple 캘린더로 직접 내보내기
-- 검증한 카탈로그의 로컬 캐시와 오프라인 재실행
-- 좁은 창에서도 과목 찾기와 시간표 편집 패널을 열고 닫을 수 있는 반응형 Avalonia UI
-- 현재 시간표의 수업과 개인 일정에 맞춰 가장 이른 일정이 속한 정각 30분 전부터 마지막 일정 종료 시각보다 늦은 첫 30분 경계까지 표시하고, 빈 시간표에는 시간축 대신 빈 상태를 제공하는 실제 시간 축
-- 앱에 포함된 Pretendard 글꼴을 사용하는 일관된 Windows·macOS 타이포그래피
+- 분반별 `선호`·`가능`·`제외` 조건을 반영한 최대 24개의 가능한 시간표 자동 구성
+- 서로 다른 여러 과목 가운데 하나만 배치하는 수강 선택
+- 이름을 붙여 관리하는 여러 시간표와 시간표마다 독립적으로 저장되는 과목 조건·개인 일정
+- 수업 시간이 제공되지 않은 분반의 별도 표시
+- 현재 시간표 한 장 또는 모든 가능한 시간표를 PNG로 저장
+- Windows와 macOS에서 Google Calendar로 내보내기
+- macOS에서 Apple Calendar로 내보내기
+- 자동 저장과 라이트·다크·시스템 화면 모드
 
-개인 일정은 해당 시간표의 모든 가능한 조합에서 고정된 일정으로 취급합니다. 시간 미정 분반은 시간표에 보존하지만 충돌 자동 검증에는 포함하지 않으며, 앱은 이 분반을 충돌이 없다고 추측하지 않습니다.
+## 지원 환경
 
-## 카탈로그 전달 모델
+| 운영체제 | 공식 지원 대상 | 캘린더 내보내기 |
+| --- | --- | --- |
+| Windows | Windows 11 x64 | Google Calendar |
+| macOS | macOS 14 이상, Apple Silicon | Google Calendar, Apple Calendar |
 
-첫 실행에서 앱은 설정된 `index.json`을 읽고, 선택된 revision의 카탈로그를 내려받아 파일 크기와 SHA-256 및 JSON 계약을 검증한 뒤 로컬 캐시에 원자적으로 설치합니다. 검증이 실패하면 기존 캐시와 시간표를 바꾸지 않습니다. 캐시가 있으면 네트워크 없이도 마지막으로 검증한 카탈로그를 사용할 수 있습니다.
+다운로드와 설치, 자세한 사용 방법은
+[Timetable Generator 제품 페이지](https://potterlim.github.io/timetable-generator/)에서 확인할 수 있습니다.
 
-카탈로그 주소는 소스 코드에 넣지 않습니다. 다음 두 방법 중 하나로 설치 환경에서 제공합니다. 환경 변수가 로컬 파일보다 우선합니다.
-
-### 환경 변수
-
-```powershell
-$env:TIMETABLE_GENERATOR_CATALOG_INDEX_URI = "https://catalog.example.edu/timetable-generator/catalog/v1/index.json"
-dotnet run --project .\src\TimetableGenerator.Desktop\TimetableGenerator.Desktop.csproj
-```
-
-```bash
-TIMETABLE_GENERATOR_CATALOG_INDEX_URI="https://catalog.example.edu/timetable-generator/catalog/v1/index.json" \
-  dotnet run --project ./src/TimetableGenerator.Desktop/TimetableGenerator.Desktop.csproj
-```
-
-### 로컬 배포 설정
-
-`src/TimetableGenerator.Desktop/catalog-source.local.json`을 아래 형식으로 만듭니다.
-
-```json
-{
-  "schemaVersion": 1,
-  "indexUri": "https://catalog.example.edu/timetable-generator/catalog/v1/index.json"
-}
-```
-
-이 파일은 Git에서 무시되며, 존재할 때만 빌드·게시 출력에 복사됩니다. 배포 전에 게시 디렉터리의 값을 확인하세요. 카탈로그 URL은 앱이 접속하려면 사용자 기기에서 확인 가능한 정보이므로 비밀 키로 취급하면 안 됩니다.
-
-## 개발
+## 개발 및 빌드
 
 ### 요구 사항
 
-- .NET SDK 10.0.301 (`global.json`이 이 버전을 정확히 고정합니다.)
-- Windows 11 x64 또는 macOS 14 이상 Apple Silicon
+- .NET SDK 10.0.301
 
 저장소 루트에서 다음 명령을 실행합니다.
 
-```powershell
+```bash
 dotnet restore TimetableGenerator.sln --locked-mode
 dotnet build TimetableGenerator.sln --configuration Release --no-restore
-dotnet test TimetableGenerator.sln --configuration Release --no-restore
-dotnet run --project .\src\TimetableGenerator.Desktop\TimetableGenerator.Desktop.csproj
+dotnet test TimetableGenerator.sln --configuration Release --no-build --no-restore
 ```
 
-macOS에서는 경로 구분자만 `/`로 바꾸면 같은 명령을 사용할 수 있습니다.
+카탈로그와 Google Calendar 연결에 필요한 로컬 설정 파일은 Git에서 추적하지 않습니다.
+실행 환경 구성과 배포 절차는 [데스크톱 배포 안내](docs/distribution.md)를 참고하세요.
 
-패키지 버전은 `Directory.Packages.props`에서만 변경합니다. 의도적으로 의존성을 갱신할 때는 `dotnet restore TimetableGenerator.sln --force-evaluate`로 프로젝트별 `packages.lock.json`을 갱신하고, lock 변경과 전이 의존성을 검토합니다.
+## 프로젝트 구조
 
-## 게시
+- `TimetableGenerator.Domain`: 강타입 도메인 모델과 시간표 규칙
+- `TimetableGenerator.Application`: 시간표 편집과 추천 유스케이스
+- `TimetableGenerator.CatalogJson`: 과목 카탈로그 JSON 계약
+- `TimetableGenerator.Infrastructure`: 원격 데이터 검증, 로컬 캐시와 영속화
+- `TimetableGenerator.Desktop`: Avalonia 기반 Windows·macOS 데스크톱 앱
+- `TimetableGenerator.HandongCatalogGenerator`: 학교 원본을 정규화된 과목 카탈로그로 변환하는 운영 도구
+- `tests`: 계층별 단위·통합·렌더링 테스트
 
-게시 산출물은 Git에서 무시되는 `artifacts/publish` 아래에 만듭니다. 전 대상의 self-contained 제품 archive와 SHA-256을 한 번에 만들려면 다음 명령을 사용합니다.
+## 운영 및 배포 문서
 
-```powershell
-pwsh ./scripts/publish-desktop.ps1
-```
-
-인수 없는 기본 게시는 실제 검증·배포 대상인 Windows x64와 macOS Apple Silicon 산출물을 만듭니다. 스크립트는 Windows x64 PE와 macOS Mach-O 아키텍처, self-contained 런타임, `.app` 구조와 디버그 심볼 제외 여부를 검증합니다. Intel Mac용 `osx-x64`는 명시적으로 요청한 개발용 개별 게시만 지원하며 v1 공개 배포 산출물에는 포함하지 않습니다. Windows 아이콘과 manifest는 Windows 대상에만 연결되므로 macOS 교차 게시를 오염시키지 않습니다.
-
-만들어진 플랫폼별 archive는 인증서가 없는 개발 환경에서도 검사할 수 있는 unsigned 산출물입니다. 공개 전에 Windows 코드 서명과 실제 기기 검사, macOS Developer ID 서명·hardened runtime·notarization·stapling이 별도로 필요합니다. 서명 후 `finalize-desktop-release.ps1`로 최종 ZIP과 checksum을 다시 만들며, 전체 명령과 검증 경계는 [데스크톱 제품 배포 안내](docs/distribution.md)를 참고하세요.
-
-배포 설정 파일을 포함할 경우 URL이 올바른지, 실제 카탈로그의 SHA-256과 `index.json`이 일치하는지 함께 확인합니다.
-
-## 구조
-
-```text
-src/
-├── TimetableGenerator.Domain/          강타입 도메인과 불변 계획 모델
-├── TimetableGenerator.Application/     계획 편집과 추천 유스케이스
-├── TimetableGenerator.CatalogJson/     엄격한 카탈로그 JSON 계약
-├── TimetableGenerator.Infrastructure/  원격 검증, 캐시, 원자적 영속화
-└── TimetableGenerator.Desktop/         Avalonia 제품 UI와 플랫폼 진입점
-tests/                                  계층별 단위·통합·렌더링 테스트
-tools/TimetableGenerator.HandongCatalogGenerator/
-                                        학교 원본을 정규화하는 운영 도구
-```
-
-사용자 시간표와 카탈로그 캐시는 `Environment.SpecialFolder.LocalApplicationData` 아래의 `TimetableGenerator` 디렉터리에 저장됩니다. 저장소에는 원본 `.xls`, 생성된 카탈로그 JSON, 실제 서비스 주소, 사용자 시간표를 커밋하지 않습니다.
+- [데스크톱 빌드 및 배포](docs/distribution.md)
+- [카탈로그 생성기](tools/TimetableGenerator.HandongCatalogGenerator/README.md)
+- [Google Calendar 연동 설정](docs/google-calendar-integration-setup.md)
 
 ## 라이선스
 
-이 프로젝트 자체에는 별도의 라이선스를 제공하지 않습니다. 앱에 포함된 자산, UI 프레임워크, native 구성 요소와 self-contained .NET runtime의 제3자 라이선스·notice 원문은 `ThirdPartyNotices`에 모아 배포 산출물과 함께 제공합니다.
+이 저장소는 별도의 오픈 소스 라이선스를 제공하지 않습니다.
+명시적인 허가 없이 소스 코드와 배포 파일의 복제·수정·재배포 권한은 부여되지 않습니다.
+
+앱과 함께 배포되는 제3자 구성 요소의 라이선스와 고지는
+배포물의 `ThirdPartyNotices`에서 확인할 수 있습니다.
