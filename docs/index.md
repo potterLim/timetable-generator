@@ -51,57 +51,6 @@ permalink: /
   </ol>
 </section>
 
-<section class="product-section" aria-labelledby="features-title">
-  <div class="section-heading">
-    <p class="eyebrow">FEATURES</p>
-    <h2 id="features-title">내 수강 조건을 이해하는 시간표</h2>
-  </div>
-  <div class="feature-grid">
-    <article class="feature-card">
-      <h3>분반별 우선순위</h3>
-      <p>
-        먼저 듣고 싶은 분반과 대안으로 가능한 분반,
-        선택하지 않을 분반을 각각 지정합니다.
-      </p>
-    </article>
-    <article class="feature-card">
-      <h3>여러 과목 중 하나 선택</h3>
-      <p>
-        서로 다른 과목 가운데 하나만 수강하면 되는 조건도
-        하나의 선택으로 묶을 수 있습니다.
-      </p>
-    </article>
-    <article class="feature-card">
-      <h3>개인 일정 반영</h3>
-      <p>
-        수업 외 고정 일정을 추가하면
-        겹치는 분반을 가능한 조합에서 제외합니다.
-      </p>
-    </article>
-    <article class="feature-card">
-      <h3>여러 시간표 관리</h3>
-      <p>
-        서로 다른 수강 조건을 시간표별로 저장하고
-        마지막으로 확인한 상태에서 이어갑니다.
-      </p>
-    </article>
-    <article class="feature-card">
-      <h3>시간 미정 분반 구분</h3>
-      <p>
-        수업 시간이 제공되지 않은 분반은 별도로 표시해
-        직접 확인할 항목을 놓치지 않게 합니다.
-      </p>
-    </article>
-    <article class="feature-card">
-      <h3>자동 저장</h3>
-      <p>
-        과목 선택과 개인 일정, 마지막으로 본 시간표를
-        기기에 저장해 변경 내용을 이어갑니다.
-      </p>
-    </article>
-  </div>
-</section>
-
 <section class="product-section" aria-labelledby="export-title">
   <div class="section-heading">
     <p class="eyebrow">EXPORT</p>
@@ -129,68 +78,29 @@ permalink: /
   </p>
 </section>
 
-<section class="product-section" aria-labelledby="download-title">
-  <div class="section-heading">
-    <p class="eyebrow">DOWNLOAD</p>
-    <h2 id="download-title">내 기기에 맞는 버전으로 시작하세요</h2>
-    <p>
-      GitHub Releases에서 운영체제에 맞는 최신 버전을 내려받을 수 있습니다.
-    </p>
-  </div>
-  <div class="platform-grid">
-    <article class="platform-card">
-      <p class="platform-card__label">Windows</p>
-      <h3>Windows 11 · x64</h3>
-      <p>
-        시간표 구성, PNG 저장과
-        Google Calendar 내보내기를 지원합니다.
-      </p>
-    </article>
-    <article class="platform-card">
-      <p class="platform-card__label">macOS</p>
-      <h3>macOS 14 이상 · Apple Silicon</h3>
-      <p>
-        Google Calendar와 Apple Calendar 내보내기를
-        모두 지원합니다.
-      </p>
-    </article>
-  </div>
-  <div class="actions actions--centered">
-    <a class="button button--primary" href="https://github.com/potterLim/timetable-generator/releases">다운로드 페이지 열기</a>
-  </div>
-</section>
-
-<section class="privacy-band" aria-labelledby="privacy-title">
-  <div>
-    <p class="eyebrow">PRIVACY</p>
-    <h2 id="privacy-title">개발자는 사용자 데이터를 수집하지 않습니다</h2>
-    <div class="privacy-band__copy">
-      <p>
-        Timetable Generator는 사용자 계정 정보, 시간표 또는 개인 일정을
-        개발자에게 전송하거나 개발자 서버에 저장하지 않습니다.
-      </p>
-      <p>
-        시간표와 개인 일정은 사용자의 기기에서 처리·보관됩니다.
-        캘린더 내보내기를 선택한 경우에만 필요한 일정 정보가 사용자가 승인한 서비스로 전달되며,
-        광고·사용 분석·원격 텔레메트리는 사용하지 않습니다.
-      </p>
-    </div>
-  </div>
-  <a class="button" href="{{ '/privacy/' | relative_url }}">개인정보처리방침</a>
-</section>
-
-<section class="product-section support-section" aria-labelledby="support-title">
-  <div>
+<section class="product-section support-panel" aria-labelledby="support-title">
+  <div class="support-panel__copy">
     <p class="eyebrow">SUPPORT</p>
-    <h2 id="support-title">도움이 필요하신가요?</h2>
+    <h2 id="support-title">필요한 답을 빠르게 찾아보세요</h2>
     <p>
-      사용 방법을 살펴보거나
-      GitHub Issues에서 설치·사용 문제를 문의할 수 있습니다.
+      사용 방법을 살펴보거나, 해결되지 않는 문제를 알려 주세요.
     </p>
   </div>
-  <div class="actions">
-    <a class="button" href="{{ '/guide/' | relative_url }}">사용 방법</a>
-    <a class="button" href="https://github.com/potterLim/timetable-generator/issues">지원 요청</a>
+  <div class="support-panel__actions">
+    <a class="support-link" href="{{ '/guide/' | relative_url }}">
+      <span>
+        <strong>사용 방법</strong>
+        <small>처음 시작부터 내보내기까지 살펴보기</small>
+      </span>
+      <span class="support-link__arrow" aria-hidden="true">→</span>
+    </a>
+    <a class="support-link" href="https://github.com/potterLim/timetable-generator/issues">
+      <span>
+        <strong>문제 알려주기</strong>
+        <small>오류나 사용 문제를 GitHub에 남기기</small>
+      </span>
+      <span class="support-link__arrow" aria-hidden="true">→</span>
+    </a>
   </div>
 </section>
 
