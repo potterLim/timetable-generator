@@ -21,7 +21,7 @@ permalink: /
 <section class="product-section" aria-labelledby="start-title">
   <div class="section-heading">
     <p class="eyebrow">GET STARTED</p>
-    <h2 id="start-title">세 단계면 충분합니다</h2>
+    <h2 id="start-title">과목 선택부터 내보내기까지</h2>
   </div>
   <ol class="step-grid">
     <li class="step-card">
