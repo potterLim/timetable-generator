@@ -187,7 +187,7 @@ Google Calendar는 Windows와 macOS에서 사용할 수 있으며 Apple Calendar
 ## 저장되는 데이터
 
 시간표와 개인 일정은 현재 기기에 자동으로 저장됩니다.
-개발자는 사용자의 시간표와 개인 일정을 수집하거나 개발자 서버에 저장하지 않습니다.
+Timetable Generator는 사용자의 시간표와 개인 일정을 수집하거나 개발자 서버에 저장하지 않습니다.
 
 Google Calendar 또는 Apple Calendar로 내보낼 때만
 사용자가 승인한 캘린더 서비스에 현재 시간표의 일정이 전달됩니다.

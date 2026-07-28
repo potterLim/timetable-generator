@@ -1,6 +1,6 @@
 # 데스크톱 제품 배포
 
-이 문서는 v1에서 실제 검증하고 공개 배포하는 Windows 11 x64와 macOS 14 이상 Apple Silicon 제품 산출물을 만드는 절차와, 현재 저장소에서 자동 검증할 수 있는 범위를 정의합니다. `osx-x64` 개별 게시는 호환성 개발을 위해 유지하지만 Intel Mac 실기기 검증 전에는 공식 Release 자산으로 취급하지 않습니다.
+이 문서는 v1에서 공식 지원하는 Windows 11 x64와 macOS 14 이상 Apple Silicon 제품 산출물을 검증하고 공개 배포하는 절차를 정의합니다.
 
 배포 식별자는 첫 공개 버전부터 다음 값을 유지합니다.
 
@@ -44,9 +44,6 @@ pwsh ./scripts/publish-desktop.ps1
 ```powershell
 pwsh ./scripts/publish-desktop.ps1 -Runtime win-x64
 pwsh ./scripts/publish-desktop.ps1 -Runtime osx-arm64
-
-# 공식 Release에는 포함하지 않는 선택적 Intel 호환성 게시
-pwsh ./scripts/publish-desktop.ps1 -Runtime osx-x64
 ```
 
 앱 버전은 프로젝트의 `Version`을 사용하며 필요할 때 `-Version 1.0.1`처럼 명시할 수 있습니다. macOS bundle identifier 기본값은 GitHub 사용자 네임스페이스를 기준으로 한 `io.github.potterlim.timetable`입니다. 첫 공개 버전부터 모든 버전과 CPU 아키텍처에서 이 값을 유지하며, 이후 Apple Developer portal 등록이 필요한 capability를 추가할 때도 동일한 식별자를 사용합니다.
@@ -64,7 +61,7 @@ pwsh ./scripts/publish-desktop.ps1 `
 | Windows x64 | `artifacts/publish/win-x64` | `TimetableGenerator-<version>-win-x64-unsigned.zip` |
 | macOS Apple Silicon | `artifacts/publish/osx-arm64/Timetable Generator.app` | `TimetableGenerator-<version>-osx-arm64-unsigned.zip` |
 
-현재 명령에서 생성하고 검증한 archive의 SHA-256만 `artifacts/publish/checksums.sha256`에 기록됩니다. 인수 없는 전체 게시는 공식 대상 두 개만 만들고 두 archive의 checksum을 기록합니다. `-Runtime osx-x64`를 명시한 선택적 게시는 해당 Intel archive만 만들며 공식 v1 checksum 집계에는 포함하지 않습니다. macOS zip에는 Mach-O 실행 권한도 보존됩니다.
+현재 명령에서 생성하고 검증한 archive의 SHA-256만 `artifacts/publish/checksums.sha256`에 기록됩니다. 인수 없는 전체 게시는 공식 대상 두 개만 만들고 두 archive의 checksum을 기록합니다. macOS zip에는 Mach-O 실행 권한도 보존됩니다.
 
 하나의 게시 출력 디렉터리는 한 번의 게시 명령만 소유합니다. 같은 명령을 다시 실행해 기존 결과를 교체할 수 있지만, 다른 버전·RID 또는 수동으로 만든 파일이 있으면 스크립트는 아무것도 자동 삭제하지 않고 중단합니다. 이 경우 기존 파일을 직접 확인한 뒤 별도의 빈 `-OutputRoot`를 사용하세요. 출력·원본 경로에 symbolic link나 junction도 허용하지 않습니다.
 
@@ -178,4 +175,27 @@ xcrun stapler validate "$APP"
 spctl --assess --type execute --verbose=4 "$APP"
 ```
 
-마지막으로 실제 Apple Silicon Mac에서 내려받은 파일에 quarantine이 적용된 상태로 첫 실행, 카탈로그 로딩, 자동 저장, PNG 저장을 검증해야 공개 배포가 완료됩니다. `osx-x64`를 향후 공식 지원하려면 별도의 Intel Mac에서 같은 서명·공증·다운로드 검증을 끝낸 뒤 해당 버전의 Release 범위에 추가합니다.
+마지막으로 실제 Apple Silicon Mac에서 내려받은 파일에 quarantine이 적용된 상태로 첫 실행, 카탈로그 로딩, 자동 저장, PNG 저장을 검증해야 공개 배포가 완료됩니다.
+
+## GitHub Release 최종 확인
+
+다음 조건을 모두 만족한 커밋만 공개 버전으로 확정합니다.
+
+1. `main` 작업 트리가 깨끗하고 원격 브랜치와 일치하며 GitHub Actions의 품질 검사가 모두 성공해야 합니다.
+2. Windows와 macOS 실기기에서 첫 실행, 카탈로그 로딩, 자동 저장, 시간표 구성, PNG 저장과 각 운영체제의 캘린더 내보내기를 확인해야 합니다.
+3. 두 빌드 호스트에서 같은 커밋을 체크아웃하고 `write-release-build-info.ps1 -Version <version> -RequireClean`으로 빌드 환경을 기록해야 합니다.
+4. 게시 전 `catalog-source.local.json`과 제품 설정 스키마 v2의 `google-calendar.local.json`이 준비되어 있어야 합니다. 실제 값은 출력하거나 Git에 추가하지 않습니다.
+5. Windows 서명과 macOS 서명·notarization·stapling을 마친 뒤 플랫폼별 최종화와 `Aggregate` 단계를 모두 통과해야 합니다.
+6. 최종 커밋에 `v<version>` 태그를 만들고 이후 코드나 문서를 변경하지 않습니다.
+7. GitHub Release에는 최종화된 Windows ZIP, Apple Silicon macOS ZIP, `checksums.sha256`만 첨부합니다. unsigned ZIP, PDB, QA 로그, 빌드 증거와 로컬 설정 원본은 첨부하지 않습니다.
+8. Release에서 두 ZIP을 새로 내려받아 체크섬을 다시 확인하고, Windows 실행과 macOS Gatekeeper 첫 실행을 마지막으로 점검합니다.
+
+최종 자산은 다음 세 파일입니다.
+
+```text
+TimetableGenerator-<version>-win-x64.zip
+TimetableGenerator-<version>-osx-arm64.zip
+checksums.sha256
+```
+
+태그와 Release를 만들기 전까지는 모든 산출물을 릴리스 후보로 취급합니다.

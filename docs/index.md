@@ -103,11 +103,3 @@ permalink: /
     </a>
   </div>
 </section>
-
-<aside class="unofficial-notice">
-  <strong>확인해 주세요</strong>
-  <p>
-    Timetable Generator는 한동대학교의 공식 서비스가 아닌 개인 프로젝트입니다.
-    실제 수강 신청 전에는 과목 정보와 수강 가능 여부를 학교의 공식 안내에서 확인해 주세요.
-  </p>
-</aside>
