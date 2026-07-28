@@ -138,6 +138,29 @@ public sealed class GoogleCalendarExportServiceTests
     }
 
     [Fact]
+    public async Task MultipleMatchingManagedCalendarsCannotBeReplacedAsync()
+    {
+        GoogleCalendarExportPlan plan = createPlan();
+        string marker = GoogleCalendarApiClient.createPlanMarker(plan.PlanId);
+        string listJson = createCalendarListJson(
+            createCalendarJson("managed-calendar-one", plan.CalendarName.Value, false, marker),
+            createCalendarJson("managed-calendar-two", plan.CalendarName.Value, false, marker));
+        CalendarExportHttpMessageHandler handler = new CalendarExportHttpMessageHandler(listJson);
+        RecordingConflictResolver resolver = new RecordingConflictResolver(ECalendarNameConflictResolution.ReplaceExisting);
+
+        GoogleCalendarExportResult result = await exportAsync(handler, resolver, plan);
+
+        Assert.Equal(EGoogleCalendarExportStatus.Failed, result.Status);
+        Assert.Equal("google_calendar_local_state_failed", result.DiagnosticCodeOrNull);
+        Assert.False(resolver.ConflictOrNull?.CanReplace);
+        Assert.DoesNotContain(
+            handler.Requests,
+            request => request.Method == HttpMethod.Put
+                || request.Method == HttpMethod.Post
+                || request.Method == HttpMethod.Delete);
+    }
+
+    [Fact]
     public async Task FriendlyDescriptionCalendarUsesManagedEventOwnershipForReplacementAsync()
     {
         GoogleCalendarExportPlan plan = createPlan();

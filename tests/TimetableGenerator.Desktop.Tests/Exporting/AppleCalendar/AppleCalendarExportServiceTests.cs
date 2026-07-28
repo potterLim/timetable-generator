@@ -66,6 +66,47 @@ public sealed class AppleCalendarExportServiceTests
     }
 
     [Fact]
+    public async Task MultipleMatchingManagedCalendarsCannotBeReplacedAsync()
+    {
+        RecordingAppleCalendarNativeBridge nativeBridge = new RecordingAppleCalendarNativeBridge(
+            createCalendar(
+                new AppleCalendarId("managed-calendar-one"),
+                "2026-2학기 시간표",
+                EAppleCalendarOwnership.ApplicationManaged,
+                EAppleCalendarContentAccess.Writable),
+            createCalendar(
+                new AppleCalendarId("managed-calendar-two"),
+                "2026-2학기 시간표",
+                EAppleCalendarOwnership.ApplicationManaged,
+                EAppleCalendarContentAccess.Writable));
+        RecordingCalendarNameConflictResolver conflictResolver = new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.ReplaceExisting);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => new AppleCalendarExportService(nativeBridge).ExportAsync(createDocument(), conflictResolver, TestContext.Current.CancellationToken));
+
+        Assert.False(Assert.Single(conflictResolver.Conflicts).CanReplace);
+        Assert.Empty(nativeBridge.AppliedMutations);
+    }
+
+    [Fact]
+    public async Task ManagedReadOnlyCalendarCannotBeReplacedAsync()
+    {
+        RecordingAppleCalendarNativeBridge nativeBridge = new RecordingAppleCalendarNativeBridge(
+            createCalendar(
+                new AppleCalendarId("managed-read-only-calendar"),
+                "2026-2학기 시간표",
+                EAppleCalendarOwnership.ApplicationManaged,
+                EAppleCalendarContentAccess.ReadOnly));
+        RecordingCalendarNameConflictResolver conflictResolver = new RecordingCalendarNameConflictResolver(ECalendarNameConflictResolution.ReplaceExisting);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => new AppleCalendarExportService(nativeBridge).ExportAsync(createDocument(), conflictResolver, TestContext.Current.CancellationToken));
+
+        Assert.False(Assert.Single(conflictResolver.Conflicts).CanReplace);
+        Assert.Empty(nativeBridge.AppliedMutations);
+    }
+
+    [Fact]
     public async Task CalendarManagedByDifferentPlanCanBeReplacedWithoutChangingItsOwnershipPlanAsync()
     {
         PlanId existingCalendarOwnerPlanId = PlanId.CreateNew();

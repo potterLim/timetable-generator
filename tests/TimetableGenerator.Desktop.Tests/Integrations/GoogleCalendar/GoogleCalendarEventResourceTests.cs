@@ -38,6 +38,26 @@ public sealed class GoogleCalendarEventResourceTests
     }
 
     [Fact]
+    public void ResourceContainsExactlyTheRequiredPrivateExtendedProperties()
+    {
+        PlanId planId = new PlanId(Guid.Parse("71f3be04-d4c6-41d4-a269-792321e71423"));
+        GoogleCalendarExportEvent exportEvent = createEvent("course:ITP30003");
+        CalendarTimeZoneId timeZoneId = new CalendarTimeZoneId("Asia/Seoul");
+
+        JsonObject resource = GoogleCalendarEventResourceFactory.Create(planId, timeZoneId, exportEvent);
+        JsonObject extendedProperties = Assert.IsType<JsonObject>(resource["extendedProperties"]);
+        JsonObject privateProperties = Assert.IsType<JsonObject>(extendedProperties["private"]);
+        JsonValue managed = Assert.IsAssignableFrom<JsonValue>(privateProperties["timetableGeneratorManaged"]);
+        JsonValue resourcePlanId = Assert.IsAssignableFrom<JsonValue>(privateProperties["timetableGeneratorPlanId"]);
+        JsonValue sourceId = Assert.IsAssignableFrom<JsonValue>(privateProperties["timetableGeneratorSourceId"]);
+
+        Assert.Equal(3, privateProperties.Count);
+        Assert.Equal("true", managed.GetValue<string>());
+        Assert.Equal("71f3be04d4c641d4a269792321e71423", resourcePlanId.GetValue<string>());
+        Assert.Equal("course:ITP30003", sourceId.GetValue<string>());
+    }
+
+    [Fact]
     public void ResourceUsesDateSpecificOffsetsAcrossDaylightSavingTime()
     {
         PlanId planId = new PlanId(Guid.Parse("71f3be04-d4c6-41d4-a269-792321e71423"));

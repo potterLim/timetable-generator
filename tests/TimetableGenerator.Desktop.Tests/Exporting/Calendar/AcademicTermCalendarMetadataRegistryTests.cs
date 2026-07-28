@@ -35,6 +35,20 @@ public sealed class AcademicTermCalendarMetadataRegistryTests
         Assert.Equal(new DateTimeOffset(2026, 12, 20, 14, 59, 59, TimeSpan.Zero), lastIncludedInstant);
     }
 
+    [Fact]
+    public void UtcMetadataUsesZeroOffsetAndPreservesTheInclusiveTermEnd()
+    {
+        AcademicTermCalendarMetadata metadata = AcademicTermCalendarMetadataRegistry.findByTerm(
+            AcademicTerm.Parse("2026-2"),
+            new CalendarTimeZoneId("Etc/UTC"));
+
+        CalendarUtcOffset localOffset = metadata.TimeZoneId.FindUtcOffset(new DateOnly(2026, 8, 31), new TimeOnly(11, 30));
+        DateTimeOffset lastIncludedInstant = metadata.GetLastIncludedInstantUtc();
+
+        Assert.Equal(TimeSpan.Zero, localOffset.Value);
+        Assert.Equal(new DateTimeOffset(2026, 12, 20, 23, 59, 59, TimeSpan.Zero), lastIncludedInstant);
+    }
+
     [Theory]
     [InlineData(EDay.Monday, 2026, 8, 31)]
     [InlineData(EDay.Sunday, 2026, 9, 6)]
