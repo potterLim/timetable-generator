@@ -27,7 +27,7 @@ permalink: /
     <li class="step-card">
       <span class="step-card__number" aria-hidden="true">1</span>
       <h3>과목과 분반을 선택하세요</h3>
-      <p>과목을 검색하고, 분반별 우선순위를 정합니다.</p>
+      <p>과목을 검색하고 분반별 우선순위를 정합니다.</p>
     </li>
     <li class="step-card">
       <span class="step-card__number" aria-hidden="true">2</span>
@@ -64,7 +64,7 @@ permalink: /
     </article>
   </div>
   <p class="section-note">
-    캘린더 연결과 접근 권한은 내보내기를 시작할 때만 요청합니다.
+    내보내기를 시작하면 필요한 경우 캘린더 연결과 접근 권한을 요청합니다.
   </p>
 </section>
 
