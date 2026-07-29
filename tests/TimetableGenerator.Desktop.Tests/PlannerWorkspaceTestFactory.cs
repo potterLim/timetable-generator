@@ -114,6 +114,40 @@ internal static class PlannerWorkspaceTestFactory
             recommendationCalculationPolicy);
     }
 
+    public static PlannerWorkspaceViewModel CreateWorkspace(
+        CourseCatalogDocument document,
+        PlanningWorkspace workspace,
+        IScheduleRecommendationProvider recommendationProvider,
+        RecommendationCalculationPolicy recommendationCalculationPolicy)
+    {
+        if (document == null)
+        {
+            throw new ArgumentNullException(nameof(document));
+        }
+
+        if (workspace == null)
+        {
+            throw new ArgumentNullException(nameof(workspace));
+        }
+
+        if (recommendationProvider == null)
+        {
+            throw new ArgumentNullException(nameof(recommendationProvider));
+        }
+
+        if (recommendationCalculationPolicy == null)
+        {
+            throw new ArgumentNullException(nameof(recommendationCalculationPolicy));
+        }
+
+        return createWorkspaceFromSnapshot(
+            document,
+            recommendationProvider,
+            workspace,
+            new ImmediatePlanningWorkspaceStore(),
+            recommendationCalculationPolicy);
+    }
+
     public static PlannerWorkspaceViewModel CreateWorkspace(CourseCatalogDocument document)
     {
         if (document == null)
