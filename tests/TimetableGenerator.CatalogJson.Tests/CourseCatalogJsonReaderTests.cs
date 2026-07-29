@@ -164,28 +164,33 @@ public sealed class CourseCatalogJsonReaderTests
             "catalog",
             "v1");
         string indexPath = Path.Combine(deploymentRoot, "index.json");
-        string catalogPath = Path.Combine(deploymentRoot, "handong-global-university", "2026-2", "catalog-r0001.json");
-        if (File.Exists(indexPath) == false || File.Exists(catalogPath) == false)
+        if (File.Exists(indexPath) == false)
         {
             return;
         }
 
         byte[] indexBytes = File.ReadAllBytes(indexPath);
-        byte[] catalogBytes = File.ReadAllBytes(catalogPath);
         CatalogIndexEntry indexEntry = CatalogIndexJsonReader.Read(indexBytes).FindDefaultEntry();
+        string catalogPath = Path.Combine(deploymentRoot, indexEntry.File.RelativePath.Value.Replace('/', Path.DirectorySeparatorChar));
+        if (File.Exists(catalogPath) == false)
+        {
+            return;
+        }
+
+        byte[] catalogBytes = File.ReadAllBytes(catalogPath);
 
         CourseCatalogDocument firstDocument = CourseCatalogJsonReader.ReadAndVerify(catalogBytes, indexEntry);
         CourseCatalogDocument secondDocument = CourseCatalogJsonReader.ReadAndVerify(catalogBytes, indexEntry);
 
-        Assert.AreEqual(972_395L, indexEntry.File.Size.Value);
-        Assert.AreEqual("fb66ad08f8f884dfa625910ec78bcaae7d445709be97e13a37e4e7761329097b", indexEntry.File.Sha256.HexValue);
-        Assert.HasCount(515, firstDocument.Catalog.Courses);
-        Assert.HasCount(742, firstDocument.Catalog.Offerings);
-        Assert.AreEqual(657, firstDocument.Counts.ScheduledOfferingCount.Value);
+        Assert.AreEqual(975_318L, indexEntry.File.Size.Value);
+        Assert.AreEqual("8ffc8acbda14875d40ab7c2200d7163ce28fa7ee49b3cf6c72378379e07cfd31", indexEntry.File.Sha256.HexValue);
+        Assert.HasCount(514, firstDocument.Catalog.Courses);
+        Assert.HasCount(745, firstDocument.Catalog.Offerings);
+        Assert.AreEqual(660, firstDocument.Counts.ScheduledOfferingCount.Value);
         Assert.AreEqual(85, firstDocument.Counts.MeetingNotProvidedCount.Value);
-        Assert.AreEqual(93, firstDocument.DataQuality.InstructorUnconfirmedCount.Value);
-        Assert.AreEqual(92, firstDocument.DataQuality.RoomNotProvidedCount.Value);
-        Assert.HasCount(742, firstDocument.OfferingMetadata);
+        Assert.AreEqual(88, firstDocument.DataQuality.InstructorUnconfirmedCount.Value);
+        Assert.AreEqual(91, firstDocument.DataQuality.RoomNotProvidedCount.Value);
+        Assert.HasCount(745, firstDocument.OfferingMetadata);
         Assert.AreEqual(firstDocument.Catalog.Id, secondDocument.Catalog.Id);
         Assert.AreEqual(firstDocument.OfferingMetadata[0].OfferingId, secondDocument.OfferingMetadata[0].OfferingId);
     }
