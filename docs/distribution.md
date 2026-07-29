@@ -65,7 +65,7 @@ pwsh ./scripts/publish-desktop.ps1 `
 
 하나의 게시 출력 디렉터리는 한 번의 게시 명령만 소유합니다. 같은 명령을 다시 실행해 기존 결과를 교체할 수 있지만, 다른 버전·RID 또는 수동으로 만든 파일이 있으면 스크립트는 아무것도 자동 삭제하지 않고 중단합니다. 이 경우 기존 파일을 직접 확인한 뒤 별도의 빈 `-OutputRoot`를 사용하세요. 출력·원본 경로에 symbolic link나 junction도 허용하지 않습니다.
 
-Release 최종화에서도 서명된 원본과 최종 ZIP 출력 위치는 서로 같거나 포함 관계일 수 없습니다. 원본 앱 안에 ZIP을 만들거나 출력 폴더를 다시 원본에 포함하는 잘못된 경로는 파일을 만들기 전에 거부합니다.
+Release 최종화에서도 원본 앱과 최종 ZIP 출력 위치는 서로 같거나 포함 관계일 수 없습니다. 원본 앱 안에 ZIP을 만들거나 출력 폴더를 다시 원본에 포함하는 잘못된 경로는 파일을 만들기 전에 거부합니다.
 
 `catalog-source.local.json`이 Desktop 프로젝트에 있으면 게시 산출물에도 포함됩니다. 이 파일은 Git에서 무시되지만 앱이 서버에 접속하려면 최종 사용자에게 보이는 설정입니다. `google-calendar.local.json`은 정확히 `schemaVersion`, `clientId`, `clientSecret` 세 속성을 가진 제품 설정 스키마 v2여야 하며, 외부 사용자용 프로덕션 **Desktop OAuth** 클라이언트 ID와 보안 비밀을 넣습니다. 현재 이 Desktop 클라이언트는 승인 코드를 토큰으로 교환할 때 두 값을 모두 요구합니다. 액세스 토큰·새로 고침 토큰과 웹 애플리케이션 OAuth 클라이언트의 보안 비밀은 절대 넣지 않습니다. 실제 사용자는 Google Calendar 내보내기 때 자신의 계정으로 직접 로그인하고 권한을 승인합니다. 두 설정 파일 중 하나라도 없거나 비어 있거나 스키마 검증에 실패하면 최종화가 중단됩니다.
 
@@ -89,16 +89,17 @@ Desktop 앱과 함께 배포되는 클라이언트 보안 비밀은 사용자가
 
 이 검증은 코드 서명, Apple notarization, 악성 코드 검사, 운영체제별 실제 실행을 대신하지 않습니다. 현재 저장소에는 인증서나 Apple notarization 자격 증명을 포함하지 않으므로 게시 스크립트가 만든 macOS archive에는 의도적으로 `unsigned`가 표시됩니다.
 
-## 서명 후 최종 Release 자산 만들기
+## 최종 Release 자산 만들기
 
-`publish-desktop.ps1`의 ZIP은 서명 전 후보이므로 GitHub Release에 올리지 않습니다. Windows Authenticode 서명 또는 macOS notarization·stapling이 앱 바이트를 변경하므로, 모든 플랫폼은 해당 절차가 끝난 다음 최종 ZIP을 새로 만듭니다.
+`publish-desktop.ps1`이 만드는 ZIP은 게시 단계 검증용이므로 GitHub Release에 올리지 않습니다. 플랫폼별 최종 정책을 적용한 원본 디렉터리에서 최종 ZIP을 새로 만듭니다.
 
-Windows에서 서명된 게시 디렉토리를 최종화합니다. 유효한 Authenticode 서명과 timestamp가 없으면 실패합니다.
+v1의 Windows 배포는 개인·교내 사용자를 위한 GitHub Release이며 유료 코드 서명 인증서를 사용하지 않습니다. 최종화 스크립트는 실행 파일이 손상되거나 불완전하게 서명된 상태가 아니라 정확히 `NotSigned`인지 확인하고, 무서명임을 파일명에 명시한 공식 자산을 만듭니다.
 
 ```powershell
 pwsh ./scripts/finalize-desktop-release.ps1 `
   -Stage Windows `
-  -Version 1.0.0
+  -Version 1.0.0 `
+  -WindowsSignatureMode Unsigned
 ```
 
 macOS에서는 각 아키텍처의 앱을 안쪽 Mach-O부터 밖쪽 bundle 순서로 서명하고, notarization 성공 후 ticket을 staple한 다음 실행합니다. 스크립트는 `codesign --strict`, Gatekeeper, stapler ticket, 필수 entitlement를 검증하고 macOS 메타데이터를 보존하는 `ditto`로 ZIP을 만듭니다.
@@ -114,24 +115,27 @@ pwsh ./scripts/finalize-desktop-release.ps1 `
 동일한 `artifacts/release/1.0.0`에 다음 두 ZIP을 모은 후 최종 checksum을 생성합니다.
 
 ```text
-TimetableGenerator-1.0.0-win-x64.zip
+TimetableGenerator-1.0.0-win-x64-unsigned.zip
 TimetableGenerator-1.0.0-osx-arm64.zip
 ```
 
 ```powershell
 pwsh ./scripts/finalize-desktop-release.ps1 `
   -Stage Aggregate `
-  -Version 1.0.0
+  -Version 1.0.0 `
+  -WindowsSignatureMode Unsigned
 ```
 
-`checksums.sha256`은 서명·notarization·stapling·최종 ZIP 생성이 모두 끝난 바이트에서 한 번만 생성합니다. 로컬 구조 검증용 `-AllowUnsigned`는 `artifacts/release-smoke`의 `unsigned-smoke` 이름으로 격리되며 Aggregate가 절대 받지 않습니다.
+`checksums.sha256`은 모든 플랫폼의 최종 ZIP 생성이 끝난 바이트에서 한 번만 생성합니다. `-WindowsSignatureMode Unsigned`는 v1의 공식 Windows 배포 정책입니다. 로컬 구조 검증용 `-AllowUnsigned`는 별개의 `artifacts/release-smoke`와 `unsigned-smoke` 이름으로 격리되며 Aggregate가 받지 않습니다.
 
 ## Windows 공개 전 검증
 
-1. 조직의 코드 서명 인증서로 `win-x64`의 실행 파일을 서명합니다. 추후 MSI·MSIX 설치 패키지를 만들면 그 패키지도 별도로 서명합니다. ZIP 자체는 SHA-256으로 무결성을 확인합니다.
-2. `Get-AuthenticodeSignature` 또는 `signtool verify /pa`로 서명을 검증합니다.
-3. 악성 코드 검사 후 실제 Windows 11 x64 기기에서 기존 앱 데이터 폴더를 안전하게 격리하고 첫 실행, 카탈로그 로딩, 자동 저장, PNG 저장을 확인합니다.
-4. 최종 archive의 SHA-256을 다시 계산해 배포 페이지에 함께 게시합니다.
+1. `Get-AuthenticodeSignature` 결과가 `NotSigned`인지 확인합니다. `HashMismatch`나 불완전한 서명은 공식 무서명 상태가 아닙니다.
+2. 악성 코드 검사 후 실제 Windows 11 x64 기기에서 기존 앱 데이터 폴더를 안전하게 격리하고 첫 실행, 카탈로그 로딩, 자동 저장, PNG 저장을 확인합니다.
+3. 최종 archive의 SHA-256을 다시 계산해 배포 페이지에 함께 게시합니다.
+4. Windows SmartScreen이 "알 수 없는 게시자" 안내를 표시할 수 있음을 사용자 안내와 Release notes에 명시합니다. 사용자는 공식 GitHub Release 주소와 `checksums.sha256`을 확인한 뒤 실행합니다.
+
+향후 조직용 배포나 더 넓은 공개 배포가 필요해지면 `Signed` 정책으로 전환합니다. 이 경우 실행 파일에 유효한 Authenticode 서명과 신뢰 가능한 timestamp가 있어야 하며 최종 자산 이름은 `TimetableGenerator-<version>-win-x64.zip`입니다.
 
 ## macOS 서명·notarization 경계
 
@@ -185,15 +189,15 @@ spctl --assess --type execute --verbose=4 "$APP"
 2. Windows와 macOS 실기기에서 첫 실행, 카탈로그 로딩, 자동 저장, 시간표 구성, PNG 저장과 각 운영체제의 캘린더 내보내기를 확인해야 합니다.
 3. 두 빌드 호스트에서 같은 커밋을 체크아웃하고 `write-release-build-info.ps1 -Version <version> -RequireClean`으로 빌드 환경을 기록해야 합니다.
 4. 게시 전 `catalog-source.local.json`과 제품 설정 스키마 v2의 `google-calendar.local.json`이 준비되어 있어야 합니다. 실제 값은 출력하거나 Git에 추가하지 않습니다.
-5. Windows 서명과 macOS 서명·notarization·stapling을 마친 뒤 플랫폼별 최종화와 `Aggregate` 단계를 모두 통과해야 합니다.
+5. Windows 공식 무서명 정책과 macOS 서명·notarization·stapling을 적용한 뒤 플랫폼별 최종화와 `Aggregate` 단계를 모두 통과해야 합니다.
 6. 최종 커밋에 `v<version>` 태그를 만들고 이후 코드나 문서를 변경하지 않습니다.
-7. GitHub Release에는 최종화된 Windows ZIP, Apple Silicon macOS ZIP, `checksums.sha256`만 첨부합니다. unsigned ZIP, PDB, QA 로그, 빌드 증거와 로컬 설정 원본은 첨부하지 않습니다.
+7. GitHub Release에는 공식 Windows 무서명 ZIP, Apple Silicon macOS ZIP, `checksums.sha256`만 첨부합니다. 게시 단계의 unsigned ZIP, `unsigned-smoke` ZIP, PDB, QA 로그, 빌드 증거와 로컬 설정 원본은 첨부하지 않습니다.
 8. Release에서 두 ZIP을 새로 내려받아 체크섬을 다시 확인하고, Windows 실행과 macOS Gatekeeper 첫 실행을 마지막으로 점검합니다.
 
 최종 자산은 다음 세 파일입니다.
 
 ```text
-TimetableGenerator-<version>-win-x64.zip
+TimetableGenerator-<version>-win-x64-unsigned.zip
 TimetableGenerator-<version>-osx-arm64.zip
 checksums.sha256
 ```

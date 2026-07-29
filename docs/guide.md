@@ -23,6 +23,11 @@ Timetable Generator는 과목과 분반을 선택하면 겹치지 않는 시간�
 2. ZIP의 압축을 새 폴더에 모두 풉니다.
 3. `TimetableGenerator.exe`를 실행합니다.
 
+v1 Windows 실행 파일은 코드 서명 인증서를 사용하지 않으므로
+SmartScreen이 "알 수 없는 게시자" 안내를 표시할 수 있습니다.
+공식 GitHub Releases에서 받은 파일인지와 릴리스의 SHA-256 체크섬을 확인한 뒤
+**추가 정보 → 실행**을 선택하세요.
+
 ### macOS
 
 1. 파일 이름에 `osx-arm64`가 포함된 ZIP을 내려받습니다.

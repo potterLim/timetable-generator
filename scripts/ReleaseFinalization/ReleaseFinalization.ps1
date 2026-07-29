@@ -17,12 +17,19 @@ function Invoke-TimetableGeneratorReleaseFinalization {
 
         [string] $BundleIdentifier = "io.github.potterlim.timetable",
 
+        [ValidateSet("Signed", "Unsigned")]
+        [string] $WindowsSignatureMode = "Signed",
+
         [string] $SourcePath,
 
         [string] $OutputRoot,
 
         [switch] $AllowUnsigned
     )
+
+    if ($AllowUnsigned -and $WindowsSignatureMode -eq "Unsigned") {
+        throw "-AllowUnsigned와 -WindowsSignatureMode Unsigned는 함께 사용할 수 없습니다."
+    }
 
     $repository = Get-NormalizedFullPath -Path $RepositoryRoot
     switch ($Stage) {
@@ -32,6 +39,7 @@ function Invoke-TimetableGeneratorReleaseFinalization {
                 -Version $Version `
                 -SourcePath $SourcePath `
                 -OutputRoot $OutputRoot `
+                -WindowsSignatureMode $WindowsSignatureMode `
                 -AllowUnsigned:$AllowUnsigned
         }
         "MacOS" {
@@ -58,6 +66,7 @@ function Invoke-TimetableGeneratorReleaseFinalization {
                 -Version $Version `
                 -SourcePath $SourcePath `
                 -OutputRoot $OutputRoot `
+                -WindowsSignatureMode $WindowsSignatureMode `
                 -AllowUnsigned:$AllowUnsigned
         }
         default {

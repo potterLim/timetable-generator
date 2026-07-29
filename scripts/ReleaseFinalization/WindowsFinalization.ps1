@@ -46,6 +46,18 @@ function Assert-WindowsSignature {
     }
 }
 
+function Assert-WindowsExecutableIsUnsigned {
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path
+    )
+
+    $signature = Get-AuthenticodeSignature -LiteralPath $Path
+    if ($signature.Status -ne [System.Management.Automation.SignatureStatus]::NotSigned) {
+        throw "공식 무서명 Windows 실행 파일은 서명이 없는 정상 상태여야 합니다: $($signature.Status)"
+    }
+}
+
 function Invoke-WindowsFinalization {
     param(
         [Parameter(Mandatory)]
@@ -58,8 +70,15 @@ function Invoke-WindowsFinalization {
 
         [string] $OutputRoot,
 
+        [ValidateSet("Signed", "Unsigned")]
+        [string] $WindowsSignatureMode = "Signed",
+
         [switch] $AllowUnsigned
     )
+
+    if ($AllowUnsigned -and $WindowsSignatureMode -eq "Unsigned") {
+        throw "공식 무서명 Windows 정책과 unsigned smoke 정책은 함께 사용할 수 없습니다."
+    }
 
     if ($IsWindows -eq $false) {
         throw "Windows Release 최종화는 Windows에서만 실행할 수 있습니다."
@@ -94,7 +113,13 @@ function Invoke-WindowsFinalization {
     Assert-NoDebugSymbols -Path $source
     Assert-RequiredConfigurationFiles -Path $source
     Assert-RequiredNoticeFiles -Path (Join-Path $source "ThirdPartyNotices")
-    if ($AllowUnsigned -eq $false) {
+    if ($AllowUnsigned) {
+        Write-Verbose "로컬 구조 검사용 unsigned smoke ZIP을 생성합니다."
+    }
+    elseif ($WindowsSignatureMode -eq "Unsigned") {
+        Assert-WindowsExecutableIsUnsigned -Path $executablePath
+    }
+    else {
         Assert-WindowsSignature -Path $executablePath
     }
 
@@ -106,12 +131,10 @@ function Invoke-WindowsFinalization {
         -AllowUnsigned:$AllowUnsigned
     $allowedFileNames = @(Get-AllowedReleaseOutputFileNames -Version $Version -AllowUnsigned:$AllowUnsigned)
     Assert-ReleaseOutputRootContents -OutputRoot $releaseRoot -AllowedFileNames $allowedFileNames
-    $archiveFileName = if ($AllowUnsigned) {
-        "TimetableGenerator-$Version-win-x64-unsigned-smoke.zip"
-    }
-    else {
-        "TimetableGenerator-$Version-win-x64.zip"
-    }
+    $archiveFileName = Get-WindowsReleaseArchiveFileName `
+        -Version $Version `
+        -WindowsSignatureMode $WindowsSignatureMode `
+        -AllowUnsigned:$AllowUnsigned
     $archivePath = Join-Path $releaseRoot $archiveFileName
     Remove-ExistingReleaseFile `
         -OutputRoot $releaseRoot `

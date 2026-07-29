@@ -10,6 +10,9 @@ function Invoke-AggregateFinalization {
 
         [string] $OutputRoot,
 
+        [ValidateSet("Signed", "Unsigned")]
+        [string] $WindowsSignatureMode = "Signed",
+
         [switch] $AllowUnsigned
     )
 
@@ -30,10 +33,9 @@ function Invoke-AggregateFinalization {
         throw "최종 Release 자산 디렉터리를 찾을 수 없습니다: $releaseRoot"
     }
 
-    $expectedArchiveFileNames = @(
-        "TimetableGenerator-$Version-osx-arm64.zip",
-        "TimetableGenerator-$Version-win-x64.zip"
-    )
+    $expectedArchiveFileNames = @(Get-ExpectedReleaseArchiveFileNames `
+        -Version $Version `
+        -WindowsSignatureMode $WindowsSignatureMode)
     Assert-ReleaseOutputRootContents `
         -OutputRoot $releaseRoot `
         -AllowedFileNames @($expectedArchiveFileNames + "checksums.sha256")

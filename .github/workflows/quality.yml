@@ -30,6 +30,7 @@ jobs:
         run: |
           ./tests/Distribution/MacOSIcon.Tests.ps1
           ./tests/Distribution/PublishedContent.Tests.ps1
+          ./tests/Distribution/ReleaseFinalizationPolicy.Tests.ps1
 
       - name: Install .NET SDK
         uses: actions/setup-dotnet@v6

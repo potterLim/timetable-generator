@@ -212,8 +212,52 @@ function Get-AllowedReleaseOutputFileNames {
     return @(
         "TimetableGenerator-$Version-osx-arm64.zip",
         "TimetableGenerator-$Version-osx-x64.zip",
+        "TimetableGenerator-$Version-win-x64-unsigned.zip",
         "TimetableGenerator-$Version-win-x64.zip",
         "checksums.sha256"
+    )
+}
+
+function Get-WindowsReleaseArchiveFileName {
+    param(
+        [Parameter(Mandatory)]
+        [string] $Version,
+
+        [ValidateSet("Signed", "Unsigned")]
+        [string] $WindowsSignatureMode = "Signed",
+
+        [switch] $AllowUnsigned
+    )
+
+    if ($AllowUnsigned -and $WindowsSignatureMode -eq "Unsigned") {
+        throw "공식 무서명 Windows 정책과 unsigned smoke 정책은 함께 사용할 수 없습니다."
+    }
+
+    if ($AllowUnsigned) {
+        return "TimetableGenerator-$Version-win-x64-unsigned-smoke.zip"
+    }
+
+    if ($WindowsSignatureMode -eq "Unsigned") {
+        return "TimetableGenerator-$Version-win-x64-unsigned.zip"
+    }
+
+    return "TimetableGenerator-$Version-win-x64.zip"
+}
+
+function Get-ExpectedReleaseArchiveFileNames {
+    param(
+        [Parameter(Mandatory)]
+        [string] $Version,
+
+        [ValidateSet("Signed", "Unsigned")]
+        [string] $WindowsSignatureMode = "Signed"
+    )
+
+    return @(
+        "TimetableGenerator-$Version-osx-arm64.zip",
+        (Get-WindowsReleaseArchiveFileName `
+            -Version $Version `
+            -WindowsSignatureMode $WindowsSignatureMode)
     )
 }
 
