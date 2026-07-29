@@ -93,7 +93,7 @@ Desktop 앱과 함께 배포되는 클라이언트 보안 비밀은 사용자가
 
 `publish-desktop.ps1`이 만드는 ZIP은 게시 단계 검증용이므로 GitHub Release에 올리지 않습니다. 플랫폼별 최종 정책을 적용한 원본 디렉터리에서 최종 ZIP을 새로 만듭니다.
 
-v1의 Windows 배포는 개인·교내 사용자를 위한 GitHub Release이며 유료 코드 서명 인증서를 사용하지 않습니다. 최종화 스크립트는 실행 파일이 손상되거나 불완전하게 서명된 상태가 아니라 정확히 `NotSigned`인지 확인하고, 무서명임을 파일명에 명시한 공식 자산을 만듭니다.
+v1의 Windows 배포는 개인·교내 사용자를 위한 GitHub Release이며 유료 코드 서명 인증서를 사용하지 않습니다. 최종화 스크립트는 실행 파일이 손상되거나 불완전하게 서명된 상태가 아니라 정확히 `NotSigned`인지 확인합니다. 최종 파일명은 서명 정책과 무관하게 사용자가 이해하기 쉬운 제품명과 버전·플랫폼만 표시하고, 무서명 상태와 SmartScreen 안내 가능성은 Release notes와 사용자 안내에 명시합니다.
 
 ```powershell
 pwsh ./scripts/finalize-desktop-release.ps1 `
@@ -115,7 +115,7 @@ pwsh ./scripts/finalize-desktop-release.ps1 `
 동일한 `artifacts/release/1.0.0`에 다음 두 ZIP을 모은 후 최종 checksum을 생성합니다.
 
 ```text
-TimetableGenerator-1.0.0-win-x64-unsigned.zip
+TimetableGenerator-1.0.0-win-x64.zip
 TimetableGenerator-1.0.0-osx-arm64.zip
 ```
 
@@ -135,7 +135,7 @@ pwsh ./scripts/finalize-desktop-release.ps1 `
 3. 최종 archive의 SHA-256을 다시 계산해 배포 페이지에 함께 게시합니다.
 4. Windows SmartScreen이 "알 수 없는 게시자" 안내를 표시할 수 있음을 사용자 안내와 Release notes에 명시합니다. 사용자는 공식 GitHub Release 주소와 `checksums.sha256`을 확인한 뒤 실행합니다.
 
-향후 조직용 배포나 더 넓은 공개 배포가 필요해지면 `Signed` 정책으로 전환합니다. 이 경우 실행 파일에 유효한 Authenticode 서명과 신뢰 가능한 timestamp가 있어야 하며 최종 자산 이름은 `TimetableGenerator-<version>-win-x64.zip`입니다.
+향후 조직용 배포나 더 넓은 공개 배포가 필요해지면 `Signed` 정책으로 전환합니다. 이 경우 실행 파일에 유효한 Authenticode 서명과 신뢰 가능한 timestamp가 있어야 하며, 사용자에게 보이는 최종 자산 이름은 그대로 유지합니다.
 
 ## macOS 서명·notarization 경계
 
@@ -197,7 +197,7 @@ spctl --assess --type execute --verbose=4 "$APP"
 최종 자산은 다음 세 파일입니다.
 
 ```text
-TimetableGenerator-<version>-win-x64-unsigned.zip
+TimetableGenerator-<version>-win-x64.zip
 TimetableGenerator-<version>-osx-arm64.zip
 checksums.sha256
 ```

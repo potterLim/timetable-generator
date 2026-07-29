@@ -212,7 +212,6 @@ function Get-AllowedReleaseOutputFileNames {
     return @(
         "TimetableGenerator-$Version-osx-arm64.zip",
         "TimetableGenerator-$Version-osx-x64.zip",
-        "TimetableGenerator-$Version-win-x64-unsigned.zip",
         "TimetableGenerator-$Version-win-x64.zip",
         "checksums.sha256"
     )
@@ -235,10 +234,6 @@ function Get-WindowsReleaseArchiveFileName {
 
     if ($AllowUnsigned) {
         return "TimetableGenerator-$Version-win-x64-unsigned-smoke.zip"
-    }
-
-    if ($WindowsSignatureMode -eq "Unsigned") {
-        return "TimetableGenerator-$Version-win-x64-unsigned.zip"
     }
 
     return "TimetableGenerator-$Version-win-x64.zip"

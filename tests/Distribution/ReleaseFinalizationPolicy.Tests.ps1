@@ -62,12 +62,12 @@ $testRoot = Join-Path $repositoryRoot (
     "artifacts/ReleasePolicyTests-" + [System.Guid]::NewGuid().ToString("N"))
 $null = New-Item -ItemType Directory -Path $testRoot
 try {
-    Invoke-TestCase -Name "Windows archive names distinguish every policy" -Action {
+    Invoke-TestCase -Name "official Windows archive keeps a product-facing name" -Action {
         Assert-Equal `
             -Expected "TimetableGenerator-1.0.0-win-x64.zip" `
             -Actual (Get-WindowsReleaseArchiveFileName -Version "1.0.0")
         Assert-Equal `
-            -Expected "TimetableGenerator-1.0.0-win-x64-unsigned.zip" `
+            -Expected "TimetableGenerator-1.0.0-win-x64.zip" `
             -Actual (Get-WindowsReleaseArchiveFileName `
                 -Version "1.0.0" `
                 -WindowsSignatureMode Unsigned)
@@ -88,8 +88,15 @@ try {
         Assert-Equal -Expected "TimetableGenerator-1.0.0-win-x64.zip" -Actual $signedNames[1]
         Assert-Equal -Expected "TimetableGenerator-1.0.0-osx-arm64.zip" -Actual $unsignedNames[0]
         Assert-Equal `
-            -Expected "TimetableGenerator-1.0.0-win-x64-unsigned.zip" `
+            -Expected "TimetableGenerator-1.0.0-win-x64.zip" `
             -Actual $unsignedNames[1]
+    }
+
+    Invoke-TestCase -Name "legacy unsigned suffix is not an official output" -Action {
+        $officialNames = @(Get-AllowedReleaseOutputFileNames -Version "1.0.0")
+        if ($officialNames -ccontains "TimetableGenerator-1.0.0-win-x64-unsigned.zip") {
+            throw "기존 무서명 suffix가 공식 Release 출력에 남아 있습니다."
+        }
     }
 
     Invoke-TestCase -Name "official unsigned and smoke policies cannot be combined" -Action {
