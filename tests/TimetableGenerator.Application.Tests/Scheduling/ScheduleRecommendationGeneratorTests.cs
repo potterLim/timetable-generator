@@ -140,6 +140,61 @@ public sealed class ScheduleRecommendationGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateRecommendationsEnumeratesEveryResultWhenTheLimitIsUnlimited()
+    {
+        CourseCatalog catalog = createCartesianCatalog();
+        PlanningPlan plan = createCartesianPlan(catalog);
+        ScheduleRecommendationRequest request = new ScheduleRecommendationRequest(catalog, plan, ScheduleRecommendationLimit.Unlimited);
+        ScheduleRecommendationGenerator generator = new ScheduleRecommendationGenerator();
+
+        ScheduleRecommendationResult result = generator.GenerateRecommendations(request, CancellationToken.None);
+
+        Assert.IsTrue(ScheduleRecommendationLimit.Unlimited.IsUnlimited);
+        Assert.HasCount(4, result.Recommendations);
+        Assert.AreEqual(
+            EScheduleRecommendationCompletion.Completed,
+            result.Completion);
+    }
+
+    [TestMethod]
+    public void GenerateRecommendationsDistinguishesTwentyFourFromAllTwentyFiveResults()
+    {
+        const string COURSE_CODE = "AAA10001";
+        string[] sectionCodes = new string[25];
+        CatalogOffering[] offerings = new CatalogOffering[sectionCodes.Length];
+        for (int sectionIndex = 0; sectionIndex < sectionCodes.Length; ++sectionIndex)
+        {
+            string sectionCode = (sectionIndex + 1).ToString("D2", System.Globalization.CultureInfo.InvariantCulture);
+            sectionCodes[sectionIndex] = sectionCode;
+            offerings[sectionIndex] = ScheduleRecommendationTestData.CreateUnscheduledOffering(COURSE_CODE, sectionCode);
+        }
+
+        CatalogCourse course = ScheduleRecommendationTestData.CreateCourse(COURSE_CODE);
+        CourseCatalog catalog = ScheduleRecommendationTestData.CreateCatalog(new CatalogCourse[] { course }, offerings);
+        PlanningPlan plan = ScheduleRecommendationTestData.CreatePlan(
+            catalog,
+            new CourseChoiceGroup[]
+            {
+                ScheduleRecommendationTestData.CreateCourseChoiceGroup(COURSE_CODE, sectionCodes),
+            },
+            Array.Empty<UnscheduledOfferingSelection>());
+        ScheduleRecommendationResult initialResult = generate(catalog, plan, 24);
+        ScheduleRecommendationGenerator generator = new ScheduleRecommendationGenerator();
+        ScheduleRecommendationResult exhaustiveResult = generator.GenerateRecommendations(
+            new ScheduleRecommendationRequest(catalog, plan, ScheduleRecommendationLimit.Unlimited),
+            CancellationToken.None);
+
+        Assert.HasCount(24, initialResult.Recommendations);
+        Assert.AreEqual(
+            EScheduleRecommendationCompletion.MaximumRecommendationCountReached,
+            initialResult.Completion);
+        Assert.HasCount(25, exhaustiveResult.Recommendations);
+        Assert.AreEqual(
+            EScheduleRecommendationCompletion.Completed,
+            exhaustiveResult.Completion);
+    }
+
+    [TestMethod]
     public void GenerateRecommendationsRetainsAValidBookmarkBeyondTheResultLimit()
     {
         CourseCatalog catalog = createCartesianCatalog();

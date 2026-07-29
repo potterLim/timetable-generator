@@ -108,7 +108,8 @@ public sealed class ScheduleRecommendationGenerator
 
     private static bool addCompletedRecommendation(ScheduleRecommendationGenerationState state, ScheduleSearchNode node)
     {
-        if (state.Recommendations.Count >= state.MaximumRecommendationCount.Value)
+        if (state.MaximumRecommendationCount.IsUnlimited == false
+            && state.Recommendations.Count >= state.MaximumRecommendationCount.Value)
         {
             return true;
         }

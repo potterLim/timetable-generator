@@ -5,6 +5,10 @@ namespace TimetableGenerator.Application.Scheduling;
 
 public readonly record struct ScheduleRecommendationLimit
 {
+    private readonly bool mIsUnlimited;
+
+    public static ScheduleRecommendationLimit Unlimited { get; } = new ScheduleRecommendationLimit(int.MaxValue, true);
+
     public int Value { get; }
 
     public bool IsValid
@@ -12,6 +16,14 @@ public readonly record struct ScheduleRecommendationLimit
         get
         {
             return Value > 0;
+        }
+    }
+
+    public bool IsUnlimited
+    {
+        get
+        {
+            return mIsUnlimited;
         }
     }
 
@@ -23,10 +35,19 @@ public readonly record struct ScheduleRecommendationLimit
         }
 
         Value = value;
+        mIsUnlimited = false;
+    }
+
+    private ScheduleRecommendationLimit(int value, bool isUnlimited)
+    {
+        Value = value;
+        mIsUnlimited = isUnlimited;
     }
 
     public override string ToString()
     {
-        return Value.ToString(CultureInfo.InvariantCulture);
+        return IsUnlimited
+            ? "Unlimited"
+            : Value.ToString(CultureInfo.InvariantCulture);
     }
 }
