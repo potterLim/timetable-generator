@@ -114,6 +114,11 @@ internal sealed partial class ProductShellViewModel : ObservableObject, IDisposa
     }
 
     public ProductShellViewModel(IProductWorkspaceLoader workspaceLoader, IProductCatalogUpdateService catalogUpdateService)
+        : this(workspaceLoader, catalogUpdateService, DEFAULT_STARTUP_CATALOG_UPDATE_WAIT)
+    {
+    }
+
+    internal ProductShellViewModel(IProductWorkspaceLoader workspaceLoader, IProductCatalogUpdateService catalogUpdateService, TimeSpan startupCatalogUpdateWait)
     {
         if (workspaceLoader == null)
         {
@@ -125,8 +130,14 @@ internal sealed partial class ProductShellViewModel : ObservableObject, IDisposa
             throw new ArgumentNullException(nameof(catalogUpdateService));
         }
 
+        if (startupCatalogUpdateWait < TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(startupCatalogUpdateWait));
+        }
+
         mWorkspaceLoader = workspaceLoader;
         mCatalogUpdateService = catalogUpdateService;
+        mStartupCatalogUpdateWait = startupCatalogUpdateWait;
         mLoadCancellationSource = new CancellationTokenSource();
         mCatalogUpdateCancellationSource = new CancellationTokenSource();
         mCatalogUpdateTask = Task.CompletedTask;
@@ -159,6 +170,9 @@ internal sealed partial class ProductShellViewModel : ObservableObject, IDisposa
         try
         {
             ProductWorkspacePresentation presentation = await mWorkspaceLoader.LoadAsync(loadCancellationSource.Token);
+            StartupCatalogRefreshResult catalogRefreshResult = await refreshCatalogAtStartupAsync(presentation, loadCancellationSource, catalogUpdateCancellationSource);
+            presentation = catalogRefreshResult.Presentation;
+            observePendingCatalogUpdate(catalogRefreshResult, catalogUpdateCancellationSource);
             PlannerWorkspaceViewModel workspace = presentation.Workspace;
             if (loadCancellationSource.IsCancellationRequested || ReferenceEquals(mLoadCancellationSource, loadCancellationSource) == false)
             {
@@ -173,7 +187,7 @@ internal sealed partial class ProductShellViewModel : ObservableObject, IDisposa
             raisePropertyChanged(nameof(WorkspaceOrNull));
             raisePropertyChanged(nameof(AccessibleWindowName));
             raiseProductNoticePropertiesChanged();
-            startCatalogUpdateCheck(presentation, catalogUpdateCancellationSource);
+            finishStartupCatalogRefresh(catalogRefreshResult);
         }
         catch (OperationCanceledException)
             when (loadCancellationSource.IsCancellationRequested)

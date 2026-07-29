@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -10,6 +9,7 @@ using Avalonia.Threading;
 using TimetableGenerator.Desktop.Presentation;
 using TimetableGenerator.Desktop.Product.CatalogUpdates;
 using TimetableGenerator.Desktop.Product.Loading;
+using TimetableGenerator.Infrastructure.Catalogs;
 
 namespace TimetableGenerator.Desktop.Product;
 
@@ -17,7 +17,11 @@ internal sealed partial class ProductShellViewModel
 {
     private const EProductWorkspaceRecoveryFlags RECOVERY_NOTICE_FLAGS = EProductWorkspaceRecoveryFlags.CatalogPreviousGeneration | EProductWorkspaceRecoveryFlags.WorkspacePreviousGeneration;
 
+    private static readonly TimeSpan DEFAULT_STARTUP_CATALOG_UPDATE_WAIT = TimeSpan.FromSeconds(2.0);
+
     private readonly IProductCatalogUpdateService mCatalogUpdateService;
+
+    private readonly TimeSpan mStartupCatalogUpdateWait;
 
     private readonly DelegateCommand mDismissProductNoticeCommand;
 
@@ -122,22 +126,122 @@ internal sealed partial class ProductShellViewModel
         clearCatalogUpdateNotice();
     }
 
-    private void startCatalogUpdateCheck(ProductWorkspacePresentation presentation, CancellationTokenSource cancellationSource)
+    private async Task<StartupCatalogRefreshResult> refreshCatalogAtStartupAsync(ProductWorkspacePresentation presentation, CancellationTokenSource loadCancellationSource, CancellationTokenSource catalogUpdateCancellationSource)
     {
         if (presentation.CatalogOrigin == EProductCatalogOrigin.RemoteDownload)
         {
+            return StartupCatalogRefreshResult.Completed(presentation);
+        }
+
+        Task<ProductCatalogUpdateResult> updateTask;
+        try
+        {
+            updateTask = mCatalogUpdateService.CheckAndStageAsync(presentation.ActiveCatalogPackage, presentation.WorkspaceSnapshot, catalogUpdateCancellationSource.Token);
+            _ = observeCatalogUpdateTaskAsync(updateTask);
+        }
+        catch (Exception exception)
+        {
+            Trace.TraceWarning("The startup catalog update check could not be started while the active cache remained available: {0}", exception);
+            return StartupCatalogRefreshResult.Failed(presentation, exception);
+        }
+
+        Task waitTask = Task.Delay(mStartupCatalogUpdateWait, loadCancellationSource.Token);
+        Task completedTask = await Task.WhenAny(updateTask, waitTask);
+        if (ReferenceEquals(completedTask, updateTask) == false)
+        {
+            if (loadCancellationSource.IsCancellationRequested)
+            {
+                presentation.Workspace.Dispose();
+                loadCancellationSource.Token.ThrowIfCancellationRequested();
+            }
+
+            return StartupCatalogRefreshResult.Pending(presentation, updateTask);
+        }
+
+        ProductCatalogUpdateResult updateResult;
+        try
+        {
+            updateResult = await updateTask;
+        }
+        catch (OperationCanceledException)
+            when (catalogUpdateCancellationSource.IsCancellationRequested)
+        {
+            presentation.Workspace.Dispose();
+            throw;
+        }
+        catch (Exception exception)
+        {
+            Trace.TraceWarning("The startup catalog update check failed while the active cache remained available: {0}", exception);
+            return StartupCatalogRefreshResult.Failed(presentation, exception);
+        }
+
+        if (updateResult.Status != EProductCatalogUpdateStatus.Staged)
+        {
+            return StartupCatalogRefreshResult.Completed(presentation, updateResult);
+        }
+
+        try
+        {
+            ProductWorkspacePresentation refreshedPresentation = await mWorkspaceLoader.LoadAsync(loadCancellationSource.Token);
+            presentation.Workspace.Dispose();
+            return StartupCatalogRefreshResult.Completed(refreshedPresentation);
+        }
+        catch (OperationCanceledException)
+            when (loadCancellationSource.IsCancellationRequested)
+        {
+            presentation.Workspace.Dispose();
+            throw;
+        }
+        catch (Exception exception)
+        {
+            Trace.TraceWarning("The staged catalog could not be applied during startup and will be retried on the next launch: {0}", exception);
+            return StartupCatalogRefreshResult.Completed(presentation, updateResult);
+        }
+    }
+
+    private void finishStartupCatalogRefresh(StartupCatalogRefreshResult refreshResult)
+    {
+        if (refreshResult.CompletedUpdateOrNull != null)
+        {
+            applyCatalogUpdateResult(refreshResult.CompletedUpdateOrNull);
+        }
+        else if (refreshResult.CompletedFailureOrNull != null)
+        {
+            applyCatalogUpdateFailure(refreshResult.CompletedFailureOrNull);
+        }
+
+        if (refreshResult.PendingUpdateOrNull == null)
+        {
             mCatalogUpdateTask = Task.CompletedTask;
+        }
+    }
+
+    private void observePendingCatalogUpdate(StartupCatalogRefreshResult refreshResult, CancellationTokenSource cancellationSource)
+    {
+        if (refreshResult.PendingUpdateOrNull == null)
+        {
             return;
         }
 
-        mCatalogUpdateTask = checkCatalogUpdateAsync(presentation, cancellationSource);
+        mCatalogUpdateTask = finishCatalogUpdateCheckAsync(refreshResult.PendingUpdateOrNull, cancellationSource);
     }
 
-    private async Task checkCatalogUpdateAsync(ProductWorkspacePresentation presentation, CancellationTokenSource cancellationSource)
+    private static async Task observeCatalogUpdateTaskAsync(Task<ProductCatalogUpdateResult> updateTask)
     {
         try
         {
-            ProductCatalogUpdateResult result = await mCatalogUpdateService.CheckAndStageAsync(presentation.ActiveCatalogPackage, presentation.WorkspaceSnapshot, cancellationSource.Token).ConfigureAwait(false);
+            await updateTask.ConfigureAwait(false);
+        }
+        catch
+        {
+        }
+    }
+
+    private async Task finishCatalogUpdateCheckAsync(Task<ProductCatalogUpdateResult> updateTask, CancellationTokenSource cancellationSource)
+    {
+        try
+        {
+            ProductCatalogUpdateResult result = await updateTask.ConfigureAwait(false);
             if (cancellationSource.IsCancellationRequested)
             {
                 return;
@@ -159,6 +263,18 @@ internal sealed partial class ProductShellViewModel
         catch (Exception exception)
         {
             Trace.TraceWarning("The background catalog update check failed while the active cache remained available: {0}", exception);
+            string failureNotice = createCatalogUpdateFailureNotice(exception);
+            if (string.IsNullOrEmpty(failureNotice) == false)
+            {
+                await Dispatcher.UIThread.InvokeAsync(
+                    delegate
+                    {
+                        if (canApplyCatalogUpdateResult(cancellationSource))
+                        {
+                            setCatalogUpdateNotice(failureNotice);
+                        }
+                    });
+            }
         }
     }
 
@@ -171,25 +287,70 @@ internal sealed partial class ProductShellViewModel
 
     private void applyCatalogUpdateResult(ProductCatalogUpdateResult result)
     {
+        string notice;
         switch (result.Status)
         {
             case EProductCatalogUpdateStatus.Current:
             case EProductCatalogUpdateStatus.TransitionRejected:
-                mCatalogUpdateNotice = string.Empty;
+                notice = string.Empty;
                 break;
             case EProductCatalogUpdateStatus.Staged:
-                mCatalogUpdateNotice = "과목 데이터 r" + result.CandidateRevision.Value.ToString("D4", CultureInfo.InvariantCulture) + " 준비됨: 다음 실행에서 확인 후 적용";
+                notice = "새 과목 정보가 있습니다. 다음 실행 시 자동으로 적용됩니다.";
                 break;
             case EProductCatalogUpdateStatus.WorkspaceIncompatible:
-                mCatalogUpdateNotice = "새 과목 데이터가 현재 시간표와 맞지 않아 기존 버전을 유지합니다.";
+                notice = "새 과목 정보를 현재 시간표에 적용할 수 없어 기존 정보를 계속 사용합니다.";
                 break;
             case EProductCatalogUpdateStatus.RevisionArtifactChanged:
-                mCatalogUpdateNotice = "같은 버전의 서버 데이터가 변경되어 안전을 위해 무시했습니다.";
+                notice = "새 과목 정보를 안전하게 확인할 수 없어 기존 정보를 계속 사용합니다.";
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(result), result.Status, "Unknown product catalog update status.");
         }
 
+        setCatalogUpdateNotice(notice);
+    }
+
+    private void applyCatalogUpdateFailure(Exception exception)
+    {
+        string notice = createCatalogUpdateFailureNotice(exception);
+        if (string.IsNullOrEmpty(notice))
+        {
+            return;
+        }
+
+        setCatalogUpdateNotice(notice);
+    }
+
+    private static string createCatalogUpdateFailureNotice(Exception exception)
+    {
+        if (exception is CatalogCachePersistenceException)
+        {
+            return "새 과목 정보를 저장하지 못해 기존 정보를 계속 사용합니다.";
+        }
+
+        if (exception is RemoteCatalogSynchronizationException synchronizationException)
+        {
+            switch (synchronizationException.FailureKind)
+            {
+                case ERemoteCatalogSynchronizationFailureKind.InvalidRemoteData:
+                case ERemoteCatalogSynchronizationFailureKind.ResourceLimit:
+                case ERemoteCatalogSynchronizationFailureKind.SecurityPolicy:
+                    return "새 과목 정보를 안전하게 확인할 수 없어 기존 정보를 계속 사용합니다.";
+                case ERemoteCatalogSynchronizationFailureKind.LocalPersistence:
+                    return "새 과목 정보를 저장하지 못해 기존 정보를 계속 사용합니다.";
+                case ERemoteCatalogSynchronizationFailureKind.Network:
+                    return string.Empty;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(exception), synchronizationException.FailureKind, "Unknown remote catalog synchronization failure kind.");
+            }
+        }
+
+        return string.Empty;
+    }
+
+    private void setCatalogUpdateNotice(string notice)
+    {
+        mCatalogUpdateNotice = notice;
         raiseProductNoticePropertiesChanged();
     }
 
@@ -221,5 +382,39 @@ internal sealed partial class ProductShellViewModel
         raisePropertyChanged(nameof(StartupRecoveryNotice));
         raisePropertyChanged(nameof(HasProductNotice));
         raisePropertyChanged(nameof(ProductNotice));
+    }
+
+    private sealed class StartupCatalogRefreshResult
+    {
+        public ProductWorkspacePresentation Presentation { get; }
+
+        public ProductCatalogUpdateResult? CompletedUpdateOrNull { get; }
+
+        public Exception? CompletedFailureOrNull { get; }
+
+        public Task<ProductCatalogUpdateResult>? PendingUpdateOrNull { get; }
+
+        private StartupCatalogRefreshResult(ProductWorkspacePresentation presentation, ProductCatalogUpdateResult? completedUpdateOrNull, Exception? completedFailureOrNull, Task<ProductCatalogUpdateResult>? pendingUpdateOrNull)
+        {
+            Presentation = presentation;
+            CompletedUpdateOrNull = completedUpdateOrNull;
+            CompletedFailureOrNull = completedFailureOrNull;
+            PendingUpdateOrNull = pendingUpdateOrNull;
+        }
+
+        public static StartupCatalogRefreshResult Completed(ProductWorkspacePresentation presentation, ProductCatalogUpdateResult? completedUpdateOrNull = null)
+        {
+            return new StartupCatalogRefreshResult(presentation, completedUpdateOrNull, null, null);
+        }
+
+        public static StartupCatalogRefreshResult Failed(ProductWorkspacePresentation presentation, Exception completedFailure)
+        {
+            return new StartupCatalogRefreshResult(presentation, null, completedFailure, null);
+        }
+
+        public static StartupCatalogRefreshResult Pending(ProductWorkspacePresentation presentation, Task<ProductCatalogUpdateResult> pendingUpdate)
+        {
+            return new StartupCatalogRefreshResult(presentation, null, null, pendingUpdate);
+        }
     }
 }
