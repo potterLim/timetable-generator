@@ -23,6 +23,8 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
 
     private readonly PlanningWorkspaceSession mSession;
 
+    private readonly RecommendationCalculationPolicy mRecommendationCalculationPolicy;
+
     private bool mIsDisposed;
 
     public string InstitutionTermDisplayText
@@ -51,6 +53,16 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
     }
 
     public PlannerWorkspaceViewModel(CourseCatalogProjection catalogProjection, PlanningWorkspaceSession session, PlanningWorkspaceAutosaveQueue autosaveQueue, IScheduleRecommendationProvider recommendationProvider)
+        : this(catalogProjection, session, autosaveQueue, recommendationProvider, RecommendationCalculationPolicy.Default)
+    {
+    }
+
+    internal PlannerWorkspaceViewModel(
+        CourseCatalogProjection catalogProjection,
+        PlanningWorkspaceSession session,
+        PlanningWorkspaceAutosaveQueue autosaveQueue,
+        IScheduleRecommendationProvider recommendationProvider,
+        RecommendationCalculationPolicy recommendationCalculationPolicy)
     {
         if (catalogProjection == null)
         {
@@ -72,6 +84,11 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
             throw new ArgumentNullException(nameof(recommendationProvider));
         }
 
+        if (recommendationCalculationPolicy == null)
+        {
+            throw new ArgumentNullException(nameof(recommendationCalculationPolicy));
+        }
+
         if (ReferenceEquals(catalogProjection.Document.Catalog, session.Catalog) == false)
         {
             throw new ArgumentException("The workspace session and presentation projection must share a catalog.", nameof(session));
@@ -81,10 +98,13 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         mSession = session;
         mAutosaveQueue = autosaveQueue;
         mRecommendationProvider = recommendationProvider;
+        mRecommendationCalculationPolicy = recommendationCalculationPolicy;
         mAllCourses = createCourseItems(catalogProjection);
         mAlternativeCourseSearchItemsByCourseId = createAlternativeCourseSearchItemsByCourseId(mAllCourses);
         mRecommendations = Array.Empty<ScheduleRecommendationViewItem>();
+        mPngExportCandidateSchedules = Array.Empty<ScheduleRecommendation>();
         mPersonalSchedulePreview = EMPTY_RECOMMENDATION;
+        mRecommendationDayRange = ScheduleBoardDayRange.CreateForEntries(EMPTY_RECOMMENDATION.Entries);
 
         VisibleCourses = new ObservableCollection<CourseSearchItem>();
         CourseChoiceDraftCourses = new ObservableCollection<CourseChoiceDraftCourseItem>();
@@ -114,6 +134,7 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         mRecommendationRefreshTask = Task.CompletedTask;
         mRecommendationCalculationState = ERecommendationCalculationState.Ready;
         mRecommendationCalculationError = string.Empty;
+        mRecommendationExpansionState = ERecommendationExpansionState.Unavailable;
         mLayoutMode = EWorkspaceLayoutMode.ExtraWide;
         mIsCoursePaneOpen = true;
         mIsInspectorPaneOpen = true;
@@ -168,6 +189,8 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         CancelClearActivePlanCommand = new DelegateCommand(cancelClearActivePlan);
         mRetryAutosaveCommand = new DelegateCommand(retryAutosave, canRetryAutosave);
         mRetryRecommendationCommand = new DelegateCommand(requestRecommendationRefresh, canRetryRecommendation);
+        mCalculateAllRecommendationsCommand = new DelegateCommand(calculateAllRecommendations, canCalculateAllRecommendations);
+        mCancelAllRecommendationsCommand = new DelegateCommand(cancelAllRecommendations, canCancelAllRecommendations);
 
         mAutosaveQueue.StateChanged += onAutosaveStateChanged;
         refreshVisibleCourses();
@@ -187,6 +210,7 @@ internal sealed partial class PlannerWorkspaceViewModel : ObservableObject, IDis
         mAutosaveSavingIndicatorTimer.Tick -= onAutosaveSavingIndicatorTimerTick;
         mRecommendationCancellationSource.Cancel();
         mRecommendationCancellationSource.Dispose();
+        mExhaustiveRecommendationCancellationSourceOrNull?.Cancel();
         mAutosaveQueue.StateChanged -= onAutosaveStateChanged;
     }
 

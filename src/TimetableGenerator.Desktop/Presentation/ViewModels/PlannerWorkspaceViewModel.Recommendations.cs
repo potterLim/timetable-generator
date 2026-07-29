@@ -20,8 +20,6 @@ namespace TimetableGenerator.Desktop.Presentation.ViewModels;
 
 internal sealed partial class PlannerWorkspaceViewModel
 {
-    private const int DISPLAYED_RECOMMENDATION_COUNT = 24;
-
     private static readonly PresentationScheduleRecommendation EMPTY_RECOMMENDATION = new PresentationScheduleRecommendation(Array.Empty<ScheduleEntry>());
 
     private readonly IScheduleRecommendationProvider mRecommendationProvider;
@@ -34,7 +32,11 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private IReadOnlyList<ScheduleRecommendationViewItem> mRecommendations;
 
+    private IReadOnlyList<PresentationScheduleRecommendation> mPngExportCandidateSchedules;
+
     private PresentationScheduleRecommendation mPersonalSchedulePreview;
+
+    private ScheduleBoardDayRange mRecommendationDayRange;
 
     private int mRecommendationIndex;
 
@@ -100,15 +102,10 @@ internal sealed partial class PlannerWorkspaceViewModel
             }
 
             CourseCatalog catalog = mCatalogProjection.Document.Catalog;
-            List<ScheduleBoardPresentation> candidates = new List<ScheduleBoardPresentation>(mRecommendations.Count);
-            foreach (ScheduleRecommendationViewItem recommendation in mRecommendations)
+            List<ScheduleBoardPresentation> candidates = new List<ScheduleBoardPresentation>(mPngExportCandidateSchedules.Count);
+            foreach (PresentationScheduleRecommendation schedule in mPngExportCandidateSchedules)
             {
-                if (containsSameScheduledOfferings(candidates, recommendation.Schedule))
-                {
-                    continue;
-                }
-
-                candidates.Add(new ScheduleBoardPresentation(recommendation.Schedule, activePlanOrNull.Name, catalog.InstitutionName, catalog.Term));
+                candidates.Add(new ScheduleBoardPresentation(schedule, activePlanOrNull.Name, catalog.InstitutionName, catalog.Term));
             }
 
             return candidates.AsReadOnly();
@@ -119,7 +116,8 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return PngExportCandidates.Count > 1;
+            return mRecommendationExpansionState == ERecommendationExpansionState.Unavailable
+                && mPngExportCandidateSchedules.Count > 1;
         }
     }
 
@@ -132,7 +130,11 @@ internal sealed partial class PlannerWorkspaceViewModel
                 return "0 / 0";
             }
 
-            return (mRecommendationIndex + 1) + " / " + mRecommendations.Count;
+            string additionalRecommendationIndicator =
+                mRecommendationExpansionState == ERecommendationExpansionState.Unavailable
+                    ? string.Empty
+                    : "+";
+            return (mRecommendationIndex + 1) + " / " + mRecommendations.Count + additionalRecommendationIndicator;
         }
     }
 
@@ -355,19 +357,24 @@ internal sealed partial class PlannerWorkspaceViewModel
     private void requestRecommendationRefresh()
     {
         throwIfDisposed();
+        mExhaustiveRecommendationCancellationSourceOrNull?.Cancel();
         mRecommendationCancellationSource.Cancel();
         mRecommendationCancellationSource.Dispose();
         CancellationTokenSource cancellationSource = new CancellationTokenSource();
         mRecommendationCancellationSource = cancellationSource;
 
         mRecommendations = Array.Empty<ScheduleRecommendationViewItem>();
+        mPngExportCandidateSchedules = Array.Empty<PresentationScheduleRecommendation>();
         mPersonalSchedulePreview = EMPTY_RECOMMENDATION;
+        mRecommendationDayRange = ScheduleBoardDayRange.CreateForEntries(EMPTY_RECOMMENDATION.Entries);
         mRecommendationIndex = 0;
         mRecommendationCalculationState = ERecommendationCalculationState.Ready;
         mRecommendationCalculationError = string.Empty;
+        mRecommendationExpansionState = ERecommendationExpansionState.Unavailable;
         mHasUnsatisfiedScheduleConstraints = false;
         notifyRecommendationChanged();
         notifyRecommendationCalculationStateChanged();
+        notifyRecommendationExpansionStateChanged();
         PlanTabItem? activePlanOrNull = mActivePlanOrNull;
         if (activePlanOrNull == null)
         {
@@ -385,25 +392,44 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         try
         {
-            ScheduleRecommendationLimit recommendationLimit = new ScheduleRecommendationLimit(DISPLAYED_RECOMMENDATION_COUNT);
-            ScheduleRecommendationResult result = await Task.Run(
-                delegate
-                {
-                    return mRecommendationProvider.Generate(planSnapshot, recommendationLimit, cancellationSource.Token);
-                },
-                cancellationSource.Token).ConfigureAwait(false);
+            ScheduleRecommendationResult initialResult = await generateRecommendationsAsync(planSnapshot, mRecommendationCalculationPolicy.InitialRecommendationLimit, cancellationSource.Token).ConfigureAwait(false);
 
             if (cancellationSource.IsCancellationRequested)
             {
                 return;
             }
 
+            RecommendationProjectionBatch? projectionBatchOrNull = null;
+            bool hasAdditionalRecommendations = initialResult.Completion == EScheduleRecommendationCompletion.MaximumRecommendationCountReached;
+            if (hasAdditionalRecommendations)
+            {
+                projectionBatchOrNull = await tryProjectAllRecommendationsAutomaticallyAsync(planSnapshot, cancellationSource).ConfigureAwait(false);
+                if (cancellationSource.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                if (projectionBatchOrNull != null)
+                {
+                    hasAdditionalRecommendations = false;
+                }
+            }
+
+            RecommendationProjectionBatch projectionBatch = projectionBatchOrNull
+                ?? projectRecommendationResult(
+                    initialResult,
+                    planSnapshot,
+                    hasAdditionalRecommendations,
+                    cancellationSource.Token);
             await Dispatcher.UIThread.InvokeAsync(
                 delegate
                 {
                     if (canApplyRecommendationResult(cancellationSource))
                     {
-                        applyRecommendationResult(result, planSnapshot);
+                        PlanningPlan restorationPlan = getCurrentPlanForRestoration(planSnapshot);
+                        applyRecommendationProjection(
+                            projectionBatch,
+                            restorationPlan);
                     }
                 });
         }
@@ -424,6 +450,22 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
     }
 
+    private Task<ScheduleRecommendationResult> generateRecommendationsAsync(
+        PlanningPlan plan,
+        ScheduleRecommendationLimit recommendationLimit,
+        CancellationToken cancellationToken)
+    {
+        return Task.Run(
+            delegate
+            {
+                return mRecommendationProvider.Generate(
+                    plan,
+                    recommendationLimit,
+                    cancellationToken);
+            },
+            cancellationToken);
+    }
+
     private bool canApplyRecommendationResult(CancellationTokenSource cancellationSource)
     {
         return mIsDisposed == false
@@ -431,8 +473,24 @@ internal sealed partial class PlannerWorkspaceViewModel
             && ReferenceEquals(mRecommendationCancellationSource, cancellationSource);
     }
 
-    private void applyRecommendationResult(ScheduleRecommendationResult result, PlanningPlan planSnapshot)
+    private PlanningPlan getCurrentPlanForRestoration(PlanningPlan planSnapshot)
     {
+        PlanId? activePlanIdOrNull = mSession.Workspace.ActivePlanIdOrNull;
+        if (activePlanIdOrNull.HasValue && activePlanIdOrNull.Value == planSnapshot.Id)
+        {
+            return mSession.Workspace.GetActivePlan();
+        }
+
+        return planSnapshot;
+    }
+
+    private RecommendationProjectionBatch projectRecommendationResult(
+        ScheduleRecommendationResult result,
+        PlanningPlan planSnapshot,
+        bool hasAdditionalRecommendations,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
         if (result.HasValidationError)
         {
             throw new InvalidOperationException("The active plan stopped matching its verified catalog: " + result.ValidationError + ".");
@@ -443,45 +501,82 @@ internal sealed partial class PlannerWorkspaceViewModel
             throw new InvalidOperationException("Recommendation calculation ended without an active cancellation request.");
         }
 
+        EScheduleRecommendationCompletion expectedCompletion =
+            hasAdditionalRecommendations
+                ? EScheduleRecommendationCompletion.MaximumRecommendationCountReached
+                : EScheduleRecommendationCompletion.Completed;
+        if (result.Completion != expectedCompletion)
+        {
+            throw new InvalidOperationException(
+                "Recommendation calculation completion did not match the presentation state: "
+                + result.Completion
+                + ".");
+        }
+
         List<ScheduleRecommendationViewItem> recommendations = new List<ScheduleRecommendationViewItem>();
         foreach (ApplicationScheduleRecommendation recommendation in result.Recommendations)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             PresentationScheduleRecommendation schedule = ScheduleRecommendationProjector.Project(recommendation, mCatalogProjection);
             ScheduleRecommendationBookmark? bookmarkOrNull = createRecommendationBookmarkOrNull(recommendation, planSnapshot);
             recommendations.Add(new ScheduleRecommendationViewItem(schedule, bookmarkOrNull));
         }
 
         bool hasSelectedScheduledCourses = planSnapshot.CourseChoiceGroups.Count > 0;
-        mHasUnsatisfiedScheduleConstraints = recommendations.Count == 0 && hasSelectedScheduledCourses;
+        bool hasUnsatisfiedScheduleConstraints = recommendations.Count == 0 && hasSelectedScheduledCourses;
+        PresentationScheduleRecommendation personalSchedulePreview = EMPTY_RECOMMENDATION;
         if (recommendations.Count == 0 && planSnapshot.PersonalSchedules.Count > 0)
         {
-            mPersonalSchedulePreview = ScheduleRecommendationProjector.ProjectPersonalSchedules(planSnapshot.PersonalSchedules);
-        }
-        else
-        {
-            mPersonalSchedulePreview = EMPTY_RECOMMENDATION;
+            personalSchedulePreview = ScheduleRecommendationProjector.ProjectPersonalSchedules(planSnapshot.PersonalSchedules);
         }
 
-        mRecommendations = recommendations.AsReadOnly();
-        mRecommendationIndex = findRestoredRecommendationIndex(recommendations, planSnapshot.LastViewedRecommendationOrNull);
+        IReadOnlyList<ScheduleRecommendationViewItem> projectedRecommendations = recommendations.AsReadOnly();
+        return new RecommendationProjectionBatch(
+            projectedRecommendations,
+            createPngExportCandidateSchedules(projectedRecommendations, cancellationToken),
+            personalSchedulePreview,
+            createRecommendationDayRange(projectedRecommendations, cancellationToken),
+            hasUnsatisfiedScheduleConstraints,
+            hasAdditionalRecommendations);
+    }
+
+    private void applyRecommendationProjection(
+        RecommendationProjectionBatch projectionBatch,
+        PlanningPlan restorationPlan)
+    {
+        mRecommendations = projectionBatch.Recommendations;
+        mPngExportCandidateSchedules = projectionBatch.PngExportCandidateSchedules;
+        mPersonalSchedulePreview = projectionBatch.PersonalSchedulePreview;
+        mRecommendationDayRange = projectionBatch.DayRange;
+        mHasUnsatisfiedScheduleConstraints = projectionBatch.HasUnsatisfiedScheduleConstraints;
         mRecommendationCalculationState = ERecommendationCalculationState.Ready;
         mRecommendationCalculationError = string.Empty;
-        synchronizeLastViewedRecommendation(planSnapshot.Id);
+        mRecommendationExpansionState =
+            projectionBatch.HasAdditionalRecommendations
+                ? ERecommendationExpansionState.Available
+                : ERecommendationExpansionState.Unavailable;
+        mRecommendationIndex = findRestoredRecommendationIndex(mRecommendations, restorationPlan.LastViewedRecommendationOrNull);
+        synchronizeLastViewedRecommendation(restorationPlan.Id);
         notifyRecommendationChanged();
         notifyRecommendationCalculationStateChanged();
+        notifyRecommendationExpansionStateChanged();
     }
 
     private void showRecommendationFailure(Exception exception)
     {
         mRecommendations = Array.Empty<ScheduleRecommendationViewItem>();
+        mPngExportCandidateSchedules = Array.Empty<PresentationScheduleRecommendation>();
         mPersonalSchedulePreview = EMPTY_RECOMMENDATION;
+        mRecommendationDayRange = ScheduleBoardDayRange.CreateForEntries(EMPTY_RECOMMENDATION.Entries);
         mRecommendationIndex = 0;
         mRecommendationCalculationState = ERecommendationCalculationState.Failed;
         mRecommendationCalculationError = "과목 선택은 유지됩니다. 다시 계산해 보세요.";
+        mRecommendationExpansionState = ERecommendationExpansionState.Unavailable;
         System.Diagnostics.Debug.WriteLine(exception);
         mHasUnsatisfiedScheduleConstraints = false;
         notifyRecommendationChanged();
         notifyRecommendationCalculationStateChanged();
+        notifyRecommendationExpansionStateChanged();
     }
 
     private ScheduleBoardLayout createScheduleBoardLayout()
@@ -491,14 +586,21 @@ internal sealed partial class PlannerWorkspaceViewModel
             return ScheduleBoardLayout.CreateForEntries(mPersonalSchedulePreview.Entries);
         }
 
+        return ScheduleBoardLayout.CreateForEntries(DisplayedSchedule.Entries, mRecommendationDayRange);
+    }
+
+    private static ScheduleBoardDayRange createRecommendationDayRange(
+        IReadOnlyList<ScheduleRecommendationViewItem> recommendations,
+        CancellationToken cancellationToken)
+    {
         List<ScheduleEntry> layoutEntries = new List<ScheduleEntry>();
-        foreach (ScheduleRecommendationViewItem recommendation in mRecommendations)
+        foreach (ScheduleRecommendationViewItem recommendation in recommendations)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             layoutEntries.AddRange(recommendation.Schedule.Entries);
         }
 
-        ScheduleBoardDayRange sharedDayRange = ScheduleBoardDayRange.CreateForEntries(layoutEntries);
-        return ScheduleBoardLayout.CreateForEntries(DisplayedSchedule.Entries, sharedDayRange);
+        return ScheduleBoardDayRange.CreateForEntries(layoutEntries);
     }
 
     private static ScheduleRecommendationBookmark? createRecommendationBookmarkOrNull(ApplicationScheduleRecommendation recommendation, PlanningPlan plan)
@@ -557,21 +659,6 @@ internal sealed partial class PlannerWorkspaceViewModel
         return false;
     }
 
-    private static bool containsSameScheduledOfferings(IReadOnlyList<ScheduleBoardPresentation> candidates, PresentationScheduleRecommendation recommendation)
-    {
-        HashSet<OfferingId> scheduledOfferingIds = createScheduledOfferingIds(recommendation);
-        foreach (ScheduleBoardPresentation candidate in candidates)
-        {
-            HashSet<OfferingId> candidateOfferingIds = createScheduledOfferingIds(candidate.Schedule);
-            if (candidateOfferingIds.SetEquals(scheduledOfferingIds))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     private static HashSet<OfferingId> createScheduledOfferingIds(PresentationScheduleRecommendation recommendation)
     {
         HashSet<OfferingId> scheduledOfferingIds = new HashSet<OfferingId>();
@@ -585,6 +672,25 @@ internal sealed partial class PlannerWorkspaceViewModel
         }
 
         return scheduledOfferingIds;
+    }
+
+    private static IReadOnlyList<PresentationScheduleRecommendation> createPngExportCandidateSchedules(
+        IReadOnlyList<ScheduleRecommendationViewItem> recommendations,
+        CancellationToken cancellationToken)
+    {
+        List<PresentationScheduleRecommendation> schedules = new List<PresentationScheduleRecommendation>(recommendations.Count);
+        HashSet<HashSet<OfferingId>> scheduledOfferingSets = new HashSet<HashSet<OfferingId>>(HashSet<OfferingId>.CreateSetComparer());
+        foreach (ScheduleRecommendationViewItem recommendation in recommendations)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            HashSet<OfferingId> scheduledOfferingIds = createScheduledOfferingIds(recommendation.Schedule);
+            if (scheduledOfferingSets.Add(scheduledOfferingIds))
+            {
+                schedules.Add(recommendation.Schedule);
+            }
+        }
+
+        return schedules.AsReadOnly();
     }
 
     private void rememberActiveRecommendation()

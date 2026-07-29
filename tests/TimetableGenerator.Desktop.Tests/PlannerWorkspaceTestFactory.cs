@@ -69,6 +69,51 @@ internal static class PlannerWorkspaceTestFactory
         return createWorkspace(document, recommendationProvider, null, new ImmediatePlanningWorkspaceStore());
     }
 
+    public static PlannerWorkspaceViewModel CreateWorkspace(RecommendationCalculationPolicy recommendationCalculationPolicy)
+    {
+        if (recommendationCalculationPolicy == null)
+        {
+            throw new ArgumentNullException(nameof(recommendationCalculationPolicy));
+        }
+
+        CourseCatalogDocument document = CatalogProjectionTestFixture.CreateDocument();
+        IScheduleRecommendationProvider recommendationProvider = new CatalogScheduleRecommendationProvider(document.Catalog);
+        return createWorkspace(
+            document,
+            recommendationProvider,
+            null,
+            new ImmediatePlanningWorkspaceStore(),
+            recommendationCalculationPolicy);
+    }
+
+    public static PlannerWorkspaceViewModel CreateWorkspace(
+        CourseCatalogDocument document,
+        IScheduleRecommendationProvider recommendationProvider,
+        RecommendationCalculationPolicy recommendationCalculationPolicy)
+    {
+        if (document == null)
+        {
+            throw new ArgumentNullException(nameof(document));
+        }
+
+        if (recommendationProvider == null)
+        {
+            throw new ArgumentNullException(nameof(recommendationProvider));
+        }
+
+        if (recommendationCalculationPolicy == null)
+        {
+            throw new ArgumentNullException(nameof(recommendationCalculationPolicy));
+        }
+
+        return createWorkspace(
+            document,
+            recommendationProvider,
+            null,
+            new ImmediatePlanningWorkspaceStore(),
+            recommendationCalculationPolicy);
+    }
+
     public static PlannerWorkspaceViewModel CreateWorkspace(CourseCatalogDocument document)
     {
         if (document == null)
@@ -180,15 +225,55 @@ internal static class PlannerWorkspaceTestFactory
 
     private static PlannerWorkspaceViewModel createWorkspace(CourseCatalogDocument document, IScheduleRecommendationProvider recommendationProvider, ScheduleRecommendationBookmark? recommendationBookmarkOrNull, IPlanningWorkspaceStore planningWorkspaceStore)
     {
+        return createWorkspace(
+            document,
+            recommendationProvider,
+            recommendationBookmarkOrNull,
+            planningWorkspaceStore,
+            RecommendationCalculationPolicy.Default);
+    }
+
+    private static PlannerWorkspaceViewModel createWorkspace(
+        CourseCatalogDocument document,
+        IScheduleRecommendationProvider recommendationProvider,
+        ScheduleRecommendationBookmark? recommendationBookmarkOrNull,
+        IPlanningWorkspaceStore planningWorkspaceStore,
+        RecommendationCalculationPolicy recommendationCalculationPolicy)
+    {
         PlanningWorkspace workspace = createPlanningWorkspace(document, recommendationBookmarkOrNull);
-        return createWorkspaceFromSnapshot(document, recommendationProvider, workspace, planningWorkspaceStore);
+        return createWorkspaceFromSnapshot(
+            document,
+            recommendationProvider,
+            workspace,
+            planningWorkspaceStore,
+            recommendationCalculationPolicy);
     }
 
     private static PlannerWorkspaceViewModel createWorkspaceFromSnapshot(CourseCatalogDocument document, IScheduleRecommendationProvider recommendationProvider, PlanningWorkspace workspace, IPlanningWorkspaceStore planningWorkspaceStore)
     {
+        return createWorkspaceFromSnapshot(
+            document,
+            recommendationProvider,
+            workspace,
+            planningWorkspaceStore,
+            RecommendationCalculationPolicy.Default);
+    }
+
+    private static PlannerWorkspaceViewModel createWorkspaceFromSnapshot(
+        CourseCatalogDocument document,
+        IScheduleRecommendationProvider recommendationProvider,
+        PlanningWorkspace workspace,
+        IPlanningWorkspaceStore planningWorkspaceStore,
+        RecommendationCalculationPolicy recommendationCalculationPolicy)
+    {
         PlanningWorkspaceSession session = new PlanningWorkspaceSession(document.Catalog, workspace);
         PlanningWorkspaceAutosaveQueue autosaveQueue = new PlanningWorkspaceAutosaveQueue(planningWorkspaceStore, PlanningWorkspaceConcurrencyToken.MissingWorkspace);
-        return new PlannerWorkspaceViewModel(CourseCatalogProjector.Project(document), session, autosaveQueue, recommendationProvider);
+        return new PlannerWorkspaceViewModel(
+            CourseCatalogProjector.Project(document),
+            session,
+            autosaveQueue,
+            recommendationProvider,
+            recommendationCalculationPolicy);
     }
 
     private static PlanningWorkspace createPlanningWorkspace(CourseCatalogDocument document, ScheduleRecommendationBookmark? recommendationBookmarkOrNull)

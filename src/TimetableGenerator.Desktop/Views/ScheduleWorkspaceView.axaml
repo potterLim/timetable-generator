@@ -308,42 +308,100 @@
         x:Name="ScheduleContentSurface"
         Grid.Row="2"
         RowDefinitions="Auto,*">
-      <Border
-          x:Name="UnsatisfiedPersonalScheduleBanner"
-          Grid.Row="0"
-          Margin="0,0,0,12"
-          Padding="14,11"
-          IsVisible="{Binding HasUnsatisfiedPersonalSchedulePreview}"
-          Background="{DynamicResource WarningSubtleBrush}"
-          CornerRadius="7"
-          AutomationProperties.LiveSetting="Polite">
-        <Grid ColumnDefinitions="Auto,12,*,16,Auto">
-          <icons:FluentIcon
-              Grid.Column="0"
-              Width="20"
-              Height="20"
-              VerticalAlignment="Center"
-              Icon="Warning"
-              IconVariant="Regular"
-              Foreground="{DynamicResource WarningBrush}" />
-          <StackPanel Grid.Column="2" Spacing="2" VerticalAlignment="Center">
-            <TextBlock
-                FontWeight="SemiBold"
-                Text="과목은 배치하지 못했습니다" />
-            <TextBlock
-                Classes="caption"
-                Text="아래에는 개인 일정만 표시됩니다. 겹치는 개인 일정이나 분반 선택을 조정해 보세요."
-                TextWrapping="Wrap" />
-          </StackPanel>
-          <Button
-              Grid.Column="4"
-              Classes="outline"
-              VerticalAlignment="Center"
-              Command="{Binding OpenInspectorPaneCommand}"
-              Content="선택 과목 확인"
-              AutomationProperties.Name="충돌한 과목 선택을 시간표 편집에서 확인" />
-        </Grid>
-      </Border>
+      <StackPanel Grid.Row="0">
+        <Border
+            x:Name="UnsatisfiedPersonalScheduleBanner"
+            Margin="0,0,0,12"
+            Padding="14,11"
+            IsVisible="{Binding HasUnsatisfiedPersonalSchedulePreview}"
+            Background="{DynamicResource WarningSubtleBrush}"
+            CornerRadius="7"
+            AutomationProperties.LiveSetting="Polite">
+          <Grid ColumnDefinitions="Auto,12,*,16,Auto">
+            <icons:FluentIcon
+                Grid.Column="0"
+                Width="20"
+                Height="20"
+                VerticalAlignment="Center"
+                Icon="Warning"
+                IconVariant="Regular"
+                Foreground="{DynamicResource WarningBrush}" />
+            <StackPanel Grid.Column="2" Spacing="2" VerticalAlignment="Center">
+              <TextBlock
+                  FontWeight="SemiBold"
+                  Text="과목은 배치하지 못했습니다" />
+              <TextBlock
+                  Classes="caption"
+                  Text="아래에는 개인 일정만 표시됩니다. 겹치는 개인 일정이나 분반 선택을 조정해 보세요."
+                  TextWrapping="Wrap" />
+            </StackPanel>
+            <Button
+                Grid.Column="4"
+                Classes="outline"
+                VerticalAlignment="Center"
+                Command="{Binding OpenInspectorPaneCommand}"
+                Content="선택 과목 확인"
+                AutomationProperties.Name="충돌한 과목 선택을 시간표 편집에서 확인" />
+          </Grid>
+        </Border>
+
+        <Border
+            x:Name="AdditionalRecommendationsBanner"
+            Margin="0,0,0,12"
+            Padding="14,10"
+            IsVisible="{Binding HasAdditionalRecommendations}"
+            Background="{DynamicResource AccentTintBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="7"
+            AutomationProperties.LiveSetting="Polite">
+          <Grid ColumnDefinitions="Auto,12,*,16,Auto">
+            <icons:FluentIcon
+                Grid.Column="0"
+                Width="20"
+                Height="20"
+                VerticalAlignment="Center"
+                Icon="Info"
+                IconVariant="Regular"
+                Foreground="{DynamicResource AccentBrush}" />
+            <StackPanel Grid.Column="2" Spacing="2" VerticalAlignment="Center">
+              <TextBlock
+                  FontWeight="SemiBold"
+                  Text="{Binding AdditionalRecommendationTitle}" />
+              <TextBlock
+                  Classes="caption"
+                  Text="{Binding AdditionalRecommendationMessage}"
+                  TextWrapping="Wrap" />
+            </StackPanel>
+            <Button
+                x:Name="CalculateAllRecommendationsButton"
+                Grid.Column="4"
+                Classes="outline"
+                VerticalAlignment="Center"
+                IsVisible="{Binding CanCalculateAllRecommendations}"
+                Command="{Binding CalculateAllRecommendationsCommand}"
+                Content="{Binding CalculateAllRecommendationsActionText}"
+                AutomationProperties.Name="{Binding CalculateAllRecommendationsActionText}" />
+            <StackPanel
+                Grid.Column="4"
+                Orientation="Horizontal"
+                Spacing="10"
+                VerticalAlignment="Center"
+                IsVisible="{Binding IsCalculatingAllRecommendations}">
+              <ProgressBar
+                  Width="56"
+                  Height="3"
+                  IsIndeterminate="{Binding IsCalculatingAllRecommendations}" />
+              <Button
+                  x:Name="CancelAllRecommendationsButton"
+                  Classes="outline"
+                  Command="{Binding CancelAllRecommendationsCommand}"
+                  Content="계산 중지"
+                  AutomationProperties.Name="모든 가능한 시간표 계산 중지" />
+            </StackPanel>
+          </Grid>
+        </Border>
+      </StackPanel>
 
       <Grid
           x:Name="ScheduleBoardContainer"

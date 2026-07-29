@@ -31,7 +31,7 @@ public sealed class IdleProgressIndicatorTests
             Dispatcher.UIThread.RunJobs();
 
             ProgressBar[] progressIndicators = window.GetVisualDescendants().OfType<ProgressBar>().ToArray();
-            Assert.Equal(5, progressIndicators.Length);
+            Assert.Equal(6, progressIndicators.Length);
             Assert.All(
                 progressIndicators,
                 progressIndicator => Assert.False(progressIndicator.IsIndeterminate));
