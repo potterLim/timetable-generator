@@ -9,7 +9,7 @@ permalink: /terms/
 
 # Timetable Generator 이용약관
 
-<p class="policy-meta">시행일: 2026년 7월 21일 · 최종 수정일: 2026년 7월 29일</p>
+<p class="policy-meta">시행일: 2026년 7월 21일 · 최종 수정일: 2026년 7월 30일</p>
 
 이 약관은 Timetable Generator를 이용할 때 적용됩니다.  
 앱을 사용하면 아래 내용을 확인하고 동의한 것으로 봅니다.
@@ -43,7 +43,8 @@ Google Calendar와 Apple Calendar에 내보낸 데이터는 앱의 로컬 데이
 
 데이터 처리 범위, Google Calendar 권한, 로컬 보관, 삭제와 권한 철회 방법은 [개인정보처리방침]({{ '/privacy/' | relative_url }})에 따릅니다.
 
-사용자는 계정·인증 정보나 민감한 개인 일정이 포함된 파일과 화면 캡처를 공개 이슈에 게시해서는 안 됩니다.  
+문의 메일에 파일이나 화면 캡처를 첨부할 때는 계정·인증 정보와 민감한 개인 일정 등 문제 확인에 필요하지 않은 정보를 제거해야 합니다.
+
 보안 문제는 [GitHub 비공개 보안 제보](https://github.com/potterLim/timetable-generator/security/advisories/new)를 이용해야 합니다.
 
 ## 5. 사용 제한
@@ -78,7 +79,8 @@ Timetable Generator의 이름·로고·화면을 사용해 다른 제품이나 �
 
 ## 9. 문의
 
-일반적인 설치·사용 문제와 기능 제안은 [GitHub Issues](https://github.com/potterLim/timetable-generator/issues)를 이용해 주세요.  
+일반적인 설치·사용 문제와 기능 제안은 [{{ site.support_email }}]({{ site.support_mailto }})으로 문의해 주세요.
+
 개인정보 또는 보안 문제는 [GitHub 비공개 보안 제보](https://github.com/potterLim/timetable-generator/security/advisories/new)를 사용해 주세요.
 
 </article>

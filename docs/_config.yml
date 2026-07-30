@@ -4,6 +4,8 @@ lang: ko-KR
 url: https://potterlim.github.io
 baseurl: /timetable-generator
 permalink: pretty
+support_email: potterLim0808@gmail.com
+support_mailto: "mailto:potterLim0808@gmail.com?subject=Timetable%20Generator%20%EB%AC%B8%EC%9D%98"
 exclude:
   - distribution.md
   - export-icon-assets.md

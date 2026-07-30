@@ -88,8 +88,11 @@ permalink: /
 <section class="product-section support-panel" aria-labelledby="support-title">
   <div class="support-panel__copy">
     <p class="eyebrow">SUPPORT</p>
-    <h2 id="support-title">사용 방법과 지원</h2>
-    <p>사용 방법을 확인하거나 해결되지 않은 문제를 알려 주세요.</p>
+    <h2 id="support-title">사용 방법과 문의</h2>
+    <p>
+      사용 방법을 확인하거나 해결되지 않은 문제를 이메일로 알려 주세요.
+      운영체제와 문제 상황, 오류 내용, 가능하면 스크린샷을 함께 보내면 확인에 도움이 됩니다.
+    </p>
   </div>
   <div class="support-panel__actions">
     <a class="support-link" href="{{ '/guide/' | relative_url }}">
@@ -99,10 +102,10 @@ permalink: /
       </span>
       <span class="support-link__arrow" aria-hidden="true">→</span>
     </a>
-    <a class="support-link" href="https://github.com/potterLim/timetable-generator/issues">
+    <a class="support-link" href="{{ site.support_mailto }}">
       <span>
-        <strong>문제 제보</strong>
-        <small>오류나 사용 문제를 GitHub Issues에 남기기</small>
+        <strong>이메일로 문의하기</strong>
+        <small>{{ site.support_email }}로 자세한 상황 보내기</small>
       </span>
       <span class="support-link__arrow" aria-hidden="true">→</span>
     </a>

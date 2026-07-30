@@ -9,10 +9,10 @@ permalink: /privacy/
 
 # Timetable Generator 개인정보처리방침
 
-<p class="policy-meta">시행일: 2026년 7월 21일 · 최종 수정일: 2026년 7월 29일</p>
+<p class="policy-meta">시행일: 2026년 7월 21일 · 최종 수정일: 2026년 7월 30일</p>
 
 Timetable Generator는 시간표를 구성하고 사용자가 요청한 내보내기 작업을 수행하는 데스크톱 앱입니다.  
-개발자는 사용자의 계정 정보·시간표·개인 일정을 수집하지 않으며 개발자 서버에도 저장하지 않습니다.  
+앱은 사용자의 계정 정보·시간표·개인 일정을 개발자에게 전송하지 않으며 개발자 서버에도 저장하지 않습니다.
 자체 계정·사용 분석·클라우드 동기화 서비스도 운영하지 않습니다.
 
 <div class="policy-callout" markdown="1">
@@ -123,18 +123,25 @@ Timetable Generator 자체는 이 과정에서 외부 서버에 접속하지 않
 앱은 별도의 제품 로그 파일을 만들지 않지만 운영체제가 충돌 진단 정보를 남길 수 있습니다.  
 문제를 제보하기 전 로컬 경로·계정 이름·시간표 내용 등 불필요한 정보를 제거해야 합니다.
 
-## 11. 외부 서비스
+## 11. 이메일 문의
+
+이메일로 문의하면 발신 이메일 주소와 사용자가 직접 작성한 문의 내용·첨부파일이 개발자에게 전달됩니다.
+이 정보는 문의 내용을 확인하고 답변하는 용도로만 사용하며, 삭제를 원하면 같은 이메일 주소로 요청할 수 있습니다.
+문의 메일은 발신자와 수신자가 사용하는 이메일 서비스의 시스템을 통해 전달·보관될 수 있습니다.
+
+## 12. 외부 서비스
 
 Google Calendar와 Apple Calendar에는 각 서비스 제공자의 정책이 적용됩니다.
 
 - [Google 개인정보처리방침](https://policies.google.com/privacy)
 - [Apple 개인정보 처리방침](https://www.apple.com/kr/legal/privacy/)
 
-## 12. 방침 변경과 문의
+## 13. 방침 변경과 문의
 
 기능 또는 데이터 처리 방식이 바뀌면 이 페이지의 최종 수정일과 내용을 갱신하고 릴리스 안내에 반영합니다.
 
-일반 문의는 [GitHub Issues](https://github.com/potterLim/timetable-generator/issues)를 이용해 주세요.  
+일반 문의는 [{{ site.support_email }}]({{ site.support_mailto }})으로 보내 주세요.
+
 개인정보 또는 보안 문제는 공개 이슈에 상세 내용을 올리지 말고 [GitHub 비공개 보안 제보](https://github.com/potterLim/timetable-generator/security/advisories/new)를 사용해 주세요.
 
 </article>

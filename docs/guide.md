@@ -238,6 +238,16 @@ Google Calendar 또는 Apple Calendar로 내보낼 때만 사용자가 승인한
 | Google Calendar 내보내기가 완료되지 않음 | 브라우저에서 로그인과 권한 승인을 완료하세요. 시간이 초과되면 다시 시도하세요. |
 | Apple Calendar 내보내기가 거부됨 | macOS 시스템 설정에서 Timetable Generator의 캘린더 자동화 권한을 허용한 뒤 다시 시도하세요. |
 
-문제가 계속되면 [GitHub Issues](https://github.com/potterLim/timetable-generator/issues)에 사용 중인 운영체제와 화면에 표시된 안내를 함께 남겨 주세요.
+문제가 계속되면 [{{ site.support_email }}]({{ site.support_mailto }})으로 문의해 주세요.
+
+정확한 확인을 위해 다음 내용을 가능한 한 함께 보내 주세요.
+
+- 사용 중인 운영체제와 버전
+- Timetable Generator 버전
+- 문제가 발생한 구체적인 상황과 재현 과정
+- 화면에 표시된 오류 메시지
+- 가능하다면 문제 화면의 스크린샷
+
+스크린샷을 첨부할 때는 이름, 시간표, 개인 일정 등 공개하고 싶지 않은 정보가 포함되지 않았는지 확인해 주세요.
 
 </article>
