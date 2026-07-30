@@ -105,7 +105,7 @@ permalink: /
     <a class="support-link" href="{{ site.support_mailto }}">
       <span>
         <strong>이메일로 문의하기</strong>
-        <small>{{ site.support_email }}로 자세한 상황 보내기</small>
+        <small>{{ site.support_email }}에 문의 내용 보내기</small>
       </span>
       <span class="support-link__arrow" aria-hidden="true">→</span>
     </a>
