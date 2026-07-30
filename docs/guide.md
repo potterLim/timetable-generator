@@ -46,6 +46,23 @@ Timetable Generator는 과목과 분반을 선택하면 겹치지 않는 시간�
 창 크기에 따라 좌우 영역은 접힐 수 있습니다.  
 시간표 위쪽의 버튼으로 언제든 다시 열 수 있습니다.
 
+<figure class="product-shot">
+  <a
+    class="product-shot__link"
+    href="{{ '/assets/screenshots/timetable-editor.png' | relative_url }}"
+    aria-label="시간표 편집 화면을 원본 크기로 보기">
+    <img
+      class="product-shot__image"
+      src="{{ '/assets/screenshots/timetable-editor.png' | relative_url }}"
+      alt="왼쪽 과목 찾기, 가운데 주간 시간표, 오른쪽 시간표 편집이 펼쳐진 화면"
+      width="1800"
+      height="1036"
+      loading="lazy"
+      decoding="async">
+  </a>
+  <figcaption class="product-shot__caption">시간표 편집을 열면 선택한 과목과 개인 일정을 한 화면에서 확인하고 수정할 수 있습니다.</figcaption>
+</figure>
+
 ## 과목 찾기
 
 1. **과목 찾기**에서 과목명, 과목 코드 또는 교수 이름을 검색합니다.
@@ -64,6 +81,23 @@ Timetable Generator는 과목과 분반을 선택하면 겹치지 않는 시간�
 
 선호 또는 가능 분반을 하나 이상 남겨야 합니다.  
 저장한 설정은 **시간표 편집**에서 언제든 바꿀 수 있습니다.
+
+<figure class="product-shot">
+  <a
+    class="product-shot__link"
+    href="{{ '/assets/screenshots/course-selection.png' | relative_url }}"
+    aria-label="수강 선택 설정 화면을 원본 크기로 보기">
+    <img
+      class="product-shot__image"
+      src="{{ '/assets/screenshots/course-selection.png' | relative_url }}"
+      alt="Calculus 1 분반을 선호, 가능, 제외로 설정하는 수강 선택 설정 창"
+      width="1800"
+      height="1036"
+      loading="lazy"
+      decoding="async">
+  </a>
+  <figcaption class="product-shot__caption">분반별로 선호·가능·제외를 정하고, 필요하면 대안 과목을 하나의 수강 선택으로 묶을 수 있습니다.</figcaption>
+</figure>
 
 ### 여러 과목 중 하나만 선택하기
 
@@ -133,6 +167,23 @@ Timetable Generator는 과목과 분반을 선택하면 겹치지 않는 시간�
 ## 내보내기
 
 시간표 위쪽의 **내보내기**에서 시간표를 PNG로 저장하거나 캘린더로 내보낼 수 있습니다.
+
+<figure class="product-shot">
+  <a
+    class="product-shot__link"
+    href="{{ '/assets/screenshots/export-menu-macos.png' | relative_url }}"
+    aria-label="macOS 내보내기 메뉴를 원본 크기로 보기">
+    <img
+      class="product-shot__image"
+      src="{{ '/assets/screenshots/export-menu-macos.png' | relative_url }}"
+      alt="PNG 저장과 캘린더 내보내기 항목이 열린 macOS 내보내기 메뉴"
+      width="1400"
+      height="560"
+      loading="lazy"
+      decoding="async">
+  </a>
+  <figcaption class="product-shot__caption">macOS의 내보내기 메뉴에서는 PNG 저장과 Google Calendar·Apple Calendar 내보내기를 선택할 수 있습니다.</figcaption>
+</figure>
 
 ### PNG 이미지
 

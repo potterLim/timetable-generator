@@ -18,6 +18,22 @@ permalink: /
   </div>
 </section>
 
+<figure class="product-shot product-shot--hero">
+  <a
+    class="product-shot__link"
+    href="{{ '/assets/screenshots/timetable-overview.png' | relative_url }}"
+    aria-label="Timetable Generator 기본 화면을 원본 크기로 보기">
+    <img
+      class="product-shot__image"
+      src="{{ '/assets/screenshots/timetable-overview.png' | relative_url }}"
+      alt="과목 검색 결과와 주간 시간표가 함께 표시된 Timetable Generator 기본 화면"
+      width="1800"
+      height="1036"
+      decoding="async"
+      fetchpriority="high">
+  </a>
+</figure>
+
 <section class="product-section" aria-labelledby="start-title">
   <div class="section-heading">
     <p class="eyebrow">WORKFLOW</p>
