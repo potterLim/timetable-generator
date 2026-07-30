@@ -1,14 +1,3 @@
-function Assert-NonEmptyFile {
-    param(
-        [Parameter(Mandatory)]
-        [string] $Path
-    )
-
-    $item = Get-Item -LiteralPath $Path -ErrorAction SilentlyContinue
-    if ($null -eq $item -or $item.PSIsContainer -or $item.Length -eq 0) {
-        throw "필수 Release 파일이 없거나 비어 있습니다: $Path"
-    }
-}
 function Assert-NoDebugSymbols {
     param(
         [Parameter(Mandatory)]

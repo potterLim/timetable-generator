@@ -35,7 +35,7 @@ function Assert-PathHasNoReparsePoint {
         if (Test-Path -LiteralPath $currentPath) {
             $item = Get-Item -LiteralPath $currentPath -Force
             if (($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
-                throw "게시 경로에는 symbolic link 또는 reparse point를 사용할 수 없습니다: $currentPath"
+                throw "산출물 경로에는 symbolic link 또는 reparse point를 사용할 수 없습니다: $currentPath"
             }
         }
 
@@ -57,7 +57,7 @@ function Assert-TreeHasNoReparsePoint {
     Assert-PathHasNoReparsePoint -Path $Path
     foreach ($item in @(Get-ChildItem -LiteralPath $Path -Force -Recurse)) {
         if (($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
-            throw "게시 원본에는 symbolic link 또는 reparse point를 포함할 수 없습니다: $($item.FullName)"
+            throw "산출물 원본에는 symbolic link 또는 reparse point를 포함할 수 없습니다: $($item.FullName)"
         }
     }
 }
@@ -303,7 +303,7 @@ function Assert-NonEmptyFile {
 
     $file = Get-Item -LiteralPath $Path -ErrorAction SilentlyContinue
     if ($null -eq $file -or $file.PSIsContainer -or $file.Length -eq 0) {
-        throw "필수 게시 파일이 없거나 비어 있습니다: $Path"
+        throw "필수 산출물 파일이 없거나 비어 있습니다: $Path"
     }
 }
 

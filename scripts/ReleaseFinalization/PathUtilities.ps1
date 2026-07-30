@@ -1,88 +1,3 @@
-function Get-PathComparison {
-    if ($IsWindows) {
-        return [System.StringComparison]::OrdinalIgnoreCase
-    }
-
-    return [System.StringComparison]::Ordinal
-}
-
-function Get-NormalizedFullPath {
-    param(
-        [Parameter(Mandatory)]
-        [string] $Path
-    )
-
-    $fullPath = [System.IO.Path]::GetFullPath($Path)
-    $rootPath = [System.IO.Path]::GetPathRoot($fullPath)
-    if ($fullPath.Equals($rootPath, (Get-PathComparison))) {
-        return $fullPath
-    }
-
-    return $fullPath.TrimEnd(
-        [System.IO.Path]::DirectorySeparatorChar,
-        [System.IO.Path]::AltDirectorySeparatorChar)
-}
-
-function Assert-PathHasNoReparsePoint {
-    param(
-        [Parameter(Mandatory)]
-        [string] $Path
-    )
-
-    $currentPath = Get-NormalizedFullPath -Path $Path
-    while (-not [string]::IsNullOrWhiteSpace($currentPath)) {
-        if (Test-Path -LiteralPath $currentPath) {
-            $item = Get-Item -LiteralPath $currentPath -Force
-            if (($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
-                throw "Release 경로에는 symbolic link 또는 reparse point를 사용할 수 없습니다: $currentPath"
-            }
-        }
-
-        $parent = [System.IO.DirectoryInfo]::new($currentPath).Parent
-        if ($null -eq $parent) {
-            break
-        }
-
-        $currentPath = $parent.FullName
-    }
-}
-
-function Assert-TreeHasNoReparsePoint {
-    param(
-        [Parameter(Mandatory)]
-        [string] $Path
-    )
-
-    Assert-PathHasNoReparsePoint -Path $Path
-    foreach ($item in @(Get-ChildItem -LiteralPath $Path -Force -Recurse)) {
-        if (($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
-            throw "Release 원본에는 symbolic link 또는 reparse point를 포함할 수 없습니다: $($item.FullName)"
-        }
-    }
-}
-
-function Test-PathIsSameOrDescendant {
-    param(
-        [Parameter(Mandatory)]
-        [string] $Path,
-
-        [Parameter(Mandatory)]
-        [string] $ParentPath
-    )
-
-    $relativePath = [System.IO.Path]::GetRelativePath(
-        (Get-NormalizedFullPath -Path $ParentPath),
-        (Get-NormalizedFullPath -Path $Path))
-    if ([System.IO.Path]::IsPathRooted($relativePath)) {
-        return $false
-    }
-
-    return $relativePath -ne ".." -and
-        -not $relativePath.StartsWith(
-            "..$([System.IO.Path]::DirectorySeparatorChar)",
-            (Get-PathComparison))
-}
-
 function Resolve-PathFromRepository {
     param(
         [Parameter(Mandatory)]
@@ -204,14 +119,12 @@ function Get-AllowedReleaseOutputFileNames {
     if ($AllowUnsigned) {
         return @(
             "TimetableGenerator-$Version-osx-arm64-unsigned-smoke.zip",
-            "TimetableGenerator-$Version-osx-x64-unsigned-smoke.zip",
             "TimetableGenerator-$Version-win-x64-unsigned-smoke.zip"
         )
     }
 
     return @(
         "TimetableGenerator-$Version-osx-arm64.zip",
-        "TimetableGenerator-$Version-osx-x64.zip",
         "TimetableGenerator-$Version-win-x64.zip",
         "checksums.sha256"
     )

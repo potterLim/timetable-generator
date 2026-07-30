@@ -58,7 +58,7 @@ function Publish-WindowsTarget {
 function Publish-MacOSTarget {
     param(
         [Parameter(Mandatory)]
-        [ValidateSet("osx-x64", "osx-arm64")]
+        [ValidateSet("osx-arm64")]
         [string] $RuntimeIdentifier,
 
         [Parameter(Mandatory)]

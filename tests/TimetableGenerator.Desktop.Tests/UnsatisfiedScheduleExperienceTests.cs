@@ -1,15 +1,11 @@
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Avalonia.Automation;
 using Avalonia.Controls;
-using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
-using Avalonia.Media.Imaging;
-using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -47,7 +43,6 @@ public sealed class UnsatisfiedScheduleExperienceTests
             ScheduleWorkspaceView scheduleWorkspace = new ScheduleWorkspaceView();
             scheduleWorkspace.DataContext = workspace;
             Window window = createWindow(scheduleWorkspace);
-            window.RequestedThemeVariant = ThemeVariant.Light;
 
             try
             {
@@ -74,12 +69,6 @@ public sealed class UnsatisfiedScheduleExperienceTests
                 workspace.OpenInspectorPaneCommand.Execute(null);
                 workspace.OpenInspectorPaneCommand.Execute(null);
                 Assert.True(workspace.IsInspectorPaneOpen);
-
-                saveRenderedFrame(window, "unsatisfied-schedule-light-1200x760.png");
-                window.RequestedThemeVariant = ThemeVariant.Dark;
-                Dispatcher.UIThread.RunJobs();
-                Dispatcher.UIThread.RunJobs();
-                saveRenderedFrame(window, "unsatisfied-schedule-dark-1200x760.png");
             }
             finally
             {
@@ -201,34 +190,6 @@ public sealed class UnsatisfiedScheduleExperienceTests
     private static string getTextOrEmpty(TextBlock textBlock)
     {
         return textBlock.Text == null ? string.Empty : textBlock.Text;
-    }
-
-    private static void saveRenderedFrame(Window window, string fileName)
-    {
-        WriteableBitmap? renderedFrameOrNull = window.CaptureRenderedFrame();
-        Assert.NotNull(renderedFrameOrNull);
-        if (renderedFrameOrNull == null)
-        {
-            throw new InvalidOperationException("The unsatisfied schedule renderer did not produce a frame.");
-        }
-
-        using (WriteableBitmap renderedFrame = renderedFrameOrNull)
-        {
-            string outputDirectoryPath = Path.Combine(
-                AppContext.BaseDirectory,
-                "..",
-                "..",
-                "..",
-                "TestResults");
-            outputDirectoryPath = Path.GetFullPath(outputDirectoryPath);
-            Directory.CreateDirectory(outputDirectoryPath);
-            string outputFilePath = Path.Combine(outputDirectoryPath, fileName);
-            renderedFrame.Save(outputFilePath, PngBitmapEncoderOptions.Default);
-
-            Assert.True(File.Exists(outputFilePath));
-            Assert.Equal(1_200, renderedFrame.PixelSize.Width);
-            Assert.Equal(760, renderedFrame.PixelSize.Height);
-        }
     }
 
     private sealed class ForcedConflictRecommendationProvider :

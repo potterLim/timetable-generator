@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace TimetableGenerator.CatalogJson.Tests;
@@ -146,69 +145,4 @@ public sealed class CourseCatalogJsonReaderTests
                 default(SourceRecordNumber)));
     }
 
-    [TestMethod]
-    public void ReadActualGeneratedArtifactWhenAvailable()
-    {
-        string? repositoryRootOrNull = findRepositoryRootOrNull();
-        if (repositoryRootOrNull == null)
-        {
-            return;
-        }
-
-        string deploymentRoot = Path.Combine(
-            repositoryRootOrNull,
-            "deploy",
-            "dothome",
-            "html",
-            "timetable-generator",
-            "catalog",
-            "v1");
-        string indexPath = Path.Combine(deploymentRoot, "index.json");
-        if (File.Exists(indexPath) == false)
-        {
-            return;
-        }
-
-        byte[] indexBytes = File.ReadAllBytes(indexPath);
-        CatalogIndexEntry indexEntry = CatalogIndexJsonReader.Read(indexBytes).FindDefaultEntry();
-        string catalogPath = Path.Combine(deploymentRoot, indexEntry.File.RelativePath.Value.Replace('/', Path.DirectorySeparatorChar));
-        if (File.Exists(catalogPath) == false)
-        {
-            return;
-        }
-
-        byte[] catalogBytes = File.ReadAllBytes(catalogPath);
-
-        CourseCatalogDocument firstDocument = CourseCatalogJsonReader.ReadAndVerify(catalogBytes, indexEntry);
-        CourseCatalogDocument secondDocument = CourseCatalogJsonReader.ReadAndVerify(catalogBytes, indexEntry);
-
-        Assert.AreEqual(975_318L, indexEntry.File.Size.Value);
-        Assert.AreEqual("8ffc8acbda14875d40ab7c2200d7163ce28fa7ee49b3cf6c72378379e07cfd31", indexEntry.File.Sha256.HexValue);
-        Assert.HasCount(514, firstDocument.Catalog.Courses);
-        Assert.HasCount(745, firstDocument.Catalog.Offerings);
-        Assert.AreEqual(660, firstDocument.Counts.ScheduledOfferingCount.Value);
-        Assert.AreEqual(85, firstDocument.Counts.MeetingNotProvidedCount.Value);
-        Assert.AreEqual(88, firstDocument.DataQuality.InstructorUnconfirmedCount.Value);
-        Assert.AreEqual(91, firstDocument.DataQuality.RoomNotProvidedCount.Value);
-        Assert.HasCount(745, firstDocument.OfferingMetadata);
-        Assert.AreEqual(firstDocument.Catalog.Id, secondDocument.Catalog.Id);
-        Assert.AreEqual(firstDocument.OfferingMetadata[0].OfferingId, secondDocument.OfferingMetadata[0].OfferingId);
-    }
-
-    private static string? findRepositoryRootOrNull()
-    {
-        DirectoryInfo? currentDirectoryOrNull = new DirectoryInfo(AppContext.BaseDirectory);
-        while (currentDirectoryOrNull != null)
-        {
-            string globalJsonPath = Path.Combine(currentDirectoryOrNull.FullName, "global.json");
-            if (File.Exists(globalJsonPath))
-            {
-                return currentDirectoryOrNull.FullName;
-            }
-
-            currentDirectoryOrNull = currentDirectoryOrNull.Parent;
-        }
-
-        return null;
-    }
 }

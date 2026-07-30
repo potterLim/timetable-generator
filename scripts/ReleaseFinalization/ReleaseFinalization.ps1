@@ -12,7 +12,7 @@ function Invoke-TimetableGeneratorReleaseFinalization {
         [Parameter(Mandatory)]
         [string] $RepositoryRoot,
 
-        [ValidateSet("osx-x64", "osx-arm64")]
+        [ValidateSet("osx-arm64")]
         [string] $Runtime,
 
         [string] $BundleIdentifier = "io.github.potterlim.timetable",
@@ -44,7 +44,7 @@ function Invoke-TimetableGeneratorReleaseFinalization {
         }
         "MacOS" {
             if ([string]::IsNullOrWhiteSpace($Runtime)) {
-                throw "MacOS 단계에는 -Runtime osx-x64 또는 osx-arm64가 필요합니다."
+                throw "MacOS 단계에는 -Runtime osx-arm64가 필요합니다."
             }
 
             if ([string]::IsNullOrWhiteSpace($BundleIdentifier)) {

@@ -112,45 +112,6 @@
       "timetablegenerator.domain": {
         "type": "Project"
       }
-    },
-    "net10.0/osx-arm64": {
-      "Microsoft.Testing.Extensions.CodeCoverage": {
-        "type": "Direct",
-        "requested": "[18.9.0, )",
-        "resolved": "18.9.0",
-        "contentHash": "Odp8djWEUFTJoRV02y0zJaAwAHF31CtNaDgnKKM+8dBHbbaH7Ee0oo9gweLpbzjI7UrtMUzH6xLJSrICZw+Nwg==",
-        "dependencies": {
-          "Microsoft.DiaSymReader": "2.2.9",
-          "Microsoft.Extensions.DependencyModel": "10.0.8",
-          "Microsoft.Testing.Platform": "2.3.0"
-        }
-      }
-    },
-    "net10.0/osx-x64": {
-      "Microsoft.Testing.Extensions.CodeCoverage": {
-        "type": "Direct",
-        "requested": "[18.9.0, )",
-        "resolved": "18.9.0",
-        "contentHash": "Odp8djWEUFTJoRV02y0zJaAwAHF31CtNaDgnKKM+8dBHbbaH7Ee0oo9gweLpbzjI7UrtMUzH6xLJSrICZw+Nwg==",
-        "dependencies": {
-          "Microsoft.DiaSymReader": "2.2.9",
-          "Microsoft.Extensions.DependencyModel": "10.0.8",
-          "Microsoft.Testing.Platform": "2.3.0"
-        }
-      }
-    },
-    "net10.0/win-x64": {
-      "Microsoft.Testing.Extensions.CodeCoverage": {
-        "type": "Direct",
-        "requested": "[18.9.0, )",
-        "resolved": "18.9.0",
-        "contentHash": "Odp8djWEUFTJoRV02y0zJaAwAHF31CtNaDgnKKM+8dBHbbaH7Ee0oo9gweLpbzjI7UrtMUzH6xLJSrICZw+Nwg==",
-        "dependencies": {
-          "Microsoft.DiaSymReader": "2.2.9",
-          "Microsoft.Extensions.DependencyModel": "10.0.8",
-          "Microsoft.Testing.Platform": "2.3.0"
-        }
-      }
     }
   }
 }

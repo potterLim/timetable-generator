@@ -4,7 +4,7 @@ function Publish-TimetableGeneratorDesktop {
         [Parameter(Mandatory)]
         [string] $RepositoryRoot,
 
-        [ValidateSet("all", "win-x64", "osx-x64", "osx-arm64")]
+        [ValidateSet("all", "win-x64", "osx-arm64")]
         [string] $Runtime = "all",
 
         [ValidatePattern("^\d+\.\d+\.\d+$")]
@@ -89,21 +89,6 @@ function Publish-TimetableGeneratorDesktop {
                     -OutputRoot $resolvedOutputRoot `
                     -ExecutableName $executableName `
                     -ProductVersion $Version `
-                    -NoRestore:$NoRestore
-                $archivePaths.Add((Join-Path `
-                    $resolvedOutputRoot `
-                    "TimetableGenerator-$Version-$runtimeIdentifier-unsigned.zip"))
-            }
-            "osx-x64" {
-                Publish-MacOSTarget `
-                    -RuntimeIdentifier $runtimeIdentifier `
-                    -ProjectPath $projectPath `
-                    -InfoPlistTemplatePath $infoPlistTemplatePath `
-                    -AppIconPath $appIconPath `
-                    -OutputRoot $resolvedOutputRoot `
-                    -ExecutableName $executableName `
-                    -ProductVersion $Version `
-                    -BundleIdentifier $BundleIdentifier `
                     -NoRestore:$NoRestore
                 $archivePaths.Add((Join-Path `
                     $resolvedOutputRoot `

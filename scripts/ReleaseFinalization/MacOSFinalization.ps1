@@ -81,7 +81,7 @@ function Invoke-MacOSFinalization {
         [string] $Version,
 
         [Parameter(Mandatory)]
-        [ValidateSet("osx-x64", "osx-arm64")]
+        [ValidateSet("osx-arm64")]
         [string] $Runtime,
 
         [Parameter(Mandatory)]

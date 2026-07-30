@@ -5,9 +5,11 @@ $ErrorActionPreference = "Stop"
 
 $repositoryRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../.."))
 $modulePath = Join-Path $repositoryRoot "scripts/ReleaseFinalization/TimetableGenerator.ReleaseFinalization.psm1"
+$commonPath = Join-Path $repositoryRoot "scripts/Distribution/Common.ps1"
 $pathUtilitiesPath = Join-Path $repositoryRoot "scripts/ReleaseFinalization/PathUtilities.ps1"
 
 Import-Module -Name $modulePath -Force
+. $commonPath
 . $pathUtilitiesPath
 
 function Assert-Equal {

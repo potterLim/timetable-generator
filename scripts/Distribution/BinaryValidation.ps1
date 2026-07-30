@@ -53,7 +53,7 @@ function Assert-MacOSPublishedBinaryArchitectures {
         [string] $Path,
 
         [Parameter(Mandatory)]
-        [ValidateSet("osx-x64", "osx-arm64")]
+        [ValidateSet("osx-arm64")]
         [string] $RuntimeIdentifier
     )
 
@@ -78,11 +78,11 @@ function Assert-MachOArchitecture {
         [string] $Path,
 
         [Parameter(Mandatory)]
-        [ValidateSet("osx-x64", "osx-arm64")]
+        [ValidateSet("osx-arm64")]
         [string] $RuntimeIdentifier
     )
 
-    $expectedCpuType = if ($RuntimeIdentifier -eq "osx-x64") { 0x01000007 } else { 0x0100000C }
+    $expectedCpuType = 0x0100000C
     $bytes = [System.IO.File]::ReadAllBytes($Path)
     $signature = [System.Convert]::ToHexString($bytes, 0, 4)
     switch ($signature) {

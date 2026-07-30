@@ -40,7 +40,7 @@ param(
     [ValidatePattern("^\d+\.\d+\.\d+$")]
     [string] $Version,
 
-    [ValidateSet("osx-x64", "osx-arm64")]
+    [ValidateSet("osx-arm64")]
     [string] $Runtime,
 
     [ValidatePattern("^[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$")]
