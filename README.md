@@ -8,7 +8,9 @@
 > Timetable Generator는 한동대학교가 개발하거나 보증하는 공식 서비스가 아닙니다.  
 > 실제 수강 신청 전에는 과목 정보와 수강 가능 여부를 학교의 공식 안내에서 확인하세요.
 
-[![Timetable Generator 사용 방법 보기](docs/assets/screenshots/timetable-overview.png)](https://potterlim.github.io/timetable-generator/guide/)
+[![과목 검색 결과와 주간 시간표가 함께 표시된 Timetable Generator 기본 화면 — 사용 방법 보기](docs/assets/screenshots/timetable-overview.png)](https://potterlim.github.io/timetable-generator/guide/)
+
+*과목 검색, 가능한 시간표 비교와 시간표 편집을 한 화면에서 확인할 수 있습니다. 이미지를 선택하면 자세한 사용 방법으로 이동합니다.*
 
 ## 주요 기능
 
