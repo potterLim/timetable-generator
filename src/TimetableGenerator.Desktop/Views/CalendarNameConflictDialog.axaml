@@ -128,5 +128,15 @@
         </StackPanel>
       </StackPanel>
     </Border>
+
+    <Border
+        x:Name="CalendarConflictWindowFrame"
+        Grid.RowSpan="2"
+        ZIndex="999"
+        BorderBrush="{DynamicResource StrongBorderBrush}"
+        BorderThickness="1"
+        IsHitTestVisible="False"
+        IsVisible="{Binding #CalendarConflictWindow.UsesProductCaptionControls}"
+        AutomationProperties.AccessibilityView="Raw" />
   </Grid>
 </Window>

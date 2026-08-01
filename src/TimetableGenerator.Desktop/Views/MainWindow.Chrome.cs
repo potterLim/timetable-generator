@@ -12,20 +12,24 @@ namespace TimetableGenerator.Desktop.Views;
 
 internal sealed partial class MainWindow
 {
+    private Border? mProductWindowFrameOrNull;
+
     private Button? mMaximizeRestoreButtonOrNull;
 
     private FluentIcon? mMaximizeRestoreIconOrNull;
 
     private void initializeProductCaptionControls()
     {
+        mProductWindowFrameOrNull = this.FindControl<Border>("ProductWindowFrame");
         mMaximizeRestoreButtonOrNull = this.FindControl<Button>("WindowMaximizeRestoreButton");
         mMaximizeRestoreIconOrNull = this.FindControl<FluentIcon>("WindowMaximizeRestoreIcon");
-        if (mMaximizeRestoreButtonOrNull == null || mMaximizeRestoreIconOrNull == null)
+        if (mProductWindowFrameOrNull == null || mMaximizeRestoreButtonOrNull == null || mMaximizeRestoreIconOrNull == null)
         {
-            throw new InvalidOperationException("The product caption controls could not be resolved.");
+            throw new InvalidOperationException("The product window chrome controls could not be resolved.");
         }
 
         PropertyChanged += onWindowChromePropertyChanged;
+        synchronizeProductWindowFrame();
         synchronizeMaximizeRestoreAction();
     }
 
@@ -39,6 +43,7 @@ internal sealed partial class MainWindow
         if (eventArgs.Property == WindowStateProperty)
         {
             recordWindowStateBeforeFullScreen(eventArgs.GetOldValue<WindowState>(), eventArgs.GetNewValue<WindowState>());
+            synchronizeProductWindowFrame();
             synchronizeMaximizeRestoreAction();
         }
     }
@@ -59,6 +64,16 @@ internal sealed partial class MainWindow
     {
         Close();
         eventArgs.Handled = true;
+    }
+
+    private void synchronizeProductWindowFrame()
+    {
+        if (mProductWindowFrameOrNull == null)
+        {
+            throw new InvalidOperationException("The product window frame was not initialized.");
+        }
+
+        mProductWindowFrameOrNull.IsVisible = UsesProductCaptionControls && WindowState == WindowState.Normal;
     }
 
     private void synchronizeMaximizeRestoreAction()

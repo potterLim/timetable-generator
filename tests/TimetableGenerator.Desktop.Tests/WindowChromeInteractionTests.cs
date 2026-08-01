@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 
+using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
@@ -9,6 +10,7 @@ using Avalonia.Controls.Chrome;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Threading;
 
 using FluentIcons.Avalonia;
@@ -70,6 +72,7 @@ public sealed class WindowChromeInteractionTests
         {
             hostWindow.Show();
 
+            Border productWindowFrame = findRequiredControl<Border>(hostWindow, "ProductWindowFrame");
             Border titleBar = findRequiredControl<Border>(hostWindow, "ProductTitleBar");
             Button appearanceButton = findRequiredControl<Button>(hostWindow, "AppearanceButton");
             StackPanel captionButtons = findRequiredControl<StackPanel>(hostWindow, "ProductCaptionButtons");
@@ -90,6 +93,12 @@ public sealed class WindowChromeInteractionTests
             Assert.Equal(expectedDecorations, hostWindow.WindowDecorations);
             Assert.Equal(insets.Left, titleBar.Padding.Left);
             Assert.Equal(insets.Right, titleBar.Padding.Right);
+            Assert.Equal(new Thickness(1.0), productWindowFrame.BorderThickness);
+            Assert.False(productWindowFrame.IsHitTestVisible);
+            Assert.Equal(999, productWindowFrame.GetValue(Panel.ZIndexProperty));
+            Assert.Equal(AccessibilityView.Raw, AutomationProperties.GetAccessibilityView(productWindowFrame));
+            Assert.Equal(platform == EWindowChromePlatform.Windows, productWindowFrame.IsVisible);
+            Assert.Equal(findRequiredThemeColor("StrongBorderBrush", hostWindow.ActualThemeVariant), findRequiredSolidColor(productWindowFrame.BorderBrush));
             Assert.Equal(platform == EWindowChromePlatform.Windows, captionButtons.IsVisible);
 
             assertCaptionButton(minimizeButton, "WindowMinimizeButton", "최소화", WindowDecorationsElementRole.MinimizeButton);
@@ -123,6 +132,7 @@ public sealed class WindowChromeInteractionTests
 
                 maximizeRestoreButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 Assert.Equal(WindowState.Maximized, hostWindow.WindowState);
+                Assert.False(productWindowFrame.IsVisible);
                 Assert.Equal("복원", AutomationProperties.GetName(maximizeRestoreButton));
                 Assert.Equal("복원", maximizeRestorePeer.GetName());
                 Assert.Equal("복원", maximizeRestorePeer.GetHelpText());
@@ -133,6 +143,7 @@ public sealed class WindowChromeInteractionTests
                 propertyChanges.Clear();
                 maximizeRestoreButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 Assert.Equal(WindowState.Normal, hostWindow.WindowState);
+                Assert.True(productWindowFrame.IsVisible);
                 Assert.Equal("최대화", AutomationProperties.GetName(maximizeRestoreButton));
                 Assert.Equal("최대화", maximizeRestorePeer.GetName());
                 Assert.Equal("최대화", maximizeRestorePeer.GetHelpText());
@@ -140,15 +151,50 @@ public sealed class WindowChromeInteractionTests
                 assertAutomationPropertyChange(propertyChanges, AutomationElementIdentifiers.NameProperty, "복원", "최대화");
                 assertAutomationPropertyChange(propertyChanges, AutomationElementIdentifiers.HelpTextProperty, "복원", "최대화");
 
+                hostWindow.WindowState = WindowState.FullScreen;
+                Assert.False(productWindowFrame.IsVisible);
+                hostWindow.WindowState = WindowState.Normal;
+                Assert.True(productWindowFrame.IsVisible);
+
                 minimizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 Assert.Equal(WindowState.Minimized, hostWindow.WindowState);
+                Assert.False(productWindowFrame.IsVisible);
                 hostWindow.WindowState = WindowState.Normal;
+                Assert.True(productWindowFrame.IsVisible);
             }
         }
         finally
         {
             hostWindow.Close();
         }
+    }
+
+    private static Color findRequiredThemeColor(string resourceKey, Avalonia.Styling.ThemeVariant themeVariant)
+    {
+        Avalonia.Application? applicationOrNull = Avalonia.Application.Current;
+        Assert.NotNull(applicationOrNull);
+        if (applicationOrNull == null)
+        {
+            throw new InvalidOperationException("The Avalonia test application was not initialized.");
+        }
+
+        object? resourceOrNull;
+        bool hasResource = applicationOrNull.TryGetResource(resourceKey, themeVariant, out resourceOrNull);
+        Assert.True(hasResource, "The product color token could not be resolved: " + resourceKey);
+
+        return findRequiredSolidColor(resourceOrNull as IBrush);
+    }
+
+    private static Color findRequiredSolidColor(IBrush? brushOrNull)
+    {
+        ISolidColorBrush? solidBrushOrNull = brushOrNull as ISolidColorBrush;
+        Assert.NotNull(solidBrushOrNull);
+        if (solidBrushOrNull == null)
+        {
+            throw new InvalidOperationException("The window frame brush was not a solid color brush.");
+        }
+
+        return solidBrushOrNull.Color;
     }
 
     private static void assertCaptionButton(Button button, string expectedAutomationId, string expectedName, WindowDecorationsElementRole expectedRole)

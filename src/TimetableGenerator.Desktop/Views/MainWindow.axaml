@@ -384,6 +384,15 @@
     </Grid>
 
     <Border
+        x:Name="ProductWindowFrame"
+        Grid.RowSpan="2"
+        ZIndex="999"
+        BorderBrush="{DynamicResource StrongBorderBrush}"
+        BorderThickness="1"
+        IsHitTestVisible="False"
+        AutomationProperties.AccessibilityView="Raw" />
+
+    <Border
         x:Name="WindowResizeNorth"
         Grid.RowSpan="2"
         ZIndex="1000"

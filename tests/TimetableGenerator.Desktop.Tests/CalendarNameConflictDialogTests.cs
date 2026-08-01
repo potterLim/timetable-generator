@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
+using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
@@ -9,6 +10,7 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 
 using TimetableGenerator.Desktop.Exporting.Calendar;
+using TimetableGenerator.Desktop.Presentation.Windowing;
 using TimetableGenerator.Desktop.Views;
 using TimetableGenerator.Domain.Planning;
 
@@ -18,6 +20,30 @@ namespace TimetableGenerator.Desktop.Tests;
 
 public sealed class CalendarNameConflictDialogTests
 {
+    [AvaloniaFact]
+    public void BorderlessProductDialogUsesAThemeAwareNonInteractiveFrame()
+    {
+        CalendarNameConflictDialog dialog = new CalendarNameConflictDialog();
+        dialog.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        try
+        {
+            Border frame = findRequiredControl<Border>(dialog, "CalendarConflictWindowFrame");
+            EWindowChromePlatform platform = WindowChromeLayoutPolicy.FindCurrentPlatform();
+
+            Assert.Equal(new Thickness(1.0), frame.BorderThickness);
+            Assert.False(frame.IsHitTestVisible);
+            Assert.Equal(999, frame.GetValue(Panel.ZIndexProperty));
+            Assert.Equal(AccessibilityView.Raw, AutomationProperties.GetAccessibilityView(frame));
+            Assert.Equal(platform == EWindowChromePlatform.Windows, frame.IsVisible);
+        }
+        finally
+        {
+            dialog.Close();
+        }
+    }
+
     [AvaloniaFact]
     public void ReplaceableConflictOffersBothDestinationChoices()
     {
