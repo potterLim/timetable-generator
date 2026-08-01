@@ -62,14 +62,15 @@ function Invoke-TestCase {
     }
 }
 
-$tempDirectoryPath = [System.IO.Path]::GetTempPath().TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
-$tempDirectory = [System.IO.DirectoryInfo]::new($tempDirectoryPath)
-$resolvedTempDirectory = $tempDirectory.ResolveLinkTarget($true)
-if ($null -ne $resolvedTempDirectory) {
-    $tempDirectory = $resolvedTempDirectory
+$tempDirectoryPath = [System.IO.Path]::GetTempPath()
+if (-not $IsWindows) {
+    $tempDirectoryPath = & realpath $tempDirectoryPath
+    if ($LASTEXITCODE -ne 0) {
+        throw "운영체제 임시 경로를 확인할 수 없습니다."
+    }
 }
 
-$testRoot = Join-Path $tempDirectory.FullName ("TimetableGenerator-ReleasePolicyTests-" + [System.Guid]::NewGuid().ToString("N"))
+$testRoot = Join-Path $tempDirectoryPath ("TimetableGenerator-ReleasePolicyTests-" + [System.Guid]::NewGuid().ToString("N"))
 $null = New-Item -ItemType Directory -Path $testRoot
 try {
     Invoke-TestCase -Name "official Windows archive keeps a product-facing name" -Action {
