@@ -1,20 +1,19 @@
-# Timetable Generator 1.0.1
+# Timetable Generator 1.0.2
 
-Apple Calendar 내보내기의 신뢰성과 macOS 종료 안정성을 높인 중요 업데이트입니다.  
-macOS에서 Apple Calendar를 사용한다면 이 버전으로 업데이트하는 것을 권장합니다.
+Windows 창 모드에서 앱의 경계를 더 분명하고 자연스럽게 다듬은 시각적 완성도 개선 업데이트입니다.
 
 ## 개선 및 수정
 
-- Apple Calendar 권한 요청과 내보내기 완료 처리를 안정화했습니다.
-- 같은 이름의 앱 관리 캘린더가 있을 때 대체 여부를 다시 선택할 수 있으며, 사용자가 직접 추가한 일정은 유지하면서 시간표 일정만 갱신합니다.
-- 주간 수업을 반복 일정으로 저장하고, 일정의 URL이나 메모에 앱 내부 관리 정보가 표시되지 않도록 개선했습니다.
-- 시간표를 수정하며 Apple Calendar로 반복 내보낸 뒤 앱을 종료할 때 드물게 비정상 종료되던 문제를 수정했습니다.
-- 제품 페이지의 문의 경로와 Apple Calendar 관련 개인정보 안내를 정비했습니다.
+- Windows 창 모드에 제품 색상과 조화를 이루는 외곽선을 적용했습니다.
+- 라이트 모드에서는 밝은 배경에서도 창의 경계가 자연스럽게 드러나도록 푸른 회색 계열의 테두리를 조정했습니다.
+- 다크 모드에서는 어두운 배경과 분리되면서도 과하게 두드러지지 않도록 테두리 대비를 다듬었습니다.
+- 최대화와 전체 화면에서는 운영체제 창 처리와 충돌하지 않도록 제품 외곽선을 표시하지 않습니다.
+- 캘린더 내보내기 확인 창에도 동일한 시각적 마감 원칙을 적용했습니다.
 
 ## 다운로드
 
-- Windows 11 x64: `TimetableGenerator-1.0.1-win-x64.zip`
-- macOS 14 이상(Apple Silicon): `TimetableGenerator-1.0.1-osx-arm64.zip`
+- Windows 11 x64: `TimetableGenerator-1.0.2-win-x64.zip`
+- macOS 14 이상(Apple Silicon): `TimetableGenerator-1.0.2-osx-arm64.zip`
 - 파일 무결성 확인: `checksums.sha256`
 
 ## 안내
