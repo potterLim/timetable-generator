@@ -40,9 +40,7 @@ function Resolve-ReleaseOutputRoot {
         $candidate = Join-Path $RepositoryRoot $relativePath
     }
     else {
-        $candidate = Resolve-PathFromRepository `
-            -RepositoryRoot $RepositoryRoot `
-            -Path $RequestedOutputRoot
+        $candidate = Resolve-PathFromRepository -RepositoryRoot $RepositoryRoot -Path $RequestedOutputRoot
     }
 
     $outputRoot = Get-NormalizedFullPath -Path $candidate

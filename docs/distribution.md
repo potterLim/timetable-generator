@@ -169,21 +169,21 @@ pwsh ./scripts/finalize-desktop-release.ps1 `
 
 서명과 공증은 Developer ID Application 인증서와 이에 대응하는 개인 키, Xcode Command Line Tools가 설치된 macOS 빌드 기기에서 수행합니다. 공증 권한이 있는 Apple ID와 Team ID, 해당 Apple ID의 앱 암호도 필요합니다.  
 서명 ID는 `security find-identity -p codesigning -v`에서 유효한 항목으로 확인되어야 합니다.  
-자체 포함 .NET 앱의 JIT 권한과 Apple Calendar 자동화에 필요한 Apple Events 권한은 `src/TimetableGenerator.Desktop/Platforms/macOS/TimetableGenerator.entitlements`에 명시되어 있으며, 불필요한 디버깅·샌드박스 예외는 포함하지 않습니다.
+자체 포함 .NET 앱의 JIT 권한과 Hardened Runtime에서 EventKit 읽기·쓰기에 필요한 Calendar 권한은 `src/TimetableGenerator.Desktop/Platforms/macOS/TimetableGenerator.entitlements`에 명시합니다. EventKit을 사용하는 네이티브 모듈은 앱 번들 안에 포함하고 외부 앱 자동화 권한 없이 동작하도록 구성하며, 불필요한 디버깅·샌드박스 예외는 포함하지 않습니다.
 
 ### Apple Calendar 내보내기 경계
 
-데스크톱 앱은 macOS Calendar 앱의 스크립팅 인터페이스를 사용합니다.  
-`/usr/bin/osascript`의 JavaScript for Automation으로 캘린더 목록을 확인하고, 현재 시간표 이름의 별도 캘린더를 새로 만들거나 앱이 관리하던 같은 이름의 캘린더를 사용자의 선택에 따라 대체합니다.
+데스크톱 앱은 앱 번들에 함께 서명된 네이티브 macOS 모듈과 EventKit을 통해 Apple Calendar에 접근합니다.  
+캘린더 목록과 기존 앱 관리 일정을 확인하고, 현재 시간표 이름의 별도 캘린더를 새로 만들거나 앱이 관리하던 같은 이름의 캘린더를 사용자의 선택에 따라 대체합니다.
 
 같은 이름으로 확인된 캘린더가 정확히 하나이고, 그 캘린더가 앱이 만든 쓰기 가능한 캘린더일 때만 대체할 수 있습니다.  
 그 밖의 캘린더는 변경하지 않고 ` (2)`, ` (3)` 순서로 사용할 수 있는 첫 이름을 골라 새 캘린더를 만듭니다.  
-대체 직전에도 캘린더 ID·이름·앱 관리 식별 정보·쓰기 가능 여부를 다시 확인합니다.
+대체 직전에도 캘린더 ID·이름·로컬 관리 정보·쓰기 가능 여부를 다시 확인합니다. 확인 결과가 모호하면 기존 캘린더를 변경하지 않습니다.
 
-캘린더 설명에는 학교명과 학기를 표시하고, 앱이 만든 일정의 URL에는 관리에 필요한 식별 정보를 저장합니다.  
+주간 수업은 학기 종료일까지 반복되는 일정으로 저장합니다. 앱이 만든 캘린더와 일정의 소유권 정보는 로컬 앱 데이터로 관리하며 일정의 제목·메모·URL처럼 사용자에게 보이는 필드에 내부 관리 문자열을 남기지 않습니다.  
 앱 관리 캘린더를 대체할 때는 앱이 만든 일정만 변경하며 사용자가 직접 추가한 일정은 유지합니다.
 
-강화된 런타임(Hardened Runtime)으로 서명된 앱에서 이 동작을 허용하려면 `NSAppleEventsUsageDescription`과 `com.apple.security.automation.apple-events=true`가 모두 필요합니다.  
+지원하는 macOS 버전에서는 `NSCalendarsFullAccessUsageDescription`을 선언하고 EventKit의 전체 캘린더 접근 권한을 요청합니다. 네이티브 모듈을 먼저 서명한 뒤 바깥쪽 앱 번들을 서명하고, 최종 산출물에서 중첩 코드와 Hardened Runtime 유효성을 함께 검증합니다.  
 공개 전에 새 사용자 프로필에서 최초 권한 요청, 허용, 거부, 시스템 설정에서 권한 철회와 재시도를 실기기로 검증합니다.
 
 공증 제출 전에 다음 명령으로 `notarytool` 자격 증명을 키체인 프로필에 저장합니다.  

@@ -70,7 +70,7 @@ function Assert-MacOSEntitlements {
     $contents = Get-InfoPlistContents -Path $Path
     $requiredEntitlements = @(
         "com.apple.security.cs.allow-jit",
-        "com.apple.security.automation.apple-events"
+        "com.apple.security.personal-information.calendars"
     )
     if ($contents.KeyCount -ne $requiredEntitlements.Count) {
         throw "macOS entitlement 구성이 예상과 일치하지 않습니다: $Path"
@@ -113,7 +113,7 @@ function Assert-MacOSInfoPlist {
         CFBundleVersion = $ProductVersion
         LSApplicationCategoryType = "public.app-category.education"
         LSMinimumSystemVersion = "14.0"
-        NSAppleEventsUsageDescription = "시간표를 Apple 캘린더에 내보내기 위해 캘린더 앱을 사용합니다."
+        NSCalendarsFullAccessUsageDescription = "시간표를 Apple Calendar에 내보내고 앱이 만든 일정을 안전하게 갱신하려면 캘린더 전체 접근이 필요합니다."
         NSPrincipalClass = "NSApplication"
     }
 
@@ -121,6 +121,10 @@ function Assert-MacOSInfoPlist {
         if (-not $values.ContainsKey($expectedValue.Key) -or $values[$expectedValue.Key] -ne $expectedValue.Value) {
             throw "Info.plist의 $($expectedValue.Key) 값이 예상과 일치하지 않습니다: $Path"
         }
+    }
+
+    if ($values.ContainsKey("NSAppleEventsUsageDescription")) {
+        throw "Info.plist에 사용하지 않는 Apple Events 권한 설명이 남아 있습니다: $Path"
     }
 
     $supportedPlatforms = @($contents.ArrayStringValues.CFBundleSupportedPlatforms)

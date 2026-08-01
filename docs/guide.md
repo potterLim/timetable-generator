@@ -204,9 +204,9 @@ Timetable Generator는 과목과 분반을 선택하면 겹치지 않는 시간�
 ### Apple Calendar
 
 macOS에서는 **Apple Calendar로 내보내기**를 사용할 수 있습니다.  
-처음 내보낼 때 macOS가 캘린더 앱 접근 권한을 요청할 수 있습니다. 권한을 허용하면 내보내기가 이어서 완료됩니다.
+처음 내보낼 때 macOS가 캘린더 전체 접근 권한을 요청할 수 있습니다. 권한을 허용하면 내보내기가 이어서 완료됩니다.
 
-권한을 거부했다면 macOS **시스템 설정 → 개인정보 보호 및 보안 → 자동화**에서 Timetable Generator의 캘린더 앱 접근을 허용한 뒤 다시 시도하세요.
+권한을 거부했다면 macOS **시스템 설정 → 개인정보 보호 및 보안 → 캘린더**에서 Timetable Generator의 접근을 허용한 뒤 다시 시도하세요.
 
 ### 같은 이름의 캘린더가 있을 때
 
@@ -236,7 +236,7 @@ Google Calendar 또는 Apple Calendar로 내보낼 때만 사용자가 승인한
 | 시간표를 저장하지 못함 | 기기의 남은 저장 공간을 확인하고 상단의 **다시 시도**를 누릅니다. |
 | PNG를 저장하지 못함 | 다른 파일 이름이나 저장 위치를 선택하고 폴더 쓰기 권한과 남은 공간을 확인합니다. |
 | Google Calendar 내보내기가 완료되지 않음 | 브라우저에서 로그인과 권한 승인을 완료하세요. 시간이 초과되면 다시 시도하세요. |
-| Apple Calendar 내보내기가 거부됨 | macOS 시스템 설정에서 Timetable Generator의 캘린더 자동화 권한을 허용한 뒤 다시 시도하세요. |
+| Apple Calendar 내보내기가 거부됨 | macOS 시스템 설정의 **개인정보 보호 및 보안 → 캘린더**에서 Timetable Generator의 접근을 허용한 뒤 다시 시도하세요. |
 
 문제가 계속되면 [{{ site.support_email }}]({{ site.support_mailto }})으로 문의해 주세요.
 

@@ -24,6 +24,25 @@
     <ApplicationIcon>Platforms\Windows\AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
 
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <EventKitBridgeFileName>libTimetableGenerator.EventKitBridge.dylib</EventKitBridgeFileName>
+    <EventKitBridgeIntermediateDirectory>$(MSBuildProjectDirectory)/obj/native/$(Configuration)/$(TargetFramework)/$(RuntimeIdentifier)</EventKitBridgeIntermediateDirectory>
+    <EventKitBridgeIntermediatePath>$(EventKitBridgeIntermediateDirectory)/$(EventKitBridgeFileName)</EventKitBridgeIntermediatePath>
+  </PropertyGroup>
+
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <EventKitBridgeSource Include="$(MSBuildProjectDirectory)/Platforms/macOS/EventKitBridge/TimetableGeneratorEventKitBridge.m" />
+    <EventKitBridgeSource Include="$(MSBuildProjectDirectory)/Platforms/macOS/EventKitBridge/TimetableGeneratorEventKitEventIdentity.m" />
+    <EventKitBridgeSource Include="$(MSBuildProjectDirectory)/Platforms/macOS/EventKitBridge/TimetableGeneratorEventKitExport.m" />
+    <EventKitBridgeSource Include="$(MSBuildProjectDirectory)/Platforms/macOS/EventKitBridge/TimetableGeneratorEventKitProtocol.m" />
+    <EventKitBridgeSource Include="$(MSBuildProjectDirectory)/Platforms/macOS/EventKitBridge/TimetableGeneratorEventKitRegistration.m" />
+    <EventKitBridgeHeader Include="$(MSBuildProjectDirectory)/Platforms/macOS/EventKitBridge/TimetableGeneratorEventKitBridge.h" />
+    <EventKitBridgeHeader Include="$(MSBuildProjectDirectory)/Platforms/macOS/EventKitBridge/TimetableGeneratorEventKitEventIdentity.h" />
+    <EventKitBridgeHeader Include="$(MSBuildProjectDirectory)/Platforms/macOS/EventKitBridge/TimetableGeneratorEventKitExport.h" />
+    <EventKitBridgeHeader Include="$(MSBuildProjectDirectory)/Platforms/macOS/EventKitBridge/TimetableGeneratorEventKitProtocol.h" />
+    <EventKitBridgeHeader Include="$(MSBuildProjectDirectory)/Platforms/macOS/EventKitBridge/TimetableGeneratorEventKitRegistration.h" />
+  </ItemGroup>
+
   <ItemGroup>
     <AvaloniaResource
         Include="Assets\**"
@@ -70,4 +89,53 @@
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="FluentIcons.Avalonia" />
   </ItemGroup>
+
+  <Target
+      Name="CompileMacOSEventKitBridge"
+      BeforeTargets="CoreCompile"
+      Condition="$([MSBuild]::IsOSPlatform('OSX')) And ('$(RuntimeIdentifier)' == '' Or '$(RuntimeIdentifier)' == 'osx-arm64')"
+      Inputs="$(MSBuildProjectFullPath);@(EventKitBridgeSource);@(EventKitBridgeHeader)"
+      Outputs="$(EventKitBridgeIntermediatePath)">
+    <MakeDir Directories="$(EventKitBridgeIntermediateDirectory)" />
+    <Exec
+        Command="/usr/bin/xcrun --sdk macosx clang -arch arm64 -mmacosx-version-min=14.0 -fobjc-arc -fblocks -fvisibility=hidden -Wall -Wextra -Werror -Wshadow -Wmissing-prototypes -Wmissing-variable-declarations -Wstrict-prototypes -dynamiclib -framework Foundation -framework EventKit -install_name @rpath/$(EventKitBridgeFileName) -o &quot;$(EventKitBridgeIntermediatePath)&quot; @(EventKitBridgeSource->'&quot;%(FullPath)&quot;', ' ')" />
+    <ItemGroup>
+      <FileWrites Include="$(EventKitBridgeIntermediatePath)" />
+    </ItemGroup>
+  </Target>
+
+  <Target
+      Name="CopyMacOSEventKitBridgeToOutput"
+      AfterTargets="Build"
+      DependsOnTargets="CompileMacOSEventKitBridge"
+      Condition="$([MSBuild]::IsOSPlatform('OSX')) And ('$(RuntimeIdentifier)' == '' Or '$(RuntimeIdentifier)' == 'osx-arm64')">
+    <Copy
+        SourceFiles="$(EventKitBridgeIntermediatePath)"
+        DestinationFiles="$(TargetDir)$(EventKitBridgeFileName)"
+        SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <FileWrites Include="$(TargetDir)$(EventKitBridgeFileName)" />
+    </ItemGroup>
+  </Target>
+
+  <Target
+      Name="CopyMacOSEventKitBridgeToPublish"
+      AfterTargets="Publish"
+      DependsOnTargets="CompileMacOSEventKitBridge"
+      Condition="$([MSBuild]::IsOSPlatform('OSX')) And '$(RuntimeIdentifier)' == 'osx-arm64'">
+    <Copy
+        SourceFiles="$(EventKitBridgeIntermediatePath)"
+        DestinationFiles="$(PublishDir)$(EventKitBridgeFileName)"
+        SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <FileWrites Include="$(PublishDir)$(EventKitBridgeFileName)" />
+    </ItemGroup>
+  </Target>
+
+  <Target
+      Name="RejectMacOSPublishWithoutNativeToolchain"
+      BeforeTargets="Publish"
+      Condition="!$([MSBuild]::IsOSPlatform('OSX')) And '$(RuntimeIdentifier)' == 'osx-arm64'">
+    <Error Text="The macOS target must be published on macOS so the EventKit native bridge can be compiled." />
+  </Target>
 </Project>

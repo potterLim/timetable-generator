@@ -5,6 +5,9 @@ $ErrorActionPreference = "Stop"
 
 $repositoryRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../.."))
 . (Join-Path $repositoryRoot "scripts/Distribution/Common.ps1")
+. (Join-Path $repositoryRoot "scripts/Distribution/BinaryValidation.ps1")
+. (Join-Path $repositoryRoot "scripts/Distribution/MacOSEventKitBridgeValidation.ps1")
+. (Join-Path $repositoryRoot "scripts/Distribution/MacOSPropertyList.ps1")
 
 function Assert-PathExists {
     param(
@@ -28,6 +31,22 @@ function Assert-PathDoesNotExist {
     }
 }
 
+function Assert-Throws {
+    param(
+        [Parameter(Mandatory)]
+        [scriptblock] $Action
+    )
+
+    try {
+        & $Action
+    }
+    catch {
+        return
+    }
+
+    throw "예상한 오류가 발생하지 않았습니다."
+}
+
 function Invoke-TestCase {
     param(
         [Parameter(Mandatory)]
@@ -46,18 +65,7 @@ function Invoke-TestCase {
     }
 }
 
-function Invoke-DotNetCommand {
-    param(
-        [Parameter(Mandatory)]
-        [string[]] $Arguments
-    )
-
-    $null = $Arguments
-}
-
-$testRoot = Join-Path (
-    [System.IO.Path]::GetTempPath()) (
-    "TimetableGenerator-PublishedContentTests-" + [System.Guid]::NewGuid().ToString("N"))
+$testRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("TimetableGenerator-PublishedContentTests-" + [System.Guid]::NewGuid().ToString("N"))
 $null = New-Item -ItemType Directory -Path $testRoot
 try {
     Invoke-TestCase -Name "publish removes only XML documentation" -Action {
@@ -89,12 +97,7 @@ try {
             "<?xml version=`"1.0`"?><applicationData />")
         [System.IO.File]::WriteAllText($noticePath, "Required third-party notice")
 
-        Invoke-SelfContainedPublish `
-            -ProjectPath (Join-Path $testRoot "Desktop.csproj") `
-            -RuntimeIdentifier "osx-arm64" `
-            -DestinationPath $publishPath `
-            -ProductVersion "1.0.0" `
-            -NoRestore
+        Remove-PublishedXmlDocumentationFiles -Path $publishPath
 
         Assert-PathDoesNotExist -Path $productDocumentationPath
         Assert-PathDoesNotExist -Path $dependencyDocumentationPath
@@ -124,6 +127,79 @@ try {
         $actualMode = [System.IO.File]::GetUnixFileMode($executablePath)
         if ($actualMode -ne $expectedMode) {
             throw "실행 권한이 보존된 access mode에 추가되지 않았습니다: $actualMode"
+        }
+    }
+
+    Invoke-TestCase -Name "macOS metadata requires EventKit full access without Apple Events" -Action {
+        $infoPlistTemplatePath = Join-Path $repositoryRoot "src/TimetableGenerator.Desktop/Platforms/macOS/Info.plist.template"
+        $infoPlistPath = Join-Path $testRoot "Info.plist"
+        $infoPlist = [System.IO.File]::ReadAllText($infoPlistTemplatePath)
+        $infoPlist = $infoPlist.Replace("__EXECUTABLE_NAME__", "TimetableGenerator")
+        $infoPlist = $infoPlist.Replace("__BUNDLE_IDENTIFIER__", "io.github.potterlim.timetable")
+        $infoPlist = $infoPlist.Replace("__VERSION__", "1.0.0")
+        [System.IO.File]::WriteAllText($infoPlistPath, $infoPlist)
+
+        Assert-MacOSInfoPlist `
+            -Path $infoPlistPath `
+            -ExecutableName "TimetableGenerator" `
+            -BundleIdentifier "io.github.potterlim.timetable" `
+            -ProductVersion "1.0.0"
+
+        $entitlementsPath = Join-Path $repositoryRoot "src/TimetableGenerator.Desktop/Platforms/macOS/TimetableGenerator.entitlements"
+        Assert-MacOSEntitlements -Path $entitlementsPath
+
+        $legacyInfoPlistPath = Join-Path $testRoot "Legacy-Info.plist"
+        $legacyInfoPlist = $infoPlist.Replace("  <key>NSPrincipalClass</key>", "  <key>NSAppleEventsUsageDescription</key>`n  <string>legacy</string>`n  <key>NSPrincipalClass</key>")
+        [System.IO.File]::WriteAllText($legacyInfoPlistPath, $legacyInfoPlist)
+        Assert-Throws {
+            Assert-MacOSInfoPlist `
+                -Path $legacyInfoPlistPath `
+                -ExecutableName "TimetableGenerator" `
+                -BundleIdentifier "io.github.potterlim.timetable" `
+                -ProductVersion "1.0.0"
+        }
+
+        $legacyEntitlementsPath = Join-Path $testRoot "Legacy.entitlements"
+        $legacyEntitlements = [System.IO.File]::ReadAllText($entitlementsPath).Replace("</dict>", "  <key>com.apple.security.automation.apple-events</key>`n  <true/>`n</dict>")
+        [System.IO.File]::WriteAllText($legacyEntitlementsPath, $legacyEntitlements)
+        Assert-Throws {
+            Assert-MacOSEntitlements -Path $legacyEntitlementsPath
+        }
+    }
+
+    Invoke-TestCase -Name "macOS EventKit bridge must expose and satisfy the versioned C ABI" -Action {
+        Assert-MacOSEventKitBridgeExportSymbols -Symbols @("_tg_eventkit_execute", "_tg_eventkit_free", "_tg_eventkit_schema_version")
+        Assert-Throws {
+            Assert-MacOSEventKitBridgeExportSymbols -Symbols @("_tg_eventkit_execute", "_tg_eventkit_free")
+        }
+
+        $eventKitBridgePath = Join-Path $testRoot "libTimetableGenerator.EventKitBridge.dylib"
+        $eventKitBridgeSourcePath = Join-Path $repositoryRoot "tests/Distribution/Fixtures/EventKitBridgeStub.c"
+        if ($IsMacOS) {
+            $compilerOutput = @(& xcrun clang -dynamiclib -arch arm64 -std=c11 -Wall -Wextra -Werror $eventKitBridgeSourcePath -o $eventKitBridgePath 2>&1)
+            if ($LASTEXITCODE -ne 0) {
+                throw "테스트용 EventKit bridge를 빌드하지 못했습니다: $($compilerOutput -join "`n")"
+            }
+        }
+        else {
+            [System.IO.File]::WriteAllBytes($eventKitBridgePath, [byte[]] @(0xCF, 0xFA, 0xED, 0xFE, 0x0C, 0x00, 0x00, 0x01))
+        }
+
+        Assert-MacOSEventKitBridgeBinary -Path $eventKitBridgePath -RuntimeIdentifier "osx-arm64"
+        if ($IsMacOS -and [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture -eq [System.Runtime.InteropServices.Architecture]::Arm64) {
+            $invalidSchemaPath = Join-Path $testRoot "libTimetableGenerator.EventKitBridge.InvalidSchema.dylib"
+            $compilerOutput = @(& xcrun clang -dynamiclib -arch arm64 -std=c11 -Wall -Wextra -Werror -DTG_EVENT_KIT_TEST_SCHEMA_VERSION=2 $eventKitBridgeSourcePath -o $invalidSchemaPath 2>&1)
+            if ($LASTEXITCODE -ne 0) {
+                throw "잘못된 schema 테스트용 EventKit bridge를 빌드하지 못했습니다: $($compilerOutput -join "`n")"
+            }
+            Assert-Throws {
+                Assert-MacOSEventKitBridgeBinary -Path $invalidSchemaPath -RuntimeIdentifier "osx-arm64"
+            }
+        }
+
+        [System.IO.File]::WriteAllText($eventKitBridgePath, "not a Mach-O binary")
+        Assert-Throws {
+            Assert-MacOSEventKitBridgeBinary -Path $eventKitBridgePath -RuntimeIdentifier "osx-arm64"
         }
     }
 }

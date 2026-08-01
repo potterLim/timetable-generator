@@ -204,9 +204,7 @@ function Invoke-TestCase {
     }
 }
 
-$testRoot = Join-Path (
-    [System.IO.Path]::GetTempPath()) (
-    "TimetableGenerator-MacOSIconTests-" + [System.Guid]::NewGuid().ToString("N"))
+$testRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("TimetableGenerator-MacOSIconTests-" + [System.Guid]::NewGuid().ToString("N"))
 $null = New-Item -ItemType Directory -Path $testRoot
 try {
     Invoke-TestCase -Name "mixed legacy ARGB and PNG chunks" -Action {

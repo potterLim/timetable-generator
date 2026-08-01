@@ -29,4 +29,4 @@ Timetable Generator는 한동대학교가 개발하거나 보증하는 공식 �
 
 - [제품 안내](https://potterlim.github.io/timetable-generator/)
 - [사용 방법](https://potterlim.github.io/timetable-generator/guide/)
-- [문제 제보](https://github.com/potterLim/timetable-generator/issues)
+- [문의하기](mailto:potterLim0808@gmail.com?subject=Timetable%20Generator%20%EB%AC%B8%EC%9D%98)

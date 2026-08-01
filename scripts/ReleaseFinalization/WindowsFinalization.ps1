@@ -131,10 +131,7 @@ function Invoke-WindowsFinalization {
         -AllowUnsigned:$AllowUnsigned
     $allowedFileNames = @(Get-AllowedReleaseOutputFileNames -Version $Version -AllowUnsigned:$AllowUnsigned)
     Assert-ReleaseOutputRootContents -OutputRoot $releaseRoot -AllowedFileNames $allowedFileNames
-    $archiveFileName = Get-WindowsReleaseArchiveFileName `
-        -Version $Version `
-        -WindowsSignatureMode $WindowsSignatureMode `
-        -AllowUnsigned:$AllowUnsigned
+    $archiveFileName = Get-WindowsReleaseArchiveFileName -Version $Version -WindowsSignatureMode $WindowsSignatureMode -AllowUnsigned:$AllowUnsigned
     $archivePath = Join-Path $releaseRoot $archiveFileName
     Remove-ExistingReleaseFile `
         -OutputRoot $releaseRoot `

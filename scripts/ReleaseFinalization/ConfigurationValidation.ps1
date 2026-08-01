@@ -45,6 +45,7 @@ function Read-ReleaseConfigurationJsonObject {
         throw "Release 설정 파일이 유효한 JSON이 아닙니다: $Path"
     }
 }
+
 function Assert-ExactJsonProperties {
     param(
         [Parameter(Mandatory)]

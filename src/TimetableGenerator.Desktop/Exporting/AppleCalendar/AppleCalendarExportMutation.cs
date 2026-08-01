@@ -15,6 +15,8 @@ internal sealed class AppleCalendarExportMutation
 
     public AppleCalendarId? ExistingCalendarIdOrNull { get; }
 
+    public string? ExpectedSourceIdentifierOrNull { get; }
+
     public PlanId CalendarOwnershipPlanId { get; }
 
     private AppleCalendarExportMutation(
@@ -22,6 +24,7 @@ internal sealed class AppleCalendarExportMutation
         CalendarExportDocument document,
         PlanName destinationName,
         AppleCalendarId? existingCalendarIdOrNull,
+        string? expectedSourceIdentifierOrNull,
         PlanId calendarOwnershipPlanId)
     {
         if (document == null)
@@ -39,12 +42,13 @@ internal sealed class AppleCalendarExportMutation
             throw new ArgumentException("Apple Calendar mutations require at least one calendar event.", nameof(document));
         }
 
-        validateTarget(kind, existingCalendarIdOrNull, calendarOwnershipPlanId);
+        validateTarget(kind, existingCalendarIdOrNull, expectedSourceIdentifierOrNull, calendarOwnershipPlanId);
 
         Kind = kind;
         Document = document;
         DestinationName = destinationName;
         ExistingCalendarIdOrNull = existingCalendarIdOrNull;
+        ExpectedSourceIdentifierOrNull = string.IsNullOrWhiteSpace(expectedSourceIdentifierOrNull) ? null : expectedSourceIdentifierOrNull.Trim();
         CalendarOwnershipPlanId = calendarOwnershipPlanId;
     }
 
@@ -55,20 +59,29 @@ internal sealed class AppleCalendarExportMutation
             throw new ArgumentNullException(nameof(document));
         }
 
-        return new AppleCalendarExportMutation(EAppleCalendarExportMutationKind.CreateNew, document, destinationName, null, document.PlanId);
+        return new AppleCalendarExportMutation(EAppleCalendarExportMutationKind.CreateNew, document, destinationName, null, null, document.PlanId);
     }
 
-    public static AppleCalendarExportMutation ReplaceExisting(CalendarExportDocument document, PlanName destinationName, AppleCalendarId existingCalendarId, PlanId calendarOwnershipPlanId)
+    public static AppleCalendarExportMutation ReplaceExisting(
+        CalendarExportDocument document,
+        PlanName destinationName,
+        AppleCalendarId existingCalendarId,
+        string expectedSourceIdentifier,
+        PlanId calendarOwnershipPlanId)
     {
         if (existingCalendarId == null)
         {
             throw new ArgumentNullException(nameof(existingCalendarId));
         }
 
-        return new AppleCalendarExportMutation(EAppleCalendarExportMutationKind.ReplaceExisting, document, destinationName, existingCalendarId, calendarOwnershipPlanId);
+        return new AppleCalendarExportMutation(EAppleCalendarExportMutationKind.ReplaceExisting, document, destinationName, existingCalendarId, expectedSourceIdentifier, calendarOwnershipPlanId);
     }
 
-    private static void validateTarget(EAppleCalendarExportMutationKind kind, AppleCalendarId? existingCalendarIdOrNull, PlanId calendarOwnershipPlanId)
+    private static void validateTarget(
+        EAppleCalendarExportMutationKind kind,
+        AppleCalendarId? existingCalendarIdOrNull,
+        string? expectedSourceIdentifierOrNull,
+        PlanId calendarOwnershipPlanId)
     {
         if (calendarOwnershipPlanId.IsValid == false)
         {
@@ -78,9 +91,9 @@ internal sealed class AppleCalendarExportMutation
         switch (kind)
         {
             case EAppleCalendarExportMutationKind.CreateNew:
-                if (existingCalendarIdOrNull != null)
+                if (existingCalendarIdOrNull != null || expectedSourceIdentifierOrNull != null)
                 {
-                    throw new ArgumentException("New Apple calendars cannot target an existing calendar ID.", nameof(existingCalendarIdOrNull));
+                    throw new ArgumentException("New Apple calendars cannot target an existing calendar.", nameof(existingCalendarIdOrNull));
                 }
 
                 return;
@@ -88,6 +101,11 @@ internal sealed class AppleCalendarExportMutation
                 if (existingCalendarIdOrNull == null)
                 {
                     throw new ArgumentException("Apple calendar replacement requires an existing calendar ID.", nameof(existingCalendarIdOrNull));
+                }
+
+                if (string.IsNullOrWhiteSpace(expectedSourceIdentifierOrNull))
+                {
+                    throw new ArgumentException("Apple calendar replacement requires an expected source identifier.", nameof(expectedSourceIdentifierOrNull));
                 }
 
                 return;

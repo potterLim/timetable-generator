@@ -438,7 +438,7 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
         {
             get
             {
-                return ReplacedPlanIdOrNull ?? Plan.PlanId;
+                return ReplacedPlanIdOrNull == null ? Plan.PlanId : ReplacedPlanIdOrNull.Value;
             }
         }
 

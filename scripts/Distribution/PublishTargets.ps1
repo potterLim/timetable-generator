@@ -90,6 +90,7 @@ function Publish-MacOSTarget {
     $contentsPath = Join-Path $bundlePath "Contents"
     $macOSPath = Join-Path $contentsPath "MacOS"
     $resourcesPath = Join-Path $contentsPath "Resources"
+    $eventKitBridgePath = Join-Path $macOSPath "libTimetableGenerator.EventKitBridge.dylib"
 
     Reset-DistributionDirectory `
         -OutputRoot $OutputRoot `
@@ -131,6 +132,7 @@ function Publish-MacOSTarget {
     $executablePath = Join-Path $macOSPath $ExecutableName
     Assert-NonEmptyFile -Path $executablePath
     Assert-NonEmptyFile -Path (Join-Path $macOSPath "libcoreclr.dylib")
+    Assert-MacOSEventKitBridgeBinary -Path $eventKitBridgePath -RuntimeIdentifier $RuntimeIdentifier
     Assert-NonEmptyFile -Path $infoPlistPath
     Assert-NonEmptyFile -Path $macOSIconPath
     Assert-RequiredThirdPartyNoticeFiles `

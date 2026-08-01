@@ -207,16 +207,12 @@ function Add-RawOutputSection {
 }
 
 $repositoryRoot = Get-NormalizedFullPath -Path (Join-Path $PSScriptRoot "..")
-$projectPath = Join-Path `
-    $repositoryRoot `
-    "src/TimetableGenerator.Desktop/TimetableGenerator.Desktop.csproj"
+$projectPath = Join-Path $repositoryRoot "src/TimetableGenerator.Desktop/TimetableGenerator.Desktop.csproj"
 if (-not (Test-Path -LiteralPath $projectPath -PathType Leaf)) {
     throw "Desktop 프로젝트를 찾을 수 없습니다: $projectPath"
 }
 
-$projectVersion = Get-ProjectVersion `
-    -ProjectPath $projectPath `
-    -RepositoryRoot $repositoryRoot
+$projectVersion = Get-ProjectVersion -ProjectPath $projectPath -RepositoryRoot $repositoryRoot
 $releaseVersion = if ([string]::IsNullOrWhiteSpace($Version)) {
     $projectVersion
 }
@@ -225,33 +221,17 @@ else {
 }
 
 $runtimeIdentifier = Get-PlatformRuntimeIdentifier
-$resolvedOutputRoot = Resolve-EvidenceOutputRoot `
-    -RepositoryRoot $repositoryRoot `
-    -RequestedOutputRoot $OutputRoot
-$evidenceDirectory = Join-Path `
-    (Join-Path $resolvedOutputRoot $releaseVersion) `
-    $runtimeIdentifier
+$resolvedOutputRoot = Resolve-EvidenceOutputRoot -RepositoryRoot $repositoryRoot -RequestedOutputRoot $OutputRoot
+$evidenceDirectory = Join-Path (Join-Path $resolvedOutputRoot $releaseVersion) $runtimeIdentifier
 $evidencePath = Join-Path $evidenceDirectory "build-info.txt"
 if ((Test-Path -LiteralPath $evidencePath -PathType Leaf) -and -not $Force) {
     throw "이미 기록된 배포 빌드 환경 증거가 있습니다. 교체하려면 -Force를 명시하세요: $evidencePath"
 }
 
-$dotNetVersion = Invoke-CapturedCommand `
-    -FileName "dotnet" `
-    -Arguments @("--version") `
-    -WorkingDirectory $repositoryRoot
-$dotNetInfo = Invoke-CapturedCommand `
-    -FileName "dotnet" `
-    -Arguments @("--info") `
-    -WorkingDirectory $repositoryRoot
-$gitHead = Invoke-CapturedCommand `
-    -FileName "git" `
-    -Arguments @("rev-parse", "--verify", "HEAD") `
-    -WorkingDirectory $repositoryRoot
-$gitStatus = Invoke-CapturedCommand `
-    -FileName "git" `
-    -Arguments @("status", "--porcelain=v1", "--untracked-files=normal") `
-    -WorkingDirectory $repositoryRoot
+$dotNetVersion = Invoke-CapturedCommand -FileName "dotnet" -Arguments @("--version") -WorkingDirectory $repositoryRoot
+$dotNetInfo = Invoke-CapturedCommand -FileName "dotnet" -Arguments @("--info") -WorkingDirectory $repositoryRoot
+$gitHead = Invoke-CapturedCommand -FileName "git" -Arguments @("rev-parse", "--verify", "HEAD") -WorkingDirectory $repositoryRoot
+$gitStatus = Invoke-CapturedCommand -FileName "git" -Arguments @("status", "--porcelain=v1", "--untracked-files=normal") -WorkingDirectory $repositoryRoot
 
 $repositoryState = if ([string]::IsNullOrEmpty($gitStatus.StandardOutput)) {
     "clean"
@@ -263,9 +243,7 @@ if ($RequireClean -and $repositoryState -ne "clean") {
     throw "최종 배포 증거는 변경 사항이 없는 Git 상태에서만 기록할 수 있습니다."
 }
 
-$recordedAtUtc = [System.DateTimeOffset]::UtcNow.ToString(
-    "O",
-    [System.Globalization.CultureInfo]::InvariantCulture)
+$recordedAtUtc = [System.DateTimeOffset]::UtcNow.ToString("O", [System.Globalization.CultureInfo]::InvariantCulture)
 $osDescription = [System.Runtime.InteropServices.RuntimeInformation]::OSDescription
 $osArchitecture = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
 $processArchitecture = [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture

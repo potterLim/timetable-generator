@@ -45,8 +45,6 @@ Google Calendar와 Apple Calendar에 내보낸 데이터는 앱의 로컬 데이
 
 문의 메일에 파일이나 화면 캡처를 첨부할 때는 계정·인증 정보와 민감한 개인 일정 등 문제 확인에 필요하지 않은 정보를 제거해야 합니다.
 
-보안 문제는 [GitHub 비공개 보안 제보](https://github.com/potterLim/timetable-generator/security/advisories/new)를 이용해야 합니다.
-
 ## 5. 사용 제한
 
 다음과 같은 방식으로 제품을 사용해서는 안 됩니다.
@@ -79,8 +77,7 @@ Timetable Generator의 이름·로고·화면을 사용해 다른 제품이나 �
 
 ## 9. 문의
 
-일반적인 설치·사용 문제와 기능 제안은 [{{ site.support_email }}]({{ site.support_mailto }})으로 문의해 주세요.
-
-개인정보 또는 보안 문제는 [GitHub 비공개 보안 제보](https://github.com/potterLim/timetable-generator/security/advisories/new)를 사용해 주세요.
+설치·사용 문제, 기능 제안, 개인정보 또는 보안 관련 문의는 [{{ site.support_email }}]({{ site.support_mailto }})으로 보내 주세요.  
+사용 중인 운영체제와 앱 버전, 문제가 발생한 구체적인 상황과 오류 내용, 재현 과정, 가능하면 문제 화면의 스크린샷을 함께 보내면 확인에 도움이 됩니다.
 
 </article>

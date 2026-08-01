@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 
 using TimetableGenerator.CatalogJson;
-using TimetableGenerator.Desktop.Exporting.AppleCalendar;
 using TimetableGenerator.Desktop.Exporting.Calendar;
 using TimetableGenerator.Desktop.Integrations.GoogleCalendar;
 using TimetableGenerator.Desktop.Presentation.Models;
@@ -58,9 +56,7 @@ public sealed class ScheduleCalendarProjectorTests
         Assert.Equal(64, calendarEvent.Uid.Value.Length);
         foreach (char character in calendarEvent.Uid.Value)
         {
-            bool isLowercaseHexadecimal =
-                character >= '0' && character <= '9'
-                || character >= 'a' && character <= 'f';
+            bool isLowercaseHexadecimal = character >= '0' && character <= '9' || character >= 'a' && character <= 'f';
             Assert.True(isLowercaseHexadecimal);
         }
     }
@@ -82,14 +78,11 @@ public sealed class ScheduleCalendarProjectorTests
         AcademicTermCalendarMetadata academicCalendar = getAcademicCalendar();
 
         CalendarExportDocument appleDocument = ScheduleCalendarProjector.ProjectForAppleCalendar(planId, planName, INSTITUTION_NAME, displayedSchedule, academicCalendar);
-        IReadOnlyList<AppleCalendarAutomationEvent> appleEvents = AppleCalendarEventOccurrenceProjector.Project(appleDocument);
         CalendarExportDocument googleDocument = ScheduleCalendarProjector.ProjectForGoogleCalendar(planId, planName, INSTITUTION_NAME, displayedSchedule, academicCalendar);
         GoogleCalendarExportPlan googleExportPlan = GoogleCalendarExportPlan.CreateFromDocument(googleDocument);
 
-        Assert.NotEmpty(appleEvents);
-        Assert.All(
-            appleEvents,
-            appleEvent => Assert.Equal("전자기학(01)", appleEvent.Summary));
+        RecurringCalendarEvent appleEvent = Assert.Single(appleDocument.Events);
+        Assert.Equal("전자기학(01)", appleEvent.Content.Summary);
         GoogleCalendarExportEvent googleEvent = Assert.Single(googleExportPlan.Events);
         Assert.Equal("전자기학", googleEvent.Title);
     }

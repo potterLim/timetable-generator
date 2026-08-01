@@ -25,7 +25,7 @@ internal static class CalendarNameConflictPolicy
 
         string canonicalFirstName = createCanonicalName(firstName);
         string canonicalSecondName = createCanonicalName(secondName);
-        return StringComparer.OrdinalIgnoreCase.Equals(canonicalFirstName, canonicalSecondName);
+        return StringComparer.Ordinal.Equals(canonicalFirstName, canonicalSecondName);
     }
 
     public static bool IsNameInUse(PlanName calendarName, IEnumerable<PlanName> existingNames)
@@ -48,7 +48,7 @@ internal static class CalendarNameConflictPolicy
         }
 
         HashSet<string> canonicalExistingNames = createCanonicalExistingNames(existingNames);
-        string normalizedRequestedName = normalizeName(requestedName.Value);
+        string normalizedRequestedName = requestedName.Value.Trim().Normalize(NormalizationForm.FormC);
 
         int copyNumber = FIRST_COPY_NUMBER;
         while (true)
@@ -103,7 +103,7 @@ internal static class CalendarNameConflictPolicy
             throw new ArgumentNullException(nameof(existingNames));
         }
 
-        HashSet<string> canonicalExistingNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        HashSet<string> canonicalExistingNames = new HashSet<string>(StringComparer.Ordinal);
         foreach (PlanName existingName in existingNames)
         {
             if (existingName == null)
@@ -122,9 +122,20 @@ internal static class CalendarNameConflictPolicy
         return normalizeName(calendarName.Value);
     }
 
-    private static string normalizeName(string calendarName)
+    internal static string normalizeName(string calendarName)
     {
-        return calendarName.Trim().Normalize(NormalizationForm.FormC);
+        if (calendarName == null)
+        {
+            throw new ArgumentNullException(nameof(calendarName));
+        }
+
+        string normalizedName = calendarName.Trim().Normalize(NormalizationForm.FormC);
+        StringBuilder canonicalName = new StringBuilder(normalizedName.Length);
+        foreach (char character in normalizedName)
+        {
+            canonicalName.Append(character >= 'a' && character <= 'z' ? (char)(character - ('a' - 'A')) : character);
+        }
+        return canonicalName.ToString();
     }
 
     private static string createCopySuffix(int copyNumber)

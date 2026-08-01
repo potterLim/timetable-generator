@@ -11,9 +11,9 @@ namespace TimetableGenerator.Desktop.Tests.Exporting.Calendar;
 public sealed class CalendarNameConflictPolicyTests
 {
     [Fact]
-    public void NameMatchingUsesTrimmedUnicodeFormCAndOrdinalIgnoreCase()
+    public void NameMatchingUsesTrimmedUnicodeFormCAndAsciiCaseFolding()
     {
-        PlanName composedName = new PlanName("  CAF\u00C9  ");
+        PlanName composedName = new PlanName("  Caf\u00E9  ");
         PlanName decomposedName = new PlanName("cafe\u0301");
 
         bool isSameName = CalendarNameConflictPolicy.IsSameName(composedName, decomposedName);
@@ -22,13 +22,33 @@ public sealed class CalendarNameConflictPolicyTests
         Assert.True(CalendarNameConflictPolicy.IsNameInUse(composedName, new PlanName[] { decomposedName }));
     }
 
+    [Theory]
+    [InlineData("Straße", "STRAßE", true)]
+    [InlineData("Straße", "STRASSE", false)]
+    [InlineData("ı", "I", false)]
+    [InlineData("ﬀ", "FF", false)]
+    public void NonAsciiCharactersHaveDeterministicOrdinalIdentity(string firstValue, string secondValue, bool expectedMatch)
+    {
+        bool isSameName = CalendarNameConflictPolicy.IsSameName(new PlanName(firstValue), new PlanName(secondValue));
+
+        Assert.Equal(expectedMatch, isSameName);
+    }
+
+    [Fact]
+    public void CanonicalNameMatchesTheNativeAsciiOnlyContract()
+    {
+        Assert.Equal("STRAßE", CalendarNameConflictPolicy.normalizeName("  Straße  "));
+        Assert.Equal("Iı", CalendarNameConflictPolicy.normalizeName("iı"));
+        Assert.Equal("FFﬀ", CalendarNameConflictPolicy.normalizeName("ffﬀ"));
+    }
+
     [Fact]
     public void NextAvailableNameUsesTheFirstFreeNumberedSuffix()
     {
         PlanName requestedName = new PlanName("Caf\u00E9 timetable");
         PlanName[] existingNames = new PlanName[]
         {
-            new PlanName("CAF\u00C9 TIMETABLE"),
+            new PlanName("CAF\u00E9 TIMETABLE"),
             new PlanName("Caf\u00E9 timetable (2)"),
             new PlanName("Cafe\u0301 timetable (3)"),
         };

@@ -19,21 +19,11 @@ function Publish-TimetableGeneratorDesktop {
     )
 
     $resolvedRepositoryRoot = [System.IO.Path]::GetFullPath($RepositoryRoot)
-    $projectPath = Join-Path `
-        $resolvedRepositoryRoot `
-        "src/TimetableGenerator.Desktop/TimetableGenerator.Desktop.csproj"
-    $windowsManifestPath = Join-Path `
-        $resolvedRepositoryRoot `
-        "src/TimetableGenerator.Desktop/Platforms/Windows/app.manifest"
-    $infoPlistTemplatePath = Join-Path `
-        $resolvedRepositoryRoot `
-        "src/TimetableGenerator.Desktop/Platforms/macOS/Info.plist.template"
-    $entitlementsPath = Join-Path `
-        $resolvedRepositoryRoot `
-        "src/TimetableGenerator.Desktop/Platforms/macOS/TimetableGenerator.entitlements"
-    $appIconPath = Join-Path `
-        $resolvedRepositoryRoot `
-        "src/TimetableGenerator.Desktop/Assets/AppIcon.png"
+    $projectPath = Join-Path $resolvedRepositoryRoot "src/TimetableGenerator.Desktop/TimetableGenerator.Desktop.csproj"
+    $windowsManifestPath = Join-Path $resolvedRepositoryRoot "src/TimetableGenerator.Desktop/Platforms/Windows/app.manifest"
+    $infoPlistTemplatePath = Join-Path $resolvedRepositoryRoot "src/TimetableGenerator.Desktop/Platforms/macOS/Info.plist.template"
+    $entitlementsPath = Join-Path $resolvedRepositoryRoot "src/TimetableGenerator.Desktop/Platforms/macOS/TimetableGenerator.entitlements"
+    $appIconPath = Join-Path $resolvedRepositoryRoot "src/TimetableGenerator.Desktop/Assets/AppIcon.png"
 
     foreach ($requiredFilePath in @(
         $projectPath,
@@ -49,9 +39,7 @@ function Publish-TimetableGeneratorDesktop {
     Assert-WindowsApplicationManifest -Path $windowsManifestPath
     Assert-MacOSEntitlements -Path $entitlementsPath
 
-    $resolvedOutputRoot = Resolve-DistributionOutputRoot `
-        -RepositoryRoot $resolvedRepositoryRoot `
-        -RequestedOutputRoot $OutputRoot
+    $resolvedOutputRoot = Resolve-DistributionOutputRoot -RepositoryRoot $resolvedRepositoryRoot -RequestedOutputRoot $OutputRoot
 
     $metadata = Get-DesktopProjectMetadata -ProjectPath $projectPath
     $executableName = [string] $metadata.AssemblyName
@@ -90,9 +78,7 @@ function Publish-TimetableGeneratorDesktop {
                     -ExecutableName $executableName `
                     -ProductVersion $Version `
                     -NoRestore:$NoRestore
-                $archivePaths.Add((Join-Path `
-                    $resolvedOutputRoot `
-                    "TimetableGenerator-$Version-$runtimeIdentifier-unsigned.zip"))
+                $archivePaths.Add((Join-Path $resolvedOutputRoot "TimetableGenerator-$Version-$runtimeIdentifier-unsigned.zip"))
             }
             "osx-arm64" {
                 Publish-MacOSTarget `
@@ -105,9 +91,7 @@ function Publish-TimetableGeneratorDesktop {
                     -ProductVersion $Version `
                     -BundleIdentifier $BundleIdentifier `
                     -NoRestore:$NoRestore
-                $archivePaths.Add((Join-Path `
-                    $resolvedOutputRoot `
-                    "TimetableGenerator-$Version-$runtimeIdentifier-unsigned.zip"))
+                $archivePaths.Add((Join-Path $resolvedOutputRoot "TimetableGenerator-$Version-$runtimeIdentifier-unsigned.zip"))
             }
             default {
                 throw "지원하지 않는 runtime identifier입니다: $runtimeIdentifier"

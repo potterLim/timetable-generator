@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-using TimetableGenerator.Domain.Planning;
+using TimetableGenerator.Desktop.Exporting.Calendar;
 
 namespace TimetableGenerator.Desktop.Exporting.AppleCalendar;
 
@@ -20,7 +20,9 @@ internal interface IAppleCalendarNativeBridge
 {
     bool IsAvailable { get; }
 
-    Task<IReadOnlyList<AppleCalendarDescriptor>> GetCalendarsAsync(PlanName requestedDestinationName, CancellationToken cancellationToken);
+    Task ReconcilePendingOperationAsync(CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<AppleCalendarDescriptor>> GetCalendarsAsync(CalendarExportDocument document, CancellationToken cancellationToken);
 
     Task<AppleCalendarNativeExportResult> ApplyExportAsync(AppleCalendarExportMutation mutation, CancellationToken cancellationToken);
 }

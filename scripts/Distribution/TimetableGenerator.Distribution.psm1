@@ -4,6 +4,7 @@ $ErrorActionPreference = "Stop"
 $implementationFiles = @(
     "Common.ps1",
     "BinaryValidation.ps1",
+    "MacOSEventKitBridgeValidation.ps1",
     "WindowsManifest.ps1",
     "MacOSPropertyList.ps1",
     "MacOSIcon.ps1",

@@ -60,9 +60,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 $repositoryRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot ".."))
-$modulePath = Join-Path `
-    $PSScriptRoot `
-    "ReleaseFinalization/TimetableGenerator.ReleaseFinalization.psm1"
+$modulePath = Join-Path $PSScriptRoot "ReleaseFinalization/TimetableGenerator.ReleaseFinalization.psm1"
 
 Import-Module -Name $modulePath -Force
 

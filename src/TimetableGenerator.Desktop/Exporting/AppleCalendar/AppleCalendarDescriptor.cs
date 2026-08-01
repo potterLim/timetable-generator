@@ -10,6 +10,8 @@ internal sealed class AppleCalendarDescriptor
 
     public string DisplayName { get; }
 
+    public string SourceIdentifier { get; }
+
     public PlanId? ManagedPlanIdOrNull { get; }
 
     public EAppleCalendarOwnership Ownership
@@ -30,7 +32,7 @@ internal sealed class AppleCalendarDescriptor
         }
     }
 
-    public AppleCalendarDescriptor(AppleCalendarId id, string displayName, PlanId? managedPlanIdOrNull, EAppleCalendarContentAccess contentAccess)
+    public AppleCalendarDescriptor(AppleCalendarId id, string displayName, string sourceIdentifier, PlanId? managedPlanIdOrNull, EAppleCalendarContentAccess contentAccess)
     {
         if (id == null)
         {
@@ -42,10 +44,21 @@ internal sealed class AppleCalendarDescriptor
             throw new ArgumentNullException(nameof(displayName));
         }
 
+        if (sourceIdentifier == null)
+        {
+            throw new ArgumentNullException(nameof(sourceIdentifier));
+        }
+
         string normalizedDisplayName = displayName.Trim();
         if (normalizedDisplayName.Length == 0)
         {
             throw new ArgumentException("Apple calendars require a display name.", nameof(displayName));
+        }
+
+        string normalizedSourceIdentifier = sourceIdentifier.Trim();
+        if (normalizedSourceIdentifier.Length == 0)
+        {
+            throw new ArgumentException("Apple calendars require a source identifier.", nameof(sourceIdentifier));
         }
 
         if (managedPlanIdOrNull.HasValue && managedPlanIdOrNull.Value.IsValid == false)
@@ -55,6 +68,7 @@ internal sealed class AppleCalendarDescriptor
 
         CalendarId = id;
         DisplayName = normalizedDisplayName;
+        SourceIdentifier = normalizedSourceIdentifier;
         ManagedPlanIdOrNull = managedPlanIdOrNull;
         ContentAccess = contentAccess;
     }

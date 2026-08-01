@@ -115,9 +115,7 @@ function New-IcnsOnWindows {
         )
 
         $chunks = foreach ($specification in $iconSpecifications) {
-            [byte[]] $pngBytes = New-ResizedPngBytes `
-                -SourceImage $sourceImage `
-                -Size $specification.Size
+            [byte[]] $pngBytes = New-ResizedPngBytes -SourceImage $sourceImage -Size $specification.Size
             [pscustomobject]@{
                 Type = $specification.Type
                 Data = $pngBytes
@@ -169,8 +167,7 @@ function New-IcnsOnMacOS {
         }
     }
 
-    $iconsetPath = Join-Path ([System.IO.Path]::GetTempPath()) (
-        "TimetableGenerator-" + [System.Guid]::NewGuid().ToString("N") + ".iconset")
+    $iconsetPath = Join-Path ([System.IO.Path]::GetTempPath()) ("TimetableGenerator-" + [System.Guid]::NewGuid().ToString("N") + ".iconset")
     $null = New-Item -ItemType Directory -Path $iconsetPath
     try {
         $iconSpecifications = @(

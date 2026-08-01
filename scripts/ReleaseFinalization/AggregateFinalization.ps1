@@ -80,6 +80,7 @@ function Invoke-AggregateFinalization {
                 "${contentsPrefix}MacOS/$($script:PRODUCT_EXECUTABLE_BASE_NAME).deps.json",
                 "${contentsPrefix}MacOS/$($script:PRODUCT_EXECUTABLE_BASE_NAME).runtimeconfig.json",
                 "${contentsPrefix}MacOS/libcoreclr.dylib",
+                "${contentsPrefix}MacOS/$($script:MACOS_EVENTKIT_BRIDGE_FILE_NAME)",
                 "${contentsPrefix}Resources/AppIcon.icns"
             )
         }

@@ -25,4 +25,13 @@
         Link="ProductAssets\AppIcon.ico"
         CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+
+  <Target
+      Name="CopyMacOSEventKitBridgeForTests"
+      AfterTargets="Build"
+      Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <Copy
+        SourceFiles="$(MSBuildThisFileDirectory)../../src/TimetableGenerator.Desktop/bin/$(Configuration)/$(TargetFramework)/libTimetableGenerator.EventKitBridge.dylib"
+        DestinationFiles="$(TargetDir)libTimetableGenerator.EventKitBridge.dylib" />
+  </Target>
 </Project>
