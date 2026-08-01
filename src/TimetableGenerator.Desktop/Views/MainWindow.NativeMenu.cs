@@ -79,7 +79,6 @@ internal sealed partial class MainWindow
         }
 
         mFullScreenNativeMenuItemOrNull = null;
-        NativeMenu.SetMenu(this, null);
         mNativeMenuCommands.Clear();
     }
 
