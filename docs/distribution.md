@@ -128,7 +128,7 @@ pwsh ./scripts/finalize-desktop-release.ps1 `
   -WindowsSignatureMode Unsigned
 ```
 
-macOS에서는 앱 내부의 Mach-O부터 바깥쪽 번들 순서로 서명하고, Apple 공증이 끝나면 공증 티켓을 스테이플합니다.  
+macOS에서는 앱 내부의 개별 파일부터 바깥쪽 번들 순서로 서명하고, Apple 공증이 끝나면 공증 티켓을 스테이플합니다.  
 아래 **macOS 서명·공증 경계** 절차를 먼저 완료한 앱을 대상으로 최종화 명령을 실행합니다.  
 스크립트는 `codesign --strict`, Gatekeeper와 공증 티켓을 검증하고, 서명 결과에 필요한 엔타이틀먼트 키가 포함되어 있는지 확인합니다.  
 최종 ZIP은 macOS 메타데이터를 보존하는 `ditto`로 만듭니다.
@@ -183,7 +183,7 @@ pwsh ./scripts/finalize-desktop-release.ps1 `
 주간 수업은 학기 종료일까지 반복되는 일정으로 저장합니다. 앱이 만든 캘린더와 일정의 소유권 정보는 로컬 앱 데이터로 관리하며 일정의 제목·메모·URL처럼 사용자에게 보이는 필드에 내부 관리 문자열을 남기지 않습니다.  
 앱 관리 캘린더를 대체할 때는 앱이 만든 일정만 변경하며 사용자가 직접 추가한 일정은 유지합니다.
 
-지원하는 macOS 버전에서는 `NSCalendarsFullAccessUsageDescription`을 선언하고 EventKit의 전체 캘린더 접근 권한을 요청합니다. 네이티브 모듈을 먼저 서명한 뒤 바깥쪽 앱 번들을 서명하고, 최종 산출물에서 중첩 코드와 Hardened Runtime 유효성을 함께 검증합니다.  
+지원하는 macOS 버전에서는 `NSCalendarsFullAccessUsageDescription`을 선언하고 EventKit의 전체 캘린더 접근 권한을 요청합니다. 앱 내부 파일을 먼저 서명한 뒤 바깥쪽 앱 번들을 서명하고, 최종 산출물에서 중첩 코드와 Hardened Runtime 유효성을 함께 검증합니다.  
 공개 전에 새 사용자 프로필에서 최초 권한 요청, 허용, 거부, 시스템 설정에서 권한 철회와 재시도를 실기기로 검증합니다.
 
 공증 제출 전에 다음 명령으로 `notarytool` 자격 증명을 키체인 프로필에 저장합니다.  
@@ -196,7 +196,8 @@ xcrun notarytool store-credentials "YOUR_NOTARY_PROFILE" \
 ```
 
 다음 순서를 배포 담당자의 실제 서명 ID와 `notarytool` 키체인 프로필로 실행합니다.  
-`codesign --deep`으로 서명하지 말고 내부 Mach-O부터 바깥쪽 번들 순서로 서명합니다.
+`codesign --deep`으로 서명하지 말고 `Contents/MacOS`의 개별 파일부터 바깥쪽 앱 번들 순서로 서명합니다.  
+자체 포함 .NET 앱의 관리형 어셈블리와 구성 파일도 일반 코드 서명으로 봉인해야 번들의 심층 검증과 공증이 일관되게 통과합니다.
 
 ```bash
 APP="artifacts/publish/osx-arm64/Timetable Generator.app"
@@ -205,13 +206,11 @@ ENTITLEMENTS="src/TimetableGenerator.Desktop/Platforms/macOS/TimetableGenerator.
 IDENTITY="Developer ID Application: YOUR NAME (TEAMID)"
 
 find "$APP/Contents/MacOS" -type f -print0 | while IFS= read -r -d '' FILE; do
-  if [ "$FILE" != "$MAIN" ] && file "$FILE" | grep -q "Mach-O"; then
-    codesign --force --timestamp --options runtime --sign "$IDENTITY" "$FILE"
+  if [ "$FILE" != "$MAIN" ]; then
+    codesign --force --timestamp --options runtime --sign "$IDENTITY" "$FILE" || exit 1
   fi
 done
 
-codesign --force --timestamp --options runtime \
-  --entitlements "$ENTITLEMENTS" --sign "$IDENTITY" "$MAIN"
 codesign --force --timestamp --options runtime \
   --entitlements "$ENTITLEMENTS" --sign "$IDENTITY" "$APP"
 codesign --verify --deep --strict --verbose=2 "$APP"
