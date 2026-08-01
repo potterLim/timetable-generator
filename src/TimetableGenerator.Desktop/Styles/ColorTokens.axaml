@@ -25,6 +25,7 @@
       <SolidColorBrush x:Key="BorderBrush" Color="#D7E3F0" />
       <SolidColorBrush x:Key="PaneDividerBrush" Color="#CBD9E8" />
       <SolidColorBrush x:Key="StrongBorderBrush" Color="#B7C9DC" />
+      <SolidColorBrush x:Key="WindowFrameBrush" Color="#B2C4D7" />
       <SolidColorBrush x:Key="ControlBorderBrush" Color="#72859E" />
       <SolidColorBrush x:Key="ScheduleHourGridLineBrush" Color="#C8D1DD" />
       <SolidColorBrush x:Key="ScheduleHalfHourGridLineBrush" Color="#E1E6ED" />
@@ -99,6 +100,7 @@
       <SolidColorBrush x:Key="BorderBrush" Color="#303F50" />
       <SolidColorBrush x:Key="PaneDividerBrush" Color="#394B5D" />
       <SolidColorBrush x:Key="StrongBorderBrush" Color="#465D72" />
+      <SolidColorBrush x:Key="WindowFrameBrush" Color="#465D72" />
       <SolidColorBrush x:Key="ControlBorderBrush" Color="#71869F" />
       <SolidColorBrush x:Key="ScheduleHourGridLineBrush" Color="#465361" />
       <SolidColorBrush x:Key="ScheduleHalfHourGridLineBrush" Color="#2C3540" />

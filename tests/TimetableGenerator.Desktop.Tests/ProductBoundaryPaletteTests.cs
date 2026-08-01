@@ -20,6 +20,7 @@ public sealed class ProductBoundaryPaletteTests
             new ExpectedColor("BorderBrush", "#D7E3F0"),
             new ExpectedColor("PaneDividerBrush", "#CBD9E8"),
             new ExpectedColor("StrongBorderBrush", "#B7C9DC"),
+            new ExpectedColor("WindowFrameBrush", "#B2C4D7"),
             new ExpectedColor("ControlBorderBrush", "#72859E"),
             new ExpectedColor("AccentTintBrush", "#E5F2FF"));
     }
@@ -36,6 +37,7 @@ public sealed class ProductBoundaryPaletteTests
             new ExpectedColor("BorderBrush", "#303F50"),
             new ExpectedColor("PaneDividerBrush", "#394B5D"),
             new ExpectedColor("StrongBorderBrush", "#465D72"),
+            new ExpectedColor("WindowFrameBrush", "#465D72"),
             new ExpectedColor("ControlBorderBrush", "#71869F"),
             new ExpectedColor("AccentTintBrush", "#172F4A"));
     }

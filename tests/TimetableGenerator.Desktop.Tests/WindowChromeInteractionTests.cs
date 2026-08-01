@@ -98,7 +98,7 @@ public sealed class WindowChromeInteractionTests
             Assert.Equal(999, productWindowFrame.GetValue(Panel.ZIndexProperty));
             Assert.Equal(AccessibilityView.Raw, AutomationProperties.GetAccessibilityView(productWindowFrame));
             Assert.Equal(platform == EWindowChromePlatform.Windows, productWindowFrame.IsVisible);
-            Assert.Equal(findRequiredThemeColor("StrongBorderBrush", hostWindow.ActualThemeVariant), findRequiredSolidColor(productWindowFrame.BorderBrush));
+            Assert.Equal(findRequiredThemeColor("WindowFrameBrush", hostWindow.ActualThemeVariant), findRequiredSolidColor(productWindowFrame.BorderBrush));
             Assert.Equal(platform == EWindowChromePlatform.Windows, captionButtons.IsVisible);
 
             assertCaptionButton(minimizeButton, "WindowMinimizeButton", "최소화", WindowDecorationsElementRole.MinimizeButton);

@@ -387,7 +387,7 @@
         x:Name="ProductWindowFrame"
         Grid.RowSpan="2"
         ZIndex="999"
-        BorderBrush="{DynamicResource StrongBorderBrush}"
+        BorderBrush="{DynamicResource WindowFrameBrush}"
         BorderThickness="1"
         IsHitTestVisible="False"
         AutomationProperties.AccessibilityView="Raw" />

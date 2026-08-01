@@ -93,6 +93,7 @@ public sealed class ProductColorContrastTests
         new ColorToken("BorderBrush"),
         new ColorToken("PaneDividerBrush"),
         new ColorToken("StrongBorderBrush"),
+        new ColorToken("WindowFrameBrush"),
         new ColorToken("ControlBorderBrush"),
         new ColorToken("ScheduleHourGridLineBrush"),
         new ColorToken("ScheduleHalfHourGridLineBrush"),
