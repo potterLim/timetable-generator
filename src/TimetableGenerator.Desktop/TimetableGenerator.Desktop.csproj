@@ -9,7 +9,7 @@
     <AssemblyTitle>Timetable Generator</AssemblyTitle>
     <Product>Timetable Generator</Product>
     <Description>과목을 조합하고 가능한 시간표를 비교하는 Windows 및 macOS 데스크톱 앱.</Description>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Authors>potterLim</Authors>
     <Company>potterLim</Company>

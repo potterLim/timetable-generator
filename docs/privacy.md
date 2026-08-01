@@ -9,7 +9,7 @@ permalink: /privacy/
 
 # Timetable Generator 개인정보처리방침
 
-<p class="policy-meta">시행일: 2026년 7월 21일 · 최종 수정일: 2026년 7월 30일</p>
+<p class="policy-meta">시행일: 2026년 7월 21일 · 최종 수정일: 2026년 8월 1일</p>
 
 Timetable Generator는 시간표를 구성하고 사용자가 요청한 내보내기 작업을 수행하는 데스크톱 앱입니다.  
 앱은 사용자의 계정 정보·시간표·개인 일정을 개발자에게 전송하지 않으며 개발자 서버에도 저장하지 않습니다.

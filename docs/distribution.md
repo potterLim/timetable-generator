@@ -1,7 +1,7 @@
 # 데스크톱 제품 배포
 
 이 문서는 배포 담당자를 위한 운영 절차입니다.  
-Timetable Generator 1.0.0이 지원하는 Windows 11 x64용 배포 파일과 Apple Silicon 기반 macOS 14 이상용 배포 파일의 생성·검증·공개 절차를 정의합니다.
+Timetable Generator 1.0.1이 지원하는 Windows 11 x64용 배포 파일과 Apple Silicon 기반 macOS 14 이상용 배포 파일의 생성·검증·공개 절차를 정의합니다.
 
 배포 식별자는 첫 공개 버전부터 다음 값을 유지합니다.
 
@@ -29,11 +29,11 @@ Windows와 macOS 배포 파일을 만드는 각 빌드 호스트에서 릴리스
 
 ```powershell
 pwsh ./scripts/write-release-build-info.ps1 `
-  -Version 1.0.0 `
+  -Version 1.0.1 `
   -RequireClean
 ```
 
-결과는 `artifacts/release-evidence/1.0.0/<host-rid>/build-info.txt`에 저장됩니다.  
+결과는 `artifacts/release-evidence/1.0.1/<host-rid>/build-info.txt`에 저장됩니다.  
 Git 커밋과 작업 트리 상태, UTC 시각, 운영체제와 아키텍처, 실제 `dotnet --version`·`dotnet --info` 출력을 기록하며 사용자용 ZIP에는 포함하지 않습니다.  
 같은 버전과 호스트의 기록을 다시 만들 때만 `-Force`를 사용합니다.
 
@@ -118,13 +118,13 @@ Windows에서는 `ThirdPartyNotices`, macOS에서는 `Contents/Resources/ThirdPa
 `publish-desktop.ps1`이 만드는 ZIP은 게시 단계 검증용이므로 GitHub 릴리스에 올리지 않습니다.  
 플랫폼별 최종 정책을 적용한 원본 디렉터리에서 최종 ZIP을 새로 만듭니다.
 
-Windows 1.0.0의 공식 배포 정책은 Authenticode 서명을 적용하지 않는 것입니다.  
+Windows 공식 배포 정책은 Authenticode 서명을 적용하지 않는 것입니다.  
 최종화 스크립트는 실행 파일이 손상되거나 불완전하게 서명된 상태가 아니라 정확히 `NotSigned`인지 확인합니다.
 
 ```powershell
 pwsh ./scripts/finalize-desktop-release.ps1 `
   -Stage Windows `
-  -Version 1.0.0 `
+  -Version 1.0.1 `
   -WindowsSignatureMode Unsigned
 ```
 
@@ -137,21 +137,21 @@ macOS에서는 앱 내부의 Mach-O부터 바깥쪽 번들 순서로 서명하�
 pwsh ./scripts/finalize-desktop-release.ps1 `
   -Stage MacOS `
   -Runtime osx-arm64 `
-  -Version 1.0.0 `
+  -Version 1.0.1 `
   -BundleIdentifier "io.github.potterlim.timetable"
 ```
 
-동일한 `artifacts/release/1.0.0`에 다음 두 ZIP을 모은 후 최종 체크섬을 생성합니다.
+동일한 `artifacts/release/1.0.1`에 다음 두 ZIP을 모은 후 최종 체크섬을 생성합니다.
 
 ```text
-TimetableGenerator-1.0.0-win-x64.zip
-TimetableGenerator-1.0.0-osx-arm64.zip
+TimetableGenerator-1.0.1-win-x64.zip
+TimetableGenerator-1.0.1-osx-arm64.zip
 ```
 
 ```powershell
 pwsh ./scripts/finalize-desktop-release.ps1 `
   -Stage Aggregate `
-  -Version 1.0.0 `
+  -Version 1.0.1 `
   -WindowsSignatureMode Unsigned
 ```
 

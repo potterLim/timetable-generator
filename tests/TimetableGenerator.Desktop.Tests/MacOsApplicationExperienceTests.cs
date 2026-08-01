@@ -48,7 +48,7 @@ public sealed class MacOsApplicationExperienceTests
 
             Assert.Equal("About Timetable Generator", aboutWindow.Title);
             Assert.Equal("About Timetable Generator", AutomationProperties.GetName(aboutWindow));
-            Assert.StartsWith("Version 1.0.0", productVersionText.Text, StringComparison.Ordinal);
+            Assert.StartsWith("Version 1.0.1", productVersionText.Text, StringComparison.Ordinal);
             Assert.Equal("정보 창 닫기", AutomationProperties.GetName(closeButton));
             Assert.False(aboutWindow.CanResize);
             Assert.False(aboutWindow.ShowInTaskbar);
