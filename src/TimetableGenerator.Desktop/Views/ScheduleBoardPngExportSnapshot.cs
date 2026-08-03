@@ -9,8 +9,9 @@ namespace TimetableGenerator.Desktop.Views;
 
 internal sealed class ScheduleBoardPngExportSnapshot : IDisposable
 {
-    private const double MINIMUM_DAY_COLUMN_WIDTH = 132.0;
+    private const double PRODUCT_DAY_COLUMN_WIDTH = 300.0;
     private const double NON_DAY_CONTENT_WIDTH = 96.0;
+    private const double BOARD_FRAME_HORIZONTAL_BORDER_WIDTH = 2.0;
 
     private readonly Canvas mHost;
 
@@ -52,7 +53,7 @@ internal sealed class ScheduleBoardPngExportSnapshot : IDisposable
             throw new InvalidOperationException("PNG export requires a rendered schedule presentation.");
         }
 
-        return create(host, sourcePresentationOrNull, sourceBoard);
+        return create(host, sourcePresentationOrNull);
     }
 
     public void Dispose()
@@ -66,18 +67,17 @@ internal sealed class ScheduleBoardPngExportSnapshot : IDisposable
         mIsDisposed = true;
     }
 
-    internal static ScheduleBoardPngExportSnapshot create(Canvas host, ScheduleBoardPresentation sourcePresentation, ScheduleBoardView sizingBoard)
+    internal static ScheduleBoardPngExportSnapshot create(Canvas host, ScheduleBoardPresentation sourcePresentation)
     {
         ArgumentNullException.ThrowIfNull(host);
         ArgumentNullException.ThrowIfNull(sourcePresentation);
-        ArgumentNullException.ThrowIfNull(sizingBoard);
 
         ScheduleBoardView exportBoard = ScheduleBoardView.createForPngExport();
         host.Children.Add(exportBoard);
         ScheduleBoardPngExportSnapshot snapshot = new ScheduleBoardPngExportSnapshot(host, exportBoard);
         try
         {
-            snapshot.update(sourcePresentation, sizingBoard);
+            snapshot.update(sourcePresentation);
             return snapshot;
         }
         catch
@@ -87,10 +87,9 @@ internal sealed class ScheduleBoardPngExportSnapshot : IDisposable
         }
     }
 
-    internal void update(ScheduleBoardPresentation sourcePresentation, ScheduleBoardView sizingBoard)
+    internal void update(ScheduleBoardPresentation sourcePresentation)
     {
         ArgumentNullException.ThrowIfNull(sourcePresentation);
-        ArgumentNullException.ThrowIfNull(sizingBoard);
         if (mIsDisposed)
         {
             throw new ObjectDisposedException(nameof(ScheduleBoardPngExportSnapshot));
@@ -104,16 +103,16 @@ internal sealed class ScheduleBoardPngExportSnapshot : IDisposable
             sourcePresentation.InstitutionName,
             sourcePresentation.AcademicTerm);
 
-        double minimumWidth = NON_DAY_CONTENT_WIDTH + (exportLayout.DayRange.DayCount * MINIMUM_DAY_COLUMN_WIDTH);
-        double exportWidth = Math.Max(sizingBoard.Bounds.Width, minimumWidth);
-        if (double.IsFinite(exportWidth) == false || exportWidth <= 0.0)
+        double exportSurfaceWidth = NON_DAY_CONTENT_WIDTH + (exportLayout.DayRange.DayCount * PRODUCT_DAY_COLUMN_WIDTH);
+        if (double.IsFinite(exportSurfaceWidth) == false || exportSurfaceWidth <= 0.0)
         {
             throw new InvalidOperationException("PNG export requires a positive schedule board width.");
         }
 
-        mScheduleBoard.Width = exportWidth;
+        double exportBoardWidth = exportSurfaceWidth + BOARD_FRAME_HORIZONTAL_BORDER_WIDTH;
+        mScheduleBoard.Width = exportBoardWidth;
         mScheduleBoard.prepareForPngExport(exportPresentation);
-        mScheduleBoard.Measure(new Size(exportWidth, double.PositiveInfinity));
+        mScheduleBoard.Measure(new Size(exportBoardWidth, double.PositiveInfinity));
 
         double exportHeight = mScheduleBoard.DesiredSize.Height;
         if (double.IsFinite(exportHeight) == false || exportHeight <= 0.0)
@@ -121,7 +120,7 @@ internal sealed class ScheduleBoardPngExportSnapshot : IDisposable
             throw new InvalidOperationException("PNG export could not measure the schedule board.");
         }
 
-        mScheduleBoard.Arrange(new Rect(0.0, 0.0, exportWidth, exportHeight));
+        mScheduleBoard.Arrange(new Rect(0.0, 0.0, exportBoardWidth, exportHeight));
         mScheduleBoard.UpdateLayout();
     }
 

@@ -52,7 +52,7 @@ public sealed partial class SchedulePngBatchWriterTests
                     SchedulePngBatchWriter writer = new SchedulePngBatchWriter(exporter);
                     using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createUnique(parentDirectoryPath, exportBatch.PlanName, CancellationToken.None))
                     {
-                        await writer.exportAsync(exportBatch, directory, sourceBoard, exportHost, CancellationToken.None);
+                        await writer.exportAsync(exportBatch, directory, exportHost, CancellationToken.None);
                     }
 
                     Assert.Equal(2, exporter.Surfaces.Count);
@@ -106,10 +106,11 @@ public sealed partial class SchedulePngBatchWriterTests
                 SchedulePngBatchWriter writer = new SchedulePngBatchWriter(exporter);
                 using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createUnique(parentDirectoryPath, exportBatch.PlanName, CancellationToken.None))
                 {
-                    await writer.exportAsync(exportBatch, directory, sourceBoard, exportHost, CancellationToken.None);
+                    await writer.exportAsync(exportBatch, directory, exportHost, CancellationToken.None);
                 }
 
                 Assert.Equal(2, exporter.Layouts.Count);
+                Assert.Equal(new double[] { 1_596.0, 2_196.0 }, exporter.SurfaceWidths);
                 ScheduleBoardLayout firstLayout = exporter.Layouts[0];
                 Assert.Equal(5, firstLayout.DayRange.DayCount);
                 Assert.Equal(new ScheduleBoardTimeBoundary(510), firstLayout.TimeAxis.Start);
@@ -170,7 +171,7 @@ public sealed partial class SchedulePngBatchWriterTests
                     using (SchedulePngBatchDirectory destinationDirectory = SchedulePngBatchDirectoryAllocator.createUnique(parentDirectoryPath, exportBatch.PlanName, CancellationToken.None))
                     {
                         SchedulePngBatchWriter writer = new SchedulePngBatchWriter(new AvaloniaControlPngExporter(PngExportScale.Create(1.0)));
-                        await writer.exportAsync(exportBatch, destinationDirectory, sourceBoard, exportHost, CancellationToken.None);
+                        await writer.exportAsync(exportBatch, destinationDirectory, exportHost, CancellationToken.None);
                         destinationDirectory.commit();
 
                         Assert.Equal(

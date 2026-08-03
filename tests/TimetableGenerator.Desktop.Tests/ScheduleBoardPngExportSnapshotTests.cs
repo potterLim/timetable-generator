@@ -37,7 +37,8 @@ namespace TimetableGenerator.Desktop.Tests;
 
 public sealed class ScheduleBoardPngExportSnapshotTests
 {
-    private const double EXPECTED_WEEKEND_EXPORT_SURFACE_MINIMUM_WIDTH = 996.0;
+    private const double EXPECTED_PRODUCT_DAY_COLUMN_WIDTH = 300.0;
+    private const double EXPECTED_WEEKEND_EXPORT_SURFACE_WIDTH = 2_196.0;
 
     private enum EScheduleCardKind
     {
@@ -297,7 +298,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.create(exportHost, exportedPresentation, sourceBoard))
+            using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.create(exportHost, exportedPresentation))
             {
                 Dispatcher.UIThread.RunJobs();
 
@@ -336,14 +337,14 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.create(exportHost, displayedPresentation, sourceBoard))
+            using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.create(exportHost, displayedPresentation))
             {
                 Assert.Equal(5, snapshot.Layout.DayRange.DayCount);
                 Assert.Equal(new ScheduleBoardTimeBoundary(510), snapshot.Layout.TimeAxis.Start);
                 Assert.Equal(new ScheduleBoardTimeBoundary(630), snapshot.Layout.TimeAxis.End);
                 Assert.Equal(new string[] { "09:00", "10:00" }, findPngTimeLabelTexts(snapshot.Surface));
 
-                snapshot.update(secondCandidate, sourceBoard);
+                snapshot.update(secondCandidate);
 
                 Assert.Equal(7, snapshot.Layout.DayRange.DayCount);
                 Assert.Equal(new ScheduleBoardTimeBoundary(870), snapshot.Layout.TimeAxis.Start);
@@ -421,7 +422,48 @@ public sealed class ScheduleBoardPngExportSnapshotTests
     }
 
     [AvaloniaFact]
-    public async Task NarrowSundayBoardExportsEveryWeekendColumnAtReadableWidthAsync()
+    public void PngSnapshotKeepsLongCourseTitlesAndOmitsTheirSections()
+    {
+        const string FIRST_TITLE = "Computer Architecture and Organization";
+        const string SECOND_TITLE = "Practicing Christian Global Leadership in a Pluralistic World";
+
+        ScheduleEntry firstEntry = createScheduleEntry(EDay.Tuesday, new AcademicPeriod(5), FIRST_TITLE);
+        ScheduleEntry secondEntry = createScheduleEntry(EDay.Friday, new AcademicPeriod(6), SECOND_TITLE);
+        ScheduleBoardView sourceBoard = createSourceBoard(new ScheduleEntry[] { firstEntry, secondEntry });
+        Canvas exportHost = new Canvas();
+        Grid root = new Grid();
+        root.Children.Add(exportHost);
+        root.Children.Add(sourceBoard);
+        Window window = createWindow(root, ThemeVariant.Light);
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal(
+                new string[] { FIRST_TITLE + "(01)", SECOND_TITLE + "(01)" },
+                findScheduleCardTitles(sourceBoard.PngExportSurface));
+
+            using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
+            {
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.Equal(
+                    new string[] { FIRST_TITLE, SECOND_TITLE },
+                    findScheduleCardTitles(snapshot.Surface));
+            }
+
+            Assert.Empty(exportHost.Children);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task SundayScheduleUsesTheFixedProductWidthRegardlessOfSourceBoardWidthAsync()
     {
         ScheduleEntry sundayEntry = createScheduleEntry(EDay.Sunday, new AcademicPeriod(2));
         ScheduleBoardView sourceBoard = createSourceBoard(new ScheduleEntry[] { sundayEntry });
@@ -439,18 +481,20 @@ public sealed class ScheduleBoardPngExportSnapshotTests
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
+            double narrowSnapshotHeight;
 
             using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
             {
                 Dispatcher.UIThread.RunJobs();
 
                 Assert.Equal(7, snapshot.Layout.DayRange.DayCount);
-                Assert.True(snapshot.Surface.Bounds.Width >= EXPECTED_WEEKEND_EXPORT_SURFACE_MINIMUM_WIDTH);
+                Assert.Equal(EXPECTED_WEEKEND_EXPORT_SURFACE_WIDTH, snapshot.Surface.Bounds.Width);
+                narrowSnapshotHeight = snapshot.Surface.Bounds.Height;
 
                 Grid boardGrid = findBoardGrid(snapshot.Surface);
                 Assert.Equal(8, boardGrid.ColumnDefinitions.Count);
                 assertWeekendHeadersArePresent(boardGrid);
-                assertDayColumnsMeetMinimumWidth(boardGrid, 132.0);
+                assertDayColumnsMeetMinimumWidth(boardGrid, EXPECTED_PRODUCT_DAY_COLUMN_WIDTH);
 
                 Button exportCard = Assert.Single(boardGrid.Children.OfType<Button>());
                 Grid exportCardContent = Assert.IsType<Grid>(exportCard.Content);
@@ -458,7 +502,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 Assert.Equal(
                     new string[]
                     {
-                        "시간표 내보내기 검증(01)",
+                        "시간표 내보내기 검증",
                         "테스트 강의실",
                         "테스트 교수",
                     },
@@ -491,11 +535,22 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                     destinationStream.Position = 0L;
                     using (Bitmap bitmap = new Bitmap(destinationStream))
                     {
-                        Assert.True(bitmap.PixelSize.Width >= EXPECTED_WEEKEND_EXPORT_SURFACE_MINIMUM_WIDTH);
+                        Assert.Equal((int)EXPECTED_WEEKEND_EXPORT_SURFACE_WIDTH, bitmap.PixelSize.Width);
                         Assert.Equal((int)Math.Ceiling(snapshot.Surface.Bounds.Height), bitmap.PixelSize.Height);
                         assertBitmapContainsOpaqueContent(bitmap);
                     }
                 }
+            }
+
+            sourceBoard.Width = 3_000.0;
+            Dispatcher.UIThread.RunJobs();
+            using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
+            {
+                Dispatcher.UIThread.RunJobs();
+
+                Assert.Equal(EXPECTED_WEEKEND_EXPORT_SURFACE_WIDTH, snapshot.Surface.Bounds.Width);
+                Assert.Equal(narrowSnapshotHeight, snapshot.Surface.Bounds.Height);
+                assertDayColumnsMeetMinimumWidth(findBoardGrid(snapshot.Surface), EXPECTED_PRODUCT_DAY_COLUMN_WIDTH);
             }
 
             Assert.Empty(exportHost.Children);
@@ -537,7 +592,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 Grid exportCardContent = Assert.IsType<Grid>(exportCard.Content);
                 List<TextBlock> exportCardTexts = exportCardContent.Children.OfType<TextBlock>().ToList();
                 Assert.Equal(
-                    new string[] { "프로그래밍 I(02)" },
+                    new string[] { "프로그래밍 I" },
                     exportCardTexts.Select(textBlock => textBlock.Text));
                 Assert.Single(exportCardContent.RowDefinitions);
                 Assert.Single(exportCardContent.Children);
@@ -609,12 +664,17 @@ public sealed class ScheduleBoardPngExportSnapshotTests
 
     private static ScheduleEntry createScheduleEntry(EDay day, AcademicPeriod period)
     {
+        return createScheduleEntry(day, period, "시간표 내보내기 검증");
+    }
+
+    private static ScheduleEntry createScheduleEntry(EDay day, AcademicPeriod period, string courseName)
+    {
         return new CourseScheduleEntry(
             new CourseId("course-tst00100"),
             new OfferingId("offering-tst00100-01"),
             new ScheduleCourseDetails(
                 new CourseCode("TST00100"),
-                new KoreanCourseName("시간표 내보내기 검증"),
+                new KoreanCourseName(courseName),
                 new CourseCredits(3m),
                 new ScheduleInstructorSummary(
                     InstructorAssignmentMetadata.CreateConfirmed(
@@ -657,6 +717,17 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             .Where(textBlock =>
                 textBlock.Classes.Contains("schedule-time-label"))
             .Select(getTextOrEmpty)
+            .ToList()
+            .AsReadOnly();
+    }
+
+    private static IReadOnlyList<string?> findScheduleCardTitles(Control surface)
+    {
+        return findBoardGrid(surface).Children
+            .OfType<Button>()
+            .Select(scheduleCard => Assert.IsType<Grid>(scheduleCard.Content))
+            .Select(cardContent => Assert.IsType<TextBlock>(cardContent.Children[0]).Text)
+            .OrderBy(title => title, StringComparer.Ordinal)
             .ToList()
             .AsReadOnly();
     }

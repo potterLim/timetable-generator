@@ -98,6 +98,8 @@ public sealed partial class SchedulePngBatchWriterTests
 
         private readonly List<ScheduleBoardLayout> mLayouts = new List<ScheduleBoardLayout>();
 
+        private readonly List<double> mSurfaceWidths = new List<double>();
+
         public IReadOnlyList<Control> Surfaces
         {
             get
@@ -114,10 +116,19 @@ public sealed partial class SchedulePngBatchWriterTests
             }
         }
 
+        public IReadOnlyList<double> SurfaceWidths
+        {
+            get
+            {
+                return mSurfaceWidths.AsReadOnly();
+            }
+        }
+
         public Task ExportControlAsync(Control sourceControl, Stream destinationStream, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             mSurfaces.Add(sourceControl);
+            mSurfaceWidths.Add(sourceControl.Bounds.Width);
             ScheduleBoardPresentation presentation = Assert.IsType<ScheduleBoardPresentation>(sourceControl.DataContext);
             mLayouts.Add(presentation.Layout);
             destinationStream.WriteByte(1);

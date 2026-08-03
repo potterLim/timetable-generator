@@ -12,7 +12,8 @@ internal sealed partial class ScheduleBoardView
     private void configureCourseCard(Button scheduleCard, CourseScheduleEntry entry)
     {
         scheduleCard.Classes.Add(findAccentClass(entry.Accent));
-        scheduleCard.Content = createScheduleCardContent(new ScheduleCardContent(entry));
+        ScheduleCardContent cardContent = mIsPngExport ? ScheduleCardContent.CreateForPngExport(entry) : new ScheduleCardContent(entry);
+        scheduleCard.Content = createScheduleCardContent(cardContent);
         scheduleCard.Flyout = createCourseEntryFlyout(entry);
 
         string accessibleName = entry.Code + ", " + entry.SectionDisplayText + ", " + entry.CourseDetails.CreditsDisplayText + ", " + entry.Name + ", " + ScheduleBoardDayRange.FindFullDayDisplayName(entry.Day) + " " + entry.TimeRange + ", " + entry.InstructorDisplayText + ", " + entry.LocationDisplayText;

@@ -57,7 +57,6 @@ internal sealed partial class ScheduleWorkspaceView
                 throw new InvalidOperationException("PNG export requires an active timetable presentation.");
             }
 
-            ScheduleBoardView scheduleBoard = getRequiredScheduleBoard();
             Canvas pngExportHost = getRequiredPngExportHost();
             TopLevel topLevel = getRequiredExportTopLevel();
             IStorageFile? destinationFileOrNull = await topLevel.StorageProvider.SaveFilePickerAsync(createPngSaveOptions(exportPresentationOrNull.PlanName));
@@ -76,7 +75,7 @@ internal sealed partial class ScheduleWorkspaceView
 
                 cancellationToken.ThrowIfCancellationRequested();
                 showPersistentExportStatus("현재 시간표 PNG를 저장하는 중입니다.", EExportStatus.Information);
-                using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.create(pngExportHost, exportPresentationOrNull, scheduleBoard))
+                using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.create(pngExportHost, exportPresentationOrNull))
                 using (Stream destinationStream = await destinationFileOrNull.OpenWriteAsync())
                 {
                     await exportSnapshotAsync(snapshot, destinationStream, cancellationToken);
@@ -134,7 +133,6 @@ internal sealed partial class ScheduleWorkspaceView
                     await writer.exportAsync(
                         exportBatch,
                         batchDirectory,
-                        getRequiredScheduleBoard(),
                         getRequiredPngExportHost(),
                         cancellationToken);
                     cancellationToken.ThrowIfCancellationRequested();

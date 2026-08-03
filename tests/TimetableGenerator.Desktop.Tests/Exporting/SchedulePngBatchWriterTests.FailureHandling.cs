@@ -62,7 +62,7 @@ public sealed partial class SchedulePngBatchWriterTests
                         SchedulePngBatchExportException exception = await Assert.ThrowsAsync<SchedulePngBatchExportException>(
                             delegate
                             {
-                                return writer.exportAsync(exportBatch, directory, sourceBoard, exportHost, CancellationToken.None);
+                                return writer.exportAsync(exportBatch, directory, exportHost, CancellationToken.None);
                             });
 
                         Assert.Equal(2, exception.SuccessfulCount);
@@ -137,7 +137,7 @@ public sealed partial class SchedulePngBatchWriterTests
                     SchedulePngBatchWriter writer = new SchedulePngBatchWriter(exporter);
                     using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createStaging(parentDirectoryPath, CancellationToken.None))
                     {
-                        await writer.exportAsync(exportBatch, directory, sourceBoard, exportHost, CancellationToken.None);
+                        await writer.exportAsync(exportBatch, directory, exportHost, CancellationToken.None);
                     }
 
                     Assert.True(inputCallbackRan);
@@ -193,7 +193,7 @@ public sealed partial class SchedulePngBatchWriterTests
                             await Assert.ThrowsAnyAsync<OperationCanceledException>(
                                 delegate
                                 {
-                                    return writer.exportAsync(exportBatch, directory, sourceBoard, exportHost, cancellationSource.Token);
+                                    return writer.exportAsync(exportBatch, directory, exportHost, cancellationSource.Token);
                                 });
                         }
                     }

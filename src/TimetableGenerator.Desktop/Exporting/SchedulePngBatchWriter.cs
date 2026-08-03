@@ -28,13 +28,11 @@ internal sealed class SchedulePngBatchWriter
     internal async Task exportAsync(
         SchedulePngExportBatch exportBatch,
         SchedulePngBatchDirectory destinationDirectory,
-        ScheduleBoardView sizingBoard,
         Canvas exportHost,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(exportBatch);
         ArgumentNullException.ThrowIfNull(destinationDirectory);
-        ArgumentNullException.ThrowIfNull(sizingBoard);
         ArgumentNullException.ThrowIfNull(exportHost);
         cancellationToken.ThrowIfCancellationRequested();
         await yieldToPendingInputAsync(cancellationToken);
@@ -43,7 +41,7 @@ internal sealed class SchedulePngBatchWriter
         ScheduleBoardPngExportSnapshot snapshot;
         try
         {
-            snapshot = ScheduleBoardPngExportSnapshot.create(exportHost, exportBatch.Candidates[0], sizingBoard);
+            snapshot = ScheduleBoardPngExportSnapshot.create(exportHost, exportBatch.Candidates[0]);
         }
         catch (OperationCanceledException)
         {
@@ -67,7 +65,7 @@ internal sealed class SchedulePngBatchWriter
                 {
                     if (candidateIndex > 0)
                     {
-                        snapshot.update(exportBatch.Candidates[candidateIndex], sizingBoard);
+                        snapshot.update(exportBatch.Candidates[candidateIndex]);
                     }
 
                     SchedulePngCandidateNumber candidateNumber = new SchedulePngCandidateNumber(candidateIndex + 1, exportBatch.Candidates.Count);
