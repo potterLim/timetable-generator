@@ -15,7 +15,17 @@ public abstract class AppleCalendarExportServiceTestFixture
 {
     private protected static AppleCalendarDescriptor createCalendar(AppleCalendarId calendarId, string name, EAppleCalendarOwnership ownership, EAppleCalendarContentAccess contentAccess)
     {
-        return new AppleCalendarDescriptor(calendarId, name, "source-1", ownership == EAppleCalendarOwnership.ApplicationManaged ? createDocument().PlanId : null, contentAccess);
+        PlanId? planIdOrNull;
+        if (ownership == EAppleCalendarOwnership.ApplicationManaged)
+        {
+            planIdOrNull = createDocument().PlanId;
+        }
+        else
+        {
+            planIdOrNull = null;
+        }
+
+        return new AppleCalendarDescriptor(calendarId, name, "source-1", planIdOrNull, contentAccess);
     }
 
     private protected static CalendarExportDocument createDocument()
@@ -289,7 +299,15 @@ public abstract class AppleCalendarExportServiceTestFixture
                 calendarId = existingCalendarIdOrNull;
             }
 
-            int deletedEventCount = mutation.Kind == EAppleCalendarExportMutationKind.ReplaceExisting ? 1 : 0;
+            int deletedEventCount;
+            if (mutation.Kind == EAppleCalendarExportMutationKind.ReplaceExisting)
+            {
+                deletedEventCount = 1;
+            }
+            else
+            {
+                deletedEventCount = 0;
+            }
             return Task.FromResult(new AppleCalendarNativeExportResult(calendarId, mutation.DestinationName, mutation.Document.Events.Count, deletedEventCount));
         }
     }

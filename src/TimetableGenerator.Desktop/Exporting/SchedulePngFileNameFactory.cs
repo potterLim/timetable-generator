@@ -70,7 +70,16 @@ internal static class SchedulePngFileNameFactory
             throw new ArgumentOutOfRangeException(nameof(copyNumber), copyNumber, "A PNG export folder copy number must be positive.");
         }
 
-        string copySuffix = copyNumber == 1 ? string.Empty : " (" + copyNumber + ")";
+        string copySuffix;
+        if (copyNumber == 1)
+        {
+            copySuffix = string.Empty;
+        }
+        else
+        {
+            copySuffix = " (" + copyNumber + ")";
+        }
+
         return createFileSystemComponent(getBaseName(planNameOrNull), copySuffix);
     }
 
@@ -90,7 +99,12 @@ internal static class SchedulePngFileNameFactory
         }
 
         string sanitizedBaseName = sanitizeBaseName(planNameOrNull.Value);
-        return string.IsNullOrWhiteSpace(sanitizedBaseName) ? FALLBACK_BASE_NAME : sanitizedBaseName;
+        if (string.IsNullOrWhiteSpace(sanitizedBaseName))
+        {
+            return FALLBACK_BASE_NAME;
+        }
+
+        return sanitizedBaseName;
     }
 
     private static string sanitizeBaseName(string value)
@@ -101,7 +115,13 @@ internal static class SchedulePngFileNameFactory
         {
             bool isPlatformInvalid = Array.IndexOf(platformInvalidCharacters, character) >= 0;
             bool isWindowsInvalid = character < ' ' || WINDOWS_INVALID_FILE_NAME_CHARACTERS.Contains(character);
-            sanitizedNameBuilder.Append(isPlatformInvalid || isWindowsInvalid ? REPLACEMENT_CHARACTER : character);
+            char sanitizedCharacter = character;
+            if (isPlatformInvalid || isWindowsInvalid)
+            {
+                sanitizedCharacter = REPLACEMENT_CHARACTER;
+            }
+
+            sanitizedNameBuilder.Append(sanitizedCharacter);
         }
 
         string sanitizedBaseName = sanitizedNameBuilder.ToString().TrimEnd(' ', '.');

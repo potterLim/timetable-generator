@@ -49,7 +49,12 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return mEditingCourseChoiceGroupIdOrNull.HasValue ? "수강 선택 수정" : "수강 선택 설정";
+            if (mEditingCourseChoiceGroupIdOrNull.HasValue)
+            {
+                return "수강 선택 수정";
+            }
+
+            return "수강 선택 설정";
         }
     }
 
@@ -283,7 +288,15 @@ internal sealed partial class PlannerWorkspaceViewModel
             courseCandidates.Add(draftCourse.CreateCandidate());
         }
 
-        CourseChoiceGroupId groupId = mEditingCourseChoiceGroupIdOrNull.HasValue ? mEditingCourseChoiceGroupIdOrNull.Value : CourseChoiceGroupId.CreateNew();
+        CourseChoiceGroupId groupId;
+        if (mEditingCourseChoiceGroupIdOrNull.HasValue)
+        {
+            groupId = mEditingCourseChoiceGroupIdOrNull.Value;
+        }
+        else
+        {
+            groupId = CourseChoiceGroupId.CreateNew();
+        }
         CourseChoiceGroup group = new CourseChoiceGroup(groupId, ECourseChoiceCardinality.ExactlyOne, courseCandidates);
         if (mEditingCourseChoiceGroupIdOrNull.HasValue)
         {

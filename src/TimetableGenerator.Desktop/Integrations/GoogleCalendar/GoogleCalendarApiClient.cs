@@ -71,7 +71,12 @@ internal sealed class GoogleCalendarApiClient
                                 string? idOrNull = getStringOrNull(item, "id");
                                 string? summaryOverrideOrNull = getStringOrNull(item, "summaryOverride");
                                 string? summaryOrNull = getStringOrNull(item, "summary");
-                                string? displayNameOrNull = string.IsNullOrWhiteSpace(summaryOverrideOrNull) ? summaryOrNull : summaryOverrideOrNull;
+                                string? displayNameOrNull = summaryOverrideOrNull;
+                                if (string.IsNullOrWhiteSpace(summaryOverrideOrNull))
+                                {
+                                    displayNameOrNull = summaryOrNull;
+                                }
+
                                 if (string.IsNullOrWhiteSpace(idOrNull) || string.IsNullOrWhiteSpace(displayNameOrNull))
                                 {
                                     continue;
@@ -429,7 +434,13 @@ internal sealed class GoogleCalendarApiClient
             isTransient = await containsRateLimitReasonAsync(response, cancellationToken).ConfigureAwait(false);
         }
 
-        throw new GoogleCalendarApiException(response.StatusCode, diagnosticCode, isTransient ? EGoogleCalendarApiFailureKind.Transient : EGoogleCalendarApiFailureKind.Permanent);
+        EGoogleCalendarApiFailureKind failureKind = EGoogleCalendarApiFailureKind.Permanent;
+        if (isTransient)
+        {
+            failureKind = EGoogleCalendarApiFailureKind.Transient;
+        }
+
+        throw new GoogleCalendarApiException(response.StatusCode, diagnosticCode, failureKind);
     }
 
     private static async Task<bool> containsRateLimitReasonAsync(HttpResponseMessage response, CancellationToken cancellationToken)
@@ -540,6 +551,11 @@ internal sealed class GoogleCalendarApiClient
         }
 
         Guid planIdValue;
-        return Guid.TryParseExact(descriptionOrNull[MARKER_PREFIX.Length..], "N", out planIdValue) && planIdValue != Guid.Empty ? new PlanId(planIdValue) : null;
+        if (Guid.TryParseExact(descriptionOrNull[MARKER_PREFIX.Length..], "N", out planIdValue) && planIdValue != Guid.Empty)
+        {
+            return new PlanId(planIdValue);
+        }
+
+        return null;
     }
 }

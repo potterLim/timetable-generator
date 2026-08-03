@@ -189,8 +189,7 @@ public sealed class PlanningWorkspaceEditorTests
             populatedPlan.Name,
             populatedPlan.CatalogBinding,
             populatedPlan.Content,
-            new ScheduleRecommendationBookmark(
-                new OfferingId[] { bookmarkedOfferingId }));
+            new ScheduleRecommendationBookmark(new OfferingId[] { bookmarkedOfferingId }));
         PlanningPlan untouchedPlan = createPlan("다른 계획");
         PlanningWorkspace workspace = new PlanningWorkspace(bookmarkedPlan.CatalogBinding, bookmarkedPlan.Id, new PlanningPlan[] { bookmarkedPlan, untouchedPlan });
         PlanningWorkspaceEditor editor = new PlanningWorkspaceEditor();

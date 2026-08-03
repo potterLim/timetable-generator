@@ -25,13 +25,12 @@ public sealed class EnglishInstructionPresentationTests
     [Fact]
     public void UniformPercentageUsesOneCultureInvariantValue()
     {
-        EnglishInstructionPercentageRange range =
-            EnglishInstructionPercentageRange.Create(
-                new EnglishInstructionPercentage[]
-                {
-                    new EnglishInstructionPercentage(12.5m),
-                    new EnglishInstructionPercentage(12.5m),
-                });
+        EnglishInstructionPercentageRange range = EnglishInstructionPercentageRange.Create(
+            new EnglishInstructionPercentage[]
+            {
+                new EnglishInstructionPercentage(12.5m),
+                new EnglishInstructionPercentage(12.5m),
+            });
 
         Assert.True(range.IsUniform);
         Assert.Equal("영어 12.5%", range.DisplayText);
@@ -41,14 +40,13 @@ public sealed class EnglishInstructionPresentationTests
     [Fact]
     public void MixedPercentagesPreserveZeroAndUseMinimumToMaximumRange()
     {
-        EnglishInstructionPercentageRange range =
-            EnglishInstructionPercentageRange.Create(
-                new EnglishInstructionPercentage[]
-                {
-                    new EnglishInstructionPercentage(100m),
-                    new EnglishInstructionPercentage(0m),
-                    new EnglishInstructionPercentage(50m),
-                });
+        EnglishInstructionPercentageRange range = EnglishInstructionPercentageRange.Create(
+            new EnglishInstructionPercentage[]
+            {
+                new EnglishInstructionPercentage(100m),
+                new EnglishInstructionPercentage(0m),
+                new EnglishInstructionPercentage(50m),
+            });
 
         Assert.False(range.IsUniform);
         Assert.Equal(new EnglishInstructionPercentage(0m), range.Minimum);

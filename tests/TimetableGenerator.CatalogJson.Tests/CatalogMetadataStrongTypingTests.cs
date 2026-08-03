@@ -100,22 +100,14 @@ public sealed class CatalogMetadataStrongTypingTests
     {
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new CatalogCourseCount(0));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new CatalogOfferingCount(0));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
-            () => new CatalogScheduledOfferingCount(-1));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
-            () => new CatalogMeetingNotProvidedCount(-1));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
-            () => new CatalogSourceEnglishScheduleMismatchCount(-1));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
-            () => new CatalogRoomNotProvidedCount(-1));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
-            () => new CatalogEnrollmentNotProvidedCount(-1));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
-            () => new CatalogInstructorUnconfirmedCount(-1));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
-            () => new CatalogMultiInstructorDisplayCount(-1));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
-            () => new CatalogSourceRemarkLookupOnlyCount(-1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new CatalogScheduledOfferingCount(-1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new CatalogMeetingNotProvidedCount(-1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new CatalogSourceEnglishScheduleMismatchCount(-1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new CatalogRoomNotProvidedCount(-1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new CatalogEnrollmentNotProvidedCount(-1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new CatalogInstructorUnconfirmedCount(-1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new CatalogMultiInstructorDisplayCount(-1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new CatalogSourceRemarkLookupOnlyCount(-1));
     }
 
     [TestMethod]
@@ -127,10 +119,7 @@ public sealed class CatalogMetadataStrongTypingTests
                 new CatalogOfferingCount(2),
                 new CatalogScheduledOfferingCount(1),
                 new CatalogMeetingNotProvidedCount(1)));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
-            () => new CatalogIndexCounts(
-                new CatalogCourseCount(1),
-                default(CatalogOfferingCount)));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new CatalogIndexCounts(new CatalogCourseCount(1), default(CatalogOfferingCount)));
     }
 
     [TestMethod]

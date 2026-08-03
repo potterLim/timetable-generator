@@ -74,8 +74,7 @@ public sealed class CatalogIndexTests
         CatalogIndexDocument document = new CatalogIndexDocument(entry, new[] { entry });
         string unsupportedContent = Encoding.UTF8.GetString(CatalogIndexJsonWriter.Write(document)).Replace("  \"schemaVersion\": 1,\n", "  \"schemaVersion\": 2,\n", StringComparison.Ordinal);
 
-        Assert.ThrowsExactly<CatalogIndexFormatException>(
-            () => CatalogIndexReader.Read(Encoding.UTF8.GetBytes(unsupportedContent)));
+        Assert.ThrowsExactly<CatalogIndexFormatException>(() => CatalogIndexReader.Read(Encoding.UTF8.GetBytes(unsupportedContent)));
     }
 
     private static CatalogIndexEntry createEntry(string term, int revision, char digestCharacter)

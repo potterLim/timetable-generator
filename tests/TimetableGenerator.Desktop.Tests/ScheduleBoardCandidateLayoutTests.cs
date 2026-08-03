@@ -22,16 +22,15 @@ public sealed class ScheduleBoardCandidateLayoutTests
     public void CandidateEntriesControlTimeAxisWhileSharedEntriesControlDayRange()
     {
         ScheduleEntry candidateEntry = createEntry(EDay.Monday, new ScheduleTime(12, 0), new ScheduleTime(13, 15));
-        ScheduleBoardDayRange sharedDayRange =
-            ScheduleBoardDayRange.CreateForEntries(
-                new ScheduleEntry[]
-                {
-                    candidateEntry,
-                    createEntry(
-                        EDay.Sunday,
-                        new ScheduleTime(8, 0),
-                        new ScheduleTime(9, 0)),
-                });
+        ScheduleBoardDayRange sharedDayRange = ScheduleBoardDayRange.CreateForEntries(
+            new ScheduleEntry[]
+            {
+                candidateEntry,
+                createEntry(
+                    EDay.Sunday,
+                    new ScheduleTime(8, 0),
+                    new ScheduleTime(9, 0)),
+            });
 
         ScheduleBoardLayout layout = ScheduleBoardLayout.CreateForEntries(new ScheduleEntry[] { candidateEntry }, sharedDayRange);
 

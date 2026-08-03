@@ -46,8 +46,11 @@ public readonly record struct ScheduleRecommendationLimit
 
     public override string ToString()
     {
-        return IsUnlimited
-            ? "Unlimited"
-            : Value.ToString(CultureInfo.InvariantCulture);
+        if (IsUnlimited)
+        {
+            return "Unlimited";
+        }
+
+        return Value.ToString(CultureInfo.InvariantCulture);
     }
 }

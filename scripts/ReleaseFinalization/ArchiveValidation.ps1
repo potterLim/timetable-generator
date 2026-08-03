@@ -1,8 +1,6 @@
 function Get-ArchiveExternalAttributes {
     $unixMode = [System.Convert]::ToUInt32("81A40000", 16)
-    return [System.BitConverter]::ToInt32(
-        [System.BitConverter]::GetBytes($unixMode),
-        0)
+    return [System.BitConverter]::ToInt32([System.BitConverter]::GetBytes($unixMode), 0)
 }
 
 function New-DeterministicWindowsArchive {
@@ -19,12 +17,9 @@ function New-DeterministicWindowsArchive {
 
     Add-Type -AssemblyName System.IO.Compression
     $sourceRoot = Get-NormalizedFullPath -Path $SourcePath
-    $entrySourcePaths = [System.Collections.Generic.Dictionary[string, string]]::new(
-        [System.StringComparer]::Ordinal)
+    $entrySourcePaths = [System.Collections.Generic.Dictionary[string, string]]::new([System.StringComparer]::Ordinal)
     foreach ($file in @(Get-ChildItem -LiteralPath $sourceRoot -File -Recurse)) {
-        $relativePath = [System.IO.Path]::GetRelativePath(
-            $sourceRoot,
-            $file.FullName).Replace("\", "/")
+        $relativePath = [System.IO.Path]::GetRelativePath($sourceRoot, $file.FullName).Replace("\", "/")
         $entryName = $ArchiveRootName.TrimEnd("/") + "/" + $relativePath
         if ($entryName.Contains("../", [System.StringComparison]::Ordinal) -or
             $entrySourcePaths.TryAdd($entryName, $file.FullName) -eq $false) {
@@ -40,15 +35,10 @@ function New-DeterministicWindowsArchive {
     [System.Array]::Sort($entryNames, [System.StringComparer]::Ordinal)
     $stream = [System.IO.File]::Open($DestinationPath, [System.IO.FileMode]::CreateNew)
     try {
-        $archive = [System.IO.Compression.ZipArchive]::new(
-            $stream,
-            [System.IO.Compression.ZipArchiveMode]::Create,
-            $false)
+        $archive = [System.IO.Compression.ZipArchive]::new($stream, [System.IO.Compression.ZipArchiveMode]::Create, $false)
         try {
             foreach ($entryName in $entryNames) {
-                $entry = $archive.CreateEntry(
-                    $entryName,
-                    [System.IO.Compression.CompressionLevel]::Optimal)
+                $entry = $archive.CreateEntry($entryName, [System.IO.Compression.CompressionLevel]::Optimal)
                 $entry.LastWriteTime = [System.DateTimeOffset]::new(
                     2000,
                     1,
@@ -96,31 +86,22 @@ function Assert-ArchiveEntries {
     Add-Type -AssemblyName System.IO.Compression
     $stream = [System.IO.File]::OpenRead($ArchivePath)
     try {
-        $archive = [System.IO.Compression.ZipArchive]::new(
-            $stream,
-            [System.IO.Compression.ZipArchiveMode]::Read,
-            $false)
+        $archive = [System.IO.Compression.ZipArchive]::new($stream, [System.IO.Compression.ZipArchiveMode]::Read, $false)
         try {
             if ($archive.Entries.Count -eq 0) {
                 throw "Release ZIP이 비어 있습니다: $ArchivePath"
             }
 
-            $entryNames = [System.Collections.Generic.HashSet[string]]::new(
-                [System.StringComparer]::Ordinal)
+            $entryNames = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
             foreach ($entry in $archive.Entries) {
                 $entryName = $entry.FullName
-                $hasExpectedPrefix = $entryName.StartsWith(
-                    $RequiredPrefix,
-                    [System.StringComparison]::Ordinal)
+                $hasExpectedPrefix = $entryName.StartsWith($RequiredPrefix, [System.StringComparison]::Ordinal)
                 $isAllowedMacOSMetadataEntry = $false
                 if ($AllowMacOSMetadataEntries) {
                     $rootName = $RequiredPrefix.TrimEnd("/")
-                    $isAllowedMacOSMetadataEntry =
-                        $entryName.Equals("__MACOSX/", [System.StringComparison]::Ordinal) -or
+                    $isAllowedMacOSMetadataEntry = $entryName.Equals("__MACOSX/", [System.StringComparison]::Ordinal) -or
                         $entryName.Equals("__MACOSX/._$rootName", [System.StringComparison]::Ordinal) -or
-                        $entryName.StartsWith(
-                            "__MACOSX/$RequiredPrefix",
-                            [System.StringComparison]::Ordinal)
+                        $entryName.StartsWith("__MACOSX/$RequiredPrefix", [System.StringComparison]::Ordinal)
                 }
 
                 if (($hasExpectedPrefix -eq $false -and $isAllowedMacOSMetadataEntry -eq $false) -or

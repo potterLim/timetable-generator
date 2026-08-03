@@ -10,9 +10,7 @@ internal sealed class RecommendationCalculationPolicy
 
     private static readonly TimeSpan AUTOMATIC_EXHAUSTIVE_CALCULATION_BUDGET = TimeSpan.FromMilliseconds(750.0);
 
-    public static RecommendationCalculationPolicy Default { get; } = new RecommendationCalculationPolicy(
-        new ScheduleRecommendationLimit(INITIAL_RECOMMENDATION_COUNT),
-        AUTOMATIC_EXHAUSTIVE_CALCULATION_BUDGET);
+    public static RecommendationCalculationPolicy Default { get; } = new RecommendationCalculationPolicy(new ScheduleRecommendationLimit(INITIAL_RECOMMENDATION_COUNT), AUTOMATIC_EXHAUSTIVE_CALCULATION_BUDGET);
 
     public ScheduleRecommendationLimit InitialRecommendationLimit { get; }
 

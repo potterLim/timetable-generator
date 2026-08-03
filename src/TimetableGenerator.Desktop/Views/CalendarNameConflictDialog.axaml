@@ -23,7 +23,7 @@
         Background="{DynamicResource SubtleSurfaceBrush}"
         BorderBrush="{DynamicResource PaneDividerBrush}"
         BorderThickness="0,0,0,1"
-        IsVisible="{Binding #CalendarConflictWindow.UsesProductCaptionControls}"
+        IsVisible="{Binding #CalendarConflictWindow.ShouldUseProductCaptionControls}"
         WindowDecorationProperties.ElementRole="TitleBar">
       <Grid ColumnDefinitions="18,10,*,Auto" VerticalAlignment="Center">
         <Image
@@ -136,7 +136,7 @@
         BorderBrush="{DynamicResource WindowFrameBrush}"
         BorderThickness="1"
         IsHitTestVisible="False"
-        IsVisible="{Binding #CalendarConflictWindow.UsesProductCaptionControls}"
+        IsVisible="{Binding #CalendarConflictWindow.ShouldUseProductCaptionControls}"
         AutomationProperties.AccessibilityView="Raw" />
   </Grid>
 </Window>

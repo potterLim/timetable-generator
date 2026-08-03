@@ -9,8 +9,7 @@ internal static class CatalogSourceConfigurationJsonReader
 {
     private const int SUPPORTED_SCHEMA_VERSION = 1;
 
-    private static readonly HashSet<string> EXPECTED_PROPERTY_NAMES =
-        new HashSet<string>(StringComparer.Ordinal)
+    private static readonly HashSet<string> EXPECTED_PROPERTY_NAMES = new HashSet<string>(StringComparer.Ordinal)
         {
             "schemaVersion",
             "indexUri",

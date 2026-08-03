@@ -253,7 +253,12 @@ internal sealed class CompositionAwareSearchTextBox : TextBox
 
     private static string normalizeNullableText(string? valueOrNull)
     {
-        return valueOrNull == null ? string.Empty : valueOrNull;
+        if (valueOrNull == null)
+        {
+            return string.Empty;
+        }
+
+        return valueOrNull;
     }
 
     private void unsubscribeFromTextPresenter()

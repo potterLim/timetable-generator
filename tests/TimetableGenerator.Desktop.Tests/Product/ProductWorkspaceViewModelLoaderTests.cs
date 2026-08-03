@@ -23,14 +23,13 @@ public sealed class ProductWorkspaceViewModelLoaderTests
         PlanningWorkspaceLoadResult persistedWorkspaceLoadResult = PlanningWorkspaceLoadResult.CreateLoadedLatestGeneration(workspace, new PlanningWorkspaceConcurrencyToken(1L));
         RecordingPlanningWorkspaceStore workspaceStore = new RecordingPlanningWorkspaceStore(persistedWorkspaceLoadResult);
         EProductWorkspaceRecoveryFlags recoveryFlags = EProductWorkspaceRecoveryFlags.CatalogPreviousGeneration | EProductWorkspaceRecoveryFlags.WorkspacePreviousGeneration;
-        ProductWorkspaceLoadResult dataLoadResult =
-            new ProductWorkspaceLoadResult(
-                catalogPackage,
-                workspace,
-                workspaceStore,
-                persistedWorkspaceLoadResult.ConcurrencyToken,
-                EProductCatalogOrigin.OfflineCache,
-                recoveryFlags);
+        ProductWorkspaceLoadResult dataLoadResult = new ProductWorkspaceLoadResult(
+            catalogPackage,
+            workspace,
+            workspaceStore,
+            persistedWorkspaceLoadResult.ConcurrencyToken,
+            EProductCatalogOrigin.OfflineCache,
+            recoveryFlags);
         FixedProductWorkspaceDataLoader dataLoader = new FixedProductWorkspaceDataLoader(dataLoadResult);
         ProductWorkspaceViewModelLoader loader = new ProductWorkspaceViewModelLoader(dataLoader);
 

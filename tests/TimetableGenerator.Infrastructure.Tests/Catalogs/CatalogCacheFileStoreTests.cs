@@ -191,11 +191,7 @@ public sealed class CatalogCacheFileStoreTests
             await store.SaveAsync(latestPackage, CancellationToken.None);
             await writeSchemaVersionAsync(getGenerationPath(testDirectoryPath, 1L), 2);
 
-            CatalogCacheUpgradeRequiredException exception =
-                await Assert.ThrowsExactlyAsync<CatalogCacheUpgradeRequiredException>(
-                    () => store.LoadMatchingAsync(
-                        createBinding(latestPackage),
-                        CancellationToken.None));
+            CatalogCacheUpgradeRequiredException exception = await Assert.ThrowsExactlyAsync<CatalogCacheUpgradeRequiredException>(() => store.LoadMatchingAsync(createBinding(latestPackage), CancellationToken.None));
 
             Assert.AreEqual(2, exception.UnsupportedSchemaVersion);
         }
@@ -264,8 +260,7 @@ public sealed class CatalogCacheFileStoreTests
             await File.WriteAllBytesAsync(getGenerationPath(testDirectoryPath, 2L), new byte[] { 0x02 }, CancellationToken.None);
             CatalogCacheFileStore store = createStore(testDirectoryPath);
 
-            await Assert.ThrowsExactlyAsync<CatalogCachePersistenceException>(
-                () => store.LoadAsync(CancellationToken.None));
+            await Assert.ThrowsExactlyAsync<CatalogCachePersistenceException>(() => store.LoadAsync(CancellationToken.None));
         }
         finally
         {
@@ -285,13 +280,8 @@ public sealed class CatalogCacheFileStoreTests
             await writeSchemaVersionAsync(generationPath, 2);
             byte[][] contentBeforeSave = await readGenerationContentsAsync(testDirectoryPath);
 
-            CatalogCacheUpgradeRequiredException loadException =
-                await Assert.ThrowsExactlyAsync<CatalogCacheUpgradeRequiredException>(
-                    () => store.LoadAsync(CancellationToken.None));
-            CatalogCacheUpgradeRequiredException saveException =
-                await Assert.ThrowsExactlyAsync<CatalogCacheUpgradeRequiredException>(
-                    () => store.SaveAsync(
-                        CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithKoreanName("덮어쓰면 안 되는 자료구조"), CancellationToken.None));
+            CatalogCacheUpgradeRequiredException loadException = await Assert.ThrowsExactlyAsync<CatalogCacheUpgradeRequiredException>(() => store.LoadAsync(CancellationToken.None));
+            CatalogCacheUpgradeRequiredException saveException = await Assert.ThrowsExactlyAsync<CatalogCacheUpgradeRequiredException>(() => store.SaveAsync(CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithKoreanName("덮어쓰면 안 되는 자료구조"), CancellationToken.None));
             byte[][] contentAfterSave = await readGenerationContentsAsync(testDirectoryPath);
 
             Assert.AreEqual(2, loadException.UnsupportedSchemaVersion);
@@ -319,11 +309,8 @@ public sealed class CatalogCacheFileStoreTests
                 CancellationToken.None);
             byte[][] contentBeforeSave = await readGenerationContentsAsync(testDirectoryPath);
 
-            await Assert.ThrowsExactlyAsync<CatalogCacheUpgradeRequiredException>(
-                () => store.LoadAsync(CancellationToken.None));
-            await Assert.ThrowsExactlyAsync<CatalogCacheUpgradeRequiredException>(
-                () => store.SaveAsync(
-                    CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithKoreanName("미래 캐시를 숨기면 안 되는 자료구조"), CancellationToken.None));
+            await Assert.ThrowsExactlyAsync<CatalogCacheUpgradeRequiredException>(() => store.LoadAsync(CancellationToken.None));
+            await Assert.ThrowsExactlyAsync<CatalogCacheUpgradeRequiredException>(() => store.SaveAsync(CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithKoreanName("미래 캐시를 숨기면 안 되는 자료구조"), CancellationToken.None));
             byte[][] contentAfterSave = await readGenerationContentsAsync(testDirectoryPath);
 
             assertGenerationContentsEqual(contentBeforeSave, contentAfterSave);
@@ -460,12 +447,7 @@ public sealed class CatalogCacheFileStoreTests
             await store.SaveAsync(CatalogSynchronizationTestDocuments.CreateVerifiedPackage(), CancellationToken.None);
             File.Move(getGenerationPath(testDirectoryPath, 1L), getGenerationPath(testDirectoryPath, long.MaxValue));
 
-            InvalidOperationException exception =
-                await Assert.ThrowsExactlyAsync<InvalidOperationException>(
-                    () => store.SaveAsync(
-                        CatalogSynchronizationTestDocuments
-                            .CreateVerifiedPackageWithKoreanName("새 자료구조"),
-                        CancellationToken.None));
+            InvalidOperationException exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => store.SaveAsync(CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithKoreanName("새 자료구조"), CancellationToken.None));
 
             Assert.AreEqual("The catalog cache generation range is exhausted.", exception.Message);
         }

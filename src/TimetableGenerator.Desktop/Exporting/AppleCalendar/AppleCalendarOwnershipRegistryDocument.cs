@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace TimetableGenerator.Desktop.Exporting.AppleCalendar;
 
@@ -20,9 +21,10 @@ internal sealed class AppleCalendarOwnershipRegistryDocument
         }
     }
 
-    public AppleCalendarPendingOperation? PendingOperation { get; }
+    [JsonPropertyName("pendingOperation")]
+    public AppleCalendarPendingOperation? PendingOperationOrNull { get; }
 
-    public AppleCalendarOwnershipRegistryDocument(int schemaVersion, IReadOnlyList<AppleCalendarRegistration> calendars, AppleCalendarPendingOperation? pendingOperation)
+    public AppleCalendarOwnershipRegistryDocument(int schemaVersion, IReadOnlyList<AppleCalendarRegistration> calendars, AppleCalendarPendingOperation? pendingOperationOrNull)
     {
         if (schemaVersion != CURRENT_SCHEMA_VERSION)
         {
@@ -31,7 +33,7 @@ internal sealed class AppleCalendarOwnershipRegistryDocument
 
         SchemaVersion = schemaVersion;
         mCalendars = copyCalendars(calendars);
-        PendingOperation = pendingOperation;
+        PendingOperationOrNull = pendingOperationOrNull;
     }
 
     public static AppleCalendarOwnershipRegistryDocument CreateEmpty()
@@ -57,7 +59,7 @@ internal sealed class AppleCalendarOwnershipRegistryDocument
     public AppleCalendarOwnershipRegistryDocument RemoveMissingCalendar(string calendarIdentifier)
     {
         string normalizedCalendarIdentifier = AppleCalendarRegistryValue.RequireText(calendarIdentifier, nameof(calendarIdentifier));
-        if (PendingOperation != null && string.Equals(PendingOperation.CalendarIdentifierOrNull, normalizedCalendarIdentifier, StringComparison.Ordinal))
+        if (PendingOperationOrNull != null && string.Equals(PendingOperationOrNull.CalendarIdentifierOrNull, normalizedCalendarIdentifier, StringComparison.Ordinal))
         {
             throw new AppleCalendarOwnershipRegistryException("A calendar with a pending Apple Calendar operation cannot be removed from the ownership registry.");
         }
@@ -68,7 +70,7 @@ internal sealed class AppleCalendarOwnershipRegistryDocument
             throw new AppleCalendarOwnershipRegistryException("The missing Apple Calendar registration does not exist.");
         }
 
-        return new AppleCalendarOwnershipRegistryDocument(SchemaVersion, registrations, PendingOperation);
+        return new AppleCalendarOwnershipRegistryDocument(SchemaVersion, registrations, PendingOperationOrNull);
     }
 
     public AppleCalendarOwnershipRegistryDocument CompleteOperation(AppleCalendarRegistration registration)
@@ -103,7 +105,7 @@ internal sealed class AppleCalendarOwnershipRegistryDocument
         List<AppleCalendarRegistration> registrations = mCalendars.Where(existing => string.Equals(existing.CalendarIdentifier, normalizedPreviousCalendarIdentifier, StringComparison.Ordinal) == false).ToList();
         registrations.Add(registration);
         registrations.Sort(compareRegistrations);
-        AppleCalendarPendingOperation? pendingOperationOrNull = rebindPendingOperationOrNull(PendingOperation, normalizedPreviousCalendarIdentifier, registration);
+        AppleCalendarPendingOperation? pendingOperationOrNull = rebindPendingOperationOrNull(PendingOperationOrNull, normalizedPreviousCalendarIdentifier, registration);
         return new AppleCalendarOwnershipRegistryDocument(SchemaVersion, registrations.AsReadOnly(), pendingOperationOrNull);
     }
 

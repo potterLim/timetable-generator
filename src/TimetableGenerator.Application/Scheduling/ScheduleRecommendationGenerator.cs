@@ -58,9 +58,7 @@ public sealed class ScheduleRecommendationGenerator
         }
 
         ScheduleRecommendation recommendation = new ScheduleRecommendation(Array.Empty<ScheduledOffering>(), unscheduledSelections, personalSchedules, RecommendationScore.ZERO);
-        return ScheduleRecommendationResult.createCompleted(
-            new ScheduleRecommendation[] { recommendation },
-            EScheduleRecommendationCompletion.Completed);
+        return ScheduleRecommendationResult.createCompleted(new ScheduleRecommendation[] { recommendation }, EScheduleRecommendationCompletion.Completed);
     }
 
     private static void generateRecommendations(ScheduleRecommendationGenerationState state)

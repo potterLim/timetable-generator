@@ -25,8 +25,7 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
             firstPlanWithoutBookmark.Name,
             firstPlanWithoutBookmark.CatalogBinding,
             firstPlanWithoutBookmark.Content,
-            new ScheduleRecommendationBookmark(
-                new OfferingId[] { bookmarkedOfferingId }));
+            new ScheduleRecommendationBookmark(new OfferingId[] { bookmarkedOfferingId }));
         PlanningPlan secondPlan = createPlan(originalCatalog, "둘째 계획", Array.Empty<CourseChoiceGroup>(), new UnscheduledOfferingSelection[] { unscheduledSelection });
         PlanningWorkspace workspace = new PlanningWorkspace(secondPlan.CatalogBinding, secondPlan.Id, new PlanningPlan[] { firstPlan, secondPlan });
         CourseCatalog newCatalog = createCompatibleCatalog();
@@ -520,7 +519,15 @@ public sealed class PlanningWorkspaceCatalogRebinderTests
 
     private static CatalogArtifactSha256 createArtifactSha256(CourseCatalog catalog)
     {
-        char hexCharacter = catalog.Revision.Value == 1 ? 'a' : 'b';
+        char hexCharacter;
+        if (catalog.Revision.Value == 1)
+        {
+            hexCharacter = 'a';
+        }
+        else
+        {
+            hexCharacter = 'b';
+        }
         return new CatalogArtifactSha256(new string(hexCharacter, 64));
     }
 }

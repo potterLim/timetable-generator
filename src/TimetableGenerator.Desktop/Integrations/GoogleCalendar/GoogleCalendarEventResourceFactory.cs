@@ -130,7 +130,12 @@ internal static class GoogleCalendarEventResourceFactory
         }
 
         Guid planIdValue;
-        return Guid.TryParseExact(getStringOrNull(privateProperties, PLAN_ID_PROPERTY_NAME), "N", out planIdValue) && planIdValue != Guid.Empty ? new PlanId(planIdValue) : null;
+        if (Guid.TryParseExact(getStringOrNull(privateProperties, PLAN_ID_PROPERTY_NAME), "N", out planIdValue) && planIdValue != Guid.Empty)
+        {
+            return new PlanId(planIdValue);
+        }
+
+        return null;
     }
 
     private static JsonObject createDateTimeResource(DateTimeOffset dateTime, CalendarTimeZoneId timeZoneId)

@@ -107,9 +107,7 @@ public sealed class CourseChoiceRecommendationTests
 
         ScheduleRecommendationResult result = generate(catalog, plan, 4);
 
-        CollectionAssert.AreEqual(
-            new int[] { 0, 1, 1, 1 },
-            getScoreValues(result));
+        CollectionAssert.AreEqual(new int[] { 0, 1, 1, 1 }, getScoreValues(result));
         Assert.AreEqual(EScheduleRecommendationCompletion.MaximumRecommendationCountReached, result.Completion);
     }
 
@@ -122,8 +120,7 @@ public sealed class CourseChoiceRecommendationTests
         RecommendationScore combinedScore = firstScore.Add(secondScore);
 
         Assert.AreEqual(new RecommendationScore(5), combinedScore);
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
-            () => new RecommendationScore(-1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new RecommendationScore(-1));
     }
 
     private static CatalogOffering createOffering(string courseCode, string sectionCode, EDay day, int period)

@@ -90,12 +90,9 @@ public sealed class PlanningWorkspaceJsonCodecTests
         string duplicatePropertyJson = validJson.Replace("\"schemaVersion\": 5,", "\"schemaVersion\": 5,\n  \"schemaVersion\": 5,", StringComparison.Ordinal);
         string unsupportedSchemaJson = validJson.Replace("\"schemaVersion\": 5,", "\"schemaVersion\": 6,", StringComparison.Ordinal);
 
-        Assert.ThrowsExactly<WorkspaceDocumentException>(
-            () => codec.Deserialize(Encoding.UTF8.GetBytes(unknownPropertyJson)));
-        Assert.ThrowsExactly<WorkspaceDocumentException>(
-            () => codec.Deserialize(Encoding.UTF8.GetBytes(duplicatePropertyJson)));
-        Assert.ThrowsExactly<UnsupportedWorkspaceSchemaVersionException>(
-            () => codec.Deserialize(Encoding.UTF8.GetBytes(unsupportedSchemaJson)));
+        Assert.ThrowsExactly<WorkspaceDocumentException>(() => codec.Deserialize(Encoding.UTF8.GetBytes(unknownPropertyJson)));
+        Assert.ThrowsExactly<WorkspaceDocumentException>(() => codec.Deserialize(Encoding.UTF8.GetBytes(duplicatePropertyJson)));
+        Assert.ThrowsExactly<UnsupportedWorkspaceSchemaVersionException>(() => codec.Deserialize(Encoding.UTF8.GetBytes(unsupportedSchemaJson)));
     }
 
     [TestMethod]
@@ -108,18 +105,11 @@ public sealed class PlanningWorkspaceJsonCodecTests
         string missingArtifactSha256Json = validJson.Replace("\"artifactSha256\"", "\"removedArtifactSha256\"", StringComparison.Ordinal);
         string invalidArtifactSha256Json = validJson.Replace(new string('a', 64), "not-a-sha256", StringComparison.Ordinal);
 
-        Assert.ThrowsExactly<WorkspaceDocumentException>(
-            () => codec.Deserialize(Encoding.UTF8.GetBytes(missingPlansJson)));
-        Assert.ThrowsExactly<WorkspaceDocumentException>(
-            () => codec.Deserialize(Encoding.UTF8.GetBytes(invalidPlanIdJson)));
-        Assert.ThrowsExactly<WorkspaceDocumentException>(
-            () => codec.Deserialize(
-                Encoding.UTF8.GetBytes(missingArtifactSha256Json)));
-        Assert.ThrowsExactly<WorkspaceDocumentException>(
-            () => codec.Deserialize(
-                Encoding.UTF8.GetBytes(invalidArtifactSha256Json)));
-        Assert.ThrowsExactly<WorkspaceDocumentException>(
-            () => codec.Deserialize(ReadOnlyMemory<byte>.Empty));
+        Assert.ThrowsExactly<WorkspaceDocumentException>(() => codec.Deserialize(Encoding.UTF8.GetBytes(missingPlansJson)));
+        Assert.ThrowsExactly<WorkspaceDocumentException>(() => codec.Deserialize(Encoding.UTF8.GetBytes(invalidPlanIdJson)));
+        Assert.ThrowsExactly<WorkspaceDocumentException>(() => codec.Deserialize(Encoding.UTF8.GetBytes(missingArtifactSha256Json)));
+        Assert.ThrowsExactly<WorkspaceDocumentException>(() => codec.Deserialize(Encoding.UTF8.GetBytes(invalidArtifactSha256Json)));
+        Assert.ThrowsExactly<WorkspaceDocumentException>(() => codec.Deserialize(ReadOnlyMemory<byte>.Empty));
     }
 
     [TestMethod]
@@ -135,15 +125,9 @@ public sealed class PlanningWorkspaceJsonCodecTests
         string emptyJson = Encoding.UTF8.GetString(codec.Serialize(new PlanningWorkspaceDocument(new WorkspaceGeneration(1), emptyWorkspace)));
         string unexpectedActivePlanJson = emptyJson.Replace("\"activePlanId\": null", "\"activePlanId\": \"11111111-1111-1111-1111-111111111111\"", StringComparison.Ordinal);
 
-        Assert.ThrowsExactly<WorkspaceDocumentException>(
-            () => codec.Deserialize(
-                Encoding.UTF8.GetBytes(missingActivePlanJson)));
-        Assert.ThrowsExactly<WorkspaceDocumentException>(
-            () => codec.Deserialize(
-                Encoding.UTF8.GetBytes(mismatchedCatalogBindingJson)));
-        Assert.ThrowsExactly<WorkspaceDocumentException>(
-            () => codec.Deserialize(
-                Encoding.UTF8.GetBytes(unexpectedActivePlanJson)));
+        Assert.ThrowsExactly<WorkspaceDocumentException>(() => codec.Deserialize(Encoding.UTF8.GetBytes(missingActivePlanJson)));
+        Assert.ThrowsExactly<WorkspaceDocumentException>(() => codec.Deserialize(Encoding.UTF8.GetBytes(mismatchedCatalogBindingJson)));
+        Assert.ThrowsExactly<WorkspaceDocumentException>(() => codec.Deserialize(Encoding.UTF8.GetBytes(unexpectedActivePlanJson)));
     }
 
     [TestMethod]
@@ -154,11 +138,8 @@ public sealed class PlanningWorkspaceJsonCodecTests
         string impreciseTimeJson = validJson.Replace("\"start\": \"12:20\"", "\"start\": \"12:21\"", StringComparison.Ordinal);
         string tooShortDurationJson = validJson.Replace("\"end\": \"13:20\"", "\"end\": \"12:30\"", StringComparison.Ordinal);
 
-        Assert.ThrowsExactly<WorkspaceDocumentException>(
-            () => codec.Deserialize(Encoding.UTF8.GetBytes(impreciseTimeJson)));
-        Assert.ThrowsExactly<WorkspaceDocumentException>(
-            () => codec.Deserialize(
-                Encoding.UTF8.GetBytes(tooShortDurationJson)));
+        Assert.ThrowsExactly<WorkspaceDocumentException>(() => codec.Deserialize(Encoding.UTF8.GetBytes(impreciseTimeJson)));
+        Assert.ThrowsExactly<WorkspaceDocumentException>(() => codec.Deserialize(Encoding.UTF8.GetBytes(tooShortDurationJson)));
     }
 
     [TestMethod]
@@ -447,13 +428,9 @@ public sealed class PlanningWorkspaceJsonCodecTests
         int bookmarkObjectEndIndex = validJson.IndexOf('}', bookmarkArrayEndIndex);
         string unknownBookmarkPropertyJson = validJson.Insert(bookmarkObjectEndIndex, ",\n      \"unexpected\": true\n    ");
 
-        Assert.ThrowsExactly<WorkspaceDocumentException>(
-            () => codec.Deserialize(Encoding.UTF8.GetBytes(duplicateOfferingJson)));
-        Assert.ThrowsExactly<WorkspaceDocumentException>(
-            () => codec.Deserialize(Encoding.UTF8.GetBytes(emptyBookmarkJson)));
-        Assert.ThrowsExactly<WorkspaceDocumentException>(
-            () => codec.Deserialize(
-                Encoding.UTF8.GetBytes(unknownBookmarkPropertyJson)));
+        Assert.ThrowsExactly<WorkspaceDocumentException>(() => codec.Deserialize(Encoding.UTF8.GetBytes(duplicateOfferingJson)));
+        Assert.ThrowsExactly<WorkspaceDocumentException>(() => codec.Deserialize(Encoding.UTF8.GetBytes(emptyBookmarkJson)));
+        Assert.ThrowsExactly<WorkspaceDocumentException>(() => codec.Deserialize(Encoding.UTF8.GetBytes(unknownBookmarkPropertyJson)));
     }
 
     [TestMethod]
@@ -539,8 +516,7 @@ public sealed class PlanningWorkspaceJsonCodecTests
                             "handong-global-university:2026-2:CSE30002:01")),
                 },
                 new PersonalSchedule[] { createPersonalSchedule() }),
-            new ScheduleRecommendationBookmark(
-                new OfferingId[] { lastViewedOfferingId }));
+            new ScheduleRecommendationBookmark(new OfferingId[] { lastViewedOfferingId }));
         PlanningPlan secondPlan = new PlanningPlan(new PlanId(Guid.Parse("22222222-2222-2222-2222-222222222222")), new PlanName("대안 시간표"), catalogBinding, new PlanningPlanContent(Array.Empty<CourseChoiceGroup>(), Array.Empty<UnscheduledOfferingSelection>(), Array.Empty<PersonalSchedule>()));
         return new PlanningWorkspace(catalogBinding, firstPlan.Id, new PlanningPlan[] { firstPlan, secondPlan });
     }

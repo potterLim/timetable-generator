@@ -176,8 +176,7 @@ public sealed class ScheduleRecommendationValidationTests
                 catalog,
                 plan,
                 default(ScheduleRecommendationLimit)));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
-            () => new ScheduleRecommendationLimit(0));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new ScheduleRecommendationLimit(0));
     }
 
     private static CourseCatalog createCatalogWithScheduledOfferings()

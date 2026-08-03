@@ -65,14 +65,7 @@ public static partial class CourseCatalogJsonReader
 
     private static CatalogConverterMetadata parseConverter(JsonElement element, string path)
     {
-        StrictJsonObject converterObject = StrictJsonObject.Create(
-            element,
-            path,
-            new string[]
-            {
-                "id",
-                "version",
-            });
+        StrictJsonObject converterObject = StrictJsonObject.Create(element, path, new string[] { "id", "version" });
         string converterIdText = converterObject.GetString("id");
         CatalogJsonValueParser.RequireExactString(converterIdText, "handong-course-catalog-importer", converterObject.GetPropertyPath("id"));
         CatalogConverterId converterId = new CatalogConverterId(converterIdText);

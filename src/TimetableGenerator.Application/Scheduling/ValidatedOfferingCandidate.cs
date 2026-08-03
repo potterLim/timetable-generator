@@ -84,7 +84,12 @@ internal sealed class ValidatedOfferingCandidate
     private static RecommendationScore createScore(EOfferingPreference preference)
     {
         validatePreference(preference);
-        return preference == EOfferingPreference.Preferred ? RecommendationScore.ZERO : new RecommendationScore(1);
+        if (preference == EOfferingPreference.Preferred)
+        {
+            return RecommendationScore.ZERO;
+        }
+
+        return new RecommendationScore(1);
     }
 
     private static void validatePreference(EOfferingPreference preference)

@@ -80,7 +80,11 @@ public sealed class ScheduleRecommendation
         mUnscheduledSelections = copiedUnscheduledSelections;
         mPersonalSchedules = copiedPersonalSchedules;
         Score = score;
-        VerificationStatus = copiedUnscheduledSelections.Count == 0 ? ERecommendationVerificationStatus.ConfirmedConflictFree : ERecommendationVerificationStatus.RequiresManualReview;
+        VerificationStatus = ERecommendationVerificationStatus.RequiresManualReview;
+        if (copiedUnscheduledSelections.Count == 0)
+        {
+            VerificationStatus = ERecommendationVerificationStatus.ConfirmedConflictFree;
+        }
     }
 
     private static IReadOnlyList<ScheduledOffering> copyAndValidateScheduledOfferings(IEnumerable<ScheduledOffering> scheduledOfferings)

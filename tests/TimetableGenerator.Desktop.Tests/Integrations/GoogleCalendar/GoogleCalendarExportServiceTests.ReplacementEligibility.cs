@@ -184,7 +184,15 @@ public sealed partial class GoogleCalendarExportServiceTests
     public async Task PrimaryOrUnmanagedCalendarCannotBeReplacedAsync(bool isPrimary, bool hasApplicationMarker)
     {
         GoogleCalendarExportPlan plan = createPlan();
-        string? markerOrNull = hasApplicationMarker ? GoogleCalendarApiClient.createPlanMarker(plan.PlanId) : null;
+        string? markerOrNull;
+        if (hasApplicationMarker)
+        {
+            markerOrNull = GoogleCalendarApiClient.createPlanMarker(plan.PlanId);
+        }
+        else
+        {
+            markerOrNull = null;
+        }
         string listJson = createCalendarListJson(createCalendarJson("protected-calendar", plan.CalendarName.Value, isPrimary, markerOrNull));
         CalendarExportHttpMessageHandler handler = new CalendarExportHttpMessageHandler(listJson);
         RecordingConflictResolver resolver = new RecordingConflictResolver(ECalendarNameConflictResolution.ReplaceExisting);

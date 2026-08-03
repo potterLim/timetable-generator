@@ -28,12 +28,12 @@ public sealed class EventKitAppleCalendarNativeBridgeReconciliationTests
             () => bridge.ApplyExportAsync(AppleCalendarExportMutation.CreateNew(document, document.CalendarName), TestContext.Current.CancellationToken));
 
         Assert.Equal("apple_calendar_registry_finalize_failed", saveException.DiagnosticCode);
-        Assert.NotNull(registryStore.Current.PendingOperation);
+        Assert.NotNull(registryStore.Current.PendingOperationOrNull);
         registryStore.FailureOnSaveAttemptOrNull = null;
 
         await bridge.ReconcilePendingOperationAsync(TestContext.Current.CancellationToken);
 
-        Assert.Null(registryStore.Current.PendingOperation);
+        Assert.Null(registryStore.Current.PendingOperationOrNull);
         Assert.Single(registryStore.Current.Calendars);
         Assert.Collection(
             command.Requests,
@@ -103,7 +103,7 @@ public sealed class EventKitAppleCalendarNativeBridgeReconciliationTests
 
         await bridge.ReconcilePendingOperationAsync(TestContext.Current.CancellationToken);
 
-        Assert.Null(registryStore.Current.PendingOperation);
+        Assert.Null(registryStore.Current.PendingOperationOrNull);
         Assert.Empty(registryStore.Current.Calendars);
         Assert.Single(registryStore.SavedDocuments);
         Assert.Equal("reconcile", getOperation(Assert.Single(command.Requests)));
@@ -148,7 +148,7 @@ public sealed class EventKitAppleCalendarNativeBridgeReconciliationTests
             () => bridge.ReconcilePendingOperationAsync(TestContext.Current.CancellationToken));
 
         Assert.Equal("apple_calendar_registry_cleanup_failed", exception.DiagnosticCode);
-        Assert.NotNull(registryStore.Current.PendingOperation);
+        Assert.NotNull(registryStore.Current.PendingOperationOrNull);
         Assert.Single(command.Requests);
     }
 
@@ -190,7 +190,7 @@ public sealed class EventKitAppleCalendarNativeBridgeReconciliationTests
             () => bridge.ReconcilePendingOperationAsync(TestContext.Current.CancellationToken));
 
         Assert.Equal("apple_calendar_registered_identifier_unavailable", exception.DiagnosticCode);
-        Assert.Same(pendingOperation, registryStore.Current.PendingOperation);
+        Assert.Same(pendingOperation, registryStore.Current.PendingOperationOrNull);
         Assert.Equal(new AppleCalendarRegistration[] { otherRegistration, registration }, registryStore.Current.Calendars);
         Assert.Empty(registryStore.SavedDocuments);
     }
@@ -230,7 +230,7 @@ public sealed class EventKitAppleCalendarNativeBridgeReconciliationTests
 
         await bridge.ReconcilePendingOperationAsync(TestContext.Current.CancellationToken);
 
-        Assert.Null(registryStore.Current.PendingOperation);
+        Assert.Null(registryStore.Current.PendingOperationOrNull);
         Assert.Same(registration, Assert.Single(registryStore.Current.Calendars));
         Assert.Single(registryStore.SavedDocuments);
     }
@@ -258,12 +258,12 @@ public sealed class EventKitAppleCalendarNativeBridgeReconciliationTests
 
         await bridge.ReconcilePendingOperationAsync(TestContext.Current.CancellationToken);
 
-        Assert.Null(registryStore.Current.PendingOperation);
+        Assert.Null(registryStore.Current.PendingOperationOrNull);
         AppleCalendarRegistration reboundRegistration = Assert.Single(registryStore.Current.Calendars);
         Assert.Equal("rebound-calendar", reboundRegistration.CalendarIdentifier);
         Assert.Equal("rebound-item", Assert.Single(reboundRegistration.Events).CalendarItemIdentifier);
         Assert.Equal(2, registryStore.SavedDocuments.Count);
-        Assert.Equal("rebound-calendar", registryStore.SavedDocuments[0].PendingOperation!.CalendarIdentifierOrNull);
+        Assert.Equal("rebound-calendar", registryStore.SavedDocuments[0].PendingOperationOrNull!.CalendarIdentifierOrNull);
     }
 
     [Fact]
@@ -289,12 +289,12 @@ public sealed class EventKitAppleCalendarNativeBridgeReconciliationTests
 
         await bridge.ReconcilePendingOperationAsync(TestContext.Current.CancellationToken);
 
-        Assert.Null(registryStore.Current.PendingOperation);
+        Assert.Null(registryStore.Current.PendingOperationOrNull);
         AppleCalendarRegistration refreshedRegistration = Assert.Single(registryStore.Current.Calendars);
         Assert.Equal(registration.CalendarIdentifier, refreshedRegistration.CalendarIdentifier);
         Assert.Equal("refreshed-item", Assert.Single(refreshedRegistration.Events).CalendarItemIdentifier);
         Assert.Equal(2, registryStore.SavedDocuments.Count);
-        Assert.Equal(registration.CalendarIdentifier, registryStore.SavedDocuments[0].PendingOperation!.CalendarIdentifierOrNull);
+        Assert.Equal(registration.CalendarIdentifier, registryStore.SavedDocuments[0].PendingOperationOrNull!.CalendarIdentifierOrNull);
     }
 
     [Fact]
@@ -309,7 +309,7 @@ public sealed class EventKitAppleCalendarNativeBridgeReconciliationTests
 
         await bridge.ReconcilePendingOperationAsync(TestContext.Current.CancellationToken);
 
-        Assert.Null(registryStore.Current.PendingOperation);
+        Assert.Null(registryStore.Current.PendingOperationOrNull);
         AppleCalendarRegistration reboundRegistration = Assert.Single(registryStore.Current.Calendars);
         Assert.Equal("rebound-calendar", reboundRegistration.CalendarIdentifier);
         Assert.Equal("new-item", Assert.Single(reboundRegistration.Events).CalendarItemIdentifier);
@@ -385,7 +385,7 @@ public sealed class EventKitAppleCalendarNativeBridgeReconciliationTests
             () => bridge.ReconcilePendingOperationAsync(TestContext.Current.CancellationToken));
 
         Assert.Equal("apple_calendar_invalid_native_response", exception.DiagnosticCode);
-        Assert.NotNull(registryStore.Current.PendingOperation);
+        Assert.NotNull(registryStore.Current.PendingOperationOrNull);
         Assert.Empty(registryStore.Current.Calendars);
         Assert.Empty(registryStore.SavedDocuments);
     }
@@ -469,7 +469,7 @@ public sealed class EventKitAppleCalendarNativeBridgeReconciliationTests
             () => bridge.ApplyExportAsync(AppleCalendarExportMutation.CreateNew(document, document.CalendarName), TestContext.Current.CancellationToken));
 
         Assert.Equal("apple_calendar_invalid_native_response", exception.DiagnosticCode);
-        Assert.NotNull(registryStore.Current.PendingOperation);
+        Assert.NotNull(registryStore.Current.PendingOperationOrNull);
         Assert.Single(registryStore.SavedDocuments);
     }
 

@@ -92,11 +92,7 @@ public sealed class HandongExportReaderTests
         string sourceHtml = HandongExportTestHtml.CreateWithCourseCodeHeader("<td>교과목코드</td>");
         using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(sourceHtml))
         {
-            HandongSourceFormatException exception =
-                await Assert.ThrowsExactlyAsync<HandongSourceFormatException>(
-                    () => HandongExportReader.ReadAsync(
-                        sourceFile.FilePath,
-                        CancellationToken.None));
+            HandongSourceFormatException exception = await Assert.ThrowsExactlyAsync<HandongSourceFormatException>(() => HandongExportReader.ReadAsync(sourceFile.FilePath, CancellationToken.None));
 
             StringAssert.Contains(exception.Message, "exact 16-column");
         }
@@ -108,11 +104,7 @@ public sealed class HandongExportReaderTests
         string sourceHtml = HandongExportTestHtml.CreateWithOfferingColumnCount(15);
         using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(sourceHtml))
         {
-            HandongSourceFormatException exception =
-                await Assert.ThrowsExactlyAsync<HandongSourceFormatException>(
-                    () => HandongExportReader.ReadAsync(
-                        sourceFile.FilePath,
-                        CancellationToken.None));
+            HandongSourceFormatException exception = await Assert.ThrowsExactlyAsync<HandongSourceFormatException>(() => HandongExportReader.ReadAsync(sourceFile.FilePath, CancellationToken.None));
 
             StringAssert.Contains(exception.Message, "Source record 2");
             StringAssert.Contains(exception.Message, "15 columns");
@@ -135,10 +127,7 @@ public sealed class HandongExportReaderTests
         };
         using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(compoundFileHeader))
         {
-            await Assert.ThrowsExactlyAsync<HandongSourceFormatException>(
-                () => HandongExportReader.ReadAsync(
-                    sourceFile.FilePath,
-                    CancellationToken.None));
+            await Assert.ThrowsExactlyAsync<HandongSourceFormatException>(() => HandongExportReader.ReadAsync(sourceFile.FilePath, CancellationToken.None));
         }
     }
 
@@ -148,11 +137,7 @@ public sealed class HandongExportReaderTests
         byte[] invalidCp949Bytes = new byte[] { 0x81 };
         using (TemporaryHandongSourceFile sourceFile = new TemporaryHandongSourceFile(invalidCp949Bytes))
         {
-            HandongSourceFormatException exception =
-                await Assert.ThrowsExactlyAsync<HandongSourceFormatException>(
-                    () => HandongExportReader.ReadAsync(
-                        sourceFile.FilePath,
-                        CancellationToken.None));
+            HandongSourceFormatException exception = await Assert.ThrowsExactlyAsync<HandongSourceFormatException>(() => HandongExportReader.ReadAsync(sourceFile.FilePath, CancellationToken.None));
 
             StringAssert.Contains(exception.Message, "not valid CP949");
         }

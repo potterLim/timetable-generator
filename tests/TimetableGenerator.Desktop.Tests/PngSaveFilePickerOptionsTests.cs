@@ -50,15 +50,13 @@ public sealed class PngSaveFilePickerOptionsTests
     [Fact]
     public void BatchFailureMessageReportsSuccessAndFailureCounts()
     {
-        SchedulePngBatchExportException exception =
-            new SchedulePngBatchExportException(
-                2,
-                1,
-                new Exception[]
-                {
-                    new InvalidOperationException(
-                        "synthetic failure"),
-                });
+        SchedulePngBatchExportException exception = new SchedulePngBatchExportException(
+            2,
+            1,
+            new Exception[]
+            {
+                new InvalidOperationException("synthetic failure"),
+            });
 
         Assert.Equal("가능한 시간표 2개 저장에 성공하고 1개 저장에 실패했습니다. " + "완성된 폴더는 만들지 않았습니다. 다시 시도해 주세요.", ScheduleWorkspaceView.formatPngBatchFailureMessage(exception));
     }

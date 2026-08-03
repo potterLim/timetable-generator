@@ -34,10 +34,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
             return null;
         }
 
-        Dictionary<string, JsonElement> properties = readExactObject(
-            element,
-            "plan.lastViewedRecommendation",
-            new string[] { "scheduledOfferingIds" });
+        Dictionary<string, JsonElement> properties = readExactObject(element, "plan.lastViewedRecommendation", new string[] { "scheduledOfferingIds" });
         JsonElement offeringIdsElement = properties["scheduledOfferingIds"];
         requireValueKind(offeringIdsElement, JsonValueKind.Array, "plan.lastViewedRecommendation.scheduledOfferingIds");
         List<OfferingId> offeringIds = new List<OfferingId>();

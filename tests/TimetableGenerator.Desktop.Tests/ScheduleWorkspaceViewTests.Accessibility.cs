@@ -78,7 +78,17 @@ public sealed partial class ScheduleWorkspaceViewTests
             IReadOnlyList<string> visibleListText = listOrNull
                 .GetVisualDescendants()
                 .OfType<TextBlock>()
-                .Select(candidate => candidate.Text is string text ? text : string.Empty)
+                .Select(candidate =>
+                {
+                    if (candidate.Text is string text)
+                    {
+                        return text;
+                    }
+                    else
+                    {
+                        return string.Empty;
+                    }
+                })
                 .ToList();
             Assert.DoesNotContain("과목", visibleListText);
             Assert.DoesNotContain("장소", visibleListText);

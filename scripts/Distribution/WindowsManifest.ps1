@@ -30,32 +30,22 @@ function Assert-WindowsApplicationManifest {
         throw "Windows manifest assembly identity가 유효하지 않습니다: $Path"
     }
 
-    $supportedOperatingSystems = @($document.SelectNodes(
-        "/asm:assembly/compat:compatibility/compat:application/compat:supportedOS",
-        $namespaces))
+    $supportedOperatingSystems = @($document.SelectNodes("/asm:assembly/compat:compatibility/compat:application/compat:supportedOS", $namespaces))
     $windowsTenAndElevenIdentifier = "{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}"
     if ($supportedOperatingSystems.Count -ne 1 -or
-        -not $supportedOperatingSystems[0].GetAttribute("Id").Equals(
-            $windowsTenAndElevenIdentifier,
-            [System.StringComparison]::OrdinalIgnoreCase)) {
+        -not $supportedOperatingSystems[0].GetAttribute("Id").Equals($windowsTenAndElevenIdentifier, [System.StringComparison]::OrdinalIgnoreCase)) {
         throw "Windows manifest는 공식 Windows 10/11 supportedOS ID 하나만 포함해야 합니다: $Path"
     }
 
-    $executionLevel = $document.SelectSingleNode(
-        "/asm:assembly/asm3:trustInfo/asm3:security/asm3:requestedPrivileges/asm3:requestedExecutionLevel",
-        $namespaces)
+    $executionLevel = $document.SelectSingleNode("/asm:assembly/asm3:trustInfo/asm3:security/asm3:requestedPrivileges/asm3:requestedExecutionLevel", $namespaces)
     if ($null -eq $executionLevel -or
         $executionLevel.GetAttribute("level") -ne "asInvoker" -or
         $executionLevel.GetAttribute("uiAccess") -ne "false") {
         throw "Windows manifest의 실행 권한은 asInvoker, uiAccess=false여야 합니다: $Path"
     }
 
-    $dpiAwareness = $document.SelectSingleNode(
-        "/asm:assembly/asm3:application/asm3:windowsSettings/windows:dpiAwareness",
-        $namespaces)
-    $longPathAwareness = $document.SelectSingleNode(
-        "/asm:assembly/asm3:application/asm3:windowsSettings/windows:longPathAware",
-        $namespaces)
+    $dpiAwareness = $document.SelectSingleNode("/asm:assembly/asm3:application/asm3:windowsSettings/windows:dpiAwareness", $namespaces)
+    $longPathAwareness = $document.SelectSingleNode("/asm:assembly/asm3:application/asm3:windowsSettings/windows:longPathAware", $namespaces)
     if ($null -eq $dpiAwareness -or $dpiAwareness.InnerText -ne "PerMonitorV2") {
         throw "Windows manifest의 DPI awareness는 PerMonitorV2여야 합니다: $Path"
     }

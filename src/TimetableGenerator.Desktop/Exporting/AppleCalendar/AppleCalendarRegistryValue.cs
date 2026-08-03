@@ -56,6 +56,11 @@ internal static class AppleCalendarRegistryValue
 
     public static string? NormalizeOptionalText(string? valueOrNull)
     {
-        return string.IsNullOrWhiteSpace(valueOrNull) ? null : valueOrNull.Trim().Normalize();
+        if (string.IsNullOrWhiteSpace(valueOrNull))
+        {
+            return null;
+        }
+
+        return valueOrNull.Trim().Normalize();
     }
 }

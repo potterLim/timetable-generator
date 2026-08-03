@@ -79,9 +79,12 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return mRecommendationExpansionState == ERecommendationExpansionState.Failed
-                ? "다시 계산"
-                : "전체 시간표 계산";
+            if (mRecommendationExpansionState == ERecommendationExpansionState.Failed)
+            {
+                return "다시 계산";
+            }
+
+            return "전체 시간표 계산";
         }
     }
 

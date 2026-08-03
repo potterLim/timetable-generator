@@ -151,9 +151,7 @@ public sealed class ScheduleRecommendationGeneratorTests
 
         Assert.IsTrue(ScheduleRecommendationLimit.Unlimited.IsUnlimited);
         Assert.HasCount(4, result.Recommendations);
-        Assert.AreEqual(
-            EScheduleRecommendationCompletion.Completed,
-            result.Completion);
+        Assert.AreEqual(EScheduleRecommendationCompletion.Completed, result.Completion);
     }
 
     [TestMethod]
@@ -180,18 +178,12 @@ public sealed class ScheduleRecommendationGeneratorTests
             Array.Empty<UnscheduledOfferingSelection>());
         ScheduleRecommendationResult initialResult = generate(catalog, plan, 24);
         ScheduleRecommendationGenerator generator = new ScheduleRecommendationGenerator();
-        ScheduleRecommendationResult exhaustiveResult = generator.GenerateRecommendations(
-            new ScheduleRecommendationRequest(catalog, plan, ScheduleRecommendationLimit.Unlimited),
-            CancellationToken.None);
+        ScheduleRecommendationResult exhaustiveResult = generator.GenerateRecommendations(new ScheduleRecommendationRequest(catalog, plan, ScheduleRecommendationLimit.Unlimited), CancellationToken.None);
 
         Assert.HasCount(24, initialResult.Recommendations);
-        Assert.AreEqual(
-            EScheduleRecommendationCompletion.MaximumRecommendationCountReached,
-            initialResult.Completion);
+        Assert.AreEqual(EScheduleRecommendationCompletion.MaximumRecommendationCountReached, initialResult.Completion);
         Assert.HasCount(25, exhaustiveResult.Recommendations);
-        Assert.AreEqual(
-            EScheduleRecommendationCompletion.Completed,
-            exhaustiveResult.Completion);
+        Assert.AreEqual(EScheduleRecommendationCompletion.Completed, exhaustiveResult.Completion);
     }
 
     [TestMethod]
@@ -244,8 +236,7 @@ public sealed class ScheduleRecommendationGeneratorTests
             basePlan.Name,
             basePlan.CatalogBinding,
             basePlan.Content,
-            new ScheduleRecommendationBookmark(
-                new OfferingId[] { secondOffering.Id }));
+            new ScheduleRecommendationBookmark(new OfferingId[] { secondOffering.Id }));
 
         ScheduleRecommendationResult result = generate(catalog, bookmarkedPlan, 1);
 

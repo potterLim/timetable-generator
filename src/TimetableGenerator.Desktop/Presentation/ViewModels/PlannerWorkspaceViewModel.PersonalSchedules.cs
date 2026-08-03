@@ -66,7 +66,12 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return mEditingPersonalScheduleIdOrNull.HasValue ? "개인 일정 수정" : "개인 일정 추가";
+            if (mEditingPersonalScheduleIdOrNull.HasValue)
+            {
+                return "개인 일정 수정";
+            }
+
+            return "개인 일정 추가";
         }
     }
 
@@ -74,7 +79,12 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return mEditingPersonalScheduleIdOrNull.HasValue ? "변경 저장" : "추가";
+            if (mEditingPersonalScheduleIdOrNull.HasValue)
+            {
+                return "변경 저장";
+            }
+
+            return "추가";
         }
     }
 

@@ -110,7 +110,7 @@
             Height="30"
             HorizontalAlignment="Right"
             VerticalAlignment="Center"
-            IsVisible="{Binding #ProductWindow.UsesProductCaptionControls}"
+            IsVisible="{Binding #ProductWindow.ShouldUseProductCaptionControls}"
             Orientation="Horizontal"
             Spacing="2">
           <Button
@@ -401,7 +401,7 @@
         HorizontalAlignment="Stretch"
         VerticalAlignment="Top"
         Background="Transparent"
-        IsVisible="{Binding #ProductWindow.UsesProductCaptionControls}"
+        IsVisible="{Binding #ProductWindow.ShouldUseProductCaptionControls}"
         AutomationProperties.AccessibilityView="Raw"
         WindowDecorationProperties.ElementRole="ResizeN" />
     <Border
@@ -413,7 +413,7 @@
         HorizontalAlignment="Stretch"
         VerticalAlignment="Bottom"
         Background="Transparent"
-        IsVisible="{Binding #ProductWindow.UsesProductCaptionControls}"
+        IsVisible="{Binding #ProductWindow.ShouldUseProductCaptionControls}"
         AutomationProperties.AccessibilityView="Raw"
         WindowDecorationProperties.ElementRole="ResizeS" />
     <Border
@@ -425,7 +425,7 @@
         HorizontalAlignment="Right"
         VerticalAlignment="Stretch"
         Background="Transparent"
-        IsVisible="{Binding #ProductWindow.UsesProductCaptionControls}"
+        IsVisible="{Binding #ProductWindow.ShouldUseProductCaptionControls}"
         AutomationProperties.AccessibilityView="Raw"
         WindowDecorationProperties.ElementRole="ResizeE" />
     <Border
@@ -437,7 +437,7 @@
         HorizontalAlignment="Left"
         VerticalAlignment="Stretch"
         Background="Transparent"
-        IsVisible="{Binding #ProductWindow.UsesProductCaptionControls}"
+        IsVisible="{Binding #ProductWindow.ShouldUseProductCaptionControls}"
         AutomationProperties.AccessibilityView="Raw"
         WindowDecorationProperties.ElementRole="ResizeW" />
     <Border
@@ -449,7 +449,7 @@
         HorizontalAlignment="Right"
         VerticalAlignment="Top"
         Background="Transparent"
-        IsVisible="{Binding #ProductWindow.UsesProductCaptionControls}"
+        IsVisible="{Binding #ProductWindow.ShouldUseProductCaptionControls}"
         AutomationProperties.AccessibilityView="Raw"
         WindowDecorationProperties.ElementRole="ResizeNE" />
     <Border
@@ -461,7 +461,7 @@
         HorizontalAlignment="Left"
         VerticalAlignment="Top"
         Background="Transparent"
-        IsVisible="{Binding #ProductWindow.UsesProductCaptionControls}"
+        IsVisible="{Binding #ProductWindow.ShouldUseProductCaptionControls}"
         AutomationProperties.AccessibilityView="Raw"
         WindowDecorationProperties.ElementRole="ResizeNW" />
     <Border
@@ -473,7 +473,7 @@
         HorizontalAlignment="Right"
         VerticalAlignment="Bottom"
         Background="Transparent"
-        IsVisible="{Binding #ProductWindow.UsesProductCaptionControls}"
+        IsVisible="{Binding #ProductWindow.ShouldUseProductCaptionControls}"
         AutomationProperties.AccessibilityView="Raw"
         WindowDecorationProperties.ElementRole="ResizeSE" />
     <Border
@@ -485,7 +485,7 @@
         HorizontalAlignment="Left"
         VerticalAlignment="Bottom"
         Background="Transparent"
-        IsVisible="{Binding #ProductWindow.UsesProductCaptionControls}"
+        IsVisible="{Binding #ProductWindow.ShouldUseProductCaptionControls}"
         AutomationProperties.AccessibilityView="Raw"
         WindowDecorationProperties.ElementRole="ResizeSW" />
   </Grid>

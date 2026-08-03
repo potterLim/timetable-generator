@@ -61,7 +61,12 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return mRecommendations.Count == 0 ? mPersonalSchedulePreview : ActiveRecommendation;
+            if (mRecommendations.Count == 0)
+            {
+                return mPersonalSchedulePreview;
+            }
+
+            return ActiveRecommendation;
         }
     }
 
@@ -124,7 +129,11 @@ internal sealed partial class PlannerWorkspaceViewModel
                 return "0 / 0";
             }
 
-            string additionalRecommendationIndicator = mRecommendationExpansionState == ERecommendationExpansionState.Unavailable ? string.Empty : "+";
+            string additionalRecommendationIndicator = "+";
+            if (mRecommendationExpansionState == ERecommendationExpansionState.Unavailable)
+            {
+                additionalRecommendationIndicator = string.Empty;
+            }
             return (mRecommendationIndex + 1) + " / " + mRecommendations.Count + additionalRecommendationIndicator;
         }
     }

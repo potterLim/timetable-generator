@@ -31,7 +31,6 @@ public sealed class CatalogIndexEndpointTests
     {
         Uri endpointUri = new Uri(endpointValue, UriKind.RelativeOrAbsolute);
 
-        Assert.ThrowsExactly<ArgumentException>(
-            () => new CatalogIndexEndpoint(endpointUri));
+        Assert.ThrowsExactly<ArgumentException>(() => new CatalogIndexEndpoint(endpointUri));
     }
 }

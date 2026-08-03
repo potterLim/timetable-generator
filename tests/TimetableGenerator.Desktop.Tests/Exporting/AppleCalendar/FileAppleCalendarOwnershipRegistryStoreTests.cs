@@ -22,7 +22,7 @@ public sealed class FileAppleCalendarOwnershipRegistryStoreTests
 
             Assert.Equal(AppleCalendarOwnershipRegistryDocument.CURRENT_SCHEMA_VERSION, document.SchemaVersion);
             Assert.Empty(document.Calendars);
-            Assert.Null(document.PendingOperation);
+            Assert.Null(document.PendingOperationOrNull);
         }
     }
 
@@ -62,9 +62,9 @@ public sealed class FileAppleCalendarOwnershipRegistryStoreTests
             Assert.Equal("calendar-1", loadedRegistration.CalendarIdentifier);
             AppleCalendarManagedEventRegistration loadedEvent = Assert.Single(loadedRegistration.Events);
             Assert.Equal("event-1", loadedEvent.CalendarItemIdentifier);
-            Assert.NotNull(loaded.PendingOperation);
-            Assert.Equal(pendingOperation.OperationId, loaded.PendingOperation!.OperationId);
-            Assert.Equal("source-1", loaded.PendingOperation.ExpectedSourceIdentifierOrNull);
+            Assert.NotNull(loaded.PendingOperationOrNull);
+            Assert.Equal(pendingOperation.OperationId, loaded.PendingOperationOrNull!.OperationId);
+            Assert.Equal("source-1", loaded.PendingOperationOrNull.ExpectedSourceIdentifierOrNull);
             string json = File.ReadAllText(registryPath);
             Assert.DoesNotContain("전자기학", json, StringComparison.Ordinal);
             Assert.DoesNotContain("NTH 311", json, StringComparison.Ordinal);
@@ -104,7 +104,7 @@ public sealed class FileAppleCalendarOwnershipRegistryStoreTests
 
         AppleCalendarOwnershipRegistryDocument completed = document.CompleteOperation(createRegistration("calendar-1", "event-new"));
 
-        Assert.Null(completed.PendingOperation);
+        Assert.Null(completed.PendingOperationOrNull);
         Assert.Collection(
             completed.Calendars,
             calendar =>

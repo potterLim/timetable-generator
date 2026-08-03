@@ -57,8 +57,7 @@ public sealed class CatalogValueTests
         Assert.AreEqual(2, term.Semester.Value);
         Assert.AreEqual("2026-2", term.Id);
         Assert.ThrowsExactly<FormatException>(() => AcademicTerm.Parse("2026"));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
-            () => AcademicTerm.Parse("2026-3"));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => AcademicTerm.Parse("2026-3"));
     }
 
     [TestMethod]

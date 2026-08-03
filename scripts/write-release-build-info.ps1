@@ -36,9 +36,7 @@ function Get-NormalizedFullPath {
         return $fullPath
     }
 
-    return $fullPath.TrimEnd(
-        [System.IO.Path]::DirectorySeparatorChar,
-        [System.IO.Path]::AltDirectorySeparatorChar)
+    return $fullPath.TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
 }
 
 function Invoke-CapturedCommand {
@@ -128,18 +126,15 @@ function Get-PlatformRuntimeIdentifier {
     $architecture = [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture
     $architectureName = $architecture.ToString().ToLowerInvariant()
 
-    if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
-            [System.Runtime.InteropServices.OSPlatform]::Windows)) {
+    if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)) {
         return "win-$architectureName"
     }
 
-    if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
-            [System.Runtime.InteropServices.OSPlatform]::OSX)) {
+    if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::OSX)) {
         return "osx-$architectureName"
     }
 
-    if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
-            [System.Runtime.InteropServices.OSPlatform]::Linux)) {
+    if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Linux)) {
         return "linux-$architectureName"
     }
 
@@ -285,9 +280,6 @@ if (-not [string]::IsNullOrWhiteSpace($dotNetInfo.StandardError)) {
 
 $null = New-Item -ItemType Directory -Path $evidenceDirectory -Force
 $utf8WithoutByteOrderMark = [System.Text.UTF8Encoding]::new($false)
-[System.IO.File]::WriteAllText(
-    $evidencePath,
-    $builder.ToString(),
-    $utf8WithoutByteOrderMark)
+[System.IO.File]::WriteAllText($evidencePath, $builder.ToString(), $utf8WithoutByteOrderMark)
 
 Write-Host "배포 빌드 환경 증거를 기록했습니다: $evidencePath"

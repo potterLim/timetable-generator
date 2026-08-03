@@ -100,15 +100,14 @@ internal static class CatalogProjectionTestFixture
                 physicalChemistryOffering,
                 physicsOffering,
             });
-        CatalogOfferingMetadata physicalChemistryMetadata =
-            createScheduledMetadata(
-                physicalChemistryOffering.Id,
-                ERequirementType.MajorElective,
-                new OfferingUnitName("자연과학부"),
-                InstructorAssignmentMetadata.NotProvided,
-                LocationAssignmentMetadata.NotProvided,
-                new KoreanScheduleSourceText("월1"),
-                new SourceRecordNumber(1));
+        CatalogOfferingMetadata physicalChemistryMetadata = createScheduledMetadata(
+            physicalChemistryOffering.Id,
+            ERequirementType.MajorElective,
+            new OfferingUnitName("자연과학부"),
+            InstructorAssignmentMetadata.NotProvided,
+            LocationAssignmentMetadata.NotProvided,
+            new KoreanScheduleSourceText("월1"),
+            new SourceRecordNumber(1));
         CatalogOfferingMetadata physicsMetadata = createScheduledMetadata(
             physicsOffering.Id,
             ERequirementType.MajorElective,
@@ -220,13 +219,19 @@ internal static class CatalogProjectionTestFixture
                 {
                     new MeetingSlot(EDay.Tuesday, new AcademicPeriod(3)),
                 }));
-        MeetingSchedule seminarSchedule = hasScheduledSeminarOffering
-            ? MeetingSchedule.CreateScheduled(
+        MeetingSchedule seminarSchedule;
+        if (hasScheduledSeminarOffering)
+        {
+            seminarSchedule = MeetingSchedule.CreateScheduled(
                 new MeetingSlot[]
                 {
                     new MeetingSlot(EDay.Friday, new AcademicPeriod(4)),
-                })
-            : MeetingSchedule.NotProvided;
+                });
+        }
+        else
+        {
+            seminarSchedule = MeetingSchedule.NotProvided;
+        }
         CatalogOffering seminarOffering = new CatalogOffering(new OfferingId("offering-seminar-unscheduled"), seminarCourse.Id, new CourseSectionCode("01"), seminarSchedule);
         CatalogOffering secondSeminarOffering = new CatalogOffering(new OfferingId("offering-seminar-unscheduled-02"), seminarCourse.Id, new CourseSectionCode("02"), MeetingSchedule.NotProvided);
 
@@ -249,7 +254,14 @@ internal static class CatalogProjectionTestFixture
         List<CatalogOfferingMetadata> metadata = new List<CatalogOfferingMetadata>();
         metadata.Add(createPrimaryOfferingMetadata(primaryOffering.Id));
         metadata.Add(createAlternativeOfferingMetadata(alternativeOffering.Id));
-        metadata.Add(hasScheduledSeminarOffering ? createScheduledSeminarOfferingMetadata(seminarOffering.Id) : createSeminarOfferingMetadata(seminarOffering.Id));
+        if (hasScheduledSeminarOffering)
+        {
+            metadata.Add(createScheduledSeminarOfferingMetadata(seminarOffering.Id));
+        }
+        else
+        {
+            metadata.Add(createSeminarOfferingMetadata(seminarOffering.Id));
+        }
         metadata.Add(createSecondSeminarOfferingMetadata(secondSeminarOffering.Id));
 
         InstitutionMetadata institution = new InstitutionMetadata(institutionId, institutionName, new EnglishInstitutionName("Handong Global University"));
@@ -263,7 +275,27 @@ internal static class CatalogProjectionTestFixture
             new CatalogFileSize(1),
             new Sha256Digest(new string('0', 64)));
         CatalogConverterMetadata converter = new CatalogConverterMetadata(new CatalogConverterId("catalog-converter"), new CatalogConverterVersion(new Version(1, 0, 0)));
-        CatalogDocumentCounts counts = new CatalogDocumentCounts(new CatalogCourseCount(2), new CatalogOfferingCount(4), new CatalogScheduledOfferingCount(hasScheduledSeminarOffering ? 3 : 2), new CatalogMeetingNotProvidedCount(hasScheduledSeminarOffering ? 1 : 2));
+        CatalogScheduledOfferingCount scheduledOfferingCount;
+        if (hasScheduledSeminarOffering)
+        {
+            scheduledOfferingCount = new CatalogScheduledOfferingCount(3);
+        }
+        else
+        {
+            scheduledOfferingCount = new CatalogScheduledOfferingCount(2);
+        }
+
+        CatalogMeetingNotProvidedCount meetingNotProvidedCount;
+        if (hasScheduledSeminarOffering)
+        {
+            meetingNotProvidedCount = new CatalogMeetingNotProvidedCount(1);
+        }
+        else
+        {
+            meetingNotProvidedCount = new CatalogMeetingNotProvidedCount(2);
+        }
+
+        CatalogDocumentCounts counts = new CatalogDocumentCounts(new CatalogCourseCount(2), new CatalogOfferingCount(4), scheduledOfferingCount, meetingNotProvidedCount);
         CatalogDataQualityMetadata dataQuality = new CatalogDataQualityMetadata(
             EScheduleNormalizationSource.KoreanPeriodText,
             new CatalogSourceEnglishScheduleMismatchCount(0),

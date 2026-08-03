@@ -132,7 +132,16 @@ internal sealed class ScheduleBoardTimeAxis
     private static IReadOnlyList<ScheduleBoardTimeBoundary> createLabelTimes(ScheduleBoardTimeBoundary start, ScheduleBoardTimeBoundary end)
     {
         List<ScheduleBoardTimeBoundary> labelTimes = new List<ScheduleBoardTimeBoundary>();
-        int firstLabelMinute = start.IsFullHour ? start.MinutesFromMidnight : roundUp(start.MinutesFromMidnight + 1, LABEL_INTERVAL_MINUTES);
+        int firstLabelMinute;
+        if (start.IsFullHour)
+        {
+            firstLabelMinute = start.MinutesFromMidnight;
+        }
+        else
+        {
+            firstLabelMinute = roundUp(start.MinutesFromMidnight + 1, LABEL_INTERVAL_MINUTES);
+        }
+
         for (int labelMinute = firstLabelMinute; labelMinute < end.MinutesFromMidnight; labelMinute += LABEL_INTERVAL_MINUTES)
         {
             labelTimes.Add(new ScheduleBoardTimeBoundary(labelMinute));

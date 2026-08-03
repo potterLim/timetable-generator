@@ -244,7 +244,10 @@ NSDictionary* tg_list_calendars(NSDictionary* const request, EKEventStore* const
     for (EKCalendar* calendar in calendars) {
         NSString* const calendar_identifier = tg_get_calendar_identifier(calendar);
         NSString* const source_identifier = tg_get_calendar_source_identifier(calendar);
-        NSString* const calendar_name = calendar.title ?: @"";
+        NSString* calendar_name = calendar.title;
+        if (calendar_name == nil) {
+            calendar_name = @"";
+        }
         if (calendar_identifier.length == 0 || source_identifier.length == 0 || calendar_name.length == 0) {
             continue;
         }
@@ -263,12 +266,16 @@ NSDictionary* tg_list_calendars(NSDictionary* const request, EKEventStore* const
                 migration_ends_at_unix_seconds);
         }
 
+        NSString* registered_plan_identifier = registrations[calendar_identifier];
+        if (registered_plan_identifier == nil) {
+            registered_plan_identifier = @"";
+        }
         [calendar_responses addObject:@{
             @"identifier" : calendar_identifier,
             @"name" : calendar_name,
             @"sourceIdentifier" : source_identifier,
             @"writable" : @(calendar.allowsContentModifications),
-            @"registeredPlanId" : registrations[calendar_identifier] ?: @"",
+            @"registeredPlanId" : registered_plan_identifier,
             @"legacyPlanId" : legacy_snapshot[@"planIdentifier"],
             @"legacyManaged" : legacy_snapshot[@"managed"]
         }];
@@ -311,18 +318,26 @@ NSDictionary* tg_create_registration_binding_or_null(NSDictionary* const registr
             return nil;
         }
 
+        NSString* external_identifier = resolved_event.calendarItemExternalIdentifier;
+        if (external_identifier == nil) {
+            external_identifier = @"";
+        }
         [event_bindings addObject:@{
             @"sourceEventHash" : managed_event[@"sourceEventHash"],
             @"calendarItemIdentifier" : calendar_item_identifier,
-            @"externalIdentifier" : resolved_event.calendarItemExternalIdentifier ?: @"",
+            @"externalIdentifier" : external_identifier,
             @"fingerprint" : managed_event[@"fingerprint"]
         }];
     }
 
+    NSString* calendar_name = calendar.title;
+    if (calendar_name == nil) {
+        calendar_name = @"";
+    }
     return @{
         @"previousCalendarIdentifier" : registration[@"calendarIdentifier"],
         @"calendarIdentifier" : tg_get_calendar_identifier(calendar),
-        @"calendarName" : calendar.title ?: @"",
+        @"calendarName" : calendar_name,
         @"sourceIdentifier" : tg_get_calendar_source_identifier(calendar),
         @"planId" : registration[@"planId"],
         @"events" : event_bindings
@@ -341,8 +356,14 @@ BOOL tg_does_registration_match_resolved_events(NSArray<NSDictionary*>* const ma
     for (NSUInteger index = 0; index < managed_events.count; ++index) {
         NSDictionary* const managed_event = managed_events[index];
         EKEvent* const resolved_event = resolved_events[index];
-        NSString* const resolved_identifier = resolved_event.calendarItemIdentifier ?: @"";
-        NSString* const resolved_external_identifier = resolved_event.calendarItemExternalIdentifier ?: @"";
+        NSString* resolved_identifier = resolved_event.calendarItemIdentifier;
+        if (resolved_identifier == nil) {
+            resolved_identifier = @"";
+        }
+        NSString* resolved_external_identifier = resolved_event.calendarItemExternalIdentifier;
+        if (resolved_external_identifier == nil) {
+            resolved_external_identifier = @"";
+        }
         const BOOL has_matching_identifier = [managed_event[@"calendarItemIdentifier"] isEqualToString:resolved_identifier];
         const BOOL has_matching_external_identifier = [managed_event[@"externalIdentifier"] isEqualToString:resolved_external_identifier];
         if (!has_matching_identifier || !has_matching_external_identifier) {
@@ -367,7 +388,11 @@ NSDictionary* tg_resolve_rebound_registration_or_null(
     NSMutableArray<NSDictionary*>* const matches = [NSMutableArray array];
     for (EKCalendar* candidate in calendars) {
         const BOOL has_matching_source = [tg_get_calendar_source_identifier(candidate) isEqualToString:registration[@"sourceIdentifier"]];
-        const BOOL has_matching_name = [tg_normalize_calendar_name(candidate.title ?: @"") isEqualToString:registration[@"normalizedCalendarName"]];
+        NSString* candidate_title = candidate.title;
+        if (candidate_title == nil) {
+            candidate_title = @"";
+        }
+        const BOOL has_matching_name = [tg_normalize_calendar_name(candidate_title) isEqualToString:registration[@"normalizedCalendarName"]];
         if (!has_matching_source || !has_matching_name) {
             continue;
         }
@@ -396,7 +421,11 @@ NSDictionary* tg_resolve_rebound_registration_or_null(
         }
     }
     *out_candidate_count = candidate_count;
-    return matches.count == 1 ? matches.firstObject : nil;
+    if (matches.count == 1) {
+        return matches.firstObject;
+    }
+
+    return nil;
 }
 
 EKCalendar* tg_find_calendar_or_null(EKEventStore* const event_store, NSString* const identifier)

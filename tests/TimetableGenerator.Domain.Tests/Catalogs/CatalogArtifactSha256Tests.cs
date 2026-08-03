@@ -23,13 +23,9 @@ public sealed class CatalogArtifactSha256Tests
     [TestMethod]
     public void Sha256RejectsMalformedHexValues()
     {
-        Assert.ThrowsExactly<ArgumentNullException>(
-            () => new CatalogArtifactSha256(null!));
-        Assert.ThrowsExactly<ArgumentException>(
-            () => new CatalogArtifactSha256(new string('a', 63)));
-        Assert.ThrowsExactly<ArgumentException>(
-            () => new CatalogArtifactSha256(new string('A', 64)));
-        Assert.ThrowsExactly<ArgumentException>(
-            () => new CatalogArtifactSha256(new string('g', 64)));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new CatalogArtifactSha256(null!));
+        Assert.ThrowsExactly<ArgumentException>(() => new CatalogArtifactSha256(new string('a', 63)));
+        Assert.ThrowsExactly<ArgumentException>(() => new CatalogArtifactSha256(new string('A', 64)));
+        Assert.ThrowsExactly<ArgumentException>(() => new CatalogArtifactSha256(new string('g', 64)));
     }
 }

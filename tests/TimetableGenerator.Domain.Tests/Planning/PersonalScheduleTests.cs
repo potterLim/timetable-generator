@@ -72,8 +72,7 @@ public sealed class PersonalScheduleTests
         Assert.HasCount(2, weekendSchedule.TimeRanges);
         Assert.AreEqual(EDay.Saturday, weekendSchedule.TimeRanges[0].Day);
         Assert.AreEqual(EDay.Sunday, weekendSchedule.TimeRanges[1].Day);
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
-            () => createSchedule(PersonalScheduleId.CreateNew(), EDay.None, noon));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => createSchedule(PersonalScheduleId.CreateNew(), EDay.None, noon));
         Assert.ThrowsExactly<ArgumentException>(
             () => new PersonalSchedule(
                 PersonalScheduleId.CreateNew(),
@@ -94,10 +93,8 @@ public sealed class PersonalScheduleTests
         PersonalSchedule duplicateId = createSchedule(sharedId, EDay.Wednesday, createTimeRange(new ScheduleTime(12, 0), new ScheduleTime(13, 0)));
         PersonalSchedule overlapping = createSchedule(PersonalScheduleId.CreateNew(), EDay.Tuesday, createTimeRange(new ScheduleTime(12, 30), new ScheduleTime(13, 30)));
 
-        Assert.ThrowsExactly<ArgumentException>(
-            () => createPlanContent(new PersonalSchedule[] { first, duplicateId }));
-        Assert.ThrowsExactly<ArgumentException>(
-            () => createPlanContent(new PersonalSchedule[] { first, overlapping }));
+        Assert.ThrowsExactly<ArgumentException>(() => createPlanContent(new PersonalSchedule[] { first, duplicateId }));
+        Assert.ThrowsExactly<ArgumentException>(() => createPlanContent(new PersonalSchedule[] { first, overlapping }));
     }
 
     private static PersonalSchedule createSchedule(PersonalScheduleId id, EDay day, DailyTimeRange timeRange)

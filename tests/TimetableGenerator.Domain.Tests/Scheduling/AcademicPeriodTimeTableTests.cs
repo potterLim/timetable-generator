@@ -67,10 +67,8 @@ public sealed class AcademicPeriodTimeTableTests
     {
         MeetingSlot invalidSlot = default;
 
-        Assert.ThrowsExactly<ArgumentException>(
-            () => AcademicPeriodTimeTable.GetTimeRange(invalidSlot));
-        Assert.ThrowsExactly<ArgumentException>(
-            () => AcademicPeriodTimeTable.GetWeeklyTimeRange(invalidSlot));
+        Assert.ThrowsExactly<ArgumentException>(() => AcademicPeriodTimeTable.GetTimeRange(invalidSlot));
+        Assert.ThrowsExactly<ArgumentException>(() => AcademicPeriodTimeTable.GetWeeklyTimeRange(invalidSlot));
     }
 
     private static ExpectedPeriodTime createExpectedPeriodTime(

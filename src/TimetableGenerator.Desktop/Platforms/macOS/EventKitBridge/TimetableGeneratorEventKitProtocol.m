@@ -80,10 +80,14 @@ NSDictionary* tg_create_response(NSString* const status, NSString* const diagnos
     assert(status != NULL);
     assert(diagnostic_code != NULL);
 
+    NSString* response_diagnostic_code = diagnostic_code;
+    if (response_diagnostic_code == nil) {
+        response_diagnostic_code = @"";
+    }
     return @{
         @"schemaVersion" : @(TG_SCHEMA_VERSION),
         @"status" : status,
-        @"diagnosticCode" : diagnostic_code ?: @""
+        @"diagnosticCode" : response_diagnostic_code
     };
 }
 
@@ -222,9 +226,19 @@ void tg_validate_legacy_migration_range(
         tg_throw_invalid_request(@"eventkit_request_term_range_invalid");
     }
 
-    const long long expected_migration_start = term_starts_at_unix_seconds < LLONG_MIN + TG_LEGACY_MIGRATION_PADDING_SECONDS ? LLONG_MIN : term_starts_at_unix_seconds - TG_LEGACY_MIGRATION_PADDING_SECONDS;
+    long long expected_migration_start;
+    if (term_starts_at_unix_seconds < LLONG_MIN + TG_LEGACY_MIGRATION_PADDING_SECONDS) {
+        expected_migration_start = LLONG_MIN;
+    } else {
+        expected_migration_start = term_starts_at_unix_seconds - TG_LEGACY_MIGRATION_PADDING_SECONDS;
+    }
     const long long maximum_inclusive_end = LLONG_MAX - TG_INCLUSIVE_RANGE_END_OFFSET_SECONDS;
-    const long long expected_migration_end = term_ends_at_unix_seconds > maximum_inclusive_end - TG_LEGACY_MIGRATION_PADDING_SECONDS ? maximum_inclusive_end : term_ends_at_unix_seconds + TG_LEGACY_MIGRATION_PADDING_SECONDS;
+    long long expected_migration_end;
+    if (term_ends_at_unix_seconds > maximum_inclusive_end - TG_LEGACY_MIGRATION_PADDING_SECONDS) {
+        expected_migration_end = maximum_inclusive_end;
+    } else {
+        expected_migration_end = term_ends_at_unix_seconds + TG_LEGACY_MIGRATION_PADDING_SECONDS;
+    }
     if (migration_starts_at_unix_seconds != expected_migration_start || migration_ends_at_unix_seconds != expected_migration_end) {
         tg_throw_invalid_request(@"eventkit_request_migration_range_invalid");
     }

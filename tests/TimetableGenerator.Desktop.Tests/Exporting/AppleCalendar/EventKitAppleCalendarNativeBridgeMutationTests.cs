@@ -21,7 +21,7 @@ public sealed class EventKitAppleCalendarNativeBridgeMutationTests
         RecordingRegistryStore registryStore = new RecordingRegistryStore(AppleCalendarOwnershipRegistryDocument.CreateEmpty());
         RecordingEventKitCalendarCommand command = new RecordingEventKitCalendarCommand(requestJson =>
         {
-            Assert.NotNull(registryStore.Current.PendingOperation);
+            Assert.NotNull(registryStore.Current.PendingOperationOrNull);
             return createSuccessfulResponse(requestJson, "created-calendar", "source-a", 0);
         });
         EventKitAppleCalendarNativeBridge bridge = new EventKitAppleCalendarNativeBridge(command, registryStore);
@@ -31,8 +31,8 @@ public sealed class EventKitAppleCalendarNativeBridgeMutationTests
         Assert.Equal("created-calendar", result.CalendarId.Value);
         Assert.Equal(1, result.CreatedEventCount);
         Assert.Equal(2, registryStore.SavedDocuments.Count);
-        Assert.NotNull(registryStore.SavedDocuments[0].PendingOperation);
-        Assert.Null(registryStore.Current.PendingOperation);
+        Assert.NotNull(registryStore.SavedDocuments[0].PendingOperationOrNull);
+        Assert.Null(registryStore.Current.PendingOperationOrNull);
         AppleCalendarRegistration completedRegistration = Assert.Single(registryStore.Current.Calendars);
         Assert.Equal("created-calendar", completedRegistration.CalendarIdentifier);
         Assert.Equal("source-a", completedRegistration.SourceIdentifier);
@@ -64,7 +64,7 @@ public sealed class EventKitAppleCalendarNativeBridgeMutationTests
         using (JsonDocument request = JsonDocument.Parse(Assert.Single(command.Requests)))
         {
             Assert.Equal("STRAßE TIMETABLE", request.RootElement.GetProperty("normalizedDestinationName").GetString());
-            Assert.Equal("STRAßE TIMETABLE", registryStore.SavedDocuments[0].PendingOperation!.NormalizedCalendarName);
+            Assert.Equal("STRAßE TIMETABLE", registryStore.SavedDocuments[0].PendingOperationOrNull!.NormalizedCalendarName);
             Assert.Equal("STRAßE TIMETABLE", Assert.Single(registryStore.Current.Calendars).NormalizedCalendarName);
         }
     }
@@ -115,7 +115,7 @@ public sealed class EventKitAppleCalendarNativeBridgeMutationTests
 
         Assert.Equal(EAppleCalendarNativeFailureKind.OperationFailed, exception.FailureKind);
         Assert.Equal("eventkit_calendar_commit_failed", exception.DiagnosticCode);
-        Assert.NotNull(registryStore.Current.PendingOperation);
+        Assert.NotNull(registryStore.Current.PendingOperationOrNull);
         Assert.Single(registryStore.SavedDocuments);
     }
 
@@ -138,7 +138,7 @@ public sealed class EventKitAppleCalendarNativeBridgeMutationTests
             () => bridge.ApplyExportAsync(AppleCalendarExportMutation.CreateNew(document, document.CalendarName), TestContext.Current.CancellationToken));
 
         Assert.Equal(EAppleCalendarNativeFailureKind.CalendarChanged, exception.FailureKind);
-        Assert.Null(registryStore.Current.PendingOperation);
+        Assert.Null(registryStore.Current.PendingOperationOrNull);
         Assert.Equal(2, registryStore.SavedDocuments.Count);
     }
 
@@ -159,8 +159,17 @@ public sealed class EventKitAppleCalendarNativeBridgeMutationTests
         await Assert.ThrowsAsync<AppleCalendarNativeBridgeException>(
             () => bridge.ApplyExportAsync(AppleCalendarExportMutation.CreateNew(document, document.CalendarName), TestContext.Current.CancellationToken));
 
-        Assert.Equal(expectedPending, registryStore.Current.PendingOperation != null);
-        Assert.Equal(expectedPending ? 1 : 2, registryStore.SavedDocuments.Count);
+        Assert.Equal(expectedPending, registryStore.Current.PendingOperationOrNull != null);
+        int expectedDocumentCount;
+        if (expectedPending)
+        {
+            expectedDocumentCount = 1;
+        }
+        else
+        {
+            expectedDocumentCount = 2;
+        }
+        Assert.Equal(expectedDocumentCount, registryStore.SavedDocuments.Count);
     }
 
     [Fact]
@@ -212,7 +221,7 @@ public sealed class EventKitAppleCalendarNativeBridgeMutationTests
         AppleCalendarExportResult result = await service.ExportAsync(document, new FixedCalendarNameConflictResolver(ECalendarNameConflictResolution.Cancel), TestContext.Current.CancellationToken);
 
         Assert.Equal(EAppleCalendarExportStatus.Cancelled, result.Status);
-        Assert.Null(registryStore.Current.PendingOperation);
+        Assert.Null(registryStore.Current.PendingOperationOrNull);
         Assert.Empty(responses);
         Assert.Collection(
             command.Requests,

@@ -108,9 +108,7 @@ public sealed class CatalogGenerationServiceTests
             CatalogGenerationResult initialResult = await service.GenerateAsync(request, CancellationToken.None);
             await File.WriteAllTextAsync(initialResult.CatalogPath.Value, "different content");
 
-            CatalogGenerationException exception =
-                await Assert.ThrowsExactlyAsync<CatalogGenerationException>(
-                    () => service.GenerateAsync(request, CancellationToken.None));
+            CatalogGenerationException exception = await Assert.ThrowsExactlyAsync<CatalogGenerationException>(() => service.GenerateAsync(request, CancellationToken.None));
 
             Assert.AreEqual(ECatalogGenerationErrorCode.OutputConflict, exception.ErrorCode);
             Assert.AreEqual(ECatalogGeneratorExitCode.OutputFailure, exception.ExitCode);

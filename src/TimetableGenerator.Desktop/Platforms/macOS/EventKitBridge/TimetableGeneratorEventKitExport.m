@@ -14,7 +14,12 @@ static BOOL tg_stage_event_removal(EKEventStore* const event_store, EKEvent* con
     assert(event != NULL);
     assert(out_error != NULL);
 
-    const EKSpan span = event.hasRecurrenceRules ? EKSpanFutureEvents : EKSpanThisEvent;
+    EKSpan span;
+    if (event.hasRecurrenceRules) {
+        span = EKSpanFutureEvents;
+    } else {
+        span = EKSpanThisEvent;
+    }
     return [event_store removeEvent:event span:span commit:NO error:out_error];
 }
 
@@ -59,7 +64,12 @@ static EKEvent* tg_stage_recurring_event_or_null(
     if (![tg_get_fingerprint_for_event_or_null(event) isEqualToString:event_request[@"fingerprint"]]) {
         return nil;
     }
-    return [event_store saveEvent:event span:EKSpanThisEvent commit:NO error:out_error] ? event : nil;
+    const BOOL did_save_event = [event_store saveEvent:event span:EKSpanThisEvent commit:NO error:out_error];
+    if (did_save_event) {
+        return event;
+    }
+
+    return nil;
 }
 
 static NSDictionary* tg_create_calendar_event_result(
@@ -82,25 +92,36 @@ static NSDictionary* tg_create_calendar_event_result(
     for (NSUInteger index = 0; index < events.count; ++index) {
         NSDictionary* const event_request = event_requests[index];
         EKEvent* const event = events[index];
-        NSString* const calendar_item_identifier = event.calendarItemIdentifier ?: @"";
+        NSString* calendar_item_identifier = event.calendarItemIdentifier;
+        if (calendar_item_identifier == nil) {
+            calendar_item_identifier = @"";
+        }
         if (calendar_item_identifier.length == 0) {
             return tg_create_response(TG_STATUS_OPERATION_FAILED, @"eventkit_calendar_event_identifier_missing");
         }
 
+        NSString* external_identifier = event.calendarItemExternalIdentifier;
+        if (external_identifier == nil) {
+            external_identifier = @"";
+        }
         [event_responses addObject:@{
             @"sourceEventHash" : event_request[@"sourceEventHash"],
             @"calendarItemIdentifier" : calendar_item_identifier,
-            @"externalIdentifier" : event.calendarItemExternalIdentifier ?: @"",
+            @"externalIdentifier" : external_identifier,
             @"fingerprint" : event_request[@"fingerprint"]
         }];
     }
 
+    NSString* calendar_name = calendar.title;
+    if (calendar_name == nil) {
+        calendar_name = @"";
+    }
     return @{
         @"schemaVersion" : @(TG_SCHEMA_VERSION),
         @"status" : TG_STATUS_OK,
         @"diagnosticCode" : @"",
         @"calendarIdentifier" : calendar_identifier,
-        @"calendarName" : calendar.title ?: @"",
+        @"calendarName" : calendar_name,
         @"sourceIdentifier" : source_identifier,
         @"createdEventCount" : @(event_responses.count),
         @"deletedEventCount" : @(deleted_event_count),
@@ -214,7 +235,11 @@ NSDictionary* tg_reconcile_export(NSDictionary* const request, EKEventStore* con
                 rebound_registered_events = rebound_registration[@"events"];
             }
         }
-        const BOOL has_expected_name = [tg_normalize_calendar_name(calendar.title ?: @"") isEqualToString:normalized_destination_name];
+        NSString* calendar_title = calendar.title;
+        if (calendar_title == nil) {
+            calendar_title = @"";
+        }
+        const BOOL has_expected_name = [tg_normalize_calendar_name(calendar_title) isEqualToString:normalized_destination_name];
         const BOOL has_expected_source = [tg_get_calendar_source_identifier(calendar) isEqualToString:expected_source_identifier];
         if (!calendar.allowsContentModifications || !has_expected_name || !has_expected_source) {
             return tg_create_response(TG_STATUS_CALENDAR_CHANGED, @"eventkit_calendar_destination_changed");
@@ -227,7 +252,11 @@ NSDictionary* tg_reconcile_export(NSDictionary* const request, EKEventStore* con
 
         NSMutableArray<EKCalendar*>* const matching_calendars = [NSMutableArray array];
         for (EKCalendar* candidate in [event_store calendarsForEntityType:EKEntityTypeEvent]) {
-            if ([tg_normalize_calendar_name(candidate.title ?: @"") isEqualToString:normalized_destination_name]) {
+            NSString* candidate_title = candidate.title;
+            if (candidate_title == nil) {
+                candidate_title = @"";
+            }
+            if ([tg_normalize_calendar_name(candidate_title) isEqualToString:normalized_destination_name]) {
                 [matching_calendars addObject:candidate];
             }
         }
@@ -280,7 +309,10 @@ NSDictionary* tg_reconcile_export(NSDictionary* const request, EKEventStore* con
         return tg_create_response(TG_STATUS_CALENDAR_CHANGED, @"eventkit_reconciliation_ambiguous");
     }
 
-    NSArray<EKEvent*>* const registered_events = rebound_registered_events ?: tg_resolve_registered_events_or_null(event_store, calendar, managed_events, term_starts_at_unix_seconds, term_ends_at_unix_seconds);
+    NSArray<EKEvent*>* registered_events = rebound_registered_events;
+    if (registered_events == nil) {
+        registered_events = tg_resolve_registered_events_or_null(event_store, calendar, managed_events, term_starts_at_unix_seconds, term_ends_at_unix_seconds);
+    }
     if (registration_binding == nil && registered_events != nil && !tg_does_registration_match_resolved_events(managed_events, registered_events)) {
         NSDictionary* const registration = @{
             @"planId" : registered_plan_identifier,
@@ -361,7 +393,11 @@ NSDictionary* tg_apply_export(NSDictionary* const request, EKEventStore* const e
         }
 
         calendar = tg_find_calendar_or_null(event_store, existing_calendar_identifier);
-        const BOOL has_expected_name = [tg_normalize_calendar_name(calendar.title ?: @"") isEqualToString:normalized_destination_name];
+        NSString* calendar_title = calendar.title;
+        if (calendar_title == nil) {
+            calendar_title = @"";
+        }
+        const BOOL has_expected_name = [tg_normalize_calendar_name(calendar_title) isEqualToString:normalized_destination_name];
         const BOOL has_expected_source = [tg_get_calendar_source_identifier(calendar) isEqualToString:expected_source_identifier];
         if (calendar == nil || !calendar.allowsContentModifications || !has_expected_name || !has_expected_source) {
             return tg_create_response(TG_STATUS_CALENDAR_CHANGED, @"eventkit_calendar_destination_changed");
@@ -373,7 +409,11 @@ NSDictionary* tg_apply_export(NSDictionary* const request, EKEventStore* const e
         }
 
         for (EKCalendar* existing_calendar in [event_store calendarsForEntityType:EKEntityTypeEvent]) {
-            if ([tg_normalize_calendar_name(existing_calendar.title ?: @"") isEqualToString:normalized_destination_name]) {
+            NSString* existing_calendar_title = existing_calendar.title;
+            if (existing_calendar_title == nil) {
+                existing_calendar_title = @"";
+            }
+            if ([tg_normalize_calendar_name(existing_calendar_title) isEqualToString:normalized_destination_name]) {
                 return tg_create_response(TG_STATUS_CALENDAR_CHANGED, @"eventkit_calendar_destination_changed");
             }
         }
@@ -393,7 +433,12 @@ NSDictionary* tg_apply_export(NSDictionary* const request, EKEventStore* const e
         }
     }
 
-    NSArray<EKEvent*>* const legacy_events = replacing ? tg_get_managed_legacy_events(event_store, calendar, plan_identifier, migration_starts_at_unix_seconds, migration_ends_at_unix_seconds) : @[];
+    NSArray<EKEvent*>* legacy_events;
+    if (replacing) {
+        legacy_events = tg_get_managed_legacy_events(event_store, calendar, plan_identifier, migration_starts_at_unix_seconds, migration_ends_at_unix_seconds);
+    } else {
+        legacy_events = @[];
+    }
     const BOOL registered_ownership = registered_plan_identifier.length > 0 && [registered_plan_identifier isEqualToString:plan_identifier];
     const BOOL has_missing_registered_events = registered_ownership && managed_events.count == 0;
     const BOOL has_unregistered_managed_events = !registered_ownership && managed_events.count > 0;
@@ -407,7 +452,12 @@ NSDictionary* tg_apply_export(NSDictionary* const request, EKEventStore* const e
         return tg_create_response(TG_STATUS_CALENDAR_CHANGED, @"eventkit_calendar_ownership_changed");
     }
 
-    NSArray<EKEvent*>* const registered_events = replacing ? tg_resolve_registered_events_or_null(event_store, calendar, managed_events, term_starts_at_unix_seconds, term_ends_at_unix_seconds) : @[];
+    NSArray<EKEvent*>* registered_events;
+    if (replacing) {
+        registered_events = tg_resolve_registered_events_or_null(event_store, calendar, managed_events, term_starts_at_unix_seconds, term_ends_at_unix_seconds);
+    } else {
+        registered_events = @[];
+    }
     if (replacing && registered_events == nil) {
         [event_store reset];
         return tg_create_response(TG_STATUS_CALENDAR_CHANGED, @"eventkit_calendar_managed_events_changed");

@@ -130,8 +130,36 @@ public sealed partial class GoogleCalendarExportServiceTests
         string? descriptionOrNull,
         string? accessRoleOrNull)
     {
-        string description = descriptionOrNull == null ? string.Empty : ",\"description\":\"" + descriptionOrNull + "\"";
-        string accessRole = accessRoleOrNull == null ? string.Empty : ",\"accessRole\":\"" + accessRoleOrNull + "\"";
-        return "{\"id\":\"" + id + "\",\"summary\":\"" + name + "\",\"primary\":" + (isPrimary ? "true" : "false") + description + accessRole + "}";
+        string description;
+        if (descriptionOrNull == null)
+        {
+            description = string.Empty;
+        }
+        else
+        {
+            description = ",\"description\":\"" + descriptionOrNull + "\"";
+        }
+
+        string accessRole;
+        if (accessRoleOrNull == null)
+        {
+            accessRole = string.Empty;
+        }
+        else
+        {
+            accessRole = ",\"accessRole\":\"" + accessRoleOrNull + "\"";
+        }
+
+        string primary;
+        if (isPrimary)
+        {
+            primary = "true";
+        }
+        else
+        {
+            primary = "false";
+        }
+
+        return "{\"id\":\"" + id + "\",\"summary\":\"" + name + "\",\"primary\":" + primary + description + accessRole + "}";
     }
 }

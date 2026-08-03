@@ -114,7 +114,12 @@ internal sealed partial class PlannerWorkspaceViewModel
     {
         get
         {
-            return VisibleCourses.Count == 0 ? ECourseSearchResultState.Empty : ECourseSearchResultState.Populated;
+            if (VisibleCourses.Count == 0)
+            {
+                return ECourseSearchResultState.Empty;
+            }
+
+            return ECourseSearchResultState.Populated;
         }
     }
 
@@ -526,7 +531,12 @@ internal sealed partial class PlannerWorkspaceViewModel
             {
                 CourseCandidate selectedCourseCandidate = findCourseCandidate(group, courseId);
                 bool isDirectSelection = group.CourseCandidates.Count == 1 && selectedCourseCandidate.OfferingCandidates.Count == 1;
-                return isDirectSelection ? ECourseSelectionAction.Remove : ECourseSelectionAction.Edit;
+                if (isDirectSelection)
+                {
+                    return ECourseSelectionAction.Remove;
+                }
+
+                return ECourseSelectionAction.Edit;
             }
         }
 

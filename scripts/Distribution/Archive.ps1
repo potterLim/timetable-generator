@@ -29,9 +29,7 @@ function Get-ZipCentralDirectoryEntries {
         throw "ZIP 파일이 유효한 end-of-central-directory record보다 짧습니다: $ArchivePath"
     }
 
-    $searchStart = [System.Math]::Max(
-        0,
-        $Bytes.Length - $minimumEndRecordLength - $maximumCommentLength)
+    $searchStart = [System.Math]::Max(0, $Bytes.Length - $minimumEndRecordLength - $maximumCommentLength)
     $endRecordOffset = -1
     for ($index = $Bytes.Length - $minimumEndRecordLength; $index -ge $searchStart; $index--) {
         if ($Bytes[$index] -eq 0x50 -and
@@ -153,10 +151,7 @@ function Assert-DistributionArchive {
 
     $stream = [System.IO.File]::OpenRead($ArchivePath)
     try {
-        $archive = [System.IO.Compression.ZipArchive]::new(
-            $stream,
-            [System.IO.Compression.ZipArchiveMode]::Read,
-            $false)
+        $archive = [System.IO.Compression.ZipArchive]::new($stream, [System.IO.Compression.ZipArchiveMode]::Read, $false)
         try {
             if ($archive.Entries.Count -eq 0) {
                 throw "게시 archive가 비어 있습니다: $ArchivePath"
@@ -185,9 +180,7 @@ function Assert-DistributionArchive {
                     throw "게시 archive entry timestamp가 결정적이지 않습니다: $($entry.FullName)"
                 }
 
-                $attributes = [System.BitConverter]::ToUInt32(
-                    [System.BitConverter]::GetBytes($entry.ExternalAttributes),
-                    0)
+                $attributes = [System.BitConverter]::ToUInt32([System.BitConverter]::GetBytes($entry.ExternalAttributes), 0)
                 $actualMode = ($attributes -shr 16) -band 0xFFFF
                 $entryMode = if ($ArchivePlatform -eq "MacOS" -and (Test-IsMachOArchiveEntry -Entry $entry)) {
                     "Executable"
@@ -196,9 +189,7 @@ function Assert-DistributionArchive {
                     "Regular"
                 }
                 $expectedAttributes = Get-ArchiveEntryExternalAttributes -EntryMode $entryMode
-                $expectedAttributesAsUInt = [System.BitConverter]::ToUInt32(
-                    [System.BitConverter]::GetBytes($expectedAttributes),
-                    0)
+                $expectedAttributesAsUInt = [System.BitConverter]::ToUInt32([System.BitConverter]::GetBytes($expectedAttributes), 0)
                 $expectedMode = ($expectedAttributesAsUInt -shr 16) -band 0xFFFF
                 if ($actualMode -ne $expectedMode) {
                     throw "게시 archive entry 권한이 올바르지 않습니다: $($entry.FullName)"
@@ -248,11 +239,8 @@ function New-DistributionArchive {
         -ArchivePath $archivePath `
         -ExpectedFileName $ArchiveFileName
 
-    $sourceRoot = [System.IO.Path]::GetFullPath($SourcePath).TrimEnd(
-        [System.IO.Path]::DirectorySeparatorChar,
-        [System.IO.Path]::AltDirectorySeparatorChar)
-    $entrySourcePaths = [System.Collections.Generic.Dictionary[string, string]]::new(
-        [System.StringComparer]::Ordinal)
+    $sourceRoot = [System.IO.Path]::GetFullPath($SourcePath).TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
+    $entrySourcePaths = [System.Collections.Generic.Dictionary[string, string]]::new([System.StringComparer]::Ordinal)
     foreach ($file in @(Get-ChildItem -LiteralPath $sourceRoot -File -Recurse)) {
         $relativePath = [System.IO.Path]::GetRelativePath($sourceRoot, $file.FullName).Replace("\", "/")
         $entryName = $ArchiveRootName.TrimEnd("/") + "/" + $relativePath
@@ -268,10 +256,7 @@ function New-DistributionArchive {
 
     $archiveStream = [System.IO.File]::Open($archivePath, [System.IO.FileMode]::CreateNew)
     try {
-        $archive = [System.IO.Compression.ZipArchive]::new(
-            $archiveStream,
-            [System.IO.Compression.ZipArchiveMode]::Create,
-            $false)
+        $archive = [System.IO.Compression.ZipArchive]::new($archiveStream, [System.IO.Compression.ZipArchiveMode]::Create, $false)
         try {
             foreach ($entryName in $entryNames) {
                 $filePath = $entrySourcePaths[$entryName]

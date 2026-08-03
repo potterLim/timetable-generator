@@ -153,7 +153,12 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
         }
 
         AppleCalendarDescriptor? replaceableCalendarOrNull = findSoleReplaceableCalendarOrNull(matchingCalendars);
-        ECalendarReplacementAvailability replacementAvailability = replaceableCalendarOrNull == null ? ECalendarReplacementAvailability.Unavailable : ECalendarReplacementAvailability.Available;
+        ECalendarReplacementAvailability replacementAvailability = ECalendarReplacementAvailability.Unavailable;
+        if (replaceableCalendarOrNull != null)
+        {
+            replacementAvailability = ECalendarReplacementAvailability.Available;
+        }
+
         PlanName nextAvailableName = CalendarNameConflictPolicy.FindNextAvailableName(document.CalendarName, getCalendarNames(calendars, unavailableDestinationNames));
         CalendarNameConflict conflict = new CalendarNameConflict(ECalendarExportProvider.Apple, document.CalendarName, nextAvailableName, replacementAvailability);
         ECalendarNameConflictResolution resolution = await conflictResolver.ResolveAsync(conflict, cancellationToken);

@@ -149,7 +149,7 @@ internal sealed partial class ProductShellViewModel : ObservableObject, IDisposa
         mShutdownMessage = string.Empty;
         mCatalogUpdateNotice = string.Empty;
         mStartupRecoveryFlags = EProductWorkspaceRecoveryFlags.None;
-        mRetryCommand = new AsyncDelegateCommand(StartAsync, showUnexpectedFailure);
+        mRetryCommand = new AsyncDelegateCommand(StartAsync, showFailure);
         mDismissShutdownErrorCommand = new DelegateCommand(dismissShutdownError);
         mDismissProductNoticeCommand = new DelegateCommand(dismissProductNotice);
     }

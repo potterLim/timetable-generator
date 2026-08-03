@@ -33,8 +33,8 @@ internal sealed partial class EventKitAppleCalendarNativeBridge
 
                 PlanId? registeredPlanIdOrNull = parseOptionalPlanId(calendarOrNull.RegisteredPlanId);
                 PlanId? legacyPlanIdOrNull = parseOptionalPlanId(calendarOrNull.LegacyPlanId);
-                if ((calendarOrNull.LegacyManaged && legacyPlanIdOrNull == null)
-                    || (calendarOrNull.LegacyManaged == false && legacyPlanIdOrNull != null)
+                if ((calendarOrNull.IsLegacyManaged && legacyPlanIdOrNull == null)
+                    || (calendarOrNull.IsLegacyManaged == false && legacyPlanIdOrNull != null)
                     || (registeredPlanIdOrNull != null && legacyPlanIdOrNull != null && registeredPlanIdOrNull != legacyPlanIdOrNull))
                 {
                     throw invalidResponse();
@@ -55,7 +55,12 @@ internal sealed partial class EventKitAppleCalendarNativeBridge
                     managedPlanIdOrNull = legacyPlanIdOrNull;
                 }
 
-                EAppleCalendarContentAccess contentAccess = calendarOrNull.Writable ? EAppleCalendarContentAccess.Writable : EAppleCalendarContentAccess.ReadOnly;
+                EAppleCalendarContentAccess contentAccess = EAppleCalendarContentAccess.ReadOnly;
+                if (calendarOrNull.IsWritable)
+                {
+                    contentAccess = EAppleCalendarContentAccess.Writable;
+                }
+
                 descriptors.Add(new AppleCalendarDescriptor(new AppleCalendarId(calendarOrNull.Identifier), calendarOrNull.Name, calendarOrNull.SourceIdentifier, managedPlanIdOrNull, contentAccess));
             }
         }
@@ -75,7 +80,12 @@ internal sealed partial class EventKitAppleCalendarNativeBridge
         EventKitAppleCalendarResponse response,
         AppleCalendarOwnershipRegistryDocument registry)
     {
-        IReadOnlyList<EventKitAppleCalendarRegistrationBindingResponse> bindings = response.RegistrationBindings == null ? Array.Empty<EventKitAppleCalendarRegistrationBindingResponse>() : response.RegistrationBindings;
+        IReadOnlyList<EventKitAppleCalendarRegistrationBindingResponse> bindings = Array.Empty<EventKitAppleCalendarRegistrationBindingResponse>();
+        if (response.RegistrationBindings != null)
+        {
+            bindings = response.RegistrationBindings;
+        }
+
         if (bindings.Count == 0 && response.Calendars == null)
         {
             return registry;
@@ -157,7 +167,12 @@ internal sealed partial class EventKitAppleCalendarNativeBridge
 
         if (bindings.Count > 0 || removedMissingRegistration)
         {
-            string diagnosticCode = bindings.Count > 0 ? "apple_calendar_registry_rebind_failed" : "apple_calendar_registry_cleanup_failed";
+            string diagnosticCode = "apple_calendar_registry_cleanup_failed";
+            if (bindings.Count > 0)
+            {
+                diagnosticCode = "apple_calendar_registry_rebind_failed";
+            }
+
             saveRegistry(reboundRegistry, diagnosticCode);
         }
         return reboundRegistry;
@@ -236,7 +251,7 @@ internal sealed partial class EventKitAppleCalendarNativeBridge
         }
 
         if (reboundCalendarOrNull == null
-            || reboundCalendarOrNull.Writable == false
+            || reboundCalendarOrNull.IsWritable == false
             || string.Equals(reboundCalendarOrNull.Name, binding.CalendarName, StringComparison.Ordinal) == false
             || string.Equals(reboundCalendarOrNull.SourceIdentifier, binding.SourceIdentifier, StringComparison.Ordinal) == false
             || string.Equals(reboundCalendarOrNull.RegisteredPlanId, binding.PlanId, StringComparison.Ordinal) == false)

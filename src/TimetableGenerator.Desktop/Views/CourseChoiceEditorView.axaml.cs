@@ -16,8 +16,7 @@ internal sealed partial class CourseChoiceEditorView : UserControl
 
     internal void focusInitialInput()
     {
-        RadioButton? selectedPreferenceButtonOrNull = this.GetVisualDescendants()
-            .OfType<RadioButton>()
+        RadioButton? selectedPreferenceButtonOrNull = this.GetVisualDescendants().OfType<RadioButton>()
             .FirstOrDefault(
                 static candidate => candidate.Classes.Contains("preference-choice")
                     && candidate.IsChecked == true);
@@ -26,8 +25,7 @@ internal sealed partial class CourseChoiceEditorView : UserControl
             return;
         }
 
-        RadioButton? firstPreferenceButtonOrNull = this.GetVisualDescendants()
-            .OfType<RadioButton>()
+        RadioButton? firstPreferenceButtonOrNull = this.GetVisualDescendants().OfType<RadioButton>()
             .FirstOrDefault(
                 static candidate => candidate.Classes.Contains("preference-choice"));
         if (firstPreferenceButtonOrNull != null && firstPreferenceButtonOrNull.Focus(NavigationMethod.Pointer))

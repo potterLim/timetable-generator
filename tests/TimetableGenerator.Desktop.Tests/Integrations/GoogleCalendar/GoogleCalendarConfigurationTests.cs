@@ -12,13 +12,12 @@ public sealed class GoogleCalendarConfigurationTests
     public void MissingConfigurationReturnsNullWithoutFailure()
     {
         GoogleCalendarOAuthConfigurationPath path = createTemporaryPath();
-        ProductGoogleCalendarOAuthConfigurationProvider provider =
-            new ProductGoogleCalendarOAuthConfigurationProvider(
-                delegate
-                {
-                    return new GoogleCalendarOAuthEnvironmentValues(null, null);
-                },
-                path);
+        ProductGoogleCalendarOAuthConfigurationProvider provider = new ProductGoogleCalendarOAuthConfigurationProvider(
+            delegate
+            {
+                return new GoogleCalendarOAuthEnvironmentValues(null, null);
+            },
+            path);
 
         GoogleCalendarOAuthConfiguration? configurationOrNull = provider.GetConfigurationOrNull();
 
@@ -32,13 +31,12 @@ public sealed class GoogleCalendarConfigurationTests
         string directoryPath = getDirectoryPath(path);
         Directory.CreateDirectory(directoryPath);
         File.WriteAllText(path.Value, "{\"schemaVersion\":1,\"clientId\":\"desktop-client.apps.googleusercontent.com\"}", Encoding.UTF8);
-        ProductGoogleCalendarOAuthConfigurationProvider provider =
-            new ProductGoogleCalendarOAuthConfigurationProvider(
-                delegate
-                {
-                    return new GoogleCalendarOAuthEnvironmentValues(null, null);
-                },
-                path);
+        ProductGoogleCalendarOAuthConfigurationProvider provider = new ProductGoogleCalendarOAuthConfigurationProvider(
+            delegate
+            {
+                return new GoogleCalendarOAuthEnvironmentValues(null, null);
+            },
+            path);
 
         try
         {
@@ -61,13 +59,12 @@ public sealed class GoogleCalendarConfigurationTests
         string directoryPath = getDirectoryPath(path);
         Directory.CreateDirectory(directoryPath);
         File.WriteAllText(path.Value, "{\"schemaVersion\":2,\"clientId\":\"desktop-client.apps.googleusercontent.com\"," + "\"clientSecret\":\"native-client-secret\"}", Encoding.UTF8);
-        ProductGoogleCalendarOAuthConfigurationProvider provider =
-            new ProductGoogleCalendarOAuthConfigurationProvider(
-                delegate
-                {
-                    return new GoogleCalendarOAuthEnvironmentValues(null, null);
-                },
-                path);
+        ProductGoogleCalendarOAuthConfigurationProvider provider = new ProductGoogleCalendarOAuthConfigurationProvider(
+            delegate
+            {
+                return new GoogleCalendarOAuthEnvironmentValues(null, null);
+            },
+            path);
 
         try
         {
@@ -97,13 +94,12 @@ public sealed class GoogleCalendarConfigurationTests
         string directoryPath = getDirectoryPath(path);
         Directory.CreateDirectory(directoryPath);
         File.WriteAllText(path.Value, json, Encoding.UTF8);
-        ProductGoogleCalendarOAuthConfigurationProvider provider =
-            new ProductGoogleCalendarOAuthConfigurationProvider(
-                delegate
-                {
-                    return new GoogleCalendarOAuthEnvironmentValues(null, null);
-                },
-                path);
+        ProductGoogleCalendarOAuthConfigurationProvider provider = new ProductGoogleCalendarOAuthConfigurationProvider(
+            delegate
+            {
+                return new GoogleCalendarOAuthEnvironmentValues(null, null);
+            },
+            path);
 
         try
         {
@@ -118,13 +114,12 @@ public sealed class GoogleCalendarConfigurationTests
     [Fact]
     public void InvalidEnvironmentClientIdFailsClosed()
     {
-        ProductGoogleCalendarOAuthConfigurationProvider provider =
-            new ProductGoogleCalendarOAuthConfigurationProvider(
-                delegate
-                {
-                    return new GoogleCalendarOAuthEnvironmentValues("invalid\r\nclient-id", null);
-                },
-                createTemporaryPath());
+        ProductGoogleCalendarOAuthConfigurationProvider provider = new ProductGoogleCalendarOAuthConfigurationProvider(
+            delegate
+            {
+                return new GoogleCalendarOAuthEnvironmentValues("invalid\r\nclient-id", null);
+            },
+            createTemporaryPath());
 
         Assert.Null(provider.GetConfigurationOrNull());
     }
@@ -132,13 +127,12 @@ public sealed class GoogleCalendarConfigurationTests
     [Fact]
     public void EnvironmentCredentialsOverrideLocalConfiguration()
     {
-        ProductGoogleCalendarOAuthConfigurationProvider provider =
-            new ProductGoogleCalendarOAuthConfigurationProvider(
-                delegate
-                {
-                    return new GoogleCalendarOAuthEnvironmentValues("environment-client.apps.googleusercontent.com", "environment-secret");
-                },
-                createTemporaryPath());
+        ProductGoogleCalendarOAuthConfigurationProvider provider = new ProductGoogleCalendarOAuthConfigurationProvider(
+            delegate
+            {
+                return new GoogleCalendarOAuthEnvironmentValues("environment-client.apps.googleusercontent.com", "environment-secret");
+            },
+            createTemporaryPath());
 
         GoogleCalendarOAuthConfiguration? configurationOrNull = provider.GetConfigurationOrNull();
 
@@ -150,13 +144,12 @@ public sealed class GoogleCalendarConfigurationTests
     [Fact]
     public void EnvironmentSecretWithoutClientIdFailsClosed()
     {
-        ProductGoogleCalendarOAuthConfigurationProvider provider =
-            new ProductGoogleCalendarOAuthConfigurationProvider(
-                delegate
-                {
-                    return new GoogleCalendarOAuthEnvironmentValues(null, "orphaned-secret");
-                },
-                createTemporaryPath());
+        ProductGoogleCalendarOAuthConfigurationProvider provider = new ProductGoogleCalendarOAuthConfigurationProvider(
+            delegate
+            {
+                return new GoogleCalendarOAuthEnvironmentValues(null, "orphaned-secret");
+            },
+            createTemporaryPath());
 
         Assert.Null(provider.GetConfigurationOrNull());
     }

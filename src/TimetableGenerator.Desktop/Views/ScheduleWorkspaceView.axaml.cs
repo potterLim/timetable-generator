@@ -38,7 +38,11 @@ internal sealed partial class ScheduleWorkspaceView :
 
     private void toggleSchedulePresentation()
     {
-        EScheduleWorkspacePresentationMode nextMode = mPresentationMode == EScheduleWorkspacePresentationMode.Board ? EScheduleWorkspacePresentationMode.List : EScheduleWorkspacePresentationMode.Board;
+        EScheduleWorkspacePresentationMode nextMode = EScheduleWorkspacePresentationMode.Board;
+        if (mPresentationMode == EScheduleWorkspacePresentationMode.Board)
+        {
+            nextMode = EScheduleWorkspacePresentationMode.List;
+        }
         applyPresentationMode(nextMode);
     }
 
@@ -61,9 +65,17 @@ internal sealed partial class ScheduleWorkspaceView :
         bool isListMode = presentationMode == EScheduleWorkspacePresentationMode.List;
         scheduleBoardOrNull.IsVisible = isListMode == false;
         scheduleListOrNull.IsVisible = isListMode;
-        modeIconOrNull.Icon = isListMode ? Icon.CalendarWeekStart : Icon.List;
-        modeTextOrNull.Text = isListMode ? "주간 시간표" : "일정 목록";
-        string automationName = isListMode ? "주간 시간표로 보기" : "일정 목록으로 보기";
+        Icon modeIcon = Icon.List;
+        string modeText = "일정 목록";
+        string automationName = "일정 목록으로 보기";
+        if (isListMode)
+        {
+            modeIcon = Icon.CalendarWeekStart;
+            modeText = "주간 시간표";
+            automationName = "주간 시간표로 보기";
+        }
+        modeIconOrNull.Icon = modeIcon;
+        modeTextOrNull.Text = modeText;
         string toolTip = automationName;
         Avalonia.Automation.AutomationProperties.SetName(modeButtonOrNull, automationName);
         ToolTip.SetTip(modeButtonOrNull, toolTip);

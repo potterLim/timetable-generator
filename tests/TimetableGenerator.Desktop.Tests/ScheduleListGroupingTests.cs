@@ -128,11 +128,7 @@ public sealed class ScheduleListGroupingTests
         CourseScheduleListSource courseSource = Assert.IsType<CourseScheduleListSource>(
             group.Sources.Single(
                 source => source.Kind == EScheduleListEntryKind.Course));
-        PersonalScheduleListSource personalSource =
-            Assert.IsType<PersonalScheduleListSource>(
-                group.Sources.Single(
-                    source => source.Kind
-                        == EScheduleListEntryKind.PersonalSchedule));
+        PersonalScheduleListSource personalSource = Assert.IsType<PersonalScheduleListSource>(group.Sources.Single(source => source.Kind == EScheduleListEntryKind.PersonalSchedule));
 
         Assert.Equal("Project Lab", group.Title);
         Assert.Equal("Project Lab(01)", group.TitleDisplayText);

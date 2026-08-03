@@ -68,10 +68,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         List<WeeklyTimeRange> timeRanges = new List<WeeklyTimeRange>();
         foreach (JsonElement timeRangeElement in element.EnumerateArray())
         {
-            Dictionary<string, JsonElement> properties = readExactObject(
-                timeRangeElement,
-                "personal schedule time range",
-                new string[] { "day", "start", "end" });
+            Dictionary<string, JsonElement> properties = readExactObject(timeRangeElement, "personal schedule time range", new string[] { "day", "start", "end" });
             EDay day = readDay(properties["day"]);
             ScheduleTime start = readScheduleTime(properties["start"], "personalSchedule.timeRanges[].start");
             ScheduleTime end = readScheduleTime(properties["end"], "personalSchedule.timeRanges[].end");

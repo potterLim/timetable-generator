@@ -14,15 +14,19 @@ internal sealed partial class CalendarNameConflictDialog : Window
 {
     private ECalendarNameConflictResolution mResolution;
 
-    public bool UsesProductCaptionControls { get; }
+    public bool ShouldUseProductCaptionControls { get; }
 
     public CalendarNameConflictDialog()
     {
         EWindowChromePlatform windowChromePlatform = WindowChromeLayoutPolicy.FindCurrentPlatform();
         WindowDecorations = WindowChromeLayoutPolicy.FindWindowDecorations(windowChromePlatform);
-        UsesProductCaptionControls = WindowDecorations == Avalonia.Controls.WindowDecorations.None;
-        ExtendClientAreaToDecorationsHint = UsesProductCaptionControls;
-        ExtendClientAreaTitleBarHeightHint = UsesProductCaptionControls ? 42.0 : -1.0;
+        ShouldUseProductCaptionControls = WindowDecorations == Avalonia.Controls.WindowDecorations.None;
+        ExtendClientAreaToDecorationsHint = ShouldUseProductCaptionControls;
+        ExtendClientAreaTitleBarHeightHint = -1.0;
+        if (ShouldUseProductCaptionControls)
+        {
+            ExtendClientAreaTitleBarHeightHint = 42.0;
+        }
         AvaloniaXamlLoader.Load(this);
         KeyDown += onKeyDown;
         Opened += onOpened;

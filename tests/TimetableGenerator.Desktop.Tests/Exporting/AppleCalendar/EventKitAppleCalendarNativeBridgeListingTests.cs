@@ -230,7 +230,7 @@ public sealed class EventKitAppleCalendarNativeBridgeListingTests
 
         Assert.Empty(calendars);
         Assert.Empty(registryStore.Current.Calendars);
-        Assert.Null(registryStore.Current.PendingOperation);
+        Assert.Null(registryStore.Current.PendingOperationOrNull);
         Assert.Single(registryStore.SavedDocuments);
     }
 

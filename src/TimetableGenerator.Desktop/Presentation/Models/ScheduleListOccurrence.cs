@@ -166,7 +166,7 @@ internal sealed class ScheduleListOccurrence
         mSources = new List<ScheduleListSource>(sources).AsReadOnly();
         TimeRange = timeRange;
         Metadata = metadata;
-        ScheduleDisplayText = createScheduleDisplayText(mDays, timeRange);
+        ScheduleDisplayText = ScheduleBoardDayRange.CreateShortDayTimeDisplayText(mDays, timeRange);
     }
 
     private static IReadOnlyList<EDay> copyAndValidateDays(IReadOnlyList<EDay> days)
@@ -183,11 +183,6 @@ internal sealed class ScheduleListOccurrence
 
         copiedDays.Sort();
         return copiedDays.AsReadOnly();
-    }
-
-    private static string createScheduleDisplayText(IReadOnlyList<EDay> days, DailyTimeRange timeRange)
-    {
-        return ScheduleBoardDayRange.CreateShortDayTimeDisplayText(days, timeRange);
     }
 
     private static string createAccessibleScheduleText(IReadOnlyList<EDay> days, DailyTimeRange timeRange)

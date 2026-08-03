@@ -318,10 +318,7 @@ public sealed partial class PlanningWorkspaceJsonCodec
         List<UnscheduledOfferingSelection> selections = new List<UnscheduledOfferingSelection>();
         foreach (JsonElement selectionElement in element.EnumerateArray())
         {
-            Dictionary<string, JsonElement> properties = readExactObject(
-                selectionElement,
-                "unscheduled selection",
-                new string[] { "courseId", "offeringId" });
+            Dictionary<string, JsonElement> properties = readExactObject(selectionElement, "unscheduled selection", new string[] { "courseId", "offeringId" });
             CourseId courseId = new CourseId(readString(properties["courseId"], "unscheduledSelection.courseId"));
             OfferingId offeringId = new OfferingId(readString(properties["offeringId"], "unscheduledSelection.offeringId"));
             selections.Add(new UnscheduledOfferingSelection(courseId, offeringId));

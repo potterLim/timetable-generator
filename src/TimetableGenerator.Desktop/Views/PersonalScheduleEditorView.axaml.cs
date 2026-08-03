@@ -113,8 +113,7 @@ internal sealed partial class PersonalScheduleEditorView : UserControl
             return;
         }
 
-        Control? focusableDescendantOrNull = target.GetVisualDescendants()
-            .OfType<Control>()
+        Control? focusableDescendantOrNull = target.GetVisualDescendants().OfType<Control>()
             .FirstOrDefault(
                 static candidate => candidate.Focusable
                     && candidate.IsVisible
@@ -135,8 +134,7 @@ internal sealed partial class PersonalScheduleEditorView : UserControl
 
     private ToggleButton findDayInput(EDay day)
     {
-        ToggleButton? dayInputOrNull = this.GetVisualDescendants()
-            .OfType<ToggleButton>()
+        ToggleButton? dayInputOrNull = this.GetVisualDescendants().OfType<ToggleButton>()
             .FirstOrDefault(
                 candidate => candidate.DataContext
                     is PersonalScheduleDayOption dayOption && dayOption.Day == day);

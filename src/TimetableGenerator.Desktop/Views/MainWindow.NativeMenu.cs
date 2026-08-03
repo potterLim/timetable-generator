@@ -101,7 +101,12 @@ internal sealed partial class MainWindow
     {
         if (mFullScreenNativeMenuItemOrNull != null)
         {
-            mFullScreenNativeMenuItemOrNull.Header = WindowState == WindowState.FullScreen ? "Exit Full Screen" : "Enter Full Screen";
+            string fullScreenActionName = "Enter Full Screen";
+            if (WindowState == WindowState.FullScreen)
+            {
+                fullScreenActionName = "Exit Full Screen";
+            }
+            mFullScreenNativeMenuItemOrNull.Header = fullScreenActionName;
         }
 
         foreach (DelegateCommand command in mNativeMenuCommands)
@@ -213,7 +218,14 @@ internal sealed partial class MainWindow
 
     private void toggleWindowZoom()
     {
-        WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+        if (WindowState == WindowState.Maximized)
+        {
+            WindowState = WindowState.Normal;
+        }
+        else
+        {
+            WindowState = WindowState.Maximized;
+        }
         synchronizeNativeMenuCommandState();
     }
 

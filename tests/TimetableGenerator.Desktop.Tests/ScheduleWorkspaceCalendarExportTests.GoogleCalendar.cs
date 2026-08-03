@@ -166,14 +166,13 @@ public sealed partial class ScheduleWorkspaceCalendarExportTests
         {
             TextBlock statusText = findRequiredTextBlock(workspaceView, "ExportStatusText");
             List<(string? Text, AutomationLiveSetting LiveSetting)> liveRegionTransitions = new List<(string? Text, AutomationLiveSetting LiveSetting)>();
-            statusText.PropertyChanged +=
-                (object? senderOrNull, AvaloniaPropertyChangedEventArgs eventArgs) =>
+            statusText.PropertyChanged += (object? senderOrNull, AvaloniaPropertyChangedEventArgs eventArgs) =>
+            {
+                if (eventArgs.Property == TextBlock.TextProperty)
                 {
-                    if (eventArgs.Property == TextBlock.TextProperty)
-                    {
-                        liveRegionTransitions.Add((statusText.Text, AutomationProperties.GetLiveSetting(statusText)));
-                    }
-                };
+                    liveRegionTransitions.Add((statusText.Text, AutomationProperties.GetLiveSetting(statusText)));
+                }
+            };
             Assert.True(string.IsNullOrEmpty(statusText.Text));
             Assert.Equal(AutomationLiveSetting.Off, AutomationProperties.GetLiveSetting(statusText));
 
@@ -216,11 +215,19 @@ public sealed partial class ScheduleWorkspaceCalendarExportTests
             Assert.NotEmpty(liveRegionTransitions);
             Assert.All(
                 liveRegionTransitions,
-                static transition => Assert.Equal(
-                    string.IsNullOrEmpty(transition.Text)
-                        ? AutomationLiveSetting.Off
-                        : AutomationLiveSetting.Polite,
-                    transition.LiveSetting));
+                static transition =>
+                {
+                    AutomationLiveSetting expectedLiveSetting;
+                    if (string.IsNullOrEmpty(transition.Text))
+                    {
+                        expectedLiveSetting = AutomationLiveSetting.Off;
+                    }
+                    else
+                    {
+                        expectedLiveSetting = AutomationLiveSetting.Polite;
+                    }
+                    Assert.Equal(expectedLiveSetting, transition.LiveSetting);
+                });
         }
         finally
         {

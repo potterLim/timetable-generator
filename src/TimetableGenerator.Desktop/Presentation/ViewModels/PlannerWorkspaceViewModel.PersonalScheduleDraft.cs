@@ -23,7 +23,15 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private PersonalSchedule createPersonalScheduleFromDraft()
     {
-        PersonalScheduleId scheduleId = mEditingPersonalScheduleIdOrNull.HasValue ? mEditingPersonalScheduleIdOrNull.Value : PersonalScheduleId.CreateNew();
+        PersonalScheduleId scheduleId;
+        if (mEditingPersonalScheduleIdOrNull.HasValue)
+        {
+            scheduleId = mEditingPersonalScheduleIdOrNull.Value;
+        }
+        else
+        {
+            scheduleId = PersonalScheduleId.CreateNew();
+        }
         PersonalScheduleTitle title = new PersonalScheduleTitle(PersonalScheduleTitleDraft);
         ScheduleTime startTime = getRequiredTime(PersonalScheduleStartTimeOrNull, nameof(PersonalScheduleStartTimeOrNull));
         ScheduleTime endTime = getRequiredTime(PersonalScheduleEndTimeOrNull, nameof(PersonalScheduleEndTimeOrNull));
@@ -207,16 +215,31 @@ internal sealed partial class PlannerWorkspaceViewModel
 
     private static string getSectionValue(PersonalScheduleDetails details)
     {
-        return details.SectionOrNull == null ? string.Empty : details.SectionOrNull.Value;
+        if (details.SectionOrNull == null)
+        {
+            return string.Empty;
+        }
+
+        return details.SectionOrNull.Value;
     }
 
     private static string getInstructorValue(PersonalScheduleDetails details)
     {
-        return details.InstructorOrNull == null ? string.Empty : details.InstructorOrNull.Value;
+        if (details.InstructorOrNull == null)
+        {
+            return string.Empty;
+        }
+
+        return details.InstructorOrNull.Value;
     }
 
     private static string getLocationValue(PersonalScheduleDetails details)
     {
-        return details.LocationOrNull == null ? string.Empty : details.LocationOrNull.Value;
+        if (details.LocationOrNull == null)
+        {
+            return string.Empty;
+        }
+
+        return details.LocationOrNull.Value;
     }
 }

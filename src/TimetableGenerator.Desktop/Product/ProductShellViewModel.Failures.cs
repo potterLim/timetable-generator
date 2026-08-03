@@ -24,11 +24,6 @@ internal sealed partial class ProductShellViewModel
         raisePropertyChanged(nameof(StatusMessage));
     }
 
-    private void showUnexpectedFailure(Exception exception)
-    {
-        showFailure(exception);
-    }
-
     private static string findFailureMessage(Exception exception)
     {
         if (exception is CatalogSourceConfigurationException)

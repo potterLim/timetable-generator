@@ -53,6 +53,10 @@ internal sealed class ValidatedCourseChoiceGroup
         copiedCandidates.AddRange(preferredCandidates);
         copiedCandidates.AddRange(acceptableCandidates);
         mOfferingCandidates = copiedCandidates.AsReadOnly();
-        MinimumScore = preferredCandidates.Count > 0 ? RecommendationScore.ZERO : new RecommendationScore(1);
+        MinimumScore = new RecommendationScore(1);
+        if (preferredCandidates.Count > 0)
+        {
+            MinimumScore = RecommendationScore.ZERO;
+        }
     }
 }

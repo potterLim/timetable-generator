@@ -57,7 +57,11 @@ internal sealed partial class ScheduleBoardView
         {
             content.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
             TextBlock responsiblePerson = createCardText(responsiblePersonOrNull, SCHEDULE_CARD_RESPONSIBLE_PERSON_FONT_SIZE, FontWeight.Normal);
-            double responsiblePersonTopMargin = locationOrNull != null ? SCHEDULE_CARD_SECONDARY_GAP : SCHEDULE_CARD_PRIMARY_GAP;
+            double responsiblePersonTopMargin = SCHEDULE_CARD_PRIMARY_GAP;
+            if (locationOrNull != null)
+            {
+                responsiblePersonTopMargin = SCHEDULE_CARD_SECONDARY_GAP;
+            }
             responsiblePerson.Margin = new Thickness(0.0, responsiblePersonTopMargin, 0.0, 0.0);
             responsiblePerson.HorizontalAlignment = HorizontalAlignment.Stretch;
             responsiblePerson.Foreground = findBrush("TextSecondaryBrush");

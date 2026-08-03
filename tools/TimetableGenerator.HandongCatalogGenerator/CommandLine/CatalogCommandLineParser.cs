@@ -36,7 +36,15 @@ internal static class CatalogCommandLineParser
     {
         if (arguments.Count == 0 || string.Equals(arguments[0], GENERATE_COMMAND, StringComparison.Ordinal) == false)
         {
-            string suppliedCommand = arguments.Count == 0 ? "<missing>" : arguments[0];
+            string suppliedCommand;
+            if (arguments.Count == 0)
+            {
+                suppliedCommand = "<missing>";
+            }
+            else
+            {
+                suppliedCommand = arguments[0];
+            }
             throw createCommandLineException(ECatalogGenerationErrorCode.InvalidCommand, "Expected the 'generate' command but received '" + suppliedCommand + "'.");
         }
     }

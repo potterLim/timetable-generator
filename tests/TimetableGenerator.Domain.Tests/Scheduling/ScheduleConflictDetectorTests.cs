@@ -37,8 +37,7 @@ public sealed class ScheduleConflictDetectorTests
     {
         CatalogOffering unscheduledOffering = new CatalogOffering(new OfferingId("handong-global-university:2026-2:CSE30001:01"), new CourseId("handong-global-university:CSE30001"), new CourseSectionCode("01"), MeetingSchedule.NotProvided);
 
-        Assert.ThrowsExactly<ArgumentException>(
-            () => new ScheduledOffering(unscheduledOffering));
+        Assert.ThrowsExactly<ArgumentException>(() => new ScheduledOffering(unscheduledOffering));
     }
 
     [TestMethod]

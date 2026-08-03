@@ -20,14 +20,14 @@ internal sealed partial class EventKitAppleCalendarNativeBridge
 
     private AppleCalendarOwnershipRegistryDocument preparePendingOperation(AppleCalendarOwnershipRegistryDocument registry, AppleCalendarPendingOperation desiredPendingOperation)
     {
-        if (registry.PendingOperation == null)
+        if (registry.PendingOperationOrNull == null)
         {
             AppleCalendarOwnershipRegistryDocument registryWithPending = registry.WithPendingOperation(desiredPendingOperation);
             saveRegistry(registryWithPending, "apple_calendar_registry_prepare_failed");
             return registryWithPending;
         }
 
-        if (pendingOperationsMatch(registry.PendingOperation, desiredPendingOperation) == false)
+        if (pendingOperationsMatch(registry.PendingOperationOrNull, desiredPendingOperation) == false)
         {
             throw new AppleCalendarNativeBridgeException(EAppleCalendarNativeFailureKind.OperationFailed, "apple_calendar_pending_operation_conflict");
         }

@@ -276,7 +276,12 @@ internal sealed partial class EventKitAppleCalendarNativeBridge
 
     private static string getDiagnosticCode(EventKitAppleCalendarResponse response, string defaultCode)
     {
-        return string.IsNullOrWhiteSpace(response.DiagnosticCode) ? defaultCode : response.DiagnosticCode.Trim();
+        if (string.IsNullOrWhiteSpace(response.DiagnosticCode))
+        {
+            return defaultCode;
+        }
+
+        return response.DiagnosticCode.Trim();
     }
 
     private static PlanId? parseOptionalPlanId(string? valueOrNull)

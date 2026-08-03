@@ -33,8 +33,7 @@ public sealed class CatalogIndexJsonReaderTests
         byte[] validBytes = CatalogJsonTestDocuments.CreateValidIndexBytes(new CatalogFileSize(1L), VALID_SHA256);
         byte[] invalidBytes = CatalogJsonTestDocuments.Replace(validBytes, "\"schemaVersion\": 1,", "\"schemaVersion\": 1,\n  \"schemaVersion\": 1,");
 
-        CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(
-            () => CatalogIndexJsonReader.Read(invalidBytes));
+        CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(() => CatalogIndexJsonReader.Read(invalidBytes));
 
         Assert.AreEqual("$.schemaVersion", exception.JsonPath);
         StringAssert.Contains(exception.Message, "duplicate");
@@ -46,8 +45,7 @@ public sealed class CatalogIndexJsonReaderTests
         byte[] validBytes = CatalogJsonTestDocuments.CreateValidIndexBytes(new CatalogFileSize(1L), VALID_SHA256);
         byte[] invalidBytes = CatalogJsonTestDocuments.Replace(validBytes, "\"counts\": {\n        \"courses\": 1,", "\"counts\": {\n        \"unexpected\": 0,\n        \"courses\": 1,");
 
-        CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(
-            () => CatalogIndexJsonReader.Read(invalidBytes));
+        CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(() => CatalogIndexJsonReader.Read(invalidBytes));
 
         Assert.AreEqual("$.catalogs[0].counts.unexpected", exception.JsonPath);
         StringAssert.Contains(exception.Message, "not defined");
@@ -59,8 +57,7 @@ public sealed class CatalogIndexJsonReaderTests
         byte[] validBytes = CatalogJsonTestDocuments.CreateValidIndexBytes(new CatalogFileSize(1L), VALID_SHA256);
         byte[] invalidBytes = CatalogJsonTestDocuments.Replace(validBytes, "  \"defaultCatalogId\": \"handong-global-university:2026-2:r0001\",\n", string.Empty);
 
-        CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(
-            () => CatalogIndexJsonReader.Read(invalidBytes));
+        CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(() => CatalogIndexJsonReader.Read(invalidBytes));
 
         Assert.AreEqual("$.defaultCatalogId", exception.JsonPath);
         StringAssert.Contains(exception.Message, "missing");
@@ -72,8 +69,7 @@ public sealed class CatalogIndexJsonReaderTests
         byte[] validBytes = CatalogJsonTestDocuments.CreateValidIndexBytes(new CatalogFileSize(1L), VALID_SHA256);
         byte[] invalidBytes = CatalogJsonTestDocuments.Replace(validBytes, "\"schemaVersion\": 1", "\"schemaVersion\": 2");
 
-        CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(
-            () => CatalogIndexJsonReader.Read(invalidBytes));
+        CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(() => CatalogIndexJsonReader.Read(invalidBytes));
 
         Assert.AreEqual("$.schemaVersion", exception.JsonPath);
         StringAssert.Contains(exception.Message, "schemaVersion 1");
@@ -85,8 +81,7 @@ public sealed class CatalogIndexJsonReaderTests
         byte[] validBytes = CatalogJsonTestDocuments.CreateValidIndexBytes(new CatalogFileSize(1L), VALID_SHA256);
         byte[] invalidBytes = CatalogJsonTestDocuments.Replace(validBytes, VALID_SHA256.HexValue, VALID_SHA256.HexValue.ToUpperInvariant());
 
-        CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(
-            () => CatalogIndexJsonReader.Read(invalidBytes));
+        CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(() => CatalogIndexJsonReader.Read(invalidBytes));
 
         StringAssert.Contains(exception.Message, "lowercase hexadecimal");
     }
@@ -111,8 +106,7 @@ public sealed class CatalogIndexJsonReaderTests
     {
         byte[] invalidBytes = CatalogJsonTestDocuments.CreateIndexBytes("handong-global-university/2026-2/other.json", new CatalogFileSize(1L), VALID_SHA256);
 
-        CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(
-            () => CatalogIndexJsonReader.Read(invalidBytes));
+        CatalogJsonFormatException exception = Assert.ThrowsExactly<CatalogJsonFormatException>(() => CatalogIndexJsonReader.Read(invalidBytes));
 
         Assert.AreEqual("$.catalogs[0].file.relativePath", exception.JsonPath);
     }

@@ -107,7 +107,12 @@ internal sealed class EventKitAppleCalendarRequest
             List<EventKitAppleCalendarManagedEventRequest> managedEvents = new List<EventKitAppleCalendarManagedEventRequest>(registration.Events.Count);
             foreach (AppleCalendarManagedEventRegistration managedEvent in registration.Events)
             {
-                string externalIdentifier = managedEvent.ExternalIdentifierOrNull == null ? string.Empty : managedEvent.ExternalIdentifierOrNull;
+                string externalIdentifier = string.Empty;
+                if (managedEvent.ExternalIdentifierOrNull != null)
+                {
+                    externalIdentifier = managedEvent.ExternalIdentifierOrNull;
+                }
+
                 managedEvents.Add(new EventKitAppleCalendarManagedEventRequest(managedEvent.SourceEventHash, managedEvent.CalendarItemIdentifier, externalIdentifier, managedEvent.Fingerprint));
             }
 
@@ -180,11 +185,21 @@ internal sealed class EventKitAppleCalendarRequest
         }
 
         string mutationKind = getMutationKind(mutation.Kind);
-        string existingCalendarIdentifier = mutation.ExistingCalendarIdOrNull == null ? string.Empty : mutation.ExistingCalendarIdOrNull.Value;
+        string existingCalendarIdentifier = string.Empty;
+        if (mutation.ExistingCalendarIdOrNull != null)
+        {
+            existingCalendarIdentifier = mutation.ExistingCalendarIdOrNull.Value;
+        }
+
         List<EventKitAppleCalendarManagedEventRequest> managedEventRequests = new List<EventKitAppleCalendarManagedEventRequest>(managedEvents.Count);
         foreach (AppleCalendarManagedEventRegistration managedEvent in managedEvents)
         {
-            string externalIdentifier = managedEvent.ExternalIdentifierOrNull == null ? string.Empty : managedEvent.ExternalIdentifierOrNull;
+            string externalIdentifier = string.Empty;
+            if (managedEvent.ExternalIdentifierOrNull != null)
+            {
+                externalIdentifier = managedEvent.ExternalIdentifierOrNull;
+            }
+
             managedEventRequests.Add(new EventKitAppleCalendarManagedEventRequest(managedEvent.SourceEventHash, managedEvent.CalendarItemIdentifier, externalIdentifier, managedEvent.Fingerprint));
         }
 
@@ -237,16 +252,31 @@ internal sealed class EventKitAppleCalendarRequest
             throw new ArgumentNullException(nameof(managedEvents));
         }
 
-        string mutationKind = pendingOperation.CalendarIdentifierOrNull == null ? "create" : "replace";
+        string mutationKind = "create";
+        if (pendingOperation.CalendarIdentifierOrNull != null)
+        {
+            mutationKind = "replace";
+        }
+
         (long migrationStartsAtUnixSeconds, long migrationEndsAtUnixSeconds) = getLegacyMigrationRange(pendingOperation.TermStartsAtUnixSeconds, pendingOperation.TermEndsAtUnixSeconds);
         List<EventKitAppleCalendarManagedEventRequest> managedEventRequests = new List<EventKitAppleCalendarManagedEventRequest>(managedEvents.Count);
         foreach (AppleCalendarManagedEventRegistration managedEvent in managedEvents)
         {
-            string externalIdentifier = managedEvent.ExternalIdentifierOrNull == null ? string.Empty : managedEvent.ExternalIdentifierOrNull;
+            string externalIdentifier = string.Empty;
+            if (managedEvent.ExternalIdentifierOrNull != null)
+            {
+                externalIdentifier = managedEvent.ExternalIdentifierOrNull;
+            }
+
             managedEventRequests.Add(new EventKitAppleCalendarManagedEventRequest(managedEvent.SourceEventHash, managedEvent.CalendarItemIdentifier, externalIdentifier, managedEvent.Fingerprint));
         }
 
-        string calendarIdentifier = pendingOperation.CalendarIdentifierOrNull == null ? string.Empty : pendingOperation.CalendarIdentifierOrNull;
+        string calendarIdentifier = string.Empty;
+        if (pendingOperation.CalendarIdentifierOrNull != null)
+        {
+            calendarIdentifier = pendingOperation.CalendarIdentifierOrNull;
+        }
+
         return new EventKitAppleCalendarRequest(
             "reconcile",
             string.Empty,
@@ -290,12 +320,26 @@ internal sealed class EventKitAppleCalendarRequest
             throw new ArgumentOutOfRangeException(nameof(termEndsAtUnixSeconds));
         }
 
-        long migrationStartsAtUnixSeconds = termStartsAtUnixSeconds < long.MinValue + LEGACY_MIGRATION_PADDING_SECONDS
-            ? long.MinValue
-            : termStartsAtUnixSeconds - LEGACY_MIGRATION_PADDING_SECONDS;
-        long migrationEndsAtUnixSeconds = termEndsAtUnixSeconds > long.MaxValue - 1L - LEGACY_MIGRATION_PADDING_SECONDS
-            ? long.MaxValue - 1L
-            : termEndsAtUnixSeconds + LEGACY_MIGRATION_PADDING_SECONDS;
+        long migrationStartsAtUnixSeconds;
+        if (termStartsAtUnixSeconds < long.MinValue + LEGACY_MIGRATION_PADDING_SECONDS)
+        {
+            migrationStartsAtUnixSeconds = long.MinValue;
+        }
+        else
+        {
+            migrationStartsAtUnixSeconds = termStartsAtUnixSeconds - LEGACY_MIGRATION_PADDING_SECONDS;
+        }
+
+        long migrationEndsAtUnixSeconds;
+        if (termEndsAtUnixSeconds > long.MaxValue - 1L - LEGACY_MIGRATION_PADDING_SECONDS)
+        {
+            migrationEndsAtUnixSeconds = long.MaxValue - 1L;
+        }
+        else
+        {
+            migrationEndsAtUnixSeconds = termEndsAtUnixSeconds + LEGACY_MIGRATION_PADDING_SECONDS;
+        }
+
         return (migrationStartsAtUnixSeconds, migrationEndsAtUnixSeconds);
     }
 

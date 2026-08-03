@@ -46,12 +46,11 @@ public sealed class ProductWorkspaceLoaderTests
         {
             await context.CatalogCacheStore.SaveAsync(changedArtifactPackage, CancellationToken.None);
 
-            ProductWorkspaceCatalogCompatibilityException exception =
-                await Assert.ThrowsAsync<ProductWorkspaceCatalogCompatibilityException>(
-                    async delegate
-                    {
-                        await context.Loader.LoadAsync(CancellationToken.None);
-                    });
+            ProductWorkspaceCatalogCompatibilityException exception = await Assert.ThrowsAsync<ProductWorkspaceCatalogCompatibilityException>(
+                async delegate
+                {
+                    await context.Loader.LoadAsync(CancellationToken.None);
+                });
 
             Assert.Equal(EPlanningWorkspaceCatalogRebindStatus.CatalogArtifactSha256Mismatch, exception.RebindStatus);
             Assert.Empty(context.WorkspaceStore.SavedWorkspaces);
@@ -65,20 +64,18 @@ public sealed class ProductWorkspaceLoaderTests
         CatalogRevision revision = new CatalogRevision(1);
         VerifiedCatalogPackage changedArtifactPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackageWithoutSavedCourse(revision);
         PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(revision);
-        Func<CancellationToken, Task<VerifiedCatalogPackage>> download =
-            delegate (CancellationToken cancellationToken)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                return Task.FromResult(changedArtifactPackage);
-            };
+        Func<CancellationToken, Task<VerifiedCatalogPackage>> download = delegate (CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(changedArtifactPackage);
+        };
         using (ProductWorkspaceLoaderTestContext context = createContext(createLoadedWorkspaceResult(workspace), download))
         {
-            ProductWorkspaceCatalogCompatibilityException exception =
-                await Assert.ThrowsAsync<ProductWorkspaceCatalogCompatibilityException>(
-                    async delegate
-                    {
-                        await context.Loader.LoadAsync(CancellationToken.None);
-                    });
+            ProductWorkspaceCatalogCompatibilityException exception = await Assert.ThrowsAsync<ProductWorkspaceCatalogCompatibilityException>(
+                async delegate
+                {
+                    await context.Loader.LoadAsync(CancellationToken.None);
+                });
             CatalogCacheLoadResult cacheLoadResult = await context.CatalogCacheStore.LoadAsync(CancellationToken.None);
 
             Assert.Equal(EPlanningWorkspaceCatalogRebindStatus.CatalogArtifactSha256Mismatch, exception.RebindStatus);
@@ -281,12 +278,11 @@ public sealed class ProductWorkspaceLoaderTests
         {
             await context.CatalogCacheStore.SaveAsync(catalogPackage, CancellationToken.None);
 
-            ProductWorkspaceCatalogCompatibilityException exception =
-                await Assert.ThrowsAsync<ProductWorkspaceCatalogCompatibilityException>(
-                    async delegate
-                    {
-                        await context.Loader.LoadAsync(CancellationToken.None);
-                    });
+            ProductWorkspaceCatalogCompatibilityException exception = await Assert.ThrowsAsync<ProductWorkspaceCatalogCompatibilityException>(
+                async delegate
+                {
+                    await context.Loader.LoadAsync(CancellationToken.None);
+                });
 
             Assert.Equal(EPlanningWorkspaceCatalogRebindStatus.OfferingNotFound, exception.RebindStatus);
             Assert.Empty(context.WorkspaceStore.SavedWorkspaces);
@@ -321,12 +317,11 @@ public sealed class ProductWorkspaceLoaderTests
     public async Task FirstRunDownloadsCachesAndPersistsWorkspaceAsync()
     {
         VerifiedCatalogPackage catalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(new CatalogRevision(1));
-        Func<CancellationToken, Task<VerifiedCatalogPackage>> download =
-            delegate (CancellationToken cancellationToken)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                return Task.FromResult(catalogPackage);
-            };
+        Func<CancellationToken, Task<VerifiedCatalogPackage>> download = delegate (CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(catalogPackage);
+        };
         using (ProductWorkspaceLoaderTestContext context = createContext(PlanningWorkspaceLoadResult.CreateNotFound(), download))
         {
             ProductWorkspaceLoadResult firstResult = await context.Loader.LoadAsync(CancellationToken.None);
@@ -352,12 +347,11 @@ public sealed class ProductWorkspaceLoaderTests
         CatalogRevision downloadedRevision = new CatalogRevision(2);
         VerifiedCatalogPackage downloadedCatalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(downloadedRevision);
         PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateWorkspaceWithValidSelection(savedRevision);
-        Func<CancellationToken, Task<VerifiedCatalogPackage>> download =
-            delegate (CancellationToken cancellationToken)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                return Task.FromResult(downloadedCatalogPackage);
-            };
+        Func<CancellationToken, Task<VerifiedCatalogPackage>> download = delegate (CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(downloadedCatalogPackage);
+        };
         using (ProductWorkspaceLoaderTestContext context = createContext(createLoadedWorkspaceResult(workspace), download))
         {
             ProductWorkspaceLoadResult result = await context.Loader.LoadAsync(CancellationToken.None);
@@ -379,12 +373,11 @@ public sealed class ProductWorkspaceLoaderTests
         CatalogRevision revision = new CatalogRevision(1);
         VerifiedCatalogPackage catalogPackage = ProductWorkspaceLoaderTestData.CreateCatalogPackage(revision);
         PlanningWorkspace workspace = ProductWorkspaceLoaderTestData.CreateWorkspaceWithMissingOffering(revision);
-        Func<CancellationToken, Task<VerifiedCatalogPackage>> download =
-            delegate (CancellationToken cancellationToken)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                return Task.FromResult(catalogPackage);
-            };
+        Func<CancellationToken, Task<VerifiedCatalogPackage>> download = delegate (CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(catalogPackage);
+        };
         using (ProductWorkspaceLoaderTestContext context = createContext(createLoadedWorkspaceResult(workspace), download))
         {
             await Assert.ThrowsAsync<ProductWorkspaceCatalogCompatibilityException>(

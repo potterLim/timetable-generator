@@ -159,7 +159,12 @@ internal static class ScheduleCalendarProjector
     private static CalendarEventContent createCourseEventContent(CourseScheduleEntry entry, ECourseSummaryStyle courseSummaryStyle)
     {
         string summary = findCourseSummary(entry, courseSummaryStyle);
-        string location = entry.HasAssignedLocation ? entry.LocationDisplayText : string.Empty;
+        string location = string.Empty;
+        if (entry.HasAssignedLocation)
+        {
+            location = entry.LocationDisplayText;
+        }
+
         List<string> descriptionLines = new List<string>
         {
             "과목 코드: " + entry.Code,
@@ -199,7 +204,12 @@ internal static class ScheduleCalendarProjector
             descriptionLines.Add("담당: " + entry.InstructorDisplayText);
         }
 
-        string location = entry.HasLocation ? entry.LocationDisplayText : string.Empty;
+        string location = string.Empty;
+        if (entry.HasLocation)
+        {
+            location = entry.LocationDisplayText;
+        }
+
         return new CalendarEventContent(entry.Title, location, string.Join(DESCRIPTION_LINE_SEPARATOR, descriptionLines));
     }
 

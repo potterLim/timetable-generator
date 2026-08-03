@@ -102,7 +102,14 @@ public sealed partial class SchedulePngBatchWriterTests
                 List<ScheduleBoardPresentation> candidates = new List<ScheduleBoardPresentation>();
                 for (int candidateIndex = 0; candidateIndex < 64; ++candidateIndex)
                 {
-                    candidates.Add(candidateIndex % 2 == 0 ? firstCandidate : secondCandidate);
+                    if (candidateIndex % 2 == 0)
+                    {
+                        candidates.Add(firstCandidate);
+                    }
+                    else
+                    {
+                        candidates.Add(secondCandidate);
+                    }
                 }
 
                 SchedulePngExportBatch exportBatch = new SchedulePngExportBatch(candidates);

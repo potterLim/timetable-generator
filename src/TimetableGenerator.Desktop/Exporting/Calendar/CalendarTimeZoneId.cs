@@ -117,6 +117,11 @@ internal readonly record struct CalendarTimeZoneId
     private static TimeSpan findFirstOccurrenceUtcOffset(TimeZoneInfo timeZone, DateTime ambiguousLocalDateTime)
     {
         TimeSpan[] possibleOffsets = timeZone.GetAmbiguousTimeOffsets(ambiguousLocalDateTime);
-        return possibleOffsets[0] > possibleOffsets[1] ? possibleOffsets[0] : possibleOffsets[1];
+        if (possibleOffsets[0] > possibleOffsets[1])
+        {
+            return possibleOffsets[0];
+        }
+
+        return possibleOffsets[1];
     }
 }

@@ -124,6 +124,11 @@ internal sealed class ScheduleListGroup
             return "과목 및 개인 일정";
         }
 
-        return hasCourse ? "과목" : "개인 일정";
+        if (hasCourse)
+        {
+            return "과목";
+        }
+
+        return "개인 일정";
     }
 }

@@ -164,9 +164,7 @@ public sealed class UnsatisfiedScheduleExperienceTests
 
     private static void selectPersonalScheduleDay(PlannerWorkspaceViewModel workspace, EDay day)
     {
-        PersonalScheduleDayOption? optionOrNull =
-            workspace.PersonalScheduleDayOptions.FirstOrDefault(
-                option => option.Day == day);
+        PersonalScheduleDayOption? optionOrNull = workspace.PersonalScheduleDayOptions.FirstOrDefault(option => option.Day == day);
         if (optionOrNull == null)
         {
             throw new ArgumentOutOfRangeException(nameof(day), day, "The personal schedule day option was not found.");
@@ -189,7 +187,14 @@ public sealed class UnsatisfiedScheduleExperienceTests
 
     private static string getTextOrEmpty(TextBlock textBlock)
     {
-        return textBlock.Text == null ? string.Empty : textBlock.Text;
+        if (textBlock.Text == null)
+        {
+            return string.Empty;
+        }
+        else
+        {
+            return textBlock.Text;
+        }
     }
 
     private sealed class ForcedConflictRecommendationProvider :

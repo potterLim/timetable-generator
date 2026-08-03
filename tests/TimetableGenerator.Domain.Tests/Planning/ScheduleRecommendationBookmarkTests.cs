@@ -30,15 +30,9 @@ public sealed class ScheduleRecommendationBookmarkTests
         Assert.IsTrue(bookmark.HasSameOfferingIds(new OfferingId[] { secondOfferingId, firstOfferingId }));
         Assert.IsTrue(bookmark.HasSameScheduledOfferingIds(new OfferingId[] { secondOfferingId, firstOfferingId }));
         Assert.IsFalse(bookmark.HasSameScheduledOfferingIds(new OfferingId[] { firstOfferingId }));
-        Assert.ThrowsExactly<ArgumentException>(
-            () => new ScheduleRecommendationBookmark(
-                Array.Empty<OfferingId>()));
-        Assert.ThrowsExactly<ArgumentException>(
-            () => new ScheduleRecommendationBookmark(
-                new OfferingId[] { firstOfferingId, firstOfferingId }));
-        Assert.ThrowsExactly<ArgumentException>(
-            () => new ScheduleRecommendationBookmark(
-                new OfferingId[] { null! }));
+        Assert.ThrowsExactly<ArgumentException>(() => new ScheduleRecommendationBookmark(Array.Empty<OfferingId>()));
+        Assert.ThrowsExactly<ArgumentException>(() => new ScheduleRecommendationBookmark(new OfferingId[] { firstOfferingId, firstOfferingId }));
+        Assert.ThrowsExactly<ArgumentException>(() => new ScheduleRecommendationBookmark(new OfferingId[] { null! }));
     }
 
     [TestMethod]
@@ -65,8 +59,7 @@ public sealed class ScheduleRecommendationBookmarkTests
             new PlanName("추천 복원"),
             createCatalogBinding(),
             content,
-            new ScheduleRecommendationBookmark(
-                new OfferingId[] { preferredOfferingId }));
+            new ScheduleRecommendationBookmark(new OfferingId[] { preferredOfferingId }));
 
         Assert.IsNotNull(plan.LastViewedRecommendationOrNull);
         Assert.ThrowsExactly<ArgumentException>(
@@ -75,16 +68,14 @@ public sealed class ScheduleRecommendationBookmarkTests
                 new PlanName("제외 분반"),
                 createCatalogBinding(),
                 content,
-                new ScheduleRecommendationBookmark(
-                    new OfferingId[] { excludedOfferingId })));
+                new ScheduleRecommendationBookmark(new OfferingId[] { excludedOfferingId })));
         Assert.ThrowsExactly<ArgumentException>(
             () => new PlanningPlan(
                 PlanId.CreateNew(),
                 new PlanName("알 수 없는 분반"),
                 createCatalogBinding(),
                 content,
-                new ScheduleRecommendationBookmark(
-                    new OfferingId[] { new OfferingId("unknown-offering") })));
+                new ScheduleRecommendationBookmark(new OfferingId[] { new OfferingId("unknown-offering") })));
     }
 
     private static PlanCatalogBinding createCatalogBinding()

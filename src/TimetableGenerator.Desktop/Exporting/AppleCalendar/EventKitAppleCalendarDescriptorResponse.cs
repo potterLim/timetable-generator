@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace TimetableGenerator.Desktop.Exporting.AppleCalendar;
 
 internal sealed class EventKitAppleCalendarDescriptorResponse
@@ -8,11 +10,13 @@ internal sealed class EventKitAppleCalendarDescriptorResponse
 
     public string? SourceIdentifier { get; set; }
 
-    public bool Writable { get; set; }
+    [JsonPropertyName("writable")]
+    public bool IsWritable { get; set; }
 
     public string? RegisteredPlanId { get; set; }
 
     public string? LegacyPlanId { get; set; }
 
-    public bool LegacyManaged { get; set; }
+    [JsonPropertyName("legacyManaged")]
+    public bool IsLegacyManaged { get; set; }
 }

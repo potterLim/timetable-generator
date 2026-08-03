@@ -227,36 +227,34 @@ public sealed class ScheduleCalendarProjectorTests
         CourseId courseId = new CourseId("course-1");
         OfferingId offeringId = new OfferingId("offering-1");
 
-        CalendarExportDocument thirdPeriodDocument =
-            ScheduleCalendarProjector.ProjectForGoogleCalendar(
-                planId,
-                new PlanName("시간표"),
-                INSTITUTION_NAME,
-                new ScheduleRecommendation(
-                    new ScheduleEntry[]
-                    {
-                        createCourseEntry(
-                            courseId,
-                            offeringId,
-                            EDay.Monday,
-                            new AcademicPeriod(3)),
-                    }),
-                getAcademicCalendar());
-        CalendarExportDocument fourthPeriodDocument =
-            ScheduleCalendarProjector.ProjectForGoogleCalendar(
-                planId,
-                new PlanName("시간표"),
-                INSTITUTION_NAME,
-                new ScheduleRecommendation(
-                    new ScheduleEntry[]
-                    {
-                        createCourseEntry(
-                            courseId,
-                            offeringId,
-                            EDay.Monday,
-                            new AcademicPeriod(4)),
-                    }),
-                getAcademicCalendar());
+        CalendarExportDocument thirdPeriodDocument = ScheduleCalendarProjector.ProjectForGoogleCalendar(
+            planId,
+            new PlanName("시간표"),
+            INSTITUTION_NAME,
+            new ScheduleRecommendation(
+                new ScheduleEntry[]
+                {
+                    createCourseEntry(
+                        courseId,
+                        offeringId,
+                        EDay.Monday,
+                        new AcademicPeriod(3)),
+                }),
+            getAcademicCalendar());
+        CalendarExportDocument fourthPeriodDocument = ScheduleCalendarProjector.ProjectForGoogleCalendar(
+            planId,
+            new PlanName("시간표"),
+            INSTITUTION_NAME,
+            new ScheduleRecommendation(
+                new ScheduleEntry[]
+                {
+                    createCourseEntry(
+                        courseId,
+                        offeringId,
+                        EDay.Monday,
+                        new AcademicPeriod(4)),
+                }),
+            getAcademicCalendar());
 
         Assert.NotEqual(Assert.Single(thirdPeriodDocument.Events).Uid, Assert.Single(fourthPeriodDocument.Events).Uid);
     }

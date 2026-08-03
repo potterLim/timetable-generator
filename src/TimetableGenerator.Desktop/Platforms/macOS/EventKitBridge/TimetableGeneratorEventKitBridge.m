@@ -100,7 +100,11 @@ static tg_calendar_access_result_t tg_request_calendar_access(EKEventStore* cons
         return TG_CALENDAR_ACCESS_RESULT_GRANTED;
     }
 
-    return request_error == nil ? TG_CALENDAR_ACCESS_RESULT_DENIED : TG_CALENDAR_ACCESS_RESULT_FAILED;
+    if (request_error == nil) {
+        return TG_CALENDAR_ACCESS_RESULT_DENIED;
+    }
+
+    return TG_CALENDAR_ACCESS_RESULT_FAILED;
 }
 
 static NSDictionary* tg_get_calendar_access_failure(const tg_calendar_access_result_t result)
@@ -172,7 +176,11 @@ char* tg_eventkit_execute(const uint8_t* const request_bytes_or_null, const size
             return tg_copy_json_response_malloc(tg_execute_request(request_object));
         } @catch (NSException* exception) {
             if ([exception.name isEqualToString:TG_INVALID_REQUEST_EXCEPTION]) {
-                return tg_copy_json_response_malloc(tg_create_response(TG_STATUS_INVALID_REQUEST, exception.reason ?: @"eventkit_request_invalid"));
+                NSString* diagnostic_code = exception.reason;
+                if (diagnostic_code == nil) {
+                    diagnostic_code = @"eventkit_request_invalid";
+                }
+                return tg_copy_json_response_malloc(tg_create_response(TG_STATUS_INVALID_REQUEST, diagnostic_code));
             }
             return tg_copy_json_response_malloc(tg_create_response(TG_STATUS_OPERATION_FAILED, @"eventkit_native_exception"));
         }

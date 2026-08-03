@@ -139,9 +139,7 @@ public sealed class GenerationFileStorageTests
                 using (CancellationTokenSource cancellationSource = new CancellationTokenSource())
                 {
                     cancellationSource.CancelAfter(100);
-                    await Assert.ThrowsAsync<OperationCanceledException>(
-                        () => secondStorage.AcquireExistingDirectoryAsync(
-                            cancellationSource.Token));
+                    await Assert.ThrowsAsync<OperationCanceledException>(() => secondStorage.AcquireExistingDirectoryAsync(cancellationSource.Token));
                 }
             }
 

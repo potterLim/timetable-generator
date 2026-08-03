@@ -48,7 +48,15 @@ internal sealed class AppleCalendarExportMutation
         Document = document;
         DestinationName = destinationName;
         ExistingCalendarIdOrNull = existingCalendarIdOrNull;
-        ExpectedSourceIdentifierOrNull = string.IsNullOrWhiteSpace(expectedSourceIdentifierOrNull) ? null : expectedSourceIdentifierOrNull.Trim();
+        if (string.IsNullOrWhiteSpace(expectedSourceIdentifierOrNull))
+        {
+            ExpectedSourceIdentifierOrNull = null;
+        }
+        else
+        {
+            ExpectedSourceIdentifierOrNull = expectedSourceIdentifierOrNull.Trim();
+        }
+
         CalendarOwnershipPlanId = calendarOwnershipPlanId;
     }
 

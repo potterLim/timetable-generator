@@ -22,9 +22,23 @@ internal sealed class ScheduleCardContent
             throw new ArgumentNullException(nameof(entry));
         }
 
-        Title = includeSection ? entry.NameWithSection : entry.Name;
-        LocationOrNull = entry.HasAssignedLocation ? entry.LocationDisplayText : null;
-        ResponsiblePersonOrNull = entry.HasConfirmedInstructor ? entry.InstructorDisplayText : null;
+        Title = entry.Name;
+        if (includeSection)
+        {
+            Title = entry.NameWithSection;
+        }
+
+        LocationOrNull = null;
+        if (entry.HasAssignedLocation)
+        {
+            LocationOrNull = entry.LocationDisplayText;
+        }
+
+        ResponsiblePersonOrNull = null;
+        if (entry.HasConfirmedInstructor)
+        {
+            ResponsiblePersonOrNull = entry.InstructorDisplayText;
+        }
     }
 
     public static ScheduleCardContent CreateForPngExport(CourseScheduleEntry entry)
@@ -40,7 +54,16 @@ internal sealed class ScheduleCardContent
         }
 
         Title = entry.TitleWithSection;
-        LocationOrNull = entry.HasLocation ? entry.LocationDisplayText : null;
-        ResponsiblePersonOrNull = entry.HasInstructor ? entry.InstructorDisplayText : null;
+        LocationOrNull = null;
+        if (entry.HasLocation)
+        {
+            LocationOrNull = entry.LocationDisplayText;
+        }
+
+        ResponsiblePersonOrNull = null;
+        if (entry.HasInstructor)
+        {
+            ResponsiblePersonOrNull = entry.InstructorDisplayText;
+        }
     }
 }

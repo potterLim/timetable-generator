@@ -510,7 +510,6 @@ public sealed class CourseSearchExperienceTests
                 course => course.Code == "BFT30009");
             Assert.True(seminar.HasMultipleSelectionOptions);
             Assert.True(seminar.IsDirectAddButtonVisible);
-            Assert.False(seminar.IsSelectionButtonVisible);
 
             workspace.AddCourseCommand.Execute(seminar);
 
@@ -518,7 +517,6 @@ public sealed class CourseSearchExperienceTests
             CourseChoiceDraftCourseItem draft = Assert.Single(workspace.CourseChoiceDraftCourses);
             Assert.Equal(2, draft.Offerings.Count);
             Assert.All(draft.Offerings, offering => Assert.True(offering.IsAcceptable));
-            Assert.False(seminar.IsSelectionButtonVisible);
         }
     }
 

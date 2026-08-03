@@ -28,7 +28,12 @@ internal sealed class PersonalScheduleEntry : ScheduleEntry
     {
         get
         {
-            return HasSection ? Title + "(" + SectionDisplayText + ")" : Title;
+            if (HasSection)
+            {
+                return Title + "(" + SectionDisplayText + ")";
+            }
+
+            return Title;
         }
     }
 

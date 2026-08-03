@@ -67,7 +67,11 @@ static BOOL tg_is_managed_legacy_url_for_plan(NSURL* const url_or_null, NSString
 
 static NSString* tg_get_base64_normalized_text(NSString* const value_or_null)
 {
-    NSData* const data = [tg_normalize_text(value_or_null ?: @"") dataUsingEncoding:NSUTF8StringEncoding];
+    NSString* value = value_or_null;
+    if (value == nil) {
+        value = @"";
+    }
+    NSData* const data = [tg_normalize_text(value) dataUsingEncoding:NSUTF8StringEncoding];
     return [data base64EncodedStringWithOptions:0];
 }
 
@@ -101,7 +105,11 @@ static NSString* tg_get_event_series_key_or_null(EKEvent* const event)
     }
 
     NSString* const calendar_item_identifier = event.calendarItemIdentifier;
-    return calendar_item_identifier.length > 0 ? [@"calendar-item:" stringByAppendingString:calendar_item_identifier] : nil;
+    if (calendar_item_identifier.length > 0) {
+        return [@"calendar-item:" stringByAppendingString:calendar_item_identifier];
+    }
+
+    return nil;
 }
 
 NSDate* tg_get_date_from_unix_seconds(const long long seconds)
@@ -111,12 +119,22 @@ NSDate* tg_get_date_from_unix_seconds(const long long seconds)
 
 NSString* tg_get_calendar_source_identifier(EKCalendar* const calendar_or_null)
 {
-    return calendar_or_null.source.sourceIdentifier ?: @"";
+    NSString* const source_identifier_or_null = calendar_or_null.source.sourceIdentifier;
+    if (source_identifier_or_null == nil) {
+        return @"";
+    }
+
+    return source_identifier_or_null;
 }
 
 NSString* tg_get_calendar_identifier(EKCalendar* const calendar_or_null)
 {
-    return calendar_or_null.calendarIdentifier ?: @"";
+    NSString* const calendar_identifier_or_null = calendar_or_null.calendarIdentifier;
+    if (calendar_identifier_or_null == nil) {
+        return @"";
+    }
+
+    return calendar_identifier_or_null;
 }
 
 NSArray<EKEvent*>* tg_get_events_in_calendar(
@@ -175,9 +193,13 @@ NSDictionary* tg_create_legacy_ownership_snapshot(
     }
 
     const BOOL managed = plan_identifier != nil || contains_v1_marker;
+    NSString* managed_plan_identifier = plan_identifier;
+    if (managed_plan_identifier == nil) {
+        managed_plan_identifier = @"";
+    }
     return @{
         @"managed" : @(managed),
-        @"planIdentifier" : plan_identifier ?: @""
+        @"planIdentifier" : managed_plan_identifier
     };
 }
 
@@ -213,9 +235,9 @@ NSString* tg_get_fingerprint_for_event_or_null(EKEvent* const event)
     [weekdays sortUsingSelector:@selector(compare:)];
 
     NSMutableString* const canonical_value = [NSMutableString string];
-    [canonical_value appendFormat:@"%@|", tg_get_base64_normalized_text(event.title ?: @"")];
-    [canonical_value appendFormat:@"%@|", tg_get_base64_normalized_text(event.location ?: @"")];
-    [canonical_value appendFormat:@"%@|", tg_get_base64_normalized_text(event.notes ?: @"")];
+    [canonical_value appendFormat:@"%@|", tg_get_base64_normalized_text(event.title)];
+    [canonical_value appendFormat:@"%@|", tg_get_base64_normalized_text(event.location)];
+    [canonical_value appendFormat:@"%@|", tg_get_base64_normalized_text(event.notes)];
     [canonical_value appendFormat:@"%lld|", (long long)llround(event.startDate.timeIntervalSince1970)];
     [canonical_value appendFormat:@"%lld|", (long long)llround(event.endDate.timeIntervalSince1970)];
     [canonical_value appendFormat:@"%@|", tg_get_base64_normalized_text(event.timeZone.name)];
@@ -465,7 +487,11 @@ EKCalendar* tg_resolve_pending_committed_calendar_after_identifier_change_or_nul
     NSMutableArray<EKCalendar*>* const matches = [NSMutableArray array];
     for (EKCalendar* candidate in calendars) {
         const BOOL has_matching_source = [tg_get_calendar_source_identifier(candidate) isEqualToString:source_identifier];
-        const BOOL has_matching_name = [tg_normalize_calendar_name(candidate.title ?: @"") isEqualToString:normalized_calendar_name];
+        NSString* candidate_title = candidate.title;
+        if (candidate_title == nil) {
+            candidate_title = @"";
+        }
+        const BOOL has_matching_name = [tg_normalize_calendar_name(candidate_title) isEqualToString:normalized_calendar_name];
         if (!candidate.allowsContentModifications || !has_matching_source || !has_matching_name) {
             continue;
         }
@@ -477,5 +503,9 @@ EKCalendar* tg_resolve_pending_committed_calendar_after_identifier_change_or_nul
             [matches addObject:candidate];
         }
     }
-    return matches.count == 1 ? matches.firstObject : nil;
+    if (matches.count == 1) {
+        return matches.firstObject;
+    }
+
+    return nil;
 }

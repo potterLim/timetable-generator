@@ -8,14 +8,7 @@ internal static class CatalogJsonValueParser
 {
     public static InstitutionMetadata ParseInstitution(JsonElement element, string path)
     {
-        StrictJsonObject institutionObject = StrictJsonObject.Create(
-            element,
-            path,
-            new string[]
-            {
-                "id",
-                "name",
-            });
+        StrictJsonObject institutionObject = StrictJsonObject.Create(element, path, new string[] { "id", "name" });
         StrictJsonObject nameObject = StrictJsonObject.Create(
             institutionObject.GetElement("name"),
             institutionObject.GetPropertyPath("name"),

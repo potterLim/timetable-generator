@@ -70,8 +70,25 @@ public sealed class ApplicationIconAssetTests
         for (int imageIndex = 0; imageIndex < imageCount; ++imageIndex)
         {
             int entryOffset = 6 + (16 * imageIndex);
-            int width = bytes[entryOffset] == 0 ? 256 : bytes[entryOffset];
-            int height = bytes[entryOffset + 1] == 0 ? 256 : bytes[entryOffset + 1];
+            int width;
+            if (bytes[entryOffset] == 0)
+            {
+                width = 256;
+            }
+            else
+            {
+                width = bytes[entryOffset];
+            }
+
+            int height;
+            if (bytes[entryOffset + 1] == 0)
+            {
+                height = 256;
+            }
+            else
+            {
+                height = bytes[entryOffset + 1];
+            }
             Assert.Equal(width, height);
 
             uint payloadLength = readLittleEndianUInt32(bytes, entryOffset + 8);

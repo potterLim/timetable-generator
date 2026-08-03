@@ -142,14 +142,7 @@ public static class CatalogIndexJsonReader
 
     private static CatalogIndexCounts parseCounts(JsonElement element, string path)
     {
-        StrictJsonObject countsObject = StrictJsonObject.Create(
-            element,
-            path,
-            new string[]
-            {
-                "courses",
-                "offerings",
-            });
+        StrictJsonObject countsObject = StrictJsonObject.Create(element, path, new string[] { "courses", "offerings" });
         return new CatalogIndexCounts(new CatalogCourseCount(countsObject.GetInt32("courses")), new CatalogOfferingCount(countsObject.GetInt32("offerings")));
     }
 }

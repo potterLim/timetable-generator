@@ -57,8 +57,7 @@ public sealed class CatalogCommandLineParserTests
         arguments.Add("--school");
         arguments.Add("handong-global-university");
 
-        CatalogGenerationException exception = Assert.ThrowsExactly<CatalogGenerationException>(
-            () => CatalogCommandLineParser.Parse(arguments));
+        CatalogGenerationException exception = Assert.ThrowsExactly<CatalogGenerationException>(() => CatalogCommandLineParser.Parse(arguments));
 
         assertInvalidArgumentsError(exception, ECatalogGenerationErrorCode.UnknownOption);
     }
@@ -70,8 +69,7 @@ public sealed class CatalogCommandLineParserTests
         arguments.Add("--published-at");
         arguments.Add("2026-07-16T00:00:00Z");
 
-        CatalogGenerationException exception = Assert.ThrowsExactly<CatalogGenerationException>(
-            () => CatalogCommandLineParser.Parse(arguments));
+        CatalogGenerationException exception = Assert.ThrowsExactly<CatalogGenerationException>(() => CatalogCommandLineParser.Parse(arguments));
 
         assertInvalidArgumentsError(exception, ECatalogGenerationErrorCode.UnknownOption);
     }
@@ -83,8 +81,7 @@ public sealed class CatalogCommandLineParserTests
         arguments.Add("--revision");
         arguments.Add("8");
 
-        CatalogGenerationException exception = Assert.ThrowsExactly<CatalogGenerationException>(
-            () => CatalogCommandLineParser.Parse(arguments));
+        CatalogGenerationException exception = Assert.ThrowsExactly<CatalogGenerationException>(() => CatalogCommandLineParser.Parse(arguments));
 
         assertInvalidArgumentsError(exception, ECatalogGenerationErrorCode.DuplicateOption);
     }
@@ -99,8 +96,7 @@ public sealed class CatalogCommandLineParserTests
             "source.xls",
         };
 
-        CatalogGenerationException exception = Assert.ThrowsExactly<CatalogGenerationException>(
-            () => CatalogCommandLineParser.Parse(arguments));
+        CatalogGenerationException exception = Assert.ThrowsExactly<CatalogGenerationException>(() => CatalogCommandLineParser.Parse(arguments));
 
         assertInvalidArgumentsError(exception, ECatalogGenerationErrorCode.MissingRequiredOption);
         StringAssert.Contains(exception.Message, "--term");
@@ -119,8 +115,7 @@ public sealed class CatalogCommandLineParserTests
             "2026-2",
         };
 
-        CatalogGenerationException exception = Assert.ThrowsExactly<CatalogGenerationException>(
-            () => CatalogCommandLineParser.Parse(arguments));
+        CatalogGenerationException exception = Assert.ThrowsExactly<CatalogGenerationException>(() => CatalogCommandLineParser.Parse(arguments));
 
         assertInvalidArgumentsError(exception, ECatalogGenerationErrorCode.MissingOptionValue);
         StringAssert.Contains(exception.Message, "--source");
@@ -136,8 +131,7 @@ public sealed class CatalogCommandLineParserTests
         int optionIndex = arguments.IndexOf(optionName);
         arguments[optionIndex + 1] = invalidValue;
 
-        CatalogGenerationException exception = Assert.ThrowsExactly<CatalogGenerationException>(
-            () => CatalogCommandLineParser.Parse(arguments));
+        CatalogGenerationException exception = Assert.ThrowsExactly<CatalogGenerationException>(() => CatalogCommandLineParser.Parse(arguments));
 
         assertInvalidArgumentsError(exception, ECatalogGenerationErrorCode.InvalidOptionValue);
         StringAssert.Contains(exception.Message, optionName);

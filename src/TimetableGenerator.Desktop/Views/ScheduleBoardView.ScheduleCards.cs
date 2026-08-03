@@ -99,7 +99,12 @@ internal sealed partial class ScheduleBoardView
     {
         ScheduleBoardDay boardDay = mRenderedLayout.DayRange.FindDay(day);
         bool isInRightHalf = (boardDay.ColumnIndex * 2) >= mRenderedLayout.DayRange.TotalColumnCount;
-        return isInRightHalf ? PlacementMode.BottomEdgeAlignedRight : PlacementMode.BottomEdgeAlignedLeft;
+        if (isInRightHalf)
+        {
+            return PlacementMode.BottomEdgeAlignedRight;
+        }
+
+        return PlacementMode.BottomEdgeAlignedLeft;
     }
 
     private static Grid createDetailRow(string label, string value)

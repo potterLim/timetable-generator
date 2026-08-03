@@ -39,10 +39,7 @@ function New-ResizedPngBytes {
         [int] $Size
     )
 
-    $bitmap = [System.Drawing.Bitmap]::new(
-        $Size,
-        $Size,
-        [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+    $bitmap = [System.Drawing.Bitmap]::new($Size, $Size, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
     try {
         $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
         try {
@@ -233,12 +230,10 @@ function Assert-IcnsFile {
         ic13 = 256
         ic14 = 512
     }
-    $legacyArgbChunkTypes = [System.Collections.Generic.HashSet[string]]::new(
-        [System.StringComparer]::Ordinal)
+    $legacyArgbChunkTypes = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
     $null = $legacyArgbChunkTypes.Add("ic04")
     $null = $legacyArgbChunkTypes.Add("ic05")
-    $requiredSizes = [System.Collections.Generic.HashSet[uint32]]::new(
-        [uint32[]] @(16, 32, 64, 128, 256, 512, 1024))
+    $requiredSizes = [System.Collections.Generic.HashSet[uint32]]::new([uint32[]] @(16, 32, 64, 128, 256, 512, 1024))
     $foundSizes = [System.Collections.Generic.HashSet[uint32]]::new()
     $pngSignature = [byte[]] @(0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A)
     $argbSignature = [System.Text.Encoding]::ASCII.GetBytes("ARGB")

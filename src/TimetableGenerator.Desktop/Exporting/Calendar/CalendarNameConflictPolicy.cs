@@ -133,7 +133,13 @@ internal static class CalendarNameConflictPolicy
         StringBuilder canonicalName = new StringBuilder(normalizedName.Length);
         foreach (char character in normalizedName)
         {
-            canonicalName.Append(character >= 'a' && character <= 'z' ? (char)(character - ('a' - 'A')) : character);
+            char canonicalCharacter = character;
+            if (character >= 'a' && character <= 'z')
+            {
+                canonicalCharacter = (char)(character - ('a' - 'A'));
+            }
+
+            canonicalName.Append(canonicalCharacter);
         }
         return canonicalName.ToString();
     }

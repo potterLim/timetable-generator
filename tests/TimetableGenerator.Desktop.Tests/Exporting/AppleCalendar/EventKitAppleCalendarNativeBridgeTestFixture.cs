@@ -71,7 +71,15 @@ public abstract class EventKitAppleCalendarNativeBridgeTestFixture
         using (JsonDocument request = JsonDocument.Parse(requestJson))
         {
             string operation = request.RootElement.GetProperty("operation").GetString()!;
-            string eventCollectionName = operation == "reconcile" ? "desiredEvents" : "recurringEvents";
+            string eventCollectionName;
+            if (operation == "reconcile")
+            {
+                eventCollectionName = "desiredEvents";
+            }
+            else
+            {
+                eventCollectionName = "recurringEvents";
+            }
             JsonElement requestedEvent = Assert.Single(request.RootElement.GetProperty(eventCollectionName).EnumerateArray());
             string sourceEventHash = requestedEvent.GetProperty("sourceEventHash").GetString()!;
             string fingerprint = requestedEvent.GetProperty("fingerprint").GetString()!;

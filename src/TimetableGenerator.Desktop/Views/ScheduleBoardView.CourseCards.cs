@@ -12,7 +12,15 @@ internal sealed partial class ScheduleBoardView
     private void configureCourseCard(Button scheduleCard, CourseScheduleEntry entry)
     {
         scheduleCard.Classes.Add(findAccentClass(entry.Accent));
-        ScheduleCardContent cardContent = mIsPngExport ? ScheduleCardContent.CreateForPngExport(entry) : new ScheduleCardContent(entry);
+        ScheduleCardContent cardContent;
+        if (mIsPngExport)
+        {
+            cardContent = ScheduleCardContent.CreateForPngExport(entry);
+        }
+        else
+        {
+            cardContent = new ScheduleCardContent(entry);
+        }
         scheduleCard.Content = createScheduleCardContent(cardContent);
         scheduleCard.Flyout = createCourseEntryFlyout(entry);
 

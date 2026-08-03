@@ -269,12 +269,11 @@ public sealed class PlannerWorkspaceSmokeTests
     [AvaloniaFact]
     public async Task LoadedWorkspaceRestoresEachPlansLastRecommendationAsync()
     {
-        ScheduleRecommendationBookmark bookmark =
-            new ScheduleRecommendationBookmark(
-                new OfferingId[]
-                {
-                    new OfferingId("offering-programming-alternative"),
-                });
+        ScheduleRecommendationBookmark bookmark = new ScheduleRecommendationBookmark(
+            new OfferingId[]
+            {
+                new OfferingId("offering-programming-alternative"),
+            });
         ImmediatePlanningWorkspaceStore planningWorkspaceStore = new ImmediatePlanningWorkspaceStore();
         using (PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace(bookmark, planningWorkspaceStore))
         {

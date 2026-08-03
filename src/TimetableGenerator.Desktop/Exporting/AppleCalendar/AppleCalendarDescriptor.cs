@@ -18,7 +18,12 @@ internal sealed class AppleCalendarDescriptor
     {
         get
         {
-            return ManagedPlanIdOrNull == null ? EAppleCalendarOwnership.External : EAppleCalendarOwnership.ApplicationManaged;
+            if (ManagedPlanIdOrNull == null)
+            {
+                return EAppleCalendarOwnership.External;
+            }
+
+            return EAppleCalendarOwnership.ApplicationManaged;
         }
     }
 

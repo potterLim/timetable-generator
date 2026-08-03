@@ -38,18 +38,9 @@ public sealed class CourseCatalogTests
         CatalogOffering offering = createOffering(course.Id, "01", MeetingSchedule.NotProvided);
         CatalogOffering orphanedOffering = createOffering(new CourseId("handong-global-university:CSE30002"), "02", MeetingSchedule.NotProvided);
 
-        Assert.ThrowsExactly<ArgumentException>(
-            () => createCatalog(
-                new CatalogCourse[] { course, course },
-                new CatalogOffering[] { offering }));
-        Assert.ThrowsExactly<ArgumentException>(
-            () => createCatalog(
-                new CatalogCourse[] { course },
-                new CatalogOffering[] { offering, offering }));
-        Assert.ThrowsExactly<ArgumentException>(
-            () => createCatalog(
-                new CatalogCourse[] { course },
-                new CatalogOffering[] { orphanedOffering }));
+        Assert.ThrowsExactly<ArgumentException>(() => createCatalog(new CatalogCourse[] { course, course }, new CatalogOffering[] { offering }));
+        Assert.ThrowsExactly<ArgumentException>(() => createCatalog(new CatalogCourse[] { course }, new CatalogOffering[] { offering, offering }));
+        Assert.ThrowsExactly<ArgumentException>(() => createCatalog(new CatalogCourse[] { course }, new CatalogOffering[] { orphanedOffering }));
     }
 
     [TestMethod]

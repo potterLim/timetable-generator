@@ -153,7 +153,15 @@ public sealed class ScheduleRecommendationGeneratorOracleTests
 
         for (int groupIndex = 0; groupIndex < 3; ++groupIndex)
         {
-            int courseCandidateCount = groupIndex == 1 ? 2 : 1;
+            int courseCandidateCount;
+            if (groupIndex == 1)
+            {
+                courseCandidateCount = 2;
+            }
+            else
+            {
+                courseCandidateCount = 1;
+            }
             List<CourseCandidate> courseCandidates = new List<CourseCandidate>();
             List<OracleCandidate> oracleCandidates = new List<OracleCandidate>();
 

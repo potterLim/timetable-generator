@@ -92,9 +92,6 @@ public sealed class CourseChoiceGroup
         }
 
         CourseCandidate courseCandidate = new CourseCandidate(courseId, offeringCandidates);
-        return new CourseChoiceGroup(
-            id,
-            ECourseChoiceCardinality.ExactlyOne,
-            new CourseCandidate[] { courseCandidate });
+        return new CourseChoiceGroup(id, ECourseChoiceCardinality.ExactlyOne, new CourseCandidate[] { courseCandidate });
     }
 }

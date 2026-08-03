@@ -169,16 +169,15 @@ internal static class PlannerWorkspaceTestFactory
                     return Task.FromResult(CreatePresentation(workspace));
                 },
             });
-        QueueProductCatalogUpdateService catalogUpdateService =
-            new QueueProductCatalogUpdateService(
-                new Func<VerifiedCatalogPackage, PlanningWorkspace, CancellationToken, Task<ProductCatalogUpdateResult>>[]
+        QueueProductCatalogUpdateService catalogUpdateService = new QueueProductCatalogUpdateService(
+            new Func<VerifiedCatalogPackage, PlanningWorkspace, CancellationToken, Task<ProductCatalogUpdateResult>>[]
+            {
+                delegate
                 {
-                    delegate
-                    {
-                        ProductCatalogUpdateResult updateResult = new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.Current, new CatalogRevision(1));
-                        return Task.FromResult(updateResult);
-                    },
-                });
+                    ProductCatalogUpdateResult updateResult = new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.Current, new CatalogRevision(1));
+                    return Task.FromResult(updateResult);
+                },
+            });
         return new ProductShellViewModel(loader, catalogUpdateService);
     }
 
@@ -280,15 +279,14 @@ internal static class PlannerWorkspaceTestFactory
     {
         PlanCatalogBinding binding = createCatalogBinding(document);
         CourseId programmingCourseId = new CourseId("course-programming");
-        CourseChoiceGroup programmingChoiceGroup =
-            CourseChoiceGroup.CreateWithAcceptableOfferings(
-                CourseChoiceGroupId.CreateNew(),
-                programmingCourseId,
-                new OfferingId[]
-                {
-                    new OfferingId("offering-programming-primary"),
-                    new OfferingId("offering-programming-alternative"),
-                });
+        CourseChoiceGroup programmingChoiceGroup = CourseChoiceGroup.CreateWithAcceptableOfferings(
+            CourseChoiceGroupId.CreateNew(),
+            programmingCourseId,
+            new OfferingId[]
+            {
+                new OfferingId("offering-programming-primary"),
+                new OfferingId("offering-programming-alternative"),
+            });
         PlanId primaryPlanId = PlanId.CreateNew();
         PlanningPlan primaryPlan = new PlanningPlan(
             primaryPlanId,

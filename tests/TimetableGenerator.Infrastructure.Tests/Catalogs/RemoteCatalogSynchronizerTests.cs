@@ -110,9 +110,7 @@ public sealed class RemoteCatalogSynchronizerTests
                 CatalogCacheFileStore store = createStore(testDirectoryPath, limits);
                 RemoteCatalogSynchronizer synchronizer = createSynchronizer(httpClient, store, limits);
 
-                await Assert.ThrowsExactlyAsync<RemoteCatalogSynchronizationException>(
-                    () => synchronizer.SynchronizeDefaultCatalogAsync(
-                        CancellationToken.None));
+                await Assert.ThrowsExactlyAsync<RemoteCatalogSynchronizationException>(() => synchronizer.SynchronizeDefaultCatalogAsync(CancellationToken.None));
                 CatalogCacheLoadResult cachedResult = await store.LoadAsync(CancellationToken.None);
 
                 Assert.AreEqual(1, handler.RequestCount);
@@ -141,9 +139,7 @@ public sealed class RemoteCatalogSynchronizerTests
                 CatalogCacheFileStore store = createStore(testDirectoryPath, limits);
                 RemoteCatalogSynchronizer synchronizer = createSynchronizer(httpClient, store, limits);
 
-                await Assert.ThrowsExactlyAsync<RemoteCatalogSynchronizationException>(
-                    () => synchronizer.SynchronizeDefaultCatalogAsync(
-                        CancellationToken.None));
+                await Assert.ThrowsExactlyAsync<RemoteCatalogSynchronizationException>(() => synchronizer.SynchronizeDefaultCatalogAsync(CancellationToken.None));
 
                 Assert.AreEqual(1, handler.RequestCount);
             }
@@ -177,9 +173,7 @@ public sealed class RemoteCatalogSynchronizerTests
                 CatalogCacheFileStore store = createStore(testDirectoryPath, limits);
                 RemoteCatalogSynchronizer synchronizer = createSynchronizer(httpClient, store, limits);
 
-                await Assert.ThrowsExactlyAsync<RemoteCatalogSynchronizationException>(
-                    () => synchronizer.SynchronizeDefaultCatalogAsync(
-                        CancellationToken.None));
+                await Assert.ThrowsExactlyAsync<RemoteCatalogSynchronizationException>(() => synchronizer.SynchronizeDefaultCatalogAsync(CancellationToken.None));
                 CatalogCacheLoadResult cachedResult = await store.LoadAsync(CancellationToken.None);
 
                 Assert.AreEqual(2, handler.RequestCount);
@@ -215,9 +209,7 @@ public sealed class RemoteCatalogSynchronizerTests
             {
                 RemoteCatalogSynchronizer synchronizer = createSynchronizer(httpClient, store, limits);
 
-                await Assert.ThrowsExactlyAsync<RemoteCatalogSynchronizationException>(
-                    () => synchronizer.SynchronizeDefaultCatalogAsync(
-                        CancellationToken.None));
+                await Assert.ThrowsExactlyAsync<RemoteCatalogSynchronizationException>(() => synchronizer.SynchronizeDefaultCatalogAsync(CancellationToken.None));
                 byte[][] contentAfterSynchronization = await readGenerationContentsAsync(testDirectoryPath);
                 CatalogCacheLoadResult cachedResult = await store.LoadAsync(CancellationToken.None);
 
@@ -251,9 +243,7 @@ public sealed class RemoteCatalogSynchronizerTests
                 CatalogCacheFileStore store = createStore(testDirectoryPath, limits);
                 RemoteCatalogSynchronizer synchronizer = createSynchronizer(httpClient, store, limits);
 
-                await Assert.ThrowsExactlyAsync<RemoteCatalogSynchronizationException>(
-                    () => synchronizer.SynchronizeDefaultCatalogAsync(
-                        CancellationToken.None));
+                await Assert.ThrowsExactlyAsync<RemoteCatalogSynchronizationException>(() => synchronizer.SynchronizeDefaultCatalogAsync(CancellationToken.None));
                 CatalogCacheLoadResult cachedResult = await store.LoadAsync(CancellationToken.None);
 
                 Assert.IsFalse(cachedResult.IsFound);
@@ -281,9 +271,7 @@ public sealed class RemoteCatalogSynchronizerTests
                 CatalogCacheFileStore store = createStore(testDirectoryPath, limits);
                 RemoteCatalogSynchronizer synchronizer = createSynchronizer(httpClient, store, limits);
 
-                await Assert.ThrowsExactlyAsync<RemoteCatalogSynchronizationException>(
-                    () => synchronizer.SynchronizeDefaultCatalogAsync(
-                        CancellationToken.None));
+                await Assert.ThrowsExactlyAsync<RemoteCatalogSynchronizationException>(() => synchronizer.SynchronizeDefaultCatalogAsync(CancellationToken.None));
 
                 Assert.AreEqual(1, handler.RequestCount);
             }
@@ -316,9 +304,7 @@ public sealed class RemoteCatalogSynchronizerTests
                 CatalogCacheFileStore store = createStore(testDirectoryPath, limits);
                 RemoteCatalogSynchronizer synchronizer = createSynchronizer(httpClient, store, limits);
 
-                await Assert.ThrowsExactlyAsync<RemoteCatalogSynchronizationException>(
-                    () => synchronizer.SynchronizeDefaultCatalogAsync(
-                        CancellationToken.None));
+                await Assert.ThrowsExactlyAsync<RemoteCatalogSynchronizationException>(() => synchronizer.SynchronizeDefaultCatalogAsync(CancellationToken.None));
                 CatalogCacheLoadResult cachedResult = await store.LoadAsync(CancellationToken.None);
 
                 Assert.AreEqual(2, handler.RequestCount);

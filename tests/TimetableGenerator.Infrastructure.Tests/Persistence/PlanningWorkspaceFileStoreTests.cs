@@ -147,10 +147,7 @@ public sealed class PlanningWorkspaceFileStoreTests
                 await store.SaveAsync(createWorkspace("안전한 시간표"), CancellationToken.None);
                 cancellationSource.Cancel();
 
-                await Assert.ThrowsAsync<OperationCanceledException>(
-                    () => store.SaveAsync(
-                        createWorkspace("저장되면 안 되는 시간표"),
-                        cancellationSource.Token));
+                await Assert.ThrowsAsync<OperationCanceledException>(() => store.SaveAsync(createWorkspace("저장되면 안 되는 시간표"), cancellationSource.Token));
             }
 
             PlanningWorkspaceLoadResult result = await store.LoadAsync(CancellationToken.None);
@@ -174,8 +171,7 @@ public sealed class PlanningWorkspaceFileStoreTests
             await File.WriteAllTextAsync(getGenerationPath(testDirectoryPath, 2), "{ damaged second", CancellationToken.None);
             PlanningWorkspaceFileStoreSession store = createStore(testDirectoryPath);
 
-            await Assert.ThrowsExactlyAsync<WorkspacePersistenceException>(
-                () => store.LoadAsync(CancellationToken.None));
+            await Assert.ThrowsExactlyAsync<WorkspacePersistenceException>(() => store.LoadAsync(CancellationToken.None));
         }
         finally
         {
@@ -197,16 +193,10 @@ public sealed class PlanningWorkspaceFileStoreTests
             string futureContent = latestContent.Replace("\"schemaVersion\": 5,", "\"schemaVersion\": 6,", StringComparison.Ordinal);
             await File.WriteAllTextAsync(latestPath, futureContent, new UTF8Encoding(false), CancellationToken.None);
 
-            PlanningWorkspaceUpgradeRequiredException exception =
-                await Assert.ThrowsExactlyAsync<PlanningWorkspaceUpgradeRequiredException>(
-                    () => store.LoadAsync(CancellationToken.None));
+            PlanningWorkspaceUpgradeRequiredException exception = await Assert.ThrowsExactlyAsync<PlanningWorkspaceUpgradeRequiredException>(() => store.LoadAsync(CancellationToken.None));
             byte[][] contentBeforeSave = await readGenerationContentsAsync(testDirectoryPath);
 
-            PlanningWorkspaceUpgradeRequiredException saveException =
-                await Assert.ThrowsExactlyAsync<PlanningWorkspaceUpgradeRequiredException>(
-                    () => store.SaveAsync(
-                        createWorkspace("덮어쓰면 안 되는 시간표"),
-                        CancellationToken.None));
+            PlanningWorkspaceUpgradeRequiredException saveException = await Assert.ThrowsExactlyAsync<PlanningWorkspaceUpgradeRequiredException>(() => store.SaveAsync(createWorkspace("덮어쓰면 안 되는 시간표"), CancellationToken.None));
             byte[][] contentAfterSave = await readGenerationContentsAsync(testDirectoryPath);
 
             Assert.AreEqual(6, exception.UnsupportedSchemaVersion);
@@ -239,13 +229,9 @@ public sealed class PlanningWorkspaceFileStoreTests
             await File.WriteAllTextAsync(getGenerationPath(testDirectoryPath, 3), "{ corrupt newest generation", CancellationToken.None);
             byte[][] contentBeforeSave = await readGenerationContentsAsync(testDirectoryPath);
 
-            await Assert.ThrowsExactlyAsync<PlanningWorkspaceUpgradeRequiredException>(
-                () => store.LoadAsync(CancellationToken.None));
+            await Assert.ThrowsExactlyAsync<PlanningWorkspaceUpgradeRequiredException>(() => store.LoadAsync(CancellationToken.None));
             store.AssumeConcurrencyToken(new PlanningWorkspaceConcurrencyToken(3L));
-            await Assert.ThrowsExactlyAsync<PlanningWorkspaceUpgradeRequiredException>(
-                () => store.SaveAsync(
-                    createWorkspace("덮어쓰면 안 되는 시간표"),
-                    CancellationToken.None));
+            await Assert.ThrowsExactlyAsync<PlanningWorkspaceUpgradeRequiredException>(() => store.SaveAsync(createWorkspace("덮어쓰면 안 되는 시간표"), CancellationToken.None));
             byte[][] contentAfterSave = await readGenerationContentsAsync(testDirectoryPath);
 
             Assert.HasCount(contentBeforeSave.Length, contentAfterSave);
@@ -319,11 +305,7 @@ public sealed class PlanningWorkspaceFileStoreTests
             await secondStore.LoadAsync(CancellationToken.None);
 
             await firstStore.SaveAsync(createWorkspace("먼저 저장한 시간표"), CancellationToken.None);
-            PlanningWorkspaceConcurrencyException exception =
-                await Assert.ThrowsExactlyAsync<PlanningWorkspaceConcurrencyException>(
-                    () => secondStore.SaveAsync(
-                        createWorkspace("오래된 상태의 시간표"),
-                        CancellationToken.None));
+            PlanningWorkspaceConcurrencyException exception = await Assert.ThrowsExactlyAsync<PlanningWorkspaceConcurrencyException>(() => secondStore.SaveAsync(createWorkspace("오래된 상태의 시간표"), CancellationToken.None));
             PlanningWorkspaceLoadResult result = await firstStore.LoadAsync(CancellationToken.None);
 
             Assert.IsTrue(exception.ExpectedToken == new PlanningWorkspaceConcurrencyToken(1L));
@@ -440,11 +422,7 @@ public sealed class PlanningWorkspaceFileStoreTests
             File.Move(getGenerationPath(testDirectoryPath, 1L), getGenerationPath(testDirectoryPath, long.MaxValue));
             store.AssumeConcurrencyToken(new PlanningWorkspaceConcurrencyToken(long.MaxValue));
 
-            InvalidOperationException exception =
-                await Assert.ThrowsExactlyAsync<InvalidOperationException>(
-                    () => store.SaveAsync(
-                        createWorkspace("새 시간표"),
-                        CancellationToken.None));
+            InvalidOperationException exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => store.SaveAsync(createWorkspace("새 시간표"), CancellationToken.None));
 
             Assert.AreEqual("The planning workspace generation range is exhausted.", exception.Message);
         }

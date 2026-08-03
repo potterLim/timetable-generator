@@ -145,7 +145,12 @@ internal sealed class ScheduleBoardDayRange
             }
         }
 
-        return hasSaturday ? SATURDAY_VISIBLE_DAY_COUNT : DEFAULT_VISIBLE_DAY_COUNT;
+        if (hasSaturday)
+        {
+            return SATURDAY_VISIBLE_DAY_COUNT;
+        }
+
+        return DEFAULT_VISIBLE_DAY_COUNT;
     }
 
     private static string findShortDisplayName(EDay day)

@@ -58,11 +58,8 @@ function Assert-ExactJsonProperties {
         [string] $Path
     )
 
-    $expectedNames = [System.Collections.Generic.HashSet[string]]::new(
-        $ExpectedPropertyNames,
-        [System.StringComparer]::Ordinal)
-    $discoveredNames = [System.Collections.Generic.HashSet[string]]::new(
-        [System.StringComparer]::Ordinal)
+    $expectedNames = [System.Collections.Generic.HashSet[string]]::new($ExpectedPropertyNames, [System.StringComparer]::Ordinal)
+    $discoveredNames = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
     foreach ($property in $Element.EnumerateObject()) {
         if ($expectedNames.Contains($property.Name) -eq $false) {
             throw "Release 설정 파일에 허용되지 않은 속성이 있습니다: $Path ($($property.Name))"
@@ -130,10 +127,7 @@ function Assert-GoogleOAuthClientSecret {
     $clientSecret = [string] $Element.GetString()
     if ([string]::IsNullOrEmpty($clientSecret) -or
         $clientSecret.Length -gt 1024 -or
-        [string]::Equals(
-            $clientSecret,
-            $clientSecret.Trim(),
-            [System.StringComparison]::Ordinal) -eq $false) {
+        [string]::Equals($clientSecret, $clientSecret.Trim(), [System.StringComparison]::Ordinal) -eq $false) {
         throw "Release Google OAuth clientSecret의 형식이 유효하지 않습니다: $Path"
     }
 
@@ -165,10 +159,7 @@ function Assert-CatalogConfiguration {
     $indexUriText = [string] $indexUriElement.GetString()
     $indexUri = $null
     if ([string]::IsNullOrWhiteSpace($indexUriText) -or
-        [System.Uri]::TryCreate(
-            $indexUriText.Trim(),
-            [System.UriKind]::Absolute,
-            [ref] $indexUri) -eq $false -or
+        [System.Uri]::TryCreate($indexUriText.Trim(), [System.UriKind]::Absolute, [ref] $indexUri) -eq $false -or
         $null -eq $indexUri -or
         $indexUri.Scheme -ne [System.Uri]::UriSchemeHttps -or
         [string]::IsNullOrWhiteSpace($indexUri.Host) -or

@@ -60,13 +60,12 @@ public sealed class ProductShellViewModelTests
                     return Task.FromResult(PlannerWorkspaceTestFactory.CreatePresentation(updatedWorkspace));
                 },
             });
-        QueueProductCatalogUpdateService catalogUpdateService =
-            createCatalogUpdateService(
-                delegate
-                {
-                    ProductCatalogUpdateResult updateResult = new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.Staged, new CatalogRevision(2));
-                    return Task.FromResult(updateResult);
-                });
+        QueueProductCatalogUpdateService catalogUpdateService = createCatalogUpdateService(
+            delegate
+            {
+                ProductCatalogUpdateResult updateResult = new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.Staged, new CatalogRevision(2));
+                return Task.FromResult(updateResult);
+            });
         using (ProductShellViewModel shell = new ProductShellViewModel(loader, catalogUpdateService))
         {
             await shell.StartAsync();
@@ -102,13 +101,12 @@ public sealed class ProductShellViewModelTests
                     return Task.FromException<ProductWorkspacePresentation>(new InvalidOperationException("Expected staged catalog reload failure."));
                 },
             });
-        QueueProductCatalogUpdateService catalogUpdateService =
-            createCatalogUpdateService(
-                delegate
-                {
-                    ProductCatalogUpdateResult updateResult = new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.Staged, new CatalogRevision(2));
-                    return Task.FromResult(updateResult);
-                });
+        QueueProductCatalogUpdateService catalogUpdateService = createCatalogUpdateService(
+            delegate
+            {
+                ProductCatalogUpdateResult updateResult = new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.Staged, new CatalogRevision(2));
+                return Task.FromResult(updateResult);
+            });
         using (ProductShellViewModel shell = new ProductShellViewModel(loader, catalogUpdateService))
         {
             await shell.StartAsync();
@@ -134,12 +132,11 @@ public sealed class ProductShellViewModelTests
                 return Task.FromResult(presentation);
             });
         TaskCompletionSource<ProductCatalogUpdateResult> updateCompletion = new TaskCompletionSource<ProductCatalogUpdateResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-        QueueProductCatalogUpdateService catalogUpdateService =
-            createCatalogUpdateService(
-                delegate
-                {
-                    return updateCompletion.Task;
-                });
+        QueueProductCatalogUpdateService catalogUpdateService = createCatalogUpdateService(
+            delegate
+            {
+                return updateCompletion.Task;
+            });
         using (ProductShellViewModel shell = new ProductShellViewModel(loader, catalogUpdateService, TimeSpan.Zero))
         {
             await shell.StartAsync();
@@ -174,12 +171,11 @@ public sealed class ProductShellViewModelTests
                 return Task.FromResult(presentation);
             });
         TaskCompletionSource<ProductCatalogUpdateResult> updateCompletion = new TaskCompletionSource<ProductCatalogUpdateResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-        QueueProductCatalogUpdateService catalogUpdateService =
-            createCatalogUpdateService(
-                delegate
-                {
-                    return updateCompletion.Task;
-                });
+        QueueProductCatalogUpdateService catalogUpdateService = createCatalogUpdateService(
+            delegate
+            {
+                return updateCompletion.Task;
+            });
         using (ProductShellViewModel shell = new ProductShellViewModel(loader, catalogUpdateService, TimeSpan.Zero))
         {
             await shell.StartAsync();
@@ -225,13 +221,12 @@ public sealed class ProductShellViewModelTests
                 ProductWorkspacePresentation presentation = PlannerWorkspaceTestFactory.CreatePresentation(expectedWorkspace);
                 return Task.FromResult(presentation);
             });
-        QueueProductCatalogUpdateService catalogUpdateService =
-            createCatalogUpdateService(
-                delegate
-                {
-                    RemoteCatalogSynchronizationException exception = new RemoteCatalogSynchronizationException(ERemoteCatalogSynchronizationFailureKind.Network, "Expected catalog network failure.");
-                    return Task.FromException<ProductCatalogUpdateResult>(exception);
-                });
+        QueueProductCatalogUpdateService catalogUpdateService = createCatalogUpdateService(
+            delegate
+            {
+                RemoteCatalogSynchronizationException exception = new RemoteCatalogSynchronizationException(ERemoteCatalogSynchronizationFailureKind.Network, "Expected catalog network failure.");
+                return Task.FromException<ProductCatalogUpdateResult>(exception);
+            });
         using (ProductShellViewModel shell = new ProductShellViewModel(loader, catalogUpdateService, TimeSpan.Zero))
         {
             await shell.StartAsync();
@@ -257,12 +252,11 @@ public sealed class ProductShellViewModelTests
                 return Task.FromResult(PlannerWorkspaceTestFactory.CreatePresentation(workspace));
             });
         TaskCompletionSource<ProductCatalogUpdateResult> updateCompletion = new TaskCompletionSource<ProductCatalogUpdateResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-        QueueProductCatalogUpdateService catalogUpdateService =
-            createCatalogUpdateService(
-                delegate
-                {
-                    return updateCompletion.Task;
-                });
+        QueueProductCatalogUpdateService catalogUpdateService = createCatalogUpdateService(
+            delegate
+            {
+                return updateCompletion.Task;
+            });
         using (ProductShellViewModel shell = new ProductShellViewModel(loader, catalogUpdateService, TimeSpan.Zero))
         {
             await shell.StartAsync();
@@ -287,13 +281,12 @@ public sealed class ProductShellViewModelTests
             {
                 return Task.FromResult(PlannerWorkspaceTestFactory.CreatePresentation(workspace));
             });
-        QueueProductCatalogUpdateService catalogUpdateService =
-            createCatalogUpdateService(
-                delegate
-                {
-                    ProductCatalogUpdateResult updateResult = new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.WorkspaceIncompatible, new CatalogRevision(2));
-                    return Task.FromResult(updateResult);
-                });
+        QueueProductCatalogUpdateService catalogUpdateService = createCatalogUpdateService(
+            delegate
+            {
+                ProductCatalogUpdateResult updateResult = new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.WorkspaceIncompatible, new CatalogRevision(2));
+                return Task.FromResult(updateResult);
+            });
         using (ProductShellViewModel shell = new ProductShellViewModel(loader, catalogUpdateService))
         {
             await shell.StartAsync();
@@ -326,20 +319,19 @@ public sealed class ProductShellViewModelTests
                 },
             });
         TaskCompletionSource<ProductCatalogUpdateResult> staleUpdateCompletion = new TaskCompletionSource<ProductCatalogUpdateResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-        QueueProductCatalogUpdateService catalogUpdateService =
-            new QueueProductCatalogUpdateService(
-                new Func<VerifiedCatalogPackage, PlanningWorkspace, CancellationToken, Task<ProductCatalogUpdateResult>>[]
+        QueueProductCatalogUpdateService catalogUpdateService = new QueueProductCatalogUpdateService(
+            new Func<VerifiedCatalogPackage, PlanningWorkspace, CancellationToken, Task<ProductCatalogUpdateResult>>[]
+            {
+                delegate
                 {
-                    delegate
-                    {
-                        return staleUpdateCompletion.Task;
-                    },
-                    delegate
-                    {
-                        ProductCatalogUpdateResult updateResult = new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.Current, new CatalogRevision(1));
-                        return Task.FromResult(updateResult);
-                    },
-                });
+                    return staleUpdateCompletion.Task;
+                },
+                delegate
+                {
+                    ProductCatalogUpdateResult updateResult = new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.Current, new CatalogRevision(1));
+                    return Task.FromResult(updateResult);
+                },
+            });
         using (ProductShellViewModel shell = new ProductShellViewModel(loader, catalogUpdateService, TimeSpan.Zero))
         {
             await shell.StartAsync();
@@ -368,12 +360,11 @@ public sealed class ProductShellViewModelTests
                 return Task.FromResult(presentation);
             });
         TaskCompletionSource<ProductCatalogUpdateResult> updateCompletion = new TaskCompletionSource<ProductCatalogUpdateResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-        QueueProductCatalogUpdateService catalogUpdateService =
-            createCatalogUpdateService(
-                delegate
-                {
-                    return updateCompletion.Task;
-                });
+        QueueProductCatalogUpdateService catalogUpdateService = createCatalogUpdateService(
+            delegate
+            {
+                return updateCompletion.Task;
+            });
         ProductShellViewModel shell = new ProductShellViewModel(loader, catalogUpdateService, TimeSpan.Zero);
         await shell.StartAsync();
         Task updateTask = shell.CatalogUpdateTask;
@@ -632,13 +623,12 @@ ProductWorkspacePresentation presentation = PlannerWorkspaceTestFactory.CreatePr
 
     private static ProductShellViewModel createShell(QueueProductWorkspaceLoader loader)
     {
-        QueueProductCatalogUpdateService catalogUpdateService =
-            createCatalogUpdateService(
-                delegate
-                {
-                    ProductCatalogUpdateResult updateResult = new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.Current, new CatalogRevision(1));
-                    return Task.FromResult(updateResult);
-                });
+        QueueProductCatalogUpdateService catalogUpdateService = createCatalogUpdateService(
+            delegate
+            {
+                ProductCatalogUpdateResult updateResult = new ProductCatalogUpdateResult(EProductCatalogUpdateStatus.Current, new CatalogRevision(1));
+                return Task.FromResult(updateResult);
+            });
         return new ProductShellViewModel(loader, catalogUpdateService);
     }
 

@@ -53,8 +53,17 @@ internal sealed class ScheduleListMetadata
         }
 
         SectionDisplayText = courseEntry.SectionCode.Value;
-        LocationDisplayText = courseEntry.HasAssignedLocation ? courseEntry.LocationDisplayText : string.Empty;
-        ResponsiblePersonDisplayText = courseEntry.HasConfirmedInstructor ? courseEntry.InstructorDisplayText : string.Empty;
+        LocationDisplayText = string.Empty;
+        if (courseEntry.HasAssignedLocation)
+        {
+            LocationDisplayText = courseEntry.LocationDisplayText;
+        }
+
+        ResponsiblePersonDisplayText = string.Empty;
+        if (courseEntry.HasConfirmedInstructor)
+        {
+            ResponsiblePersonDisplayText = courseEntry.InstructorDisplayText;
+        }
         DisplayText = createDisplayTextWithSection(SectionDisplayText, LocationDisplayText, ResponsiblePersonDisplayText);
     }
 

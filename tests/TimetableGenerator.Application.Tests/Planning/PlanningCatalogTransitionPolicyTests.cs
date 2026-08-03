@@ -93,12 +93,8 @@ public sealed class PlanningCatalogTransitionPolicyTests
         CourseCatalog catalog = createDefaultCatalog();
         PlanCatalogBinding binding = createBinding(catalog);
 
-        Assert.ThrowsExactly<ArgumentNullException>(
-            () => PlanningCatalogTransitionPolicy.EvaluateTransition(
-                null!,
-                binding));
-        Assert.ThrowsExactly<ArgumentNullException>(
-            () => PlanningCatalogTransitionPolicy.EvaluateTransition(binding, null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => PlanningCatalogTransitionPolicy.EvaluateTransition(null!, binding));
+        Assert.ThrowsExactly<ArgumentNullException>(() => PlanningCatalogTransitionPolicy.EvaluateTransition(binding, null!));
     }
 
     private static CourseCatalog createDefaultCatalog()

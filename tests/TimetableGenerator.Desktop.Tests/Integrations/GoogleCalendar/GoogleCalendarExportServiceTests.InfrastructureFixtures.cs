@@ -151,8 +151,25 @@ public sealed partial class GoogleCalendarExportServiceTests
 
         protected sealed override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            string body = request.Content == null ? string.Empty : await request.Content.ReadAsStringAsync(cancellationToken);
-            string path = request.RequestUri == null ? string.Empty : request.RequestUri.PathAndQuery;
+            string body;
+            if (request.Content == null)
+            {
+                body = string.Empty;
+            }
+            else
+            {
+                body = await request.Content.ReadAsStringAsync(cancellationToken);
+            }
+
+            string path;
+            if (request.RequestUri == null)
+            {
+                path = string.Empty;
+            }
+            else
+            {
+                path = request.RequestUri.PathAndQuery;
+            }
             RequestRecord record = new RequestRecord(request.Method, path, body);
             mRequests.Add(record);
             return createResponse(record);

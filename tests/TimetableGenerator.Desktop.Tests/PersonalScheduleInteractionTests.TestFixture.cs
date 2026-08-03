@@ -50,9 +50,7 @@ public sealed partial class PersonalScheduleInteractionTests
 
     private static void selectPersonalScheduleDay(PlannerWorkspaceViewModel workspace, EDay day)
     {
-        PersonalScheduleDayOption? matchingOptionOrNull =
-            workspace.PersonalScheduleDayOptions.FirstOrDefault(
-                option => option.Day == day);
+        PersonalScheduleDayOption? matchingOptionOrNull = workspace.PersonalScheduleDayOptions.FirstOrDefault(option => option.Day == day);
         if (matchingOptionOrNull == null)
         {
             throw new ArgumentOutOfRangeException(nameof(day), day, "The personal schedule day option was not found.");
@@ -153,7 +151,14 @@ public sealed partial class PersonalScheduleInteractionTests
 
     private static string getTextOrEmpty(TextBlock textBlock)
     {
-        return textBlock.Text == null ? string.Empty : textBlock.Text;
+        if (textBlock.Text == null)
+        {
+            return string.Empty;
+        }
+        else
+        {
+            return textBlock.Text;
+        }
     }
 
     private static bool hasAutomationIdPrefix(Control control, string automationIdPrefix)

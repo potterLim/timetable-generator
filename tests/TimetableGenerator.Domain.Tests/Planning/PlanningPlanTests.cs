@@ -17,8 +17,7 @@ public sealed class PlanningPlanTests
         Assert.AreEqual("공강 중심", planName.Value);
         Assert.ThrowsExactly<ArgumentException>(() => new PlanName("  "));
         Assert.ThrowsExactly<ArgumentException>(() => new PlanName("첫째 줄\n둘째 줄"));
-        Assert.ThrowsExactly<ArgumentException>(
-            () => new PlanName(new string('가', PlanName.MAXIMUM_LENGTH + 1)));
+        Assert.ThrowsExactly<ArgumentException>(() => new PlanName(new string('가', PlanName.MAXIMUM_LENGTH + 1)));
     }
 
     [TestMethod]
@@ -26,8 +25,7 @@ public sealed class PlanningPlanTests
     {
         CourseId courseId = createCourseId("CSE30001");
         OfferingId firstOfferingId = createOfferingId("CSE30001", "01");
-        List<OfferingCandidate> mutableOfferingCandidates =
-            new List<OfferingCandidate>()
+        List<OfferingCandidate> mutableOfferingCandidates = new List<OfferingCandidate>()
         {
             new OfferingCandidate(
                 firstOfferingId,
@@ -38,10 +36,7 @@ public sealed class PlanningPlanTests
         mutableOfferingCandidates.Add(new OfferingCandidate(createOfferingId("CSE30001", "02"), EOfferingPreference.Acceptable));
 
         Assert.HasCount(1, courseCandidate.OfferingCandidates);
-        Assert.ThrowsExactly<ArgumentException>(
-            () => new CourseCandidate(
-                courseId,
-                Array.Empty<OfferingCandidate>()));
+        Assert.ThrowsExactly<ArgumentException>(() => new CourseCandidate(courseId, Array.Empty<OfferingCandidate>()));
         Assert.ThrowsExactly<ArgumentException>(
             () => new CourseCandidate(
                 courseId,

@@ -105,11 +105,16 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
                             string requestLine = await readRequestLineAsync(stream, connectionSource.Token).ConfigureAwait(false);
                             GoogleOAuthAuthorizationCodeResult result = parseRequestLine(requestLine, redirectUri, state);
                             bool shouldContinue = isIgnorableCallbackFailure(result);
-                            EGoogleLoopbackResponseKind responseKind = shouldContinue
-                                ? EGoogleLoopbackResponseKind.InvalidRequest
-                                : result.Status == EGoogleOAuthAuthorizationStatus.Completed
-                                    ? EGoogleLoopbackResponseKind.Success
-                                    : EGoogleLoopbackResponseKind.AuthorizationFailed;
+                            EGoogleLoopbackResponseKind responseKind = EGoogleLoopbackResponseKind.AuthorizationFailed;
+                            if (shouldContinue)
+                            {
+                                responseKind = EGoogleLoopbackResponseKind.InvalidRequest;
+                            }
+                            else if (result.Status == EGoogleOAuthAuthorizationStatus.Completed)
+                            {
+                                responseKind = EGoogleLoopbackResponseKind.Success;
+                            }
+
                             try
                             {
                                 await writeBrowserResponseAsync(stream, responseKind, connectionSource.Token).ConfigureAwait(false);
@@ -248,7 +253,12 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
         string? error;
         if (query.TryGetValue("error", out error))
         {
-            EGoogleOAuthAuthorizationStatus status = string.Equals(error, "access_denied", StringComparison.Ordinal) ? EGoogleOAuthAuthorizationStatus.Cancelled : EGoogleOAuthAuthorizationStatus.Failed;
+            EGoogleOAuthAuthorizationStatus status = EGoogleOAuthAuthorizationStatus.Failed;
+            if (string.Equals(error, "access_denied", StringComparison.Ordinal))
+            {
+                status = EGoogleOAuthAuthorizationStatus.Cancelled;
+            }
+
             return GoogleOAuthAuthorizationCodeResult.Fail(status, redirectUri, error);
         }
 
@@ -264,12 +274,28 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
     private static IReadOnlyDictionary<string, string>? tryParseQueryOrNull(string query)
     {
         Dictionary<string, string> values = new Dictionary<string, string>(StringComparer.Ordinal);
-        string queryWithoutPrefix = query.StartsWith("?", StringComparison.Ordinal) ? query[1..] : query;
+        string queryWithoutPrefix = query;
+        if (query.StartsWith("?", StringComparison.Ordinal))
+        {
+            queryWithoutPrefix = query[1..];
+        }
+
         foreach (string part in queryWithoutPrefix.Split('&', StringSplitOptions.RemoveEmptyEntries))
         {
             int separatorIndex = part.IndexOf('=', StringComparison.Ordinal);
-            string encodedName = separatorIndex < 0 ? part : part[..separatorIndex];
-            string encodedValue = separatorIndex < 0 ? string.Empty : part[(separatorIndex + 1)..];
+            string encodedName;
+            string encodedValue;
+            if (separatorIndex < 0)
+            {
+                encodedName = part;
+                encodedValue = string.Empty;
+            }
+            else
+            {
+                encodedName = part[..separatorIndex];
+                encodedValue = part[(separatorIndex + 1)..];
+            }
+
             if (hasMalformedPercentEncoding(encodedName) || hasMalformedPercentEncoding(encodedValue))
             {
                 return null;
@@ -368,15 +394,29 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
         }
 
         bool isSuccess = responseKind == EGoogleLoopbackResponseKind.Success;
-        string title = isSuccess ? "Google 승인이 완료되었습니다" : "Google에 연결하지 못했습니다";
-        string message = isSuccess
-            ? "Timetable Generator에서 내보내기를 마무리하고 있습니다."
-            : responseKind == EGoogleLoopbackResponseKind.InvalidRequest
-                ? "올바른 Google 로그인 응답을 기다리고 있습니다."
-                : "Timetable Generator로 돌아가 다시 시도해 주세요.";
-        string supportingMessage = isSuccess ? "이 창은 닫아도 됩니다." : "";
-        string callbackPageScript = isSuccess ? CALLBACK_PAGE_HISTORY_SCRIPT + SUCCESS_PAGE_CLOSE_SCRIPT : CALLBACK_PAGE_HISTORY_SCRIPT;
+        string title = "Google에 연결하지 못했습니다";
+        string message = "Timetable Generator로 돌아가 다시 시도해 주세요.";
+        string supportingMessage = "";
+        string callbackPageScript = CALLBACK_PAGE_HISTORY_SCRIPT;
+        if (isSuccess)
+        {
+            title = "Google 승인이 완료되었습니다";
+            message = "Timetable Generator에서 내보내기를 마무리하고 있습니다.";
+            supportingMessage = "이 창은 닫아도 됩니다.";
+            callbackPageScript += SUCCESS_PAGE_CLOSE_SCRIPT;
+        }
+        else if (responseKind == EGoogleLoopbackResponseKind.InvalidRequest)
+        {
+            message = "올바른 Google 로그인 응답을 기다리고 있습니다.";
+        }
+
         string scriptElement = "<script>" + callbackPageScript + "</script>";
+        string supportingMessageElement = "";
+        if (supportingMessage.Length > 0)
+        {
+            supportingMessageElement = "<p class=\"support\">" + supportingMessage + "</p>";
+        }
+
         string body = "<!doctype html><html lang=\"ko\"><head><meta charset=\"utf-8\">"
             + "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
             + "<meta name=\"color-scheme\" content=\"light dark\">"
@@ -396,11 +436,14 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
             + ".support{color:#8793a7}}</style></head><body><main>"
             + "<div class=\"mark\" aria-hidden=\"true\">✓</div><h1>"
             + title + "</h1><p>" + message + "</p>"
-            + (supportingMessage.Length > 0
-                ? "<p class=\"support\">" + supportingMessage + "</p>"
-                : "") + "</main>" + scriptElement + "</body></html>";
+            + supportingMessageElement + "</main>" + scriptElement + "</body></html>";
         byte[] bodyBytes = Encoding.UTF8.GetBytes(body);
-        string statusLine = responseKind == EGoogleLoopbackResponseKind.InvalidRequest ? "HTTP/1.1 400 Bad Request\r\n" : "HTTP/1.1 200 OK\r\n";
+        string statusLine = "HTTP/1.1 200 OK\r\n";
+        if (responseKind == EGoogleLoopbackResponseKind.InvalidRequest)
+        {
+            statusLine = "HTTP/1.1 400 Bad Request\r\n";
+        }
+
         string scriptPolicy = " script-src 'sha256-" + Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(callbackPageScript))) + "';";
         string header = statusLine + "Content-Type: text/html; charset=utf-8\r\n" + "Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline';" + scriptPolicy + " base-uri 'none'; form-action 'none'; frame-ancestors 'none'\r\n" + "Cache-Control: no-store\r\n" + "Referrer-Policy: no-referrer\r\n" + "X-Content-Type-Options: nosniff\r\n" + "Connection: close\r\n" + "Content-Length: " + bodyBytes.Length.ToString(CultureInfo.InvariantCulture) + "\r\n\r\n";
         byte[] headerBytes = Encoding.ASCII.GetBytes(header);

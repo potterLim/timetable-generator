@@ -66,8 +66,7 @@ public sealed class PlanningWorkspaceSessionTests
                     ScheduleRecommendationTestData.CreateOfferingId("BBB10001", "01"),
                 });
 
-        Assert.ThrowsExactly<ArgumentException>(
-            () => session.AddCourse(invalidSelection));
+        Assert.ThrowsExactly<ArgumentException>(() => session.AddCourse(invalidSelection));
         Assert.IsEmpty(session.Workspace.GetActivePlan().CourseChoiceGroups);
         Assert.IsEmpty(session.Workspace.GetActivePlan().UnscheduledOfferingSelections);
     }
@@ -149,8 +148,7 @@ public sealed class PlanningWorkspaceSessionTests
         PlanningWorkspace workspaceBeforeRejectedEdit = session.Workspace;
         PersonalSchedule overlappingSchedule = createPersonalSchedule(PersonalScheduleId.CreateNew(), "겹치는 일정", new ScheduleTime(12, 30), new ScheduleTime(13, 30));
 
-        Assert.ThrowsExactly<ArgumentException>(
-            () => session.AddPersonalSchedule(overlappingSchedule));
+        Assert.ThrowsExactly<ArgumentException>(() => session.AddPersonalSchedule(overlappingSchedule));
 
         Assert.AreSame(workspaceBeforeRejectedEdit, session.Workspace);
         Assert.HasCount(1, session.Workspace.GetActivePlan().PersonalSchedules);
@@ -170,8 +168,7 @@ public sealed class PlanningWorkspaceSessionTests
         PlanningPlan plan = ScheduleRecommendationTestData.CreatePlanWithBinding(mismatchedBinding, Array.Empty<CourseChoiceGroup>(), Array.Empty<UnscheduledOfferingSelection>());
         PlanningWorkspace workspace = new PlanningWorkspace(plan.CatalogBinding, plan.Id, new PlanningPlan[] { plan });
 
-        Assert.ThrowsExactly<ArgumentException>(
-            () => new PlanningWorkspaceSession(catalog, workspace));
+        Assert.ThrowsExactly<ArgumentException>(() => new PlanningWorkspaceSession(catalog, workspace));
     }
 
     [TestMethod]
@@ -209,8 +206,7 @@ public sealed class PlanningWorkspaceSessionTests
         PlanningWorkspace workspace = new PlanningWorkspace(binding, null, Array.Empty<PlanningPlan>());
         PlanningWorkspaceSession session = new PlanningWorkspaceSession(catalog, workspace);
 
-        Assert.ThrowsExactly<InvalidOperationException>(
-            () => session.ClearActivePlanContent());
+        Assert.ThrowsExactly<InvalidOperationException>(() => session.ClearActivePlanContent());
         Assert.AreSame(workspace, session.Workspace);
     }
 

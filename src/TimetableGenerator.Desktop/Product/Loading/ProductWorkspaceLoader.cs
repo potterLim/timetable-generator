@@ -50,7 +50,7 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
         }
 
         PlanningWorkspace workspace = getLoadedWorkspace(workspaceLoadResult);
-        PlanCatalogBinding savedBinding = getSharedCatalogBinding(workspace);
+        PlanCatalogBinding savedBinding = workspace.CatalogBinding;
         if (cacheLoadResult.IsFound)
         {
             return await loadWithCachedCatalogAsync(cacheLoadResult, workspace, savedBinding, workspaceLoadResult.ConcurrencyToken, recoveryFlags, cancellationToken).ConfigureAwait(false);
@@ -62,18 +62,10 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
     private static PlanningWorkspace createEmptyWorkspace(VerifiedCatalogPackage catalogPackage)
     {
         PlanId planId = PlanId.CreateNew();
-        PlanCatalogBinding catalogBinding = createCatalogBinding(catalogPackage);
+        PlanCatalogBinding catalogBinding = catalogPackage.CreatePlanCatalogBinding();
         PlanName initialPlanName = AcademicTermPlanNameFactory.CreateInitialPlanName(catalogBinding.Term);
         PlanningPlan plan = new PlanningPlan(planId, initialPlanName, catalogBinding, new PlanningPlanContent(Array.Empty<CourseChoiceGroup>(), Array.Empty<UnscheduledOfferingSelection>(), Array.Empty<PersonalSchedule>()));
-        return new PlanningWorkspace(
-            catalogBinding,
-            planId,
-            new PlanningPlan[] { plan });
-    }
-
-    private static PlanCatalogBinding createCatalogBinding(VerifiedCatalogPackage catalogPackage)
-    {
-        return catalogPackage.CreatePlanCatalogBinding();
+        return new PlanningWorkspace(catalogBinding, planId, new PlanningPlan[] { plan });
     }
 
     private static PlanningWorkspace getLoadedWorkspace(PlanningWorkspaceLoadResult loadResult)
@@ -84,11 +76,6 @@ internal sealed class ProductWorkspaceLoader : IProductWorkspaceDataLoader
         }
 
         return loadResult.WorkspaceOrNull;
-    }
-
-    private static PlanCatalogBinding getSharedCatalogBinding(PlanningWorkspace workspace)
-    {
-        return workspace.CatalogBinding;
     }
 
     private static bool hasMatchingCatalogBinding(VerifiedCatalogPackage catalogPackage, PlanCatalogBinding catalogBinding)

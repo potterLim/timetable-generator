@@ -322,14 +322,13 @@ public sealed partial class ProductWorkspaceInteractionTests
             Assert.True(string.IsNullOrEmpty(validationMessage.Text));
             Assert.Equal(AutomationLiveSetting.Off, AutomationProperties.GetLiveSetting(validationMessage));
             List<(string? Text, AutomationLiveSetting LiveSetting)> liveRegionTransitions = new List<(string? Text, AutomationLiveSetting LiveSetting)>();
-            validationMessage.PropertyChanged +=
-                (object? senderOrNull, AvaloniaPropertyChangedEventArgs eventArgs) =>
+            validationMessage.PropertyChanged += (object? senderOrNull, AvaloniaPropertyChangedEventArgs eventArgs) =>
+            {
+                if (eventArgs.Property == TextBlock.TextProperty)
                 {
-                    if (eventArgs.Property == TextBlock.TextProperty)
-                    {
-                        liveRegionTransitions.Add((validationMessage.Text, AutomationProperties.GetLiveSetting(validationMessage)));
-                    }
-                };
+                    liveRegionTransitions.Add((validationMessage.Text, AutomationProperties.GetLiveSetting(validationMessage)));
+                }
+            };
 
             workspace.BeginRenamePlanCommand.Execute(null);
             string duplicatePlanName = workspace.Plans
@@ -373,11 +372,19 @@ public sealed partial class ProductWorkspaceInteractionTests
             Assert.NotEmpty(liveRegionTransitions);
             Assert.All(
                 liveRegionTransitions,
-                static transition => Assert.Equal(
-                    string.IsNullOrEmpty(transition.Text)
-                        ? AutomationLiveSetting.Off
-                        : AutomationLiveSetting.Assertive,
-                    transition.LiveSetting));
+                static transition =>
+                {
+                    AutomationLiveSetting expectedLiveSetting;
+                    if (string.IsNullOrEmpty(transition.Text))
+                    {
+                        expectedLiveSetting = AutomationLiveSetting.Off;
+                    }
+                    else
+                    {
+                        expectedLiveSetting = AutomationLiveSetting.Assertive;
+                    }
+                    Assert.Equal(expectedLiveSetting, transition.LiveSetting);
+                });
         }
         finally
         {

@@ -244,14 +244,7 @@ public static partial class CourseCatalogJsonReader
 
     private static LocationAssignmentMetadata parseLocation(JsonElement element, string path)
     {
-        StrictJsonObject locationObject = StrictJsonObject.Create(
-            element,
-            path,
-            new string[]
-            {
-                "status",
-                "displayText",
-            });
+        StrictJsonObject locationObject = StrictJsonObject.Create(element, path, new string[] { "status", "displayText" });
         ELocationAssignmentStatus status = parseLocationAssignmentStatus(locationObject.GetString("status"), locationObject.GetPropertyPath("status"));
         string? displayTextOrNull = locationObject.GetNullableStringOrNull("displayText");
         switch (status)
@@ -290,33 +283,27 @@ public static partial class CourseCatalogJsonReader
 
     private static GradingMetadata parseGrading(JsonElement element, string path)
     {
-        StrictJsonObject gradingObject = StrictJsonObject.Create(
-            element,
-            path,
-            new string[]
-            {
-                "type",
-                "passFailOptionAvailable",
-            });
+        StrictJsonObject gradingObject = StrictJsonObject.Create(element, path, new string[] { "type", "passFailOptionAvailable" });
         EGradingType gradingType = parseGradingType(gradingObject.GetString("type"), gradingObject.GetPropertyPath("type"));
         bool isPassFailOptionAvailable = gradingObject.GetBoolean("passFailOptionAvailable");
-        EPassFailOptionAvailability availability = isPassFailOptionAvailable ? EPassFailOptionAvailability.Available : EPassFailOptionAvailability.Unavailable;
+        EPassFailOptionAvailability availability = EPassFailOptionAvailability.Unavailable;
+        if (isPassFailOptionAvailable)
+        {
+            availability = EPassFailOptionAvailability.Available;
+        }
         return new GradingMetadata(gradingType, availability);
     }
 
     private static OfferingDetailsMetadata parseDetails(JsonElement element, string path)
     {
-        StrictJsonObject detailsObject = StrictJsonObject.Create(
-            element,
-            path,
-            new string[]
-            {
-                "syllabusUrl",
-                "remarksAvailable",
-            });
+        StrictJsonObject detailsObject = StrictJsonObject.Create(element, path, new string[] { "syllabusUrl", "remarksAvailable" });
         detailsObject.RequireNull("syllabusUrl");
         bool areRemarksAvailable = detailsObject.GetBoolean("remarksAvailable");
-        ERemarksAvailability availability = areRemarksAvailable ? ERemarksAvailability.Available : ERemarksAvailability.Unavailable;
+        ERemarksAvailability availability = ERemarksAvailability.Unavailable;
+        if (areRemarksAvailable)
+        {
+            availability = ERemarksAvailability.Available;
+        }
         return new OfferingDetailsMetadata(availability);
     }
 

@@ -185,7 +185,15 @@ public sealed class ProductControlVerticalAlignmentGeometryTests
                     RadioButton preferenceInput = preferenceInputs[optionIndex];
                     foreach (bool isSelected in new bool[] { false, true })
                     {
-                        int selectedOptionIndex = isSelected ? optionIndex : (optionIndex + 1) % preferenceInputs.Length;
+                        int selectedOptionIndex;
+                        if (isSelected)
+                        {
+                            selectedOptionIndex = optionIndex;
+                        }
+                        else
+                        {
+                            selectedOptionIndex = (optionIndex + 1) % preferenceInputs.Length;
+                        }
                         preferenceInputs[selectedOptionIndex].Command?.Execute(null);
                         Dispatcher.UIThread.RunJobs();
 

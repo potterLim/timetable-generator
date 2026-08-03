@@ -192,9 +192,7 @@ public sealed class PersonalSchedulePaneStateTests
 
     private static void selectPersonalScheduleDay(PlannerWorkspaceViewModel workspace, EDay day)
     {
-        PersonalScheduleDayOption? matchingOptionOrNull =
-            workspace.PersonalScheduleDayOptions.FirstOrDefault(
-                candidate => candidate.Day == day);
+        PersonalScheduleDayOption? matchingOptionOrNull = workspace.PersonalScheduleDayOptions.FirstOrDefault(candidate => candidate.Day == day);
         if (matchingOptionOrNull == null)
         {
             throw new ArgumentOutOfRangeException(nameof(day), day, "The personal schedule day option was not found.");

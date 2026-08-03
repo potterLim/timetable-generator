@@ -56,7 +56,14 @@ internal sealed partial class MainWindow
 
     private void onWindowMaximizeRestoreButtonClick(object? senderOrNull, RoutedEventArgs eventArgs)
     {
-        WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+        if (WindowState == WindowState.Maximized)
+        {
+            WindowState = WindowState.Normal;
+        }
+        else
+        {
+            WindowState = WindowState.Maximized;
+        }
         eventArgs.Handled = true;
     }
 
@@ -73,7 +80,7 @@ internal sealed partial class MainWindow
             throw new InvalidOperationException("The product window frame was not initialized.");
         }
 
-        mProductWindowFrameOrNull.IsVisible = UsesProductCaptionControls && WindowState == WindowState.Normal;
+        mProductWindowFrameOrNull.IsVisible = ShouldUseProductCaptionControls && WindowState == WindowState.Normal;
     }
 
     private void synchronizeMaximizeRestoreAction()
@@ -91,12 +98,18 @@ internal sealed partial class MainWindow
         Button maximizeRestoreButton = mMaximizeRestoreButtonOrNull;
         FluentIcon maximizeRestoreIcon = mMaximizeRestoreIconOrNull;
         bool isMaximized = WindowState == WindowState.Maximized;
-        string actionName = isMaximized ? "복원" : "최대화";
+        string actionName = "최대화";
+        FluentIcons.Common.Icon actionIcon = FluentIcons.Common.Icon.Square;
+        if (isMaximized)
+        {
+            actionName = "복원";
+            actionIcon = FluentIcons.Common.Icon.SquareMultiple;
+        }
         AutomationPeer? maximizeRestorePeerOrNull = ControlAutomationPeer.FromElement(maximizeRestoreButton);
         string? previousNameOrNull = maximizeRestorePeerOrNull?.GetName();
         string? previousHelpTextOrNull = maximizeRestorePeerOrNull?.GetHelpText();
 
-        maximizeRestoreIcon.Icon = isMaximized ? FluentIcons.Common.Icon.SquareMultiple : FluentIcons.Common.Icon.Square;
+        maximizeRestoreIcon.Icon = actionIcon;
         AutomationProperties.SetName(maximizeRestoreButton, actionName);
         ToolTip.SetTip(maximizeRestoreButton, actionName);
         if (maximizeRestorePeerOrNull != null)

@@ -26,7 +26,6 @@ public sealed class StrongValueTests
     [TestMethod]
     public void EnglishInstructionPercentage_AboveOneHundred_Throws()
     {
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
-            () => new EnglishInstructionPercentage(101));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new EnglishInstructionPercentage(101));
     }
 }

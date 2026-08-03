@@ -57,7 +57,12 @@ internal sealed partial class ScheduleBoardView : UserControl
     {
         get
         {
-            return mIsPngExport ? mPngExportCanvas : mBoardExportSurface;
+            if (mIsPngExport)
+            {
+                return mPngExportCanvas;
+            }
+
+            return mBoardExportSurface;
         }
     }
 
@@ -234,7 +239,12 @@ internal sealed partial class ScheduleBoardView : UserControl
         {
             Border columnGuide = new Border();
             columnGuide.BorderBrush = findBrush("BorderBrush");
-            columnGuide.BorderThickness = new Thickness(0.0, 0.0, columnIndex < totalColumnCount - 1 ? 1.0 : 0.0, 0.0);
+            double rightBorderWidth = 0.0;
+            if (columnIndex < totalColumnCount - 1)
+            {
+                rightBorderWidth = 1.0;
+            }
+            columnGuide.BorderThickness = new Thickness(0.0, 0.0, rightBorderWidth, 0.0);
             Grid.SetRow(columnGuide, 0);
             Grid.SetRowSpan(columnGuide, mRenderedLayout.TimeAxis.IncrementCount + 1);
             Grid.SetColumn(columnGuide, columnIndex);
@@ -252,7 +262,11 @@ internal sealed partial class ScheduleBoardView : UserControl
         {
             int rowIndex = 1 + mRenderedLayout.TimeAxis.FindBoundaryRowOffset(guideTime);
             Border timeGuide = new Border();
-            string gridLineBrushKey = guideTime.IsFullHour ? "ScheduleHourGridLineBrush" : "ScheduleHalfHourGridLineBrush";
+            string gridLineBrushKey = "ScheduleHalfHourGridLineBrush";
+            if (guideTime.IsFullHour)
+            {
+                gridLineBrushKey = "ScheduleHourGridLineBrush";
+            }
             timeGuide.BorderBrush = findBrush(gridLineBrushKey);
             timeGuide.BorderThickness = new Thickness(0.0, 1.0, 0.0, 0.0);
             timeGuide.IsHitTestVisible = false;
@@ -315,7 +329,12 @@ internal sealed partial class ScheduleBoardView : UserControl
         {
             Border columnGuide = new Border();
             columnGuide.BorderBrush = findBrush("BorderBrush");
-            columnGuide.BorderThickness = new Thickness(0.0, 0.0, columnIndex < totalColumnCount - 1 ? 1.0 : 0.0, 0.0);
+            double rightBorderWidth = 0.0;
+            if (columnIndex < totalColumnCount - 1)
+            {
+                rightBorderWidth = 1.0;
+            }
+            columnGuide.BorderThickness = new Thickness(0.0, 0.0, rightBorderWidth, 0.0);
             Grid.SetColumn(columnGuide, columnIndex);
             mBoardStickyDayHeaderGrid.Children.Add(columnGuide);
         }
@@ -352,7 +371,11 @@ internal sealed partial class ScheduleBoardView : UserControl
             timeHeader.Margin = new Thickness(0.0, 0.0, HOUR_GUIDE_EXTENSION_WIDTH + TIME_LABEL_GUIDE_GAP, 0.0);
             timeHeader.IsHitTestVisible = false;
             int boundaryRowIndex = 1 + mRenderedLayout.TimeAxis.FindBoundaryRowOffset(labelTime);
-            int labelRowIndex = labelTime == mRenderedLayout.TimeAxis.Start ? boundaryRowIndex : boundaryRowIndex - 1;
+            int labelRowIndex = boundaryRowIndex - 1;
+            if (labelTime == mRenderedLayout.TimeAxis.Start)
+            {
+                labelRowIndex = boundaryRowIndex;
+            }
             Grid.SetRow(timeHeader, labelRowIndex);
             Grid.SetRowSpan(timeHeader, 2);
             Grid.SetColumn(timeHeader, 0);
@@ -374,6 +397,11 @@ internal sealed partial class ScheduleBoardView : UserControl
 
     private double findBoardGridHeaderRowHeight()
     {
-        return mIsPngExport ? HEADER_ROW_HEIGHT : 0.0;
+        if (mIsPngExport)
+        {
+            return HEADER_ROW_HEIGHT;
+        }
+
+        return 0.0;
     }
 }

@@ -223,12 +223,11 @@ public sealed class PlanningWorkspaceAutosaveQueueTests
         PlanningWorkspaceAutosaveQueue autosaveQueue = new PlanningWorkspaceAutosaveQueue(store, PlanningWorkspaceConcurrencyToken.MissingWorkspace);
         autosaveQueue.RequestSave(createWorkspace(new PlanName("실패할 저장")));
 
-        PlanningWorkspaceAutosaveException exception =
-            await Assert.ThrowsAsync<PlanningWorkspaceAutosaveException>(
-                async delegate
-                {
-                    await autosaveQueue.CompleteAsync(TestContext.Current.CancellationToken);
-                });
+        PlanningWorkspaceAutosaveException exception = await Assert.ThrowsAsync<PlanningWorkspaceAutosaveException>(
+            async delegate
+            {
+                await autosaveQueue.CompleteAsync(TestContext.Current.CancellationToken);
+            });
 
         Assert.Same(saveFailure, exception.InnerException);
     }

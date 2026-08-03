@@ -35,7 +35,7 @@ internal sealed partial class MainWindow : Window
 
     public ProductAppearanceViewModel Appearance { get; }
 
-    public bool UsesProductCaptionControls { get; }
+    public bool ShouldUseProductCaptionControls { get; }
 
     public MainWindow(ProductShellViewModel productShellViewModel, ProductAppearanceViewModel appearance)
     {
@@ -46,7 +46,7 @@ internal sealed partial class MainWindow : Window
         Appearance = appearance;
         EWindowChromePlatform windowChromePlatform = WindowChromeLayoutPolicy.FindCurrentPlatform();
         WindowDecorations = WindowChromeLayoutPolicy.FindWindowDecorations(windowChromePlatform);
-        UsesProductCaptionControls = WindowDecorations == Avalonia.Controls.WindowDecorations.None;
+        ShouldUseProductCaptionControls = WindowDecorations == Avalonia.Controls.WindowDecorations.None;
         AvaloniaXamlLoader.Load(this);
         DataContext = mProductShellViewModel;
         initializeProductCaptionControls();

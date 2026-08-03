@@ -48,7 +48,7 @@ internal sealed partial class EventKitAppleCalendarNativeBridge : IAppleCalendar
     {
         ensureAvailable();
         AppleCalendarOwnershipRegistryDocument registry = loadRegistry();
-        AppleCalendarPendingOperation? pendingOperationOrNull = registry.PendingOperation;
+        AppleCalendarPendingOperation? pendingOperationOrNull = registry.PendingOperationOrNull;
         if (pendingOperationOrNull == null)
         {
             return;
@@ -66,8 +66,14 @@ internal sealed partial class EventKitAppleCalendarNativeBridge : IAppleCalendar
             expectedSourceIdentifier = pendingOperationOrNull.ExpectedSourceIdentifierOrNull;
         }
 
-        string registeredPlanId = existingRegistrationOrNull == null ? string.Empty : existingRegistrationOrNull.PlanId;
-        IReadOnlyList<AppleCalendarManagedEventRegistration> managedEvents = existingRegistrationOrNull == null ? Array.Empty<AppleCalendarManagedEventRegistration>() : existingRegistrationOrNull.Events;
+        string registeredPlanId = string.Empty;
+        IReadOnlyList<AppleCalendarManagedEventRegistration> managedEvents = Array.Empty<AppleCalendarManagedEventRegistration>();
+        if (existingRegistrationOrNull != null)
+        {
+            registeredPlanId = existingRegistrationOrNull.PlanId;
+            managedEvents = existingRegistrationOrNull.Events;
+        }
+
         EventKitAppleCalendarRequest request = EventKitAppleCalendarRequest.CreateReconcile(
             pendingOperationOrNull,
             expectedSourceIdentifier,
@@ -75,7 +81,7 @@ internal sealed partial class EventKitAppleCalendarNativeBridge : IAppleCalendar
             managedEvents);
         EventKitAppleCalendarResponse response = await executeAsync(request, cancellationToken).ConfigureAwait(false);
         registry = applyRegistrationBindings(response, registry);
-        pendingOperationOrNull = registry.PendingOperation;
+        pendingOperationOrNull = registry.PendingOperationOrNull;
         if (pendingOperationOrNull == null)
         {
             throw invalidResponse();
@@ -161,13 +167,19 @@ internal sealed partial class EventKitAppleCalendarNativeBridge : IAppleCalendar
             expectedSourceIdentifier = mutation.ExpectedSourceIdentifierOrNull;
         }
 
-        string registeredPlanId = existingRegistrationOrNull == null ? string.Empty : existingRegistrationOrNull.PlanId;
-        IReadOnlyList<AppleCalendarManagedEventRegistration> managedEvents = existingRegistrationOrNull == null ? Array.Empty<AppleCalendarManagedEventRegistration>() : existingRegistrationOrNull.Events;
+        string registeredPlanId = string.Empty;
+        IReadOnlyList<AppleCalendarManagedEventRegistration> managedEvents = Array.Empty<AppleCalendarManagedEventRegistration>();
+        if (existingRegistrationOrNull != null)
+        {
+            registeredPlanId = existingRegistrationOrNull.PlanId;
+            managedEvents = existingRegistrationOrNull.Events;
+        }
+
         EventKitAppleCalendarRequest request = EventKitAppleCalendarRequest.CreateApply(
             mutation,
             expectedSourceIdentifier,
             registeredPlanId,
-            registryWithPending.PendingOperation!.PreparedAtUnixSeconds,
+            registryWithPending.PendingOperationOrNull!.PreparedAtUnixSeconds,
             recurringEvents,
             managedEvents);
         EventKitAppleCalendarResponse response = await executeAsync(request, cancellationToken).ConfigureAwait(false);

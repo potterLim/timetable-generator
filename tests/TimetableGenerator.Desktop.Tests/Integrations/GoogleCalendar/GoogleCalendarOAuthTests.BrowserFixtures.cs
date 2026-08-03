@@ -125,12 +125,27 @@ public sealed partial class GoogleCalendarOAuthTests
         private static string? getHeaderValueOrNull(HttpResponseMessage response, string headerName)
         {
             IEnumerable<string>? values;
-            return response.Headers.TryGetValues(headerName, out values) ? string.Join(", ", values) : null;
+            if (response.Headers.TryGetValues(headerName, out values))
+            {
+                return string.Join(", ", values);
+            }
+            else
+            {
+                return null;
+            }
         }
 
         private static string getQueryParameter(Uri uri, string parameterName)
         {
-            string query = uri.Query.StartsWith("?", StringComparison.Ordinal) ? uri.Query[1..] : uri.Query;
+            string query;
+            if (uri.Query.StartsWith("?", StringComparison.Ordinal))
+            {
+                query = uri.Query[1..];
+            }
+            else
+            {
+                query = uri.Query;
+            }
             foreach (string pair in query.Split('&'))
             {
                 string[] parts = pair.Split('=', 2);
@@ -188,12 +203,27 @@ public sealed partial class GoogleCalendarOAuthTests
         private static string? getHeaderValueOrNull(HttpResponseMessage response, string headerName)
         {
             IEnumerable<string>? values;
-            return response.Headers.TryGetValues(headerName, out values) ? string.Join(", ", values) : null;
+            if (response.Headers.TryGetValues(headerName, out values))
+            {
+                return string.Join(", ", values);
+            }
+            else
+            {
+                return null;
+            }
         }
 
         private static string getQueryParameter(Uri uri, string parameterName)
         {
-            string query = uri.Query.StartsWith("?", StringComparison.Ordinal) ? uri.Query[1..] : uri.Query;
+            string query;
+            if (uri.Query.StartsWith("?", StringComparison.Ordinal))
+            {
+                query = uri.Query[1..];
+            }
+            else
+            {
+                query = uri.Query;
+            }
             foreach (string pair in query.Split('&'))
             {
                 string[] parts = pair.Split('=', 2);

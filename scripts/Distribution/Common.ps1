@@ -19,9 +19,7 @@ function Get-NormalizedFullPath {
         return $fullPath
     }
 
-    return $fullPath.TrimEnd(
-        [System.IO.Path]::DirectorySeparatorChar,
-        [System.IO.Path]::AltDirectorySeparatorChar)
+    return $fullPath.TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
 }
 
 function Assert-PathHasNoReparsePoint {
@@ -71,17 +69,12 @@ function Test-PathIsSameOrDescendant {
         [string] $ParentPath
     )
 
-    $relativePath = [System.IO.Path]::GetRelativePath(
-        (Get-NormalizedFullPath -Path $ParentPath),
-        (Get-NormalizedFullPath -Path $Path))
+    $relativePath = [System.IO.Path]::GetRelativePath((Get-NormalizedFullPath -Path $ParentPath), (Get-NormalizedFullPath -Path $Path))
     if ([System.IO.Path]::IsPathRooted($relativePath)) {
         return $false
     }
 
-    return $relativePath -ne ".." -and
-        -not $relativePath.StartsWith(
-            "..$([System.IO.Path]::DirectorySeparatorChar)",
-            (Get-PathComparison))
+    return $relativePath -ne ".." -and -not $relativePath.StartsWith("..$([System.IO.Path]::DirectorySeparatorChar)", (Get-PathComparison))
 }
 
 function Invoke-DotNetCommand {
@@ -313,15 +306,13 @@ function Get-RequiredThirdPartyNoticeFileNames {
         [string] $ProjectPath
     )
 
-    $projectDirectory = [System.IO.Path]::GetDirectoryName(
-        [System.IO.Path]::GetFullPath($ProjectPath))
+    $projectDirectory = [System.IO.Path]::GetDirectoryName([System.IO.Path]::GetFullPath($ProjectPath))
     $noticeSourcePath = Join-Path $projectDirectory "ThirdPartyNotices"
     if (-not (Test-Path -LiteralPath $noticeSourcePath -PathType Container)) {
         throw "third-party notice 원본 디렉토리를 찾을 수 없습니다: $noticeSourcePath"
     }
 
-    $fileNames = [System.Collections.Generic.HashSet[string]]::new(
-        [System.StringComparer]::Ordinal)
+    $fileNames = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
     foreach ($fileName in @(
         "FluentUiSystemIcons-LICENSE.txt",
         "Pretendard-LICENSE.txt")) {

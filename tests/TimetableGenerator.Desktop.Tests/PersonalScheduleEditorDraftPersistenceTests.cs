@@ -36,7 +36,7 @@ public sealed class PersonalScheduleEditorDraftPersistenceTests
         {
             window.Show();
             workspace.BeginAddPersonalScheduleCommand.Execute(null);
-            workspace.PersonalScheduleTitleDraft = "QA 고정 일정";
+            workspace.PersonalScheduleTitleDraft = "개인 일정";
             workspace.PersonalScheduleDayOptions.Single(option => option.Day == EDay.Sunday).IsSelected = true;
             workspace.PersonalScheduleStartTimeOrNull = new ScheduleTime(20, 10);
             workspace.PersonalScheduleEndTimeOrNull = new ScheduleTime(21, 10);
@@ -48,9 +48,9 @@ public sealed class PersonalScheduleEditorDraftPersistenceTests
             bindExplicitDraft(sectionInput, workspace, nameof(workspace.PersonalScheduleSectionDraft));
             bindExplicitDraft(instructorInput, workspace, nameof(workspace.PersonalScheduleInstructorDraft));
             bindExplicitDraft(locationInput, workspace, nameof(workspace.PersonalScheduleLocationDraft));
-            sectionInput.Text = "QA";
-            instructorInput.Text = "테스트 담당";
-            locationInput.Text = "QA 101";
+            sectionInput.Text = "01";
+            instructorInput.Text = "김교수";
+            locationInput.Text = "NTH 101";
 
             Assert.Equal(string.Empty, workspace.PersonalScheduleSectionDraft);
             Assert.Equal(string.Empty, workspace.PersonalScheduleInstructorDraft);
@@ -63,9 +63,9 @@ public sealed class PersonalScheduleEditorDraftPersistenceTests
             Dispatcher.UIThread.RunJobs();
 
             PersonalSchedule schedule = Assert.Single(workspace.ActivePlan.Plan.PersonalSchedules);
-            Assert.Equal("QA", schedule.Details.SectionOrNull?.Value);
-            Assert.Equal("테스트 담당", schedule.Details.InstructorOrNull?.Value);
-            Assert.Equal("QA 101", schedule.Details.LocationOrNull?.Value);
+            Assert.Equal("01", schedule.Details.SectionOrNull?.Value);
+            Assert.Equal("김교수", schedule.Details.InstructorOrNull?.Value);
+            Assert.Equal("NTH 101", schedule.Details.LocationOrNull?.Value);
         }
         finally
         {

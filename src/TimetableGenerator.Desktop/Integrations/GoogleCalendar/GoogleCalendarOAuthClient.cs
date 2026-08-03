@@ -106,7 +106,13 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
         GoogleTokenExchangeResult exchangeResult = await exchangeAuthorizationCodeAsync(configuration, authorizationCodeOrNull, codeVerifier, codeResult.RedirectUri, cancellationToken).ConfigureAwait(false);
         if (exchangeResult.AccessTokenOrNull == null)
         {
-            return GoogleOAuthAuthorizationResult.Fail(exchangeResult.FailureKind == EGoogleTokenExchangeFailureKind.Network ? EGoogleOAuthAuthorizationStatus.NetworkFailed : EGoogleOAuthAuthorizationStatus.Failed, exchangeResult.DiagnosticCodeOrNull);
+            EGoogleOAuthAuthorizationStatus status = EGoogleOAuthAuthorizationStatus.Failed;
+            if (exchangeResult.FailureKind == EGoogleTokenExchangeFailureKind.Network)
+            {
+                status = EGoogleOAuthAuthorizationStatus.NetworkFailed;
+            }
+
+            return GoogleOAuthAuthorizationResult.Fail(status, exchangeResult.DiagnosticCodeOrNull);
         }
 
         return GoogleOAuthAuthorizationResult.Complete(exchangeResult.AccessTokenOrNull);
