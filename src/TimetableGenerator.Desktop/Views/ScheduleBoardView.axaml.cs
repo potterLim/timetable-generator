@@ -172,10 +172,11 @@ internal sealed partial class ScheduleBoardView : UserControl
     private void rebuildBoard()
     {
         ScheduleBoardPresentation? presentationOrNull = DataContext as ScheduleBoardPresentation;
-        ScheduleRecommendation? recommendationOrNull = null;
+        ScheduleRecommendation? recommendationOrNull;
         if (presentationOrNull == null)
         {
             mRenderedLayout = ScheduleBoardLayout.Default;
+            recommendationOrNull = null;
         }
         else
         {
@@ -262,10 +263,14 @@ internal sealed partial class ScheduleBoardView : UserControl
         {
             int rowIndex = 1 + mRenderedLayout.TimeAxis.FindBoundaryRowOffset(guideTime);
             Border timeGuide = new Border();
-            string gridLineBrushKey = "ScheduleHalfHourGridLineBrush";
+            string gridLineBrushKey;
             if (guideTime.IsFullHour)
             {
                 gridLineBrushKey = "ScheduleHourGridLineBrush";
+            }
+            else
+            {
+                gridLineBrushKey = "ScheduleHalfHourGridLineBrush";
             }
             timeGuide.BorderBrush = findBrush(gridLineBrushKey);
             timeGuide.BorderThickness = new Thickness(0.0, 1.0, 0.0, 0.0);

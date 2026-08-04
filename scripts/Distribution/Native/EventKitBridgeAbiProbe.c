@@ -57,7 +57,7 @@ int main(const int argument_count, char* const argument_values[])
     dlclose(library_or_null);
     if (response_is_valid != 0) {
         return TG_EVENT_KIT_PROBE_EXIT_CODE_SUCCESS;
-    } else {
-        return TG_EVENT_KIT_PROBE_EXIT_CODE_RESPONSE_INVALID;
     }
+
+    return TG_EVENT_KIT_PROBE_EXIT_CODE_RESPONSE_INVALID;
 }

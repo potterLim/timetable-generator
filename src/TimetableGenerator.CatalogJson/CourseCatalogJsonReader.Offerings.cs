@@ -286,10 +286,14 @@ public static partial class CourseCatalogJsonReader
         StrictJsonObject gradingObject = StrictJsonObject.Create(element, path, new string[] { "type", "passFailOptionAvailable" });
         EGradingType gradingType = parseGradingType(gradingObject.GetString("type"), gradingObject.GetPropertyPath("type"));
         bool isPassFailOptionAvailable = gradingObject.GetBoolean("passFailOptionAvailable");
-        EPassFailOptionAvailability availability = EPassFailOptionAvailability.Unavailable;
+        EPassFailOptionAvailability availability;
         if (isPassFailOptionAvailable)
         {
             availability = EPassFailOptionAvailability.Available;
+        }
+        else
+        {
+            availability = EPassFailOptionAvailability.Unavailable;
         }
         return new GradingMetadata(gradingType, availability);
     }
@@ -299,10 +303,14 @@ public static partial class CourseCatalogJsonReader
         StrictJsonObject detailsObject = StrictJsonObject.Create(element, path, new string[] { "syllabusUrl", "remarksAvailable" });
         detailsObject.RequireNull("syllabusUrl");
         bool areRemarksAvailable = detailsObject.GetBoolean("remarksAvailable");
-        ERemarksAvailability availability = ERemarksAvailability.Unavailable;
+        ERemarksAvailability availability;
         if (areRemarksAvailable)
         {
             availability = ERemarksAvailability.Available;
+        }
+        else
+        {
+            availability = ERemarksAvailability.Unavailable;
         }
         return new OfferingDetailsMetadata(availability);
     }

@@ -11,10 +11,10 @@
 #define TG_HEXADECIMAL_DIGITS_PER_BYTE (2U)
 #define TG_SHA256_HEXADECIMAL_LENGTH (CC_SHA256_DIGEST_LENGTH * TG_HEXADECIMAL_DIGITS_PER_BYTE)
 
+static const int64_t TG_LEGACY_MIGRATION_PADDING_SECONDS = 366LL * 24LL * 60LL * 60LL;
+
 const uint32_t TG_SCHEMA_VERSION = 1;
 const int64_t TG_INCLUSIVE_RANGE_END_OFFSET_SECONDS = 1;
-
-static const int64_t TG_LEGACY_MIGRATION_PADDING_SECONDS = 366LL * 24LL * 60LL * 60LL;
 
 NSString* const TG_INVALID_REQUEST_EXCEPTION = @"TimetableGeneratorEventKitInvalidRequest";
 
@@ -80,14 +80,10 @@ NSDictionary* tg_create_response(NSString* const status, NSString* const diagnos
     assert(status != NULL);
     assert(diagnostic_code != NULL);
 
-    NSString* response_diagnostic_code = diagnostic_code;
-    if (response_diagnostic_code == nil) {
-        response_diagnostic_code = @"";
-    }
     return @{
         @"schemaVersion" : @(TG_SCHEMA_VERSION),
         @"status" : status,
-        @"diagnosticCode" : response_diagnostic_code
+        @"diagnosticCode" : diagnostic_code
     };
 }
 

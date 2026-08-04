@@ -213,10 +213,14 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
             }
 
             GoogleCalendarDescriptor? replaceableCalendarOrNull = findSoleReplaceableCalendarOrNull(matches);
-            ECalendarReplacementAvailability replacementAvailability = ECalendarReplacementAvailability.Unavailable;
+            ECalendarReplacementAvailability replacementAvailability;
             if (replaceableCalendarOrNull != null)
             {
                 replacementAvailability = ECalendarReplacementAvailability.Available;
+            }
+            else
+            {
+                replacementAvailability = ECalendarReplacementAvailability.Unavailable;
             }
 
             PlanName nextAvailableName = CalendarNameConflictPolicy.FindNextAvailableName(plan.CalendarName, getExistingNames(calendars));
@@ -269,10 +273,14 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
             }
 
             PlanId? managedPlanIdOrNull = await mApiClient.FindManagedPlanIdAsync(accessToken, calendar.CalendarId, cancellationToken).ConfigureAwait(false);
-            GoogleCalendarDescriptor resolvedCalendar = calendar;
+            GoogleCalendarDescriptor resolvedCalendar;
             if (managedPlanIdOrNull.HasValue)
             {
                 resolvedCalendar = calendar.WithManagedPlanId(managedPlanIdOrNull.Value);
+            }
+            else
+            {
+                resolvedCalendar = calendar;
             }
 
             resolvedMatches.Add(resolvedCalendar);

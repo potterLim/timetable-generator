@@ -157,16 +157,24 @@ internal sealed partial class ProductWorkspaceHostView
             return;
         }
 
-        string message = string.Empty;
+        string message;
         if (workspaceOrNull != null)
         {
             message = workspaceOrNull.PlanNameValidationMessage;
         }
+        else
+        {
+            message = string.Empty;
+        }
 
-        AutomationLiveSetting liveSetting = AutomationLiveSetting.Off;
+        AutomationLiveSetting liveSetting;
         if (string.IsNullOrEmpty(message) == false)
         {
             liveSetting = AutomationLiveSetting.Assertive;
+        }
+        else
+        {
+            liveSetting = AutomationLiveSetting.Off;
         }
         AutomationProperties.SetLiveSetting(validationMessageOrNull, liveSetting);
         validationMessageOrNull.Text = message;

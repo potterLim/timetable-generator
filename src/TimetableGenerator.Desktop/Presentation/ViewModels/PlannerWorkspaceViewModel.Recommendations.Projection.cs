@@ -32,10 +32,14 @@ internal sealed partial class PlannerWorkspaceViewModel
             throw new InvalidOperationException("Recommendation calculation ended without an active cancellation request.");
         }
 
-        EScheduleRecommendationCompletion expectedCompletion = EScheduleRecommendationCompletion.Completed;
+        EScheduleRecommendationCompletion expectedCompletion;
         if (hasAdditionalRecommendations)
         {
             expectedCompletion = EScheduleRecommendationCompletion.MaximumRecommendationCountReached;
+        }
+        else
+        {
+            expectedCompletion = EScheduleRecommendationCompletion.Completed;
         }
         if (result.Completion != expectedCompletion)
         {
@@ -83,10 +87,13 @@ internal sealed partial class PlannerWorkspaceViewModel
         mHasUnsatisfiedScheduleConstraints = projectionBatch.HasUnsatisfiedScheduleConstraints;
         mRecommendationCalculationState = ERecommendationCalculationState.Ready;
         mRecommendationCalculationError = string.Empty;
-        mRecommendationExpansionState = ERecommendationExpansionState.Unavailable;
         if (projectionBatch.HasAdditionalRecommendations)
         {
             mRecommendationExpansionState = ERecommendationExpansionState.Available;
+        }
+        else
+        {
+            mRecommendationExpansionState = ERecommendationExpansionState.Unavailable;
         }
         mRecommendationIndex = findRestoredRecommendationIndex(mRecommendations, restorationPlan.LastViewedRecommendationOrNull);
         synchronizeLastViewedRecommendation(restorationPlan.Id);

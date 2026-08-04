@@ -84,10 +84,8 @@ public sealed partial class ScheduleWorkspaceViewTests
                     {
                         return text;
                     }
-                    else
-                    {
-                        return string.Empty;
-                    }
+
+                    return string.Empty;
                 })
                 .ToList();
             Assert.DoesNotContain("과목", visibleListText);

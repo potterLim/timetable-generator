@@ -20,11 +20,10 @@ static const NSUInteger TG_CURRENT_MARKER_FINGERPRINT_INDEX = 1;
 static const NSUInteger TG_CURRENT_MARKER_PLAN_IDENTIFIER_INDEX = 0;
 static const NSUInteger TG_LOW_HEXADECIMAL_DIGIT_OFFSET = 1;
 static const unsigned char TG_LOW_NIBBLE_MASK = 0x0F;
-
-const NSInteger TG_WEEKLY_RECURRENCE_INTERVAL = 1;
-
 static NSString* const TG_CURRENT_EVENT_MARKER_PREFIX = @"timetable-generator://managed-event/v2/";
 static NSString* const TG_LEGACY_EVENT_MARKER_PREFIX = @"timetable-generator://managed-event/v1/";
+
+const NSInteger TG_WEEKLY_RECURRENCE_INTERVAL = 1;
 
 static NSString* tg_get_current_marker_plan_identifier_or_null(NSURL* const url_or_null)
 {

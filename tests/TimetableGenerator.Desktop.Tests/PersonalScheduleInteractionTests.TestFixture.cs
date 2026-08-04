@@ -155,10 +155,8 @@ public sealed partial class PersonalScheduleInteractionTests
         {
             return string.Empty;
         }
-        else
-        {
-            return textBlock.Text;
-        }
+
+        return textBlock.Text;
     }
 
     private static bool hasAutomationIdPrefix(Control control, string automationIdPrefix)

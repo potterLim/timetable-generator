@@ -115,10 +115,14 @@ internal static class SchedulePngFileNameFactory
         {
             bool isPlatformInvalid = Array.IndexOf(platformInvalidCharacters, character) >= 0;
             bool isWindowsInvalid = character < ' ' || WINDOWS_INVALID_FILE_NAME_CHARACTERS.Contains(character);
-            char sanitizedCharacter = character;
+            char sanitizedCharacter;
             if (isPlatformInvalid || isWindowsInvalid)
             {
                 sanitizedCharacter = REPLACEMENT_CHARACTER;
+            }
+            else
+            {
+                sanitizedCharacter = character;
             }
 
             sanitizedNameBuilder.Append(sanitizedCharacter);

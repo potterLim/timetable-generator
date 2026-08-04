@@ -129,12 +129,13 @@ internal sealed partial class PlannerWorkspaceViewModel
                 return "0 / 0";
             }
 
-            string additionalRecommendationIndicator = "+";
+            string summary = (mRecommendationIndex + 1) + " / " + mRecommendations.Count;
             if (mRecommendationExpansionState == ERecommendationExpansionState.Unavailable)
             {
-                additionalRecommendationIndicator = string.Empty;
+                return summary;
             }
-            return (mRecommendationIndex + 1) + " / " + mRecommendations.Count + additionalRecommendationIndicator;
+
+            return summary + "+";
         }
     }
 

@@ -71,10 +71,14 @@ internal sealed class GoogleCalendarApiClient
                                 string? idOrNull = getStringOrNull(item, "id");
                                 string? summaryOverrideOrNull = getStringOrNull(item, "summaryOverride");
                                 string? summaryOrNull = getStringOrNull(item, "summary");
-                                string? displayNameOrNull = summaryOverrideOrNull;
+                                string? displayNameOrNull;
                                 if (string.IsNullOrWhiteSpace(summaryOverrideOrNull))
                                 {
                                     displayNameOrNull = summaryOrNull;
+                                }
+                                else
+                                {
+                                    displayNameOrNull = summaryOverrideOrNull;
                                 }
 
                                 if (string.IsNullOrWhiteSpace(idOrNull) || string.IsNullOrWhiteSpace(displayNameOrNull))
@@ -434,10 +438,14 @@ internal sealed class GoogleCalendarApiClient
             isTransient = await containsRateLimitReasonAsync(response, cancellationToken).ConfigureAwait(false);
         }
 
-        EGoogleCalendarApiFailureKind failureKind = EGoogleCalendarApiFailureKind.Permanent;
+        EGoogleCalendarApiFailureKind failureKind;
         if (isTransient)
         {
             failureKind = EGoogleCalendarApiFailureKind.Transient;
+        }
+        else
+        {
+            failureKind = EGoogleCalendarApiFailureKind.Permanent;
         }
 
         throw new GoogleCalendarApiException(response.StatusCode, diagnosticCode, failureKind);

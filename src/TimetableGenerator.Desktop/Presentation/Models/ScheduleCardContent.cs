@@ -22,22 +22,31 @@ internal sealed class ScheduleCardContent
             throw new ArgumentNullException(nameof(entry));
         }
 
-        Title = entry.Name;
         if (includeSection)
         {
             Title = entry.NameWithSection;
         }
+        else
+        {
+            Title = entry.Name;
+        }
 
-        LocationOrNull = null;
         if (entry.HasAssignedLocation)
         {
             LocationOrNull = entry.LocationDisplayText;
         }
+        else
+        {
+            LocationOrNull = null;
+        }
 
-        ResponsiblePersonOrNull = null;
         if (entry.HasConfirmedInstructor)
         {
             ResponsiblePersonOrNull = entry.InstructorDisplayText;
+        }
+        else
+        {
+            ResponsiblePersonOrNull = null;
         }
     }
 
@@ -54,16 +63,22 @@ internal sealed class ScheduleCardContent
         }
 
         Title = entry.TitleWithSection;
-        LocationOrNull = null;
         if (entry.HasLocation)
         {
             LocationOrNull = entry.LocationDisplayText;
         }
+        else
+        {
+            LocationOrNull = null;
+        }
 
-        ResponsiblePersonOrNull = null;
         if (entry.HasInstructor)
         {
             ResponsiblePersonOrNull = entry.InstructorDisplayText;
+        }
+        else
+        {
+            ResponsiblePersonOrNull = null;
         }
     }
 }

@@ -129,10 +129,8 @@ public sealed partial class GoogleCalendarOAuthTests
             {
                 return string.Join(", ", values);
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
 
         private static string getQueryParameter(Uri uri, string parameterName)
@@ -207,10 +205,8 @@ public sealed partial class GoogleCalendarOAuthTests
             {
                 return string.Join(", ", values);
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
 
         private static string getQueryParameter(Uri uri, string parameterName)

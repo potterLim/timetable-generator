@@ -182,13 +182,12 @@ NSDictionary* tg_reconcile_export(NSDictionary* const request, EKEventStore* con
     NSArray<NSDictionary*>* const desired_event_requests = tg_validate_desired_events(request);
     NSArray<NSDictionary*>* const managed_events = tg_validate_managed_events(request);
     const BOOL replacing = [mutation_kind isEqualToString:@"replace"];
-    EKCalendar* calendar = nil;
-    BOOL registered_reconciliation = NO;
+    const BOOL registered_reconciliation = replacing && managed_events.count > 0 && [registered_plan_identifier isEqualToString:plan_identifier];
+    EKCalendar* calendar;
     NSDictionary* registration_binding = nil;
     NSArray<EKEvent*>* rebound_registered_events = nil;
 
     if (replacing) {
-        registered_reconciliation = managed_events.count > 0 && [registered_plan_identifier isEqualToString:plan_identifier];
         const BOOL legacy_reconciliation = managed_events.count == 0 && registered_plan_identifier.length == 0;
         if (existing_calendar_identifier.length == 0 || expected_source_identifier.length == 0 || (!registered_reconciliation && !legacy_reconciliation)) {
             tg_throw_invalid_request(@"eventkit_request_reconciliation_precondition_invalid");
@@ -210,7 +209,7 @@ NSDictionary* tg_reconcile_export(NSDictionary* const request, EKEventStore* con
                 @"termEndsAtUnixSeconds" : @(term_ends_at_unix_seconds),
                 @"managedEvents" : managed_events
             };
-            NSUInteger rebound_candidate_count = 0;
+            NSUInteger rebound_candidate_count;
             NSDictionary* const rebound_registration = tg_resolve_rebound_registration_or_null(
                 event_store,
                 [event_store calendarsForEntityType:EKEntityTypeEvent],
@@ -385,7 +384,7 @@ NSDictionary* tg_apply_export(NSDictionary* const request, EKEventStore* const e
     NSArray<NSDictionary*>* const recurring_events = tg_validate_recurring_events(request);
     NSArray<NSDictionary*>* const managed_events = tg_validate_managed_events(request);
     const BOOL replacing = [mutation_kind isEqualToString:@"replace"];
-    EKCalendar* calendar = nil;
+    EKCalendar* calendar;
 
     if (replacing) {
         if (existing_calendar_identifier.length == 0 || expected_source_identifier.length == 0) {

@@ -123,7 +123,7 @@ static NSDictionary* tg_resolve_list_registration_state(NSDictionary* const requ
             continue;
         }
 
-        NSUInteger candidate_count = 0;
+        NSUInteger candidate_count;
         NSDictionary* const rebound_registration = tg_resolve_rebound_registration_or_null(event_store, calendars, registration, &candidate_count);
         if (rebound_registration == nil) {
             if (matches_requested_name && candidate_count > 0) {
@@ -177,7 +177,7 @@ static NSArray<EKEvent*>* tg_resolve_registered_events_by_stored_identifiers_or_
     for (NSDictionary* registration in managed_events) {
         NSString* const registered_identifier = registration[@"calendarItemIdentifier"];
         EKCalendarItem* const exact_item = [event_store calendarItemWithIdentifier:registered_identifier];
-        EKEvent* resolved_event = nil;
+        EKEvent* resolved_event;
         if (exact_item != nil) {
             if (![exact_item isKindOfClass:[EKEvent class]] || ![tg_get_calendar_identifier(exact_item.calendar) isEqualToString:calendar_identifier]) {
                 return nil;

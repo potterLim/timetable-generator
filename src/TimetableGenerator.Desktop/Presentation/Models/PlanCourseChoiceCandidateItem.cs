@@ -111,10 +111,14 @@ internal sealed class PlanCourseChoiceCandidateItem : ObservableObject
     {
         CatalogOfferingProjection? selectedOfferingOrNull = findSelectedOfferingOrNull(recommendationBookmarkOrNull);
         bool hasTimeNotProvidedSelection = selectedOfferingOrNull != null && selectedOfferingOrNull.Offering.MeetingSchedule.IsScheduled == false;
-        string displayText = string.Empty;
+        string displayText;
         if (hasTimeNotProvidedSelection && selectedOfferingOrNull != null)
         {
             displayText = selectedOfferingOrNull.Offering.SectionCode.Value + "분반: 시간 미정";
+        }
+        else
+        {
+            displayText = string.Empty;
         }
 
         setProperty(ref mSelectedTimeNotProvidedOfferingDisplayText, displayText, nameof(SelectedTimeNotProvidedOfferingDisplayText));

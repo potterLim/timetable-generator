@@ -80,10 +80,13 @@ public sealed class ScheduleRecommendation
         mUnscheduledSelections = copiedUnscheduledSelections;
         mPersonalSchedules = copiedPersonalSchedules;
         Score = score;
-        VerificationStatus = ERecommendationVerificationStatus.RequiresManualReview;
         if (copiedUnscheduledSelections.Count == 0)
         {
             VerificationStatus = ERecommendationVerificationStatus.ConfirmedConflictFree;
+        }
+        else
+        {
+            VerificationStatus = ERecommendationVerificationStatus.RequiresManualReview;
         }
     }
 

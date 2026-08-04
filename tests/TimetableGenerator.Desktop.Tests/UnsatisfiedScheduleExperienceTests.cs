@@ -191,10 +191,8 @@ public sealed class UnsatisfiedScheduleExperienceTests
         {
             return string.Empty;
         }
-        else
-        {
-            return textBlock.Text;
-        }
+
+        return textBlock.Text;
     }
 
     private sealed class ForcedConflictRecommendationProvider :

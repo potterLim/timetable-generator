@@ -101,10 +101,14 @@ internal sealed partial class MainWindow
     {
         if (mFullScreenNativeMenuItemOrNull != null)
         {
-            string fullScreenActionName = "Enter Full Screen";
+            string fullScreenActionName;
             if (WindowState == WindowState.FullScreen)
             {
                 fullScreenActionName = "Exit Full Screen";
+            }
+            else
+            {
+                fullScreenActionName = "Enter Full Screen";
             }
             mFullScreenNativeMenuItemOrNull.Header = fullScreenActionName;
         }

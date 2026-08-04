@@ -49,16 +49,24 @@ internal sealed partial class EventKitAppleCalendarNativeBridge
                     throw invalidResponse();
                 }
 
-                PlanId? managedPlanIdOrNull = registeredPlanIdOrNull;
-                if (managedPlanIdOrNull == null)
+                PlanId? managedPlanIdOrNull;
+                if (registeredPlanIdOrNull != null)
+                {
+                    managedPlanIdOrNull = registeredPlanIdOrNull;
+                }
+                else
                 {
                     managedPlanIdOrNull = legacyPlanIdOrNull;
                 }
 
-                EAppleCalendarContentAccess contentAccess = EAppleCalendarContentAccess.ReadOnly;
+                EAppleCalendarContentAccess contentAccess;
                 if (calendarOrNull.IsWritable)
                 {
                     contentAccess = EAppleCalendarContentAccess.Writable;
+                }
+                else
+                {
+                    contentAccess = EAppleCalendarContentAccess.ReadOnly;
                 }
 
                 descriptors.Add(new AppleCalendarDescriptor(new AppleCalendarId(calendarOrNull.Identifier), calendarOrNull.Name, calendarOrNull.SourceIdentifier, managedPlanIdOrNull, contentAccess));
@@ -80,10 +88,14 @@ internal sealed partial class EventKitAppleCalendarNativeBridge
         EventKitAppleCalendarResponse response,
         AppleCalendarOwnershipRegistryDocument registry)
     {
-        IReadOnlyList<EventKitAppleCalendarRegistrationBindingResponse> bindings = Array.Empty<EventKitAppleCalendarRegistrationBindingResponse>();
+        IReadOnlyList<EventKitAppleCalendarRegistrationBindingResponse> bindings;
         if (response.RegistrationBindings != null)
         {
             bindings = response.RegistrationBindings;
+        }
+        else
+        {
+            bindings = Array.Empty<EventKitAppleCalendarRegistrationBindingResponse>();
         }
 
         if (bindings.Count == 0 && response.Calendars == null)
@@ -167,10 +179,14 @@ internal sealed partial class EventKitAppleCalendarNativeBridge
 
         if (bindings.Count > 0 || removedMissingRegistration)
         {
-            string diagnosticCode = "apple_calendar_registry_cleanup_failed";
+            string diagnosticCode;
             if (bindings.Count > 0)
             {
                 diagnosticCode = "apple_calendar_registry_rebind_failed";
+            }
+            else
+            {
+                diagnosticCode = "apple_calendar_registry_cleanup_failed";
             }
 
             saveRegistry(reboundRegistry, diagnosticCode);

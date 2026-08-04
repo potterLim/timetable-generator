@@ -105,7 +105,7 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
                             string requestLine = await readRequestLineAsync(stream, connectionSource.Token).ConfigureAwait(false);
                             GoogleOAuthAuthorizationCodeResult result = parseRequestLine(requestLine, redirectUri, state);
                             bool shouldContinue = isIgnorableCallbackFailure(result);
-                            EGoogleLoopbackResponseKind responseKind = EGoogleLoopbackResponseKind.AuthorizationFailed;
+                            EGoogleLoopbackResponseKind responseKind;
                             if (shouldContinue)
                             {
                                 responseKind = EGoogleLoopbackResponseKind.InvalidRequest;
@@ -113,6 +113,10 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
                             else if (result.Status == EGoogleOAuthAuthorizationStatus.Completed)
                             {
                                 responseKind = EGoogleLoopbackResponseKind.Success;
+                            }
+                            else
+                            {
+                                responseKind = EGoogleLoopbackResponseKind.AuthorizationFailed;
                             }
 
                             try
@@ -253,10 +257,14 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
         string? error;
         if (query.TryGetValue("error", out error))
         {
-            EGoogleOAuthAuthorizationStatus status = EGoogleOAuthAuthorizationStatus.Failed;
+            EGoogleOAuthAuthorizationStatus status;
             if (string.Equals(error, "access_denied", StringComparison.Ordinal))
             {
                 status = EGoogleOAuthAuthorizationStatus.Cancelled;
+            }
+            else
+            {
+                status = EGoogleOAuthAuthorizationStatus.Failed;
             }
 
             return GoogleOAuthAuthorizationCodeResult.Fail(status, redirectUri, error);
@@ -274,10 +282,14 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
     private static IReadOnlyDictionary<string, string>? tryParseQueryOrNull(string query)
     {
         Dictionary<string, string> values = new Dictionary<string, string>(StringComparer.Ordinal);
-        string queryWithoutPrefix = query;
+        string queryWithoutPrefix;
         if (query.StartsWith("?", StringComparison.Ordinal))
         {
             queryWithoutPrefix = query[1..];
+        }
+        else
+        {
+            queryWithoutPrefix = query;
         }
 
         foreach (string part in queryWithoutPrefix.Split('&', StringSplitOptions.RemoveEmptyEntries))
@@ -393,28 +405,41 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
             throw new ArgumentOutOfRangeException(nameof(responseKind));
         }
 
-        bool isSuccess = responseKind == EGoogleLoopbackResponseKind.Success;
-        string title = "Google에 연결하지 못했습니다";
-        string message = "Timetable Generator로 돌아가 다시 시도해 주세요.";
-        string supportingMessage = "";
-        string callbackPageScript = CALLBACK_PAGE_HISTORY_SCRIPT;
-        if (isSuccess)
+        string title;
+        string message;
+        string supportingMessage;
+        string callbackPageScript;
+        if (responseKind == EGoogleLoopbackResponseKind.Success)
         {
             title = "Google 승인이 완료되었습니다";
             message = "Timetable Generator에서 내보내기를 마무리하고 있습니다.";
             supportingMessage = "이 창은 닫아도 됩니다.";
-            callbackPageScript += SUCCESS_PAGE_CLOSE_SCRIPT;
+            callbackPageScript = CALLBACK_PAGE_HISTORY_SCRIPT + SUCCESS_PAGE_CLOSE_SCRIPT;
         }
         else if (responseKind == EGoogleLoopbackResponseKind.InvalidRequest)
         {
+            title = "Google에 연결하지 못했습니다";
             message = "올바른 Google 로그인 응답을 기다리고 있습니다.";
+            supportingMessage = string.Empty;
+            callbackPageScript = CALLBACK_PAGE_HISTORY_SCRIPT;
+        }
+        else
+        {
+            title = "Google에 연결하지 못했습니다";
+            message = "Timetable Generator로 돌아가 다시 시도해 주세요.";
+            supportingMessage = string.Empty;
+            callbackPageScript = CALLBACK_PAGE_HISTORY_SCRIPT;
         }
 
         string scriptElement = "<script>" + callbackPageScript + "</script>";
-        string supportingMessageElement = "";
+        string supportingMessageElement;
         if (supportingMessage.Length > 0)
         {
             supportingMessageElement = "<p class=\"support\">" + supportingMessage + "</p>";
+        }
+        else
+        {
+            supportingMessageElement = string.Empty;
         }
 
         string body = "<!doctype html><html lang=\"ko\"><head><meta charset=\"utf-8\">"
@@ -438,10 +463,14 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
             + title + "</h1><p>" + message + "</p>"
             + supportingMessageElement + "</main>" + scriptElement + "</body></html>";
         byte[] bodyBytes = Encoding.UTF8.GetBytes(body);
-        string statusLine = "HTTP/1.1 200 OK\r\n";
+        string statusLine;
         if (responseKind == EGoogleLoopbackResponseKind.InvalidRequest)
         {
             statusLine = "HTTP/1.1 400 Bad Request\r\n";
+        }
+        else
+        {
+            statusLine = "HTTP/1.1 200 OK\r\n";
         }
 
         string scriptPolicy = " script-src 'sha256-" + Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(callbackPageScript))) + "';";

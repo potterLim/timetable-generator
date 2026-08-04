@@ -38,10 +38,14 @@ internal sealed partial class ScheduleWorkspaceView :
 
     private void toggleSchedulePresentation()
     {
-        EScheduleWorkspacePresentationMode nextMode = EScheduleWorkspacePresentationMode.Board;
+        EScheduleWorkspacePresentationMode nextMode;
         if (mPresentationMode == EScheduleWorkspacePresentationMode.Board)
         {
             nextMode = EScheduleWorkspacePresentationMode.List;
+        }
+        else
+        {
+            nextMode = EScheduleWorkspacePresentationMode.Board;
         }
         applyPresentationMode(nextMode);
     }

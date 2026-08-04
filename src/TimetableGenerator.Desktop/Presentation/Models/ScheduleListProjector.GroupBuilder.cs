@@ -67,10 +67,14 @@ internal static partial class ScheduleListProjector
                 occurrences.Add(occurrence);
             }
 
-            string titleDisplayText = mTitle;
+            string titleDisplayText;
             if (sharedSectionOrNull != null)
             {
                 titleDisplayText = mTitle + "(" + sharedSectionOrNull + ")";
+            }
+            else
+            {
+                titleDisplayText = mTitle;
             }
             return new ScheduleListGroup(mTitle, titleDisplayText, occurrences.AsReadOnly(), groupSources.AsReadOnly());
         }

@@ -136,10 +136,14 @@ internal sealed partial class ProductTimePicker : UserControl
             }
 
             ScheduleTime selectedTime = selectedTimeOrNull.Value;
-            ETimePickerMeridiem meridiem = ETimePickerMeridiem.PostMeridiem;
+            ETimePickerMeridiem meridiem;
             if (selectedTime.Hour < HOURS_PER_HALF_DAY)
             {
                 meridiem = ETimePickerMeridiem.AnteMeridiem;
+            }
+            else
+            {
+                meridiem = ETimePickerMeridiem.PostMeridiem;
             }
             int twelveHourValue = selectedTime.Hour % HOURS_PER_HALF_DAY;
             if (twelveHourValue == 0)
