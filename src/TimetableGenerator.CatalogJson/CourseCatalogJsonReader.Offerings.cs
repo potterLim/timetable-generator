@@ -286,16 +286,12 @@ public static partial class CourseCatalogJsonReader
         StrictJsonObject gradingObject = StrictJsonObject.Create(element, path, new string[] { "type", "passFailOptionAvailable" });
         EGradingType gradingType = parseGradingType(gradingObject.GetString("type"), gradingObject.GetPropertyPath("type"));
         bool isPassFailOptionAvailable = gradingObject.GetBoolean("passFailOptionAvailable");
-        EPassFailOptionAvailability availability;
         if (isPassFailOptionAvailable)
         {
-            availability = EPassFailOptionAvailability.Available;
+            return new GradingMetadata(gradingType, EPassFailOptionAvailability.Available);
         }
-        else
-        {
-            availability = EPassFailOptionAvailability.Unavailable;
-        }
-        return new GradingMetadata(gradingType, availability);
+
+        return new GradingMetadata(gradingType, EPassFailOptionAvailability.Unavailable);
     }
 
     private static OfferingDetailsMetadata parseDetails(JsonElement element, string path)
@@ -303,16 +299,12 @@ public static partial class CourseCatalogJsonReader
         StrictJsonObject detailsObject = StrictJsonObject.Create(element, path, new string[] { "syllabusUrl", "remarksAvailable" });
         detailsObject.RequireNull("syllabusUrl");
         bool areRemarksAvailable = detailsObject.GetBoolean("remarksAvailable");
-        ERemarksAvailability availability;
         if (areRemarksAvailable)
         {
-            availability = ERemarksAvailability.Available;
+            return new OfferingDetailsMetadata(ERemarksAvailability.Available);
         }
-        else
-        {
-            availability = ERemarksAvailability.Unavailable;
-        }
-        return new OfferingDetailsMetadata(availability);
+
+        return new OfferingDetailsMetadata(ERemarksAvailability.Unavailable);
     }
 
     private static ERequirementType parseRequirementType(string value, string path)

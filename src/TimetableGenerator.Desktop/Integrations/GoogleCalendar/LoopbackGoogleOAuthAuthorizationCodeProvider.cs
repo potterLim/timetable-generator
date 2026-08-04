@@ -257,17 +257,12 @@ internal sealed class LoopbackGoogleOAuthAuthorizationCodeProvider
         string? error;
         if (query.TryGetValue("error", out error))
         {
-            EGoogleOAuthAuthorizationStatus status;
             if (string.Equals(error, "access_denied", StringComparison.Ordinal))
             {
-                status = EGoogleOAuthAuthorizationStatus.Cancelled;
-            }
-            else
-            {
-                status = EGoogleOAuthAuthorizationStatus.Failed;
+                return GoogleOAuthAuthorizationCodeResult.Fail(EGoogleOAuthAuthorizationStatus.Cancelled, redirectUri, error);
             }
 
-            return GoogleOAuthAuthorizationCodeResult.Fail(status, redirectUri, error);
+            return GoogleOAuthAuthorizationCodeResult.Fail(EGoogleOAuthAuthorizationStatus.Failed, redirectUri, error);
         }
 
         string? code;

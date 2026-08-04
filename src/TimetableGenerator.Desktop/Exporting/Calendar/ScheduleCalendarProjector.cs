@@ -208,17 +208,13 @@ internal static class ScheduleCalendarProjector
             descriptionLines.Add("담당: " + entry.InstructorDisplayText);
         }
 
-        string location;
         if (entry.HasLocation)
         {
-            location = entry.LocationDisplayText;
-        }
-        else
-        {
-            location = string.Empty;
+            string location = entry.LocationDisplayText;
+            return new CalendarEventContent(entry.Title, location, string.Join(DESCRIPTION_LINE_SEPARATOR, descriptionLines));
         }
 
-        return new CalendarEventContent(entry.Title, location, string.Join(DESCRIPTION_LINE_SEPARATOR, descriptionLines));
+        return new CalendarEventContent(entry.Title, string.Empty, string.Join(DESCRIPTION_LINE_SEPARATOR, descriptionLines));
     }
 
     private static int compareGroups(CalendarEventProjectionGroup left, CalendarEventProjectionGroup right)

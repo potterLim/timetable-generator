@@ -131,17 +131,12 @@ internal sealed class GoogleCalendarExportService : IGoogleCalendarExporter
         catch (GoogleCalendarApiException exception)
         {
             Trace.TraceError("Google Calendar export failed with diagnostic code '{0}': {1}", exception.DiagnosticCode, exception);
-            EGoogleCalendarExportStatus status;
             if (exception.FailureKind == EGoogleCalendarApiFailureKind.Transient)
             {
-                status = EGoogleCalendarExportStatus.NetworkFailed;
-            }
-            else
-            {
-                status = mapApiFailure(exception.StatusCode);
+                return GoogleCalendarExportResult.Fail(EGoogleCalendarExportStatus.NetworkFailed, exception.DiagnosticCode);
             }
 
-            return GoogleCalendarExportResult.Fail(status, exception.DiagnosticCode);
+            return GoogleCalendarExportResult.Fail(mapApiFailure(exception.StatusCode), exception.DiagnosticCode);
         }
         catch (Exception exception) when (exception is HttpRequestException || exception is TimeoutException)
         {

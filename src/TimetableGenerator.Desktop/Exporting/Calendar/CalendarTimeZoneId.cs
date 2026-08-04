@@ -79,17 +79,12 @@ internal readonly record struct CalendarTimeZoneId
             throw new InvalidOperationException("The calendar local time does not exist in time zone " + Value + ".");
         }
 
-        TimeSpan utcOffset;
         if (timeZone.IsAmbiguousTime(localDateTime))
         {
-            utcOffset = findFirstOccurrenceUtcOffset(timeZone, localDateTime);
-        }
-        else
-        {
-            utcOffset = timeZone.GetUtcOffset(localDateTime);
+            return new CalendarUtcOffset(findFirstOccurrenceUtcOffset(timeZone, localDateTime));
         }
 
-        return new CalendarUtcOffset(utcOffset);
+        return new CalendarUtcOffset(timeZone.GetUtcOffset(localDateTime));
     }
 
     public DateTimeOffset ResolveLocalDateTime(DateOnly date, TimeOnly time)

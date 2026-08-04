@@ -438,17 +438,12 @@ internal sealed class GoogleCalendarApiClient
             isTransient = await containsRateLimitReasonAsync(response, cancellationToken).ConfigureAwait(false);
         }
 
-        EGoogleCalendarApiFailureKind failureKind;
         if (isTransient)
         {
-            failureKind = EGoogleCalendarApiFailureKind.Transient;
-        }
-        else
-        {
-            failureKind = EGoogleCalendarApiFailureKind.Permanent;
+            throw new GoogleCalendarApiException(response.StatusCode, diagnosticCode, EGoogleCalendarApiFailureKind.Transient);
         }
 
-        throw new GoogleCalendarApiException(response.StatusCode, diagnosticCode, failureKind);
+        throw new GoogleCalendarApiException(response.StatusCode, diagnosticCode, EGoogleCalendarApiFailureKind.Permanent);
     }
 
     private static async Task<bool> containsRateLimitReasonAsync(HttpResponseMessage response, CancellationToken cancellationToken)

@@ -150,7 +150,6 @@ static NSDictionary* tg_execute_request(NSDictionary* const request)
     }
 
     tg_throw_invalid_request(@"eventkit_request_operation_unsupported");
-    return tg_create_response(TG_STATUS_INVALID_REQUEST, @"eventkit_request_operation_unsupported");
 }
 
 uint32_t tg_eventkit_schema_version(void)
@@ -176,11 +175,12 @@ char* tg_eventkit_execute(const uint8_t* const request_bytes_or_null, const size
             return tg_copy_json_response_malloc(tg_execute_request(request_object));
         } @catch (NSException* exception) {
             if ([exception.name isEqualToString:TG_INVALID_REQUEST_EXCEPTION]) {
-                NSString* diagnostic_code = exception.reason;
-                if (diagnostic_code == nil) {
-                    diagnostic_code = @"eventkit_request_invalid";
+                NSString* const diagnostic_code_or_null = exception.reason;
+                if (diagnostic_code_or_null == nil) {
+                    return tg_copy_json_response_malloc(tg_create_response(TG_STATUS_INVALID_REQUEST, @"eventkit_request_invalid"));
                 }
-                return tg_copy_json_response_malloc(tg_create_response(TG_STATUS_INVALID_REQUEST, diagnostic_code));
+
+                return tg_copy_json_response_malloc(tg_create_response(TG_STATUS_INVALID_REQUEST, diagnostic_code_or_null));
             }
             return tg_copy_json_response_malloc(tg_create_response(TG_STATUS_OPERATION_FAILED, @"eventkit_native_exception"));
         }

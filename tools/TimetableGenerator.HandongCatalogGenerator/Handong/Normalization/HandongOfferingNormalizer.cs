@@ -256,21 +256,17 @@ internal sealed class HandongOfferingNormalizer
         }
 
         IReadOnlyList<string> noteLines = HandongCellValueReader.getNonEmptyLines(row, EHandongColumn.Notes);
-        ERemarksAvailability remarksAvailability;
         if (noteLines.Count == 0)
         {
-            remarksAvailability = ERemarksAvailability.NotProvided;
-        }
-        else if (noteLines.Count == 1 && string.Equals(noteLines[0], "조회", StringComparison.Ordinal))
-        {
-            remarksAvailability = ERemarksAvailability.LookupAvailable;
-        }
-        else
-        {
-            throw new InvalidHandongSourceRecordException(row.SourceRecordNumber, EHandongColumn.Notes, "The export contains an unsupported remarks value.");
+            return new OfferingDetails(ESyllabusAvailability.NotProvided, ERemarksAvailability.NotProvided);
         }
 
-        return new OfferingDetails(ESyllabusAvailability.NotProvided, remarksAvailability);
+        if (noteLines.Count == 1 && string.Equals(noteLines[0], "조회", StringComparison.Ordinal))
+        {
+            return new OfferingDetails(ESyllabusAvailability.NotProvided, ERemarksAvailability.LookupAvailable);
+        }
+
+        throw new InvalidHandongSourceRecordException(row.SourceRecordNumber, EHandongColumn.Notes, "The export contains an unsupported remarks value.");
     }
 
     private static int parseNonnegativeInteger(string sourceValue, HandongRawOfferingRow row, EHandongColumn column, string valueDescription)

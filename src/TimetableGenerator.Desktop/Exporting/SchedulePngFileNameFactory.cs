@@ -70,16 +70,12 @@ internal static class SchedulePngFileNameFactory
             throw new ArgumentOutOfRangeException(nameof(copyNumber), copyNumber, "A PNG export folder copy number must be positive.");
         }
 
-        string copySuffix;
         if (copyNumber == 1)
         {
-            copySuffix = string.Empty;
-        }
-        else
-        {
-            copySuffix = " (" + copyNumber + ")";
+            return createFileSystemComponent(getBaseName(planNameOrNull), string.Empty);
         }
 
+        string copySuffix = " (" + copyNumber + ")";
         return createFileSystemComponent(getBaseName(planNameOrNull), copySuffix);
     }
 

@@ -71,11 +71,10 @@ public sealed partial class ScheduleWorkspaceCalendarExportTests
             Assert.Equal(RelativePoint.Center, image.RenderTransformOrigin);
             RotateTransform rotation = Assert.IsType<RotateTransform>(image.RenderTransform);
             Assert.Equal(rotationAngleOrNull.Value, rotation.Angle);
+            return;
         }
-        else
-        {
-            Assert.Null(image.RenderTransform);
-        }
+
+        Assert.Null(image.RenderTransform);
     }
 
     private static Grid assertExportRasterLogoPresentation(

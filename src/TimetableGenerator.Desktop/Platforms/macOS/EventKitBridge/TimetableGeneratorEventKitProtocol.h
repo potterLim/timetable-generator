@@ -18,7 +18,7 @@ extern NSString* const TG_STATUS_NOT_FOUND;
 extern NSString* const TG_STATUS_OPERATION_FAILED;
 
 NSDictionary* tg_create_response(NSString* const status, NSString* const diagnostic_code);
-void tg_throw_invalid_request(NSString* const diagnostic_code);
+void tg_throw_invalid_request(NSString* const diagnostic_code) __attribute__((noreturn));
 
 NSString* tg_get_required_string(NSDictionary* const dictionary, NSString* const key);
 NSString* tg_get_optional_string(NSDictionary* const dictionary, NSString* const key);

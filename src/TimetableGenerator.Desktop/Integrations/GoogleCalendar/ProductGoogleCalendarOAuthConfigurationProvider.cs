@@ -58,17 +58,13 @@ internal sealed class ProductGoogleCalendarOAuthConfigurationProvider
 
             try
             {
-                GoogleOAuthClientSecret? clientSecretOrNull;
                 if (hasEnvironmentClientSecret)
                 {
-                    clientSecretOrNull = new GoogleOAuthClientSecret(environmentValues.ClientSecretOrNull!);
-                }
-                else
-                {
-                    clientSecretOrNull = null;
+                    GoogleOAuthClientSecret clientSecret = new GoogleOAuthClientSecret(environmentValues.ClientSecretOrNull!);
+                    return new GoogleCalendarOAuthConfiguration(new GoogleOAuthClientId(environmentValues.ClientIdOrNull!), clientSecret);
                 }
 
-                return new GoogleCalendarOAuthConfiguration(new GoogleOAuthClientId(environmentValues.ClientIdOrNull!), clientSecretOrNull);
+                return new GoogleCalendarOAuthConfiguration(new GoogleOAuthClientId(environmentValues.ClientIdOrNull!), null);
             }
             catch (ArgumentException)
             {
@@ -154,17 +150,13 @@ internal sealed class ProductGoogleCalendarOAuthConfigurationProvider
                     return null;
                 }
 
-                GoogleOAuthClientSecret? parsedClientSecretOrNull;
                 if (isSchemaVersionTwo)
                 {
-                    parsedClientSecretOrNull = new GoogleOAuthClientSecret(clientSecretOrNull!);
-                }
-                else
-                {
-                    parsedClientSecretOrNull = null;
+                    GoogleOAuthClientSecret parsedClientSecret = new GoogleOAuthClientSecret(clientSecretOrNull!);
+                    return new GoogleCalendarOAuthConfiguration(new GoogleOAuthClientId(clientIdOrNull), parsedClientSecret);
                 }
 
-                return new GoogleCalendarOAuthConfiguration(new GoogleOAuthClientId(clientIdOrNull), parsedClientSecretOrNull);
+                return new GoogleCalendarOAuthConfiguration(new GoogleOAuthClientId(clientIdOrNull), null);
             }
         }
         catch (Exception exception) when (

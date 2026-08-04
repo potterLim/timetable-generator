@@ -92,11 +92,8 @@ static NSDictionary* tg_create_calendar_event_result(
     for (NSUInteger index = 0; index < events.count; ++index) {
         NSDictionary* const event_request = event_requests[index];
         EKEvent* const event = events[index];
-        NSString* calendar_item_identifier = event.calendarItemIdentifier;
-        if (calendar_item_identifier == nil) {
-            calendar_item_identifier = @"";
-        }
-        if (calendar_item_identifier.length == 0) {
+        NSString* const calendar_item_identifier_or_null = event.calendarItemIdentifier;
+        if (calendar_item_identifier_or_null.length == 0) {
             return tg_create_response(TG_STATUS_OPERATION_FAILED, @"eventkit_calendar_event_identifier_missing");
         }
 
@@ -106,7 +103,7 @@ static NSDictionary* tg_create_calendar_event_result(
         }
         [event_responses addObject:@{
             @"sourceEventHash" : event_request[@"sourceEventHash"],
-            @"calendarItemIdentifier" : calendar_item_identifier,
+            @"calendarItemIdentifier" : calendar_item_identifier_or_null,
             @"externalIdentifier" : external_identifier,
             @"fingerprint" : event_request[@"fingerprint"]
         }];

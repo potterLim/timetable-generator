@@ -106,17 +106,12 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
         GoogleTokenExchangeResult exchangeResult = await exchangeAuthorizationCodeAsync(configuration, authorizationCodeOrNull, codeVerifier, codeResult.RedirectUri, cancellationToken).ConfigureAwait(false);
         if (exchangeResult.AccessTokenOrNull == null)
         {
-            EGoogleOAuthAuthorizationStatus status;
             if (exchangeResult.FailureKind == EGoogleTokenExchangeFailureKind.Network)
             {
-                status = EGoogleOAuthAuthorizationStatus.NetworkFailed;
-            }
-            else
-            {
-                status = EGoogleOAuthAuthorizationStatus.Failed;
+                return GoogleOAuthAuthorizationResult.Fail(EGoogleOAuthAuthorizationStatus.NetworkFailed, exchangeResult.DiagnosticCodeOrNull);
             }
 
-            return GoogleOAuthAuthorizationResult.Fail(status, exchangeResult.DiagnosticCodeOrNull);
+            return GoogleOAuthAuthorizationResult.Fail(EGoogleOAuthAuthorizationStatus.Failed, exchangeResult.DiagnosticCodeOrNull);
         }
 
         return GoogleOAuthAuthorizationResult.Complete(exchangeResult.AccessTokenOrNull);
@@ -172,17 +167,12 @@ internal sealed class GoogleCalendarOAuthClient : IGoogleAccessTokenProvider
                     || response.StatusCode == HttpStatusCode.TooManyRequests
                     || numericStatusCode >= 500
                     || string.Equals(diagnosticCode, "oauth_service_unavailable", StringComparison.Ordinal);
-                EGoogleTokenExchangeFailureKind failureKind;
                 if (isNetworkFailure)
                 {
-                    failureKind = EGoogleTokenExchangeFailureKind.Network;
-                }
-                else
-                {
-                    failureKind = EGoogleTokenExchangeFailureKind.Permanent;
+                    return GoogleTokenExchangeResult.Fail(EGoogleTokenExchangeFailureKind.Network, diagnosticCode);
                 }
 
-                return GoogleTokenExchangeResult.Fail(failureKind, diagnosticCode);
+                return GoogleTokenExchangeResult.Fail(EGoogleTokenExchangeFailureKind.Permanent, diagnosticCode);
             }
 
             using (JsonDocument document = JsonDocument.Parse(responseContent))

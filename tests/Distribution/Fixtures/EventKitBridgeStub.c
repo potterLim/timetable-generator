@@ -18,10 +18,12 @@ char* tg_eventkit_execute(const uint8_t* const request_bytes_or_null, const size
     (void)request_length;
 
     static const char RESPONSE_JSON[] = "{\"schemaVersion\":1,\"status\":\"invalid_request\"}";
-    char* pa_response_or_null = malloc(sizeof(RESPONSE_JSON));
-    if (pa_response_or_null != NULL) {
-        memcpy(pa_response_or_null, RESPONSE_JSON, sizeof(RESPONSE_JSON));
+    char* const pa_response_or_null = malloc(sizeof(RESPONSE_JSON));
+    if (pa_response_or_null == NULL) {
+        return NULL;
     }
+
+    memcpy(pa_response_or_null, RESPONSE_JSON, sizeof(RESPONSE_JSON));
     return pa_response_or_null;
 }
 

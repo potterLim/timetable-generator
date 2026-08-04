@@ -303,25 +303,19 @@ internal sealed class AppleCalendarExportService : IAppleCalendarExporter
 
     private static AppleCalendarExportResult createFailureResult(AppleCalendarNativeBridgeException exception)
     {
-        EAppleCalendarExportStatus status;
         switch (exception.FailureKind)
         {
             case EAppleCalendarNativeFailureKind.AccessDenied:
-                status = EAppleCalendarExportStatus.AccessDenied;
-                break;
+                return AppleCalendarExportResult.Fail(EAppleCalendarExportStatus.AccessDenied, exception.DiagnosticCode);
             case EAppleCalendarNativeFailureKind.Unavailable:
-                status = EAppleCalendarExportStatus.Unavailable;
-                break;
+                return AppleCalendarExportResult.Fail(EAppleCalendarExportStatus.Unavailable, exception.DiagnosticCode);
             case EAppleCalendarNativeFailureKind.CalendarChanged:
             case EAppleCalendarNativeFailureKind.OperationFailed:
-                status = EAppleCalendarExportStatus.Failed;
-                break;
+                return AppleCalendarExportResult.Fail(EAppleCalendarExportStatus.Failed, exception.DiagnosticCode);
             case EAppleCalendarNativeFailureKind.None:
             default:
                 throw new ArgumentOutOfRangeException(nameof(exception), exception.FailureKind, "Apple Calendar failures require a supported failure kind.");
         }
-
-        return AppleCalendarExportResult.Fail(status, exception.DiagnosticCode);
     }
 
     private static void reportProgress(IProgress<AppleCalendarExportProgress>? progressOrNull, EAppleCalendarExportProgressStage stage)
