@@ -1,7 +1,7 @@
 # 데스크톱 제품 배포
 
 이 문서는 배포 담당자를 위한 운영 절차입니다.  
-Timetable Generator 1.0.2가 지원하는 Windows 11 x64용 배포 파일과 Apple Silicon 기반 macOS 14 이상용 배포 파일의 생성·검증·공개 절차를 정의합니다.
+Timetable Generator 1.0.3이 지원하는 Windows 11 x64용 배포 파일과 Apple Silicon 기반 macOS 14 이상용 배포 파일의 생성·검증·공개 절차를 정의합니다.
 
 배포 식별자는 첫 공개 버전부터 다음 값을 유지합니다.
 
@@ -29,11 +29,11 @@ Windows와 macOS 배포 파일을 만드는 각 빌드 호스트에서 릴리스
 
 ```powershell
 pwsh ./scripts/write-release-build-info.ps1 `
-  -Version 1.0.2 `
+  -Version 1.0.3 `
   -RequireClean
 ```
 
-결과는 `artifacts/release-evidence/1.0.2/<host-rid>/build-info.txt`에 저장됩니다.
+결과는 `artifacts/release-evidence/1.0.3/<host-rid>/build-info.txt`에 저장됩니다.
 Git 커밋과 작업 트리 상태, UTC 시각, 운영체제와 아키텍처, 실제 `dotnet --version`·`dotnet --info` 출력을 기록하며 사용자용 ZIP에는 포함하지 않습니다.  
 같은 버전과 호스트의 기록을 다시 만들 때만 `-Force`를 사용합니다.
 
@@ -53,7 +53,7 @@ pwsh ./scripts/publish-desktop.ps1 -Runtime win-x64
 pwsh ./scripts/publish-desktop.ps1 -Runtime osx-arm64
 ```
 
-앱 버전은 프로젝트의 `Version`을 사용하며 필요할 때 `-Version 1.0.2`처럼 명시할 수 있습니다.
+앱 버전은 프로젝트의 `Version`을 사용하며 필요할 때 `-Version 1.0.3`처럼 명시할 수 있습니다.
 macOS 번들 식별자는 모든 버전과 CPU 아키텍처에서 `io.github.potterlim.timetable`을 유지합니다.
 
 ```powershell
@@ -124,7 +124,7 @@ Windows 공식 배포 정책은 Authenticode 서명을 적용하지 않는 것�
 ```powershell
 pwsh ./scripts/finalize-desktop-release.ps1 `
   -Stage Windows `
-  -Version 1.0.2 `
+  -Version 1.0.3 `
   -WindowsSignatureMode Unsigned
 ```
 
@@ -137,21 +137,21 @@ macOS에서는 앱 내부의 개별 파일부터 바깥쪽 번들 순서로 서�
 pwsh ./scripts/finalize-desktop-release.ps1 `
   -Stage MacOS `
   -Runtime osx-arm64 `
-  -Version 1.0.2 `
+  -Version 1.0.3 `
   -BundleIdentifier "io.github.potterlim.timetable"
 ```
 
-동일한 `artifacts/release/1.0.2`에 다음 두 ZIP을 모은 후 최종 체크섬을 생성합니다.
+동일한 `artifacts/release/1.0.3`에 다음 두 ZIP을 모은 후 최종 체크섬을 생성합니다.
 
 ```text
-TimetableGenerator-1.0.2-win-x64.zip
-TimetableGenerator-1.0.2-osx-arm64.zip
+TimetableGenerator-1.0.3-win-x64.zip
+TimetableGenerator-1.0.3-osx-arm64.zip
 ```
 
 ```powershell
 pwsh ./scripts/finalize-desktop-release.ps1 `
   -Stage Aggregate `
-  -Version 1.0.2 `
+  -Version 1.0.3 `
   -WindowsSignatureMode Unsigned
 ```
 
