@@ -171,6 +171,52 @@ function Write-TestIcnsFile {
     }
 }
 
+function Get-IcnsChunkTypes {
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path
+    )
+
+    $bytes = [System.IO.File]::ReadAllBytes($Path)
+    $chunkTypes = [System.Collections.Generic.List[string]]::new()
+    $offset = 8
+    while ($offset -lt $bytes.Length) {
+        $chunkTypes.Add([System.Text.Encoding]::ASCII.GetString($bytes, $offset, 4))
+        $offset += Read-BigEndianUInt32 -Buffer $bytes -Offset ($offset + 4)
+    }
+
+    return $chunkTypes.ToArray()
+}
+
+function Assert-IcnsChunkTypes {
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path
+    )
+
+    [string[]] $expectedTypes = (Get-IcnsPngSpecifications).Type
+    [string[]] $actualTypes = Get-IcnsChunkTypes -Path $Path
+    if (-not [System.Linq.Enumerable]::SequenceEqual($expectedTypes, $actualTypes)) {
+        throw "ICNS chunk 순서가 예상과 다릅니다. 예상: $($expectedTypes -join ', '), 실제: $($actualTypes -join ', ')"
+    }
+}
+
+function Assert-FilesEqual {
+    param(
+        [Parameter(Mandatory)]
+        [string] $ExpectedPath,
+
+        [Parameter(Mandatory)]
+        [string] $ActualPath
+    )
+
+    $expectedHash = [System.Security.Cryptography.SHA256]::HashData([System.IO.File]::ReadAllBytes($ExpectedPath))
+    $actualHash = [System.Security.Cryptography.SHA256]::HashData([System.IO.File]::ReadAllBytes($ActualPath))
+    if (-not [System.Linq.Enumerable]::SequenceEqual[byte]($expectedHash, $actualHash)) {
+        throw "동일한 입력으로 생성한 ICNS 파일의 SHA-256이 다릅니다."
+    }
+}
+
 function Invoke-TestCase {
     param(
         [Parameter(Mandatory)]
@@ -192,6 +238,46 @@ function Invoke-TestCase {
 $testRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("TimetableGenerator-MacOSIconTests-" + [System.Guid]::NewGuid().ToString("N"))
 $null = New-Item -ItemType Directory -Path $testRoot
 try {
+    Invoke-TestCase -Name "deterministic modern PNG ICNS container" -Action {
+        $chunks = foreach ($specification in Get-IcnsPngSpecifications) {
+            New-TestIcnsChunk -Type $specification.Type -Data (New-TransparentPngBytes -Size $specification.Size)
+        }
+
+        $firstPath = Join-Path $testRoot "deterministic-first.icns"
+        $secondPath = Join-Path $testRoot "deterministic-second.icns"
+        Write-IcnsFile -DestinationPath $firstPath -Chunks $chunks
+        Write-IcnsFile -DestinationPath $secondPath -Chunks $chunks
+        Assert-IcnsFile -Path $firstPath
+        Assert-IcnsFile -Path $secondPath
+        Assert-IcnsChunkTypes -Path $firstPath
+        Assert-FilesEqual -ExpectedPath $firstPath -ActualPath $secondPath
+    }
+
+    if ($IsMacOS) {
+        Invoke-TestCase -Name "macOS sips ICNS generation and iconutil extraction" -Action {
+            $sourcePath = Join-Path $repositoryRoot "src/TimetableGenerator.Desktop/Assets/AppIcon.png"
+            $firstPath = Join-Path $testRoot "macos-first.icns"
+            $secondPath = Join-Path $testRoot "macos-second.icns"
+            New-IcnsOnMacOS -SourcePath $sourcePath -DestinationPath $firstPath
+            New-IcnsOnMacOS -SourcePath $sourcePath -DestinationPath $secondPath
+            Assert-IcnsFile -Path $firstPath
+            Assert-IcnsFile -Path $secondPath
+            Assert-IcnsChunkTypes -Path $firstPath
+            Assert-FilesEqual -ExpectedPath $firstPath -ActualPath $secondPath
+
+            $extractedPath = Join-Path $testRoot "extracted.iconset"
+            & iconutil -c iconset $firstPath -o $extractedPath | Out-Null
+            if ($LASTEXITCODE -ne 0) {
+                throw "iconutil이 생성된 ICNS 파일을 iconset으로 역추출하지 못했습니다."
+            }
+
+            $extractedPngFiles = @(Get-ChildItem -LiteralPath $extractedPath -File -Filter "*.png")
+            if ($extractedPngFiles.Count -eq 0) {
+                throw "iconutil이 역추출한 PNG 아이콘이 없습니다."
+            }
+        }
+    }
+
     Invoke-TestCase -Name "mixed legacy ARGB and PNG chunks" -Action {
         $path = Join-Path $testRoot "valid-mixed.icns"
         Write-TestIcnsFile -Path $path -Chunks (New-ValidMixedIcnsChunks)

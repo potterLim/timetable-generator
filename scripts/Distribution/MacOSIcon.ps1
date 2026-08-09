@@ -30,6 +30,73 @@ function Read-BigEndianUInt32 {
         [uint32] $Buffer[$Offset + 3]
 }
 
+function Get-IcnsPngSpecifications {
+    return @(
+        [pscustomobject]@{ Type = "icp4"; Size = 16 },
+        [pscustomobject]@{ Type = "icp5"; Size = 32 },
+        [pscustomobject]@{ Type = "icp6"; Size = 64 },
+        [pscustomobject]@{ Type = "ic07"; Size = 128 },
+        [pscustomobject]@{ Type = "ic08"; Size = 256 },
+        [pscustomobject]@{ Type = "ic09"; Size = 512 },
+        [pscustomobject]@{ Type = "ic10"; Size = 1024 }
+    )
+}
+
+function Write-IcnsFile {
+    param(
+        [Parameter(Mandatory)]
+        [string] $DestinationPath,
+
+        [Parameter(Mandatory)]
+        [object[]] $Chunks
+    )
+
+    [uint64] $totalLength = 8
+    $chunkTypes = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
+    foreach ($chunk in $Chunks) {
+        if ($chunk.Type -isnot [string] -or $chunk.Type.Length -ne 4) {
+            throw "ICNS chunk type은 ASCII 문자 4개여야 합니다."
+        }
+
+        if (-not $chunkTypes.Add($chunk.Type)) {
+            throw "ICNS chunk type이 중복되었습니다: $($chunk.Type)"
+        }
+
+        [byte[]] $data = $chunk.Data
+        $totalLength += 8 + $data.Length
+    }
+
+    if ($totalLength -gt [uint32]::MaxValue) {
+        throw "ICNS 파일 크기가 지원 범위를 초과합니다."
+    }
+
+    $stream = [System.IO.MemoryStream]::new()
+    try {
+        $writer = [System.IO.BinaryWriter]::new($stream, [System.Text.Encoding]::UTF8, $true)
+        try {
+            $writer.Write([System.Text.Encoding]::ASCII.GetBytes("icns"))
+            Write-BigEndianUInt32 -Writer $writer -Value ([uint32] $totalLength)
+            foreach ($chunk in $Chunks) {
+                [byte[]] $data = $chunk.Data
+                $writer.Write([System.Text.Encoding]::ASCII.GetBytes($chunk.Type))
+                Write-BigEndianUInt32 -Writer $writer -Value ([uint32] (8 + $data.Length))
+                $writer.Write($data)
+            }
+
+            $writer.Flush()
+            $icnsBytes = $stream.ToArray()
+        }
+        finally {
+            $writer.Dispose()
+        }
+    }
+    finally {
+        $stream.Dispose()
+    }
+
+    [System.IO.File]::WriteAllBytes($DestinationPath, $icnsBytes)
+}
+
 function New-ResizedPngBytes {
     param(
         [Parameter(Mandatory)]
@@ -101,17 +168,7 @@ function New-IcnsOnWindows {
             throw "macOS 원본 아이콘은 1024px 이상의 정사각형이어야 합니다: $SourcePath"
         }
 
-        $iconSpecifications = @(
-            [pscustomobject]@{ Type = "icp4"; Size = 16 },
-            [pscustomobject]@{ Type = "icp5"; Size = 32 },
-            [pscustomobject]@{ Type = "icp6"; Size = 64 },
-            [pscustomobject]@{ Type = "ic07"; Size = 128 },
-            [pscustomobject]@{ Type = "ic08"; Size = 256 },
-            [pscustomobject]@{ Type = "ic09"; Size = 512 },
-            [pscustomobject]@{ Type = "ic10"; Size = 1024 }
-        )
-
-        $chunks = foreach ($specification in $iconSpecifications) {
+        $chunks = foreach ($specification in Get-IcnsPngSpecifications) {
             [byte[]] $pngBytes = New-ResizedPngBytes -SourceImage $sourceImage -Size $specification.Size
             [pscustomobject]@{
                 Type = $specification.Type
@@ -119,30 +176,7 @@ function New-IcnsOnWindows {
             }
         }
 
-        [uint32] $totalLength = 8
-        foreach ($chunk in $chunks) {
-            $totalLength += 8 + $chunk.Data.Length
-        }
-
-        $stream = [System.IO.File]::Open($DestinationPath, [System.IO.FileMode]::Create)
-        try {
-            $writer = [System.IO.BinaryWriter]::new($stream)
-            try {
-                $writer.Write([System.Text.Encoding]::ASCII.GetBytes("icns"))
-                Write-BigEndianUInt32 -Writer $writer -Value $totalLength
-                foreach ($chunk in $chunks) {
-                    $writer.Write([System.Text.Encoding]::ASCII.GetBytes($chunk.Type))
-                    Write-BigEndianUInt32 -Writer $writer -Value (8 + $chunk.Data.Length)
-                    $writer.Write([byte[]] $chunk.Data)
-                }
-            }
-            finally {
-                $writer.Dispose()
-            }
-        }
-        finally {
-            $stream.Dispose()
-        }
+        Write-IcnsFile -DestinationPath $DestinationPath -Chunks $chunks
     }
     finally {
         $sourceImage.Dispose()
@@ -158,46 +192,31 @@ function New-IcnsOnMacOS {
         [string] $DestinationPath
     )
 
-    foreach ($commandName in @("sips", "iconutil")) {
-        if ($null -eq (Get-Command $commandName -CommandType Application -ErrorAction SilentlyContinue)) {
-            throw "macOS ICNS 생성에 필요한 시스템 도구를 찾을 수 없습니다: $commandName"
-        }
+    if ($null -eq (Get-Command "sips" -CommandType Application -ErrorAction SilentlyContinue)) {
+        throw "macOS ICNS 생성에 필요한 시스템 도구를 찾을 수 없습니다: sips"
     }
 
-    $iconsetPath = Join-Path ([System.IO.Path]::GetTempPath()) ("TimetableGenerator-" + [System.Guid]::NewGuid().ToString("N") + ".iconset")
-    $null = New-Item -ItemType Directory -Path $iconsetPath
+    $temporaryPath = Join-Path ([System.IO.Path]::GetTempPath()) ("TimetableGenerator-" + [System.Guid]::NewGuid().ToString("N"))
+    $null = New-Item -ItemType Directory -Path $temporaryPath
     try {
-        $iconSpecifications = @(
-            [pscustomobject]@{ Name = "icon_16x16.png"; Size = 16 },
-            [pscustomobject]@{ Name = "icon_16x16@2x.png"; Size = 32 },
-            [pscustomobject]@{ Name = "icon_32x32.png"; Size = 32 },
-            [pscustomobject]@{ Name = "icon_32x32@2x.png"; Size = 64 },
-            [pscustomobject]@{ Name = "icon_128x128.png"; Size = 128 },
-            [pscustomobject]@{ Name = "icon_128x128@2x.png"; Size = 256 },
-            [pscustomobject]@{ Name = "icon_256x256.png"; Size = 256 },
-            [pscustomobject]@{ Name = "icon_256x256@2x.png"; Size = 512 },
-            [pscustomobject]@{ Name = "icon_512x512.png"; Size = 512 },
-            [pscustomobject]@{ Name = "icon_512x512@2x.png"; Size = 1024 }
-        )
-
-        foreach ($specification in $iconSpecifications) {
-            & sips `
-                -z $specification.Size $specification.Size `
-                $SourcePath `
-                --out (Join-Path $iconsetPath $specification.Name) | Out-Null
+        $chunks = foreach ($specification in Get-IcnsPngSpecifications) {
+            $pngPath = Join-Path $temporaryPath ("$($specification.Type).png")
+            & sips -z $specification.Size $specification.Size $SourcePath --out $pngPath | Out-Null
             if ($LASTEXITCODE -ne 0) {
-                throw "sips가 macOS 아이콘 해상도를 생성하지 못했습니다."
+                throw "sips가 $($specification.Size)px macOS 아이콘을 생성하지 못했습니다."
+            }
+
+            [pscustomobject]@{
+                Type = $specification.Type
+                Data = [System.IO.File]::ReadAllBytes($pngPath)
             }
         }
 
-        & iconutil -c icns $iconsetPath -o $DestinationPath
-        if ($LASTEXITCODE -ne 0) {
-            throw "iconutil이 AppIcon.icns를 생성하지 못했습니다."
-        }
+        Write-IcnsFile -DestinationPath $DestinationPath -Chunks $chunks
     }
     finally {
-        if (Test-Path -LiteralPath $iconsetPath) {
-            Remove-Item -LiteralPath $iconsetPath -Recurse -Force
+        if (Test-Path -LiteralPath $temporaryPath) {
+            Remove-Item -LiteralPath $temporaryPath -Recurse -Force
         }
     }
 }

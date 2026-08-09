@@ -41,7 +41,8 @@ Git 커밋과 작업 트리 상태, UTC 시각, 운영체제와 아키텍처, �
 
 .NET 10 SDK와 PowerShell 7이 설치된 대상 운영체제에서 저장소 루트를 기준으로 실행합니다.
 Windows 게시 파일은 Windows에서, macOS 게시 파일은 macOS에서 만듭니다.
-Windows에서는 PowerShell에서 `System.Drawing.Common`을 사용하고, macOS에서는 운영체제의 `sips`와 `iconutil`을 사용해 다중 해상도 `AppIcon.icns`를 생성하므로 별도 이미지 변환 프로그램은 필요하지 않습니다.
+Windows에서는 PowerShell의 `System.Drawing.Common`을 사용하고 macOS에서는 운영체제의 `sips`를 사용해 16px부터 1024px까지 PNG를 생성합니다.
+두 운영체제 모두 같은 ICNS 컨테이너 작성기로 PNG를 고정된 순서로 패키징하므로 `iconutil`이나 별도 이미지 변환 프로그램은 필요하지 않습니다.
 
 대상 런타임은 반드시 명시합니다.
 
