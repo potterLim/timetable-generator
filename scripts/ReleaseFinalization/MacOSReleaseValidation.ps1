@@ -41,7 +41,7 @@ function Get-MacOSDeveloperIDTeamIdentifierFromSigningDetails {
     $hasHardenedRuntime = $SigningDetails -match "(?m)^CodeDirectory .*\bflags=.*\(runtime\)"
     $teamIdentifierMatch = [System.Text.RegularExpressions.Regex]::Match($SigningDetails, "(?m)^TeamIdentifier=([A-Z0-9]+)\r?$")
     if (-not $isDeveloperIDApplication -or -not $hasHardenedRuntime -or -not $teamIdentifierMatch.Success) {
-        throw "$ArtifactDescription이(가) Developer ID Application과 hardened runtime으로 서명되지 않았거나 TeamIdentifier가 없습니다."
+        throw "${ArtifactDescription}이(가) Developer ID Application과 hardened runtime으로 서명되지 않았거나 TeamIdentifier가 없습니다."
     }
 
     return $teamIdentifierMatch.Groups[1].Value
@@ -58,7 +58,7 @@ function Get-MacOSDeveloperIDTeamIdentifier {
 
     $signingDetails = (& codesign -d --verbose=4 -- $Path 2>&1) -join "`n"
     if ($LASTEXITCODE -ne 0) {
-        throw "$ArtifactDescription의 코드 서명 정보를 읽을 수 없습니다."
+        throw "${ArtifactDescription}의 코드 서명 정보를 읽을 수 없습니다."
     }
 
     return Get-MacOSDeveloperIDTeamIdentifierFromSigningDetails -SigningDetails $signingDetails -ArtifactDescription $ArtifactDescription
@@ -80,6 +80,43 @@ function Assert-MacOSMatchingTeamIdentifiers {
         $ApplicationTeamIdentifier -cne $MainExecutableTeamIdentifier -or
         $ApplicationTeamIdentifier -cne $EventKitBridgeTeamIdentifier) {
         throw "macOS 앱, 주 실행 파일, EventKit 네이티브 모듈의 TeamIdentifier가 정확히 일치하지 않습니다."
+    }
+}
+
+function Assert-MacOSSignedEntitlementsFile {
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path
+    )
+
+    Assert-NonEmptyFile -Path $Path
+    Assert-MacOSEntitlements -Path $Path
+}
+
+function Assert-MacOSSignedEntitlements {
+    param(
+        [Parameter(Mandatory)]
+        [string] $MainExecutablePath
+    )
+
+    $temporaryDirectory = Join-Path ([System.IO.Path]::GetTempPath()) ("TimetableGenerator-SignedEntitlements-" + [System.Guid]::NewGuid().ToString("N"))
+    $null = New-Item -ItemType Directory -Path $temporaryDirectory
+    $entitlementsPath = Join-Path $temporaryDirectory "entitlements.plist"
+    try {
+        Invoke-NativeCommand `
+            -Command "codesign" `
+            -Arguments @("--display", "--xml", "--entitlements", $entitlementsPath, "--", $MainExecutablePath) `
+            -FailureMessage "서명된 macOS 주 실행 파일의 entitlement를 XML로 추출할 수 없습니다."
+        if (-not (Test-Path -LiteralPath $entitlementsPath -PathType Leaf) -or (Get-Item -LiteralPath $entitlementsPath).Length -eq 0) {
+            throw "codesign이 유효한 entitlement XML을 생성하지 않았습니다. entitlement blob이 없거나 손상되었을 수 있습니다: $MainExecutablePath"
+        }
+
+        Assert-MacOSSignedEntitlementsFile -Path $entitlementsPath
+    }
+    finally {
+        if (Test-Path -LiteralPath $temporaryDirectory) {
+            Remove-Item -LiteralPath $temporaryDirectory -Recurse -Force
+        }
     }
 }
 
@@ -106,13 +143,7 @@ function Assert-MacOSSignatureAndNotarization {
     $eventKitBridgeTeamIdentifier = Get-MacOSDeveloperIDTeamIdentifier -Path $EventKitBridgePath -ArtifactDescription "EventKit 네이티브 모듈"
     Assert-MacOSMatchingTeamIdentifiers -ApplicationTeamIdentifier $applicationTeamIdentifier -MainExecutableTeamIdentifier $mainExecutableTeamIdentifier -EventKitBridgeTeamIdentifier $eventKitBridgeTeamIdentifier
 
-    $entitlements = (& codesign -d --entitlements :- -- $MainExecutablePath 2>&1) -join "`n"
-    if ($LASTEXITCODE -ne 0 -or
-        $entitlements.Contains("com.apple.security.cs.allow-jit", [System.StringComparison]::Ordinal) -eq $false -or
-        $entitlements.Contains("com.apple.security.personal-information.calendars", [System.StringComparison]::Ordinal) -eq $false -or
-        $entitlements.Contains("com.apple.security.automation.apple-events", [System.StringComparison]::Ordinal)) {
-        throw "서명된 macOS 앱의 JIT, Calendar 또는 Apple Events entitlement 구성이 유효하지 않습니다."
-    }
+    Assert-MacOSSignedEntitlements -MainExecutablePath $MainExecutablePath
 }
 
 function Get-MacOSReleaseBundleLayout {

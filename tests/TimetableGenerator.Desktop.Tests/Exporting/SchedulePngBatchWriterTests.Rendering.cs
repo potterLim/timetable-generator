@@ -50,7 +50,7 @@ public sealed partial class SchedulePngBatchWriterTests
                 {
                     RecordingPngExporter exporter = new RecordingPngExporter();
                     SchedulePngBatchWriter writer = new SchedulePngBatchWriter(exporter);
-                    using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createUnique(parentDirectoryPath, exportBatch.PlanName, CancellationToken.None))
+                    using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createStaging(parentDirectoryPath, CancellationToken.None))
                     {
                         await writer.exportAsync(exportBatch, directory, exportHost, CancellationToken.None);
                     }
@@ -104,7 +104,7 @@ public sealed partial class SchedulePngBatchWriterTests
             {
                 RecordingPngExporter exporter = new RecordingPngExporter();
                 SchedulePngBatchWriter writer = new SchedulePngBatchWriter(exporter);
-                using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createUnique(parentDirectoryPath, exportBatch.PlanName, CancellationToken.None))
+                using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createStaging(parentDirectoryPath, CancellationToken.None))
                 {
                     await writer.exportAsync(exportBatch, directory, exportHost, CancellationToken.None);
                 }
@@ -168,11 +168,11 @@ public sealed partial class SchedulePngBatchWriterTests
 
                 try
                 {
-                    using (SchedulePngBatchDirectory destinationDirectory = SchedulePngBatchDirectoryAllocator.createUnique(parentDirectoryPath, exportBatch.PlanName, CancellationToken.None))
+                    using (SchedulePngBatchDirectory destinationDirectory = SchedulePngBatchDirectoryAllocator.createStaging(parentDirectoryPath, CancellationToken.None))
                     {
                         SchedulePngBatchWriter writer = new SchedulePngBatchWriter(new AvaloniaControlPngExporter(PngExportScale.Create(1.0)));
                         await writer.exportAsync(exportBatch, destinationDirectory, exportHost, CancellationToken.None);
-                        destinationDirectory.commit();
+                        destinationDirectory.commitAsUniqueBatch(exportBatch.PlanName, CancellationToken.None);
 
                         Assert.Equal(
                             new string[]

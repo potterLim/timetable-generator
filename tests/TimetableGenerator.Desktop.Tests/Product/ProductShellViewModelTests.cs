@@ -568,6 +568,40 @@ ProductWorkspacePresentation presentation = PlannerWorkspaceTestFactory.CreatePr
     }
 
     [AvaloniaFact]
+    public async Task ExportShutdownStateReportsTimeoutAndAllowsEditingToContinueAsync()
+    {
+        PlannerWorkspaceViewModel workspace = PlannerWorkspaceTestFactory.CreateWorkspace();
+        QueueProductWorkspaceLoader loader = createLoader(
+            delegate
+            {
+                ProductWorkspacePresentation presentation = PlannerWorkspaceTestFactory.CreatePresentation(workspace);
+                return Task.FromResult(presentation);
+            });
+        using (ProductShellViewModel shell = createShell(loader))
+        {
+            await shell.StartAsync();
+
+            shell.beginExportShutdown();
+
+            Assert.True(shell.IsShutdownInProgress);
+            Assert.False(shell.IsProductInteractionEnabled);
+            Assert.Contains("내보내기", shell.ShutdownTitle);
+            Assert.Contains("안전하게", shell.ShutdownMessage);
+
+            shell.showExportShutdownFailure();
+
+            Assert.True(shell.HasShutdownError);
+            Assert.Contains("진행 중", shell.ShutdownTitle);
+            Assert.Contains("창은 닫지 않았습니다", shell.ShutdownMessage);
+
+            shell.DismissShutdownErrorCommand.Execute(null);
+
+            Assert.False(shell.IsShutdownOverlayVisible);
+            Assert.True(shell.IsProductInteractionEnabled);
+        }
+    }
+
+    [AvaloniaFact]
     public async Task InvalidRemoteDataProducesAnIntegrityMessageAsync()
     {
         QueueProductWorkspaceLoader loader = createLoader(

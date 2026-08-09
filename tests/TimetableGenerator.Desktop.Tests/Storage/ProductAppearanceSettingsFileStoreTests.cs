@@ -71,6 +71,27 @@ public sealed class ProductAppearanceSettingsFileStoreTests
         }
     }
 
+    [Fact]
+    public void OversizedSettingsRecoverToSystemPreference()
+    {
+        string testDirectoryPath = createTestDirectoryPath();
+        try
+        {
+            string settingsFilePath = createSettingsFilePath(testDirectoryPath);
+            Directory.CreateDirectory(testDirectoryPath);
+            File.WriteAllBytes(settingsFilePath, new byte[16_385]);
+            ProductAppearanceSettingsFileStore store = createStore(testDirectoryPath);
+
+            ProductAppearanceSettings settings = store.LoadOrDefault();
+
+            Assert.Equal(EProductThemePreference.System, settings.ThemePreference);
+        }
+        finally
+        {
+            tryDeleteDirectory(testDirectoryPath);
+        }
+    }
+
     private static ProductAppearanceSettingsFileStore createStore(string testDirectoryPath)
     {
         ProductAppearanceSettingsFilePath filePath = new ProductAppearanceSettingsFilePath(createSettingsFilePath(testDirectoryPath));

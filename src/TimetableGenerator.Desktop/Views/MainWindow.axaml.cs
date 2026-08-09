@@ -10,6 +10,7 @@ using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 using TimetableGenerator.Desktop.Presentation.Appearance;
 using TimetableGenerator.Desktop.Presentation.Layout;
@@ -21,17 +22,27 @@ namespace TimetableGenerator.Desktop.Views;
 
 internal sealed partial class MainWindow : Window
 {
+    private static readonly TimeSpan AUTOSAVE_SHUTDOWN_TIMEOUT = TimeSpan.FromSeconds(10.0);
+
+    private static readonly TimeSpan EXPORT_SHUTDOWN_TIMEOUT = TimeSpan.FromSeconds(15.0);
+
+    private static readonly TimeSpan OPERATING_SYSTEM_SHUTDOWN_TIMEOUT = TimeSpan.FromSeconds(2.5);
+
     private readonly ProductShellViewModel mProductShellViewModel;
 
     private readonly Task mStartupTask;
 
     private Task mShutdownTask;
 
+    private CancellationTokenSource? mShutdownModeCancellationSourceOrNull;
+
     private bool mIsShutdownStarted;
 
     private bool mIsCloseAuthorized;
 
     private bool mShouldExitApplicationAfterClose;
+
+    private bool mIsOperatingSystemShutdownRequested;
 
     public ProductAppearanceViewModel Appearance { get; }
 
@@ -98,6 +109,8 @@ internal sealed partial class MainWindow : Window
         disposeNativeMenu();
         disposeProductCaptionControls();
         mProductShellViewModel.Dispose();
+        mShutdownModeCancellationSourceOrNull?.Dispose();
+        mShutdownModeCancellationSourceOrNull = null;
         GC.KeepAlive(mStartupTask);
         GC.KeepAlive(mShutdownTask);
     }
@@ -109,12 +122,22 @@ internal sealed partial class MainWindow : Window
             mShouldExitApplicationAfterClose = true;
         }
 
+        if (eventArgs.CloseReason == WindowCloseReason.OSShutdown)
+        {
+            mIsOperatingSystemShutdownRequested = true;
+        }
+
         if (mIsCloseAuthorized)
         {
             return;
         }
 
         eventArgs.Cancel = true;
+        if (mIsOperatingSystemShutdownRequested)
+        {
+            cancelShutdownModeForOperatingSystemShutdown(mShutdownModeCancellationSourceOrNull);
+        }
+
         if (mIsShutdownStarted)
         {
             return;
@@ -122,34 +145,162 @@ internal sealed partial class MainWindow : Window
 
         mIsShutdownStarted = true;
         mProductShellViewModel.beginShutdown();
-        mShutdownTask = completeShutdownAsync();
+        findWorkspaceHostOrNull()?.blockNewExportsForShutdown();
+        mShutdownModeCancellationSourceOrNull = new CancellationTokenSource();
+        mShutdownTask = completeShutdownAsync(mShutdownModeCancellationSourceOrNull.Token);
     }
 
-    private async Task completeShutdownAsync()
+    private async Task completeShutdownAsync(CancellationToken shutdownModeCancellationToken)
     {
         try
         {
-            using (CancellationTokenSource timeoutSource = new CancellationTokenSource(TimeSpan.FromSeconds(10.0)))
+            if (mIsOperatingSystemShutdownRequested)
             {
-                await mProductShellViewModel.CompleteAutosaveAsync(timeoutSource.Token);
+                await completeOperatingSystemShutdownAsync();
+            }
+            else
+            {
+                await completeNormalShutdownAsync(shutdownModeCancellationToken);
             }
 
-            await Appearance.CompletePersistenceAsync();
-
-            bool shouldExitApplication = mShouldExitApplicationAfterClose;
-            mIsCloseAuthorized = true;
-            Close();
-            if (shouldExitApplication)
-            {
-                requestExplicitApplicationShutdown();
-            }
+            authorizeClose();
+        }
+        catch (OperationCanceledException) when (shutdownModeCancellationToken.IsCancellationRequested && mIsOperatingSystemShutdownRequested)
+        {
+            await completeOperatingSystemShutdownAsync();
+            authorizeClose();
+        }
+        catch (ExportShutdownTimeoutException exception)
+        {
+            cancelExportShutdown();
+            resetShutdownAttempt();
+            mProductShellViewModel.showExportShutdownFailure();
+            Trace.TraceWarning("The product window remained open because export shutdown timed out: {0}", exception);
         }
         catch (Exception exception)
         {
-            mIsShutdownStarted = false;
-            mShouldExitApplicationAfterClose = false;
+            cancelExportShutdown();
+            resetShutdownAttempt();
             mProductShellViewModel.showShutdownFailure(exception);
-            Trace.TraceError("The product window remained open because autosave completion failed: {0}", exception);
+            Trace.TraceError("The product window remained open because graceful shutdown failed: {0}", exception);
+        }
+    }
+
+    private async Task completeNormalShutdownAsync(CancellationToken shutdownModeCancellationToken)
+    {
+        using (CancellationTokenSource autosaveTimeoutSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownModeCancellationToken))
+        {
+            autosaveTimeoutSource.CancelAfter(AUTOSAVE_SHUTDOWN_TIMEOUT);
+            await mProductShellViewModel.PrepareAutosaveForShutdownAsync(autosaveTimeoutSource.Token);
+        }
+
+        await Appearance.CompletePersistenceAsync().WaitAsync(shutdownModeCancellationToken);
+
+        ProductWorkspaceHostView? workspaceHostOrNull = findWorkspaceHostOrNull();
+        mProductShellViewModel.beginExportShutdown();
+        workspaceHostOrNull?.beginExportShutdown();
+        using (CancellationTokenSource exportTimeoutSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownModeCancellationToken))
+        {
+            exportTimeoutSource.CancelAfter(EXPORT_SHUTDOWN_TIMEOUT);
+            try
+            {
+                if (workspaceHostOrNull != null)
+                {
+                    await workspaceHostOrNull.completeExportShutdownAsync(exportTimeoutSource.Token);
+                }
+            }
+            catch (OperationCanceledException exception) when (exportTimeoutSource.IsCancellationRequested && shutdownModeCancellationToken.IsCancellationRequested == false)
+            {
+                throw new ExportShutdownTimeoutException(exception);
+            }
+        }
+
+        using (CancellationTokenSource autosaveCompletionTimeoutSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownModeCancellationToken))
+        {
+            autosaveCompletionTimeoutSource.CancelAfter(AUTOSAVE_SHUTDOWN_TIMEOUT);
+            await mProductShellViewModel.CompleteAutosaveAsync(autosaveCompletionTimeoutSource.Token);
+        }
+    }
+
+    private async Task completeOperatingSystemShutdownAsync()
+    {
+        using (CancellationTokenSource timeoutSource = new CancellationTokenSource(OPERATING_SYSTEM_SHUTDOWN_TIMEOUT))
+        {
+            try
+            {
+                ProductWorkspaceHostView? workspaceHostOrNull = findWorkspaceHostOrNull();
+                workspaceHostOrNull?.beginExportShutdown();
+                await mProductShellViewModel.PrepareAutosaveForShutdownAsync(timeoutSource.Token);
+                await Appearance.CompletePersistenceAsync().WaitAsync(timeoutSource.Token);
+                if (workspaceHostOrNull != null)
+                {
+                    await workspaceHostOrNull.completeExportShutdownAsync(timeoutSource.Token);
+                }
+
+                await mProductShellViewModel.CompleteAutosaveAsync(timeoutSource.Token);
+            }
+            catch (Exception exception)
+            {
+                Trace.TraceWarning("Operating-system shutdown continued after best-effort product cleanup: {0}", exception);
+            }
+        }
+    }
+
+    private ProductWorkspaceHostView? findWorkspaceHostOrNull()
+    {
+        foreach (Avalonia.Visual visual in this.GetVisualDescendants())
+        {
+            if (visual is ProductWorkspaceHostView workspaceHost)
+            {
+                return workspaceHost;
+            }
+        }
+
+        return null;
+    }
+
+    private void cancelExportShutdown()
+    {
+        findWorkspaceHostOrNull()?.cancelExportShutdown();
+    }
+
+    internal static void cancelShutdownModeForOperatingSystemShutdown(CancellationTokenSource? shutdownModeCancellationSourceOrNull)
+    {
+        try
+        {
+            shutdownModeCancellationSourceOrNull?.Cancel();
+        }
+        catch (Exception exception)
+        {
+            Trace.TraceWarning("Operating-system shutdown continued after the normal shutdown cancellation callback failed: {0}", exception);
+        }
+    }
+
+    private void resetShutdownAttempt()
+    {
+        mShutdownModeCancellationSourceOrNull?.Dispose();
+        mShutdownModeCancellationSourceOrNull = null;
+        mIsShutdownStarted = false;
+        mShouldExitApplicationAfterClose = false;
+        mIsOperatingSystemShutdownRequested = false;
+    }
+
+    private void authorizeClose()
+    {
+        bool shouldExitApplication = mShouldExitApplicationAfterClose;
+        mIsCloseAuthorized = true;
+        Close();
+        if (shouldExitApplication)
+        {
+            requestExplicitApplicationShutdown();
+        }
+    }
+
+    private sealed class ExportShutdownTimeoutException : TimeoutException
+    {
+        public ExportShutdownTimeoutException(Exception innerException)
+            : base("Schedule export shutdown exceeded the product deadline.", innerException)
+        {
         }
     }
 

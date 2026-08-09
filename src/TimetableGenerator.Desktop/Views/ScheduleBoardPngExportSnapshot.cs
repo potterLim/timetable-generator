@@ -42,20 +42,6 @@ internal sealed class ScheduleBoardPngExportSnapshot : IDisposable
         mIsDisposed = false;
     }
 
-    public static ScheduleBoardPngExportSnapshot Create(Canvas host, ScheduleBoardView sourceBoard)
-    {
-        ArgumentNullException.ThrowIfNull(host);
-        ArgumentNullException.ThrowIfNull(sourceBoard);
-
-        ScheduleBoardPresentation? sourcePresentationOrNull = sourceBoard.DataContext as ScheduleBoardPresentation;
-        if (sourcePresentationOrNull == null)
-        {
-            throw new InvalidOperationException("PNG export requires a rendered schedule presentation.");
-        }
-
-        return create(host, sourcePresentationOrNull);
-    }
-
     public void Dispose()
     {
         if (mIsDisposed)

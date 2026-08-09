@@ -135,6 +135,21 @@ public sealed class FileAppleCalendarOwnershipRegistryStoreTests
         }
     }
 
+    [Fact]
+    public void OversizedRegistryFailsClosed()
+    {
+        using (TemporaryDirectory directory = new TemporaryDirectory())
+        {
+            string registryPath = Path.Combine(directory.Path, "apple-calendar-ownership.json");
+            File.WriteAllBytes(registryPath, new byte[(8 * 1_024 * 1_024) + 1]);
+            FileAppleCalendarOwnershipRegistryStore store = new FileAppleCalendarOwnershipRegistryStore(new AppleCalendarOwnershipRegistryFilePath(registryPath));
+
+            AppleCalendarOwnershipRegistryException exception = Assert.Throws<AppleCalendarOwnershipRegistryException>(() => store.Load());
+
+            Assert.Contains("exceeds the product size limit", exception.Message, StringComparison.Ordinal);
+        }
+    }
+
     private static FileAppleCalendarOwnershipRegistryStore createStore(string directoryPath)
     {
         return new FileAppleCalendarOwnershipRegistryStore(new AppleCalendarOwnershipRegistryFilePath(Path.Combine(directoryPath, "apple-calendar-ownership.json")));

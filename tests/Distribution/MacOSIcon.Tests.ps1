@@ -5,6 +5,7 @@ $ErrorActionPreference = "Stop"
 
 $repositoryRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../.."))
 . (Join-Path $repositoryRoot "scripts/Distribution/MacOSIcon.ps1")
+. (Join-Path $repositoryRoot "tests/Distribution/TestAssertions.ps1")
 
 function Get-Crc32 {
     param(
@@ -170,22 +171,6 @@ function Write-TestIcnsFile {
     }
 }
 
-function Assert-Throws {
-    param(
-        [Parameter(Mandatory)]
-        [scriptblock] $Action
-    )
-
-    try {
-        & $Action
-    }
-    catch {
-        return
-    }
-
-    throw "예상한 예외가 발생하지 않았습니다."
-}
-
 function Invoke-TestCase {
     param(
         [Parameter(Mandatory)]
@@ -220,7 +205,10 @@ try {
             -Type "ic04" `
             -Data ([System.Text.Encoding]::ASCII.GetBytes("XRGB1"))
         Write-TestIcnsFile -Path $path -Chunks $chunks
-        Assert-Throws -Action { Assert-IcnsFile -Path $path }
+        Assert-Throws `
+            -Action { Assert-IcnsFile -Path $path } `
+            -ExceptionType ([System.Management.Automation.RuntimeException]) `
+            -ExpectedMessageFragment "ARGB chunk payload가 유효하지 않습니다"
     }
 
     Invoke-TestCase -Name "empty legacy ARGB body" -Action {
@@ -230,7 +218,10 @@ try {
             -Type "ic04" `
             -Data ([System.Text.Encoding]::ASCII.GetBytes("ARGB"))
         Write-TestIcnsFile -Path $path -Chunks $chunks
-        Assert-Throws -Action { Assert-IcnsFile -Path $path }
+        Assert-Throws `
+            -Action { Assert-IcnsFile -Path $path } `
+            -ExceptionType ([System.Management.Automation.RuntimeException]) `
+            -ExpectedMessageFragment "ARGB chunk payload가 유효하지 않습니다"
     }
 
     Invoke-TestCase -Name "missing required 16px representation" -Action {
@@ -240,7 +231,10 @@ try {
                 Where-Object { $_.Type -ne "ic04" }
         )
         Write-TestIcnsFile -Path $path -Chunks $chunks
-        Assert-Throws -Action { Assert-IcnsFile -Path $path }
+        Assert-Throws `
+            -Action { Assert-IcnsFile -Path $path } `
+            -ExceptionType ([System.Management.Automation.RuntimeException]) `
+            -ExpectedMessageFragment "필요한 모든 해상도가 포함되지 않았습니다"
     }
 }
 finally {

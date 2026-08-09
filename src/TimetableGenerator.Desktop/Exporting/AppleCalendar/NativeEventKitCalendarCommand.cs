@@ -9,22 +9,20 @@ namespace TimetableGenerator.Desktop.Exporting.AppleCalendar;
 
 internal sealed class NativeEventKitCalendarCommand : IEventKitCalendarCommand
 {
+    private const uint SUPPORTED_ABI_VERSION = 1;
     private const uint SUPPORTED_SCHEMA_VERSION = 1;
     private const string LIBRARY_FILE_NAME = "libTimetableGenerator.EventKitBridge.dylib";
 
-    private readonly Lazy<NativeApi?> mNativeApi;
+    private static readonly CancellationRequestedDelegate CANCELLATION_REQUESTED = isCancellationRequested;
+
+    private static readonly Lazy<NativeApi?> NATIVE_API = new Lazy<NativeApi?>(loadNativeApiOrNull, LazyThreadSafetyMode.ExecutionAndPublication);
 
     public bool IsAvailable
     {
         get
         {
-            return mNativeApi.Value != null;
+            return NATIVE_API.Value != null;
         }
-    }
-
-    public NativeEventKitCalendarCommand()
-    {
-        mNativeApi = new Lazy<NativeApi?>(loadNativeApiOrNull, LazyThreadSafetyMode.ExecutionAndPublication);
     }
 
     public Task<string> ExecuteAsync(string requestJson, CancellationToken cancellationToken)
@@ -35,7 +33,7 @@ internal sealed class NativeEventKitCalendarCommand : IEventKitCalendarCommand
         }
 
         cancellationToken.ThrowIfCancellationRequested();
-        NativeApi? nativeApiOrNull = mNativeApi.Value;
+        NativeApi? nativeApiOrNull = NATIVE_API.Value;
         if (nativeApiOrNull == null)
         {
             throw new InvalidOperationException("The EventKit bridge is unavailable.");
@@ -60,14 +58,15 @@ internal sealed class NativeEventKitCalendarCommand : IEventKitCalendarCommand
 
         try
         {
-            SchemaVersionDelegate getSchemaVersion = Marshal.GetDelegateForFunctionPointer<SchemaVersionDelegate>(NativeLibrary.GetExport(libraryHandle, "tg_eventkit_schema_version"));
-            if (getSchemaVersion() != SUPPORTED_SCHEMA_VERSION)
+            VersionDelegate getAbiVersion = Marshal.GetDelegateForFunctionPointer<VersionDelegate>(NativeLibrary.GetExport(libraryHandle, "tg_eventkit_abi_version"));
+            VersionDelegate getSchemaVersion = Marshal.GetDelegateForFunctionPointer<VersionDelegate>(NativeLibrary.GetExport(libraryHandle, "tg_eventkit_schema_version"));
+            if (getAbiVersion() != SUPPORTED_ABI_VERSION || getSchemaVersion() != SUPPORTED_SCHEMA_VERSION)
             {
                 NativeLibrary.Free(libraryHandle);
                 return null;
             }
 
-            ExecuteDelegate executeCommand = Marshal.GetDelegateForFunctionPointer<ExecuteDelegate>(NativeLibrary.GetExport(libraryHandle, "tg_eventkit_execute"));
+            ExecuteCancellableDelegate executeCommand = Marshal.GetDelegateForFunctionPointer<ExecuteCancellableDelegate>(NativeLibrary.GetExport(libraryHandle, "tg_eventkit_execute_cancellable"));
             FreeResponseDelegate freeResponse = Marshal.GetDelegateForFunctionPointer<FreeResponseDelegate>(NativeLibrary.GetExport(libraryHandle, "tg_eventkit_free"));
             return new NativeApi(libraryHandle, executeCommand, freeResponse);
         }
@@ -83,10 +82,15 @@ internal sealed class NativeEventKitCalendarCommand : IEventKitCalendarCommand
         cancellationToken.ThrowIfCancellationRequested();
         byte[] requestBytes = Encoding.UTF8.GetBytes(requestJson);
         GCHandle pinnedRequest = GCHandle.Alloc(requestBytes, GCHandleType.Pinned);
+        GCHandle cancellationContext = GCHandle.Alloc(cancellationToken);
         IntPtr responsePointer = IntPtr.Zero;
         try
         {
-            responsePointer = nativeApi.Execute(pinnedRequest.AddrOfPinnedObject(), checked((nuint)requestBytes.Length));
+            responsePointer = nativeApi.Execute(
+                pinnedRequest.AddrOfPinnedObject(),
+                checked((nuint)requestBytes.Length),
+                CANCELLATION_REQUESTED,
+                GCHandle.ToIntPtr(cancellationContext));
             if (responsePointer == IntPtr.Zero)
             {
                 throw new InvalidOperationException("The EventKit bridge returned no response.");
@@ -107,15 +111,24 @@ internal sealed class NativeEventKitCalendarCommand : IEventKitCalendarCommand
                 nativeApi.FreeResponse(responsePointer);
             }
 
+            GC.KeepAlive(CANCELLATION_REQUESTED);
             pinnedRequest.Free();
+            cancellationContext.Free();
         }
     }
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    private delegate uint SchemaVersionDelegate();
+    private delegate uint VersionDelegate();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    private delegate IntPtr ExecuteDelegate(IntPtr requestBytes, nuint requestLength);
+    private delegate int CancellationRequestedDelegate(IntPtr cancellationContext);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate IntPtr ExecuteCancellableDelegate(
+        IntPtr requestBytes,
+        nuint requestLength,
+        CancellationRequestedDelegate cancellationRequested,
+        IntPtr cancellationContext);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate void FreeResponseDelegate(IntPtr response);
@@ -124,15 +137,32 @@ internal sealed class NativeEventKitCalendarCommand : IEventKitCalendarCommand
     {
         public IntPtr LibraryHandle { get; }
 
-        public ExecuteDelegate Execute { get; }
+        public ExecuteCancellableDelegate Execute { get; }
 
         public FreeResponseDelegate FreeResponse { get; }
 
-        public NativeApi(IntPtr libraryHandle, ExecuteDelegate execute, FreeResponseDelegate freeResponse)
+        public NativeApi(IntPtr libraryHandle, ExecuteCancellableDelegate execute, FreeResponseDelegate freeResponse)
         {
             LibraryHandle = libraryHandle;
             Execute = execute;
             FreeResponse = freeResponse;
         }
+    }
+
+    private static int isCancellationRequested(IntPtr cancellationContext)
+    {
+        try
+        {
+            object? targetOrNull = GCHandle.FromIntPtr(cancellationContext).Target;
+            if (targetOrNull is CancellationToken cancellationToken && cancellationToken.IsCancellationRequested)
+            {
+                return 1;
+            }
+        }
+        catch (InvalidOperationException)
+        {
+        }
+
+        return 0;
     }
 }

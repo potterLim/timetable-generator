@@ -20,6 +20,7 @@ function Invoke-AggregateFinalization {
         throw "Aggregate는 unsigned smoke archive를 허용하지 않습니다."
     }
 
+    $windowsArchiveTimestamp = Get-RepositoryCommitArchiveTimestamp -RepositoryRoot $RepositoryRoot
     $releaseRoot = if ([string]::IsNullOrWhiteSpace($SourcePath)) {
         Resolve-ReleaseOutputRoot `
             -RepositoryRoot $RepositoryRoot `
@@ -111,6 +112,9 @@ function Invoke-AggregateFinalization {
         if ($archiveFileName.Contains("osx-", [System.StringComparison]::Ordinal)) {
             $archiveEntryParameters.AllowMacOSMetadataEntries = $true
         }
+        else {
+            $archiveEntryParameters.ExpectedEntryTimestamp = $windowsArchiveTimestamp
+        }
 
         Assert-ArchiveEntries @archiveEntryParameters
     }
@@ -121,13 +125,9 @@ function Invoke-AggregateFinalization {
         -OutputRoot $releaseRoot `
         -Path $checksumPath `
         -ExpectedFileName $checksumFileName
-    $checksumLines = foreach ($archiveFileName in $expectedArchiveFileNames) {
-        $archivePath = Join-Path $releaseRoot $archiveFileName
-        $hash = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash.ToLowerInvariant()
-        "$hash  $archiveFileName"
+    $archivePaths = foreach ($archiveFileName in $expectedArchiveFileNames) {
+        Join-Path $releaseRoot $archiveFileName
     }
-    $encoding = [System.Text.UTF8Encoding]::new($false)
-    [System.IO.File]::WriteAllLines($checksumPath, $checksumLines, $encoding)
-    Assert-NonEmptyFile -Path $checksumPath
+    Write-Sha256ChecksumFile -Path $checksumPath -FilePaths $archivePaths
     Write-Host "최종 Release checksum을 생성했습니다: $checksumPath"
 }

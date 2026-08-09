@@ -1,7 +1,7 @@
 # 데스크톱 제품 배포
 
 이 문서는 배포 담당자를 위한 운영 절차입니다.  
-Timetable Generator 1.0.3이 지원하는 Windows 11 x64용 배포 파일과 Apple Silicon 기반 macOS 14 이상용 배포 파일의 생성·검증·공개 절차를 정의합니다.
+Timetable Generator 1.0.4가 지원하는 Windows 11 x64용 배포 파일과 Apple Silicon 기반 macOS 14 이상용 배포 파일의 생성·검증·공개 절차를 정의합니다.
 
 배포 식별자는 첫 공개 버전부터 다음 값을 유지합니다.
 
@@ -29,31 +29,28 @@ Windows와 macOS 배포 파일을 만드는 각 빌드 호스트에서 릴리스
 
 ```powershell
 pwsh ./scripts/write-release-build-info.ps1 `
-  -Version 1.0.3 `
+  -Version 1.0.4 `
   -RequireClean
 ```
 
-결과는 `artifacts/release-evidence/1.0.3/<host-rid>/build-info.txt`에 저장됩니다.
+결과는 `artifacts/release-evidence/1.0.4/<host-rid>/build-info.txt`에 저장됩니다.
 Git 커밋과 작업 트리 상태, UTC 시각, 운영체제와 아키텍처, 실제 `dotnet --version`·`dotnet --info` 출력을 기록하며 사용자용 ZIP에는 포함하지 않습니다.  
 같은 버전과 호스트의 기록을 다시 만들 때만 `-Force`를 사용합니다.
 
 ## 서명 전 산출물 만들기
 
-.NET 10 SDK와 PowerShell 7이 설치된 Windows 또는 macOS에서 저장소 루트를 기준으로 실행합니다.  
+.NET 10 SDK와 PowerShell 7이 설치된 대상 운영체제에서 저장소 루트를 기준으로 실행합니다.
+Windows 게시 파일은 Windows에서, macOS 게시 파일은 macOS에서 만듭니다.
 Windows에서는 PowerShell에서 `System.Drawing.Common`을 사용하고, macOS에서는 운영체제의 `sips`와 `iconutil`을 사용해 다중 해상도 `AppIcon.icns`를 생성하므로 별도 이미지 변환 프로그램은 필요하지 않습니다.
 
-```powershell
-pwsh ./scripts/publish-desktop.ps1
-```
-
-특정 대상만 게시할 수도 있습니다.
+대상 런타임은 반드시 명시합니다.
 
 ```powershell
 pwsh ./scripts/publish-desktop.ps1 -Runtime win-x64
 pwsh ./scripts/publish-desktop.ps1 -Runtime osx-arm64
 ```
 
-앱 버전은 프로젝트의 `Version`을 사용하며 필요할 때 `-Version 1.0.3`처럼 명시할 수 있습니다.
+앱 버전은 프로젝트의 `Version`을 사용하며 필요할 때 `-Version 1.0.4`처럼 명시할 수 있습니다.
 macOS 번들 식별자는 모든 버전과 CPU 아키텍처에서 `io.github.potterlim.timetable`을 유지합니다.
 
 ```powershell
@@ -69,8 +66,8 @@ pwsh ./scripts/publish-desktop.ps1 `
 | Windows x64 | `artifacts/publish/win-x64` | `TimetableGenerator-<version>-win-x64-unsigned.zip` |
 | macOS Apple Silicon | `artifacts/publish/osx-arm64/Timetable Generator.app` | `TimetableGenerator-<version>-osx-arm64-unsigned.zip` |
 
-현재 명령에서 생성하고 검증한 ZIP의 SHA-256만 `artifacts/publish/checksums.sha256`에 기록합니다.  
-인수 없이 실행하면 공식 대상 두 개를 만들고 두 ZIP의 체크섬을 기록합니다.  
+현재 명령에서 생성하고 검증한 ZIP의 SHA-256만 `artifacts/publish/checksums.sha256`에 UTF-8 무 BOM·LF 형식으로 기록합니다.
+각 ZIP entry에는 릴리스 대상 커밋 시각을 ZIP의 2초 정밀도로 정규화해 기록하므로 같은 커밋의 파일 날짜와 ZIP 구조를 재현할 수 있습니다.
 macOS ZIP에는 Mach-O 실행 파일의 실행 권한도 보존됩니다.
 
 하나의 게시 출력 디렉터리에는 같은 명령이 관리하는 결과만 둡니다.  
@@ -124,34 +121,34 @@ Windows 공식 배포 정책은 Authenticode 서명을 적용하지 않는 것�
 ```powershell
 pwsh ./scripts/finalize-desktop-release.ps1 `
   -Stage Windows `
-  -Version 1.0.3 `
+  -Version 1.0.4 `
   -WindowsSignatureMode Unsigned
 ```
 
 macOS에서는 앱 내부의 개별 파일부터 바깥쪽 번들 순서로 서명하고, Apple 공증이 끝나면 공증 티켓을 스테이플합니다.  
 아래 **macOS 서명·공증 경계** 절차를 먼저 완료한 앱을 대상으로 최종화 명령을 실행합니다.  
-스크립트는 `codesign --strict`, Gatekeeper와 공증 티켓을 검증하고, 서명 결과에 필요한 엔타이틀먼트 키가 포함되어 있는지 확인합니다.  
+스크립트는 `codesign --strict`, Gatekeeper와 공증 티켓을 검증하고, 서명 결과에 허용된 두 엔타이틀먼트만 정확히 `true`로 포함되어 있는지 확인합니다.
 최종 ZIP은 macOS 메타데이터를 보존하는 `ditto`로 만듭니다.
 
 ```powershell
 pwsh ./scripts/finalize-desktop-release.ps1 `
   -Stage MacOS `
   -Runtime osx-arm64 `
-  -Version 1.0.3 `
+  -Version 1.0.4 `
   -BundleIdentifier "io.github.potterlim.timetable"
 ```
 
-동일한 `artifacts/release/1.0.3`에 다음 두 ZIP을 모은 후 최종 체크섬을 생성합니다.
+동일한 `artifacts/release/1.0.4`에 다음 두 ZIP을 모은 후 최종 체크섬을 생성합니다.
 
 ```text
-TimetableGenerator-1.0.3-win-x64.zip
-TimetableGenerator-1.0.3-osx-arm64.zip
+TimetableGenerator-1.0.4-win-x64.zip
+TimetableGenerator-1.0.4-osx-arm64.zip
 ```
 
 ```powershell
 pwsh ./scripts/finalize-desktop-release.ps1 `
   -Stage Aggregate `
-  -Version 1.0.3 `
+  -Version 1.0.4 `
   -WindowsSignatureMode Unsigned
 ```
 

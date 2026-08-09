@@ -2,8 +2,9 @@
 
 [CmdletBinding()]
 param(
-    [ValidateSet("all", "win-x64", "osx-arm64")]
-    [string] $Runtime = "all",
+    [Parameter(Mandatory)]
+    [ValidateSet("win-x64", "osx-arm64")]
+    [string] $Runtime,
 
     [ValidatePattern("^\d+\.\d+\.\d+$")]
     [string] $Version,

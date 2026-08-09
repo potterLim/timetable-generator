@@ -99,13 +99,6 @@ internal sealed class SchedulePngBatchDirectory : IDisposable
         return stream;
     }
 
-    internal void commit()
-    {
-        throwIfUnavailable();
-        deleteOwnershipMarker();
-        mIsCommitted = true;
-    }
-
     internal void commitAsUniqueBatch(PlanName planName, CancellationToken cancellationToken)
     {
         throwIfUnavailable();

@@ -139,7 +139,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
+            using (ScheduleBoardPngExportSnapshot snapshot = createPngExportSnapshot(exportHost, sourceBoard))
             {
                 Dispatcher.UIThread.RunJobs();
 
@@ -202,7 +202,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
+            using (ScheduleBoardPngExportSnapshot snapshot = createPngExportSnapshot(exportHost, sourceBoard))
             {
                 Dispatcher.UIThread.RunJobs();
 
@@ -249,7 +249,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             Dispatcher.UIThread.RunJobs();
 
             Assert.Equal(new ScheduleBoardTimeBoundary(510), sourceBoard.RenderedLayout.TimeAxis.Start);
-            using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
+            using (ScheduleBoardPngExportSnapshot snapshot = createPngExportSnapshot(exportHost, sourceBoard))
             {
                 Dispatcher.UIThread.RunJobs();
 
@@ -381,7 +381,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
+            using (ScheduleBoardPngExportSnapshot snapshot = createPngExportSnapshot(exportHost, sourceBoard))
             {
                 Assert.Equal(new ScheduleBoardTimeBoundary(450), snapshot.Layout.TimeAxis.Start);
                 Grid exportBoardGrid = findBoardGrid(snapshot.Surface);
@@ -445,7 +445,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
                 new string[] { FIRST_TITLE + "(01)", SECOND_TITLE + "(01)" },
                 findScheduleCardTitles(sourceBoard.PngExportSurface));
 
-            using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
+            using (ScheduleBoardPngExportSnapshot snapshot = createPngExportSnapshot(exportHost, sourceBoard))
             {
                 Dispatcher.UIThread.RunJobs();
 
@@ -483,7 +483,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             Dispatcher.UIThread.RunJobs();
             double narrowSnapshotHeight;
 
-            using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
+            using (ScheduleBoardPngExportSnapshot snapshot = createPngExportSnapshot(exportHost, sourceBoard))
             {
                 Dispatcher.UIThread.RunJobs();
 
@@ -544,7 +544,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
 
             sourceBoard.Width = 3_000.0;
             Dispatcher.UIThread.RunJobs();
-            using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
+            using (ScheduleBoardPngExportSnapshot snapshot = createPngExportSnapshot(exportHost, sourceBoard))
             {
                 Dispatcher.UIThread.RunJobs();
 
@@ -583,7 +583,7 @@ public sealed class ScheduleBoardPngExportSnapshotTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.Create(exportHost, sourceBoard))
+            using (ScheduleBoardPngExportSnapshot snapshot = createPngExportSnapshot(exportHost, sourceBoard))
             {
                 Dispatcher.UIThread.RunJobs();
 
@@ -650,6 +650,12 @@ public sealed class ScheduleBoardPngExportSnapshotTests
         ScheduleBoardView sourceBoard = new ScheduleBoardView();
         sourceBoard.DataContext = new ScheduleBoardPresentation(new ScheduleRecommendation(entries), new PlanName("PNG 내보내기 테스트"), new InstitutionName("한동대학교"), AcademicTerm.Parse("2026-2"));
         return sourceBoard;
+    }
+
+    private static ScheduleBoardPngExportSnapshot createPngExportSnapshot(Canvas exportHost, ScheduleBoardView sourceBoard)
+    {
+        ScheduleBoardPresentation presentation = Assert.IsType<ScheduleBoardPresentation>(sourceBoard.DataContext);
+        return ScheduleBoardPngExportSnapshot.create(exportHost, presentation);
     }
 
     private static Window createWindow(Control content, ThemeVariant themeVariant)

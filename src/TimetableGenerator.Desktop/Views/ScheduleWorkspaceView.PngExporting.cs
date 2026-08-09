@@ -48,7 +48,7 @@ internal sealed partial class ScheduleWorkspaceView
 
         try
         {
-            CancellationToken cancellationToken = mLifetimeCancellationSource.Token;
+            CancellationToken cancellationToken = getActiveExportCancellationToken();
             cancellationToken.ThrowIfCancellationRequested();
             PlannerWorkspaceViewModel workspace = getRequiredWorkspace();
             ScheduleBoardPresentation? exportPresentationOrNull = workspace.DisplayedScheduleBoard;
@@ -76,9 +76,16 @@ internal sealed partial class ScheduleWorkspaceView
                 cancellationToken.ThrowIfCancellationRequested();
                 showPersistentExportStatus("현재 시간표 PNG를 저장하는 중입니다.", EExportStatus.Information);
                 using (ScheduleBoardPngExportSnapshot snapshot = ScheduleBoardPngExportSnapshot.create(pngExportHost, exportPresentationOrNull))
-                using (Stream destinationStream = await destinationFileOrNull.OpenWriteAsync())
+                using (MemoryStream encodedPngStream = new MemoryStream())
                 {
-                    await exportSnapshotAsync(snapshot, destinationStream, cancellationToken);
+                    await exportSnapshotAsync(snapshot, encodedPngStream, cancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    encodedPngStream.Position = 0;
+                    using (Stream destinationStream = await destinationFileOrNull.OpenWriteAsync())
+                    {
+                        await encodedPngStream.CopyToAsync(destinationStream);
+                        await destinationStream.FlushAsync(CancellationToken.None);
+                    }
                 }
             }
 
@@ -99,7 +106,7 @@ internal sealed partial class ScheduleWorkspaceView
 
         try
         {
-            CancellationToken cancellationToken = mLifetimeCancellationSource.Token;
+            CancellationToken cancellationToken = getActiveExportCancellationToken();
             cancellationToken.ThrowIfCancellationRequested();
             PlannerWorkspaceViewModel workspace = getRequiredWorkspace();
             if (workspace.CanExportAllPngCandidates == false)

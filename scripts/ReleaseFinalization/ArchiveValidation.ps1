@@ -12,7 +12,10 @@ function New-DeterministicWindowsArchive {
         [string] $DestinationPath,
 
         [Parameter(Mandatory)]
-        [string] $ArchiveRootName
+        [string] $ArchiveRootName,
+
+        [Parameter(Mandatory)]
+        [System.DateTimeOffset] $ArchiveTimestamp
     )
 
     Add-Type -AssemblyName System.IO.Compression
@@ -31,6 +34,7 @@ function New-DeterministicWindowsArchive {
         throw "Windows ZIP 원본 디렉터리가 비어 있습니다: $SourcePath"
     }
 
+    $normalizedArchiveTimestamp = Get-NormalizedZipEntryTimestamp -Timestamp $ArchiveTimestamp
     [string[]] $entryNames = @($entrySourcePaths.Keys)
     [System.Array]::Sort($entryNames, [System.StringComparer]::Ordinal)
     $stream = [System.IO.File]::Open($DestinationPath, [System.IO.FileMode]::CreateNew)
@@ -39,14 +43,7 @@ function New-DeterministicWindowsArchive {
         try {
             foreach ($entryName in $entryNames) {
                 $entry = $archive.CreateEntry($entryName, [System.IO.Compression.CompressionLevel]::Optimal)
-                $entry.LastWriteTime = [System.DateTimeOffset]::new(
-                    2000,
-                    1,
-                    1,
-                    0,
-                    0,
-                    0,
-                    [System.TimeSpan]::Zero)
+                $entry.LastWriteTime = $normalizedArchiveTimestamp
                 $entry.ExternalAttributes = Get-ArchiveExternalAttributes
 
                 $inputStream = [System.IO.File]::OpenRead($entrySourcePaths[$entryName])
@@ -79,6 +76,8 @@ function Assert-ArchiveEntries {
 
         [Parameter(Mandatory)]
         [string] $RequiredPrefix,
+
+        [System.DateTimeOffset] $ExpectedEntryTimestamp,
 
         [switch] $AllowMacOSMetadataEntries
     )
@@ -113,6 +112,11 @@ function Assert-ArchiveEntries {
 
                 if ($entry.FullName.EndsWith(".pdb", [System.StringComparison]::OrdinalIgnoreCase)) {
                     throw "Release ZIP에 PDB가 포함되어 있습니다: $($entry.FullName)"
+                }
+
+                if ($PSBoundParameters.ContainsKey("ExpectedEntryTimestamp") -and
+                    -not (Test-ZipEntryTimestampEquals -Actual $entry.LastWriteTime -Expected $ExpectedEntryTimestamp)) {
+                    throw "Release ZIP entry timestamp가 릴리스 커밋 시각과 일치하지 않습니다: $($entry.FullName)"
                 }
 
                 if ($entryNames.Add($entry.FullName) -eq $false) {

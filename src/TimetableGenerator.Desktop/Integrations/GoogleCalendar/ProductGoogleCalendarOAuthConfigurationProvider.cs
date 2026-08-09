@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
+using TimetableGenerator.Desktop.Storage;
+
 namespace TimetableGenerator.Desktop.Integrations.GoogleCalendar;
 
 internal sealed class ProductGoogleCalendarOAuthConfigurationProvider
@@ -79,14 +81,9 @@ internal sealed class ProductGoogleCalendarOAuthConfigurationProvider
 
         try
         {
-            FileInfo fileInfo = new FileInfo(mLocalConfigurationPath.Value);
-            if (fileInfo.Length > MAXIMUM_CONFIGURATION_FILE_BYTES)
-            {
-                return null;
-            }
-
-            using (FileStream stream = File.OpenRead(mLocalConfigurationPath.Value))
-            using (JsonDocument document = JsonDocument.Parse(stream))
+            byte[] content = BoundedLocalFileReader.readAllBytes(mLocalConfigurationPath.Value, MAXIMUM_CONFIGURATION_FILE_BYTES);
+            using (MemoryStream jsonStream = new MemoryStream(content, false))
+            using (JsonDocument document = JsonDocument.Parse(jsonStream))
             {
                 if (document.RootElement.ValueKind != JsonValueKind.Object)
                 {

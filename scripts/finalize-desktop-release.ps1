@@ -15,18 +15,18 @@ produces an archive whose name contains "unsigned-smoke". Aggregate never
 accepts those archives.
 
 .EXAMPLE
-pwsh ./scripts/finalize-desktop-release.ps1 -Stage Windows -Version 1.0.3
+pwsh ./scripts/finalize-desktop-release.ps1 -Stage Windows -Version 1.0.4
 
 .EXAMPLE
-pwsh ./scripts/finalize-desktop-release.ps1 -Stage Windows -Version 1.0.3 `
+pwsh ./scripts/finalize-desktop-release.ps1 -Stage Windows -Version 1.0.4 `
   -WindowsSignatureMode Unsigned
 
 .EXAMPLE
 pwsh ./scripts/finalize-desktop-release.ps1 -Stage MacOS -Runtime osx-arm64 `
-  -Version 1.0.3 -BundleIdentifier io.github.potterlim.timetable
+  -Version 1.0.4 -BundleIdentifier io.github.potterlim.timetable
 
 .EXAMPLE
-pwsh ./scripts/finalize-desktop-release.ps1 -Stage Aggregate -Version 1.0.3 `
+pwsh ./scripts/finalize-desktop-release.ps1 -Stage Aggregate -Version 1.0.4 `
   -WindowsSignatureMode Unsigned
 #>
 

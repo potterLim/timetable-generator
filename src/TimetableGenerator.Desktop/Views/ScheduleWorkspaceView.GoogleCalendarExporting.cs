@@ -19,7 +19,7 @@ internal sealed partial class ScheduleWorkspaceView
 
         try
         {
-            CancellationToken cancellationToken = mLifetimeCancellationSource.Token;
+            CancellationToken cancellationToken = getActiveExportCancellationToken();
             cancellationToken.ThrowIfCancellationRequested();
             CalendarExportDocument document = createCalendarExportDocument(ECalendarExportProvider.Google);
             GoogleCalendarExportPlan exportPlan = GoogleCalendarExportPlan.CreateFromDocument(document);

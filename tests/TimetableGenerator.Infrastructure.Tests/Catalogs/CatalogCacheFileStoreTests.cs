@@ -227,6 +227,29 @@ public sealed class CatalogCacheFileStoreTests
     }
 
     [TestMethod]
+    public async Task OversizedGenerationFallsBackWithoutUnboundedAllocationAsync()
+    {
+        string testDirectoryPath = createTestDirectoryPath();
+        try
+        {
+            CatalogSynchronizationLimits limits = createLimits();
+            CatalogCacheFilePath cachePath = new CatalogCacheFilePath(Path.Combine(testDirectoryPath, "catalog.cache"));
+            CatalogCacheFileStore store = new CatalogCacheFileStore(cachePath, limits);
+            await store.SaveAsync(CatalogSynchronizationTestDocuments.CreateVerifiedPackageWithKoreanName("정상 자료구조"), CancellationToken.None);
+            await File.WriteAllBytesAsync(getGenerationPath(testDirectoryPath, 2L), new byte[checked((int)limits.MaximumCacheDocumentBytes + 1)], CancellationToken.None);
+
+            CatalogCacheLoadResult result = await store.LoadAsync(CancellationToken.None);
+
+            Assert.AreEqual(ECatalogCacheLoadStatus.RecoveredPreviousGeneration, result.Status);
+            Assert.AreEqual("정상 자료구조", result.GetPackage().Document.Catalog.Courses[0].KoreanName.Value);
+        }
+        finally
+        {
+            deleteTestDirectory(testDirectoryPath);
+        }
+    }
+
+    [TestMethod]
     public async Task SaveDoesNotCreateGenerationForIdenticalVerifiedPackageAsync()
     {
         string testDirectoryPath = createTestDirectoryPath();

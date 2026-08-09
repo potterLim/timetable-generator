@@ -14,6 +14,9 @@ extern "C" {
 #define TG_EVENT_KIT_EXPORT
 #endif /* __GNUC__ */
 
+typedef int32_t (*tg_eventkit_is_cancelled_callback_t)(void* const p_context_or_null);
+
+TG_EVENT_KIT_EXPORT uint32_t tg_eventkit_abi_version(void);
 TG_EVENT_KIT_EXPORT uint32_t tg_eventkit_schema_version(void);
 
 /*
@@ -22,6 +25,12 @@ TG_EVENT_KIT_EXPORT uint32_t tg_eventkit_schema_version(void);
  * tg_eventkit_free. The response must not be released with a managed allocator.
  */
 TG_EVENT_KIT_EXPORT char* tg_eventkit_execute(const uint8_t* const request_bytes_or_null, const size_t request_length);
+
+TG_EVENT_KIT_EXPORT char* tg_eventkit_execute_cancellable(
+    const uint8_t* const request_bytes_or_null,
+    const size_t request_length,
+    const tg_eventkit_is_cancelled_callback_t is_cancelled_or_null,
+    void* const p_cancellation_context_or_null);
 
 TG_EVENT_KIT_EXPORT void tg_eventkit_free(char* const pa_response_or_null);
 

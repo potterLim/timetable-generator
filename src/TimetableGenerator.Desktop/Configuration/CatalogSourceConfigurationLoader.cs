@@ -3,6 +3,8 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
+using TimetableGenerator.Desktop.Storage;
+
 namespace TimetableGenerator.Desktop.Configuration;
 
 internal sealed class CatalogSourceConfigurationLoader
@@ -56,13 +58,7 @@ internal sealed class CatalogSourceConfigurationLoader
 
         try
         {
-            FileInfo fileInfo = new FileInfo(mPath.Value);
-            if (fileInfo.Length > MAXIMUM_CONFIGURATION_FILE_BYTES)
-            {
-                throw new CatalogSourceConfigurationException("The catalog source configuration exceeds the product size limit.");
-            }
-
-            byte[] content = await File.ReadAllBytesAsync(mPath.Value, cancellationToken).ConfigureAwait(false);
+            byte[] content = await BoundedLocalFileReader.readAllBytesAsync(mPath.Value, MAXIMUM_CONFIGURATION_FILE_BYTES, cancellationToken).ConfigureAwait(false);
             return CatalogSourceConfigurationJsonReader.Read(content);
         }
         catch (OperationCanceledException)
@@ -72,6 +68,10 @@ internal sealed class CatalogSourceConfigurationLoader
         catch (CatalogSourceConfigurationException)
         {
             throw;
+        }
+        catch (BoundedLocalFileReadLimitException exception)
+        {
+            throw new CatalogSourceConfigurationException("The catalog source configuration exceeds the product size limit.", exception);
         }
         catch (Exception exception) when (isFileSystemException(exception))
         {

@@ -285,14 +285,16 @@ public sealed class CatalogCacheFileStore
 
     private async Task<CatalogCacheDocument> readDocumentAsync(GenerationFilePath path, CancellationToken cancellationToken)
     {
-        FileInfo fileInfo = new FileInfo(path.Value);
-        long documentLength = fileInfo.Length;
-        if (documentLength > mLimits.MaximumCacheDocumentBytes)
+        byte[] content;
+        try
+        {
+            content = await BoundedFileReader.readAllBytesAsync(path.Value, mLimits.MaximumCacheDocumentBytes, cancellationToken).ConfigureAwait(false);
+        }
+        catch (BoundedFileReadLimitException)
         {
             throw new CatalogCacheDocumentSizeException("The catalog cache document exceeds the configured size limit.");
         }
 
-        byte[] content = await File.ReadAllBytesAsync(path.Value, cancellationToken).ConfigureAwait(false);
         CatalogCacheDocument document = mCodec.Deserialize(content);
         cancellationToken.ThrowIfCancellationRequested();
         return document;
@@ -312,6 +314,11 @@ public sealed class CatalogCacheFileStore
 
         CatalogCacheDocument document = new CatalogCacheDocument(nextGeneration, package);
         byte[] content = mCodec.Serialize(document);
+        if (content.LongLength > mLimits.MaximumCacheDocumentBytes)
+        {
+            throw new CatalogCacheDocumentSizeException("The catalog cache document exceeds the configured size limit.");
+        }
+
         GenerationFile committedGeneration = await mFileStorage.CommitAsync(nextFileGeneration, content, cancellationToken).ConfigureAwait(false);
 
         CatalogCacheDocument verifiedDocument;

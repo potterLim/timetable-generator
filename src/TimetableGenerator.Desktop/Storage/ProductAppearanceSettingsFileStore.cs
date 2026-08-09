@@ -9,6 +9,7 @@ namespace TimetableGenerator.Desktop.Storage;
 internal sealed class ProductAppearanceSettingsFileStore
     : IProductAppearanceSettingsStore
 {
+    private const long MAXIMUM_SETTINGS_FILE_BYTES = 16_384L;
     private const int WRITE_BUFFER_SIZE_BYTES = 4_096;
 
     private readonly ProductAppearanceSettingsFilePath mFilePath;
@@ -40,7 +41,7 @@ internal sealed class ProductAppearanceSettingsFileStore
 
         try
         {
-            byte[] content = File.ReadAllBytes(mFilePath.Value);
+            byte[] content = BoundedLocalFileReader.readAllBytes(mFilePath.Value, MAXIMUM_SETTINGS_FILE_BYTES);
             return mJsonCodec.Deserialize(content);
         }
         catch (Exception exception) when (canRecoverFromLoadFailure(exception))
@@ -68,6 +69,11 @@ internal sealed class ProductAppearanceSettingsFileStore
 
             Directory.CreateDirectory(directoryPathOrNull);
             byte[] content = mJsonCodec.Serialize(settings);
+            if (content.LongLength > MAXIMUM_SETTINGS_FILE_BYTES)
+            {
+                throw new ProductAppearanceSettingsException("The appearance settings exceed the product size limit.");
+            }
+
             using (FileStream outputStream = new FileStream(
                 temporaryFilePath,
                 FileMode.CreateNew,

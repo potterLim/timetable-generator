@@ -6,6 +6,184 @@ function Get-PathComparison {
     return [System.StringComparison]::Ordinal
 }
 
+function Get-NormalizedZipEntryTimestamp {
+    param(
+        [Parameter(Mandatory)]
+        [System.DateTimeOffset] $Timestamp
+    )
+
+    $utcTimestamp = $Timestamp.ToUniversalTime()
+    $minimumTimestamp = [System.DateTimeOffset]::new(1980, 1, 1, 0, 0, 0, [System.TimeSpan]::Zero)
+    $maximumTimestamp = [System.DateTimeOffset]::new(2107, 12, 31, 23, 59, 58, [System.TimeSpan]::Zero)
+    if ($utcTimestamp -lt $minimumTimestamp -or $utcTimestamp -gt $maximumTimestamp) {
+        throw "ZIP entry timestamp는 1980-01-01부터 2107-12-31까지여야 합니다: $utcTimestamp"
+    }
+
+    $normalizedSecond = $utcTimestamp.Second - ($utcTimestamp.Second % 2)
+    return [System.DateTimeOffset]::new(
+        $utcTimestamp.Year,
+        $utcTimestamp.Month,
+        $utcTimestamp.Day,
+        $utcTimestamp.Hour,
+        $utcTimestamp.Minute,
+        $normalizedSecond,
+        [System.TimeSpan]::Zero)
+}
+
+function Get-RepositoryCommitArchiveTimestamp {
+    param(
+        [Parameter(Mandatory)]
+        [string] $RepositoryRoot
+    )
+
+    $resolvedRepositoryRoot = Get-NormalizedFullPath -Path $RepositoryRoot
+    $timestampOutput = @(& git -C $resolvedRepositoryRoot show -s --format=%ct HEAD 2>&1)
+    if ($LASTEXITCODE -ne 0) {
+        throw "릴리스 커밋 시각을 읽을 수 없습니다: $($timestampOutput -join "`n")"
+    }
+
+    $timestampText = ($timestampOutput -join "`n").Trim()
+    [long] $unixTimeSeconds = 0
+    if (-not [long]::TryParse(
+        $timestampText,
+        [System.Globalization.NumberStyles]::None,
+        [System.Globalization.CultureInfo]::InvariantCulture,
+        [ref] $unixTimeSeconds)) {
+        throw "릴리스 커밋 시각이 유효한 Unix timestamp가 아닙니다: $timestampText"
+    }
+
+    $commitTimestamp = [System.DateTimeOffset]::FromUnixTimeSeconds($unixTimeSeconds)
+    return Get-NormalizedZipEntryTimestamp -Timestamp $commitTimestamp
+}
+
+function Test-ZipEntryTimestampEquals {
+    param(
+        [Parameter(Mandatory)]
+        [System.DateTimeOffset] $Actual,
+
+        [Parameter(Mandatory)]
+        [System.DateTimeOffset] $Expected
+    )
+
+    $normalizedExpected = Get-NormalizedZipEntryTimestamp -Timestamp $Expected
+    return $Actual.Year -eq $normalizedExpected.Year -and
+        $Actual.Month -eq $normalizedExpected.Month -and
+        $Actual.Day -eq $normalizedExpected.Day -and
+        $Actual.Hour -eq $normalizedExpected.Hour -and
+        $Actual.Minute -eq $normalizedExpected.Minute -and
+        $Actual.Second -eq $normalizedExpected.Second
+}
+
+function Assert-Sha256ChecksumFile {
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path,
+
+        [Parameter(Mandatory)]
+        [string[]] $FilePaths
+    )
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        throw "SHA-256 checksum 파일을 찾을 수 없습니다: $Path"
+    }
+
+    $bytes = [System.IO.File]::ReadAllBytes($Path)
+    if ($bytes.Length -eq 0) {
+        throw "SHA-256 checksum 파일이 비어 있습니다: $Path"
+    }
+
+    if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
+        throw "SHA-256 checksum 파일에는 UTF-8 BOM을 사용할 수 없습니다: $Path"
+    }
+
+    $strictUtf8 = [System.Text.UTF8Encoding]::new($false, $true)
+    try {
+        $contents = $strictUtf8.GetString($bytes)
+    }
+    catch [System.Text.DecoderFallbackException] {
+        throw "SHA-256 checksum 파일이 유효한 UTF-8이 아닙니다: $Path"
+    }
+
+    if ($contents.Contains("`r", [System.StringComparison]::Ordinal)) {
+        throw "SHA-256 checksum 파일은 LF 줄바꿈만 사용해야 합니다: $Path"
+    }
+
+    if (-not $contents.EndsWith("`n", [System.StringComparison]::Ordinal)) {
+        throw "SHA-256 checksum 파일은 LF로 끝나야 합니다: $Path"
+    }
+
+    $body = $contents.Substring(0, $contents.Length - 1)
+    if ([string]::IsNullOrEmpty($body) -or $body.EndsWith("`n", [System.StringComparison]::Ordinal)) {
+        throw "SHA-256 checksum 파일은 마지막에 정확히 하나의 LF만 사용해야 합니다: $Path"
+    }
+
+    $expectedFilesByName = [System.Collections.Generic.Dictionary[string, string]]::new([System.StringComparer]::Ordinal)
+    foreach ($filePath in $FilePaths) {
+        Assert-NonEmptyFile -Path $filePath
+        $fileName = [System.IO.Path]::GetFileName($filePath)
+        if ([System.IO.Path]::GetFileName($fileName) -cne $fileName -or $expectedFilesByName.TryAdd($fileName, $filePath) -eq $false) {
+            throw "SHA-256 checksum 대상 파일 이름이 안전하지 않거나 중복되었습니다: $fileName"
+        }
+    }
+
+    [string[]] $expectedFileNames = @($expectedFilesByName.Keys)
+    [System.Array]::Sort($expectedFileNames, [System.StringComparer]::Ordinal)
+    $lines = @($body.Split("`n"))
+    if ($lines.Count -ne $expectedFileNames.Count) {
+        throw "SHA-256 checksum 항목 수가 예상과 일치하지 않습니다: $Path"
+    }
+
+    for ($index = 0; $index -lt $expectedFileNames.Count; $index++) {
+        $match = [System.Text.RegularExpressions.Regex]::Match($lines[$index], "^(?<hash>[0-9a-f]{64})  (?<fileName>[^/\\]+)$")
+        if (-not $match.Success) {
+            throw "SHA-256 checksum 항목 형식이 유효하지 않습니다: $($lines[$index])"
+        }
+
+        $expectedFileName = $expectedFileNames[$index]
+        $actualFileName = $match.Groups["fileName"].Value
+        if ($actualFileName -cne $expectedFileName) {
+            throw "SHA-256 checksum 파일 이름 또는 정렬이 예상과 일치하지 않습니다: $actualFileName"
+        }
+
+        $actualHash = $match.Groups["hash"].Value
+        $expectedHash = (Get-FileHash -LiteralPath $expectedFilesByName[$expectedFileName] -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($actualHash -cne $expectedHash) {
+            throw "SHA-256 checksum 값이 실제 파일과 일치하지 않습니다: $actualFileName"
+        }
+    }
+}
+
+function Write-Sha256ChecksumFile {
+    param(
+        [Parameter(Mandatory)]
+        [string] $Path,
+
+        [Parameter(Mandatory)]
+        [string[]] $FilePaths
+    )
+
+    $filesByName = [System.Collections.Generic.Dictionary[string, string]]::new([System.StringComparer]::Ordinal)
+    foreach ($filePath in $FilePaths) {
+        Assert-NonEmptyFile -Path $filePath
+        $fileName = [System.IO.Path]::GetFileName($filePath)
+        if ([System.IO.Path]::GetFileName($fileName) -cne $fileName -or $filesByName.TryAdd($fileName, $filePath) -eq $false) {
+            throw "SHA-256 checksum 대상 파일 이름이 안전하지 않거나 중복되었습니다: $fileName"
+        }
+    }
+
+    [string[]] $fileNames = @($filesByName.Keys)
+    [System.Array]::Sort($fileNames, [System.StringComparer]::Ordinal)
+    $lines = foreach ($fileName in $fileNames) {
+        $hash = (Get-FileHash -LiteralPath $filesByName[$fileName] -Algorithm SHA256).Hash.ToLowerInvariant()
+        "$hash  $fileName"
+    }
+
+    $contents = ($lines -join "`n") + "`n"
+    $utf8WithoutBom = [System.Text.UTF8Encoding]::new($false)
+    [System.IO.File]::WriteAllText($Path, $contents, $utf8WithoutBom)
+    Assert-Sha256ChecksumFile -Path $Path -FilePaths $FilePaths
+}
+
 function Get-NormalizedFullPath {
     param(
         [Parameter(Mandatory)]

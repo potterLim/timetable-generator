@@ -52,7 +52,7 @@ function Assert-MacOSEventKitBridgeExportSymbols {
         $null = $exportedSymbols.Add($normalizedSymbol)
     }
 
-    foreach ($requiredSymbol in @("tg_eventkit_execute", "tg_eventkit_free", "tg_eventkit_schema_version")) {
+    foreach ($requiredSymbol in @("tg_eventkit_abi_version", "tg_eventkit_execute", "tg_eventkit_execute_cancellable", "tg_eventkit_free", "tg_eventkit_schema_version")) {
         if (-not $exportedSymbols.Contains($requiredSymbol)) {
             throw "EventKit 네이티브 모듈에 필수 C ABI export가 없습니다: $requiredSymbol"
         }
@@ -80,7 +80,7 @@ function Assert-MacOSEventKitBridgeAbi {
         $resolvedBridgePath = [System.IO.Path]::GetFullPath($Path)
         $probeOutput = @(& $executablePath $resolvedBridgePath 2>&1)
         if ($LASTEXITCODE -ne 0) {
-            throw "EventKit 네이티브 모듈의 schema 또는 execute/free ABI 검증에 실패했습니다: $($probeOutput -join "`n")"
+            throw "EventKit 네이티브 모듈의 ABI, schema 또는 execute/free 검증에 실패했습니다: $($probeOutput -join "`n")"
         }
     }
     finally {

@@ -112,6 +112,30 @@ public sealed class GoogleCalendarConfigurationTests
     }
 
     [Fact]
+    public void OversizedLocalConfigurationFailsClosed()
+    {
+        GoogleCalendarOAuthConfigurationPath path = createTemporaryPath();
+        string directoryPath = getDirectoryPath(path);
+        Directory.CreateDirectory(directoryPath);
+        File.WriteAllBytes(path.Value, new byte[16_385]);
+        ProductGoogleCalendarOAuthConfigurationProvider provider = new ProductGoogleCalendarOAuthConfigurationProvider(
+            delegate
+            {
+                return new GoogleCalendarOAuthEnvironmentValues(null, null);
+            },
+            path);
+
+        try
+        {
+            Assert.Null(provider.GetConfigurationOrNull());
+        }
+        finally
+        {
+            Directory.Delete(directoryPath, true);
+        }
+    }
+
+    [Fact]
     public void InvalidEnvironmentClientIdFailsClosed()
     {
         ProductGoogleCalendarOAuthConfigurationProvider provider = new ProductGoogleCalendarOAuthConfigurationProvider(

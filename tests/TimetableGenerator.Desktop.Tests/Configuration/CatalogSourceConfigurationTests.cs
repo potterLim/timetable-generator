@@ -101,6 +101,36 @@ public sealed class CatalogSourceConfigurationTests
             });
     }
 
+    [AvaloniaFact]
+    public async Task LoaderRejectsOversizedLocalConfigurationAsync()
+    {
+        CatalogSourceConfigurationPath path = createConfigurationPath("oversized.json");
+        string directoryPath = getDirectoryPath(path);
+        Directory.CreateDirectory(directoryPath);
+        await File.WriteAllBytesAsync(path.Value, new byte[16_385], CancellationToken.None);
+        CatalogSourceConfigurationLoader loader = new CatalogSourceConfigurationLoader(
+            path,
+            delegate
+            {
+                return null;
+            });
+
+        try
+        {
+            CatalogSourceConfigurationException exception = await Assert.ThrowsAsync<CatalogSourceConfigurationException>(
+                async delegate
+                {
+                    await loader.LoadAsync(CancellationToken.None);
+                });
+
+            Assert.Contains("exceeds the product size limit", exception.Message, StringComparison.Ordinal);
+        }
+        finally
+        {
+            Directory.Delete(directoryPath, true);
+        }
+    }
+
     private static CatalogSourceConfigurationPath createConfigurationPath(string fileName)
     {
         string directoryPath = Path.Combine(Path.GetTempPath(), "TimetableGenerator.Desktop.Tests", Guid.NewGuid().ToString("N"));

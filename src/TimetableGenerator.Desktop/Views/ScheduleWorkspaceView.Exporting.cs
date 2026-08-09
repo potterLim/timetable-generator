@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -34,11 +35,19 @@ internal sealed partial class ScheduleWorkspaceView
 
     private readonly CancellationTokenSource mLifetimeCancellationSource;
 
+    private CancellationTokenSource? mActiveExportCancellationSourceOrNull;
+
     private Task mExportResourceReleaseTask;
 
     private Exception? mExportResourceReleaseExceptionOrNull;
 
     private bool mIsExportInProgress;
+
+    private bool mIsExportShutdownRequested;
+
+    private bool mIsDetached;
+
+    private bool mIsExportResourceReleaseStarted;
 
     public ICommand ExportGoogleCalendarCommand
     {
@@ -161,11 +170,21 @@ internal sealed partial class ScheduleWorkspaceView
     private bool tryBeginExportOperation()
     {
         PlannerWorkspaceViewModel? workspaceOrNull = DataContext as PlannerWorkspaceViewModel;
-        if (mIsExportInProgress || workspaceOrNull == null || workspaceOrNull.CanExportSchedule == false)
+        if (mIsExportInProgress
+            || mIsExportShutdownRequested
+            || mIsDetached
+            || workspaceOrNull == null
+            || workspaceOrNull.CanExportSchedule == false)
         {
             return false;
         }
 
+        if (mActiveExportCancellationSourceOrNull != null)
+        {
+            throw new InvalidOperationException("A previous schedule export cancellation source was not released.");
+        }
+
+        mActiveExportCancellationSourceOrNull = CancellationTokenSource.CreateLinkedTokenSource(mLifetimeCancellationSource.Token);
         mIsExportInProgress = true;
         disableExportButton();
         clearExportStatus();
@@ -174,8 +193,25 @@ internal sealed partial class ScheduleWorkspaceView
 
     private void completeExportOperation()
     {
+        CancellationTokenSource? activeExportCancellationSourceOrNull = mActiveExportCancellationSourceOrNull;
+        mActiveExportCancellationSourceOrNull = null;
+        activeExportCancellationSourceOrNull?.Dispose();
         mIsExportInProgress = false;
-        enableExportButton();
+        if (mIsExportShutdownRequested == false && mIsDetached == false)
+        {
+            enableExportButton();
+        }
+    }
+
+    private CancellationToken getActiveExportCancellationToken()
+    {
+        CancellationTokenSource? activeExportCancellationSourceOrNull = mActiveExportCancellationSourceOrNull;
+        if (mIsExportInProgress == false || activeExportCancellationSourceOrNull == null)
+        {
+            throw new InvalidOperationException("Schedule export cancellation is unavailable outside an active export.");
+        }
+
+        return activeExportCancellationSourceOrNull.Token;
     }
 
     private void disableExportButton()
@@ -196,32 +232,120 @@ internal sealed partial class ScheduleWorkspaceView
         }
     }
 
-
     private void onDetachedFromVisualTree(object? senderOrNull, VisualTreeAttachmentEventArgs eventArgs)
     {
+        if (mIsDetached)
+        {
+            return;
+        }
+
+        mIsDetached = true;
         DetachedFromVisualTree -= onDetachedFromVisualTree;
         DataContextChanged -= onDataContextChanged;
         observeWorkspace(null);
         mExportStatusTimer.Stop();
         mExportStatusTimer.Tick -= onExportStatusTimerTick;
-        mLifetimeCancellationSource.Cancel();
-        mExportResourceReleaseTask = releaseExportResourcesAsync();
+        beginExportShutdown();
+        cancelCancellationSource(mLifetimeCancellationSource);
+        if (mIsExportResourceReleaseStarted == false)
+        {
+            mIsExportResourceReleaseStarted = true;
+            mExportResourceReleaseTask = releaseExportResourcesAsync();
+        }
     }
 
     private async Task releaseExportResourcesAsync()
     {
+        Exception? releaseExceptionOrNull = null;
         try
         {
-            await Task.WhenAll(mExportPngCommand.ExecutionTask, mExportAllPngCommand.ExecutionTask, mExportGoogleCalendarCommand.ExecutionTask, mExportAppleCalendarCommand.ExecutionTask);
-            mGoogleCalendarExporter.Dispose();
+            await waitForExportOperationsAsync();
         }
         catch (Exception exception)
         {
-            mExportResourceReleaseExceptionOrNull = exception;
+            releaseExceptionOrNull = exception;
         }
         finally
         {
+            try
+            {
+                mGoogleCalendarExporter.Dispose();
+            }
+            catch (Exception exception)
+            {
+                if (releaseExceptionOrNull == null)
+                {
+                    releaseExceptionOrNull = exception;
+                }
+                else
+                {
+                    releaseExceptionOrNull = new AggregateException(releaseExceptionOrNull, exception);
+                }
+            }
+
+            CancellationTokenSource? activeExportCancellationSourceOrNull = mActiveExportCancellationSourceOrNull;
+            mActiveExportCancellationSourceOrNull = null;
+            activeExportCancellationSourceOrNull?.Dispose();
             mLifetimeCancellationSource.Dispose();
+            mExportResourceReleaseExceptionOrNull = releaseExceptionOrNull;
+        }
+    }
+
+    internal void beginExportShutdown()
+    {
+        blockNewExportsForShutdown();
+        cancelCancellationSource(mActiveExportCancellationSourceOrNull);
+    }
+
+    internal void blockNewExportsForShutdown()
+    {
+        if (mIsExportShutdownRequested)
+        {
+            return;
+        }
+
+        mIsExportShutdownRequested = true;
+        disableExportButton();
+    }
+
+    internal async Task completeExportShutdownAsync(CancellationToken cancellationToken)
+    {
+        beginExportShutdown();
+        await waitForExportOperationsAsync().WaitAsync(cancellationToken);
+    }
+
+    internal void cancelExportShutdown()
+    {
+        if (mIsDetached || mIsExportShutdownRequested == false)
+        {
+            return;
+        }
+
+        mIsExportShutdownRequested = false;
+        if (mIsExportInProgress == false)
+        {
+            enableExportButton();
+        }
+    }
+
+    private Task waitForExportOperationsAsync()
+    {
+        return Task.WhenAll(
+            mExportPngCommand.ExecutionTask,
+            mExportAllPngCommand.ExecutionTask,
+            mExportGoogleCalendarCommand.ExecutionTask,
+            mExportAppleCalendarCommand.ExecutionTask);
+    }
+
+    private static void cancelCancellationSource(CancellationTokenSource? cancellationSourceOrNull)
+    {
+        try
+        {
+            cancellationSourceOrNull?.Cancel();
+        }
+        catch (Exception exception)
+        {
+            Trace.TraceWarning("Schedule export cancellation continued after a cancellation callback failed: {0}", exception);
         }
     }
 }

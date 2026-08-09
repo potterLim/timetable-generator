@@ -123,6 +123,7 @@ function Invoke-WindowsFinalization {
         Assert-WindowsSignature -Path $executablePath
     }
 
+    $archiveTimestamp = Get-RepositoryCommitArchiveTimestamp -RepositoryRoot $RepositoryRoot
     $releaseRoot = Resolve-ReleaseOutputRoot `
         -RepositoryRoot $RepositoryRoot `
         -Version $Version `
@@ -142,7 +143,8 @@ function Invoke-WindowsFinalization {
         New-DeterministicWindowsArchive `
             -SourcePath $source `
             -DestinationPath $archivePath `
-            -ArchiveRootName $archiveRootName
+            -ArchiveRootName $archiveRootName `
+            -ArchiveTimestamp $archiveTimestamp
 
         $prefix = "$archiveRootName/"
         $requiredEntries = @(
@@ -162,7 +164,8 @@ function Invoke-WindowsFinalization {
         Assert-ArchiveEntries `
             -ArchivePath $archivePath `
             -RequiredEntryNames $requiredEntries `
-            -RequiredPrefix $prefix
+            -RequiredPrefix $prefix `
+            -ExpectedEntryTimestamp $archiveTimestamp
     }
     catch {
         Remove-ExistingReleaseFile `

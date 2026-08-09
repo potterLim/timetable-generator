@@ -5,6 +5,7 @@
 #include <string.h>
 
 #define TG_EXPECTED_SCHEMA_VERSION (1U)
+#define TG_EXPECTED_ABI_VERSION (1U)
 
 typedef enum tg_event_kit_probe_exit_code {
     TG_EVENT_KIT_PROBE_EXIT_CODE_SUCCESS = 0,
@@ -13,12 +14,25 @@ typedef enum tg_event_kit_probe_exit_code {
     TG_EVENT_KIT_PROBE_EXIT_CODE_SYMBOL_MISSING = 12,
     TG_EVENT_KIT_PROBE_EXIT_CODE_SCHEMA_UNSUPPORTED = 13,
     TG_EVENT_KIT_PROBE_EXIT_CODE_RESPONSE_MISSING = 14,
-    TG_EVENT_KIT_PROBE_EXIT_CODE_RESPONSE_INVALID = 15
+    TG_EVENT_KIT_PROBE_EXIT_CODE_RESPONSE_INVALID = 15,
+    TG_EVENT_KIT_PROBE_EXIT_CODE_CANCELLATION_INVALID = 16
 } tg_event_kit_probe_exit_code_t;
 
 typedef uint32_t (*tg_schema_version_function_t)(void);
 typedef char* (*tg_execute_function_t)(const uint8_t* const request_bytes_or_null, const size_t request_length);
+typedef int32_t (*tg_is_cancelled_callback_t)(void* const p_context_or_null);
+typedef char* (*tg_execute_cancellable_function_t)(
+    const uint8_t* const request_bytes_or_null,
+    const size_t request_length,
+    const tg_is_cancelled_callback_t is_cancelled_or_null,
+    void* const p_cancellation_context_or_null);
 typedef void (*tg_free_response_function_t)(char* const pa_response_or_null);
+
+static int32_t tg_report_cancelled(void* const p_context_or_null)
+{
+    (void)p_context_or_null;
+    return 1;
+}
 
 int main(const int argument_count, char* const argument_values[])
 {
@@ -32,14 +46,16 @@ int main(const int argument_count, char* const argument_values[])
         return TG_EVENT_KIT_PROBE_EXIT_CODE_LIBRARY_OPEN_FAILED;
     }
 
+    tg_schema_version_function_t const get_abi_version_or_null = (tg_schema_version_function_t)dlsym(library_or_null, "tg_eventkit_abi_version");
     tg_schema_version_function_t const get_schema_version_or_null = (tg_schema_version_function_t)dlsym(library_or_null, "tg_eventkit_schema_version");
     tg_execute_function_t const execute_or_null = (tg_execute_function_t)dlsym(library_or_null, "tg_eventkit_execute");
+    tg_execute_cancellable_function_t const execute_cancellable_or_null = (tg_execute_cancellable_function_t)dlsym(library_or_null, "tg_eventkit_execute_cancellable");
     tg_free_response_function_t const free_response_or_null = (tg_free_response_function_t)dlsym(library_or_null, "tg_eventkit_free");
-    if (get_schema_version_or_null == NULL || execute_or_null == NULL || free_response_or_null == NULL) {
+    if (get_abi_version_or_null == NULL || get_schema_version_or_null == NULL || execute_or_null == NULL || execute_cancellable_or_null == NULL || free_response_or_null == NULL) {
         dlclose(library_or_null);
         return TG_EVENT_KIT_PROBE_EXIT_CODE_SYMBOL_MISSING;
     }
-    if (get_schema_version_or_null() != TG_EXPECTED_SCHEMA_VERSION) {
+    if (get_abi_version_or_null() != TG_EXPECTED_ABI_VERSION || get_schema_version_or_null() != TG_EXPECTED_SCHEMA_VERSION) {
         dlclose(library_or_null);
         return TG_EVENT_KIT_PROBE_EXIT_CODE_SCHEMA_UNSUPPORTED;
     }
@@ -54,10 +70,24 @@ int main(const int argument_count, char* const argument_values[])
     const int response_is_valid = strstr(pa_response_or_null, "invalid_request") != NULL;
     free_response_or_null(pa_response_or_null);
     pa_response_or_null = NULL;
-    dlclose(library_or_null);
-    if (response_is_valid != 0) {
-        return TG_EVENT_KIT_PROBE_EXIT_CODE_SUCCESS;
+    if (response_is_valid == 0) {
+        dlclose(library_or_null);
+        return TG_EVENT_KIT_PROBE_EXIT_CODE_RESPONSE_INVALID;
     }
 
-    return TG_EVENT_KIT_PROBE_EXIT_CODE_RESPONSE_INVALID;
+    static const uint8_t CANCELLABLE_REQUEST[] = "{\"schemaVersion\":1,\"operation\":\"list\"}";
+    pa_response_or_null = execute_cancellable_or_null(CANCELLABLE_REQUEST, sizeof(CANCELLABLE_REQUEST) - 1U, tg_report_cancelled, NULL);
+    if (pa_response_or_null == NULL) {
+        dlclose(library_or_null);
+        return TG_EVENT_KIT_PROBE_EXIT_CODE_RESPONSE_MISSING;
+    }
+
+    const int cancellation_is_valid = strstr(pa_response_or_null, "eventkit_calendar_access_request_cancelled") != NULL;
+    free_response_or_null(pa_response_or_null);
+    dlclose(library_or_null);
+    if (cancellation_is_valid == 0) {
+        return TG_EVENT_KIT_PROBE_EXIT_CODE_CANCELLATION_INVALID;
+    }
+
+    return TG_EVENT_KIT_PROBE_EXIT_CODE_SUCCESS;
 }

@@ -200,7 +200,16 @@ internal sealed partial class EventKitAppleCalendarNativeBridge : IAppleCalendar
             registryWithPending.PendingOperationOrNull!.PreparedAtUnixSeconds,
             recurringEvents,
             managedEvents);
-        EventKitAppleCalendarResponse response = await executeAsync(request, cancellationToken).ConfigureAwait(false);
+        EventKitAppleCalendarResponse response;
+        try
+        {
+            response = await executeAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            saveRegistry(registryWithPending.ClearPendingOperation(), "apple_calendar_registry_cleanup_failed");
+            throw;
+        }
         try
         {
             ensureSuccessfulResponse(response);
@@ -229,6 +238,13 @@ internal sealed partial class EventKitAppleCalendarNativeBridge : IAppleCalendar
             EventKitAppleCalendarResponse? responseOrNull = JsonSerializer.Deserialize<EventKitAppleCalendarResponse>(responseJson, JSON_OPTIONS);
             if (responseOrNull == null)
             {
+                throw invalidResponse();
+            }
+
+            if (string.Equals(responseOrNull.Status, "operation_failed", StringComparison.Ordinal)
+                && string.Equals(responseOrNull.DiagnosticCode, "eventkit_calendar_access_request_cancelled", StringComparison.Ordinal))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
                 throw invalidResponse();
             }
 

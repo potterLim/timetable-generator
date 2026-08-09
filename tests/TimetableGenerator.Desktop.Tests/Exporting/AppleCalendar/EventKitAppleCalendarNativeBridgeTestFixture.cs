@@ -185,7 +185,7 @@ public abstract class EventKitAppleCalendarNativeBridgeTestFixture
 
     private protected sealed class RecordingEventKitCalendarCommand : IEventKitCalendarCommand
     {
-        private readonly Func<string, string> mResponseFactory;
+        private readonly Func<string, CancellationToken, Task<string>> mResponseFactory;
         private readonly List<string> mRequests = new List<string>();
 
         public bool IsAvailable { get; set; } = true;
@@ -199,11 +199,16 @@ public abstract class EventKitAppleCalendarNativeBridgeTestFixture
         }
 
         public RecordingEventKitCalendarCommand(string response)
-            : this(_ => response)
+            : this((_, _) => Task.FromResult(response))
         {
         }
 
         public RecordingEventKitCalendarCommand(Func<string, string> responseFactory)
+            : this((requestJson, _) => Task.FromResult(responseFactory(requestJson)))
+        {
+        }
+
+        public RecordingEventKitCalendarCommand(Func<string, CancellationToken, Task<string>> responseFactory)
         {
             mResponseFactory = responseFactory;
         }
@@ -212,7 +217,7 @@ public abstract class EventKitAppleCalendarNativeBridgeTestFixture
         {
             cancellationToken.ThrowIfCancellationRequested();
             mRequests.Add(requestJson);
-            return Task.FromResult(mResponseFactory(requestJson));
+            return mResponseFactory(requestJson, cancellationToken);
         }
     }
 

@@ -1,4 +1,4 @@
-function Get-InfoPlistContents {
+function Get-MacOSPropertyListContents {
     param(
         [Parameter(Mandatory)]
         [string] $Path
@@ -19,7 +19,7 @@ function Get-InfoPlistContents {
 
     $dictionary = $document.SelectSingleNode("/plist/dict")
     if ($null -eq $dictionary) {
-        throw "Info.plist에 최상위 dict가 없습니다: $Path"
+        throw "macOS property list에 최상위 dict가 없습니다: $Path"
     }
 
     $elements = @($dictionary.ChildNodes | Where-Object NodeType -eq ([System.Xml.XmlNodeType]::Element))
@@ -29,12 +29,12 @@ function Get-InfoPlistContents {
     $arrayStringValues = @{}
     for ($index = 0; $index -lt $elements.Count; $index += 2) {
         if ($index + 1 -ge $elements.Count -or $elements[$index].Name -ne "key") {
-            throw "Info.plist key/value 구조가 유효하지 않습니다: $Path"
+            throw "macOS property list의 key/value 구조가 유효하지 않습니다: $Path"
         }
 
         $key = $elements[$index].InnerText
         if (-not $keys.Add($key)) {
-            throw "Info.plist에 중복 key가 있습니다: $key"
+            throw "macOS property list에 중복 key가 있습니다: $key"
         }
 
         $valueElement = $elements[$index + 1]
@@ -67,7 +67,7 @@ function Assert-MacOSEntitlements {
         [string] $Path
     )
 
-    $contents = Get-InfoPlistContents -Path $Path
+    $contents = Get-MacOSPropertyListContents -Path $Path
     $requiredEntitlements = @(
         "com.apple.security.cs.allow-jit",
         "com.apple.security.personal-information.calendars"
@@ -98,7 +98,7 @@ function Assert-MacOSInfoPlist {
         [string] $ProductVersion
     )
 
-    $contents = Get-InfoPlistContents -Path $Path
+    $contents = Get-MacOSPropertyListContents -Path $Path
     $values = $contents.StringValues
     $expectedValues = [ordered]@{
         CFBundleDevelopmentRegion = "ko"

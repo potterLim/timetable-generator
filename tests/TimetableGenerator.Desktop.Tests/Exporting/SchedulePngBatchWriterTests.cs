@@ -12,7 +12,7 @@ namespace TimetableGenerator.Desktop.Tests.Exporting;
 public sealed partial class SchedulePngBatchWriterTests
 {
     [Fact]
-    public void BatchDirectoryAllocatorNeverReusesAnExistingFolder()
+    public void AtomicBatchCommitNeverReusesAnExistingFolder()
     {
         string parentDirectoryPath = createTemporaryDirectory();
         try
@@ -20,8 +20,10 @@ public sealed partial class SchedulePngBatchWriterTests
             Directory.CreateDirectory(Path.Combine(parentDirectoryPath, "2026-2학기 시간표"));
             Directory.CreateDirectory(Path.Combine(parentDirectoryPath, "2026-2학기 시간표 (2)"));
 
-            using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createUnique(parentDirectoryPath, new PlanName("2026-2학기 시간표"), CancellationToken.None))
+            PlanName planName = new PlanName("2026-2학기 시간표");
+            using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createStaging(parentDirectoryPath, CancellationToken.None))
             {
+                directory.commitAsUniqueBatch(planName, CancellationToken.None);
                 Assert.Equal("2026-2학기 시간표 (3)", Path.GetFileName(directory.DirectoryPath));
             }
         }
@@ -32,15 +34,17 @@ public sealed partial class SchedulePngBatchWriterTests
     }
 
     [Fact]
-    public void BatchDirectoryAllocatorSkipsAnExistingFile()
+    public void AtomicBatchCommitSkipsAnExistingFile()
     {
         string parentDirectoryPath = createTemporaryDirectory();
         try
         {
             File.WriteAllText(Path.Combine(parentDirectoryPath, "2026-2학기 시간표"), "preserve");
 
-            using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createUnique(parentDirectoryPath, new PlanName("2026-2학기 시간표"), CancellationToken.None))
+            PlanName planName = new PlanName("2026-2학기 시간표");
+            using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createStaging(parentDirectoryPath, CancellationToken.None))
             {
+                directory.commitAsUniqueBatch(planName, CancellationToken.None);
                 Assert.Equal("2026-2학기 시간표 (2)", Path.GetFileName(directory.DirectoryPath));
             }
         }
@@ -51,7 +55,7 @@ public sealed partial class SchedulePngBatchWriterTests
     }
 
     [Fact]
-    public void BatchDirectoryAllocatorKeepsCopySuffixWithinComponentLimit()
+    public void AtomicBatchCommitKeepsCopySuffixWithinComponentLimit()
     {
         string parentDirectoryPath = createTemporaryDirectory();
         try
@@ -60,8 +64,9 @@ public sealed partial class SchedulePngBatchWriterTests
             string firstFolderName = SchedulePngFileNameFactory.CreateBatchFolderName(planName);
             Directory.CreateDirectory(Path.Combine(parentDirectoryPath, firstFolderName));
 
-            using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createUnique(parentDirectoryPath, planName, CancellationToken.None))
+            using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createStaging(parentDirectoryPath, CancellationToken.None))
             {
+                directory.commitAsUniqueBatch(planName, CancellationToken.None);
                 string folderName = Path.GetFileName(directory.DirectoryPath);
                 Assert.True(System.Text.Encoding.UTF8.GetByteCount(folderName) <= 255);
                 Assert.EndsWith(" (2)", folderName, StringComparison.Ordinal);
@@ -79,7 +84,7 @@ public sealed partial class SchedulePngBatchWriterTests
         string parentDirectoryPath = createTemporaryDirectory();
         try
         {
-            using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createUnique(parentDirectoryPath, new PlanName("2026-2학기 시간표"), CancellationToken.None))
+            using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createStaging(parentDirectoryPath, CancellationToken.None))
             {
                 using (Stream stream = directory.createFile("후보.png"))
                 {
@@ -108,7 +113,7 @@ public sealed partial class SchedulePngBatchWriterTests
         string directoryPath;
         try
         {
-            using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createUnique(parentDirectoryPath, new PlanName("2026-2학기 시간표"), CancellationToken.None))
+            using (SchedulePngBatchDirectory directory = SchedulePngBatchDirectoryAllocator.createStaging(parentDirectoryPath, CancellationToken.None))
             {
                 directoryPath = directory.DirectoryPath;
                 using (Stream stream = directory.createFile("후보.png"))

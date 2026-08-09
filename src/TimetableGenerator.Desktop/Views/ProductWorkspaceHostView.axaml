@@ -264,7 +264,7 @@
       </Border>
 
       <Grid Grid.Column="1" ColumnDefinitions="*,Auto">
-        <views:ScheduleWorkspaceView Grid.Column="0" />
+        <views:ScheduleWorkspaceView x:Name="ScheduleWorkspace" Grid.Column="0" />
         <Border
             x:Name="InspectorPaneHost"
             Classes="inspector-pane"

@@ -43,11 +43,14 @@ public sealed partial class ScheduleWorkspaceCalendarExportTests
             }
         }
 
+        public int ExportCallCount { get; private set; }
+
         public async Task<GoogleCalendarExportResult> ExportAsync(GoogleCalendarExportPlan plan, ICalendarNameConflictResolver conflictResolver, CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(plan);
             ArgumentNullException.ThrowIfNull(conflictResolver);
             cancellationToken.ThrowIfCancellationRequested();
+            ExportCallCount++;
             mExportStartedSource.TrySetResult();
             return await mCompletionSource.Task.WaitAsync(cancellationToken);
         }
@@ -64,6 +67,78 @@ public sealed partial class ScheduleWorkspaceCalendarExportTests
         public void CancelPendingExport()
         {
             mCompletionSource.TrySetCanceled();
+        }
+
+        public void Dispose()
+        {
+        }
+    }
+
+    private sealed class NonCancellingControlledGoogleCalendarExporter : IGoogleCalendarExporter
+    {
+        private readonly TaskCompletionSource mExportStartedSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        private readonly TaskCompletionSource<GoogleCalendarExportResult> mCompletionSource = new TaskCompletionSource<GoogleCalendarExportResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public int ExportCallCount { get; private set; }
+
+        public Task ExportStartedTask
+        {
+            get
+            {
+                return mExportStartedSource.Task;
+            }
+        }
+
+        public async Task<GoogleCalendarExportResult> ExportAsync(GoogleCalendarExportPlan plan, ICalendarNameConflictResolver conflictResolver, CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(plan);
+            ArgumentNullException.ThrowIfNull(conflictResolver);
+            ExportCallCount++;
+            mExportStartedSource.TrySetResult();
+            return await mCompletionSource.Task;
+        }
+
+        public void Complete(GoogleCalendarExportResult result)
+        {
+            ArgumentNullException.ThrowIfNull(result);
+            if (mCompletionSource.TrySetResult(result) == false)
+            {
+                throw new InvalidOperationException("The controlled export already completed.");
+            }
+        }
+
+        public void Dispose()
+        {
+        }
+    }
+
+    private sealed class ThrowingCancellationCallbackGoogleCalendarExporter : IGoogleCalendarExporter
+    {
+        private readonly TaskCompletionSource mExportStartedSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task ExportStartedTask
+        {
+            get
+            {
+                return mExportStartedSource.Task;
+            }
+        }
+
+        public async Task<GoogleCalendarExportResult> ExportAsync(GoogleCalendarExportPlan plan, ICalendarNameConflictResolver conflictResolver, CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(plan);
+            ArgumentNullException.ThrowIfNull(conflictResolver);
+            using (cancellationToken.Register(
+                delegate
+                {
+                    throw new InvalidOperationException("Synthetic cancellation callback failure.");
+                }))
+            {
+                mExportStartedSource.TrySetResult();
+                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+                throw new InvalidOperationException("The controlled export should have been canceled.");
+            }
         }
 
         public void Dispose()

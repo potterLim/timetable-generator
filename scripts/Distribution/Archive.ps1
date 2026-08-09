@@ -138,7 +138,10 @@ function Assert-DistributionArchive {
 
         [Parameter(Mandatory)]
         [ValidateSet("Windows", "MacOS")]
-        [string] $ArchivePlatform
+        [string] $ArchivePlatform,
+
+        [Parameter(Mandatory)]
+        [System.DateTimeOffset] $ArchiveTimestamp
     )
 
     $bytes = [System.IO.File]::ReadAllBytes($ArchivePath)
@@ -171,12 +174,7 @@ function Assert-DistributionArchive {
                 }
 
                 $previousEntryName = $entry.FullName
-                if ($entry.LastWriteTime.Year -ne 2000 -or
-                    $entry.LastWriteTime.Month -ne 1 -or
-                    $entry.LastWriteTime.Day -ne 1 -or
-                    $entry.LastWriteTime.Hour -ne 0 -or
-                    $entry.LastWriteTime.Minute -ne 0 -or
-                    $entry.LastWriteTime.Second -ne 0) {
+                if (-not (Test-ZipEntryTimestampEquals -Actual $entry.LastWriteTime -Expected $ArchiveTimestamp)) {
                     throw "게시 archive entry timestamp가 결정적이지 않습니다: $($entry.FullName)"
                 }
 
@@ -221,7 +219,10 @@ function New-DistributionArchive {
 
         [Parameter(Mandatory)]
         [ValidateSet("Windows", "MacOS")]
-        [string] $ArchivePlatform
+        [string] $ArchivePlatform,
+
+        [Parameter(Mandatory)]
+        [System.DateTimeOffset] $ArchiveTimestamp
     )
 
     if (-not (Test-Path -LiteralPath $SourcePath -PathType Container)) {
@@ -233,6 +234,7 @@ function New-DistributionArchive {
         throw "게시 archive 이름에는 디렉터리 구분자를 사용할 수 없습니다: $ArchiveFileName"
     }
 
+    $normalizedArchiveTimestamp = Get-NormalizedZipEntryTimestamp -Timestamp $ArchiveTimestamp
     $archivePath = Join-Path $OutputRoot $ArchiveFileName
     Remove-ExistingDistributionArchive `
         -OutputRoot $OutputRoot `
@@ -261,14 +263,7 @@ function New-DistributionArchive {
             foreach ($entryName in $entryNames) {
                 $filePath = $entrySourcePaths[$entryName]
                 $entry = $archive.CreateEntry($entryName, [System.IO.Compression.CompressionLevel]::Optimal)
-                $entry.LastWriteTime = [System.DateTimeOffset]::new(
-                    2000,
-                    1,
-                    1,
-                    0,
-                    0,
-                    0,
-                    [System.TimeSpan]::Zero)
+                $entry.LastWriteTime = $normalizedArchiveTimestamp
                 $entryMode = if ($ArchivePlatform -eq "MacOS" -and (Test-IsMachOFile -Path $filePath)) {
                     "Executable"
                 }
@@ -300,7 +295,8 @@ function New-DistributionArchive {
     Assert-DistributionArchive `
         -ArchivePath $archivePath `
         -ArchiveRootName $ArchiveRootName `
-        -ArchivePlatform $ArchivePlatform
+        -ArchivePlatform $ArchivePlatform `
+        -ArchiveTimestamp $normalizedArchiveTimestamp
 }
 
 function Write-DistributionChecksums {
@@ -312,15 +308,6 @@ function Write-DistributionChecksums {
         [string[]] $ArchivePaths
     )
 
-    [System.Array]::Sort($ArchivePaths, [System.StringComparer]::Ordinal)
-    $checksumLines = foreach ($archivePath in $ArchivePaths) {
-        Assert-NonEmptyFile -Path $archivePath
-        $archiveName = [System.IO.Path]::GetFileName($archivePath)
-        $hash = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash.ToLowerInvariant()
-        "$hash  $archiveName"
-    }
-
     $checksumPath = Join-Path $OutputRoot "checksums.sha256"
-    $utf8WithoutBom = [System.Text.UTF8Encoding]::new($false)
-    [System.IO.File]::WriteAllLines($checksumPath, $checksumLines, $utf8WithoutBom)
+    Write-Sha256ChecksumFile -Path $checksumPath -FilePaths $ArchivePaths
 }

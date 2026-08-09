@@ -1,11 +1,28 @@
+function Assert-DistributionRuntimeHost {
+    param(
+        [Parameter(Mandatory)]
+        [ValidateSet("win-x64", "osx-arm64")]
+        [string] $Runtime
+    )
+
+    if ($Runtime -eq "win-x64" -and -not $IsWindows) {
+        throw "win-x64 게시 산출물은 Windows에서만 만들 수 있습니다."
+    }
+
+    if ($Runtime -eq "osx-arm64" -and -not $IsMacOS) {
+        throw "osx-arm64 게시 산출물은 macOS에서만 만들 수 있습니다."
+    }
+}
+
 function Publish-TimetableGeneratorDesktop {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
         [string] $RepositoryRoot,
 
-        [ValidateSet("all", "win-x64", "osx-arm64")]
-        [string] $Runtime = "all",
+        [Parameter(Mandatory)]
+        [ValidateSet("win-x64", "osx-arm64")]
+        [string] $Runtime,
 
         [ValidatePattern("^\d+\.\d+\.\d+$")]
         [string] $Version,
@@ -17,6 +34,8 @@ function Publish-TimetableGeneratorDesktop {
 
         [switch] $NoRestore
     )
+
+    Assert-DistributionRuntimeHost -Runtime $Runtime
 
     $resolvedRepositoryRoot = [System.IO.Path]::GetFullPath($RepositoryRoot)
     $projectPath = Join-Path $resolvedRepositoryRoot "src/TimetableGenerator.Desktop/TimetableGenerator.Desktop.csproj"
@@ -51,12 +70,8 @@ function Publish-TimetableGeneratorDesktop {
         throw "제품 버전은 major.minor.patch 숫자 형식이어야 합니다: $Version"
     }
 
-    $selectedRuntimes = if ($Runtime -eq "all") {
-        @("win-x64", "osx-arm64")
-    }
-    else {
-        @($Runtime)
-    }
+    $archiveTimestamp = Get-RepositoryCommitArchiveTimestamp -RepositoryRoot $resolvedRepositoryRoot
+    $selectedRuntimes = @($Runtime)
     $replaceableEntryNames = [System.Collections.Generic.List[string]]::new()
     foreach ($runtimeIdentifier in $selectedRuntimes) {
         $replaceableEntryNames.Add($runtimeIdentifier)
@@ -77,6 +92,7 @@ function Publish-TimetableGeneratorDesktop {
                     -OutputRoot $resolvedOutputRoot `
                     -ExecutableName $executableName `
                     -ProductVersion $Version `
+                    -ArchiveTimestamp $archiveTimestamp `
                     -NoRestore:$NoRestore
                 $archivePaths.Add((Join-Path $resolvedOutputRoot "TimetableGenerator-$Version-$runtimeIdentifier-unsigned.zip"))
             }
@@ -90,6 +106,7 @@ function Publish-TimetableGeneratorDesktop {
                     -ExecutableName $executableName `
                     -ProductVersion $Version `
                     -BundleIdentifier $BundleIdentifier `
+                    -ArchiveTimestamp $archiveTimestamp `
                     -NoRestore:$NoRestore
                 $archivePaths.Add((Join-Path $resolvedOutputRoot "TimetableGenerator-$Version-$runtimeIdentifier-unsigned.zip"))
             }

@@ -12,12 +12,15 @@
 
 #define TG_NULL_TERMINATOR_BYTE_COUNT (1U)
 
+static const uint32_t TG_ABI_VERSION = 1U;
 static const size_t TG_MAXIMUM_REQUEST_BYTE_COUNT = 8 * 1024 * 1024;
-static const int64_t TG_CALENDAR_ACCESS_TIMEOUT_NANOSECONDS = 5LL * 60LL * NSEC_PER_SEC;
+static const int64_t TG_CALENDAR_ACCESS_WAIT_SLICE_NANOSECONDS = 100LL * NSEC_PER_MSEC;
+static const NSUInteger TG_CALENDAR_ACCESS_WAIT_SLICE_COUNT = 60U * 10U;
 
 typedef NS_ENUM(NSInteger, tg_calendar_access_result_t) {
     TG_CALENDAR_ACCESS_RESULT_GRANTED,
     TG_CALENDAR_ACCESS_RESULT_DENIED,
+    TG_CALENDAR_ACCESS_RESULT_CANCELLED,
     TG_CALENDAR_ACCESS_RESULT_TIMED_OUT,
     TG_CALENDAR_ACCESS_RESULT_FAILED
 };
@@ -70,9 +73,27 @@ static char* tg_copy_json_response_malloc(NSDictionary* const response)
     return pa_json_response;
 }
 
-static tg_calendar_access_result_t tg_request_calendar_access(EKEventStore* const event_store)
+static BOOL tg_is_cancellation_requested(
+    const tg_eventkit_is_cancelled_callback_t is_cancelled_or_null,
+    void* const p_cancellation_context_or_null)
+{
+    if (is_cancelled_or_null == NULL) {
+        return NO;
+    }
+
+    return is_cancelled_or_null(p_cancellation_context_or_null) != 0;
+}
+
+static tg_calendar_access_result_t tg_request_calendar_access(
+    EKEventStore* const event_store,
+    const tg_eventkit_is_cancelled_callback_t is_cancelled_or_null,
+    void* const p_cancellation_context_or_null)
 {
     assert(event_store != NULL);
+
+    if (tg_is_cancellation_requested(is_cancelled_or_null, p_cancellation_context_or_null)) {
+        return TG_CALENDAR_ACCESS_RESULT_CANCELLED;
+    }
 
     const EKAuthorizationStatus status = [EKEventStore authorizationStatusForEntityType:EKEntityTypeEvent];
     if (status == EKAuthorizationStatusFullAccess) {
@@ -91,26 +112,35 @@ static tg_calendar_access_result_t tg_request_calendar_access(EKEventStore* cons
         request_error = error_or_null;
         dispatch_semaphore_signal(completion_semaphore);
     }];
-    const long wait_result = dispatch_semaphore_wait(completion_semaphore, dispatch_time(DISPATCH_TIME_NOW, TG_CALENDAR_ACCESS_TIMEOUT_NANOSECONDS));
-    if (wait_result != 0) {
-        return TG_CALENDAR_ACCESS_RESULT_TIMED_OUT;
+    for (NSUInteger wait_slice_index = 0; wait_slice_index < TG_CALENDAR_ACCESS_WAIT_SLICE_COUNT; ++wait_slice_index) {
+        const long wait_result = dispatch_semaphore_wait(completion_semaphore, dispatch_time(DISPATCH_TIME_NOW, TG_CALENDAR_ACCESS_WAIT_SLICE_NANOSECONDS));
+        if (wait_result == 0) {
+            if (granted) {
+                return TG_CALENDAR_ACCESS_RESULT_GRANTED;
+            }
+
+            if (request_error == nil) {
+                return TG_CALENDAR_ACCESS_RESULT_DENIED;
+            }
+
+            return TG_CALENDAR_ACCESS_RESULT_FAILED;
+        }
+
+        if (tg_is_cancellation_requested(is_cancelled_or_null, p_cancellation_context_or_null)) {
+            return TG_CALENDAR_ACCESS_RESULT_CANCELLED;
+        }
     }
 
-    if (granted) {
-        return TG_CALENDAR_ACCESS_RESULT_GRANTED;
-    }
-
-    if (request_error == nil) {
-        return TG_CALENDAR_ACCESS_RESULT_DENIED;
-    }
-
-    return TG_CALENDAR_ACCESS_RESULT_FAILED;
+    return TG_CALENDAR_ACCESS_RESULT_TIMED_OUT;
 }
 
 static NSDictionary* tg_get_calendar_access_failure(const tg_calendar_access_result_t result)
 {
     if (result == TG_CALENDAR_ACCESS_RESULT_DENIED) {
         return tg_create_response(TG_STATUS_ACCESS_DENIED, @"eventkit_calendar_access_denied");
+    }
+    if (result == TG_CALENDAR_ACCESS_RESULT_CANCELLED) {
+        return tg_create_response(TG_STATUS_OPERATION_FAILED, @"eventkit_calendar_access_request_cancelled");
     }
     if (result == TG_CALENDAR_ACCESS_RESULT_TIMED_OUT) {
         return tg_create_response(TG_STATUS_OPERATION_FAILED, @"eventkit_calendar_access_request_timed_out");
@@ -119,7 +149,10 @@ static NSDictionary* tg_get_calendar_access_failure(const tg_calendar_access_res
     return tg_create_response(TG_STATUS_OPERATION_FAILED, @"eventkit_calendar_access_request_failed");
 }
 
-static NSDictionary* tg_execute_request(NSDictionary* const request)
+static NSDictionary* tg_execute_request(
+    NSDictionary* const request,
+    const tg_eventkit_is_cancelled_callback_t is_cancelled_or_null,
+    void* const p_cancellation_context_or_null)
 {
     assert(request != NULL);
 
@@ -134,7 +167,7 @@ static NSDictionary* tg_execute_request(NSDictionary* const request)
     }
 
     EKEventStore* const event_store = [[EKEventStore alloc] init];
-    const tg_calendar_access_result_t access_result = tg_request_calendar_access(event_store);
+    const tg_calendar_access_result_t access_result = tg_request_calendar_access(event_store, is_cancelled_or_null, p_cancellation_context_or_null);
     if (access_result != TG_CALENDAR_ACCESS_RESULT_GRANTED) {
         return tg_get_calendar_access_failure(access_result);
     }
@@ -157,7 +190,16 @@ uint32_t tg_eventkit_schema_version(void)
     return TG_SCHEMA_VERSION;
 }
 
-char* tg_eventkit_execute(const uint8_t* const request_bytes_or_null, const size_t request_length)
+uint32_t tg_eventkit_abi_version(void)
+{
+    return TG_ABI_VERSION;
+}
+
+char* tg_eventkit_execute_cancellable(
+    const uint8_t* const request_bytes_or_null,
+    const size_t request_length,
+    const tg_eventkit_is_cancelled_callback_t is_cancelled_or_null,
+    void* const p_cancellation_context_or_null)
 {
     @autoreleasepool {
         if (request_bytes_or_null == NULL || request_length == 0 || request_length > TG_MAXIMUM_REQUEST_BYTE_COUNT) {
@@ -172,7 +214,7 @@ char* tg_eventkit_execute(const uint8_t* const request_bytes_or_null, const size
                 return tg_copy_json_response_malloc(tg_create_response(TG_STATUS_INVALID_REQUEST, @"eventkit_request_json_invalid"));
             }
 
-            return tg_copy_json_response_malloc(tg_execute_request(request_object));
+            return tg_copy_json_response_malloc(tg_execute_request(request_object, is_cancelled_or_null, p_cancellation_context_or_null));
         } @catch (NSException* exception) {
             if ([exception.name isEqualToString:TG_INVALID_REQUEST_EXCEPTION]) {
                 NSString* const diagnostic_code_or_null = exception.reason;
@@ -185,6 +227,11 @@ char* tg_eventkit_execute(const uint8_t* const request_bytes_or_null, const size
             return tg_copy_json_response_malloc(tg_create_response(TG_STATUS_OPERATION_FAILED, @"eventkit_native_exception"));
         }
     }
+}
+
+char* tg_eventkit_execute(const uint8_t* const request_bytes_or_null, const size_t request_length)
+{
+    return tg_eventkit_execute_cancellable(request_bytes_or_null, request_length, NULL, NULL);
 }
 
 void tg_eventkit_free(char* const pa_response_or_null)

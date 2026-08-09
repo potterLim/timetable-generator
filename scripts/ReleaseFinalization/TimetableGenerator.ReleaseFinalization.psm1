@@ -4,6 +4,7 @@ $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "../Distribution/Common.ps1")
 . (Join-Path $PSScriptRoot "../Distribution/BinaryValidation.ps1")
 . (Join-Path $PSScriptRoot "../Distribution/MacOSEventKitBridgeValidation.ps1")
+. (Join-Path $PSScriptRoot "../Distribution/MacOSPropertyList.ps1")
 . (Join-Path $PSScriptRoot "ProductIdentity.ps1")
 . (Join-Path $PSScriptRoot "PathUtilities.ps1")
 . (Join-Path $PSScriptRoot "ArtifactValidation.ps1")

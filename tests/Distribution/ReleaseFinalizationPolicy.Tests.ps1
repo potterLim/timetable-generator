@@ -8,11 +8,17 @@ $modulePath = Join-Path $repositoryRoot "scripts/ReleaseFinalization/TimetableGe
 $commonPath = Join-Path $repositoryRoot "scripts/Distribution/Common.ps1"
 $pathUtilitiesPath = Join-Path $repositoryRoot "scripts/ReleaseFinalization/PathUtilities.ps1"
 $macOSReleaseValidationPath = Join-Path $repositoryRoot "scripts/ReleaseFinalization/MacOSReleaseValidation.ps1"
+$nativeCommandPath = Join-Path $repositoryRoot "scripts/ReleaseFinalization/NativeCommand.ps1"
+$macOSPropertyListPath = Join-Path $repositoryRoot "scripts/Distribution/MacOSPropertyList.ps1"
+$testAssertionsPath = Join-Path $repositoryRoot "tests/Distribution/TestAssertions.ps1"
 
 Import-Module -Name $modulePath -Force
 . $commonPath
 . $pathUtilitiesPath
+. $macOSPropertyListPath
+. $nativeCommandPath
 . $macOSReleaseValidationPath
+. $testAssertionsPath
 
 function Assert-Equal {
     param(
@@ -26,22 +32,6 @@ function Assert-Equal {
     if ($Expected -cne $Actual) {
         throw "값이 일치하지 않습니다. 예상: $Expected, 실제: $Actual"
     }
-}
-
-function Assert-Throws {
-    param(
-        [Parameter(Mandatory)]
-        [scriptblock] $Action
-    )
-
-    try {
-        & $Action
-    }
-    catch {
-        return
-    }
-
-    throw "예상한 오류가 발생하지 않았습니다."
 }
 
 function Invoke-TestCase {
@@ -111,14 +101,14 @@ try {
     }
 
     Invoke-TestCase -Name "official unsigned and smoke policies cannot be combined" -Action {
-        Assert-Throws {
+        Assert-Throws -Action {
             Invoke-TimetableGeneratorReleaseFinalization `
                 -Stage Aggregate `
                 -Version "1.0.0" `
                 -RepositoryRoot $repositoryRoot `
                 -WindowsSignatureMode Unsigned `
                 -AllowUnsigned
-        }
+        } -ExceptionType ([System.Management.Automation.RuntimeException]) -ExpectedMessageFragment "함께 사용할 수 없습니다"
     }
 
     Invoke-TestCase -Name "official unsigned policy uses the release output tree" -Action {
@@ -136,13 +126,13 @@ try {
     }
 
     Invoke-TestCase -Name "smoke policy remains isolated and rejected by Aggregate" -Action {
-        Assert-Throws {
+        Assert-Throws -Action {
             Invoke-TimetableGeneratorReleaseFinalization `
                 -Stage Aggregate `
                 -Version "1.0.0" `
                 -RepositoryRoot $repositoryRoot `
                 -AllowUnsigned
-        }
+        } -ExceptionType ([System.Management.Automation.RuntimeException]) -ExpectedMessageFragment "unsigned smoke archive를 허용하지 않습니다"
 
     }
 
@@ -159,21 +149,68 @@ Runtime Version=26.0.0
         Assert-Equal -Expected "ABCDE12345" -Actual $teamIdentifier
         Assert-MacOSMatchingTeamIdentifiers -ApplicationTeamIdentifier $teamIdentifier -MainExecutableTeamIdentifier $teamIdentifier -EventKitBridgeTeamIdentifier $teamIdentifier
 
-        Assert-Throws {
+        Assert-Throws -Action {
             $invalidDetails = $validSigningDetails.Replace("flags=0x10000(runtime)", "flags=0x0(none)")
             Get-MacOSDeveloperIDTeamIdentifierFromSigningDetails -SigningDetails $invalidDetails -ArtifactDescription "테스트 앱"
-        }
-        Assert-Throws {
+        } -ExceptionType ([System.Management.Automation.RuntimeException]) -ExpectedMessageFragment "hardened runtime"
+        Assert-Throws -Action {
             $invalidDetails = $validSigningDetails.Replace("Authority=Developer ID Application:", "Authority=Apple Development:")
             Get-MacOSDeveloperIDTeamIdentifierFromSigningDetails -SigningDetails $invalidDetails -ArtifactDescription "테스트 앱"
-        }
-        Assert-Throws {
+        } -ExceptionType ([System.Management.Automation.RuntimeException]) -ExpectedMessageFragment "Developer ID Application"
+        Assert-Throws -Action {
             $invalidDetails = $validSigningDetails.Replace("TeamIdentifier=ABCDE12345", "TeamIdentifier=not set")
             Get-MacOSDeveloperIDTeamIdentifierFromSigningDetails -SigningDetails $invalidDetails -ArtifactDescription "테스트 앱"
-        }
-        Assert-Throws {
+        } -ExceptionType ([System.Management.Automation.RuntimeException]) -ExpectedMessageFragment "TeamIdentifier"
+        Assert-Throws -Action {
             Assert-MacOSMatchingTeamIdentifiers -ApplicationTeamIdentifier "ABCDE12345" -MainExecutableTeamIdentifier "ABCDE12345" -EventKitBridgeTeamIdentifier "ZZZZZ99999"
+        } -ExceptionType ([System.Management.Automation.RuntimeException]) -ExpectedMessageFragment "정확히 일치하지 않습니다"
+    }
+
+    Invoke-TestCase -Name "signed entitlement plist requires exact true keys" -Action {
+        $validPath = Join-Path $testRoot "valid-signed-entitlements.plist"
+        [System.IO.File]::Copy(
+            (Join-Path $repositoryRoot "src/TimetableGenerator.Desktop/Platforms/macOS/TimetableGenerator.entitlements"),
+            $validPath)
+        Assert-MacOSSignedEntitlementsFile -Path $validPath
+
+        $falsePath = Join-Path $testRoot "false-signed-entitlements.plist"
+        $falseContents = [System.IO.File]::ReadAllText($validPath).Replace("<true/>", "<false/>")
+        [System.IO.File]::WriteAllText($falsePath, $falseContents)
+        Assert-Throws -Action {
+            Assert-MacOSSignedEntitlementsFile -Path $falsePath
+        } -ExceptionType ([System.Management.Automation.RuntimeException]) -ExpectedMessageFragment "=true가 없습니다"
+
+        $unexpectedPath = Join-Path $testRoot "unexpected-signed-entitlements.plist"
+        $unexpectedContents = [System.IO.File]::ReadAllText($validPath).Replace("</dict>", "  <key>com.apple.security.get-task-allow</key>`n  <true/>`n</dict>")
+        [System.IO.File]::WriteAllText($unexpectedPath, $unexpectedContents)
+        Assert-Throws -Action {
+            Assert-MacOSSignedEntitlementsFile -Path $unexpectedPath
+        } -ExceptionType ([System.Management.Automation.RuntimeException]) -ExpectedMessageFragment "구성이 예상과 일치하지 않습니다"
+
+        $missingPath = Join-Path $testRoot "missing-signed-entitlements.plist"
+        Assert-Throws -Action {
+            Assert-MacOSSignedEntitlementsFile -Path $missingPath
+        } -ExceptionType ([System.Management.Automation.RuntimeException]) -ExpectedMessageFragment "필수 산출물 파일이 없거나 비어 있습니다"
+    }
+
+    Invoke-TestCase -Name "codesign XML extraction rejects a missing entitlement blob" -Action {
+        if (-not $IsMacOS) {
+            return
         }
+
+        $signedExecutablePath = Join-Path $testRoot "signed-test-executable"
+        Copy-Item -LiteralPath "/bin/ls" -Destination $signedExecutablePath
+        $entitlementsPath = Join-Path $repositoryRoot "src/TimetableGenerator.Desktop/Platforms/macOS/TimetableGenerator.entitlements"
+        Invoke-NativeCommand `
+            -Command "codesign" `
+            -Arguments @("--force", "--sign", "-", "--options", "runtime", "--entitlements", $entitlementsPath, "--", $signedExecutablePath) `
+            -FailureMessage "테스트 실행 파일을 임시 서명할 수 없습니다."
+        Assert-MacOSSignedEntitlements -MainExecutablePath $signedExecutablePath
+
+        Assert-Throws `
+            -Action { Assert-MacOSSignedEntitlements -MainExecutablePath "/bin/ls" } `
+            -ExceptionType ([System.Management.Automation.RuntimeException]) `
+            -ExpectedMessageFragment "유효한 entitlement XML을 생성하지 않았습니다"
     }
 }
 finally {

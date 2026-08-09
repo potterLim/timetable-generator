@@ -30,4 +30,23 @@ public sealed class NativeEventKitCalendarCommandTests
             Assert.Equal("eventkit_request_json_invalid", response.RootElement.GetProperty("diagnosticCode").GetString());
         }
     }
+
+    [Fact]
+    public async Task MultipleCommandInstancesReuseTheProcessWideNativeApiAsync()
+    {
+        if (OperatingSystem.IsMacOSVersionAtLeast(14) == false)
+        {
+            return;
+        }
+
+        NativeEventKitCalendarCommand firstCommand = new NativeEventKitCalendarCommand();
+        NativeEventKitCalendarCommand secondCommand = new NativeEventKitCalendarCommand();
+
+        Assert.True(firstCommand.IsAvailable);
+        Assert.True(secondCommand.IsAvailable);
+        string firstResponseJson = await firstCommand.ExecuteAsync("{", TestContext.Current.CancellationToken);
+        string secondResponseJson = await secondCommand.ExecuteAsync("{", TestContext.Current.CancellationToken);
+
+        Assert.Equal(firstResponseJson, secondResponseJson);
+    }
 }

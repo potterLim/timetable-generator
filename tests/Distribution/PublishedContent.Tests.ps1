@@ -8,6 +8,7 @@ $repositoryRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../.."
 . (Join-Path $repositoryRoot "scripts/Distribution/BinaryValidation.ps1")
 . (Join-Path $repositoryRoot "scripts/Distribution/MacOSEventKitBridgeValidation.ps1")
 . (Join-Path $repositoryRoot "scripts/Distribution/MacOSPropertyList.ps1")
+. (Join-Path $repositoryRoot "tests/Distribution/TestAssertions.ps1")
 
 function Assert-PathExists {
     param(
@@ -29,22 +30,6 @@ function Assert-PathDoesNotExist {
     if (Test-Path -LiteralPath $Path) {
         throw "제거되어야 하는 파일이 남아 있습니다: $Path"
     }
-}
-
-function Assert-Throws {
-    param(
-        [Parameter(Mandatory)]
-        [scriptblock] $Action
-    )
-
-    try {
-        & $Action
-    }
-    catch {
-        return
-    }
-
-    throw "예상한 오류가 발생하지 않았습니다."
 }
 
 function Invoke-TestCase {
@@ -151,27 +136,27 @@ try {
         $legacyInfoPlistPath = Join-Path $testRoot "Legacy-Info.plist"
         $legacyInfoPlist = $infoPlist.Replace("  <key>NSPrincipalClass</key>", "  <key>NSAppleEventsUsageDescription</key>`n  <string>legacy</string>`n  <key>NSPrincipalClass</key>")
         [System.IO.File]::WriteAllText($legacyInfoPlistPath, $legacyInfoPlist)
-        Assert-Throws {
+        Assert-Throws -Action {
             Assert-MacOSInfoPlist `
                 -Path $legacyInfoPlistPath `
                 -ExecutableName "TimetableGenerator" `
                 -BundleIdentifier "io.github.potterlim.timetable" `
                 -ProductVersion "1.0.0"
-        }
+        } -ExceptionType ([System.Management.Automation.RuntimeException]) -ExpectedMessageFragment "사용하지 않는 Apple Events 권한 설명"
 
         $legacyEntitlementsPath = Join-Path $testRoot "Legacy.entitlements"
         $legacyEntitlements = [System.IO.File]::ReadAllText($entitlementsPath).Replace("</dict>", "  <key>com.apple.security.automation.apple-events</key>`n  <true/>`n</dict>")
         [System.IO.File]::WriteAllText($legacyEntitlementsPath, $legacyEntitlements)
-        Assert-Throws {
+        Assert-Throws -Action {
             Assert-MacOSEntitlements -Path $legacyEntitlementsPath
-        }
+        } -ExceptionType ([System.Management.Automation.RuntimeException]) -ExpectedMessageFragment "구성이 예상과 일치하지 않습니다"
     }
 
     Invoke-TestCase -Name "macOS EventKit bridge must expose and satisfy the versioned C ABI" -Action {
-        Assert-MacOSEventKitBridgeExportSymbols -Symbols @("_tg_eventkit_execute", "_tg_eventkit_free", "_tg_eventkit_schema_version")
-        Assert-Throws {
+        Assert-MacOSEventKitBridgeExportSymbols -Symbols @("_tg_eventkit_abi_version", "_tg_eventkit_execute", "_tg_eventkit_execute_cancellable", "_tg_eventkit_free", "_tg_eventkit_schema_version")
+        Assert-Throws -Action {
             Assert-MacOSEventKitBridgeExportSymbols -Symbols @("_tg_eventkit_execute", "_tg_eventkit_free")
-        }
+        } -ExceptionType ([System.Management.Automation.RuntimeException]) -ExpectedMessageFragment "필수 C ABI export가 없습니다"
 
         $eventKitBridgePath = Join-Path $testRoot "libTimetableGenerator.EventKitBridge.dylib"
         $eventKitBridgeSourcePath = Join-Path $repositoryRoot "tests/Distribution/Fixtures/EventKitBridgeStub.c"
@@ -187,20 +172,29 @@ try {
 
         Assert-MacOSEventKitBridgeBinary -Path $eventKitBridgePath -RuntimeIdentifier "osx-arm64"
         if ($IsMacOS -and [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture -eq [System.Runtime.InteropServices.Architecture]::Arm64) {
+            $invalidAbiPath = Join-Path $testRoot "libTimetableGenerator.EventKitBridge.InvalidAbi.dylib"
+            $compilerOutput = @(& xcrun clang -dynamiclib -arch arm64 -std=c11 -Wall -Wextra -Werror -DTG_EVENT_KIT_TEST_ABI_VERSION=2 $eventKitBridgeSourcePath -o $invalidAbiPath 2>&1)
+            if ($LASTEXITCODE -ne 0) {
+                throw "잘못된 ABI 테스트용 EventKit bridge를 빌드하지 못했습니다: $($compilerOutput -join "`n")"
+            }
+            Assert-Throws -Action {
+                Assert-MacOSEventKitBridgeBinary -Path $invalidAbiPath -RuntimeIdentifier "osx-arm64"
+            } -ExceptionType ([System.Management.Automation.RuntimeException]) -ExpectedMessageFragment "ABI, schema 또는 execute/free 검증에 실패했습니다"
+
             $invalidSchemaPath = Join-Path $testRoot "libTimetableGenerator.EventKitBridge.InvalidSchema.dylib"
             $compilerOutput = @(& xcrun clang -dynamiclib -arch arm64 -std=c11 -Wall -Wextra -Werror -DTG_EVENT_KIT_TEST_SCHEMA_VERSION=2 $eventKitBridgeSourcePath -o $invalidSchemaPath 2>&1)
             if ($LASTEXITCODE -ne 0) {
                 throw "잘못된 schema 테스트용 EventKit bridge를 빌드하지 못했습니다: $($compilerOutput -join "`n")"
             }
-            Assert-Throws {
+            Assert-Throws -Action {
                 Assert-MacOSEventKitBridgeBinary -Path $invalidSchemaPath -RuntimeIdentifier "osx-arm64"
-            }
+            } -ExceptionType ([System.Management.Automation.RuntimeException]) -ExpectedMessageFragment "ABI, schema 또는 execute/free 검증에 실패했습니다"
         }
 
         [System.IO.File]::WriteAllText($eventKitBridgePath, "not a Mach-O binary")
-        Assert-Throws {
+        Assert-Throws -Action {
             Assert-MacOSEventKitBridgeBinary -Path $eventKitBridgePath -RuntimeIdentifier "osx-arm64"
-        }
+        } -ExceptionType ([System.Management.Automation.RuntimeException]) -ExpectedMessageFragment "Mach-O 형식이 아닙니다"
     }
 }
 finally {

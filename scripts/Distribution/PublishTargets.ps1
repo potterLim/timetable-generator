@@ -12,6 +12,9 @@ function Publish-WindowsTarget {
         [Parameter(Mandatory)]
         [string] $ProductVersion,
 
+        [Parameter(Mandatory)]
+        [System.DateTimeOffset] $ArchiveTimestamp,
+
         [switch] $NoRestore
     )
 
@@ -52,7 +55,8 @@ function Publish-WindowsTarget {
         -OutputRoot $OutputRoot `
         -ArchiveFileName $archiveFileName `
         -ArchiveRootName "TimetableGenerator-$ProductVersion" `
-        -ArchivePlatform "Windows"
+        -ArchivePlatform "Windows" `
+        -ArchiveTimestamp $ArchiveTimestamp
 }
 
 function Publish-MacOSTarget {
@@ -81,6 +85,9 @@ function Publish-MacOSTarget {
 
         [Parameter(Mandatory)]
         [string] $BundleIdentifier,
+
+        [Parameter(Mandatory)]
+        [System.DateTimeOffset] $ArchiveTimestamp,
 
         [switch] $NoRestore
     )
@@ -158,5 +165,6 @@ function Publish-MacOSTarget {
         -OutputRoot $OutputRoot `
         -ArchiveFileName $archiveFileName `
         -ArchiveRootName "Timetable Generator.app" `
-        -ArchivePlatform "MacOS"
+        -ArchivePlatform "MacOS" `
+        -ArchiveTimestamp $ArchiveTimestamp
 }

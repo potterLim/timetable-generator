@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 using TimetableGenerator.Desktop.Presentation;
+using TimetableGenerator.Desktop.Presentation.ViewModels;
 
 namespace TimetableGenerator.Desktop.Product;
 
@@ -83,6 +84,21 @@ internal sealed partial class ProductShellViewModel
         return mWorkspaceOrNull.FlushAutosaveAsync(cancellationToken);
     }
 
+    public async Task PrepareAutosaveForShutdownAsync(CancellationToken cancellationToken)
+    {
+        PlannerWorkspaceViewModel? workspaceOrNull = mWorkspaceOrNull;
+        if (workspaceOrNull == null)
+        {
+            return;
+        }
+
+        await workspaceOrNull.FlushAutosaveAsync(cancellationToken);
+        if (workspaceOrNull.HasAutosaveError)
+        {
+            throw new InvalidOperationException("The latest planning workspace autosave attempt failed.");
+        }
+    }
+
     public Task CompleteAutosaveAsync(CancellationToken cancellationToken)
     {
         if (mWorkspaceOrNull == null)
@@ -99,6 +115,15 @@ internal sealed partial class ProductShellViewModel
         mShutdownState = EShutdownPresentationState.Saving;
         mShutdownTitle = "변경 사항 저장 중";
         mShutdownMessage = "저장한 뒤 창을 닫습니다.";
+        raiseShutdownPropertiesChanged();
+    }
+
+    internal void beginExportShutdown()
+    {
+        throwIfDisposed();
+        mShutdownState = EShutdownPresentationState.Saving;
+        mShutdownTitle = "내보내기 마무리 중";
+        mShutdownMessage = "진행 중인 내보내기를 안전하게 마친 뒤 창을 닫습니다.";
         raiseShutdownPropertiesChanged();
     }
 
@@ -121,6 +146,15 @@ internal sealed partial class ProductShellViewModel
             mShutdownMessage = "시간표는 화면에 그대로 남아 있습니다. 저장 오류를 해결한 뒤 다시 시도해 주세요.";
         }
 
+        raiseShutdownPropertiesChanged();
+    }
+
+    internal void showExportShutdownFailure()
+    {
+        throwIfDisposed();
+        mShutdownState = EShutdownPresentationState.Failed;
+        mShutdownTitle = "내보내기 작업이 아직 진행 중입니다";
+        mShutdownMessage = "창은 닫지 않았습니다. 진행 중인 작업이 끝난 뒤 다시 시도해 주세요.";
         raiseShutdownPropertiesChanged();
     }
 

@@ -70,6 +70,8 @@ App_Data/
 
 # macOS metadata
 .DS_Store
+._*
+__MACOSX/
 
 # NuGet Packages
 *.nupkg

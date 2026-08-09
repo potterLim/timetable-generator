@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 using TimetableGenerator.Desktop.Exporting.AppleCalendar;
@@ -117,6 +118,56 @@ public sealed class EventKitAppleCalendarNativeBridgeMutationTests
         Assert.Equal("eventkit_calendar_commit_failed", exception.DiagnosticCode);
         Assert.NotNull(registryStore.Current.PendingOperationOrNull);
         Assert.Single(registryStore.SavedDocuments);
+    }
+
+    [Fact]
+    public async Task CancellationBeforeNativeMutationClearsThePreparedPendingOperationAsync()
+    {
+        CalendarExportDocument document = createDocument();
+        RecordingRegistryStore registryStore = new RecordingRegistryStore(AppleCalendarOwnershipRegistryDocument.CreateEmpty());
+        using (CancellationTokenSource cancellationSource = new CancellationTokenSource())
+        {
+            RecordingEventKitCalendarCommand command = new RecordingEventKitCalendarCommand(
+                delegate (string requestJson, CancellationToken cancellationToken)
+                {
+                    Assert.NotNull(registryStore.Current.PendingOperationOrNull);
+                    cancellationSource.Cancel();
+                    return Task.FromCanceled<string>(cancellationToken);
+                });
+            EventKitAppleCalendarNativeBridge bridge = new EventKitAppleCalendarNativeBridge(command, registryStore);
+
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                () => bridge.ApplyExportAsync(AppleCalendarExportMutation.CreateNew(document, document.CalendarName), cancellationSource.Token));
+        }
+
+        Assert.Null(registryStore.Current.PendingOperationOrNull);
+        Assert.Equal(2, registryStore.SavedDocuments.Count);
+    }
+
+    [Fact]
+    public async Task CancellationAfterNativeMutationStartsDoesNotInterruptRegistryFinalizationAsync()
+    {
+        CalendarExportDocument document = createDocument();
+        RecordingRegistryStore registryStore = new RecordingRegistryStore(AppleCalendarOwnershipRegistryDocument.CreateEmpty());
+        using (CancellationTokenSource cancellationSource = new CancellationTokenSource())
+        {
+            RecordingEventKitCalendarCommand command = new RecordingEventKitCalendarCommand(
+                delegate (string requestJson, CancellationToken cancellationToken)
+                {
+                    Assert.NotNull(registryStore.Current.PendingOperationOrNull);
+                    cancellationSource.Cancel();
+                    return Task.FromResult(createSuccessfulResponse(requestJson, "created-calendar", "source-a", 0));
+                });
+            EventKitAppleCalendarNativeBridge bridge = new EventKitAppleCalendarNativeBridge(command, registryStore);
+
+            AppleCalendarNativeExportResult result = await bridge.ApplyExportAsync(AppleCalendarExportMutation.CreateNew(document, document.CalendarName), cancellationSource.Token);
+
+            Assert.Equal("created-calendar", result.CalendarId.Value);
+        }
+
+        Assert.Null(registryStore.Current.PendingOperationOrNull);
+        Assert.Single(registryStore.Current.Calendars);
+        Assert.Equal(2, registryStore.SavedDocuments.Count);
     }
 
     [Fact]

@@ -3,10 +3,13 @@ using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using TimetableGenerator.Desktop.Storage;
+
 namespace TimetableGenerator.Desktop.Exporting.AppleCalendar;
 
 internal sealed class FileAppleCalendarOwnershipRegistryStore : IAppleCalendarOwnershipRegistryStore
 {
+    private const long MAXIMUM_REGISTRY_FILE_BYTES = 8L * 1_024L * 1_024L;
     private const int WRITE_BUFFER_SIZE = 16_384;
 
     private static readonly JsonSerializerOptions JSON_OPTIONS = createJsonOptions();
@@ -32,7 +35,7 @@ internal sealed class FileAppleCalendarOwnershipRegistryStore : IAppleCalendarOw
 
         try
         {
-            byte[] content = File.ReadAllBytes(mFilePath.Value);
+            byte[] content = BoundedLocalFileReader.readAllBytes(mFilePath.Value, MAXIMUM_REGISTRY_FILE_BYTES);
             AppleCalendarOwnershipRegistryDocument? documentOrNull = JsonSerializer.Deserialize<AppleCalendarOwnershipRegistryDocument>(content, JSON_OPTIONS);
             if (documentOrNull == null)
             {
@@ -40,6 +43,10 @@ internal sealed class FileAppleCalendarOwnershipRegistryStore : IAppleCalendarOw
             }
 
             return documentOrNull;
+        }
+        catch (BoundedLocalFileReadLimitException exception)
+        {
+            throw new AppleCalendarOwnershipRegistryException("The Apple Calendar ownership registry exceeds the product size limit.", exception);
         }
         catch (JsonException exception)
         {
@@ -69,6 +76,11 @@ internal sealed class FileAppleCalendarOwnershipRegistryStore : IAppleCalendarOw
         try
         {
             byte[] content = JsonSerializer.SerializeToUtf8Bytes(document, JSON_OPTIONS);
+            if (content.LongLength > MAXIMUM_REGISTRY_FILE_BYTES)
+            {
+                throw new AppleCalendarOwnershipRegistryException("The Apple Calendar ownership registry exceeds the product size limit.");
+            }
+
             using (FileStream output = new FileStream(temporaryPath, createPrivateFileOptions()))
             {
                 output.Write(content, 0, content.Length);

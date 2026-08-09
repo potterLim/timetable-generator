@@ -272,7 +272,7 @@ public sealed class PlanningWorkspaceFileStoreTests
     }
 
     [TestMethod]
-    public async Task OversizedGenerationFallsBackBeforeAllocatingItsContentAsync()
+    public async Task OversizedGenerationFallsBackWithoutUnboundedAllocationAsync()
     {
         string testDirectoryPath = createTestDirectoryPath();
         try

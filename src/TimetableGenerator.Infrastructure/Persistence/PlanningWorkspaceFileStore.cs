@@ -165,14 +165,16 @@ public sealed class PlanningWorkspaceFileStore : IPlanningWorkspaceStore
 
     private async Task<PlanningWorkspaceDocument> readDocumentAsync(GenerationFilePath path, CancellationToken cancellationToken)
     {
-        FileInfo fileInfo = new FileInfo(path.Value);
-        long documentLength = fileInfo.Length;
-        if (documentLength > mDocumentSizeLimit.Bytes)
+        byte[] content;
+        try
+        {
+            content = await BoundedFileReader.readAllBytesAsync(path.Value, mDocumentSizeLimit.Bytes, cancellationToken).ConfigureAwait(false);
+        }
+        catch (BoundedFileReadLimitException)
         {
             throw new WorkspaceDocumentSizeException("The planning workspace document exceeds the product size limit.");
         }
 
-        byte[] content = await File.ReadAllBytesAsync(path.Value, cancellationToken).ConfigureAwait(false);
         return mCodec.Deserialize(content);
     }
 
